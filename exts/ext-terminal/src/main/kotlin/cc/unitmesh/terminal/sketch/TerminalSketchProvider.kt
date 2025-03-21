@@ -6,6 +6,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.run.ProcessExecutor
+import cc.unitmesh.devti.sketch.run.ShellSyntaxSafetyCheck
 import cc.unitmesh.devti.sketch.run.UIUpdatingWriter
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
@@ -145,15 +146,11 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                     resultPanel.border = LineBorder(JBColor(Color(0, 128, 0), Color(0, 100, 0)), 1)
                     collapsibleResultPanel.setTitle("✅ Execution Successful")
                 }
-                errorMessage != null -> {
+                else -> {
                     resultPanel.background = errorColor
                     resultPanel.border = LineBorder(JBColor(Color(128, 0, 0), Color(100, 0, 0)), 1)
-                    collapsibleResultPanel.setTitle("❌ Execution Failed")
-                }
-                else -> {
-                    resultPanel.background = normalColor
-                    resultPanel.border = null
-                    collapsibleResultPanel.setTitle("Execution Results")
+                    val errorText = errorMessage?.let { ": $it" } ?: ""
+                    collapsibleResultPanel.setTitle("❌ Execution Failed$errorText")
                 }
             }
             resultPanel.repaint()
@@ -335,7 +332,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
             resultSketch.updateViewText("", true)
             stdWriter.setExecuting(true)
-            // Reset result panel appearance
             setResultStatus(false)
 
             AutoDevCoroutineScope.scope(project).launch {
@@ -348,7 +344,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                         if (collapsibleResultPanel.isCollapsed()) {
                             collapsibleResultPanel.expand()
                         }
-                        // Set success/failure based on exit code
+
                         val success = exitCode == 0
                         setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
                     }
@@ -415,4 +411,5 @@ class ResizableTerminalPanel(terminalWidget: JBTerminalWidget) : JPanel(BorderLa
         })
     }
 }
+
 

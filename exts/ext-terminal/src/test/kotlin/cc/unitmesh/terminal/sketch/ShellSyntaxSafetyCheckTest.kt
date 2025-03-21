@@ -1,5 +1,6 @@
 package cc.unitmesh.terminal.sketch
 
+import cc.unitmesh.devti.sketch.run.ShellSyntaxSafetyCheck
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class ShellSyntaxSafetyCheckTest : BasePlatformTestCase() {

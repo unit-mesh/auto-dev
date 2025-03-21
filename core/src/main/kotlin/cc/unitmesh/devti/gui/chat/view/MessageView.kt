@@ -162,8 +162,7 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
         val rightToolbar = ActionManager.getInstance()
             .createActionToolbar("AutoDevCopyView", actionGroup, true)
 
-        rightToolbar.setTargetComponent(this)
-
+        rightToolbar.targetComponent = this
         return rightToolbar
     }
 
