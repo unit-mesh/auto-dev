@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jLabel
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.tips
-import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project

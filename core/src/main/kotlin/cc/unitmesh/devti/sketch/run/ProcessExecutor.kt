@@ -26,22 +26,14 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.text.Strings
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
+import com.intellij.util.ObjectUtils
+import kotlinx.coroutines.*
 import org.jetbrains.ide.PooledThreadExecutor
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.OutputStream
-import java.io.StringWriter
-import java.io.Writer
+import java.io.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 data class ProcessExecutorResult(
     val exitCode: Int,
@@ -108,12 +100,11 @@ class ProcessExecutor(val project: Project) {
         val errOutput = async { consumeProcessOutput(process.errorStream, errWriter, process, dispatcher) }
         val stdOutput = async { consumeProcessOutput(process.inputStream, stdWriter, process, dispatcher) }
 
-        val exitCode = async { process.waitFor() }
+        val exitCode = async { process.awaitExit() }
         stdOutput.await()
         errOutput.await()
         exitCode.await()
     }
-
 
     /**
      * for share process
