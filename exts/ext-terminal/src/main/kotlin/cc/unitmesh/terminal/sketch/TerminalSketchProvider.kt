@@ -171,14 +171,14 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         executeAction = TerminalExecuteAction()
 
         val showCodeAction = object :
-            AnAction("Show/Hide Code", "Show or hide the shell code", AllIcons.Actions.ShowCode) {
+            AnAction("Show/Hide Code", "Show or hide the shell code", AutoDevIcons.View) {
             override fun actionPerformed(e: AnActionEvent) {
                 toggleCodePanel()
             }
         }
 
         val copyAction = object :
-            AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AllIcons.Actions.Copy) {
+            AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevIcons.Copy) {
             override fun actionPerformed(e: AnActionEvent) {
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 val selection = StringSelection(getViewText())
@@ -314,7 +314,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     inner class TerminalExecuteAction :
-        AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
+        AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AutoDevIcons.Run) {
         override fun actionPerformed(e: AnActionEvent) {
             titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
             

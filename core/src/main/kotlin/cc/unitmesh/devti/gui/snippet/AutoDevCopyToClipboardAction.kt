@@ -1,12 +1,13 @@
 package cc.unitmesh.devti.gui.snippet
 
+import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 
-class AutoDevCopyToClipboardAction : DumbAwareAction() {
+class AutoDevCopyToClipboardAction : DumbAwareAction(AutoDevBundle.message("autodev.copy.action")) {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun actionPerformed(e: AnActionEvent) {

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.snippet
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -16,7 +17,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.testFramework.LightVirtualFile
 
 
-class AutoDevInsertCodeAction : DumbAwareAction() {
+class AutoDevInsertCodeAction : DumbAwareAction(AutoDevBundle.message("autodev.insert.action")) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val editor = e.getData(PlatformDataKeys.EDITOR) ?: return
@@ -32,9 +33,7 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
         }
 
         val file = FileDocumentManager.getInstance().getFile(editor.document) as? LightVirtualFile
-        if (file?.language?.displayName == "DevIn" &&
-            ToolWindowManager.getInstance(project).getToolWindow("AutoDev") != null
-        ) {
+        if (file?.language?.displayName == "DevIn") {
             val sketchService = project.getService(AutoSketchMode::class.java)
             if (sketchService.listener == null) {
                 AutoInputService.getInstance(project).putText(newText)
