@@ -5,7 +5,6 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.sh.ShLanguage
 import com.intellij.sh.psi.ShCommand
-import com.intellij.sh.psi.ShFile
 
 object ShellSyntaxSafetyCheck {
     private val checkerRegistry = ShellCommandCheckerRegistry()
@@ -27,7 +26,7 @@ object ShellSyntaxSafetyCheck {
      */
     fun checkDangerousCommand(project: Project, command: String): Pair<Boolean, String> {
         val psiFile = PsiFileFactory.getInstance(project)
-            .createFileFromText("temp.sh", ShLanguage.INSTANCE, command) as? ShFile
+            .createFileFromText("temp.sh", ShLanguage.INSTANCE, command)
             ?: return Pair(true, "Could not parse command")
 
         val commandElements = PsiTreeUtil.findChildrenOfType(psiFile, ShCommand::class.java)
