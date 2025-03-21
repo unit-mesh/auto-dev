@@ -207,8 +207,28 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     override fun onDoneStream(allText: String) {
-        if (content.lines().size > 1) return
+        val (isDangerous, reason) = ShellSyntaxSafetyCheck.checkDangerousCommand(content)
+        if (isDangerous) {
+            AutoDevNotifications.notify(project, "Auto-execution has been disabled for safety: $reason")
 
+            ApplicationManager.getApplication().invokeLater {
+                terminalWidget!!.terminalStarter?.sendString(
+                    "echo \"⚠️ WARNING: $reason - Command not auto-executed for safety\"",
+                    false
+                )
+
+                // Set result panel with warning
+                resultSketch.updateViewText(
+                    "⚠️ WARNING: $reason\nThe command was not auto-executed for safety reasons.\nPlease review and run manually if you're sure.",
+                    true
+                )
+                collapsibleResultPanel.setTitle("Safety Warning")
+                collapsibleResultPanel.expand()
+            }
+            return
+        }
+
+        if (content.lines().size > 1) return
         ApplicationManager.getApplication().invokeLater {
             terminalWidget!!.terminalStarter?.sendString(content, false)
 
