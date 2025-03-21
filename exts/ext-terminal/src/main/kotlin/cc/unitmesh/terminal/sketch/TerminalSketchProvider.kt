@@ -260,7 +260,12 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         codeSketch.updateViewText(code, true)
         titleLabel.text = "Terminal - ($content)"
 
-        val (isDangerous, reason) = ShellSyntaxSafetyCheck.checkDangerousCommand(project, content)
+        val (isDangerous, reason) = try {
+            ShellSyntaxSafetyCheck.checkDangerousCommand(project, content)
+        } catch (e: Exception) {
+            Pair(true, "Error checking command safety: ${e.message}")
+        }
+
         if (isDangerous) {
             AutoDevNotifications.notify(project, "Auto-execution has been disabled for safety: $reason")
 
@@ -311,6 +316,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     inner class TerminalExecuteAction :
         AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
         override fun actionPerformed(e: AnActionEvent) {
+            titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
+            
             val stdWriter = UIUpdatingWriter(
                 onTextUpdate = { text, complete ->
                     resultSketch.updateViewText(text, complete)
@@ -329,7 +336,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             resultSketch.updateViewText("", true)
             stdWriter.setExecuting(true)
             setResultStatus(false)
-
+            
             AutoDevCoroutineScope.scope(project).launch {
                 val executor = ProcessExecutor(project)
                 try {
@@ -340,13 +347,16 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                         if (collapsibleResultPanel.isCollapsed()) {
                             collapsibleResultPanel.expand()
                         }
-
+                        // Clear the running icon.
+                        titleLabel.icon = null
                         val success = exitCode == 0
                         setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
                     }
                 } catch (ex: Exception) {
                     ApplicationManager.getApplication().invokeLater {
                         stdWriter.setExecuting(false)
+                        // Clear the running icon.
+                        titleLabel.icon = null
                         resultSketch.updateViewText("${stdWriter.getContent()}\nError: ${ex.message}", true)
                         setResultStatus(false, ex.message)
                     }
@@ -364,3 +374,4 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         }
     }
 }
+
