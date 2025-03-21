@@ -122,7 +122,14 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
                         oldComponent.dispose()
                     } else {
                         blockViews[index].apply {
-                            updateLanguage(codeFence.language, codeFence.originLanguage)
+                            var originLanguage = codeFence.originLanguage
+                            var language = codeFence.language
+                            if (language.displayName == "Markdown" && codeFence.text.startsWith("<devin>")) {
+                                language = CodeFence.findLanguage("DevIn")
+                                originLanguage = "DevIn"
+                            }
+
+                            updateLanguage(language, originLanguage)
                             updateViewText(codeFence.text, codeFence.isComplete)
                         }
                     }

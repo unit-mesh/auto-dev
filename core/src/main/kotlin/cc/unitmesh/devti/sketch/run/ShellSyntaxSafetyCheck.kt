@@ -2,7 +2,6 @@ package cc.unitmesh.devti.sketch.run
 
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.sh.ShLanguage

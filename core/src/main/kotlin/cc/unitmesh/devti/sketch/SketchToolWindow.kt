@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
@@ -312,12 +313,10 @@ open class SketchToolWindow(
                             }
 
                             var language = codeFence.language
-                            if (codeFence.text.contains("\n```") && codeFence.text.startsWith("/")) {
-                                if (language.displayName == "Markdown") {
-                                    com.intellij.openapi.diagnostic.logger<SketchToolWindow>().warn("Try to fix language error")
-                                    language = findLanguage("DevIn")
-                                    originLanguage = "DevIn"
-                                }
+                            if (language.displayName == "Markdown" && codeFence.text.startsWith("<devin>")) {
+                                logger<SketchToolWindow>().warn("Try to fix language error")
+                                language = findLanguage("DevIn")
+                                originLanguage = "DevIn"
                             }
 
                             updateLanguage(language, originLanguage)
