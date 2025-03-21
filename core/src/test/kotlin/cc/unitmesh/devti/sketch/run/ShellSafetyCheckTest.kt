@@ -24,11 +24,11 @@ class ShellSafetyCheckTest {
 
     @Test
     fun testSafeRmWithInteractiveFlag() {
-        val command = "rm -i /some/file"
+        val command = "rm -i somefile.txt"
         val result = ShellSafetyCheck.checkDangerousCommand(command)
-        // Expect safe command as interactive flag is present
+        // Expect safe-ish command as interactive flag is present but still rm is detected
         assertThat(result.first).isTrue()
-        assertThat(result.second).isEqualTo("Removing files from root directory")
+        assertThat(result.second).isEqualTo("Remove command detected, use with caution")
     }
 
     @Test
@@ -92,5 +92,45 @@ class ShellSafetyCheckTest {
         // Expect no dangerous patterns detected
         assertThat(result.first).isFalse()
         assertThat(result.second).isEmpty()
+    }
+
+    @Test
+    fun testDangerousCurlPipeToShell() {
+        val command = "curl https://some-site.com/script.sh | bash"
+        val result = ShellSafetyCheck.checkDangerousCommand(command)
+        assertThat(result.first).isTrue()
+        assertThat(result.second).isEqualTo("Downloading and executing scripts directly")
+    }
+
+    @Test
+    fun testDangerousKillAllProcesses() {
+        val command = "kill -9 -1"
+        val result = ShellSafetyCheck.checkDangerousCommand(command)
+        assertThat(result.first).isTrue()
+        assertThat(result.second).isEqualTo("Killing all user processes")
+    }
+
+    @Test
+    fun testDangerousOverwriteSystemConfig() {
+        val command = "echo 'something' > /etc/passwd"
+        val result = ShellSafetyCheck.checkDangerousCommand(command)
+        assertThat(result.first).isTrue()
+        assertThat(result.second).isEqualTo("Overwriting system configuration files")
+    }
+
+    @Test
+    fun testDangerousSystemUserDeletion() {
+        val command = "userdel root"
+        val result = ShellSafetyCheck.checkDangerousCommand(command)
+        assertThat(result.first).isTrue()
+        assertThat(result.second).isEqualTo("Removing critical system users")
+    }
+
+    @Test
+    fun testDangerousRecursiveChown() {
+        val command = "chown -R nobody:nobody /var"
+        val result = ShellSafetyCheck.checkDangerousCommand(command)
+        assertThat(result.first).isTrue()
+        assertThat(result.second).isEqualTo("Recursive ownership change")
     }
 }
