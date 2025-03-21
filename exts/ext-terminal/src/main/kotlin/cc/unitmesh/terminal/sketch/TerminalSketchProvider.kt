@@ -8,6 +8,7 @@ import cc.unitmesh.devti.sketch.run.ProcessExecutor
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
@@ -28,6 +29,9 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import org.jetbrains.ide.PooledThreadExecutor
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -66,10 +70,10 @@ class TerminalSketchProvider : LanguageSketchProvider {
             val resultPanel = JPanel(BorderLayout()).apply {
                 add(resultSketch.getComponent(), BorderLayout.CENTER)
             }
-            
+
             val isSingleLine = content.lines().filter { it.trim().isNotEmpty() }.size <= 1
             val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel, initiallyCollapsed = isSingleLine)
-            
+
             val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
 
             val toolbarPanel = JPanel(BorderLayout()).apply {
@@ -91,7 +95,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
                 codeSketch.getComponent().border = JBUI.Borders.empty()
                 resultSketch.getComponent().border = JBUI.Borders.empty()
-                
+
                 mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
                     init {
                         add(toolbarWrapper)
@@ -109,24 +113,31 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 val executeAction = object :
                     AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
                     override fun actionPerformed(e: AnActionEvent) {
-                        val runResult = ProcessExecutor(project).executeCode(getViewText())
-                        ApplicationManager.getApplication().invokeLater {
-                            val resultText = if (runResult.exitCode != 0) {
-                                "${runResult.stdOutput}\n${runResult.errOutput}".trim()
-                            } else {
-                                runResult.stdOutput
-                            }
-                            
-                            resultSketch.updateViewText(resultText, true)
-                            
-                            if (collapsibleResultPanel.isCollapsed()) {
-                                collapsibleResultPanel.expand()
-                            }
-                            
-                            if (runResult.exitCode != 0) {
-                                collapsibleResultPanel.setTitle("Execution Results (Error: ${runResult.exitCode})")
-                            } else {
-                                collapsibleResultPanel.setTitle("Execution Results")
+                        AutoDevCoroutineScope.scope(project).launch {
+                            val executor = ProcessExecutor(project)
+                            val runResult = executor.executeCode(
+                                getViewText(),
+                                PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
+                            )
+
+                            ApplicationManager.getApplication().invokeLater {
+                                val resultText = if (runResult.exitCode != 0) {
+                                    "${runResult.stdOutput}\n${runResult.errOutput}".trim()
+                                } else {
+                                    runResult.stdOutput
+                                }
+
+                                resultSketch.updateViewText(resultText, true)
+
+                                if (collapsibleResultPanel.isCollapsed()) {
+                                    collapsibleResultPanel.expand()
+                                }
+
+                                if (runResult.exitCode != 0) {
+                                    collapsibleResultPanel.setTitle("Execution Results (Error: ${runResult.exitCode})")
+                                } else {
+                                    collapsibleResultPanel.setTitle("Execution Results")
+                                }
                             }
                         }
                     }
@@ -155,7 +166,11 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 }
 
                 val popupAction = object :
-                    AnAction("Popup", AutoDevBundle.message("sketch.terminal.popup"), AllIcons.Ide.External_link_arrow) {
+                    AnAction(
+                        "Popup",
+                        AutoDevBundle.message("sketch.terminal.popup"),
+                        AllIcons.Ide.External_link_arrow
+                    ) {
                     override fun displayTextInToolbar(): Boolean = true
 
                     override fun actionPerformed(e: AnActionEvent) {
@@ -239,4 +254,3 @@ class TerminalSketchProvider : LanguageSketchProvider {
         }
     }
 }
-
