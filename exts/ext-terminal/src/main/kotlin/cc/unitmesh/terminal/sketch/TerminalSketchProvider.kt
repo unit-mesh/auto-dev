@@ -3,6 +3,7 @@ package cc.unitmesh.terminal.sketch
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.run.ProcessExecutor
 import cc.unitmesh.devti.sketch.run.UIUpdatingWriter
@@ -17,6 +18,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -52,6 +54,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
 
 class TerminalLangSketch(val project: Project, var content: String) : ExtensionLangSketch {
+    val enableAutoRunTerminal = project.coderSetting.state.enableAutoRunTerminal
+
     var terminalWidget: JBTerminalWidget? = null
     var mainPanel: JPanel? = null
     val actionGroup = DefaultActionGroup(createConsoleActions())
@@ -68,7 +72,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         add(codeSketch.getComponent(), BorderLayout.CENTER)
     }
 
-    // Add result display component
     val resultSketch = CodeHighlightSketch(project, "", CodeFence.findLanguage("bash"))
     val resultPanel = JPanel(BorderLayout()).apply {
         add(resultSketch.getComponent(), BorderLayout.CENTER)
@@ -88,12 +91,14 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         it.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 1, 1, 1)
     }
 
+    private lateinit var executeAction: TerminalExecuteAction
+
     init {
         val projectDir = project.guessProjectDir()?.path
         val terminalRunner = LocalTerminalDirectRunner.createTerminalRunner(project)
 
         terminalWidget = terminalRunner.createTerminalWidget(this, projectDir, true).also {
-            it.preferredSize = Dimension(it.preferredSize.width, 120)
+            it.preferredSize = Dimension(it.preferredSize.width, 80)
         }
 
         codeSketch.getComponent().border = JBUI.Borders.empty()
@@ -113,7 +118,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     fun createConsoleActions(): List<AnAction> {
-        val executeAction = TerminalExecuteAction()
+        executeAction = TerminalExecuteAction()
 
         val copyAction = object :
             AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AllIcons.Actions.Copy) {
@@ -203,8 +208,20 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     override fun onDoneStream(allText: String) {
         if (content.lines().size > 1) return
+
         ApplicationManager.getApplication().invokeLater {
             terminalWidget!!.terminalStarter?.sendString(content, false)
+
+            if (enableAutoRunTerminal && ::executeAction.isInitialized) {
+                executeAction.actionPerformed(
+                    AnActionEvent.createFromAnAction(
+                        executeAction,
+                        null,
+                        "AutoExecuteTerminal",
+                        DataContext.EMPTY_CONTEXT
+                    )
+                )
+            }
         }
     }
 

@@ -30,6 +30,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     private val teamPromptsField = JTextField()
     private val trimCodeBeforeSend = JCheckBox()
     private val enableAutoRepairDiff = JCheckBox()
+    private val enableAutoRunTerminal = JCheckBox()
 
 
     val settings = project.service<AutoDevCoderSettingService>()
@@ -126,6 +127,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
+        row(jLabel("settings.autodev.coder.enableAutoRunTerminal")) {
+            fullWidthCell(enableAutoRunTerminal)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::enableAutoRunTerminal.toMutableProperty()
+                )
+        }
+
         row(jLabel("settings.external.team.prompts.path")) {
             fullWidthCell(teamPromptsField)
                 .bind(
@@ -147,6 +157,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.enableExportAsMcpServer = state.enableExportAsMcpServer
                 it.enableObserver = state.enableObserver
                 it.enableAutoRepairDiff = state.enableAutoRepairDiff
+                it.enableAutoRunTerminal = state.enableAutoRunTerminal
             }
         }
     }

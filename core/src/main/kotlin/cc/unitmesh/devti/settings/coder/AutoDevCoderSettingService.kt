@@ -29,6 +29,7 @@ class AutoDevCoderSettingService(
         var noChatHistory by property(false)
         var trimCodeBeforeSend by property(false)
         var enableRenameSuggestion by property(false)
+        var enableAutoRunTerminal by property(false)
         var teamPromptsDir by property("prompts") { it.isEmpty() }
 
         override fun copy(): AutoDevCoderSettings {
