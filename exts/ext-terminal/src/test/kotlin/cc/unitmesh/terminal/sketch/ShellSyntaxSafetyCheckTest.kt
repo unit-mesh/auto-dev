@@ -23,7 +23,7 @@ class ShellSyntaxSafetyCheckTest : BasePlatformTestCase() {
             "sudo rm file.txt" to "Removing files with elevated privileges",
             "mkfs /dev/sda1" to "Filesystem formatting command",
             "dd if=/dev/zero of=/dev/sda" to "Low-level disk operation",
-            "chmod -R 777 /var" to "Recursive chmod with insecure permissions",
+            "chmod -R 777 /var" to "Recursive chmod with insecure permissions (e.g., 777)",
             "rm /" to "Operation targeting root directory"
         )
 

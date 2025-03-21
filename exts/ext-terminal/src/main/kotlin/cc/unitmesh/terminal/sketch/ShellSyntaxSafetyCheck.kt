@@ -40,11 +40,6 @@ object ShellSyntaxSafetyCheck {
 
         return Pair(false, "")
     }
-
-    // Public API to register custom checkers
-    fun registerChecker(checker: ShellCommandChecker) {
-        checkerRegistry.register(checker)
-    }
 }
 
 class ShellCommandCheckerRegistry {
@@ -91,9 +86,10 @@ class RmCommandChecker : BaseShellCommandChecker() {
         if (!ShellCommandUtils.isCommandWithName(command, "rm")) return checkNext(command, fullCommandText)
 
         val options = ShellCommandUtils.getCommandOptions(command)
-        if (options.contains("-rf") || options.contains("-fr") ||
-            options.contains("-r") && options.contains("-f") ||
-            options.contains("-f") && !options.contains("-i")
+        if (options.containsAll(listOf("-r", "-f")) ||
+            options.containsAll(listOf("-rf")) ||
+            options.containsAll(listOf("-fr")) ||
+            (options.contains("-f") && !options.contains("-i"))
         ) {
             return Pair(true, "Dangerous rm command detected")
         }
@@ -110,6 +106,11 @@ class SudoCommandChecker : BaseShellCommandChecker() {
         if (sudoArgs.contains("rm")) {
             return Pair(true, "Removing files with elevated privileges")
         }
+        // Consider more advanced parsing of the command after sudo if needed
+        // Example: if (sudoArgs.isNotEmpty()) {
+        //     val commandAfterSudo = sudoArgs.joinToString(" ")
+        //     // Potentially recursively call checkDangerousCommand on commandAfterSudo
+        // }
 
         return checkNext(command, fullCommandText)
     }
@@ -123,15 +124,26 @@ class GenericCommandChecker(private val commandName: String, private val dangerM
         }
         return checkNext(command, fullCommandText)
     }
+    // Consider adding checks based on arguments for specific generic commands if needed
 }
 
 class ChmodCommandChecker : BaseShellCommandChecker() {
     override fun check(command: ShCommand, fullCommandText: String): Pair<Boolean, String>? {
         if (!ShellCommandUtils.isCommandWithName(command, "chmod")) return checkNext(command, fullCommandText)
 
+        val commandText = command.text
         if (ShellCommandUtils.hasRecursiveFlag(command) && ShellCommandUtils.hasInsecurePermissions(command)) {
-            return Pair(true, "Recursive chmod with insecure permissions")
+            return Pair(true, "Recursive chmod with insecure permissions (e.g., 777)")
         }
+
+        // Example of checking for other potentially dangerous permission changes:
+        // Giving execute permission to 'others' without a clear reason might be risky.
+        // This is a simplified check and might need refinement based on your security policy.
+        if (commandText.contains("o+x") && !commandText.contains("a+x")) {
+            return Pair(true, "Granting execute permission to others (o+x) might be dangerous")
+        }
+        // You can add more checks here for other insecure permission patterns,
+        // like removing write permissions from group or others unexpectedly.
 
         return checkNext(command, fullCommandText)
     }
@@ -140,6 +152,12 @@ class ChmodCommandChecker : BaseShellCommandChecker() {
 class RootDirectoryOperationChecker : BaseShellCommandChecker() {
     override fun check(command: ShCommand, fullCommandText: String): Pair<Boolean, String>? {
         if (ShellCommandUtils.operatesOnRootDirectory(command)) {
+            return Pair(true, "Operation targeting root directory")
+        }
+        // Consider more precise checks for operations directly on the root directory
+        // For example, commands like `rm -rf /` or `mv /some/file /`
+        val tokens = ShellCommandUtils.getCommandArgs(command)
+        if (tokens.size > 1 && tokens.drop(1).any { it == "/" }) {
             return Pair(true, "Operation targeting root directory")
         }
         return checkNext(command, fullCommandText)
@@ -167,8 +185,7 @@ object ShellCommandUtils {
     }
 
     fun isCommandWithName(cmd: ShCommand, name: String): Boolean {
-        val tokens = cmd.text.trim().split("\\s+".toRegex())
-        return tokens.firstOrNull() == name
+        return getCommandArgs(cmd).firstOrNull()?.equals(name) ?: false
     }
 
     fun hasRecursiveFlag(cmd: ShCommand): Boolean {
@@ -180,7 +197,7 @@ object ShellCommandUtils {
     }
 
     fun operatesOnRootDirectory(cmd: ShCommand): Boolean {
-        val tokens = cmd.text.trim().split("\\s+".toRegex())
+        val tokens = getCommandArgs(cmd)
         return tokens.any { it == "/" }
     }
 }
