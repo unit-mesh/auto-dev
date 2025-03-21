@@ -1,4 +1,4 @@
-package cc.unitmesh.terminal.sketch
+package cc.unitmesh.devti.sketch.run
 
 import com.intellij.openapi.application.ApplicationManager
 import java.io.StringWriter
@@ -42,11 +42,11 @@ class UIUpdatingWriter(
         ApplicationManager.getApplication().invokeLater {
             val currentText = stringWriter.toString()
             onTextUpdate(currentText, !isExecuting)
-            
+
             if (checkCollapsed()) {
                 expandPanel()
             }
-            
+
             if (isExecuting) {
                 onPanelUpdate("Execution Results (Running...)", isExecuting)
             } else {

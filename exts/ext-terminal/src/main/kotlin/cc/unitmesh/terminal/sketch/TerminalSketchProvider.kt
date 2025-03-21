@@ -5,6 +5,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.run.ProcessExecutor
+import cc.unitmesh.devti.sketch.run.UIUpdatingWriter
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
@@ -232,21 +233,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                 }
             )
 
-            val errWriter = UIUpdatingWriter(
-                onTextUpdate = { text, complete ->
-                    resultSketch.updateViewText(text, complete)
-                },
-                onPanelUpdate = { title, _ ->
-                    collapsibleResultPanel.setTitle(title)
-                },
-                checkCollapsed = {
-                    collapsibleResultPanel.isCollapsed()
-                },
-                expandPanel = {
-                    collapsibleResultPanel.expand()
-                }
-            )
-
             resultSketch.updateViewText("", true)
             stdWriter.setExecuting(true)
 
@@ -254,7 +240,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                 val executor = ProcessExecutor(project)
                 try {
                     val dispatcher = PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
-                    executor.exec(getViewText(), stdWriter, errWriter, dispatcher)
+                    executor.exec(getViewText(), stdWriter, stdWriter, dispatcher)
                     ApplicationManager.getApplication().invokeLater {
                         stdWriter.setExecuting(false)
                         if (collapsibleResultPanel.isCollapsed()) {
@@ -264,11 +250,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                 } catch (ex: Exception) {
                     ApplicationManager.getApplication().invokeLater {
                         stdWriter.setExecuting(false)
-                        resultSketch.updateViewText(
-                            "${stdWriter.getContent()}\nError: ${ex.message}",
-                            true
-                        )
-
+                        resultSketch.updateViewText("${stdWriter.getContent()}\nError: ${ex.message}", true)
                         collapsibleResultPanel.setTitle("Execution Results (Error)")
                     }
                 }
