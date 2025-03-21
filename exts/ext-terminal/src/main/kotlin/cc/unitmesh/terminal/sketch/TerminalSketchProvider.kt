@@ -65,18 +65,24 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     val actionGroup = DefaultActionGroup(createConsoleActions())
     val toolbar = ActionManager.getInstance().createActionToolbar("TerminalSketch", actionGroup, true).apply {
         targetComponent = mainPanel
+        this.component.border = JBUI.Borders.empty()
     }
 
     val titleLabel = JLabel("Terminal").apply {
         border = JBUI.Borders.empty(0, 10)
     }
 
-    val codeSketch = CodeHighlightSketch(project, content, CodeFence.findLanguage("bash"))
+    val codeSketch = CodeHighlightSketch(project, content, CodeFence.findLanguage("bash")).apply {
+        border = JBUI.Borders.empty()
+    }
+
     val codePanel = JPanel(BorderLayout()).apply {
         add(codeSketch.getComponent(), BorderLayout.CENTER)
     }
 
-    val resultSketch = CodeHighlightSketch(project, "", CodeFence.findLanguage("bash"))
+    val resultSketch = CodeHighlightSketch(project, "", CodeFence.findLanguage("bash")).apply {
+        border = JBUI.Borders.empty()
+    }
     val resultPanel = JPanel(BorderLayout()).apply {
         add(resultSketch.getComponent(), BorderLayout.CENTER)
     }
@@ -91,7 +97,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     private var toolbarWrapper = Wrapper(JBUI.Panels.simplePanel(toolbarPanel)).also {
-        it.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 1, 1, 1)
+        it.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0)
     }
 
     private lateinit var executeAction: TerminalExecuteAction
@@ -119,7 +125,10 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             }
         }
 
-        mainPanel!!.border = JBUI.Borders.empty(0, 8)
+        mainPanel!!.border = JBUI.Borders.compound(
+            JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1),
+            JBUI.Borders.empty(0, 4)
+        )
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
     }
 
