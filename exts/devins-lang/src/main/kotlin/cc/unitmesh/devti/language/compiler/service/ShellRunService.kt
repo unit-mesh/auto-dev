@@ -8,10 +8,6 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -20,11 +16,6 @@ import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShConfigurationType
 import com.intellij.sh.run.ShRunConfiguration
 import com.intellij.sh.run.ShRunner
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.ide.PooledThreadExecutor
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class ShellRunService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile) = file.extension == "sh" || file.extension == "bash"
@@ -39,7 +30,13 @@ class ShellRunService : RunService {
 
         val code = virtualFile.readText()
         if (isFromToolAction) {
-            return ProcessExecutor(project).executeCode(code)
+            return ProcessExecutor(project).executeCode(code).let { result ->
+                return if (result.exitCode != 0) {
+                    "Error: ${result.errOutput}"
+                } else {
+                    "Output: ${result.stdOutput}"
+                }
+            }
         }
 
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)

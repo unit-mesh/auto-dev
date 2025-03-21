@@ -61,8 +61,16 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 add(codeSketch.getComponent(), BorderLayout.CENTER)
             }
 
+            // Add result display component
+            val resultSketch = CodeHighlightSketch(project, "", CodeFence.findLanguage("bash"))
+            val resultPanel = JPanel(BorderLayout()).apply {
+                add(resultSketch.getComponent(), BorderLayout.CENTER)
+            }
+            
             val isSingleLine = content.lines().filter { it.trim().isNotEmpty() }.size <= 1
             val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel, initiallyCollapsed = isSingleLine)
+            
+            val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
 
             val toolbarPanel = JPanel(BorderLayout()).apply {
                 add(titleLabel, BorderLayout.WEST)
@@ -82,10 +90,13 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 }
 
                 codeSketch.getComponent().border = JBUI.Borders.empty()
+                resultSketch.getComponent().border = JBUI.Borders.empty()
+                
                 mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
                     init {
                         add(toolbarWrapper)
                         add(collapsibleCodePanel)
+                        add(collapsibleResultPanel)
                         add(terminalWidget!!.component)
                     }
                 }
@@ -98,7 +109,26 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 val executeAction = object :
                     AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
                     override fun actionPerformed(e: AnActionEvent) {
-                        ProcessExecutor(project).executeCode(getViewText())
+                        val runResult = ProcessExecutor(project).executeCode(getViewText())
+                        ApplicationManager.getApplication().invokeLater {
+                            val resultText = if (runResult.exitCode != 0) {
+                                "${runResult.stdOutput}\n${runResult.errOutput}".trim()
+                            } else {
+                                runResult.stdOutput
+                            }
+                            
+                            resultSketch.updateViewText(resultText, true)
+                            
+                            if (collapsibleResultPanel.isCollapsed()) {
+                                collapsibleResultPanel.expand()
+                            }
+                            
+                            if (runResult.exitCode != 0) {
+                                collapsibleResultPanel.setTitle("Execution Results (Error: ${runResult.exitCode})")
+                            } else {
+                                collapsibleResultPanel.setTitle("Execution Results")
+                            }
+                        }
                     }
                 }
 
@@ -195,6 +225,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
             override fun updateLanguage(language: Language?, originLanguage: String?) {}
             override fun dispose() {
                 codeSketch.dispose()
+                resultSketch.dispose()  // Make sure to dispose resultSketch
             }
         }
     }

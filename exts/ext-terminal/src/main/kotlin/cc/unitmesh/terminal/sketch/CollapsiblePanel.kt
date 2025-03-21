@@ -10,12 +10,12 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JPanel
 
-class CollapsiblePanel(title: String, content: JPanel, initiallyCollapsed: Boolean = false) :
+class CollapsiblePanel(title: String, private val contentPanel: JPanel, initiallyCollapsed: Boolean = false) :
     JBPanel<CollapsiblePanel>(BorderLayout()) {
 
     private var isCollapsed = initiallyCollapsed
     private val headerPanel = JBPanel<JBPanel<*>>(BorderLayout())
-    private val titleLabel = JBLabel(title)
+    val titleLabel = JBLabel(title)
     private val toggleLabel = JBLabel()
 
     init {
@@ -28,31 +28,47 @@ class CollapsiblePanel(title: String, content: JPanel, initiallyCollapsed: Boole
 
         headerPanel.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                toggleContent(content)
+                toggleContent()
             }
         })
 
         add(headerPanel, BorderLayout.NORTH)
-        add(content, BorderLayout.CENTER)
+        add(contentPanel, BorderLayout.CENTER)
 
-        content.isVisible = !isCollapsed
+        contentPanel.isVisible = !isCollapsed
     }
 
     private fun updateToggleIcon() {
         toggleLabel.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
     }
 
-    private fun toggleContent(content: JPanel) {
-        setCollapsed(!isCollapsed, content)
+    private fun toggleContent() {
+        setCollapsed(!isCollapsed)
     }
 
-    fun setCollapsed(collapsed: Boolean, content: JPanel) {
+    fun setCollapsed(collapsed: Boolean) {
         isCollapsed = collapsed
-        content.isVisible = !isCollapsed
+        contentPanel.isVisible = !isCollapsed
         updateToggleIcon()
         revalidate()
         repaint()
     }
 
+    fun setCollapsed(collapsed: Boolean, content: JPanel) {
+        setCollapsed(collapsed)
+    }
+
+    fun expand() {
+        setCollapsed(false)
+    }
+
+    fun collapse() {
+        setCollapsed(true)
+    }
+
     fun isCollapsed(): Boolean = isCollapsed
+    
+    fun setTitle(title: String) {
+        titleLabel.text = title
+    }
 }

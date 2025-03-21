@@ -43,16 +43,22 @@ import java.io.Writer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
+data class ProcessExecutorResult(
+    val exitCode: Int,
+    val stdOutput: String,
+    val errOutput: String
+)
+
 class ProcessExecutor(val project: Project) {
-    fun executeCode(code: String): String? {
+    fun executeCode(code: String): ProcessExecutorResult {
         val taskExecutor = PooledThreadExecutor.INSTANCE
-        val future: CompletableFuture<String?> = CompletableFuture()
+        val future: CompletableFuture<ProcessExecutorResult> = CompletableFuture()
         val task = object : Task.Backgroundable(project, "Running shell command") {
             override fun run(indicator: ProgressIndicator) {
                 runBlocking(taskExecutor.asCoroutineDispatcher()) {
                     val executor = ProcessExecutor(project)
                     val result = executor.executeCode(code, taskExecutor.asCoroutineDispatcher())
-                    future.complete(result ?: "")
+                    future.complete(result)
                 }
             }
         }
@@ -63,7 +69,7 @@ class ProcessExecutor(val project: Project) {
         return future.get(120, TimeUnit.SECONDS)
     }
 
-    suspend fun executeCode(code: String, dispatcher: CoroutineDispatcher): String? {
+    suspend fun executeCode(code: String, dispatcher: CoroutineDispatcher): ProcessExecutorResult {
         val outputWriter = StringWriter()
         val errWriter = StringWriter()
 
@@ -72,15 +78,19 @@ class ProcessExecutor(val project: Project) {
             val stdOutput = outputWriter.toString()
             val errOutput = errWriter.toString()
 
-            return if (exitCode == 0) {
+            if (exitCode == 0) {
                 AutoDevNotifications.notify(project, "Shell command $code executed successfully")
-                stdOutput
             } else {
                 AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
                     ui.putText("Error executing shell command: \n```bash\n$errOutput\n```")
                 }
-                "Error executing shell command: $errOutput"
             }
+
+            return ProcessExecutorResult(
+                exitCode = exitCode,
+                stdOutput = stdOutput,
+                errOutput = errOutput
+            )
         }
     }
 
