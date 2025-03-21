@@ -3,7 +3,7 @@ package cc.unitmesh.devti.sketch.run
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class ShellSyntaxSafetyCheckTest : BasePlatformTestCase() {
-    fun testCheckDangerousCommandByPsi() {
+    fun checkDangerousCommandByPsi() {
         val project = project // Use the test fixture's project
 
         val safeCommands = listOf(
@@ -39,7 +39,7 @@ class ShellSyntaxSafetyCheckTest : BasePlatformTestCase() {
         assertEquals("Potential fork bomb", result.second)
     }
 
-    fun testCheckDangerousCommandByPsiWithForce() {
+    fun checkDangerousCommandByPsiWithForce() {
         val result = ShellSyntaxSafetyCheck.checkDangerousCommand(project, "rm -f /tmp")
         assertTrue("Should be dangerous: rm -f /tmp", result.first)
         assertEquals("Dangerous rm command detected", result.second)
