@@ -7,8 +7,11 @@ import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import cc.unitmesh.devti.observer.agent.AgentStateService
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 
 class EditPlanAction : AnAction(AutoDevBundle.message("sketch.plan.edit")) {
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
 

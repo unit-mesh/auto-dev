@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class PlanReviewAction : AnAction(AutoDevBundle.message("sketch.plan.review"), null, AutoDevIcons.REVIEWER) {
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
