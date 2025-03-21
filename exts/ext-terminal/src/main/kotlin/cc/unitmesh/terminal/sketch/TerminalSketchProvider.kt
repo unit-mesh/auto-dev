@@ -267,7 +267,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         codeSketch.updateViewText(code, true)
         titleLabel.text = "Terminal - ($content)"
 
-        val (isDangerous, reason) = ShellSyntaxSafetyCheck.checkDangerousCommand(content)
+        val (isDangerous, reason) = ShellSyntaxSafetyCheck.checkDangerousCommand(project, content)
         if (isDangerous) {
             AutoDevNotifications.notify(project, "Auto-execution has been disabled for safety: $reason")
 
