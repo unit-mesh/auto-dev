@@ -1,5 +1,6 @@
 package cc.unitmesh.terminal.sketch
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.SketchToolWindow
@@ -59,7 +60,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
             val codePanel = JPanel(BorderLayout()).apply {
                 add(codeSketch.getComponent(), BorderLayout.CENTER)
             }
-            
+
             val isSingleLine = content.lines().filter { it.trim().isNotEmpty() }.size <= 1
             val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel, initiallyCollapsed = isSingleLine)
 
@@ -94,19 +95,15 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             fun createConsoleActions(): List<AnAction> {
-                val executeAction = object : AnAction("Execute", "Execute command", AllIcons.Actions.Execute) {
+                val executeAction = object :
+                    AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
                     override fun actionPerformed(e: AnActionEvent) {
                         ProcessExecutor(project).executeCode(getViewText())
                     }
                 }
 
-                val clearAction = object : AnAction("Clear", "Clear terminal", AllIcons.Actions.GC) {
-                    override fun actionPerformed(e: AnActionEvent) {
-                        terminalWidget?.terminalStarter?.sendString("clear\n", false)
-                    }
-                }
-
-                val copyAction = object : AnAction("Copy", "Copy text", AllIcons.Actions.Copy) {
+                val copyAction = object :
+                    AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AllIcons.Actions.Copy) {
                     override fun actionPerformed(e: AnActionEvent) {
                         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                         val selection = StringSelection(getViewText())
@@ -114,7 +111,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
-                val sendAction = object : AnAction("Send to Chat", "Send to chat", AutoDevIcons.Send) {
+                val sendAction = object :
+                    AnAction("Send to Chat", AutoDevBundle.message("sketch.terminal.send.chat"), AutoDevIcons.Send) {
                     override fun actionPerformed(e: AnActionEvent) {
                         try {
                             val output = terminalWidget!!::class.java.getMethod("getText")
@@ -126,7 +124,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
-                val popupAction = object : AnAction("Popup", "Popup terminal", AllIcons.Ide.External_link_arrow) {
+                val popupAction = object :
+                    AnAction("Popup", AutoDevBundle.message("sketch.terminal.popup"), AllIcons.Ide.External_link_arrow) {
                     override fun displayTextInToolbar(): Boolean = true
 
                     override fun actionPerformed(e: AnActionEvent) {
@@ -134,7 +133,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
-                return listOf(executeAction, copyAction, clearAction, sendAction, popupAction)
+                return listOf(executeAction, copyAction, sendAction, popupAction)
             }
 
             private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
