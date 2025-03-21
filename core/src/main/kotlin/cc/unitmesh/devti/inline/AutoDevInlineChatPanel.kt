@@ -56,12 +56,46 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
             val suggestion = StringBuilder()
             panelView.onStart()
 
+            var isDevinTagInProgress = false
+            val tagBuffer = StringBuilder()
+            val devinPrefix = "<devin>"
+
             flow?.cancelHandler { panelView.handleCancel = it }?.cancellable()?.collect { char ->
                 suggestion.append(char)
 
-                invokeLater {
-                    panelView.onUpdate(suggestion.toString())
-                    panelView.resize()
+                when {
+                    suggestion.length <= devinPrefix.length -> {
+                        tagBuffer.append(char)
+                        if (devinPrefix.startsWith(tagBuffer.toString())) {
+                            isDevinTagInProgress = true
+                            if (tagBuffer.toString() == devinPrefix) {
+                                invokeLater {
+                                    panelView.onUpdate(suggestion.toString())
+                                    panelView.resize()
+                                }
+                                isDevinTagInProgress = false
+                            }
+                        } else {
+                            isDevinTagInProgress = false
+                            invokeLater {
+                                panelView.onUpdate(suggestion.toString())
+                                panelView.resize()
+                            }
+                        }
+                    }
+                    isDevinTagInProgress -> {
+                        isDevinTagInProgress = false
+                        invokeLater {
+                            panelView.onUpdate(suggestion.toString())
+                            panelView.resize()
+                        }
+                    }
+                    else -> {
+                        invokeLater {
+                            panelView.onUpdate(suggestion.toString())
+                            panelView.resize()
+                        }
+                    }
                 }
             }
 
