@@ -6,7 +6,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.run.ProcessExecutor
-import cc.unitmesh.devti.sketch.run.ShellSyntaxSafetyCheck
+import cc.unitmesh.devti.sketch.run.ShellSafetyCheck
 import cc.unitmesh.devti.sketch.run.UIUpdatingWriter
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
@@ -261,7 +261,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         titleLabel.text = "Terminal - ($content)"
 
         val (isDangerous, reason) = try {
-            ShellSyntaxSafetyCheck.checkDangerousCommand(content)
+            ShellSafetyCheck.checkDangerousCommand(content)
         } catch (e: Exception) {
             Pair(true, "Error checking command safety: ${e.message}")
         }
