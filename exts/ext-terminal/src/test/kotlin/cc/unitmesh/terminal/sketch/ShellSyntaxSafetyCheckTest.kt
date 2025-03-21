@@ -6,7 +6,6 @@ class ShellSyntaxSafetyCheckTest : BasePlatformTestCase() {
     fun testCheckDangerousCommandByPsi() {
         val project = project // Use the test fixture's project
 
-        // Test safe commands
         val safeCommands = listOf(
             "ls -la",
             "cd /home/user",
@@ -19,7 +18,6 @@ class ShellSyntaxSafetyCheckTest : BasePlatformTestCase() {
             assertEquals("", result.second)
         }
 
-        // Test dangerous commands
         val dangerousCommands = mapOf(
             "rm -rf /tmp" to "Dangerous rm command detected",
             "sudo rm file.txt" to "Removing files with elevated privileges",
@@ -35,10 +33,15 @@ class ShellSyntaxSafetyCheckTest : BasePlatformTestCase() {
             assertEquals(expectedMessage, result.second)
         }
 
-        // Test fork bomb
         val forkBomb = ":(){ :|:& };:"
         val result = ShellSyntaxSafetyCheck.checkDangerousCommand(project, forkBomb)
         assertTrue("Fork bomb should be detected", result.first)
         assertEquals("Potential fork bomb", result.second)
+    }
+
+    fun testCheckDangerousCommandByPsiWithForce() {
+        val result = ShellSyntaxSafetyCheck.checkDangerousCommand(project, "rm -f /tmp")
+        assertTrue("Should be dangerous: rm -f /tmp", result.first)
+        assertEquals("Dangerous rm command detected", result.second)
     }
 }
