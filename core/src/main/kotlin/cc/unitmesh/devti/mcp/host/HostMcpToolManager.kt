@@ -38,7 +38,10 @@ class HostMcpToolManager {
             ExecuteActionByIdTool(),
             GetProgressIndicatorsTool(),
             WaitTool(),
+
+            /// autodev code
             IssueEvaluateTool(),
+            CreateTestForFileTool(),
         )
     }
 }

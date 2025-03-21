@@ -4,6 +4,7 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.observer.plan.reviewPlan
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.AutoSketchModeListener
 import cc.unitmesh.devti.util.parser.CodeFence
@@ -12,6 +13,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.serialization.Serializable
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.util.Disposer
+import com.intellij.psi.PsiManager
 import java.util.concurrent.CompletableFuture
 
 @Serializable
@@ -44,7 +46,7 @@ class IssueEvaluateTool : AbstractMcpTool<IssueArgs>() {
         connection.subscribe(AutoSketchModeListener.TOPIC, object : AutoSketchModeListener {
             override fun done() {
                 val messages = project.getService(AgentStateService::class.java).getAllMessages()
-                var plan: String = ""
+                var plan = ""
                 messages.lastOrNull()?.content?.also {
                     plan = CodeFence.parseAll(it).firstOrNull {
                         it.originLanguage == "plan"
@@ -65,7 +67,36 @@ class IssueEvaluateTool : AbstractMcpTool<IssueArgs>() {
             }
         })
 
-
         return Response(future.get())
+    }
+}
+
+@Serializable
+data class CreateTestForFileArgs(val fileName: String)
+
+class CreateTestForFileTool : AbstractMcpTool<CreateTestForFileArgs>() {
+    override val name: String = "create_test_for_file"
+    override val description: String = """
+        This tool is used to create a test for a file.
+        Requires a file_name parameter containing the file name.
+        Returns a the test code for this file.
+    """.trimIndent()
+
+    override fun handle(
+        project: Project,
+        args: CreateTestForFileArgs
+    ): Response {
+        val fileName = args.fileName
+        val file = project.baseDir.findFileByRelativePath(fileName)
+            ?: return Response(error = "File not found")
+        val psiFile = PsiManager.getInstance(project).findFile(file)
+            ?: return Response(error = "Current IDE don't support this file type")
+        val context = AutoTestService.context(psiFile)
+            ?: return Response(error = "AutoDev don't support this file type")
+
+        val result = context.runFileAsync(project, file, psiFile)
+            ?: return Response(error = "Failed to create test for file")
+
+        return Response(result)
     }
 }
