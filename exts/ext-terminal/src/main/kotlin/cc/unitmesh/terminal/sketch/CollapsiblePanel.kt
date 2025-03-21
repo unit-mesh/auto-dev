@@ -15,11 +15,13 @@ class CollapsiblePanel(title: String, private val contentPanel: JPanel, initiall
 
     private var isCollapsed = initiallyCollapsed
     private val headerPanel = JBPanel<JBPanel<*>>(BorderLayout())
-    val titleLabel = JBLabel(title)
+    val titleLabel = JBLabel(title).apply {
+        border = JBUI.Borders.empty(4)
+    }
+
     private val toggleLabel = JBLabel()
 
     init {
-        headerPanel.border = JBUI.Borders.empty(5)
         headerPanel.add(titleLabel, BorderLayout.CENTER)
         headerPanel.add(toggleLabel, BorderLayout.EAST)
         headerPanel.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
@@ -36,6 +38,7 @@ class CollapsiblePanel(title: String, private val contentPanel: JPanel, initiall
         add(contentPanel, BorderLayout.CENTER)
 
         contentPanel.isVisible = !isCollapsed
+        border = JBUI.Borders.empty()
     }
 
     private fun updateToggleIcon() {

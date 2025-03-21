@@ -50,6 +50,7 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants
+import javax.swing.border.LineBorder
 
 class TerminalSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
@@ -83,11 +84,15 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     val resultSketch = CodeHighlightSketch(project, "", CodeFence.findLanguage("bash")).apply {
         border = JBUI.Borders.empty()
     }
+
     val resultPanel = JPanel(BorderLayout()).apply {
+        border = JBUI.Borders.empty()
         add(resultSketch.getComponent(), BorderLayout.CENTER)
     }
 
-    val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel, initiallyCollapsed = true)
+    private val successColor = JBColor(Color(233, 255, 233), Color(0, 77, 0))
+    private val errorColor = JBColor(Color(255, 233, 233), Color(77, 0, 0))
+    private val normalColor = resultPanel.background
 
     val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
 
@@ -101,7 +106,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     private lateinit var executeAction: TerminalExecuteAction
-    private lateinit var resizableTerminalPanel: ResizableTerminalPanel
+    private var resizableTerminalPanel: ResizableTerminalPanel
+    private var isCodePanelVisible = false
 
     init {
         val projectDir = project.guessProjectDir()?.path
@@ -119,7 +125,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
             init {
                 add(toolbarWrapper)
-                add(collapsibleCodePanel)
                 add(collapsibleResultPanel)
                 add(resizableTerminalPanel)
             }
@@ -127,13 +132,57 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
         mainPanel!!.border = JBUI.Borders.compound(
             JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1),
-            JBUI.Borders.empty(0, 4)
+            JBUI.Borders.empty()
         )
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
+    }
+    
+    private fun setResultStatus(success: Boolean, errorMessage: String? = null) {
+        ApplicationManager.getApplication().invokeLater {
+            when {
+                success -> {
+                    resultPanel.background = successColor
+                    resultPanel.border = LineBorder(JBColor(Color(0, 128, 0), Color(0, 100, 0)), 1)
+                    collapsibleResultPanel.setTitle("✅ Execution Successful")
+                }
+                errorMessage != null -> {
+                    resultPanel.background = errorColor
+                    resultPanel.border = LineBorder(JBColor(Color(128, 0, 0), Color(100, 0, 0)), 1)
+                    collapsibleResultPanel.setTitle("❌ Execution Failed")
+                }
+                else -> {
+                    resultPanel.background = normalColor
+                    resultPanel.border = null
+                    collapsibleResultPanel.setTitle("Execution Results")
+                }
+            }
+            resultPanel.repaint()
+        }
+    }
+    
+    private fun toggleCodePanel() {
+        if (isCodePanelVisible) {
+            mainPanel!!.remove(codePanel)
+            isCodePanelVisible = false
+        } else {
+            // Add code panel at index 1 (after toolbar, before result panel)
+            mainPanel!!.add(codePanel, 1)
+            isCodePanelVisible = true
+        }
+        
+        mainPanel!!.revalidate()
+        mainPanel!!.repaint()
     }
 
     fun createConsoleActions(): List<AnAction> {
         executeAction = TerminalExecuteAction()
+
+        val showCodeAction = object :
+            AnAction("Show/Hide Code", "Show or hide the shell code", AllIcons.Actions.ShowCode) {
+            override fun actionPerformed(e: AnActionEvent) {
+                toggleCodePanel()
+            }
+        }
 
         val copyAction = object :
             AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AllIcons.Actions.Copy) {
@@ -170,7 +219,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             }
         }
 
-        return listOf(executeAction, copyAction, sendAction, popupAction)
+        return listOf(executeAction, showCodeAction, copyAction, sendAction, popupAction)
     }
 
     private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
@@ -232,7 +281,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                     "⚠️ WARNING: $reason\nThe command was not auto-executed for safety reasons.\nPlease review and run manually if you're sure.",
                     true
                 )
-                collapsibleResultPanel.setTitle("Safety Warning")
+                setResultStatus(false, reason)
                 collapsibleResultPanel.expand()
             }
             return
@@ -286,23 +335,28 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
             resultSketch.updateViewText("", true)
             stdWriter.setExecuting(true)
+            // Reset result panel appearance
+            setResultStatus(false)
 
             AutoDevCoroutineScope.scope(project).launch {
                 val executor = ProcessExecutor(project)
                 try {
                     val dispatcher = PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
-                    executor.exec(getViewText(), stdWriter, stdWriter, dispatcher)
+                    val exitCode = executor.exec(getViewText(), stdWriter, stdWriter, dispatcher)
                     ApplicationManager.getApplication().invokeLater {
                         stdWriter.setExecuting(false)
                         if (collapsibleResultPanel.isCollapsed()) {
                             collapsibleResultPanel.expand()
                         }
+                        // Set success/failure based on exit code
+                        val success = exitCode == 0
+                        setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
                     }
                 } catch (ex: Exception) {
                     ApplicationManager.getApplication().invokeLater {
                         stdWriter.setExecuting(false)
                         resultSketch.updateViewText("${stdWriter.getContent()}\nError: ${ex.message}", true)
-                        collapsibleResultPanel.setTitle("Execution Results (Error)")
+                        setResultStatus(false, ex.message)
                     }
                 }
             }
