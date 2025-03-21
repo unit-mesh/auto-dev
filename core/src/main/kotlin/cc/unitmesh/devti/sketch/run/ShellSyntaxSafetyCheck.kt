@@ -1,7 +1,9 @@
 package cc.unitmesh.devti.sketch.run
 
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.sh.ShLanguage
 import com.intellij.sh.psi.ShCommand
@@ -25,9 +27,12 @@ object ShellSyntaxSafetyCheck {
      * @return Pair<Boolean, String> - first: is dangerous, second: reason message
      */
     fun checkDangerousCommand(project: Project, command: String): Pair<Boolean, String> {
-        val psiFile = PsiFileFactory.getInstance(project)
-            .createFileFromText("temp.sh", ShLanguage.INSTANCE, command)
+        val createScratchFile = ScratchRootType.getInstance()
+            .createScratchFile(project, "devin-shell-ins.sh", ShLanguage.INSTANCE, command)
             ?: return Pair(true, "Could not parse command")
+
+        val psiFile = PsiManager.getInstance(project)
+            .findFile(createScratchFile) ?: return Pair(true, "Could not parse command")
 
         val commandElements = PsiTreeUtil.findChildrenOfType(psiFile, ShCommand::class.java)
 
@@ -38,6 +43,7 @@ object ShellSyntaxSafetyCheck {
             }
         }
 
+        createScratchFile.delete(this)
         return Pair(false, "")
     }
 }
