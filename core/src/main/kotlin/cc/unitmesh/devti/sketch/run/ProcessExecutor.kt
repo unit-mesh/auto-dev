@@ -97,10 +97,10 @@ class ProcessExecutor(val project: Project) {
     ): Int = withContext(dispatcher) {
         val process = createProcess(shellScript)
 
+        val exitCode = async { process.awaitExit() }
         val errOutput = async { consumeProcessOutput(process.errorStream, errWriter, process, dispatcher) }
         val stdOutput = async { consumeProcessOutput(process.inputStream, stdWriter, process, dispatcher) }
 
-        val exitCode = async { process.awaitExit() }
         stdOutput.await()
         errOutput.await()
         exitCode.await()
@@ -142,9 +142,9 @@ class ProcessExecutor(val project: Project) {
         return commandLine.startProcessWithPty(commands)
     }
 
-
     private fun formatCommand(command: String): String {
-        return "{ $command; EXIT_CODE=$?; } 2>&1 && echo \"EXIT_CODE: ${'$'}EXIT_CODE\""
+        //         return "{ $command; EXIT_CODE=$?; } 2>&1 && echo \"EXIT_CODE: ${'$'}EXIT_CODE\""
+        return "{ $command; } 2>&1"
     }
 
     private fun feedProcessInput(outputStream: OutputStream, inputLines: List<String>) {
