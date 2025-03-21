@@ -26,14 +26,11 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.text.Strings
-import com.intellij.util.ObjectUtils
 import kotlinx.coroutines.*
 import org.jetbrains.ide.PooledThreadExecutor
 import java.io.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 data class ProcessExecutorResult(
     val exitCode: Int,
@@ -133,7 +130,6 @@ class ProcessExecutor(val project: Project) {
         commandLine.withEnvironment("BASH_SILENCE_DEPRECATION_WARNING", "1")
         commandLine.withEnvironment("GIT_PAGER", "cat")
         val commands: List<String> = listOf("bash", "--noprofile", "--norc", "-c", formatCommand(shellScript))
-
 
         if (basedir != null) {
             commandLine.withWorkDirectory(basedir)
