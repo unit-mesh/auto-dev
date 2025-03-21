@@ -40,17 +40,14 @@ import org.jetbrains.ide.PooledThreadExecutor
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.awt.event.MouseMotionAdapter
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.SwingConstants
 import javax.swing.border.LineBorder
 
 class TerminalSketchProvider : LanguageSketchProvider {
@@ -93,7 +90,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     private val successColor = JBColor(Color(233, 255, 233), Color(0, 77, 0))
     private val errorColor = JBColor(Color(255, 233, 233), Color(77, 0, 0))
-    private val normalColor = resultPanel.background
 
     val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
 
@@ -368,48 +364,3 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         }
     }
 }
-
-class ResizableTerminalPanel(terminalWidget: JBTerminalWidget) : JPanel(BorderLayout()) {
-    private val minHeight = 48
-    private val maxHeight = 600
-    private var startY = 0
-    private var startHeight = 0
-
-    init {
-        add(terminalWidget.component, BorderLayout.CENTER)
-
-        val dragHandle = JPanel().apply {
-            preferredSize = Dimension(Int.MAX_VALUE, 5)
-            background = UIUtil.getPanelBackground()
-            cursor = Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR) // Change to south resize cursor
-        }
-
-        val dragIndicator = JLabel("≡", SwingConstants.CENTER).apply {
-            foreground = JBColor.GRAY
-        }
-        dragHandle.add(dragIndicator)
-
-        add(dragHandle, BorderLayout.SOUTH) // Move handle to bottom of panel
-
-        dragHandle.addMouseListener(object : MouseAdapter() {
-            override fun mousePressed(e: MouseEvent) {
-                startY = e.y
-                startHeight = preferredSize.height
-            }
-        })
-
-        dragHandle.addMouseMotionListener(object : MouseMotionAdapter() {
-            override fun mouseDragged(e: MouseEvent) {
-                val newHeight = startHeight + e.y - startY // Adjust calculation for bottom handle
-
-                if (newHeight in minHeight..maxHeight) {
-                    preferredSize = Dimension(preferredSize.width, newHeight)
-                    revalidate()
-                    repaint()
-                }
-            }
-        })
-    }
-}
-
-
