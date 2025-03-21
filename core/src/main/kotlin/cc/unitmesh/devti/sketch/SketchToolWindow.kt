@@ -288,7 +288,11 @@ open class SketchToolWindow(
 
                     val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
                     if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
-                        langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
+                        langSketch = if (codeFence.text.contains("\n```") && codeFence.text.startsWith("/")) {
+                            MarkdownPreviewHighlightSketch(project, codeFence.text)
+                        } else {
+                            MarkdownPreviewHighlightSketch(project, codeFence.text)
+                        }
                     }
 
                     if (langSketch != null) {
@@ -307,11 +311,10 @@ open class SketchToolWindow(
                                 }
                             }
 
-                            //// simple fix for langauge error
                             var language = codeFence.language
                             if (codeFence.text.contains("\n```") && codeFence.text.startsWith("/")) {
                                 if (language.displayName == "Markdown") {
-                                    println("Try to fix language error")
+                                    com.intellij.openapi.diagnostic.logger<SketchToolWindow>().warn("Try to fix language error")
                                     language = findLanguage("DevIn")
                                     originLanguage = "DevIn"
                                 }

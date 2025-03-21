@@ -4,7 +4,6 @@ import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.sketch.ui.code.MarkdownWebViewer
 import cc.unitmesh.devti.util.parser.convertMarkdownToHtml
 import com.intellij.ide.BrowserUtil
-import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI

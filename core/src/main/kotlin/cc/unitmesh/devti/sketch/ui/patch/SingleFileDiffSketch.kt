@@ -230,15 +230,17 @@ class SingleFileDiffSketch(
 
         isRepaired = true
 
-        ApplicationManager.getApplication().invokeLater {
-            val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
-                override fun run(indicator: ProgressIndicator) {
-                    lintCheckForNewCode(currentFile)
+        if (myProject.coderSetting.state.enableAutoLintCode) {
+            ApplicationManager.getApplication().invokeLater {
+                val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
+                    override fun run(indicator: ProgressIndicator) {
+                        lintCheckForNewCode(currentFile)
+                    }
                 }
-            }
 
-            ProgressManager.getInstance()
-                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+                ProgressManager.getInstance()
+                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            }
         }
     }
 
