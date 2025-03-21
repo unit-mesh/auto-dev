@@ -28,6 +28,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
@@ -37,21 +38,24 @@ import kotlinx.coroutines.launch
 import org.jetbrains.ide.PooledThreadExecutor
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.awt.event.MouseMotionAdapter
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 
 class TerminalSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
 
     override fun create(project: Project, content: String): ExtensionLangSketch = TerminalLangSketch(project, content)
 }
-
 
 class TerminalLangSketch(val project: Project, var content: String) : ExtensionLangSketch {
     val enableAutoRunTerminal = project.coderSetting.state.enableAutoRunTerminal
@@ -77,8 +81,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         add(resultSketch.getComponent(), BorderLayout.CENTER)
     }
 
-    val isSingleLine = content.lines().filter { it.trim().isNotEmpty() }.size <= 1
-    val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel, initiallyCollapsed = isSingleLine)
+    val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel, initiallyCollapsed = true)
 
     val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
 
@@ -92,6 +95,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     private lateinit var executeAction: TerminalExecuteAction
+    private lateinit var resizableTerminalPanel: ResizableTerminalPanel
 
     init {
         val projectDir = project.guessProjectDir()?.path
@@ -101,6 +105,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             it.preferredSize = Dimension(it.preferredSize.width, 80)
         }
 
+        resizableTerminalPanel = ResizableTerminalPanel(terminalWidget!!)
+
         codeSketch.getComponent().border = JBUI.Borders.empty()
         resultSketch.getComponent().border = JBUI.Borders.empty()
 
@@ -109,7 +115,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                 add(toolbarWrapper)
                 add(collapsibleCodePanel)
                 add(collapsibleResultPanel)
-                add(terminalWidget!!.component)
+                add(resizableTerminalPanel)
             }
         }
 
@@ -171,10 +177,10 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                     .setCancelButton(MinimizeButton("Hide"))
                     .setCancelCallback {
                         popup?.cancel()
-                        mainPanel!!.remove(terminalWidget.component)
-                        mainPanel!!.add(terminalWidget.component)
-                        mainPanel!!.revalidate()
-                        mainPanel!!.repaint()
+                        resizableTerminalPanel.removeAll()
+                        resizableTerminalPanel.add(terminalWidget.component, BorderLayout.CENTER)
+                        resizableTerminalPanel.revalidate()
+                        resizableTerminalPanel.repaint()
                         true
                     }
                     .setFocusable(true)
@@ -303,3 +309,47 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         }
     }
 }
+
+class ResizableTerminalPanel(terminalWidget: JBTerminalWidget) : JPanel(BorderLayout()) {
+    private val minHeight = 48
+    private val maxHeight = 600
+    private var startY = 0
+    private var startHeight = 0
+
+    init {
+        add(terminalWidget.component, BorderLayout.CENTER)
+
+        val dragHandle = JPanel().apply {
+            preferredSize = Dimension(Int.MAX_VALUE, 5)
+            background = UIUtil.getPanelBackground()
+            cursor = Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR) // Change to south resize cursor
+        }
+
+        val dragIndicator = JLabel("≡", SwingConstants.CENTER).apply {
+            foreground = JBColor.GRAY
+        }
+        dragHandle.add(dragIndicator)
+
+        add(dragHandle, BorderLayout.SOUTH) // Move handle to bottom of panel
+
+        dragHandle.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                startY = e.y
+                startHeight = preferredSize.height
+            }
+        })
+
+        dragHandle.addMouseMotionListener(object : MouseMotionAdapter() {
+            override fun mouseDragged(e: MouseEvent) {
+                val newHeight = startHeight + e.y - startY // Adjust calculation for bottom handle
+
+                if (newHeight in minHeight..maxHeight) {
+                    preferredSize = Dimension(preferredSize.width, newHeight)
+                    revalidate()
+                    repaint()
+                }
+            }
+        })
+    }
+}
+
