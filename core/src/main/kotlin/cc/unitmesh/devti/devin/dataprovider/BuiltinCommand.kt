@@ -2,6 +2,7 @@ package cc.unitmesh.devti.devin.dataprovider
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.agent.Tool
 import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.icons.AllIcons
@@ -11,12 +12,12 @@ import javax.swing.Icon
 
 enum class BuiltinCommand(
     val commandName: String,
-    val description: String,
+    override val description: String,
     val icon: Icon,
     val hasCompletion: Boolean = false,
     val requireProps: Boolean = false,
     val enableInSketch: Boolean = true
-) {
+): Tool {
     FILE("file", "Read the content of a file by project relative path", AllIcons.Actions.Copy, true, true),
     REV(
         "rev",
@@ -166,7 +167,7 @@ enum class BuiltinCommand(
             return ToolchainFunctionProvider.all().map {
                 val toolInfo: List<AgentTool> = it.toolInfos()
                 if (toolInfo.isNotEmpty()) {
-                    return@map toolInfo.map { it.commandName }
+                    return@map toolInfo.map { it.name }
                 }
 
                 it.funcNames()

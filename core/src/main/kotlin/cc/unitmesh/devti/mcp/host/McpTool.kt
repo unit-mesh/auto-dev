@@ -1,13 +1,12 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.mcp.host
 
+import cc.unitmesh.devti.agent.Tool
 import kotlinx.serialization.Serializable
 import com.intellij.openapi.project.Project
 import kotlin.reflect.KClass
 
-interface McpTool<Args : Any> {
-    val name: String
-    val description: String
+interface McpTool<Args : Any>: Tool {
     fun handle(project: Project, args: Args): Response
 }
 
