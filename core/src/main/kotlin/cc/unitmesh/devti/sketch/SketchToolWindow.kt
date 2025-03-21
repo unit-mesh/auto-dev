@@ -313,6 +313,8 @@ open class SketchToolWindow(
                             }
 
                             var language = codeFence.language
+                            /// in stream API, the <devin> maybe split, like `<dev`, `<devin` or `<devin>`,
+                            /// so we need to check the language again
                             if (language.displayName == "Markdown" && codeFence.text.startsWith("<devin>")) {
                                 logger<SketchToolWindow>().warn("Try to fix language error")
                                 language = findLanguage("DevIn")

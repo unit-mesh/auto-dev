@@ -261,7 +261,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         titleLabel.text = "Terminal - ($content)"
 
         val (isDangerous, reason) = try {
-            ShellSyntaxSafetyCheck.checkDangerousCommand(project, content)
+            ShellSyntaxSafetyCheck.checkDangerousCommand(content)
         } catch (e: Exception) {
             Pair(true, "Error checking command safety: ${e.message}")
         }
