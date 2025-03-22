@@ -11,6 +11,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JComponent
@@ -104,7 +105,7 @@ class PlanLangSketch(
         val wrapperPanel = JPanel(BorderLayout())
         wrapperPanel.add(scrollPane, BorderLayout.CENTER)
         wrapperPanel.background = JBUI.CurrentTheme.ToolWindow.background()
-        
+
         add(wrapperPanel, BorderLayout.CENTER)
 
         minimumSize = Dimension(200, 0)

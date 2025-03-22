@@ -2,11 +2,11 @@
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentPlanStep
 import cc.unitmesh.devti.observer.plan.TaskStatus
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -56,9 +56,9 @@ class TaskStepPanel(
 
     private fun createStatusIcon(): JComponent {
         return when (task.status) {
-            TaskStatus.COMPLETED -> JLabel(AllIcons.Actions.Checked)
-            TaskStatus.FAILED -> JLabel(AllIcons.General.Error)
-            TaskStatus.IN_PROGRESS -> JLabel(AllIcons.Toolwindows.ToolWindowBuild)
+            TaskStatus.COMPLETED -> JLabel(AutoDevIcons.Checked)
+            TaskStatus.FAILED -> JLabel(AutoDevIcons.Error)
+            TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.Build)
             TaskStatus.TODO -> JBCheckBox().apply {
                 isSelected = task.completed
                 addActionListener {
@@ -74,7 +74,7 @@ class TaskStepPanel(
     }
 
     private fun createExecuteButton(): JButton {
-        return JButton(AllIcons.Actions.Execute).apply {
+        return JButton(AutoDevIcons.Run).apply {
             border = BorderFactory.createEmptyBorder()
             preferredSize = Dimension(20, 20)
             toolTipText = "Execute"

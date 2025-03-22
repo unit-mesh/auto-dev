@@ -111,7 +111,7 @@ open class CodeHighlightSketch(
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
         }
 
-        editorFragment?.editor?.setBorder(JBEmptyBorder(0, 0, 0, 0))
+        editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
     }
 
     override fun getViewText(): String {

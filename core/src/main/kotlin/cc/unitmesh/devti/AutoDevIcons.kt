@@ -30,6 +30,15 @@ object AutoDevIcons {
     val Run: Icon = IconLoader.getIcon("/icons/run.svg", AutoDevIcons::class.java)
 
     @JvmField
+    val Error: Icon = IconLoader.getIcon("/icons/error.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val Checked: Icon = IconLoader.getIcon("/icons/checked.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val Build: Icon = IconLoader.getIcon("/icons/build.svg", AutoDevIcons::class.java)
+
+    @JvmField
     val Copy: Icon = IconLoader.getIcon("/icons/copy.svg", AutoDevIcons::class.java)
 
     @JvmField

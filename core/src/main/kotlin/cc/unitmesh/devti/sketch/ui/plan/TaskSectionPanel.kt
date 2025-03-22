@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
@@ -76,7 +77,7 @@ class TaskSectionPanel(
     }
 
     private fun createExecuteSectionButton(): JButton {
-        return JButton(AllIcons.Actions.Execute).apply {
+        return JButton(AutoDevIcons.Run).apply {
             border = BorderFactory.createEmptyBorder()
             preferredSize = Dimension(20, 20)
             toolTipText = "Execute Task"
