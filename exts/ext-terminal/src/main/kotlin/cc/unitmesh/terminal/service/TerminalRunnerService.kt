@@ -5,12 +5,20 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.terminal.JBTerminalWidget
+import com.pty4j.PtyProcess
+import org.jetbrains.plugins.terminal.AbstractTerminalRunner
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 
 @Service(Service.Level.PROJECT)
 class TerminalRunnerService(private val project: Project) {
-    fun createTerminalRunner(): LocalTerminalDirectRunner {
-        return LocalTerminalDirectRunner.createTerminalRunner(project)
+    private var terminalRunner: AbstractTerminalRunner<PtyProcess>? = null
+    
+    fun createTerminalRunner(): AbstractTerminalRunner<PtyProcess> {
+        if (terminalRunner == null) {
+            terminalRunner = LocalTerminalDirectRunner.createTerminalRunner(project)
+        }
+        
+        return terminalRunner!!
     }
 
     fun createTerminalWidget(
