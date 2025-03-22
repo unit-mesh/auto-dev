@@ -338,7 +338,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             setResultStatus(false)
             
             AutoDevCoroutineScope.scope(project).launch {
-                val executor = ProcessExecutor(project)
+                val executor = project.getService(ProcessExecutor::class.java)
                 try {
                     val dispatcher = PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
                     val exitCode = executor.exec(getViewText(), stdWriter, stdWriter, dispatcher)

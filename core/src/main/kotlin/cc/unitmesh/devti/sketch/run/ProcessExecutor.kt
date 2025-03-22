@@ -19,6 +19,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.execution.configurations.PtyCommandLine
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -38,6 +39,7 @@ data class ProcessExecutorResult(
     val errOutput: String
 )
 
+@Service(Service.Level.PROJECT)
 class ProcessExecutor(val project: Project) {
     fun executeCode(code: String): ProcessExecutorResult {
         val taskExecutor = PooledThreadExecutor.INSTANCE
