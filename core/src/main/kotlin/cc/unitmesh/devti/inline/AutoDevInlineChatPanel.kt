@@ -20,6 +20,7 @@ import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.editor.actionSystem.EditorActionManager
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.RoundedLineBorder
@@ -43,66 +44,33 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         this.centerPanel.isVisible = true
         val project = editor.project!!
 
-
         val panelView = SketchToolWindow(project, editor)
         panelView.minimumSize = Dimension(800, 40)
         addToCenter(panelView)
         onCreated(panelView) // Add process listener before onStart
 
         AutoDevCoroutineScope.scope(project).launch {
-            val prompt = AutoDevInlineChatService.getInstance().prompting(project, input, editor)
-            val flow: Flow<String>? = LlmFactory.create(project).stream(prompt, "", false)
-
-            val suggestion = StringBuilder()
-            panelView.onStart()
-
-            var isDevinTagInProgress = false
-            val tagBuffer = StringBuilder()
-            val devinPrefix = "<devin>"
-
-            flow?.cancelHandler { panelView.handleCancel = it }?.cancellable()?.collect { char ->
-                suggestion.append(char)
-
-                when {
-                    suggestion.length <= devinPrefix.length -> {
-                        tagBuffer.append(char)
-                        if (devinPrefix.startsWith(tagBuffer.toString())) {
-                            isDevinTagInProgress = true
-                            if (tagBuffer.toString() == devinPrefix) {
-                                invokeLater {
-                                    panelView.onUpdate(suggestion.toString())
-                                    panelView.resize()
-                                }
-                                isDevinTagInProgress = false
-                            }
-                        } else {
-                            isDevinTagInProgress = false
-                            invokeLater {
-                                panelView.onUpdate(suggestion.toString())
-                                panelView.resize()
-                            }
-                        }
+            processLlmFlow(
+                project = project,
+                input = input,
+                editor = editor,
+                onStart = { panelView.onStart() },
+                onUpdate = { text ->
+                    invokeLater {
+                        panelView.onUpdate(text)
+                        panelView.resize()
                     }
-                    isDevinTagInProgress -> {
-                        isDevinTagInProgress = false
-                        invokeLater {
-                            panelView.onUpdate(suggestion.toString())
-                            panelView.resize()
-                        }
+                },
+                onFinish = { text ->
+                    invokeLater {
+                        panelView.resize()
+                        panelView.onFinish(text)
                     }
-                    else -> {
-                        invokeLater {
-                            panelView.onUpdate(suggestion.toString())
-                            panelView.resize()
-                        }
-                    }
+                },
+                registerCancelHandler = { handler ->
+                    panelView.handleCancel = handler
                 }
-            }
-
-            invokeLater {
-                panelView.resize()
-                panelView.onFinish(suggestion.toString())
-            }
+            )
         }
 
         panelView
@@ -211,6 +179,64 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         inputPanel.dispose()
         inlay?.dispose()
         inlay = null
+    }
+
+    companion object {
+        /**
+         * Process the LLM flow with the given input and editor.
+         * This method is extracted into a companion object for better testability.
+         */
+        suspend fun processLlmFlow(
+            project: Project,
+            input: String,
+            editor: Editor,
+            onStart: () -> Unit,
+            onUpdate: (String) -> Unit,
+            onFinish: (String) -> Unit,
+            registerCancelHandler: ((((String) -> Unit)?) -> Unit)
+        ) {
+            val prompt = AutoDevInlineChatService.getInstance().prompting(project, input, editor)
+            val flow: Flow<String>? = LlmFactory.create(project).stream(prompt, "", false)
+
+            val suggestion = StringBuilder()
+            onStart()
+
+            var isDevinTagInProgress = false
+            val tagBuffer = StringBuilder()
+            val devinPrefix = "<devin>"
+
+            flow?.cancelHandler {
+                registerCancelHandler(it) }?.cancellable()?.collect { char ->
+                suggestion.append(char)
+
+                when {
+                    suggestion.length <= devinPrefix.length -> {
+                        tagBuffer.append(char)
+                        if (devinPrefix.startsWith(tagBuffer.toString())) {
+                            isDevinTagInProgress = true
+                            if (tagBuffer.toString() == devinPrefix) {
+                                onUpdate(suggestion.toString())
+                                isDevinTagInProgress = false
+                            }
+                        } else {
+                            isDevinTagInProgress = false
+                            onUpdate(suggestion.toString())
+                        }
+                    }
+
+                    isDevinTagInProgress -> {
+                        isDevinTagInProgress = false
+                        onUpdate(suggestion.toString())
+                    }
+
+                    else -> {
+                        onUpdate(suggestion.toString())
+                    }
+                }
+            }
+
+            onFinish(suggestion.toString())
+        }
     }
 }
 
@@ -364,3 +390,4 @@ class EscHandler(private val targetEditor: Editor, private val action: () -> Uni
         }
     }
 }
+
