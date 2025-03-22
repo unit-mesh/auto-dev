@@ -66,8 +66,17 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
-        val commitWorkflowUi = VcsUtil.getCommitWorkFlowUi(event) ?: return
-        val changes = getChanges(commitWorkflowUi) ?: return
+        val commitWorkflowUi = VcsUtil.getCommitWorkFlowUi(event)
+        if (commitWorkflowUi == null) {
+            AutoDevNotifications.notify(project, "Cannot get commit workflow UI.")
+            return
+        }
+        val changes = getChanges(commitWorkflowUi)
+        if (changes == null || changes.isEmpty()) {
+            AutoDevNotifications.notify(project, "No changes to commit. Do you select any files?")
+            return
+        }
+
         val diffContext = project.service<VcsPrompting>().prepareContext(changes)
 
         if (diffContext.isEmpty() || diffContext == "\n") {
@@ -77,7 +86,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         }
 
         val editorField = (event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage).editorField
-        // empty commit message before generating
         val originText = editorField.editor?.selectionModel?.selectedText ?: ""
         currentJob?.cancel()
         editorField.text = ""
@@ -93,11 +101,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                 val stream = LlmFactory.create(project).stream(prompt, "", false)
                 currentJob = AutoDevCoroutineScope.scope(project).launch {
                     runBlocking {
-                        stream
-                            .onCompletion {
-                                event.presentation.icon = AutoDevStatus.Ready.icon
-                            }
-                            .cancellable().collect {
+                        stream.cancellable().collect {
                                 invokeLater {
                                     if (this@launch.isActive) editorField.text += it
                                 }
@@ -114,6 +118,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                             editorField.text = text.removePrefix("```\n").removeSuffix("```")
                         }
                     }
+
+                    event.presentation.icon = AutoDevStatus.Ready.icon
                 }
             } catch (e: Exception) {
                 event.presentation.icon = AutoDevStatus.Error.icon
