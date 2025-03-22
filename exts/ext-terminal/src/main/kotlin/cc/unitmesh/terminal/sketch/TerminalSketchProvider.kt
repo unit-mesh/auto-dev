@@ -96,7 +96,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     private val errorColor = JBColor(Color(255, 233, 233), Color(77, 0, 0))
 
     val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
-    val collapsibleTerminalPanel: CollapsiblePanel
 
     val toolbarPanel = JPanel(BorderLayout()).apply {
         add(titleLabel, BorderLayout.WEST)
@@ -109,18 +108,19 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     private lateinit var executeAction: TerminalExecuteAction
     private var resizableTerminalPanel: ResizableTerminalPanel
-    private var isCodePanelVisible = true
+    private var isTerminalPanelVisible = false
 
     init {
         val projectDir = project.guessProjectDir()?.path
-        val terminalRunnerService = TerminalRunnerService.getInstance(project)
 
-        terminalWidget = terminalRunnerService.createTerminalWidget(this, projectDir, true).also {
-            it.preferredSize = Dimension(it.preferredSize.width, 80)
+        terminalWidget = TerminalRunnerService.getInstance(project)
+            .createTerminalWidget(this, projectDir, true).also {
+                it.preferredSize = Dimension(it.preferredSize.width, 80)
+            }
+
+        resizableTerminalPanel = ResizableTerminalPanel(terminalWidget!!).apply {
+            isVisible = isTerminalPanelVisible
         }
-        collapsibleTerminalPanel = CollapsiblePanel("Terminal", terminalWidget!!, initiallyCollapsed = true)
-
-        resizableTerminalPanel = ResizableTerminalPanel(terminalWidget!!)
 
         codeSketch.getComponent().border = JBUI.Borders.empty()
         resultSketch.getComponent().border = JBUI.Borders.empty()
@@ -129,8 +129,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             init {
                 add(toolbarWrapper)
                 add(codePanel)
-                add(collapsibleTerminalPanel)
                 add(collapsibleResultPanel)
+                add(resizableTerminalPanel)
             }
         }
 
@@ -140,7 +140,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         )
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
     }
-    
+
     private fun setResultStatus(success: Boolean, errorMessage: String? = null) {
         ApplicationManager.getApplication().invokeLater {
             when {
@@ -149,6 +149,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                     resultPanel.border = LineBorder(JBColor(Color(0, 128, 0), Color(0, 100, 0)), 1)
                     collapsibleResultPanel.setTitle("✅ Execution Successful")
                 }
+
                 else -> {
                     resultPanel.background = errorColor
                     resultPanel.border = LineBorder(JBColor(Color(128, 0, 0), Color(100, 0, 0)), 1)
@@ -159,28 +160,21 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             resultPanel.repaint()
         }
     }
-    
-    private fun toggleCodePanel() {
-        if (isCodePanelVisible) {
-            mainPanel!!.remove(codePanel)
-            isCodePanelVisible = false
-        } else {
-            // Add code panel at index 1 (after toolbar, before terminal panel)
-            mainPanel!!.add(codePanel, 1)
-            isCodePanelVisible = true
-        }
-        
-        mainPanel!!.revalidate()
-        mainPanel!!.repaint()
+
+    private fun toggleTerminalAction() {
+        resizableTerminalPanel.isVisible = !resizableTerminalPanel.isVisible
+        resizableTerminalPanel.revalidate()
+
+        isTerminalPanelVisible = resizableTerminalPanel.isVisible
     }
 
     fun createConsoleActions(): List<AnAction> {
         executeAction = TerminalExecuteAction()
 
-        val showCodeAction = object :
-            AnAction("Show/Hide Code", "Show or hide the shell code", AutoDevIcons.View) {
+        val showTerminalAction = object :
+            AnAction("Show/Hide Terminal", "Show or hide the terminal", AutoDevIcons.View) {
             override fun actionPerformed(e: AnActionEvent) {
-                toggleCodePanel()
+                toggleTerminalAction()
             }
         }
 
@@ -229,7 +223,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             }
         }
 
-        return listOf(executeAction, showCodeAction, copyAction, sendAction, popupAction)
+        return listOf(executeAction, showTerminalAction, copyAction, sendAction, popupAction)
     }
 
     private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
@@ -334,10 +328,10 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AutoDevIcons.Run) {
         override fun actionPerformed(e: AnActionEvent) {
             titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
-            
+
             hasExecutionResults = false
             lastExecutionResults = ""
-            
+
             val stdWriter = UIUpdatingWriter(
                 onTextUpdate = { text, complete ->
                     resultSketch.updateViewText(text, complete)
@@ -356,7 +350,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             resultSketch.updateViewText("", true)
             stdWriter.setExecuting(true)
             setResultStatus(false)
-            
+
             AutoDevCoroutineScope.scope(project).launch {
                 val executor = project.getService(ProcessExecutor::class.java)
                 try {
