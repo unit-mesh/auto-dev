@@ -375,6 +375,9 @@
             <action id="AutoDev.ToolWindow.Snippet.RunDevIns"
                     icon="cc.unitmesh.devti.AutoDevIcons.Run"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevRunAction"/>
+            <action id="AutoDev.ToolWindow.Snippet.SaveFile"
+                    icon="cc.unitmesh.devti.AutoDevIcons.SaveFile"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevSaveFileAction"/>
         </group>
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">

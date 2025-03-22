@@ -42,6 +42,9 @@ object AutoDevIcons {
     val Terminal: Icon = IconLoader.getIcon("/icons/terminal.svg", AutoDevIcons::class.java)
 
     @JvmField
+    val SaveFile: Icon = IconLoader.getIcon("/icons/save-file.svg", AutoDevIcons::class.java)
+
+    @JvmField
     val Stop: Icon = IconLoader.getIcon("/icons/stop.svg", AutoDevIcons::class.java)
 
     @JvmField
