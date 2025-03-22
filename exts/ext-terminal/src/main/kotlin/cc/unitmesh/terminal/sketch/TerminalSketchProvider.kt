@@ -13,6 +13,7 @@ import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
+import cc.unitmesh.terminal.service.TerminalRunnerService
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
@@ -37,7 +38,6 @@ import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import org.jetbrains.ide.PooledThreadExecutor
-import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -108,9 +108,9 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     init {
         val projectDir = project.guessProjectDir()?.path
-        val terminalRunner = LocalTerminalDirectRunner.createTerminalRunner(project)
+        val terminalRunnerService = TerminalRunnerService.getInstance(project)
 
-        terminalWidget = terminalRunner.createTerminalWidget(this, projectDir, true).also {
+        terminalWidget = terminalRunnerService.createTerminalWidget(this, projectDir, true).also {
             it.preferredSize = Dimension(it.preferredSize.width, 80)
         }
 
@@ -374,4 +374,3 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         }
     }
 }
-
