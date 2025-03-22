@@ -92,6 +92,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     private val errorColor = JBColor(Color(255, 233, 233), Color(77, 0, 0))
 
     val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
+    val collapsibleTerminalPanel: CollapsiblePanel
 
     val toolbarPanel = JPanel(BorderLayout()).apply {
         add(titleLabel, BorderLayout.WEST)
@@ -104,7 +105,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     private lateinit var executeAction: TerminalExecuteAction
     private var resizableTerminalPanel: ResizableTerminalPanel
-    private var isCodePanelVisible = false
+    private var isCodePanelVisible = true
 
     init {
         val projectDir = project.guessProjectDir()?.path
@@ -113,6 +114,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         terminalWidget = terminalRunnerService.createTerminalWidget(this, projectDir, true).also {
             it.preferredSize = Dimension(it.preferredSize.width, 80)
         }
+        collapsibleTerminalPanel = CollapsiblePanel("Terminal", terminalWidget!!, initiallyCollapsed = true)
 
         resizableTerminalPanel = ResizableTerminalPanel(terminalWidget!!)
 
@@ -122,8 +124,9 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
             init {
                 add(toolbarWrapper)
+                add(codePanel)
+                add(collapsibleTerminalPanel)
                 add(collapsibleResultPanel)
-                add(resizableTerminalPanel)
             }
         }
 
@@ -158,7 +161,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             mainPanel!!.remove(codePanel)
             isCodePanelVisible = false
         } else {
-            // Add code panel at index 1 (after toolbar, before result panel)
+            // Add code panel at index 1 (after toolbar, before terminal panel)
             mainPanel!!.add(codePanel, 1)
             isCodePanelVisible = true
         }

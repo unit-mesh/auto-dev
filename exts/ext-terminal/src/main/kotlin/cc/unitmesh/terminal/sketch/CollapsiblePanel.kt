@@ -8,9 +8,10 @@ import java.awt.BorderLayout
 import java.awt.Cursor
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.JComponent
 import javax.swing.JPanel
 
-class CollapsiblePanel(title: String, private val contentPanel: JPanel, initiallyCollapsed: Boolean = false) :
+class CollapsiblePanel(title: String, private val contentPanel: JComponent, initiallyCollapsed: Boolean = false) :
     JBPanel<CollapsiblePanel>(BorderLayout()) {
 
     private var isCollapsed = initiallyCollapsed
