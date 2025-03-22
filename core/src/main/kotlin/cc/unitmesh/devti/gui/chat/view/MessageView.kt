@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.gui.chat.view
 
-import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch

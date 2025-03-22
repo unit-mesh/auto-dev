@@ -14,6 +14,7 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
+import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
@@ -144,22 +145,17 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
         })
-
-
         val header = panel {
             row {
                 val buttonBox = Box.createHorizontalBox()
                 buttonBox.add(Box.createHorizontalGlue())
-                buttonBox.add(createActionButton(NewSketchAction()))
+                buttonBox.add(createActionButton(NewChatAction()))
                 buttonBox.add(createActionButton(CopyAllMessagesAction()))
                 cell(buttonBox).alignRight()
             }
         }
 
-        header.border = JBUI.Borders.compound(
-            JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0),
-            JBUI.Borders.empty(0, 4)
-        )
+        header.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0)
 
         panelContent = panel {
             row { cell(header).fullWidth() }
@@ -169,7 +165,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             row {
                 cell(inputSection).fullWidth()
             }
-
         }.also {
             it.border = JBUI.Borders.empty()
             it.background = PanelBackground
