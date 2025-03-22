@@ -74,7 +74,7 @@ interface AutoDevChatPanel {
 
 class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true), NullableComponent, AutoDevChatPanel {
-    private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
+    private val myList = JPanel(VerticalLayout(JBUI.scale(4)))
     private var inputSection: AutoDevInputSection
     private val focusMouseListener: MouseAdapter
     private var panelContent: DialogPanel

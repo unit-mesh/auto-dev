@@ -102,14 +102,16 @@ open class CodeHighlightSketch(
         add(editorFragment!!.getContent())
 
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
-        if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
+        val lowercase = textLanguage?.lowercase()
+        if (textLanguage != null && lowercase != "markdown" && lowercase != "plain text") {
             if (showToolbar) {
                 toolbar = setupActionBar(project, editor, isDeclarePackageFile)
             }
         } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
-            editorFragment?.editor?.setBorder(JBEmptyBorder(0, 0, 0, 0))
         }
+
+        editorFragment?.editor?.setBorder(JBEmptyBorder(0, 0, 0, 0))
     }
 
     override fun getViewText(): String {

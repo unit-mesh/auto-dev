@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat.view
 
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
@@ -60,9 +61,9 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
             }
         )
 
-        layout = BorderLayout(JBUI.scale(8), 0)
+        layout = BorderLayout(JBUI.scale(4), 0)
 
-        val centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
+        val centerPanel = JPanel(VerticalLayout(JBUI.scale(4)))
         centerPanel.add(authorLabel)
 
         val toolbar = createViewActionGroup().component
@@ -122,14 +123,7 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
                         oldComponent.dispose()
                     } else {
                         blockViews[index].apply {
-                            var originLanguage = codeFence.originLanguage
-                            var language = codeFence.language
-                            if (language.displayName == "Markdown" && codeFence.text.startsWith("<devin>")) {
-                                language = CodeFence.findLanguage("DevIn")
-                                originLanguage = "DevIn"
-                            }
-
-                            updateLanguage(language, originLanguage)
+                            updateLanguage(codeFence.language, codeFence.originLanguage)
                             updateViewText(codeFence.text, codeFence.isComplete)
                         }
                     }

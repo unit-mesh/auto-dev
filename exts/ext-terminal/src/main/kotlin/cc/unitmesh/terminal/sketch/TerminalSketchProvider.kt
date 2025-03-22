@@ -88,7 +88,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     val resultPanel = JPanel(BorderLayout()).apply {
-        border = JBUI.Borders.empty()
+        border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 0, 0, 0)
         add(resultSketch.getComponent(), BorderLayout.CENTER)
     }
 
