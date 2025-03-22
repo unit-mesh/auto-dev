@@ -75,7 +75,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         border = JBUI.Borders.empty(0, 10)
     }
 
-    val codeSketch = CodeHighlightSketch(project, content, CodeFence.findLanguage("bash")).apply {
+    val codeSketch = CodeHighlightSketch(project, content, CodeFence.findLanguage("bash"), showToolbar = false).apply {
         border = JBUI.Borders.empty()
     }
 
@@ -172,7 +172,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         executeAction = TerminalExecuteAction()
 
         val showTerminalAction = object :
-            AnAction("Show/Hide Terminal", "Show or hide the terminal", AutoDevIcons.View) {
+            AnAction("Show/Hide Terminal", "Show or hide the terminal", AutoDevIcons.Terminal) {
             override fun actionPerformed(e: AnActionEvent) {
                 toggleTerminalAction()
             }

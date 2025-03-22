@@ -13,6 +13,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
@@ -52,7 +53,8 @@ open class CodeHighlightSketch(
     private var ideaLanguage: Language? = null,
     val editorLineThreshold: Int = 6,
     val fileName: String? = null,
-    val withLeftRightBorder: Boolean = true
+    val withLeftRightBorder: Boolean = true,
+    val showToolbar: Boolean = true
 ) : JBPanel<CodeHighlightSketch>(VerticalLayout(4)), DataProvider, LangSketch, Disposable {
     private val devinLineThreshold = 10
     private val minDevinLineThreshold = 1
@@ -73,6 +75,8 @@ open class CodeHighlightSketch(
     private fun String?.isNotNullOrEmpty(): Boolean {
         return this != null && this.trim().isNotEmpty()
     }
+
+    private var toolbar: ActionToolbar? = null
 
     fun initEditor(text: String, fileName: String? = null) {
         if (hasSetupAction) return
@@ -99,7 +103,9 @@ open class CodeHighlightSketch(
 
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
-            setupActionBar(project, editor, isDeclarePackageFile)
+            if (showToolbar) {
+                toolbar = setupActionBar(project, editor, isDeclarePackageFile)
+            }
         } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
             editorFragment?.editor?.setBorder(JBEmptyBorder(0, 0, 0, 0))
