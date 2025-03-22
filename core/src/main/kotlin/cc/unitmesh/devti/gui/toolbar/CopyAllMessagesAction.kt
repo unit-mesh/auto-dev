@@ -4,7 +4,6 @@ import cc.unitmesh.devti.observer.agent.AgentStateService
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBInsets
@@ -16,12 +15,6 @@ import javax.swing.JComponent
 
 class CopyAllMessagesAction : AnAction("Copy All Messages", "Copy all messages", AllIcons.Actions.Copy),
     CustomComponentAction {
-    private val logger = logger<NewChatAction>()
-
-    override fun update(e: AnActionEvent) {
-        e.presentation.text = "New Sketch"
-    }
-
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
     override fun actionPerformed(e: AnActionEvent) {
         copyMessages(e.project)
