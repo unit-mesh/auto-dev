@@ -67,6 +67,10 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         this.component.border = JBUI.Borders.empty()
     }
 
+    // Store execution results for reuse
+    private var lastExecutionResults: String = ""
+    private var hasExecutionResults: Boolean = false
+
     val titleLabel = JLabel("Terminal").apply {
         border = JBUI.Borders.empty(0, 10)
     }
@@ -184,7 +188,13 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevIcons.Copy) {
             override fun actionPerformed(e: AnActionEvent) {
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                val selection = StringSelection(getViewText())
+                val textToCopy = if (hasExecutionResults) {
+                    lastExecutionResults
+                } else {
+                    getViewText()
+                }
+
+                val selection = StringSelection(textToCopy)
                 clipboard.setContents(selection, null)
             }
         }
@@ -193,8 +203,12 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             AnAction("Send to Chat", AutoDevBundle.message("sketch.terminal.send.chat"), AutoDevIcons.Send) {
             override fun actionPerformed(e: AnActionEvent) {
                 try {
-                    val output = terminalWidget!!::class.java.getMethod("getText")
-                        .invoke(terminalWidget) as String
+                    val output = if (hasExecutionResults) {
+                        lastExecutionResults
+                    } else {
+                        terminalWidget!!::class.java.getMethod("getText")
+                            .invoke(terminalWidget) as String
+                    }
                     sendToSketch(project, "Help me to solve this issue:\n```bash\n$output\n```\n")
                 } catch (e: Exception) {
                     AutoDevNotifications.notify(project, "Failed to send to Sketch")
@@ -321,6 +335,9 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         override fun actionPerformed(e: AnActionEvent) {
             titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
             
+            hasExecutionResults = false
+            lastExecutionResults = ""
+            
             val stdWriter = UIUpdatingWriter(
                 onTextUpdate = { text, complete ->
                     resultSketch.updateViewText(text, complete)
@@ -350,7 +367,11 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                         if (collapsibleResultPanel.isCollapsed()) {
                             collapsibleResultPanel.expand()
                         }
-                        // Clear the running icon.
+
+                        val content = stdWriter.getContent()
+                        lastExecutionResults = content
+                        hasExecutionResults = true
+
                         titleLabel.icon = null
                         val success = exitCode == 0
                         setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
