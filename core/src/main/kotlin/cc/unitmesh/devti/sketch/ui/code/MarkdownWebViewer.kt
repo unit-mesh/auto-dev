@@ -5,6 +5,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.BrowserHyperlinkListener
 import com.intellij.ui.ColorUtil
 import com.intellij.util.ui.HTMLEditorKitBuilder
+import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import javax.swing.JEditorPane
 import javax.swing.text.DefaultCaret
@@ -15,8 +16,8 @@ object MarkdownWebViewer {
         jEditorPane.setContentType("text/html")
         val htmlEditorKit = HTMLEditorKitBuilder().build()
 
-        val backgroundColor = UIUtil.getPanelBackground()
-        val backgroundColorHex = ColorUtil.toHex(backgroundColor)
+        val backgroundColor = JBUI.CurrentTheme.ToolWindow.background()
+        val bg = ColorUtil.toHex(backgroundColor)
 
         val editorFontName = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontName
         val editorFontSize = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontSize
@@ -31,8 +32,8 @@ object MarkdownWebViewer {
             h3 { font-size: 1.2em; font-weight: bold; }
             h4, h5, h6 { font-size: 1.1em; font-weight: bold; }
             
-            pre { background-color: #f5f5f5; border-radius: 4px; padding: 8px; overflow-x: auto; margin: 1em 0; }
-            code { font-family: 'JetBrains Mono', Consolas, monospace; background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-size: 0.9em; }
+            pre { background-color: #$bg; border-radius: 4px; padding: 8px; overflow-x: auto; margin: 1em 0; }
+            code { font-family: 'JetBrains Mono', Consolas, monospace; background-color: #$bg; padding: 2px 4px; border-radius: 3px; font-size: 0.9em; }
             
             /* Lists */
             ul, ol { margin-top: 0.5em; margin-bottom: 0.5em; padding-left: 2em; }
@@ -51,7 +52,7 @@ object MarkdownWebViewer {
             a:hover { text-decoration: underline; }
             
             /* Horizontal rule */
-            hr { border: 0; height: 1px; background-color: #ddd; margin: 1em 0; }
+            hr { border: 0; height: 1px; background-color: #$bg; margin: 1em 0; }
             
             /* Inline elements */
             strong, b { font-weight: bold; }

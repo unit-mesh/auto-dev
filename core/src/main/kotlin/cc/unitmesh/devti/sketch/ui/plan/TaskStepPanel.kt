@@ -95,10 +95,9 @@ class TaskStepPanel(
     private fun createStyledTaskLabel(): JEditorPane {
         val labelText = getLabelTextByStatus()
         
-        val backgroundColor = UIUtil.getPanelBackground()
+        val backgroundColor = JBUI.CurrentTheme.ToolWindow.background()
         val backgroundColorHex = ColorUtil.toHex(backgroundColor)
         
-        // Get the foreground color that matches the current theme
         val foregroundColor = UIUtil.getLabelForeground()
         val foregroundColorHex = ColorUtil.toHex(foregroundColor)
         

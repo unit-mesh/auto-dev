@@ -30,17 +30,22 @@ class PlanToolbarFactory(private val project: Project) {
                 this.targetComponent = component
             }
 
-        val titleLabel = JLabel("Thought Plan").apply {
+        val bg = JBUI.CurrentTheme.ToolWindow.background()
+        toolbar.component.setBackground(bg)
+
+        val titleLabel = JLabel("Plan").apply {
             border = JBUI.Borders.empty(0, 10)
         }
 
         val toolbarPanel = JPanel(BorderLayout()).apply {
             add(titleLabel, BorderLayout.WEST)
             add(toolbar.component, BorderLayout.EAST)
+        }.also {
+            it.background = bg
         }
 
         val toolbarWrapper = Wrapper(JBUI.Panels.simplePanel(toolbarPanel)).also {
-            it.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 1, 1, 1)
+            it.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0)
         }
 
         return toolbarWrapper
