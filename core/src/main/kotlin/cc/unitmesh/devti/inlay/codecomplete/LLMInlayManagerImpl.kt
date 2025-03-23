@@ -124,9 +124,9 @@ class LLMInlayManagerImpl : LLMInlayManager {
                 renderer.apply {
                     val inlay: Inlay<EditorCustomElementRenderer>? = editor.inlayModel
                         .addBlockElement(changeOffset, true, false, 0, this)
-                    inlay?.let {
-                        renderer.setInlay(inlay)
-                    }
+                        ?: return@apply
+
+                    renderer.inlay = inlay
                 }
             }
         }
@@ -140,7 +140,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
         val inlays = collectInlays(editor, tabRange.startOffset, tabRange.endOffset)
         if (inlays.isEmpty()) return 0
 
-        val completionCount = inlays.count { it.getInlay()?.renderer is LLMInlayRenderer }
+        val completionCount = inlays.count { it.inlay?.renderer is LLMInlayRenderer }
 
         if (completionCount > 0) {
             logger.debug("Completion inlays found: $completionCount")
@@ -152,10 +152,8 @@ class LLMInlayManagerImpl : LLMInlayManager {
     private fun disposeInlays(renderers: List<LLMInlayRenderer>) {
         logger.debug("Disposing inlays: " + renderers.size)
         for (renderer in renderers) {
-            val inlay = renderer.getInlay()
-            if (inlay != null) {
-                Disposer.dispose((inlay as Disposable?)!!)
-            }
+            if (renderer.inlay == null) continue
+            Disposer.dispose((renderer.inlay as Disposable?)!!)
         }
     }
 

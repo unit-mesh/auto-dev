@@ -5,36 +5,19 @@ import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.temporary.inlay.presentation.LLMTextInlayPainter
-import org.jetbrains.annotations.NonNls
 import java.awt.Graphics
 import java.awt.Rectangle
 
 class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomElementRenderer {
-    private val lines: List<String>
-    private val content: String
+    private val lines: List<String> = PresentationUtil.replaceLeadingTabs(lines, 4)
+    private val content: String = lines.joinToString("\n")
+    private val textAttributes: TextAttributes = PresentationUtil.getTextAttributes(editor)
+    var inlay: Inlay<EditorCustomElementRenderer>? = null
+
     private var cachedWidth = -1
     private var cachedHeight = -1
 
-    private val textAttributes: TextAttributes
-    private var inlay: Inlay<EditorCustomElementRenderer>? = null
-
-    init {
-        this.lines = PresentationUtil.replaceLeadingTabs(lines, 4)
-        content = lines.joinToString("\n")
-        textAttributes = PresentationUtil.getTextAttributes(editor)
-    }
-
-    fun getInlay(): Inlay<EditorCustomElementRenderer>? {
-        return inlay
-    }
-
-    fun setInlay(inlay: Inlay<EditorCustomElementRenderer>) {
-        this.inlay = inlay
-    }
-
-    override fun getContextMenuGroupId(inlay: Inlay<*>): @NonNls String {
-        return "copilot.inlayContextMenu"
-    }
+    override fun getContextMenuGroupId(inlay: Inlay<*>): String = "autodev.inlayContextMenu"
 
     override fun calcHeightInPixels(inlay: Inlay<*>): Int {
         return if (cachedHeight < 0) {
@@ -47,7 +30,7 @@ class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomEleme
     override fun calcWidthInPixels(inlay: Inlay<*>): Int {
         if (cachedWidth < 0) {
             val width = LLMTextInlayPainter.calculateWidth(inlay.editor, content, lines)
-            return Math.max(1, width).also { cachedWidth = it }
+            return 1.coerceAtLeast(width).also { cachedWidth = it }
         }
         return cachedWidth
     }
