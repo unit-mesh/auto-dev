@@ -25,10 +25,40 @@ import com.intellij.util.Consumer
 import java.util.concurrent.CompletableFuture
 
 object SQLExecutor {
+    private val DANGEROUS_OPERATIONS = setOf(
+        "DELETE",
+        "DROP",
+        "TRUNCATE",
+        "ALTER",
+        "GRANT",
+        "REVOKE"
+    )
+
+    private fun checkSqlSafety(project: Project, psiFile: com.intellij.psi.PsiFile): Pair<Boolean, String> {
+        val sqlFile = psiFile as? com.intellij.sql.psi.SqlFile ?: return Pair(true, "Not a SQL file")
+        val statements = sqlFile.ddl
+
+        for (statement in statements) {
+            val firstChild = statement.firstChild
+            val operation = firstChild?.text?.uppercase() ?: continue
+            
+            if (DANGEROUS_OPERATIONS.any { operation.contains(it) }) {
+                return Pair(true, "Dangerous operation detected: $operation. Please confirm this operation.")
+            }
+        }
+
+        return Pair(false, "")
+    }
+
     fun executeSqlQuery(project: Project, sql: String): String {
         val file = LightVirtualFile("temp.sql", sql)
         val psiFile = runReadAction { PsiManager.getInstance(project).findFile(file) }
             ?: return "ShireError[Database]: Can't find PSI file"
+
+        val (isDangerous, reason) = checkSqlSafety(project, psiFile)
+        if (isDangerous) {
+            return "ShireError[Database]: $reason"
+        }
 
         val dataSource = DatabaseSchemaAssistant.allRawDatasource(project).firstOrNull()
             ?: throw IllegalArgumentException("ShireError[Database]: No database found")
