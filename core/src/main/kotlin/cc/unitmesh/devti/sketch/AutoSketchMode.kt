@@ -1,6 +1,18 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.BROWSE
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.DATABASE
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.DIR
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.FILE
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.LOCAL_SEARCH
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.PATCH
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.RELATED
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.REV
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.RIPGREP_SEARCH
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.STRUCTURE
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.SYMBOL
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.WRITE
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
@@ -63,9 +75,25 @@ class AutoSketchMode(val project: Project) {
         listener?.manualSend(text)
     }
 
-    private fun hasReadCommand(fence: CodeFence): Boolean = BuiltinCommand.READ_COMMANDS.any { command ->
+    private fun hasReadCommand(fence: CodeFence): Boolean = AUTOABLE_COMMANDS.any { command ->
         fence.text.contains("/" + command.commandName + ":")
     }
+
+    val AUTOABLE_COMMANDS =
+        setOf(
+            DIR,
+            LOCAL_SEARCH,
+            FILE,
+            REV,
+            STRUCTURE,
+            SYMBOL,
+            DATABASE, // should be handle in run sql
+            RELATED,
+            RIPGREP_SEARCH,
+            BROWSE,
+            PATCH,
+            WRITE
+        )
 
     private fun hasToolchainFunctionCommand(fence: CodeFence): Boolean {
         val toolchainCmds = ToolchainFunctionProvider.all().map { it.funcNames() }.flatten()

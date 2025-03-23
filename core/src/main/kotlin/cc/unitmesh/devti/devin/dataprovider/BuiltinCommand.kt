@@ -17,7 +17,7 @@ enum class BuiltinCommand(
     val hasCompletion: Boolean = false,
     val requireProps: Boolean = false,
     val enableInSketch: Boolean = true
-): Tool {
+) : Tool {
     FILE("file", "Read the content of a file by project relative path", AllIcons.Actions.Copy, true, true),
     REV(
         "rev",
@@ -55,7 +55,14 @@ enum class BuiltinCommand(
         AllIcons.Vcs.Patch_file,
         false
     ),
-    RUN("run", "Run the IDE's built-in command, like build tool, test.", AllIcons.Actions.Execute, true, true, enableInSketch = false),
+    RUN(
+        "run",
+        "Run the IDE's built-in command, like build tool, test.",
+        AllIcons.Actions.Execute,
+        true,
+        true,
+        enableInSketch = false
+    ),
     SHELL(
         "shell",
         "Execute a shell command and collect (ProcessBuild) the result",
@@ -173,8 +180,5 @@ enum class BuiltinCommand(
                 it.funcNames()
             }.flatten()
         }
-
-        val READ_COMMANDS =
-            setOf(DIR, LOCAL_SEARCH, FILE, REV, STRUCTURE, SYMBOL, DATABASE, RELATED, RIPGREP_SEARCH, BROWSE)
     }
 }
