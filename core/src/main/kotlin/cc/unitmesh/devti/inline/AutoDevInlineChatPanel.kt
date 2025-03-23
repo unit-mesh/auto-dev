@@ -201,38 +201,12 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
             val suggestion = StringBuilder()
             onStart()
 
-            var isDevinTagInProgress = false
-            val tagBuffer = StringBuilder()
-            val devinPrefix = "<devin>"
 
             flow?.cancelHandler {
-                registerCancelHandler(it) }?.cancellable()?.collect { char ->
+                registerCancelHandler(it)
+            }?.cancellable()?.collect { char ->
                 suggestion.append(char)
-
-                when {
-                    suggestion.length <= devinPrefix.length -> {
-                        tagBuffer.append(char)
-                        if (devinPrefix.startsWith(tagBuffer.toString())) {
-                            isDevinTagInProgress = true
-                            if (tagBuffer.toString() == devinPrefix) {
-                                onUpdate(suggestion.toString())
-                                isDevinTagInProgress = false
-                            }
-                        } else {
-                            isDevinTagInProgress = false
-                            onUpdate(suggestion.toString())
-                        }
-                    }
-
-                    isDevinTagInProgress -> {
-                        isDevinTagInProgress = false
-                        onUpdate(suggestion.toString())
-                    }
-
-                    else -> {
-                        onUpdate(suggestion.toString())
-                    }
-                }
+                onUpdate(suggestion.toString())
             }
 
             onFinish(suggestion.toString())
