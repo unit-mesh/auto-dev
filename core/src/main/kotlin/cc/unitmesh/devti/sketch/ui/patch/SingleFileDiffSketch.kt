@@ -148,7 +148,7 @@ class SingleFileDiffSketch(
     private fun createActionButtons(
         file: VirtualFile, appliedPatch: GenericPatchApplier.AppliedPatch?, filePatch: TextFilePatch, isRepaired: Boolean = false
     ): List<JButton> {
-        val viewButton = JButton("View").apply {
+        val viewButton = JButton(AutoDevBundle.message("sketch.patch.view")).apply {
             icon = AllIcons.Actions.ListChanges
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
 
@@ -159,7 +159,7 @@ class SingleFileDiffSketch(
             })
         }
 
-        val applyButton = JButton("Apply").apply {
+        val applyButton = JButton(AutoDevBundle.message("sketch.patch.apply")).apply {
             icon = AllIcons.Actions.RunAll
             toolTipText = AutoDevBundle.message("sketch.patch.action.applyDiff.tooltip")
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
@@ -185,14 +185,14 @@ class SingleFileDiffSketch(
             }
         }
 
-        val text = if (isRepaired) { "Repaired" } else { "Repair" }
+        val text = if (isRepaired) { AutoDevBundle.message("sketch.patch.repaired") } else { AutoDevBundle.message("sketch.patch.repair") }
         val repairButton = JButton(text).apply {
             val isFailedPatch = appliedPatch?.status != ApplyPatchStatus.SUCCESS
             isEnabled = isFailedPatch
             icon = if (isAutoRepair && isFailedPatch) {
                 AutoDevIcons.InProgress
             } else {
-                AllIcons.Toolwindows.ToolWindowBuild
+                AutoDevIcons.Repair
             }
 
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
