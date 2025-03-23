@@ -13,6 +13,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.Key
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBLabel
+import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 
@@ -21,10 +22,11 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
 
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
         val languageId = presentation.getClientProperty(LANGUAGE_PRESENTATION_KEY) ?: ""
-        val jBLabel: JComponent = JBLabel(languageId)
-        jBLabel.setOpaque(false)
-        jBLabel.setForeground(UIUtil.getLabelInfoForeground())
-        return jBLabel
+        val label: JComponent = JBLabel(languageId)
+        label.setOpaque(false)
+        label.setForeground(UIUtil.getLabelInfoForeground())
+        label.border = JBUI.Borders.empty(0, 8)
+        return label
     }
 
     override fun updateCustomComponent(component: JComponent, presentation: Presentation) {

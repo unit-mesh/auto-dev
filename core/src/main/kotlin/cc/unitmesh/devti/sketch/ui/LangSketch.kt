@@ -12,6 +12,8 @@ import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.Topic
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 
 interface LangSketch : Disposable {
@@ -38,6 +40,8 @@ interface LangSketch : Disposable {
         toolbar.component.setOpaque(true)
         toolbar.targetComponent = editor.contentComponent
         editor.headerComponent = toolbar.component
+
+        toolbar.component.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0)
 
         val connect = project.messageBus.connect(this)
         val topic: Topic<EditorColorsListener> = EditorColorsManager.TOPIC

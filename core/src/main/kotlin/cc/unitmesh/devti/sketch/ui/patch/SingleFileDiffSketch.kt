@@ -149,7 +149,7 @@ class SingleFileDiffSketch(
         file: VirtualFile, appliedPatch: GenericPatchApplier.AppliedPatch?, filePatch: TextFilePatch, isRepaired: Boolean = false
     ): List<JButton> {
         val viewButton = JButton(AutoDevBundle.message("sketch.patch.view")).apply {
-            icon = AllIcons.Actions.ListChanges
+            icon = AutoDevIcons.View
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
 
             addMouseListener(object : MouseAdapter() {
@@ -160,7 +160,7 @@ class SingleFileDiffSketch(
         }
 
         val applyButton = JButton(AutoDevBundle.message("sketch.patch.apply")).apply {
-            icon = AllIcons.Actions.RunAll
+            icon = AutoDevIcons.Run
             toolTipText = AutoDevBundle.message("sketch.patch.action.applyDiff.tooltip")
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
 
