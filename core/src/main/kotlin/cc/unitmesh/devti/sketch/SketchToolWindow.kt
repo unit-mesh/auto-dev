@@ -344,31 +344,30 @@ open class SketchToolWindow(
         val codes = CodeFence.parseAll(code.text)
 
         val panels = codes.map { code ->
-            var panel: JComponent? = null
-            when (code.originLanguage) {
+            var panel: JComponent = when (code.originLanguage) {
                 "diff", "patch" -> {
                     val langSketch = LanguageSketchProvider.provide("patch")?.create(project, code.text)
                         ?: return@map null
-                    panel = langSketch.getComponent()
                     langSketch.onComplete(code.text)
+                    langSketch.getComponent()
                 }
 
                 "html" -> {
                     val langSketch = LanguageSketchProvider.provide("html")?.create(project, code.text)
                         ?: return@map null
-                    panel = langSketch.getComponent()
                     langSketch.onComplete(code.text)
+                    langSketch.getComponent()
                 }
 
                 "bash", "shell" -> {
                     val langSketch = LanguageSketchProvider.provide("shell")?.create(project, code.text)
                         ?: return@map null
-                    panel = langSketch.getComponent()
                     langSketch.onComplete(code.text)
+                    langSketch.getComponent()
                 }
-            }
 
-            if (panel == null) return@map null
+                else -> null
+            } ?: return@map null
 
             panel.border = JBEmptyBorder(4)
             panel
