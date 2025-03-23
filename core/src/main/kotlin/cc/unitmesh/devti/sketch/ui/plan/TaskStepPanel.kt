@@ -7,12 +7,16 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentPlanStep
 import cc.unitmesh.devti.observer.plan.TaskStatus
+import com.intellij.ide.ui.UISettings
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.ui.ColorUtil
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import java.awt.Dimension
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
@@ -90,19 +94,31 @@ class TaskStepPanel(
 
     private fun createStyledTaskLabel(): JEditorPane {
         val labelText = getLabelTextByStatus()
+        
+        val backgroundColor = UIUtil.getPanelBackground()
+        val backgroundColorHex = ColorUtil.toHex(backgroundColor)
+        
+        // Get the foreground color that matches the current theme
+        val foregroundColor = UIUtil.getLabelForeground()
+        val foregroundColorHex = ColorUtil.toHex(foregroundColor)
+        
+        val editorColorsManager = EditorColorsManager.getInstance()
+        val currentScheme = editorColorsManager.schemeForCurrentUITheme
+        val editorFontName = currentScheme.editorFontName
+        val editorFontSize = currentScheme.editorFontSize
 
         return JEditorPane().apply {
             contentType = "text/html"
 
             val editorKit = HTMLEditorKit()
             val styleSheet = StyleSheet()
+            styleSheet.addRule("body { font-family: '$editorFontName'; font-size: ${editorFontSize}pt; background-color: #$backgroundColorHex; color: #$foregroundColorHex; }")
             styleSheet.addRule("a { color: #3366CC; text-decoration: underline; }")
             styleSheet.addRule("a:hover { color: #3366CC; }")
             editorKit.styleSheet = styleSheet
 
             this.editorKit = editorKit
 
-            // Get the document after setting the editorKit to ensure proper connection
             val document = this.document as HTMLDocument
             document.putProperty("IgnoreCharsetDirective", true)
             project.basePath?.let {
@@ -112,10 +128,9 @@ class TaskStepPanel(
 
             border = JBUI.Borders.emptyLeft(5)
             isEditable = false
-            background = JBUI.CurrentTheme.ToolWindow.background()
+            background = backgroundColor
 
-            // Set text after stylesheet is applied
-            text = "<html>$labelText</html>"
+            text = "<html><body>$labelText</body></html>"
 
             addHyperlinkListener { e ->
                 if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {

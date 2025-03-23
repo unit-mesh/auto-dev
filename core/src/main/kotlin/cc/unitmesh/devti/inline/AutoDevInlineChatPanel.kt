@@ -268,7 +268,6 @@ class AutoDevInlineChatInput(
 
         border = AutoDevLineBorder(CurrentTheme.Focus.focusColor(), 1, true, 2)
 
-        // escape to close
         textArea.actionMap.put("escapeAction", object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent) {
                 cancel()
@@ -283,7 +282,6 @@ class AutoDevInlineChatInput(
             }
         })
         textArea.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterAction")
-        // newLine with shift + enter
         textArea.actionMap.put("newlineAction", object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent) {
                 textArea.append("\n")
