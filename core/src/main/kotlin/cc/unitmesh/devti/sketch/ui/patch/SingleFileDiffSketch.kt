@@ -7,8 +7,6 @@ import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.diff.editor.DiffVirtualFileBase
-import com.intellij.icons.AllIcons
-import com.intellij.lang.Language
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
@@ -165,7 +163,7 @@ class SingleFileDiffSketch(
         val applyButton = JButton(AutoDevBundle.message("sketch.patch.apply")).apply {
             icon = AutoDevIcons.Run
             toolTipText = AutoDevBundle.message("sketch.patch.action.applyDiff.tooltip")
-            isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
+            isEnabled = !isFailure(appliedPatch)
 
             addActionListener {
                 val document = FileDocumentManager.getInstance().getDocument(file)
@@ -194,7 +192,7 @@ class SingleFileDiffSketch(
             AutoDevBundle.message("sketch.patch.repair")
         }
         val repairButton = JButton(text).apply {
-            val isFailedPatch = appliedPatch?.status != ApplyPatchStatus.SUCCESS
+            val isFailedPatch = isFailure(appliedPatch)
             isEnabled = isFailedPatch
             icon = if (isAutoRepair && isFailedPatch) {
                 AutoDevIcons.InProgress
@@ -221,6 +219,11 @@ class SingleFileDiffSketch(
 
         return listOf(viewButton, applyButton, repairButton)
     }
+
+    private fun isFailure(appliedPatch: GenericPatchApplier.AppliedPatch?): Boolean =
+        appliedPatch?.status != ApplyPatchStatus.SUCCESS
+                && appliedPatch?.status != ApplyPatchStatus.ALREADY_APPLIED
+                && appliedPatch?.status != ApplyPatchStatus.PARTIAL
 
     override fun getViewText(): String = currentFile.readText()
 
