@@ -30,7 +30,7 @@ class AutoDevSaveFileAction : AnAction(AutoDevBundle.message("autodev.save.actio
         val editor = e.getData(PlatformDataKeys.EDITOR) ?: return
         val document = editor.document
         val virtualFile = FileDocumentManager.getInstance().getFile(document) ?: return
-        val content = virtualFile.contentsToByteArray().toString(Charsets.UTF_8)
+        val content = document.text
         
         val descriptor = FileSaverDescriptor(AutoDevBundle.message("autodev.save.as.file"), AutoDevBundle.message("autodev.save.as.file.description"))
         
