@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.snippet
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -45,19 +46,10 @@ class AutoDevSaveFileAction : AnAction(AutoDevBundle.message("autodev.save.actio
                     file.writeText(content)
                     
                     LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
-                    
-                    Messages.showInfoMessage(
-                        project,
-                        "File saved successfully to: ${file.absolutePath}",
-                        "File Saved"
-                    )
+                    AutoDevNotifications.notify(project, "File saved successfully to: ${file.absolutePath}")
                 }
             } catch (ex: IOException) {
-                Messages.showErrorDialog(
-                    project,
-                    "Failed to save file: ${ex.message}",
-                    "Error"
-                )
+                AutoDevNotifications.error(project, "Failed to save file: ${ex.message}")
             }
         }
     }
