@@ -80,10 +80,10 @@ open class CodeHighlightSketch(
             JBEmptyBorder(8, 0, 0, 0)
         }
 
-        border = JBUI.Borders.compound(
-            paddingborder,
-            JBUI.Borders.customLine(JBColor.border(), 1, 1, 1, 1)
-        )
+        border = paddingborder
+//            paddingborder
+//            JBUI.Borders.customLine(JBColor.border(), 1, 1, 1, 1)
+//        )
 
         editor.component.isOpaque = true
 
@@ -102,11 +102,11 @@ open class CodeHighlightSketch(
             if (showToolbar) {
                 toolbar = setupActionBar(project, editor, isDeclarePackageFile)
             }
-
-            editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
         } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
         }
+
+        editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
     }
 
     override fun getViewText(): String {

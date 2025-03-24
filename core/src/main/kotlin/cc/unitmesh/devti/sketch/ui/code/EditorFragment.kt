@@ -41,7 +41,7 @@ class EditorFragment(
     private val expandCollapseTextLabel: JBLabel = JBLabel("", 0).apply {
         isOpaque = true
         isVisible = false
-        border = JBUI.Borders.customLine(JBColor.border(), 1, 0, 0, 0)
+        border = JBUI.Borders.customLine(JBColor.border(), 0, 1, 1, 1)
     }
 
     private val content: BorderLayoutPanel = createContentPanel().also {
