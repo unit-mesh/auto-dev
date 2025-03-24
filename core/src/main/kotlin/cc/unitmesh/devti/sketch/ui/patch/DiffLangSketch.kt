@@ -87,12 +87,16 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                 return@invokeLater
             }
 
-            filePatches.forEach { patch ->
-                val diffPanel = createDiffPanel(patch)
-                if (diffPanel != null) {
-                    mainPanel.add(diffPanel.getComponent())
-                    mainPanel.revalidate()
+            try {
+                filePatches.forEach { patch ->
+                    val diffPanel = createDiffPanel(patch)
+                    if (diffPanel != null) {
+                        mainPanel.add(diffPanel.getComponent())
+                        mainPanel.revalidate()
+                    }
                 }
+            } catch (e: Exception) {
+                AutoDevNotifications.error(myProject, "Failed to create diff panel: ${e.message}")
             }
         }
     }
