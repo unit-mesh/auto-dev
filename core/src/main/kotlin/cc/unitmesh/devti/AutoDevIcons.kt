@@ -67,4 +67,7 @@ object AutoDevIcons {
 
     @JvmField
     val PLANNER: Icon = IconLoader.getIcon("/icons/planner.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val EDIT: Icon = IconLoader.getIcon("/icons/edit.svg", AutoDevIcons::class.java)
 }

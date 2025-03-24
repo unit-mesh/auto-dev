@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>edit</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="edit" transform="translate(1.000000, 1.000000)">
+            <polygon id="Path" fill="#48A178" fill-rule="nonzero" points="0.333333 16.313358 4.32833924 16.313358 10.3208486 10.3208486 6.32584236 6.32584236 0.333333 12.3183517"></polygon>
+            <path d="M6.32584236,6.32584236 L0.333333,12.3183517 L0.333333,16.313358 L4.32833924,16.313358 L10.3208486,10.3208486 M9.32209704,3.32958768 L13.3171033,7.32459392 L10.3208486,10.3208486 L6.32584236,6.32584236 L9.32209704,3.32958768 Z M10.3208486,16.313358 L16.313358,16.313358 L16.313358,0.333333 L0.333333,0.333333 L0.333333,6.32584236" id="Shape" stroke="#6E6E6E" opacity="0.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </g>
+    </g>
+</svg>

@@ -70,11 +70,6 @@ object MarkdownWebViewer {
             it.text = ""
         }
 
-        if (jEditorPane.caret != null) {
-            jEditorPane.setCaretPosition(0)
-            (jEditorPane.caret as? DefaultCaret)?.updatePolicy = 1
-        }
-
         jEditorPane.addHyperlinkListener(BrowserHyperlinkListener.INSTANCE);
         return jEditorPane
     }

@@ -36,8 +36,6 @@
                 serviceInterface="cc.unitmesh.devti.inlay.codecomplete.LLMInlayManager"
                 serviceImplementation="cc.unitmesh.devti.inlay.codecomplete.LLMInlayManagerImpl"/>
 
-        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>
-
         <typedHandler order="first, before completionAutoPopup"
                       implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
 
@@ -76,6 +74,7 @@
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
 
         <httpRequestHandler implementation="cc.unitmesh.devti.mcp.host.MCPService"/>
+        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>
         <postStartupActivity implementation="cc.unitmesh.devti.mcp.MCPServerStartupValidator"/>
         <notificationGroup id="UnitMesh.MCPServer" displayType="BALLOON"/>
     </extensions>
@@ -424,7 +423,7 @@
         <group id="AutoDevPlanner.ToolWindow.TitleActions">
             <action id="ReviewPlan" icon="cc.unitmesh.devti.AutoDevIcons.REVIEWER"
                     class="cc.unitmesh.devti.observer.plan.PlanReviewAction"/>
-            <action id="EditPlan" icon="AllIcons.Actions.EditScheme"
+            <action id="EditPlan" icon="cc.unitmesh.devti.AutoDevIcons.EDIT"
                     class="cc.unitmesh.devti.observer.plan.EditPlanAction"/>
             <separator/>
         </group>

@@ -51,7 +51,7 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
-        <toolWindow id="AutoDevPlaner"
+        <toolWindow id="AutoDevPlanner"
                     anchor="left"
                     order="after Structure"
                     icon="cc.unitmesh.devti.AutoDevIcons.PLANNER"
@@ -400,7 +400,8 @@
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 class="cc.unitmesh.devti.actions.chat.AutoTestInMenuAction">
 
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ProjectViewPopupMenuRefactoringGroup"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after"
+                          relative-to-action="ProjectViewPopupMenuRefactoringGroup"/>
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </action>
@@ -419,7 +420,7 @@
         <group id="AutoDevPlanner.ToolWindow.TitleActions">
             <action id="ReviewPlan" icon="cc.unitmesh.devti.AutoDevIcons.REVIEWER"
                     class="cc.unitmesh.devti.observer.plan.PlanReviewAction"/>
-            <action id="EditPlan" icon="AllIcons.Actions.EditScheme"
+            <action id="EditPlan" icon="cc.unitmesh.devti.AutoDevIcons.EDIT"
                     class="cc.unitmesh.devti.observer.plan.EditPlanAction"/>
             <separator/>
         </group>
