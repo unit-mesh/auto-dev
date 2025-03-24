@@ -15,7 +15,6 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewChatAction
-import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState

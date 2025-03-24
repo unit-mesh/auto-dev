@@ -2,32 +2,23 @@ package cc.unitmesh.devti.sketch.ui.code
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.AutoDevSnippetFile
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
+import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.util.parser.CodeFence
-import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DataProvider
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.EditorKind
-import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.editor.ex.EditorMarkupModel
-import com.intellij.openapi.editor.ex.FocusChangeListener
-import com.intellij.openapi.editor.ex.MarkupModelEx
-import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
@@ -35,7 +26,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
-import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
@@ -84,11 +74,16 @@ open class CodeHighlightSketch(
 
         val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
 
-        border = if (withLeftRightBorder) {
+        val paddingborder = if (withLeftRightBorder) {
             JBEmptyBorder(8, 8, 8, 8)
         } else {
             JBEmptyBorder(8, 0, 0, 0)
         }
+
+        border = JBUI.Borders.compound(
+            paddingborder,
+            JBUI.Borders.customLine(JBColor.border(), 1, 1, 1, 1)
+        )
 
         editor.component.isOpaque = true
 

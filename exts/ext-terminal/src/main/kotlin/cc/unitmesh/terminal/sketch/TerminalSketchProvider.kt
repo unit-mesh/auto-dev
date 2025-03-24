@@ -136,7 +136,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
         mainPanel!!.border = JBUI.Borders.compound(
             JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1),
-            JBUI.Borders.empty()
+            JBUI.Borders.empty(0, 8)
         )
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
     }

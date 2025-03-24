@@ -12,6 +12,7 @@ import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.agent.AgentStateService
+import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
@@ -61,6 +62,7 @@ open class SketchToolWindow(
     open val chatCodingService = ChatCodingService(chatActionType, project)
     open val inputListener: SketchInputListener = SketchInputListener(project, chatCodingService, this)
     private var progressBar: JProgressBar = JProgressBar()
+    private val renderInWebview = project.coderSetting.state.enableRenderWebview
 
     private var thinkingHighlight: CodeHighlightSketch =
         CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE, withLeftRightBorder = false)
@@ -285,7 +287,7 @@ open class SketchToolWindow(
                         langSketch?.onComplete(codeFence.text)
                     }
 
-                    val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
+                    val isCanHtml = renderInWebview && codeFence.language.displayName.lowercase() == "markdown"
                     if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
                         langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
                     }
