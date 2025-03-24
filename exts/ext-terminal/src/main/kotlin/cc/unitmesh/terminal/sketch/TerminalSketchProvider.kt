@@ -67,7 +67,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         this.component.border = JBUI.Borders.empty()
     }
 
-    // Store execution results for reuse
     private var lastExecutionResults: String = ""
     private var hasExecutionResults: Boolean = false
 
@@ -173,14 +172,14 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         executeAction = TerminalExecuteAction()
 
         val showTerminalAction = object :
-            AnAction("Show/Hide Terminal", "Show or hide the terminal", AutoDevIcons.Terminal) {
+            AnAction(AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevBundle.message("sketch.terminal.show.hide"), AutoDevIcons.Terminal) {
             override fun actionPerformed(e: AnActionEvent) {
                 toggleTerminalAction()
             }
         }
 
         val copyAction = object :
-            AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevIcons.Copy) {
+            AnAction(AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevIcons.Copy) {
             override fun actionPerformed(e: AnActionEvent) {
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 val textToCopy = if (hasExecutionResults) {
@@ -195,7 +194,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         }
 
         val sendAction = object :
-            AnAction("Send to Chat", AutoDevBundle.message("sketch.terminal.send.chat"), AutoDevIcons.Send) {
+            AnAction(AutoDevBundle.message("sketch.terminal.send.chat"), AutoDevBundle.message("sketch.terminal.send.chat"), AutoDevIcons.Send) {
             override fun actionPerformed(e: AnActionEvent) {
                 try {
                     val output = if (hasExecutionResults) {
