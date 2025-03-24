@@ -16,7 +16,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import java.io.IOException
 
 class AutoDevSaveFileAction : AnAction(AutoDevBundle.message("autodev.save.action")) {
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
         val editor = e.getData(PlatformDataKeys.EDITOR) ?: return

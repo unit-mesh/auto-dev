@@ -6,7 +6,6 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.utils.lookupFile
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
@@ -19,10 +18,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.util.concurrency.AppExecutorUtil
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
 
 class WriteInsCommand(val myProject: Project, val argument: String, val content: String, val used: DevInUsed) :
     InsCommand {
@@ -52,73 +47,65 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
     }
 
     private fun writeToFile(filepath: String, projectDir: VirtualFile): String {
-        // filepath maybe just a file name, so we need to create parent directory
         val hasChildPath = filepath.contains(pathSeparator)
-        if (hasChildPath) {
-            val parentPath = filepath.substringBeforeLast(pathSeparator)
-            var parentDir = projectDir.findChild(parentPath)
-            if (parentDir == null) {
-                // parentDir maybe multiple level, so we need to create all parent directory
-                val parentDirs = parentPath.split(pathSeparator)
-                parentDir = projectDir
-                for (dir in parentDirs) {
-                    if (dir.isEmpty()) continue
+        if (!hasChildPath) {
+            return createNewContent(projectDir, filepath, content) ?: "$DEVINS_ERROR: Create File failed: $argument"
+        }
 
-                    //check child folder if exist? if not, create it
-                    if (parentDir?.findChild(dir) == null) {
-                        var parentDir: VirtualFile? = null
-                        runInEdt {
-                            runWriteAction {
-                                parentDir = parentDir?.createChildDirectory(this, dir)
-                            }
+        val parentPath = filepath.substringBeforeLast(pathSeparator)
+        var parentDir = projectDir.findChild(parentPath)
+        if (parentDir == null) {
+            val parentDirs = parentPath.split(pathSeparator)
+            parentDir = projectDir
+            for (dir in parentDirs) {
+                if (dir.isEmpty()) continue
+
+                if (parentDir?.findChild(dir) == null) {
+                    var parentDir: VirtualFile? = null
+                    runInEdt {
+                        runWriteAction {
+                            parentDir = parentDir?.createChildDirectory(this, dir)
                         }
-                    } else {
-                        parentDir = parentDir?.findChild(dir)
                     }
-                }
-
-                if (parentDir == null) {
-                    return "$DEVINS_ERROR: Create Directory failed: $parentPath"
+                } else {
+                    parentDir = parentDir.findChild(dir)
                 }
             }
 
-            return createNewContent(parentDir, filepath, content) ?: "$DEVINS_ERROR: Create File failed: $argument"
-        } else {
-            return createNewContent(projectDir, filepath, content) ?: "$DEVINS_ERROR: Create File failed: $argument"
+            if (parentDir == null) {
+                return "$DEVINS_ERROR: Create Directory failed: $parentPath"
+            }
         }
+
+        return createNewContent(parentDir, filepath, content) ?: "$DEVINS_ERROR: Create File failed: $argument"
     }
 
     private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): String? {
         var newFile: VirtualFile? = null
+        var result: String? = null
         runInEdt {
-            WriteCommandAction.runWriteCommandAction(myProject) {
+            return@runInEdt WriteCommandAction.runWriteCommandAction(myProject) {
                 val name = filepath.substringAfterLast(pathSeparator)
                 if (name.isEmpty()) {
                     return@runWriteCommandAction
                 }
 
                 newFile = parentDir.createChildData(this, name)
-            }
-        }
 
-        if (newFile == null) {
-            return "$DEVINS_ERROR: Create File failed: $argument"
-        }
+                val document = runReadAction { FileDocumentManager.getInstance().getDocument(newFile) }
+                if (document == null) {
+                    result = "$DEVINS_ERROR: Document not found: $argument"
+                    return@runWriteCommandAction
+                }
 
-        val document = runReadAction { FileDocumentManager.getInstance().getDocument(newFile) }
-            ?: return "$DEVINS_ERROR: File not found: $argument"
-
-        runInEdt {
-            FileEditorManager.getInstance(myProject).openFile(newFile, true)
-        }
-
-        runInEdt {
-            WriteCommandAction.runWriteCommandAction(myProject) {
+                FileEditorManager.getInstance(myProject).openFile(newFile, true)
                 document.setText(content)
+
+                result = "Writing to file: $argument"
             }
         }
 
-        return "Writing to file: $argument"
+        return result
     }
 
     private fun executeInsert(
