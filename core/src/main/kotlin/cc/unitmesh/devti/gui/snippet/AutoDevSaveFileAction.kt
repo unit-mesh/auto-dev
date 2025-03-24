@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileChooser.FileChooserFactory
@@ -14,8 +13,6 @@ import com.intellij.openapi.vfs.VirtualFileWrapper
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiManager
 import java.io.IOException
 
 class AutoDevSaveFileAction : AnAction(AutoDevBundle.message("autodev.save.action")) {
@@ -35,11 +32,7 @@ class AutoDevSaveFileAction : AnAction(AutoDevBundle.message("autodev.save.actio
         val virtualFile = FileDocumentManager.getInstance().getFile(document) ?: return
         val content = virtualFile.contentsToByteArray().toString(Charsets.UTF_8)
         
-        val descriptor = FileSaverDescriptor(
-            "Save File As",
-            "Choose location to save the file",
-            *arrayOf()
-        )
+        val descriptor = FileSaverDescriptor(AutoDevBundle.message("autodev.save.as.file"), AutoDevBundle.message("autodev.save.as.file.description"))
         
         val dialog: FileSaverDialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, project)
         val dir = project.baseDir
