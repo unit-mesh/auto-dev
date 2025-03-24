@@ -103,7 +103,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
     private fun createDiffPanel(patch: TextFilePatch): SingleFileDiffSketch? {
         return when {
-            patch.hasNoModifiedContent() -> {
+            patch.hasNoModifiedContent() || patch.hunks.size > 1 -> {
                 createErrorSketch(patch)
             }
             patch.beforeFileName != null -> {
