@@ -67,10 +67,6 @@ object MarkdownWebViewer {
             it.putClientProperty("JEditorPane.honorDisplayProperties", true)
             it.isOpaque = false
             it.border = null
-            it.putClientProperty(
-                "AccessibleName",
-                StringUtil.unescapeXmlEntities(StringUtil.stripHtml("", " "))
-            )
             it.text = ""
         }
 
