@@ -31,6 +31,7 @@ class AutoDevCoderSettingService(
         var enableRenameSuggestion by property(false)
         var enableAutoRunTerminal by property(false)
         var enableAutoLintCode by property(false)
+        var enableRenderWebview by property(false)
         var teamPromptsDir by property("prompts") { it.isEmpty() }
 
         override fun copy(): AutoDevCoderSettings {

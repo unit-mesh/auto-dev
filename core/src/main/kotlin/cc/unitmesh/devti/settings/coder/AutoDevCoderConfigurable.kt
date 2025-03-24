@@ -31,6 +31,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     private val enableAutoRepairDiff = JCheckBox()
     private val enableAutoRunTerminal = JCheckBox()
     private val enableAutoLintCode = JCheckBox()
+    private val enableRenderWebview = JCheckBox()
 
 
     val settings = project.service<AutoDevCoderSettingService>()
@@ -145,6 +146,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
+        row(jLabel("settings.autodev.coder.enableRenderWebview")) {
+            fullWidthCell(enableRenderWebview)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::enableRenderWebview.toMutableProperty()
+                )
+        }
+
         row(jLabel("settings.external.team.prompts.path")) {
             fullWidthCell(teamPromptsField)
                 .bind(
@@ -168,6 +178,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.enableAutoRepairDiff = state.enableAutoRepairDiff
                 it.enableAutoRunTerminal = state.enableAutoRunTerminal
                 it.enableAutoLintCode = state.enableAutoLintCode
+                it.enableRenderWebview = state.enableRenderWebview
             }
         }
     }
