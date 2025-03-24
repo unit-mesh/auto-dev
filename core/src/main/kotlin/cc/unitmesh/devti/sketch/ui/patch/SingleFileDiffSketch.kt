@@ -146,7 +146,10 @@ class SingleFileDiffSketch(
     }
 
     private fun createActionButtons(
-        file: VirtualFile, appliedPatch: GenericPatchApplier.AppliedPatch?, filePatch: TextFilePatch, isRepaired: Boolean = false
+        file: VirtualFile,
+        appliedPatch: GenericPatchApplier.AppliedPatch?,
+        filePatch: TextFilePatch,
+        isRepaired: Boolean = false
     ): List<JButton> {
         val viewButton = JButton(AutoDevBundle.message("sketch.patch.view")).apply {
             icon = AutoDevIcons.View
@@ -185,7 +188,11 @@ class SingleFileDiffSketch(
             }
         }
 
-        val text = if (isRepaired) { AutoDevBundle.message("sketch.patch.repaired") } else { AutoDevBundle.message("sketch.patch.repair") }
+        val text = if (isRepaired) {
+            AutoDevBundle.message("sketch.patch.repaired")
+        } else {
+            AutoDevBundle.message("sketch.patch.repair")
+        }
         val repairButton = JButton(text).apply {
             val isFailedPatch = appliedPatch?.status != ApplyPatchStatus.SUCCESS
             isEnabled = isFailedPatch
@@ -256,34 +263,33 @@ class SingleFileDiffSketch(
 
     private fun executeAutoRepair() {
         DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode: String ->
-                createPatchFromCode(oldCode, fixedCode)?.let { patch ->
-                    this.patch = patch
-                    appliedPatch = try {
-                        GenericPatchApplier.apply(oldCode, patch.hunks)
-                    } catch (e: Exception) {
-                        logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
-                        null
-                    }
-
-                    runInEdt {
-                        WriteAction.compute<Unit, Throwable> {
-                            currentFile.writeText(fixedCode)
-                        }
-                    }
-
-                    createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
-                        actionPanel.removeAll()
-                        actions.forEach { button ->
-                            actionPanel.add(button)
-                        }
-                    }
-
-                    mainPanel.revalidate()
-                    mainPanel.repaint()
+            createPatchFromCode(oldCode, fixedCode)?.let { patch ->
+                this.patch = patch
+                appliedPatch = try {
+                    GenericPatchApplier.apply(oldCode, patch.hunks)
+                } catch (e: Exception) {
+                    logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+                    null
                 }
-            })
-    }
 
+                runInEdt {
+                    WriteAction.compute<Unit, Throwable> {
+                        currentFile.writeText(fixedCode)
+                    }
+                }
+
+                createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
+                    actionPanel.removeAll()
+                    actions.forEach { button ->
+                        actionPanel.add(button)
+                    }
+                }
+
+                mainPanel.revalidate()
+                mainPanel.repaint()
+            }
+        })
+    }
 
     override fun dispose() {}
 }
