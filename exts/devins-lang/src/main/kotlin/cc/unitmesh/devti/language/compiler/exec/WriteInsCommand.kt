@@ -31,11 +31,15 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val filepath = argument.split("#")[0]
         val projectDir = myProject.guessProjectDir() ?: return "$DEVINS_ERROR: Project directory not found"
 
-        val virtualFile = runReadAction { myProject.lookupFile(filepath) }
-        if (virtualFile == null) {
+        val fileExists = runReadAction {
+            myProject.lookupFile(filepath) != null
+        }
+
+        if (!fileExists) {
             return writeToFile(filepath, projectDir)
         }
 
+        val virtualFile = runReadAction { myProject.lookupFile(filepath) }!!
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(virtualFile) }
             ?: return "$DEVINS_ERROR: File not found: $argument"
 
@@ -58,43 +62,59 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
         var currentDir = projectDir
         val pathSegments = dirPath.split(pathSeparator).filter { it.isNotEmpty() }
+        var result: String? = null
 
-        for (segment in pathSegments) {
-            val childDir = currentDir.findChild(segment)
-            if (childDir == null) {
-                var newDir: VirtualFile? = null
-                WriteCommandAction.runWriteCommandAction(myProject) {
-                    newDir = currentDir.createChildDirectory(this, segment)
+        runInEdt {
+            WriteCommandAction.runWriteCommandAction(myProject) {
+                try {
+                    for (segment in pathSegments) {
+                        val childDir = currentDir.findChild(segment)
+                        if (childDir == null) {
+                            val newDir = currentDir.createChildDirectory(this, segment)
+                            currentDir = newDir
+                        } else {
+                            currentDir = childDir
+                        }
+                    }
+                    
+                    // Create the file in the final directory
+                    val name = if (filename.contains(pathSeparator)) filename.substringAfterLast(pathSeparator) else filename
+                    if (name.isEmpty()) {
+                        result = "$DEVINS_ERROR: File name is empty: $argument"
+                        return@runWriteCommandAction
+                    }
+
+                    val newFile = currentDir.createChildData(this, name)
+                    newFile.writeText(content)
+                    result = "Writing to file: $argument"
+                } catch (e: Exception) {
+                    result = "$DEVINS_ERROR: ${e.message}"
                 }
-
-                if (newDir == null) {
-                    return "$DEVINS_ERROR: Failed to create directory: $segment in path $dirPath"
-                }
-
-                currentDir = newDir
-            } else {
-                currentDir = childDir
             }
         }
 
-        // Create the file in the final directory
-        return createNewContent(currentDir, filename, content) ?: "$DEVINS_ERROR: Create File failed: $argument"
+        return result ?: "$DEVINS_ERROR: Operation failed for unknown reason"
     }
 
     private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): String? {
-        var newFile: VirtualFile? = null
         var result: String? = null
-        WriteCommandAction.runWriteCommandAction(myProject) {
-            val name = if (filepath.contains(pathSeparator)) filepath.substringAfterLast(pathSeparator) else filepath
-            if (name.isEmpty()) {
-                result = "$DEVINS_ERROR: File name is empty: $argument"
-                return@runWriteCommandAction
+        
+        runInEdt {
+            WriteCommandAction.runWriteCommandAction(myProject) {
+                try {
+                    val name = if (filepath.contains(pathSeparator)) filepath.substringAfterLast(pathSeparator) else filepath
+                    if (name.isEmpty()) {
+                        result = "$DEVINS_ERROR: File name is empty: $argument"
+                        return@runWriteCommandAction
+                    }
+
+                    val newFile = parentDir.createChildData(this, name)
+                    newFile.writeText(content)
+                    result = "Writing to file: $argument"
+                } catch (e: Exception) {
+                    result = "$DEVINS_ERROR: ${e.message}"
+                }
             }
-
-            newFile = parentDir.createChildData(this, name)
-            newFile.writeText(content)
-
-            result = "Writing to file: $argument"
         }
 
         return result
