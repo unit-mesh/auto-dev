@@ -13,6 +13,7 @@ import cc.unitmesh.devti.util.relativePath
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.openapi.application.runReadAction
 
 /**
  * FileInsCommand is responsible for reading a file and returning its contents.
@@ -51,7 +52,9 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         InsCommandListener.notify(this, InsCommandStatus.SUCCESS, virtualFile)
 
-        val lang = PsiManager.getInstance(myProject).findFile(virtualFile)?.language?.displayName ?: ""
+        val lang = runReadAction {
+            PsiManager.getInstance(myProject).findFile(virtualFile)?.language?.displayName ?: ""
+        }
 
         val fileContent = splitLines(range, content)
 

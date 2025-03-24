@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch.ui.plan
 
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.gui.AutoDevPlannerToolWindow
 import cc.unitmesh.devti.gui.AutoDevPlannerToolWindowFactory
 import cc.unitmesh.devti.observer.agent.AgentStateService
@@ -15,6 +16,8 @@ import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -75,6 +78,18 @@ class PlanToolbarFactory(private val project: Project) {
             }
         }
 
-        return listOf(pinAction)
+        val copyAction = object : AnAction("Copy", "Copy plan to clipboard", AutoDevIcons.Copy) {
+            override fun actionPerformed(e: AnActionEvent) {
+                val agentStateService = project.getService(AgentStateService::class.java)
+                val currentPlan = agentStateService.getPlan()
+                val planString = MarkdownPlanParser.formatPlanToMarkdown(currentPlan)
+
+                val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                val selection = StringSelection(planString)
+                clipboard.setContents(selection, null)
+            }
+        }
+
+        return listOf(pinAction, copyAction)
     }
 }

@@ -25,13 +25,14 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
             FileDocumentManager.getInstance().saveAllDocuments()
         }
 
-        try {
-            val myReader = PatchReader(codeContent)
-            myReader.parseAllPatches()
+        val myReader = PatchReader(codeContent)
+        myReader.parseAllPatches()
 
-            val filePatches: MutableList<FilePatch> = myReader.allPatches
+        val filePatches: MutableList<FilePatch> = myReader.allPatches
 
+        runInEdt {
             ApplicationManager.getApplication().invokeAndWait {
+
                 val matchedPatches = MatchPatchPaths(myProject).execute(filePatches, true)
 
                 val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
@@ -53,10 +54,8 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
                 val additionalInfo = myReader.getAdditionalInfo(ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups))
                 ApplyPatchDefaultExecutor(myProject).apply(filePatches, patchGroups, null, prop, additionalInfo)
             }
-
-            return "Applied ${filePatches.size} patches."
-        } catch (e: Exception) {
-            return "$DEVINS_ERROR message: " + e.message
         }
+
+        return "Applied ${filePatches.size} patches."
     }
 }
