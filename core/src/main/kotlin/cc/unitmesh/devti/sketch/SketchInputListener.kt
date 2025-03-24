@@ -126,6 +126,6 @@ open class SketchInputListener(
     }
 
     fun stop() {
-        TODO("Not yet implemented")
+
     }
 }

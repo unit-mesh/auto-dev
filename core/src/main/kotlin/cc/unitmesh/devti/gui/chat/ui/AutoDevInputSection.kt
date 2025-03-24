@@ -191,10 +191,14 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         setupEditorListener()
         setupRelatedListener()
 
-        /// get current open file and add to the list
         val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
         currentFile?.let {
             listModel.addIfAbsent(currentFile, first = true)
+            val index = listModel.indexOf(currentFile)
+            if (index != -1) {
+                listModel.remove(index)
+                listModel.insertElementAt(listModel.getElementAt(index), 0)
+            }
         }
     }
 
@@ -231,43 +235,46 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         elementsList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                val list = e.source as JBList<*>
-                val index = list.locationToIndex(e.point)
-                if (index == -1) return
-
-                val wrapper = listModel.getElementAt(index)
-                val cellBounds = list.getCellBounds(index, index)
-                wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }
-                    ?.let { component ->
-                        when {
-                            component is JPanel -> {
-                                listModel.removeElement(wrapper)
-                                val vfile = wrapper.virtualFile
-                                val relativePath = vfile.path.substringAfter(project.basePath!!).removePrefix("/")
-                                listModel.addIfAbsent(vfile)
-
-                                input.appendText("\n/" + "file" + ":${relativePath}")
-                                listModel.indexOf(wrapper.virtualFile).takeIf { it != -1 }
-                                    ?.let { listModel.remove(it) }
-
-                                // invoake later
-                                ApplicationManager.getApplication().invokeLater {
-                                    val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
-                                    val relatedElements =
-                                        RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
-                                    updateElements(relatedElements)
-                                }
-                            }
-
-                            component is JLabel && component.icon == AllIcons.Actions.Close -> listModel.removeElement(
-                                wrapper
-                            )
-
-                            else -> list.clearSelection()
-                        }
-                    } ?: list.clearSelection()
+                calculateRelativeFile(e)
             }
         })
+    }
+
+    private fun calculateRelativeFile(e: MouseEvent) {
+        val list = e.source as JBList<*>
+        val index = list.locationToIndex(e.point)
+        if (index == -1) return
+
+        val wrapper = listModel.getElementAt(index)
+        val cellBounds = list.getCellBounds(index, index)
+        wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }
+            ?.let { component ->
+                when {
+                    component is JPanel -> {
+                        listModel.removeElement(wrapper)
+                        val vfile = wrapper.virtualFile
+                        val relativePath = vfile.path.substringAfter(project.basePath!!).removePrefix("/")
+                        listModel.addIfAbsent(vfile)
+
+                        input.appendText("\n/" + "file" + ":${relativePath}")
+                        listModel.indexOf(wrapper.virtualFile).takeIf { it != -1 }
+                            ?.let { listModel.remove(it) }
+
+                        ApplicationManager.getApplication().invokeLater {
+                            val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
+                            val relatedElements =
+                                RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
+                            updateElements(relatedElements)
+                        }
+                    }
+
+                    component is JLabel && component.icon == AllIcons.Actions.Close -> listModel.removeElement(
+                        wrapper
+                    )
+
+                    else -> list.clearSelection()
+                }
+            } ?: list.clearSelection()
     }
 
     private fun updateElements(elements: List<PsiElement>?) {

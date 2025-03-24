@@ -5,13 +5,11 @@ import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.TaskStatus
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
-import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JComponent
