@@ -56,13 +56,14 @@ interface SketchProcessListener {
 open class SketchToolWindow(
     val project: Project,
     open val editor: Editor?,
-    private val showInput: Boolean = false,
+    showInput: Boolean = false,
     chatActionType: ChatActionType = ChatActionType.SKETCH
 ) : SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
     open val chatCodingService = ChatCodingService(chatActionType, project)
     open val inputListener: SketchInputListener = SketchInputListener(project, chatCodingService, this)
     private var progressBar: JProgressBar = JProgressBar()
     private val renderInWebview = project.coderSetting.state.enableRenderWebview
+    private val isAutoScroll = project.coderSetting.state.enableAutoScrollInSketch
 
     private var thinkingHighlight: CodeHighlightSketch =
         CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE, withLeftRightBorder = false)
@@ -97,10 +98,11 @@ open class SketchToolWindow(
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     ).apply {
-        this.verticalScrollBar.autoscrolls = true
+        this.verticalScrollBar.autoscrolls = isAutoScroll
         this.verticalScrollBar.addAdjustmentListener { e ->
             if (e.valueIsAdjusting) {
                 isUserScrolling = true
+                this.verticalScrollBar.autoscrolls = false
             }
         }
     }
@@ -333,11 +335,6 @@ open class SketchToolWindow(
             myList.revalidate()
             myList.repaint()
         }
-
-
-        invokeLater {
-            scrollToBottom()
-        }
     }
 
     fun createRenderSketch(code: CodeFence): JComponent? {
@@ -424,7 +421,7 @@ open class SketchToolWindow(
     }
 
     fun scrollToBottom() {
-        if (!isUserScrolling) {
+        if (!isUserScrolling && isAutoScroll) {
             ApplicationManager.getApplication().invokeLater {
                 val verticalScrollBar = scrollPanel.verticalScrollBar
                 verticalScrollBar.value = verticalScrollBar.maximum

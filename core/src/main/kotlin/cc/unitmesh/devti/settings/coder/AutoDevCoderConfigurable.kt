@@ -32,6 +32,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     private val enableAutoRunTerminal = JCheckBox()
     private val enableAutoLintCode = JCheckBox()
     private val enableRenderWebview = JCheckBox()
+    private val enableAutoScrollInSketch = JCheckBox()
 
 
     val settings = project.service<AutoDevCoderSettingService>()
@@ -155,6 +156,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
+        row(jLabel("settings.autodev.coder.enableAutoScrollInSketch")) {
+            fullWidthCell(enableAutoScrollInSketch)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::enableAutoScrollInSketch.toMutableProperty()
+                )
+        }
+
         row(jLabel("settings.external.team.prompts.path")) {
             fullWidthCell(teamPromptsField)
                 .bind(
@@ -179,6 +189,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.enableAutoRunTerminal = state.enableAutoRunTerminal
                 it.enableAutoLintCode = state.enableAutoLintCode
                 it.enableRenderWebview = state.enableRenderWebview
+                it.enableAutoScrollInSketch = state.enableAutoScrollInSketch
             }
         }
     }
