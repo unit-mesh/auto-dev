@@ -87,10 +87,8 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
     private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): String? {
         var newFile: VirtualFile? = null
-        ApplicationManager.getApplication().invokeAndWait {
-            runWriteAction {
-                newFile = parentDir.createChildData(this, filepath.substringAfterLast(pathSeparator))
-            }
+        runWriteAction {
+            newFile = parentDir.createChildData(this, filepath.substringAfterLast(pathSeparator))
         }
 
         if (newFile == null) {

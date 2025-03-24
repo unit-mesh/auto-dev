@@ -67,7 +67,14 @@ object MarkdownWebViewer {
             it.putClientProperty("JEditorPane.honorDisplayProperties", true)
             it.isOpaque = false
             it.border = null
+            val xmlEntities = StringUtil.unescapeXmlEntities(StringUtil.stripHtml("", " "))
+            it.putClientProperty("AccessibleName", "")
             it.text = ""
+        }
+
+        if (jEditorPane.caret != null) {
+            jEditorPane.setCaretPosition(0)
+            (jEditorPane.caret as? DefaultCaret)?.updatePolicy = 1
         }
 
         jEditorPane.addHyperlinkListener(BrowserHyperlinkListener.INSTANCE);
