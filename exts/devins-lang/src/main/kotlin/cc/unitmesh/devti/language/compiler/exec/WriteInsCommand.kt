@@ -11,7 +11,6 @@ import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -20,6 +19,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.util.concurrency.AppExecutorUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 
 class WriteInsCommand(val myProject: Project, val argument: String, val content: String, val used: DevInUsed) :
     InsCommand {
@@ -87,8 +90,15 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
     private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): String? {
         var newFile: VirtualFile? = null
-        runWriteAction {
-            newFile = parentDir.createChildData(this, filepath.substringAfterLast(pathSeparator))
+        runInEdt {
+            WriteCommandAction.runWriteCommandAction(myProject) {
+                val name = filepath.substringAfterLast(pathSeparator)
+                if (name.isEmpty()) {
+                    return@runWriteCommandAction
+                }
+
+                newFile = parentDir.createChildData(this, name)
+            }
         }
 
         if (newFile == null) {
@@ -102,8 +112,8 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
             FileEditorManager.getInstance(myProject).openFile(newFile, true)
         }
 
-        ApplicationManager.getApplication().invokeLater {
-            runWriteAction {
+        runInEdt {
+            WriteCommandAction.runWriteCommandAction(myProject) {
                 document.setText(content)
             }
         }
