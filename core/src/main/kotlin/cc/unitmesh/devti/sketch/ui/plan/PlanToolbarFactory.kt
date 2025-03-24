@@ -90,6 +90,6 @@ class PlanToolbarFactory(private val project: Project) {
             }
         }
 
-        return listOf(pinAction, copyAction)
+        return listOf(copyAction, pinAction)
     }
 }
