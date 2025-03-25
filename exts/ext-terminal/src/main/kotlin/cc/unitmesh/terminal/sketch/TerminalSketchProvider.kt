@@ -371,6 +371,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                         setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
                     }
                 } catch (ex: Exception) {
+                    AutoDevNotifications.notify(project, "Error executing command: ${ex.message}")
                     ApplicationManager.getApplication().invokeLater {
                         stdWriter.setExecuting(false)
                         // Clear the running icon.
