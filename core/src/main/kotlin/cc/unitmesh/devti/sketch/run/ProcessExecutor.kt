@@ -136,14 +136,14 @@ class ProcessExecutor(val project: Project) {
         commandLine.withEnvironment("TERM", "dumb")
         commandLine.withEnvironment("BASH_SILENCE_DEPRECATION_WARNING", "1")
         commandLine.withEnvironment("GIT_PAGER", "cat")
+        getJdkVersion(project)?.let { javaHomePath ->
+            commandLine.withEnvironment("JAVA_HOME", javaHomePath)
+        }
+
         val commands: List<String> = listOf("bash", "--noprofile", "--norc", "-c", formatCommand(shellScript))
 
         if (basedir != null) {
             commandLine.withWorkDirectory(basedir)
-        }
-
-        getJdkVersion(project)?.let { javaHomePath ->
-            commandLine.withEnvironment("JAVA_HOME", javaHomePath)
         }
 
         return commandLine.startProcessWithPty(commands)
