@@ -3,16 +3,13 @@ package cc.unitmesh.devti.sketch.ui.patch
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.settings.coder.coderSetting
+import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.application.*
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -235,28 +232,35 @@ class SingleFileDiffSketch(
     override fun onComplete(code: String) {
         if (isRepaired) return
         if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
-            executeAutoRepair()
+            executeAutoRepair {
+                runAutoLint(currentFile)
+            }
+        } else {
+            if (myProject.coderSetting.state.enableAutoLintCode && !AutoSketchMode.getInstance(myProject).isEnable) {
+                runAutoLint(currentFile)
+            }
         }
 
         isRepaired = true
+    }
 
-        if (myProject.coderSetting.state.enableAutoLintCode) {
-            ApplicationManager.getApplication().invokeLater {
-                val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
-                    override fun run(indicator: ProgressIndicator) {
-                        lintCheckForNewCode(currentFile)
-                    }
+    fun runAutoLint(file: VirtualFile) {
+        ApplicationManager.getApplication().invokeLater {
+            val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
+                override fun run(indicator: ProgressIndicator ) {
+                    lintCheckForNewCode(file)
                 }
-
-                ProgressManager.getInstance()
-                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
     }
 
     fun lintCheckForNewCode(currentFile: VirtualFile) {
         if (newCode.isEmpty()) return
         val newFile = LightVirtualFile(currentFile, newCode, LocalTimeCounter.currentTime())
+
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
         val errors = SketchCodeInspection.runInspections(myProject, psiFile, currentFile, HighlightSeverity.ERROR)
         if (errors.isNotEmpty()) {
@@ -264,7 +268,7 @@ class SingleFileDiffSketch(
         }
     }
 
-    private fun executeAutoRepair() {
+    private fun executeAutoRepair(postAction: () -> Unit) {
         DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode: String ->
             createPatchFromCode(oldCode, fixedCode)?.let { patch ->
                 this.patch = patch
@@ -287,6 +291,8 @@ class SingleFileDiffSketch(
                         actionPanel.add(button)
                     }
                 }
+
+                postAction()
 
                 mainPanel.revalidate()
                 mainPanel.repaint()
