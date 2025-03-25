@@ -41,108 +41,67 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         }
 
         val virtualFile = runReadAction { myProject.lookupFile(filepath) }!!
-        val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(virtualFile) }
-            ?: return "$DEVINS_ERROR: File not found: $argument"
-
-        var output: String? = null
+        virtualFile.writeText(content)
         runInEdt {
             FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
-            output = executeInsert(psiFile, range, content)
         }
-        return output
+
+        return "Writing to file: $argument"
     }
 
     private fun writeToFile(filepath: String, projectDir: VirtualFile): String {
         val hasChildPath = filepath.contains(pathSeparator)
         if (!hasChildPath) {
-            return createNewContent(projectDir, filepath, content) ?: "$DEVINS_ERROR: Create File failed: $argument"
+            return runWriteAction {
+                createFileWithContent(projectDir, filepath)
+            } ?: "$DEVINS_ERROR: Create File failed: $argument"
         }
 
         val filename = filepath.substringAfterLast(pathSeparator)
         val dirPath = filepath.substringBeforeLast(pathSeparator)
 
-        var currentDir = projectDir
-        val pathSegments = dirPath.split(pathSeparator).filter { it.isNotEmpty() }
-        var result: String? = null
-
-        val disposable = Disposer.newCheckedDisposable()
-        runInEdtAsync(disposable) {
-            result = WriteCommandAction.runWriteCommandAction<String>(myProject) {
-                for (segment in pathSegments) {
-                    val childDir = currentDir.findChild(segment)
-                    if (childDir == null) {
-                        val newDir = currentDir.createChildDirectory(this, segment)
-                        currentDir = newDir
-                    } else {
-                        currentDir = childDir
-                    }
-                }
-
-                val name = if (filename.contains(pathSeparator)) filename.substringAfterLast(pathSeparator) else filename
-                if (name.isEmpty()) {
-                    return@runWriteCommandAction "$DEVINS_ERROR: File name is empty: $argument"
-                }
-
-                val newFile = currentDir.createChildData(this, name)
-                newFile.writeText(content)
-                return@runWriteCommandAction "Writing to file: $argument"
-            }
-        }
-
-        return result ?: ""
+        return runWriteAction {
+            val currentDir = getOrCreateDirectory(projectDir, dirPath)
+            createFileWithContent(currentDir, filename)
+        } ?: ""
     }
 
-    private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): String? {
+    private fun runWriteAction(action: () -> String): String? {
         var result: String? = null
-
         val disposable = Disposer.newCheckedDisposable()
         runInEdtAsync(disposable) {
-            result = WriteCommandAction.runWriteCommandAction<String>(myProject) {
-                try {
-                    val name =
-                        if (filepath.contains(pathSeparator)) filepath.substringAfterLast(pathSeparator) else filepath
-                    if (name.isEmpty()) {
-                        return@runWriteCommandAction "$DEVINS_ERROR: File name is empty: $argument"
-                    }
-
-                    val newFile = parentDir.createChildData(this, name)
-                    newFile.writeText(content)
-                    return@runWriteCommandAction "Writing to file: $argument"
-                } catch (e: Exception) {
-                    return@runWriteCommandAction "$DEVINS_ERROR: ${e.message}"
-                }
-            }
+            result = WriteCommandAction.runWriteCommandAction<String>(myProject, action)
         }
 
         return result
     }
 
-    private fun executeInsert(
-        psiFile: PsiFile,
-        range: LineInfo?,
-        content: String
-    ): String {
-        val document = runReadAction {
-            PsiDocumentManager.getInstance(myProject).getDocument(psiFile)
-        } ?: return "$DEVINS_ERROR: File not found: $argument"
-
-        val startLine = range?.startLine ?: 0
-        val endLine = if (document.lineCount == 0) 1 else range?.endLine ?: document.lineCount
+    private fun createFileWithContent(parentDir: VirtualFile, fileName: String): String {
+        if (fileName.isEmpty()) return "$DEVINS_ERROR: File name is empty: $argument"
 
         try {
-            val startOffset = document.getLineStartOffset(startLine)
-            val endOffset = document.getLineEndOffset(endLine - 1)
-            WriteCommandAction.runWriteCommandAction(myProject) {
-                document.replaceString(startOffset, endOffset, content)
-            }
-
+            val newFile = parentDir.createChildData(this, fileName)
+            newFile.writeText(content)
             return "Writing to file: $argument"
         } catch (e: Exception) {
             return "$DEVINS_ERROR: ${e.message}"
         }
+    }
+
+    private fun getOrCreateDirectory(baseDir: VirtualFile, path: String): VirtualFile {
+        var currentDir = baseDir
+        val pathSegments = path.split(pathSeparator).filter { it.isNotEmpty() }
+
+        for (segment in pathSegments) {
+            val childDir = currentDir.findChild(segment)
+            currentDir = childDir ?: currentDir.createChildDirectory(this, segment)
+        }
+
+        return currentDir
     }
 }
 
 fun runInEdtAsync(disposable: CheckedDisposable, action: () -> Unit) {
     ApplicationManager.getApplication().invokeLater(action) { disposable.isDisposed }
 }
+
