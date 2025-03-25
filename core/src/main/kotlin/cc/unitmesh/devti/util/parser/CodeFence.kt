@@ -239,6 +239,7 @@ class CodeFence(
                 "bash" -> "Shell Script"
                 "http" -> "HTTP Request"
                 "plan" -> "Plain Text"
+                "go" -> "Go"
                 else -> languageName
             }
 

@@ -261,6 +261,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                             ?.let { listModel.remove(it) }
 
                         ApplicationManager.getApplication().invokeLater {
+                            if (!vfile.isValid) return@invokeLater
                             val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
                             val relatedElements =
                                 RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
