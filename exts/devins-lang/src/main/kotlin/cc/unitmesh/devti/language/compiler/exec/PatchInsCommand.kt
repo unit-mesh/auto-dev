@@ -3,19 +3,22 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
+import cc.unitmesh.devti.sketch.AutoSketchMode
+import cc.unitmesh.devti.sketch.ui.patch.SingleFileDiffSketch
+import cc.unitmesh.devti.sketch.ui.patch.readText
+import cc.unitmesh.devti.sketch.ui.patch.writeText
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.diff.impl.patch.FilePatch
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
 import com.intellij.openapi.diff.impl.patch.PatchReader
+import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.vcs.changes.patch.AbstractFilePatchInProgress
-import com.intellij.openapi.vcs.changes.patch.ApplyPatchDefaultExecutor
-import com.intellij.openapi.vcs.changes.patch.MatchPatchPaths
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.containers.MultiMap
+import com.intellij.openapi.util.Disposer
 
 class PatchInsCommand(val myProject: Project, val prop: String, val codeContent: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.PATCH
@@ -28,34 +31,50 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
         val myReader = PatchReader(codeContent)
         myReader.parseAllPatches()
 
-        val filePatches: MutableList<FilePatch> = myReader.allPatches
+        val filePatches: MutableList<TextFilePatch> = myReader.textPatches
 
-        runInEdt {
-            ApplicationManager.getApplication().invokeAndWait {
+        val disposable = Disposer.newCheckedDisposable()
+        var result: String? = null
 
-                val matchedPatches = MatchPatchPaths(myProject).execute(filePatches, true)
-
-                val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
-                for (patchInProgress in matchedPatches) {
-                    patchGroups.putValue(patchInProgress.base, patchInProgress)
+        runInEdtAsync(disposable) {
+            filePatches.forEach {
+                val vfile = myProject.guessProjectDir()!!.findFileByRelativePath(it.beforeName.toString())
+                if (vfile == null) {
+                    result += "$DEVINS_ERROR: File not found: ${it.beforeName}"
+                    return@runInEdtAsync
                 }
 
-                if (patchGroups.isEmpty) return@invokeAndWait
-                /// open file in editor
-                filePatches.firstOrNull()?.apply {
-                    val file = myProject.guessProjectDir()!!.findFileByRelativePath(this.beforeFileName.toString())
-                    file?.let {
-                        ApplicationManager.getApplication().invokeAndWait {
-                            FileEditorManager.getInstance(myProject).openFile(it, true)
-                        }
-                    }
+                ApplicationManager.getApplication().invokeAndWait {
+                    FileEditorManager.getInstance(myProject).openFile(vfile, true)
                 }
 
-                val additionalInfo = myReader.getAdditionalInfo(ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups))
-                ApplyPatchDefaultExecutor(myProject).apply(filePatches, patchGroups, null, prop, additionalInfo)
+                var oldCode = vfile.readText()
+
+                var appliedPatch = try {
+                    GenericPatchApplier.apply(oldCode, it.hunks)
+                } catch (e: Exception) {
+                    logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${it.beforeName}", e)
+                    null
+                }
+
+                if (appliedPatch == null) {
+                    result += "$DEVINS_ERROR: Failed to apply patch: ${it.beforeName}"
+                    return@runInEdtAsync
+                }
+
+                if (appliedPatch.status == ApplyPatchStatus.SUCCESS || appliedPatch.status == ApplyPatchStatus.PARTIAL) {
+                    vfile.writeText(appliedPatch.patchedText)
+                    result += "Patch applied successfully: ${it.beforeName}\n"
+                }
             }
+
+            result
         }
 
-        return "Applied ${filePatches.size} patches."
+        if (AutoSketchMode.getInstance(myProject).isEnable) {
+            result = ""
+        }
+
+        return result
     }
 }

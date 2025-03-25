@@ -6,7 +6,6 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.findFile
 import com.intellij.icons.AllIcons
-import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
@@ -50,7 +49,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     private val filePatches: MutableList<TextFilePatch> = myReader?.textPatches ?: mutableListOf()
 
     init {
-        if (filePatches.size > 1 || filePatches.any { it.beforeFileName == null }) {
+        if (filePatches.size > 1 || filePatches.any { it.beforeName == null }) {
             val header = createHeaderAction()
             myHeaderPanel.add(header, BorderLayout.EAST)
             mainPanel.add(myHeaderPanel)
@@ -103,20 +102,17 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
     private fun createDiffPanel(patch: TextFilePatch): SingleFileDiffSketch? {
         return when {
-            patch.hasNoModifiedContent() || patch.hunks.size > 1 -> {
-                createErrorSketch(patch)
-            }
-            patch.beforeFileName != null -> {
-                val originFile = myProject.findFile(patch.beforeFileName!!) ?: LightVirtualFile(
-                    patch.beforeFileName!!,
+            patch.beforeName != null -> {
+                val originFile = myProject.findFile(patch.beforeName!!) ?: LightVirtualFile(
+                    patch.beforeName!!,
                     getChunkText(patch)
                 )
                 createSingleFileDiffSketch(originFile, patch)
             }
 
-            patch.afterFileName != null -> {
-                val virtualFile = myProject.findFile(patch.afterFileName!!) ?: LightVirtualFile(
-                    patch.afterFileName!!,
+            patch.afterName != null -> {
+                val virtualFile = myProject.findFile(patch.afterName!!) ?: LightVirtualFile(
+                    patch.afterName!!,
                     getChunkText(patch)
                 )
                 createSingleFileDiffSketch(virtualFile, patch)
@@ -129,7 +125,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     }
 
     private fun createErrorSketch(patch: TextFilePatch): SingleFileDiffSketch {
-        val fileName = patch.beforeFileName ?: ""
+        val fileName = patch.beforeName ?: ""
         val virtualFile = LightVirtualFile(fileName, getChunkText(patch))
         return createSingleFileDiffSketch(virtualFile, patch)
     }
@@ -226,8 +222,8 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     }
 
     fun handleViewDiffAction() {
-        val beforeFileNames = filePatches.mapNotNull { it.beforeFileName }
-        if (beforeFileNames.size > 1) {
+        val beforeNames = filePatches.mapNotNull { it.beforeName }
+        if (beforeNames.size > 1) {
             MyApplyPatchFromClipboardDialog(myProject, patchContent).show()
             return
         } else {

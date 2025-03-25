@@ -1,12 +1,8 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.util
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileTypes.FileTypeManager
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -15,11 +11,7 @@ import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.changes.VcsIgnoreManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.ProjectScope
-import java.util.concurrent.CompletableFuture
 
 // https://github.com/JetBrains/intellij-community/blob/master/platform/projectModel-impl/src/com/intellij/openapi/roots/impl/ProjectFileIndexImpl.java#L32
 fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
@@ -31,22 +23,7 @@ fun Project.isInProject(virtualFile: VirtualFile): Boolean {
 }
 
 fun Project.findFile(filename: String): VirtualFile? {
-    ApplicationManager.getApplication().assertReadAccessAllowed()
-//    val future = CompletableFuture<VirtualFile?>()
-//
-//    val task = object : Task.Backgroundable(this, "Searching for file", false) {
-//        override fun run(indicator: com.intellij.openapi.progress.ProgressIndicator) {
-//            val file = runReadAction {
-//                FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
-//            }
-//            future.complete(file)
-//        }
-//    }
-//
-//    ProgressManager.getInstance()
-//        .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
-    return FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
+    return this.guessProjectDir()!!.findFileByRelativePath(filename)
 }
 
 fun Project.findFileByPath(path: String): VirtualFile? {
