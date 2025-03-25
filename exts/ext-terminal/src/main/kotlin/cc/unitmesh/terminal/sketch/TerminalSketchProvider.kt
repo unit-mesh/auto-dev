@@ -269,7 +269,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     override fun onComplete(code: String) {
         if (hasSent) return
         codeSketch.updateViewText(code, true)
-        titleLabel.text = "Terminal - ($content)"
+        val title = content.split("\n").firstOrNull() ?: content
+        titleLabel.text = "Terminal - ($title)"
 
         val (isDangerous, reason) = try {
             ShellSafetyCheck.checkDangerousCommand(content)

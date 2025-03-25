@@ -43,7 +43,7 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
                 var appliedPatch = try {
                     GenericPatchApplier.apply(vfile.readText(), it.hunks)
                 } catch (e: Exception) {
-                    result += "$DEVINS_ERROR: Failed to apply patch: ${it.beforeName}"
+                    result += "$DEVINS_ERROR: Failed to apply patch: ${it.beforeName}, ${e.message}"
                     null
                 } ?: return@runInEdtAsync
 
