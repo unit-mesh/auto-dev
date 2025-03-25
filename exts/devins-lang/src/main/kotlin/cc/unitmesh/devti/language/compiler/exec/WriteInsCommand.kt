@@ -7,14 +7,15 @@ import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.sketch.ui.patch.writeText
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.CheckedDisposable
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
@@ -64,8 +65,9 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val pathSegments = dirPath.split(pathSeparator).filter { it.isNotEmpty() }
         var result: String? = null
 
-        runInEdt {
-            WriteCommandAction.runWriteCommandAction(myProject) {
+        val disposable = Disposer.newCheckedDisposable()
+        runInEdtAsync(disposable) {
+            result = WriteCommandAction.runWriteCommandAction<String>(myProject) {
                 for (segment in pathSegments) {
                     val childDir = currentDir.findChild(segment)
                     if (childDir == null) {
@@ -76,17 +78,16 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
                     }
                 }
 
-                // Create the file in the final directory
                 val name =
                     if (filename.contains(pathSeparator)) filename.substringAfterLast(pathSeparator) else filename
                 if (name.isEmpty()) {
-                    result = "$DEVINS_ERROR: File name is empty: $argument"
-                    return@runWriteCommandAction
+                    result =
+                    return@runWriteCommandAction "$DEVINS_ERROR: File name is empty: $argument"
                 }
 
                 val newFile = currentDir.createChildData(this, name)
                 newFile.writeText(content)
-                result = "Writing to file: $argument"
+                "Writing to file: $argument"
             }
         }
 
@@ -142,4 +143,8 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
             return "$DEVINS_ERROR: ${e.message}"
         }
     }
+}
+
+fun runInEdtAsync(disposable: CheckedDisposable, action: () -> Unit) {
+    ApplicationManager.getApplication().invokeLater(action) { disposable.isDisposed }
 }

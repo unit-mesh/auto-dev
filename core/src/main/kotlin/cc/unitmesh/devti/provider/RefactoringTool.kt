@@ -24,7 +24,6 @@ import com.intellij.refactoring.rename.naming.AutomaticRenamerFactory
 import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.intellij.usageView.UsageInfo
 import com.intellij.util.ThrowableRunnable
-import com.intellij.vcs.log.runInEdtAsync
 
 /**
  * RefactoringTool is an interface that defines operations for performing various code refactoring tasks.
