@@ -78,10 +78,8 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
                     }
                 }
 
-                val name =
-                    if (filename.contains(pathSeparator)) filename.substringAfterLast(pathSeparator) else filename
+                val name = if (filename.contains(pathSeparator)) filename.substringAfterLast(pathSeparator) else filename
                 if (name.isEmpty()) {
-                    result =
                     return@runWriteCommandAction "$DEVINS_ERROR: File name is empty: $argument"
                 }
 
@@ -97,21 +95,21 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
     private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): String? {
         var result: String? = null
 
-        runInEdt {
-            WriteCommandAction.runWriteCommandAction(myProject) {
+        val disposable = Disposer.newCheckedDisposable()
+        runInEdtAsync(disposable) {
+            result = WriteCommandAction.runWriteCommandAction<String>(myProject) {
                 try {
                     val name =
                         if (filepath.contains(pathSeparator)) filepath.substringAfterLast(pathSeparator) else filepath
                     if (name.isEmpty()) {
-                        result = "$DEVINS_ERROR: File name is empty: $argument"
-                        return@runWriteCommandAction
+                        return@runWriteCommandAction "$DEVINS_ERROR: File name is empty: $argument"
                     }
 
                     val newFile = parentDir.createChildData(this, name)
                     newFile.writeText(content)
-                    result = "Writing to file: $argument"
+                    return@runWriteCommandAction "Writing to file: $argument"
                 } catch (e: Exception) {
-                    result = "$DEVINS_ERROR: ${e.message}"
+                    return@runWriteCommandAction "$DEVINS_ERROR: ${e.message}"
                 }
             }
         }
