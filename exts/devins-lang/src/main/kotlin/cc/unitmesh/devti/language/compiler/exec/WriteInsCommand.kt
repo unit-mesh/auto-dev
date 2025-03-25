@@ -3,7 +3,6 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
-import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.sketch.ui.patch.writeText
@@ -17,9 +16,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 
 class WriteInsCommand(val myProject: Project, val argument: String, val content: String, val used: DevInUsed) :
     InsCommand {
@@ -28,7 +24,6 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
     private val pathSeparator = "/"
 
     override suspend fun execute(): String? {
-        val range: LineInfo? = LineInfo.fromString(runReadAction { used.text })
         val filepath = argument.split("#")[0]
         val projectDir = myProject.guessProjectDir() ?: return "$DEVINS_ERROR: Project directory not found"
 
