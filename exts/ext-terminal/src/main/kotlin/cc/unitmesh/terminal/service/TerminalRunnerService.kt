@@ -1,14 +1,10 @@
 package cc.unitmesh.terminal.service
 
+import cc.unitmesh.devti.sketch.run.ProcessExecutor
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkUtil
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.JavaSdk
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.terminal.JBTerminalWidget
 import com.pty4j.PtyProcess
 import org.jetbrains.plugins.terminal.AbstractTerminalRunner
@@ -23,19 +19,21 @@ class TerminalRunnerService(private val project: Project) {
         return terminalRunner ?: initializeTerminalRunner().also { terminalRunner = it }
     }
 
-    private fun initializeTerminalRunner(): AbstractTerminalRunner<PtyProcess> {
+    fun initializeTerminalRunner(): AbstractTerminalRunner<PtyProcess> {
         val runner = LocalTerminalDirectRunner.createTerminalRunner(project)
 
-        getJdkVersion()?.let { javaHomePath ->
+        return runner
+    }
+
+    private fun createStartupOptions(): ShellStartupOptions? {
+        return ProcessExecutor.getJdkVersion(project)?.let { javaHomePath ->
             val environmentVariables = mapOf("JAVA_HOME" to javaHomePath)
             val startupOptions = ShellStartupOptions.Builder()
                 .envVariables(environmentVariables)
                 .build()
 
-            runner.configureStartupOptions(startupOptions)
+            return@let startupOptions
         }
-
-        return runner
     }
 
     fun createTerminalWidget(
@@ -44,35 +42,16 @@ class TerminalRunnerService(private val project: Project) {
         deferSessionStartUntilUiShown: Boolean = true
     ): JBTerminalWidget {
         val terminalRunner = createTerminalRunner()
-        return terminalRunner.createTerminalWidget(parent, startingDirectory, deferSessionStartUntilUiShown)
-    }
 
-    private fun getJdkVersion(): String? {
-        val projectSdk = ProjectRootManager.getInstance(project).projectSdk
-        if (projectSdk != null && projectSdk.sdkType is JavaSdk) {
-            return projectSdk.homePath
-        }
-
-        val projectJdkTable = ProjectJdkTable.getInstance()
-        if (projectJdkTable.allJdks.isNotEmpty()) {
-            for (jdk in projectJdkTable.allJdks) {
-                if (jdk.sdkType is JavaSdk) {
-                    return jdk.homePath
-                }
+        createStartupOptions()?.also {
+            val terminalWidget = terminalRunner.startShellTerminalWidget(parent, it, deferSessionStartUntilUiShown)
+            val jediTermWidget = JBTerminalWidget.asJediTermWidget(terminalWidget)
+            if (jediTermWidget != null) {
+                return jediTermWidget
             }
         }
 
-        val javaHome = System.getenv("JAVA_HOME")
-        if (javaHome != null && javaHome.isNotEmpty()) {
-            return javaHome
-        }
-
-        val javaHomeSdk: Sdk? = ExternalSystemJdkUtil.resolveJdkName(null, "#JAVA_HOME")
-        if (javaHomeSdk != null) {
-            return javaHomeSdk.homePath
-        }
-
-        return null
+        return terminalRunner.createTerminalWidget(parent, startingDirectory, deferSessionStartUntilUiShown)
     }
 
     companion object {

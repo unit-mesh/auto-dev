@@ -20,12 +20,17 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.execution.configurations.PtyCommandLine
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkUtil
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.projectRoots.JavaSdk
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.text.Strings
 import kotlinx.coroutines.*
 import org.jetbrains.ide.PooledThreadExecutor
@@ -137,6 +142,10 @@ class ProcessExecutor(val project: Project) {
             commandLine.withWorkDirectory(basedir)
         }
 
+        getJdkVersion(project)?.let { javaHomePath ->
+            commandLine.withEnvironment("JAVA_HOME", javaHomePath)
+        }
+
         return commandLine.startProcessWithPty(commands)
     }
 
@@ -175,6 +184,36 @@ class ProcessExecutor(val project: Project) {
                 }
                 ensureActive()
             } while (process.isAlive || line != null)
+        }
+    }
+
+    companion object {
+        fun getJdkVersion(project: Project): String? {
+            val projectSdk = ProjectRootManager.getInstance(project).projectSdk
+            if (projectSdk != null && projectSdk.sdkType is JavaSdk) {
+                return projectSdk.homePath
+            }
+
+            val projectJdkTable = ProjectJdkTable.getInstance()
+            if (projectJdkTable.allJdks.isNotEmpty()) {
+                for (jdk in projectJdkTable.allJdks) {
+                    if (jdk.sdkType is JavaSdk) {
+                        return jdk.homePath
+                    }
+                }
+            }
+
+            val javaHome = System.getenv("JAVA_HOME")
+            if (javaHome != null && javaHome.isNotEmpty()) {
+                return javaHome
+            }
+
+            val javaHomeSdk: Sdk? = ExternalSystemJdkUtil.resolveJdkName(null, "#JAVA_HOME")
+            if (javaHomeSdk != null) {
+                return javaHomeSdk.homePath
+            }
+
+            return null
         }
     }
 }

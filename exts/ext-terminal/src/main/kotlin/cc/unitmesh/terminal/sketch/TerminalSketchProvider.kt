@@ -93,13 +93,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     private val successColor = JBColor(Color(233, 255, 233), Color(0, 77, 0))
     private val errorColor = JBColor(Color(255, 233, 233), Color(77, 0, 0))
-    private val executingColor = JBColor(Color(233, 233, 255), Color(0, 0, 77))
-
-    enum class ExecutionStatus {
-        EXECUTING,
-        SUCCESS,
-        FAILURE
-    }
 
     val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
 
@@ -148,24 +141,20 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
     }
 
-    private fun setResultStatus(status: ExecutionStatus, errorMessage: String? = null) {
+    private fun setResultStatus(success: Boolean, errorMessage: String? = null) {
         ApplicationManager.getApplication().invokeLater {
-            when (status) {
-                ExecutionStatus.SUCCESS -> {
+            when {
+                success -> {
                     resultPanel.background = successColor
                     resultPanel.border = LineBorder(JBColor(Color(0, 128, 0), Color(0, 100, 0)), 1)
                     collapsibleResultPanel.setTitle("✅ Execution Successful")
                 }
-                ExecutionStatus.FAILURE -> {
+
+                else -> {
                     resultPanel.background = errorColor
                     resultPanel.border = LineBorder(JBColor(Color(128, 0, 0), Color(100, 0, 0)), 1)
                     val errorText = errorMessage?.let { ": $it" } ?: ""
                     collapsibleResultPanel.setTitle("❌ Execution Failed$errorText")
-                }
-                ExecutionStatus.EXECUTING -> {
-                    resultPanel.background = executingColor
-                    resultPanel.border = LineBorder(JBColor(Color(0, 0, 128), Color(0, 0, 100)), 1)
-                    collapsibleResultPanel.setTitle("⏳ Executing...")
                 }
             }
             resultPanel.repaint()
@@ -302,7 +291,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                     "⚠️ WARNING: $reason\nThe command was not auto-executed for safety reasons.\nPlease review and run manually if you're sure.",
                     true
                 )
-                setResultStatus(ExecutionStatus.FAILURE, reason)
+                setResultStatus(false, reason)
                 collapsibleResultPanel.expand()
             }
             return
@@ -361,7 +350,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
             resultSketch.updateViewText("", true)
             stdWriter.setExecuting(true)
-            setResultStatus(ExecutionStatus.EXECUTING)
+            setResultStatus(false)
 
             AutoDevCoroutineScope.scope(project).launch {
                 val executor = project.getService(ProcessExecutor::class.java)
@@ -380,10 +369,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
                         titleLabel.icon = null
                         val success = exitCode == 0
-                        setResultStatus(
-                            if (success) ExecutionStatus.SUCCESS else ExecutionStatus.FAILURE, 
-                            if (!success) "Process exited with code $exitCode" else null
-                        )
+                        setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
                     }
                 } catch (ex: Exception) {
                     AutoDevNotifications.notify(project, "Error executing command: ${ex.message}")
@@ -392,7 +378,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                         // Clear the running icon.
                         titleLabel.icon = null
                         resultSketch.updateViewText("${stdWriter.getContent()}\nError: ${ex.message}", true)
-                        setResultStatus(ExecutionStatus.FAILURE, ex.message)
+                        setResultStatus(false, ex.message)
                     }
                 }
             }
