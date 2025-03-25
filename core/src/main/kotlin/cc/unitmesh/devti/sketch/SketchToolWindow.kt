@@ -43,7 +43,6 @@ import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
-import java.awt.EventQueue.invokeLater
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.*
@@ -335,6 +334,8 @@ open class SketchToolWindow(
             myList.revalidate()
             myList.repaint()
         }
+
+        scrollToBottom()
     }
 
     fun createRenderSketch(code: CodeFence): JComponent? {
@@ -395,7 +396,7 @@ open class SketchToolWindow(
 
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
-        scrollToBottom()
+        scrollToBottom(force = true)
 
         afterRun()
 
@@ -420,8 +421,8 @@ open class SketchToolWindow(
         }
     }
 
-    fun scrollToBottom() {
-        if (!isUserScrolling && isAutoScroll) {
+    fun scrollToBottom(force: Boolean = false) {
+        if ((!isUserScrolling && isAutoScroll) || force == true) {
             ApplicationManager.getApplication().invokeLater {
                 val verticalScrollBar = scrollPanel.verticalScrollBar
                 verticalScrollBar.value = verticalScrollBar.maximum

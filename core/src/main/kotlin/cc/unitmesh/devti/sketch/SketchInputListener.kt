@@ -69,8 +69,12 @@ open class SketchInputListener(
         return when {
             chatCodingService.getAllMessages().size == 3 && LlmConfig.hasPlanModel() -> {
                 val intention = project.getService(AgentStateService::class.java).buildOriginIntention() ?: ""
-                planPrompt.replace("<user.question>user.question</user.question>", "<user.question>$intention</user.question>")
+                planPrompt.replace(
+                    "<user.question>user.question</user.question>",
+                    "<user.question>$intention</user.question>"
+                )
             }
+
             else -> {
                 systemPrompt
             }
@@ -90,30 +94,28 @@ open class SketchInputListener(
         logger<SketchInputListener>().debug("Start compiling: $input")
         ProgressManager.getInstance().runProcessWithProgressSynchronously({
             val devInProcessor = LanguageProcessor.devin()
-            val compiledInput = runReadAction { runBlocking {
+            val compiledInput = runReadAction {
+                runBlocking {
                     devInProcessor?.compile(project, input)
                 }
             } ?: input
 
+            val input = compiledInput.toString().trim()
+            if (input.isEmpty()) {
+                return@runProcessWithProgressSynchronously
+            }
+
             toolWindow.beforeRun()
             toolWindow.updateHistoryPanel()
-            toolWindow.addRequestPrompt(compiledInput)
+            toolWindow.addRequestPrompt(input)
 
-            val flow = chatCodingService.sketchRequest(collectSystemPrompt(), compiledInput, isFromSketch = true)
+            val flow = chatCodingService.sketchRequest(collectSystemPrompt(), input, isFromSketch = true)
             val suggestion = StringBuilder()
 
             AutoDevCoroutineScope.workerScope(project).launch {
                 flow.cancelHandler { toolWindow.handleCancel = it }.cancellable().collect { char ->
                     suggestion.append(char)
-
-                    invokeLater {
-                        if (project.isDisposed) {
-                            cancel()
-                            return@invokeLater
-                        }
-
-                        toolWindow.onUpdate(suggestion.toString())
-                    }
+                    toolWindow.onUpdate(suggestion.toString())
                 }
 
                 toolWindow.onFinish(suggestion.toString())

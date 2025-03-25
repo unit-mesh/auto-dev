@@ -87,7 +87,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
                 val newFile = currentDir.createChildData(this, name)
                 newFile.writeText(content)
-                "Writing to file: $argument"
+                return@runWriteCommandAction "Writing to file: $argument"
             }
         }
 
