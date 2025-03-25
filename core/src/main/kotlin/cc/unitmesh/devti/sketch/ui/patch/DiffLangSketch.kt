@@ -109,7 +109,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             patch.beforeFileName != null -> {
                 val originFile = myProject.findFile(patch.beforeFileName!!) ?: LightVirtualFile(
                     patch.beforeFileName!!,
-                    patch.singleHunkPatchText
+                    getChunkText(patch)
                 )
                 createSingleFileDiffSketch(originFile, patch)
             }
@@ -117,7 +117,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             patch.afterFileName != null -> {
                 val virtualFile = myProject.findFile(patch.afterFileName!!) ?: LightVirtualFile(
                     patch.afterFileName!!,
-                    patch.singleHunkPatchText
+                    getChunkText(patch)
                 )
                 createSingleFileDiffSketch(virtualFile, patch)
             }
@@ -130,8 +130,16 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
     private fun createErrorSketch(patch: TextFilePatch): SingleFileDiffSketch {
         val fileName = patch.beforeFileName ?: ""
-        val virtualFile = LightVirtualFile(fileName, patch.singleHunkPatchText)
+        val virtualFile = LightVirtualFile(fileName, getChunkText(patch))
         return createSingleFileDiffSketch(virtualFile, patch)
+    }
+
+    private fun getChunkText(patch: TextFilePatch): String {
+        if (patch.hunks.size > 1) {
+            return patch.hunks.joinToString("\n") { it.toString() }
+        }
+
+        return patch.singleHunkPatchText
     }
 
     private fun createSingleFileDiffSketch(virtualFile: VirtualFile, patch: TextFilePatch): SingleFileDiffSketch {
