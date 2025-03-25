@@ -20,24 +20,22 @@ class TerminalRunnerService(private val project: Project) {
     private var terminalRunner: AbstractTerminalRunner<PtyProcess>? = null
 
     fun createTerminalRunner(): AbstractTerminalRunner<PtyProcess> {
-        if (terminalRunner == null) {
-            terminalRunner = LocalTerminalDirectRunner.createTerminalRunner(project)
-        }
+        return terminalRunner ?: initializeTerminalRunner().also { terminalRunner = it }
+    }
 
-        val homepath: String? = getJdkVersion()
+    private fun initializeTerminalRunner(): AbstractTerminalRunner<PtyProcess> {
+        val runner = LocalTerminalDirectRunner.createTerminalRunner(project)
 
-        if (homepath != null) {
-            val env = mutableMapOf<String, String>()
-            env["JAVA_HOME"] = homepath
-
-            val baseOptions = ShellStartupOptions.Builder()
-                .envVariables(env)
+        getJdkVersion()?.let { javaHomePath ->
+            val environmentVariables = mapOf("JAVA_HOME" to javaHomePath)
+            val startupOptions = ShellStartupOptions.Builder()
+                .envVariables(environmentVariables)
                 .build()
 
-            terminalRunner?.configureStartupOptions(baseOptions)
+            runner.configureStartupOptions(startupOptions)
         }
 
-        return terminalRunner!!
+        return runner
     }
 
     fun createTerminalWidget(
@@ -49,7 +47,7 @@ class TerminalRunnerService(private val project: Project) {
         return terminalRunner.createTerminalWidget(parent, startingDirectory, deferSessionStartUntilUiShown)
     }
 
-    private fun getJdkVersion() : String? {
+    private fun getJdkVersion(): String? {
         val projectSdk = ProjectRootManager.getInstance(project).projectSdk
         if (projectSdk != null && projectSdk.sdkType is JavaSdk) {
             return projectSdk.homePath
