@@ -28,6 +28,12 @@ class ProjectRule(private val project: Project) {
         return file
     }
 
+    fun hasRule(filename: String): Boolean {
+        val fullname = "$RULE_PATH/$filename.md"
+        val file = project.lookupFile(fullname)
+        return file != null
+    }
+
     /**
      * Get all available rules
      */
