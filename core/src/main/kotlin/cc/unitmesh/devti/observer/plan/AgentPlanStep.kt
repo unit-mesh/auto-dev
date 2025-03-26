@@ -24,11 +24,6 @@ class AgentPlanStep(
         private val IN_PROGRESS_PATTERN = Regex("^\\[\\*\\]\\s*(.*)")
         private val TODO_PATTERN = Regex("^\\[\\s*\\]\\s*(.*)")
 
-        /**
-         * 从文本创建计划任务
-         * @param text 任务文本，可能包含状态标记如 [✓]、[!]、[*] 或 [ ]
-         * @return 创建的计划任务对象
-         */
         fun fromText(text: String): AgentPlanStep {
             return when {
                 COMPLETED_PATTERN.matches(text) -> {
@@ -51,11 +46,7 @@ class AgentPlanStep(
             }
         }
     }
-    
-    /**
-     * 将任务转换为标准格式的文本表示
-     * @return 包含状态标记的文本，如 [✓] Task description
-     */
+
     fun toText(): String {
         val statusMarker = when (status) {
             TaskStatus.COMPLETED -> "[✓]"
@@ -65,12 +56,7 @@ class AgentPlanStep(
         }
         return "$statusMarker $step"
     }
-    
-    /**
-     * 更新任务状态
-     * @param newStatus 新的任务状态
-     * @param updateSubtasks 是否同时更新所有子任务的状态
-     */
+
     fun updateStatus(newStatus: TaskStatus, updateSubtasks: Boolean = false) {
         status = newStatus
         completed = (status == TaskStatus.COMPLETED)
@@ -79,43 +65,33 @@ class AgentPlanStep(
             subSteps.forEach { it.updateStatus(newStatus, true) }
         }
     }
-    
-    /**
-     * 添加子任务
-     * @param subtask 要添加的子任务
-     */
+
     fun addSubtask(subtask: AgentPlanStep) {
         subSteps.add(subtask)
     }
-    
-    /**
-     * 根据子任务状态更新当前任务状态
-     * 如果所有子任务都已完成，则当前任务也标记为完成
-     */
+
     fun updateStatusFromSubtasks() {
         if (subSteps.isEmpty()) {
             return
         }
-        
-        // 如果所有子任务都完成，则当前任务也完成
-        if (subSteps.all { it.status == TaskStatus.COMPLETED }) {
-            status = TaskStatus.COMPLETED
-            completed = true
-        }
-        // 如果有任何子任务失败，则当前任务也标记为失败
-        else if (subSteps.any { it.status == TaskStatus.FAILED }) {
-            status = TaskStatus.FAILED
-            completed = false
-        }
-        // 如果有任何子任务进行中，则当前任务也标记为进行中
-        else if (subSteps.any { it.status == TaskStatus.IN_PROGRESS }) {
-            status = TaskStatus.IN_PROGRESS
-            completed = false
-        }
-        // 否则任务仍然是 TODO 状态
-        else {
-            status = TaskStatus.TODO
-            completed = false
+
+        when {
+            subSteps.all { it.status == TaskStatus.COMPLETED } -> {
+                status = TaskStatus.COMPLETED
+                completed = true
+            }
+            subSteps.any { it.status == TaskStatus.FAILED } -> {
+                status = TaskStatus.FAILED
+                completed = false
+            }
+            subSteps.any { it.status == TaskStatus.IN_PROGRESS } -> {
+                status = TaskStatus.IN_PROGRESS
+                completed = false
+            }
+            else -> {
+                status = TaskStatus.TODO
+                completed = false
+            }
         }
     }
 }
