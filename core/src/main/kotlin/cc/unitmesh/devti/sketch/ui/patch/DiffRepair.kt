@@ -41,16 +41,16 @@ object DiffRepair {
         val prompt = createDiffRepairPrompt(project, oldCode, patchedCode)
         val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "You are professional program", false)
 
-        processStreamBatch(project, flow) { result ->
-            callback.invoke(result)
+        processStreamBatch(project, flow) { code ->
+            callback.invoke(code)
         }
     }
-    
+
     private fun createDiffRepairPrompt(project: Project, oldCode: String, patchedCode: String): String {
         val templateRender = TemplateRender(GENIUS_CODE)
         val template = templateRender.getTemplate(TEMPLATE_NAME)
         val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
-        
+
         templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
         return templateRender.renderTemplate(template)
     }
@@ -58,25 +58,40 @@ object DiffRepair {
     private fun processStreamRealtime(project: Project, flow: Flow<String>, onCodeChange: (String) -> Unit) {
         AutoDevCoroutineScope.Companion.scope(project).launch {
             val suggestion = StringBuilder()
+            var lastProcessedCode = ""
+            
             flow.cancellable().collect { char ->
                 suggestion.append(char)
                 val code = CodeFence.Companion.parse(suggestion.toString())
-                if (code.text.isNotEmpty()) {
+                if (code.text.isNotEmpty() && code.text != lastProcessedCode) {
+                    lastProcessedCode = code.text
                     onCodeChange(code.text)
                 }
             }
         }
     }
-    
+
     private fun processStreamBatch(project: Project, flow: Flow<String>, onComplete: (String) -> Unit) {
         AutoDevCoroutineScope.Companion.scope(project).launch {
             val suggestion = StringBuilder()
+            var lastProcessedCode = ""
+            
             flow.cancellable().collect { char ->
                 suggestion.append(char)
+                val code = CodeFence.Companion.parse(suggestion.toString())
+                if (code.text.isNotEmpty() && code.text != lastProcessedCode) {
+                    lastProcessedCode = code.text
+                }
             }
-            
-            val code = CodeFence.Companion.parse(suggestion.toString())
-            onComplete(code.text)
+
+            if (lastProcessedCode.isNotEmpty()) {
+                onComplete(lastProcessedCode)
+            } else {
+                val code = CodeFence.Companion.parse(suggestion.toString())
+                if (code.text.isNotEmpty()) {
+                    onComplete(code.text)
+                }
+            }
         }
     }
 }
