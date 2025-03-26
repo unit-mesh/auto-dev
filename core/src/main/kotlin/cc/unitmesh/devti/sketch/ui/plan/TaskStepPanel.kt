@@ -7,6 +7,10 @@ import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentPlanStep
 import cc.unitmesh.devti.observer.plan.TaskStatus
 import com.intellij.ide.ui.UISettings
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -86,7 +90,6 @@ class TaskStepPanel(
             font = Font(editorFontName, Font.PLAIN, editorFontSize)
             foreground = UIUtil.getLabelForeground()
             
-            // Handle links
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val offset = viewToModel2D(e.point)
@@ -132,18 +135,23 @@ class TaskStepPanel(
         }
     }
 
-    private fun createExecuteButton(): JButton {
-        return JButton(AutoDevIcons.Run).apply {
-            border = BorderFactory.createEmptyBorder()
-            preferredSize = Dimension(20, 20)
-            toolTipText = "Execute"
-            background = JBUI.CurrentTheme.ToolWindow.background()
-
-            addActionListener {
+    private fun createExecuteButton(): JComponent {
+        val executeAction = object : AnAction(AutoDevIcons.Run) {
+            override fun actionPerformed(e: AnActionEvent) {
                 AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
                     ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + task.step)
                 }
             }
+        }
+        
+        val presentation = Presentation().apply {
+            icon = AutoDevIcons.Run
+            text = ""
+            description = AutoDevBundle.message("sketch.plan.execute.tooltip", "Execute")
+        }
+        
+        return ActionButton(executeAction, presentation, "TaskStepPanelExecuteAction", Dimension(22, 22)).apply {
+            background = JBUI.CurrentTheme.ToolWindow.background()
         }
     }
 
@@ -227,3 +235,4 @@ class TaskStepPanel(
         taskLabel.componentPopupMenu = taskPopupMenu
     }
 }
+

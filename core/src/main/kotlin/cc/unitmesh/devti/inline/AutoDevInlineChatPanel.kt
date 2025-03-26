@@ -56,16 +56,12 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
                 editor = editor,
                 onStart = { panelView.onStart() },
                 onUpdate = { text ->
-                    invokeLater {
-                        panelView.onUpdate(text)
-                        panelView.resize()
-                    }
+                    panelView.onUpdate(text)
+                    panelView.resize()
                 },
                 onFinish = { text ->
-                    invokeLater {
-                        panelView.resize()
-                        panelView.onFinish(text)
-                    }
+                    panelView.resize()
+                    panelView.onFinish(text)
                 },
                 registerCancelHandler = { handler ->
                     panelView.handleCancel = handler
