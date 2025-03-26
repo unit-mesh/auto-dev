@@ -172,26 +172,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val clearButton = JButton(AutoDevBundle.message("chat.panel.clear.all")).apply {
-            toolTipText = AutoDevBundle.message("chat.panel.clear.all.tooltip")
-            addActionListener {
-                val result = JOptionPane.showConfirmDialog(
-                    this@AutoDevInputSection,
-                    AutoDevBundle.message("chat.panel.clear.all.confirm"),
-                    AutoDevBundle.message("chat.panel.clear.all.title"),
-                    JOptionPane.YES_NO_OPTION
-                )
-                
-                if (result == JOptionPane.YES_OPTION) {
-                    while (listModel.size() > 3) {
-                        listModel.removeElementAt(listModel.size() - 1)
-                    }
-                }
-            }
-        }
+        val toolbar = setupToolbar()
 
         val headerPanel = JPanel(BorderLayout())
-        headerPanel.add(clearButton, BorderLayout.NORTH)
+        headerPanel.add(toolbar, BorderLayout.NORTH)
         headerPanel.add(scrollPane, BorderLayout.CENTER)
 
         this.add(headerPanel, BorderLayout.NORTH)
@@ -301,6 +285,28 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     private fun updateElements(elements: List<PsiElement>?) {
         elements?.forEach { listModel.addIfAbsent(it.containingFile.virtualFile) }
+    }
+
+    private fun setupToolbar(): JToolBar {
+        val toolbar = JToolBar()
+        toolbar.isFloatable = false
+
+        val reminderLabel = JBLabel(AutoDevBundle.message("chat.panel.select.files"))
+        reminderLabel.border = JBUI.Borders.empty(5)
+        reminderLabel.foreground = UIUtil.getContextHelpForeground()
+        toolbar.add(reminderLabel)
+
+        toolbar.add(Box.createHorizontalGlue())
+
+        val clearButton = JButton(AutoDevBundle.message("chat.panel.clear.all")).apply {
+            toolTipText = AutoDevBundle.message("chat.panel.clear.all.tooltip")
+            addActionListener {
+                listModel.removeAllElements()
+            }
+        }
+
+        toolbar.add(clearButton)
+        return toolbar
     }
 
     fun showStopButton() {
