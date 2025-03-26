@@ -11,7 +11,7 @@ class RuleInsCommand(val myProject: Project, private val filename: String) : Ins
     override val commandName: BuiltinCommand = BuiltinCommand.OPEN
 
     override suspend fun execute(): String? {
-        val fullname = "prompts/rule/$filename.md"
+        val fullname = "prompts/rules/$filename.md"
         val file = myProject.lookupFile(fullname)
 
         if (file != null) {
