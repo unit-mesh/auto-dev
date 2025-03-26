@@ -334,6 +334,8 @@ open class SketchToolWindow(
             myList.revalidate()
             myList.repaint()
         }
+
+        scrollToBottom()
     }
 
     fun createRenderSketch(code: CodeFence): JComponent? {

@@ -74,21 +74,38 @@ class SingleFileDiffSketch(
             this@SingleFileDiffSketch.appliedPatch,
             this@SingleFileDiffSketch.patch
         )
-        val filepathLabel = JBLabel(currentFile.name).apply {
+        
+        val fileName = if (currentFile.name.contains("/")) {
+            currentFile.name.substringAfterLast("/")
+        } else {
+            currentFile.name
+        }
+
+        val filepathLabel = JBLabel(fileName).apply {
             icon = currentFile.fileType.icon
             border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
-
+            
+            val originalColor = foreground
+            val hoverColor = JBColor(0x4A7EB3, 0x589DF6) // Blue color for hover state
+            
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
                     FileEditorManager.getInstance(myProject).openFile(currentFile, true)
                 }
-
-                override fun mouseEntered(e: MouseEvent) {
-                    patchActionPanel?.background = JBColor(DarculaColors.BLUE, DarculaColors.BLUE)
+                
+                override fun mouseEntered(e: MouseEvent?) {
+                    foreground = hoverColor
+                    cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
+                    border = BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, hoverColor),
+                        BorderFactory.createEmptyBorder(2, 10, 1, 10)
+                    )
                 }
-
-                override fun mouseExited(e: MouseEvent) {
-                    patchActionPanel?.background = JBColor.PanelBackground
+                
+                override fun mouseExited(e: MouseEvent?) {
+                    foreground = originalColor
+                    cursor = java.awt.Cursor.getDefaultCursor()
+                    border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
                 }
             })
         }
