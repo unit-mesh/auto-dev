@@ -168,12 +168,33 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         inputPanel.add(input, BorderLayout.CENTER)
         inputPanel.addToBottom(layoutPanel)
 
-        // 将 elementsList 放入 JScrollPane 中
         val scrollPane = JBScrollPane(elementsList)
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        this.add(scrollPane, BorderLayout.NORTH)
 
+        val clearButton = JButton(AutoDevBundle.message("chat.panel.clear.all")).apply {
+            toolTipText = AutoDevBundle.message("chat.panel.clear.all.tooltip")
+            addActionListener {
+                val result = JOptionPane.showConfirmDialog(
+                    this@AutoDevInputSection,
+                    AutoDevBundle.message("chat.panel.clear.all.confirm"),
+                    AutoDevBundle.message("chat.panel.clear.all.title"),
+                    JOptionPane.YES_NO_OPTION
+                )
+                
+                if (result == JOptionPane.YES_OPTION) {
+                    while (listModel.size() > 3) {
+                        listModel.removeElementAt(listModel.size() - 1)
+                    }
+                }
+            }
+        }
+
+        val headerPanel = JPanel(BorderLayout())
+        headerPanel.add(clearButton, BorderLayout.NORTH)
+        headerPanel.add(scrollPane, BorderLayout.CENTER)
+
+        this.add(headerPanel, BorderLayout.NORTH)
         this.add(inputPanel, BorderLayout.CENTER)
 
         ComponentValidator(disposable!!).withValidator(Supplier<ValidationInfo?> {
@@ -411,6 +432,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             if (first) {
                 insertElementAt(modelWrapper, 0)
             } else {
+                // 保持最近使用的文件在前面
                 addElement(modelWrapper)
             }
         }

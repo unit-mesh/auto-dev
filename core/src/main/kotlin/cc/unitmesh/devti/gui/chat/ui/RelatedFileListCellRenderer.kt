@@ -28,6 +28,7 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<Model
             val namePanel = JPanel(layout)
             val iconLabel = JLabel(value.virtualFile.fileType.icon ?: AllIcons.FileTypes.Unknown)
             namePanel.add(iconLabel)
+            namePanel.toolTipText = value.virtualFile.relativePath(project)
 
             val nameLabel = JLabel(buildDisplayName(value))
             namePanel.add(nameLabel)
@@ -40,7 +41,6 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<Model
 
             value.panel = this
             value.namePanel = namePanel
-
             this.toolTipText = value.virtualFile.relativePath(project)
         }
         val namePanel = value.namePanel
@@ -65,11 +65,15 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<Model
      */
     private fun buildDisplayName(value: ModelWrapper): @NlsSafe String {
         val filename = value.virtualFile.name
-        // if it's frontend index file,  like index.js, index.ts, index.vue, index.html, index.css etc, then show the parent folder name
         if (filename.startsWith("index.")) {
             val parent = value.virtualFile.parent?.name
             if (parent != null) {
-                return "$parent/$filename"
+                val grandParent = value.virtualFile.parent?.parent?.name
+                return if (grandParent != null) {
+                    "$grandParent/$parent/$filename"
+                } else {
+                    "$parent/$filename"
+                }
             }
         }
 
