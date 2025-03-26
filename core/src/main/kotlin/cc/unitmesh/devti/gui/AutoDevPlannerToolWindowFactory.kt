@@ -27,6 +27,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.lang.LanguageUtil
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.fileTypes.FileTypeManager
 import java.awt.BorderLayout
 import javax.swing.JPanel
@@ -84,7 +85,9 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
             override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
                 if (!isEditorMode) {
-                    planLangSketch.updatePlan(items)
+                    runInEdt {
+                        planLangSketch.updatePlan(items)
+                    }
                 }
             }
         })
