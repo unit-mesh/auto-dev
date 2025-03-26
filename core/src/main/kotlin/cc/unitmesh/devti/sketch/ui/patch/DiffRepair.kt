@@ -24,11 +24,9 @@ object DiffRepair {
         val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "You are professional program", false)
 
         processStreamRealtime(project, flow) { code ->
-            ApplicationManager.getApplication().invokeLater({
-                runWriteAction {
-                    editor.document.setText(code)
-                }
-            }, ModalityState.defaultModalityState())
+            runWriteAction {
+                editor.document.setText(code)
+            }
         }
     }
 
@@ -59,7 +57,7 @@ object DiffRepair {
         AutoDevCoroutineScope.Companion.scope(project).launch {
             val suggestion = StringBuilder()
             var lastProcessedCode = ""
-            
+
             flow.cancellable().collect { char ->
                 suggestion.append(char)
                 val code = CodeFence.Companion.parse(suggestion.toString())
@@ -75,7 +73,7 @@ object DiffRepair {
         AutoDevCoroutineScope.Companion.scope(project).launch {
             val suggestion = StringBuilder()
             var lastProcessedCode = ""
-            
+
             flow.cancellable().collect { char ->
                 suggestion.append(char)
                 val code = CodeFence.Companion.parse(suggestion.toString())
