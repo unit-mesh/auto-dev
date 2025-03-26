@@ -5,7 +5,6 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
-import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
@@ -74,16 +73,11 @@ open class CodeHighlightSketch(
 
         val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
 
-        val paddingborder = if (withLeftRightBorder) {
+        border = if (withLeftRightBorder) {
             JBEmptyBorder(8, 8, 8, 8)
         } else {
             JBEmptyBorder(8, 0, 0, 0)
         }
-
-        border = paddingborder
-//            paddingborder
-//            JBUI.Borders.customLine(JBColor.border(), 1, 1, 1, 1)
-//        )
 
         editor.component.isOpaque = true
 

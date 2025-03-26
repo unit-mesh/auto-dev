@@ -19,7 +19,6 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
-import java.awt.Color
 
 object EditorUtil {
     private val LINE_NO_REGEX = Regex("^\\d+:")
@@ -95,7 +94,6 @@ object EditorUtil {
     ): EditorEx {
         editor.setCaretEnabled(true)
 
-
         val highlighter = ApplicationManager.getApplication()
             .getService(EditorHighlighterFactory::class.java)
             .createEditorHighlighter(project, file)
@@ -119,7 +117,6 @@ object EditorUtil {
             it.isCaretRowShown = false
         }
 
-        // Hide scrollbars when they're not needed
         editor.scrollPane.verticalScrollBar.isVisible = false
         editor.scrollPane.horizontalScrollBar.isVisible = false
 

@@ -1,4 +1,6 @@
-搜索关键字 in project
+在项目中搜索关键字搜索时，不能有空格，而且至少是 4 个字符：
+/localSearch:photo
+当你需要带空格时，语法如下：
 /localSearch:project
 ```
 select * from blog
