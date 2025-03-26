@@ -112,6 +112,13 @@ enum class BuiltinCommand(
     ),
     OPEN("open", "Open a file in the editor", AllIcons.Actions.MenuOpen, false, true),
     RIPGREP_SEARCH("ripgrepSearch", "Search text in the project with ripgrep", AllIcons.Actions.Regex, false, true),
+    RULE(
+        "rule",
+        "Get the rule from one file, such as code style, code quality, and code smell",
+        AutoDevIcons.RULE,
+        true,
+        true
+    ),
     TOOLCHAIN_COMMAND(
         "x",
         "Execute custom toolchain command",

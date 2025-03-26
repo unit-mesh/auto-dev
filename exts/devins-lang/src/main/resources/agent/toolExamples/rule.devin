@@ -1,0 +1,2 @@
+获取 service 相关的规则（将读取 promtps/rule/service.md 文件，请确保文件存在）
+/rule:service

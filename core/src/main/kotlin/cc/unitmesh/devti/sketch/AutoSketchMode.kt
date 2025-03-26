@@ -1,18 +1,7 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.BROWSE
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.DATABASE
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.DIR
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.FILE
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.LOCAL_SEARCH
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.PATCH
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.RELATED
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.REV
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.RIPGREP_SEARCH
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.STRUCTURE
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.SYMBOL
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.WRITE
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.*
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
@@ -90,6 +79,7 @@ class AutoSketchMode(val project: Project) {
             DATABASE, // should be handle in run sql
             RELATED,
             RIPGREP_SEARCH,
+            RULE,
             BROWSE,
             PATCH,
             WRITE

@@ -303,6 +303,11 @@ class DevInsCompiler(
             RelatedSymbolInsCommand(myProject, prop)
         }
 
+        BuiltinCommand.RULE -> {
+            result.isLocalCommand = true
+            RuleInsCommand(myProject, prop)
+        }
+
         BuiltinCommand.OPEN -> {
             result.isLocalCommand = true
             OpenInsCommand(myProject, prop)
