@@ -42,11 +42,13 @@ import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.HintHint
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
+import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
+import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
@@ -298,14 +300,16 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         toolbar.add(Box.createHorizontalGlue())
 
-        val clearButton = JButton(AutoDevBundle.message("chat.panel.clear.all")).apply {
-            toolTipText = AutoDevBundle.message("chat.panel.clear.all.tooltip")
-            addActionListener {
-                listModel.removeAllElements()
-            }
+
+        val clearAll = LinkLabel(AutoDevBundle.message("chat.panel.clear.all"), null) { _: LinkLabel<Unit>, _: Unit? ->
+            listModel.removeAllElements()
         }
 
-        toolbar.add(clearButton)
+        clearAll.mediumFontFunction()
+        clearAll.border = JBUI.Borders.emptyRight(20)
+
+        toolbar.add(clearAll)
+
         return toolbar
     }
 
@@ -443,4 +447,13 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             }
         }
     }
+}
+
+private const val FONT_KEY = "FontFunction"
+private fun JComponent.mediumFontFunction() {
+    font = JBFont.medium()
+    val f: (JComponent) -> Unit = {
+        it.font = JBFont.medium()
+    }
+    putClientProperty(FONT_KEY, f)
 }

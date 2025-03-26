@@ -60,6 +60,9 @@ object AutoDevIcons {
     val Stop: Icon = IconLoader.getIcon("/icons/stop.svg", AutoDevIcons::class.java)
 
     @JvmField
+    val Clear: Icon = IconLoader.getIcon("/icons/clear.svg", AutoDevIcons::class.java)
+
+    @JvmField
     val TOOLCHAIN: Icon = IconLoader.getIcon("/icons/toolchain.svg", AutoDevIcons::class.java)
 
     @JvmField
