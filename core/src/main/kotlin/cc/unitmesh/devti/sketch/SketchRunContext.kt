@@ -70,9 +70,21 @@ data class SketchRunContext(
 
             val otherFiles = FileEditorManager.getInstance(project).openFiles.filter { it != currentFile }
 
-            val rules = ProjectRule(project).getAllRules().map { it.nameWithoutExtension }
+            val projectRule = ProjectRule(project)
+            val rules = projectRule.getAllRules().map { it.nameWithoutExtension }
             val rule = if (rules.isNotEmpty()) {
-                "- User custom coding rule: [" + rules.joinToString(",") { it } + "]"
+                val allRules = "- User custom coding rules file:" + rules.joinToString(",") { it }
+                val string = if (projectRule.hasRule("README")) {
+                    projectRule.getRuleContent("README")?.let {
+                        "<rule> $it </rule>"
+                    } ?: ""
+                } else ""
+
+                if (string.isNotEmpty()) {
+                    allRules + "\n" + string
+                } else {
+                    allRules
+                }
             } else {
                 ""
             }
