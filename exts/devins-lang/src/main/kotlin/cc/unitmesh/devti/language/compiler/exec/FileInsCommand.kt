@@ -74,12 +74,9 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
         return if (range == null) {
             limitMaxSize(currentSize, content)
         } else {
-            try {
-                lines.slice(range.startLine - 1 until range.endLine)
-                    .joinToString("\n")
-            } catch (e: StringIndexOutOfBoundsException) {
-                limitMaxSize(currentSize, content)
-            }
+            val endLine = minOf(range.endLine, currentSize)
+            lines.slice(range.startLine - 1 until endLine)
+                .joinToString("\n")
         }
     }
 
@@ -88,8 +85,9 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             val code = content.split("\n")
                 .slice(0 until MAX_LINES)
                 .joinToString("\n")
-
-            "File too long, only show first $MAX_LINES lines.\n$code\nUse `filename#L300-L600` to get more lines."
+            
+            val availableEndLine = minOf(size, MAX_LINES * 2)
+            "File too long, only show first $MAX_LINES lines.\n$code\nUse `filename#L${MAX_LINES}-L${availableEndLine}` to get more lines."
         } else {
             content
         }
