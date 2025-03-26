@@ -95,14 +95,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         )
         myScrollPane.verticalScrollBar.autoscrolls = true
 
-        val actionLink = panel {
-            row {
-                text("").apply {
-                    componentStateChanged("label.submit.issue", this.component) { c, d -> c.text = d }
-                }
-            }
-        }
-
         inputSection = AutoDevInputSection(chatCodingService.project, disposable).apply {
             border = JBUI.Borders.empty(8)
         }
@@ -160,10 +152,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             row { cell(header).fullWidth() }
             row { cell(myScrollPane).fullWidth().fullHeight() }.resizableRow()
             row { cell(progressBar).fullWidth() }
-            row { cell(actionLink).alignRight() }
-            row {
-                cell(inputSection).fullWidth()
-            }
+            row { cell(inputSection).fullWidth() }
         }.also {
             it.border = JBUI.Borders.empty()
             it.background = PanelBackground
