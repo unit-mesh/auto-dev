@@ -13,9 +13,10 @@ structure and configuration. The project rule is defined under `prompts/rules` d
 For example, the project rule file is defined as follows:
 
 ```bash
-promtps/rules/
+prompts/rules/
 ├── service.md
 ├── controller.md
+├── repository.md
 ├── rpc.md
 └── README.md  # will always load this file default !!
 ```

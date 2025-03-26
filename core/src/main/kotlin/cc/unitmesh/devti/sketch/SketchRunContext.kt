@@ -73,11 +73,9 @@ data class SketchRunContext(
             val projectRule = ProjectRule(project)
             val rules = projectRule.getAllRules().map { it.nameWithoutExtension }
             val rule = if (rules.isNotEmpty()) {
-                val allRules = "- User custom coding rules file:" + rules.joinToString(",") { it }
+                val allRules = "- User custom coding rules file names:" + rules.joinToString(",") { it }
                 val string = if (projectRule.hasRule("README")) {
-                    projectRule.getRuleContent("README")?.let {
-                        "<rule> $it </rule>"
-                    } ?: ""
+                    projectRule.getRuleContent("README") ?: ""
                 } else ""
 
                 if (string.isNotEmpty()) {

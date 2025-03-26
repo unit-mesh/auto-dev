@@ -22,7 +22,8 @@ class ProjectRule(private val project: Project) {
         val file = project.lookupFile(fullname)
 
         if (file != null) {
-            return file.readText()
+            val content = file.readText()
+            return "<user-rule>\n$content\n</user-rule>"
         }
 
         return file
