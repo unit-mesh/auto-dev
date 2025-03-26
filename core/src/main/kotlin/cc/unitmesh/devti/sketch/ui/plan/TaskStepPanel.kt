@@ -1,4 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/plan/TaskStepPanel.kt
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.AutoDevBundle
@@ -13,23 +12,30 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.ColorUtil
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import java.awt.Color
 import java.awt.Dimension
+import java.awt.Font
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.JEditorPane
 import javax.swing.JLabel
 import javax.swing.JMenuItem
 import javax.swing.JPopupMenu
-import javax.swing.event.HyperlinkEvent
-import javax.swing.text.html.HTMLDocument
-import javax.swing.text.html.HTMLEditorKit
-import javax.swing.text.html.StyleSheet
+import javax.swing.JTextPane
+import javax.swing.text.AttributeSet
+import javax.swing.text.DefaultStyledDocument
+import javax.swing.text.MutableAttributeSet
+import javax.swing.text.SimpleAttributeSet
+import javax.swing.text.StyleConstants
+import javax.swing.text.StyledDocument
 
 /**
  * Task Panel UI Component responsible for rendering and handling interactions for a single task
@@ -39,13 +45,21 @@ class TaskStepPanel(
     private val task: AgentPlanStep,
     private val onStatusChange: () -> Unit
 ) : JBPanel<TaskStepPanel>() {
-    private val taskLabel: JEditorPane
+    private val taskLabel: JTextPane
+    private val doc: StyledDocument
+    
+    private val linkMap = mutableMapOf<IntRange, String>()
 
     init {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
         border = JBUI.Borders.empty(4, 16, 4, 0)
         background = JBUI.CurrentTheme.ToolWindow.background()
-        taskLabel = createStyledTaskLabel()
+        
+        taskLabel = JTextPane()
+        doc = taskLabel.styledDocument
+        
+        configureTaskLabel()
+        updateTaskLabel()
 
         val statusIcon = createStatusIcon()
         add(statusIcon)
@@ -56,6 +70,47 @@ class TaskStepPanel(
 
         add(taskLabel)
         setupContextMenu()
+    }
+
+    private fun configureTaskLabel() {
+        val editorColorsManager = EditorColorsManager.getInstance()
+        val currentScheme = editorColorsManager.schemeForCurrentUITheme
+        val editorFontName = currentScheme.editorFontName
+        val editorFontSize = currentScheme.editorFontSize
+
+        taskLabel.apply {
+            isEditable = false
+            isOpaque = false
+            background = JBUI.CurrentTheme.ToolWindow.background()
+            border = JBUI.Borders.emptyLeft(5)
+            font = Font(editorFontName, Font.PLAIN, editorFontSize)
+            foreground = UIUtil.getLabelForeground()
+            
+            // Handle links
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    val offset = viewToModel2D(e.point)
+                    for ((range, filePath) in linkMap) {
+                        if (offset in range) {
+                            val realPath = project.basePath + "/" + filePath
+                            val virtualFile = LocalFileSystem.getInstance().findFileByPath(realPath)
+                            if (virtualFile != null) {
+                                FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                            }
+                            break
+                        }
+                    }
+                }
+                
+                override fun mouseEntered(e: MouseEvent) {
+                    setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR))
+                }
+                
+                override fun mouseExited(e: MouseEvent) {
+                    setCursor(java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR))
+                }
+            })
+        }
     }
 
     private fun createStatusIcon(): JComponent {
@@ -92,77 +147,61 @@ class TaskStepPanel(
         }
     }
 
-    private fun createStyledTaskLabel(): JEditorPane {
-        val labelText = getLabelTextByStatus()
-        
-        val backgroundColor = JBUI.CurrentTheme.ToolWindow.background()
-        val backgroundColorHex = ColorUtil.toHex(backgroundColor)
-        
-        val foregroundColor = UIUtil.getLabelForeground()
-        val foregroundColorHex = ColorUtil.toHex(foregroundColor)
-        
-        val editorColorsManager = EditorColorsManager.getInstance()
-        val currentScheme = editorColorsManager.schemeForCurrentUITheme
-        val editorFontName = currentScheme.editorFontName
-        val editorFontSize = currentScheme.editorFontSize
-
-        return JEditorPane().apply {
-            contentType = "text/html"
-
-            val editorKit = HTMLEditorKit()
-            val styleSheet = StyleSheet()
-            styleSheet.addRule("body { font-family: '$editorFontName'; font-size: ${editorFontSize}pt; background-color: #$backgroundColorHex; color: #$foregroundColorHex; }")
-            styleSheet.addRule("a { color: #3366CC; text-decoration: underline; }")
-            styleSheet.addRule("a:hover { color: #3366CC; }")
-            editorKit.styleSheet = styleSheet
-
-            this.editorKit = editorKit
-
-            val document = this.document as HTMLDocument
-            document.putProperty("IgnoreCharsetDirective", true)
-            project.basePath?.let {
-                val url: String? = LocalFileSystem.getInstance().findFileByPath(it)?.url
-                document.putProperty("Base", url)
-            }
-
-            border = JBUI.Borders.emptyLeft(5)
-            isEditable = false
-            background = backgroundColor
-
-            text = "<html><body>$labelText</body></html>"
-
-            addHyperlinkListener { e ->
-                if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                    val filePath = e.url?.path ?: e.description
-                    val realPath = project.basePath + "/" + filePath
-                    val virtualFile = LocalFileSystem.getInstance().findFileByPath(realPath)
-                    if (virtualFile != null) {
-                        FileEditorManager.getInstance(project).openFile(virtualFile, true)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun getLabelTextByStatus(): String {
-        var text = task.step
-        task.codeFileLinks.forEach { link ->
-            text = text.replace(
-                "[${link.displayText}](${link.filePath})",
-                "<a href='${link.filePath}'>${link.displayText}</a>"
-            )
-        }
-
-        return when (task.status) {
-            TaskStatus.COMPLETED -> "<strike>$text</strike>"
-            TaskStatus.FAILED -> "<span style='color:red'>$text</span>"
-            TaskStatus.IN_PROGRESS -> "<span style='color:blue;font-style:italic'>$text</span>"
-            TaskStatus.TODO -> text
-        }
-    }
-
     private fun updateTaskLabel() {
-        taskLabel.text = getLabelTextByStatus()
+        doc.remove(0, doc.length)
+        linkMap.clear()
+        
+        var text = task.step
+        var currentPos = 0
+        
+        // Process each code file link
+        task.codeFileLinks.forEach { link ->
+            val linkPattern = "[${link.displayText}](${link.filePath})"
+            val linkIndex = text.indexOf(linkPattern)
+            
+            if (linkIndex >= 0) {
+                val beforeLink = text.substring(0, linkIndex)
+                doc.insertString(currentPos, beforeLink, getStyleForStatus(task.status))
+                currentPos += beforeLink.length
+                
+                val linkStyle = SimpleAttributeSet().apply {
+                    StyleConstants.setForeground(this, Color(0x33, 0x66, 0xCC))
+                    StyleConstants.setUnderline(this, true)
+                }
+                
+                doc.insertString(currentPos, link.displayText, linkStyle)
+                linkMap[currentPos..(currentPos + link.displayText.length)] = link.filePath
+                
+                currentPos += link.displayText.length
+                text = text.substring(linkIndex + linkPattern.length)
+            }
+        }
+        
+        if (text.isNotEmpty()) {
+            doc.insertString(currentPos, text, getStyleForStatus(task.status))
+        }
+    }
+    
+    private fun getStyleForStatus(status: TaskStatus): AttributeSet {
+        val style = SimpleAttributeSet()
+        
+        when (status) {
+            TaskStatus.COMPLETED -> {
+                StyleConstants.setStrikeThrough(style, true)
+            }
+            TaskStatus.FAILED -> {
+                StyleConstants.setForeground(style, JBColor.RED)
+            }
+            TaskStatus.IN_PROGRESS -> {
+                StyleConstants.setForeground(style, JBColor.BLUE)
+                StyleConstants.setItalic(style, true)
+            }
+            TaskStatus.TODO -> {
+                // Default styling
+            }
+        }
+        
+        return style
     }
 
     private fun setupContextMenu() {
