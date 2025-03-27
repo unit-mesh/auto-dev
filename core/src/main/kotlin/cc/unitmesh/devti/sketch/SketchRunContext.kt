@@ -3,6 +3,7 @@ package cc.unitmesh.devti.sketch
 import cc.unitmesh.devti.agent.tool.search.RipgrepSearcher
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.relativePath
+import cc.unitmesh.devti.mcp.host.Response
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
@@ -17,6 +18,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.guessProjectDir
@@ -44,6 +46,7 @@ data class SketchRunContext(
     val buildTool: String = "",
     val searchTool: String = "localSearch",
     val rule: String = "",
+    val moduleInfo: String = "",
 ) : TemplateContext {
     companion object {
         suspend fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
@@ -87,6 +90,8 @@ data class SketchRunContext(
                 ""
             }
 
+            val moduleInfo = moduleContext(project)
+
             return SketchRunContext(
                 currentFile = currentFile?.relativePath(project),
                 currentElement = currentElement,
@@ -101,7 +106,36 @@ data class SketchRunContext(
                 buildTool = buildTool,
                 searchTool = lookupSearchTool(),
                 rule = rule,
+                moduleInfo = moduleInfo,
             )
+        }
+
+        private val JAVA_ONE_PROJECT_SIZE_IN_IDEA = 2
+        fun moduleContext(project: Project): String {
+            val moduleManager = ModuleManager.getInstance(project)
+            val allModules = moduleManager.modules.map { it.name }
+            if (allModules.size <= JAVA_ONE_PROJECT_SIZE_IN_IDEA) {
+                return ""
+            }
+
+            val rootProjectName = allModules.minByOrNull { it.length } ?: return ""
+            
+            val cleanedModules = allModules
+                .filter { it != rootProjectName && !it.endsWith(".test") }
+                .map { moduleName ->
+                    moduleName
+                        .removePrefix("$rootProjectName.")
+                        .removeSuffix(".main")
+                }
+                .distinct() // Remove duplicates after cleaning
+                .filter { it.isNotEmpty() } // Remove any empty strings that might result
+            
+            return if (cleanedModules.isNotEmpty()) {
+                val modules = cleanedModules.joinToString(", ") { it }
+                "- This project is a mono-repo projects, Please careful to create file in module. Here's modules: $modules"
+            } else {
+                ""
+            }
         }
     }
 }
@@ -130,3 +164,4 @@ private fun workspace(myProject: Project? = null): String {
     val project = myProject ?: ProjectManager.getInstance().openProjects.firstOrNull()
     return project?.guessProjectDir()?.path ?: ""
 }
+
