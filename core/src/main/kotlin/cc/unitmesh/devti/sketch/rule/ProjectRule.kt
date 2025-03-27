@@ -25,6 +25,13 @@ class ProjectRule(private val project: Project) {
             return "<user-rule>\n$content\n</user-rule>"
         }
 
+        /// try .devin file
+        val devinFile = project.lookupFile("$RULE_PATH/$filename.devin")
+        if (devinFile != null) {
+            val content = devinFile.readText()
+            return "<user-rule>\n$content\n</user-rule>"
+        }
+
         return file
     }
 
@@ -39,6 +46,6 @@ class ProjectRule(private val project: Project) {
      */
     fun getAllRules(): List<VirtualFile> {
         val ruleDir = project.guessProjectDir()?.findFileByRelativePath(RULE_PATH) ?: return emptyList()
-        return ruleDir.children.filter { it.extension == "md" }
+        return ruleDir.children.filter { it.extension == "md" || it.extension == "devin" }
     }
 }
