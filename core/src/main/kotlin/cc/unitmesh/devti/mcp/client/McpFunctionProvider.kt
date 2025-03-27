@@ -4,7 +4,6 @@ import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.util.NlsSafe
 import io.modelcontextprotocol.kotlin.sdk.Tool.Input
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString

@@ -4,6 +4,7 @@ import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.cf.core.parser.MarkdownCode
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -15,6 +16,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -68,7 +70,7 @@ class FileGenerateTask(
     }
 
     protected fun refreshAndOpenInEditor(file: Path, parentDir: VirtualFile) {
-        runBlocking {
+        AutoDevCoroutineScope.scope(project).launch {
             ProgressManager.getInstance().run(object : Modal(project, "Refreshing Project Model", true) {
                 override fun run(indicator: ProgressIndicator) {
                     repeat(5) {

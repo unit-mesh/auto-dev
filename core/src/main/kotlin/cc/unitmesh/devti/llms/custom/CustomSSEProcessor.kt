@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.bridge.BridgeToolWindow
 import cc.unitmesh.devti.coder.recording.EmptyRecording
 import cc.unitmesh.devti.coder.recording.JsonlRecording
 import cc.unitmesh.devti.coder.recording.Recording
@@ -10,7 +9,6 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.CustomFlowWrapper
 import cc.unitmesh.devti.settings.coder.coderSetting
-import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
