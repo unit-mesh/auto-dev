@@ -85,24 +85,18 @@ open class SketchInputListener(
         val input = userInput.trim()
         if (input.isEmpty() || input.isBlank()) return
         if (input == "\n") return
-
-        // if length < 10, logger for debug
         if (input.length < 10) {
             logger<SketchInputListener>().debug("Input.length < 10: $input")
         }
 
         logger<SketchInputListener>().debug("Start compiling: $input")
-        ProgressManager.getInstance().runProcessWithProgressSynchronously({
+        AutoDevCoroutineScope.workerScope(project).launch {
             val devInProcessor = LanguageProcessor.devin()
-            val compiledInput = runReadAction {
-                runBlocking {
-                    devInProcessor?.compile(project, input)
-                }
-            } ?: input
+            val compiledInput = devInProcessor?.compile(project, input) ?: input
 
             val input = compiledInput.toString().trim()
             if (input.isEmpty()) {
-                return@runProcessWithProgressSynchronously
+                return@launch
             }
 
             toolWindow.beforeRun()
@@ -120,7 +114,7 @@ open class SketchInputListener(
 
                 toolWindow.onFinish(suggestion.toString())
             }
-        }, AutoDevBundle.message("sketch.compile.devins"), false, project);
+        }
     }
 
     override fun dispose() {
