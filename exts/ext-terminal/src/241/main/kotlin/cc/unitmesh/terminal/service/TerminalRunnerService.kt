@@ -20,13 +20,17 @@ class TerminalRunnerService(private val project: Project) {
     }
 
     fun initializeTerminalRunner(): AbstractTerminalRunner<PtyProcess> {
-        val runner = LocalTerminalDirectRunner.createTerminalRunner(project)
-
-        return runner
+        return LocalTerminalDirectRunner.createTerminalRunner(project)
     }
 
     private fun createStartupOptions(): ShellStartupOptions? {
-        return ProcessExecutor.getJdkVersion(project)?.let { javaHomePath ->
+        val jdkVersion = try {
+            ProcessExecutor.getJdkVersion(project)
+        } catch (e: Exception) {
+            null
+        }
+
+        return jdkVersion?.let { javaHomePath ->
             val environmentVariables = mapOf("JAVA_HOME" to javaHomePath)
             val startupOptions = ShellStartupOptions.Builder()
                 .envVariables(environmentVariables)

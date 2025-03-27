@@ -136,8 +136,12 @@ class ProcessExecutor(val project: Project) {
         commandLine.withEnvironment("TERM", "dumb")
         commandLine.withEnvironment("BASH_SILENCE_DEPRECATION_WARNING", "1")
         commandLine.withEnvironment("GIT_PAGER", "cat")
-        getJdkVersion(project)?.let { javaHomePath ->
-            commandLine.withEnvironment("JAVA_HOME", javaHomePath)
+        try {
+            getJdkVersion(project)?.let { javaHomePath ->
+                commandLine.withEnvironment("JAVA_HOME", javaHomePath)
+            }
+        } catch (e: Exception) {
+            AutoDevNotifications.notify(project, "Failed to get JAVA_HOME: ${e.message}")
         }
 
         val commands: List<String> = listOf("bash", "--noprofile", "--norc", "-c", formatCommand(shellScript))
@@ -208,7 +212,12 @@ class ProcessExecutor(val project: Project) {
                 return javaHome
             }
 
-            val javaHomeSdk: Sdk? = ExternalSystemJdkUtil.resolveJdkName(null, "#JAVA_HOME")
+            val javaHomeSdk: Sdk? = try {
+                ExternalSystemJdkUtil.resolveJdkName(null, "#JAVA_HOME")
+            } catch (e: Exception) {
+                null
+            }
+
             if (javaHomeSdk != null) {
                 return javaHomeSdk.homePath
             }
