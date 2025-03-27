@@ -20,18 +20,9 @@ class BridgeToolWindow(val myProject: Project, val myEditor: Editor?, private va
         override fun collectSystemPrompt(): String = systemPrompt
 
         override suspend fun setup() {
-            invokeLater {
-                val task = object : Task.Backgroundable(project, "Processing agent tools", false) {
-                    override fun run(indicator: ProgressIndicator) {
-                        val customContext = BridgeRunContext.create(project, null, "")
-                        systemPrompt = templateRender.renderTemplate(template, customContext)
-                        toolWindow.addSystemPrompt(systemPrompt)
-                    }
-                }
-
-                ProgressManager.getInstance()
-                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-            }
+            val customContext = BridgeRunContext.create(project, null, "")
+            systemPrompt = templateRender.renderTemplate(template, customContext)
+            toolWindow.addSystemPrompt(systemPrompt)
         }
     }
 }

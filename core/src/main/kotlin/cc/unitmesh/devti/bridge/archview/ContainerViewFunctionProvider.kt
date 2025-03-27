@@ -7,11 +7,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 
 class ContainerViewFunctionProvider : ToolchainFunctionProvider {
-    override fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.ContainerView.name
+    override suspend fun isApplicable(project: Project, funcName: String) =
+        funcName == ArchViewCommand.ContainerView.name
 
-    override fun funcNames(): List<String> = listOf(ArchViewCommand.ContainerView.name)
+    override suspend fun funcNames(): List<String> = listOf(ArchViewCommand.ContainerView.name)
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,

@@ -13,16 +13,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 
 class DatabaseFunctionProvider : ToolchainFunctionProvider {
-    override fun toolInfos(): List<AgentTool> {
+    override suspend fun toolInfos(): List<AgentTool> {
         val example = BuiltinCommand.example("database")
         return listOf(AgentTool("database", "Database schema and query tool", example))
     }
 
-    override fun isApplicable(project: Project, funcName: String): Boolean = DatabaseFunction.entries.any { it.funName == funcName }
+    override suspend fun isApplicable(project: Project, funcName: String): Boolean =
+        DatabaseFunction.entries.any { it.funName == funcName }
 
-    override fun funcNames(): List<String> = DatabaseFunction.allFuncNames()
+    override suspend fun funcNames(): List<String> = DatabaseFunction.allFuncNames()
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,

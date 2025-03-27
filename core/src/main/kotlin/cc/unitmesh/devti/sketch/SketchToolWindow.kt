@@ -40,7 +40,9 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import java.awt.event.KeyAdapter
@@ -401,7 +403,9 @@ open class SketchToolWindow(
         afterRun()
 
         if (AutoSketchMode.getInstance(project).isEnable && !isInterrupted) {
-            AutoSketchMode.getInstance(project).start(text, this@SketchToolWindow.inputListener)
+            AutoDevCoroutineScope.scope(project).launch {
+                AutoSketchMode.getInstance(project).start(text, this@SketchToolWindow.inputListener)
+            }
         }
 
         this.revalidate()

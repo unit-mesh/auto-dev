@@ -29,7 +29,7 @@ interface LanguageProcessor {
     suspend fun compile(project: Project, text: String): String
 
     @RequiresBackgroundThread
-    fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand>
+    suspend fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand>
 
     companion object {
         val EP_NAME = ExtensionPointName<LanguageProcessor>("cc.unitmesh.languageProcessor")

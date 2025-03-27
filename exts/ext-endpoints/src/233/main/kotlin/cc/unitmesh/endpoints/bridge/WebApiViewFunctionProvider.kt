@@ -14,11 +14,11 @@ import com.intellij.spring.mvc.mapping.UrlMappingElement
 import java.util.concurrent.CompletableFuture
 
 class WebApiViewFunctionProvider : ToolchainFunctionProvider {
-    override fun funcNames(): List<String> = listOf(ArchViewCommand.WebApiView.name)
+    override suspend fun funcNames(): List<String> = listOf(ArchViewCommand.WebApiView.name)
 
-    override fun isApplicable(project: Project, funcName: String): Boolean = funcName == ArchViewCommand.WebApiView.name
+    override suspend fun isApplicable(project: Project, funcName: String): Boolean = funcName == ArchViewCommand.WebApiView.name
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,

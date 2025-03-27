@@ -50,7 +50,7 @@ class DevInsPromptProcessor : LanguageProcessor {
         return result.output
     }
 
-    override fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand> {
+    override suspend fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand> {
         if (psiFile !is DevInFile) return emptyList()
         return DevInsCompiler.transpileCommand(psiFile)
     }

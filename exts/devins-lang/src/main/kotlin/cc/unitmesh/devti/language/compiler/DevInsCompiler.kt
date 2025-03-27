@@ -206,7 +206,7 @@ class DevInsCompiler(
         output.append(result)
     }
 
-    fun toInsCommand(commandNode: BuiltinCommand, prop: String, used: DevInUsed, originCmdName: String): InsCommand = when (commandNode) {
+    suspend fun toInsCommand(commandNode: BuiltinCommand, prop: String, used: DevInUsed, originCmdName: String): InsCommand = when (commandNode) {
         BuiltinCommand.FILE -> {
             FileInsCommand(myProject, prop)
         }
@@ -342,7 +342,7 @@ class DevInsCompiler(
         }
     }
 
-    private fun executeExtensionFunction(
+    private suspend fun executeExtensionFunction(
         used: DevInUsed,
         prop: String,
         provider: ToolchainFunctionProvider
@@ -407,7 +407,7 @@ class DevInsCompiler(
     }
 
     companion object {
-        fun transpileCommand(file: DevInFile): List<BuiltinCommand> {
+        suspend fun transpileCommand(file: DevInFile): List<BuiltinCommand> {
             val result = file.children.mapNotNull { it ->
                 when (it.elementType) {
                     DevInTypes.USED -> {

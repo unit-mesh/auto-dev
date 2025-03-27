@@ -10,11 +10,11 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.NlsSafe
 
 class SccFunctionProvider : ToolchainFunctionProvider {
-    override fun isApplicable(project: Project, funcName: String): Boolean = funcName == Assessment.SCC.name
+    override suspend fun isApplicable(project: Project, funcName: String): Boolean = funcName == Assessment.SCC.name
 
-    override fun funcNames(): List<String> = listOf(Assessment.SCC.name)
+    override suspend fun funcNames(): List<String> = listOf(Assessment.SCC.name)
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,
@@ -22,7 +22,9 @@ class SccFunctionProvider : ToolchainFunctionProvider {
         commandName: @NlsSafe String
     ): Any {
         val baseDir = project.guessProjectDir()!!.path
-        val path = if (prop.isEmpty()) { baseDir } else "$baseDir/$prop"
+        val path = if (prop.isEmpty()) {
+            baseDir
+        } else "$baseDir/$prop"
 
         var items = emptyList<SccResult>()
         val thread = ApplicationManager.getApplication().executeOnPooledThread {

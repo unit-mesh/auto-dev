@@ -45,12 +45,12 @@ val API_METHODS: List<String> = listOf("GET", "POST", "PUT", "DELETE", "PATCH", 
  *
  */
 class KnowledgeFunctionProvider : ToolchainFunctionProvider {
-    override fun funcNames(): List<String> = listOf(KnowledgeTransfer.Knowledge.name)
+    override suspend fun funcNames(): List<String> = listOf(KnowledgeTransfer.Knowledge.name)
 
-    override fun isApplicable(project: Project, funcName: String): Boolean =
+    override suspend fun isApplicable(project: Project, funcName: String): Boolean =
         funcName == KnowledgeTransfer.Knowledge.name
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,

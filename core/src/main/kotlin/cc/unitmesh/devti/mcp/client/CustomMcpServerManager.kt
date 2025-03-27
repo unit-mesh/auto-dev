@@ -24,7 +24,7 @@ class CustomMcpServerManager(val project: Project) {
     val cached = mutableMapOf<String, List<Tool>>()
     val toolClientMap = mutableMapOf<Tool, Client>()
 
-    fun collectServerInfos(): List<Tool> {
+    suspend fun collectServerInfos(): List<Tool> {
         val mcpServerConfig = project.customizeSetting.mcpServerConfig
         if (mcpServerConfig.isEmpty()) {
             return emptyList()
@@ -58,29 +58,24 @@ class CustomMcpServerManager(val project: Project) {
             val output = process.outputStream.asSink().buffered()
 
             val transport = StdioClientTransport(input, output)
+            var tools = listOf<Tool>()
 
-            val future = CompletableFuture<List<Tool>>()
-
-            runBlocking {
-                try {
-                    client.connect(transport)
-                    val listTools = client.listTools()
-                    if (listTools?.tools != null) {
-                        future.complete(listTools.tools)
-                    }
-
-                    listTools?.tools?.map {
-                        toolClientMap[it] = client
-                    }
-
-                    listTools
-                } catch (e: java.lang.Error) {
-                    logger<CustomMcpServerManager>().warn("Failed to list tools from ${it.key}: $e")
-                    null
+            try {
+                client.connect(transport)
+                val listTools = client.listTools()
+                if (listTools?.tools != null) {
+                    tools = listTools.tools
                 }
-            }?.tools
 
-            future.get(30, TimeUnit.SECONDS)
+                listTools?.tools?.map {
+                    toolClientMap[it] = client
+                }
+            } catch (e: java.lang.Error) {
+                logger<CustomMcpServerManager>().warn("Failed to list tools from ${it.key}: $e")
+                null
+            }
+
+            tools
         }.flatten()
 
         cached[mcpServerConfig] = tools
@@ -100,13 +95,13 @@ class CustomMcpServerManager(val project: Project) {
                     }
 
                     val result = it.callTool(tool.name, arguments, true, null)
-                        if (result?.content.isNullOrEmpty()) {
-                            future.complete("No result from tool ${tool.name}")
-                        } else {
-                            val result = Json { prettyPrint = true } .encodeToString(result.content)
-                            val text = "Execute ${tool.name} tool's result\n"
-                            future.complete(text + result)
-                        }
+                    if (result?.content.isNullOrEmpty()) {
+                        future.complete("No result from tool ${tool.name}")
+                    } else {
+                        val result = Json { prettyPrint = true }.encodeToString(result.content)
+                        val text = "Execute ${tool.name} tool's result\n"
+                        future.complete(text + result)
+                    }
                 } catch (e: Error) {
                     logger<CustomMcpServerManager>().warn("Failed to execute tool ${tool.name}: $e")
                     future.complete("Failed to execute tool ${tool.name}: $e")

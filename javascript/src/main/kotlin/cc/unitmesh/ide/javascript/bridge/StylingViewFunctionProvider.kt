@@ -15,11 +15,11 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 
 class StylingViewFunctionProvider : ToolchainFunctionProvider {
-    override fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.StylingView.name
+    override suspend fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.StylingView.name
 
-    override fun funcNames(): List<String> = listOf(ArchViewCommand.StylingView.name)
+    override suspend fun funcNames(): List<String> = listOf(ArchViewCommand.StylingView.name)
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,

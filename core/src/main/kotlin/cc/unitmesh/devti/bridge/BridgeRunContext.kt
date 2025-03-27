@@ -46,7 +46,7 @@ data class BridgeRunContext(
     val searchTool: String = "localSearch",
 ) : TemplateContext {
     companion object {
-        fun create(project: Project, myEditor: Editor?, input: String): BridgeRunContext {
+        suspend fun create(project: Project, myEditor: Editor?, input: String): BridgeRunContext {
             var editor: Editor? = null
             runInEdt {
                 editor = (myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor)

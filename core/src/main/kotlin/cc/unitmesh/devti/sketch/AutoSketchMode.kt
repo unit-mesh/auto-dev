@@ -13,6 +13,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
+import kotlinx.coroutines.runBlocking
 
 @Service(Service.Level.PROJECT)
 class AutoSketchMode(val project: Project) {
@@ -20,7 +21,7 @@ class AutoSketchMode(val project: Project) {
 
     var listener: SketchInputListener? = null
 
-    fun start(text: String, inputListener: SketchInputListener) {
+    suspend fun start(text: String, inputListener: SketchInputListener) {
         listener = inputListener
         val codeFenceList = CodeFence.parseAll(text)
         val devinCodeFence = codeFenceList.filter {
@@ -33,17 +34,15 @@ class AutoSketchMode(val project: Project) {
             !it.text.contains("<DevinsError>") && (hasReadCommand(it) || hasToolchainFunctionCommand(it))
         }
 
-        invokeLater {
-            val language = CodeFence.findLanguage("DevIn") ?: return@invokeLater
-            commands += devinCodeFence.mapNotNull {
-                val psiFile = PsiFileFactory.getInstance(project).createFileFromText(language, it.text)
-                    ?: return@mapNotNull null
+        val language = CodeFence.findLanguage("DevIn")
+        commands += devinCodeFence.mapNotNull {
+            val psiFile = PsiFileFactory.getInstance(project).createFileFromText(language, it.text)
+                ?: return@mapNotNull null
 
-                LanguageProcessor.devin()?.transpileCommand(project, psiFile) ?: emptyList()
-            }.flatten()
+            LanguageProcessor.devin()?.transpileCommand(project, psiFile) ?: emptyList()
+        }.flatten()
 
-            project.getService(AgentStateService::class.java).addTools(commands)
-        }
+        project.getService(AgentStateService::class.java).addTools(commands)
 
         if (allCode.isEmpty()) {
             ApplicationManager.getApplication().messageBus
@@ -85,7 +84,7 @@ class AutoSketchMode(val project: Project) {
             WRITE
         )
 
-    private fun hasToolchainFunctionCommand(fence: CodeFence): Boolean {
+    private suspend fun hasToolchainFunctionCommand(fence: CodeFence): Boolean {
         val toolchainCmds = ToolchainFunctionProvider.all().map { it.funcNames() }.flatten()
         return toolchainCmds.any {
             fence.text.contains("/$it:")

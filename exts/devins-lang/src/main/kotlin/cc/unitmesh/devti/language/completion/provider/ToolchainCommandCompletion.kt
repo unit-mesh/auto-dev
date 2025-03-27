@@ -5,6 +5,7 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
+import kotlinx.coroutines.runBlocking
 
 class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -12,9 +13,11 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        BuiltinCommand.allToolchains().forEach {
-            val lookupElement = createCommandCompletionCandidate(it)
-            result.addElement(lookupElement)
+        runBlocking {
+            BuiltinCommand.allToolchains().forEach {
+                val lookupElement = createCommandCompletionCandidate(it)
+                result.addElement(lookupElement)
+            }
         }
     }
 
@@ -24,4 +27,3 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
             98.0
         )
 }
-

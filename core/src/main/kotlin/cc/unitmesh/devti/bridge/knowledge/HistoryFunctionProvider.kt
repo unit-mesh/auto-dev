@@ -10,11 +10,12 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 
 class HistoryFunctionProvider : ToolchainFunctionProvider {
-    override fun isApplicable(project: Project, funcName: String): Boolean = funcName == KnowledgeTransfer.History.name
+    override suspend fun isApplicable(project: Project, funcName: String): Boolean =
+        funcName == KnowledgeTransfer.History.name
 
-    override fun funcNames(): List<String> = listOf(KnowledgeTransfer.History.name)
+    override suspend fun funcNames(): List<String> = listOf(KnowledgeTransfer.History.name)
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,

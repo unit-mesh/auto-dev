@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 object BridgeToolProvider {
     val Tools = setOf(STRUCTURE, RIPGREP_SEARCH, DATABASE, DIR, WRITE, PATCH, FILE)
 
-    fun collect(project: Project): List<AgentTool> {
+    suspend fun collect(project: Project): List<AgentTool> {
         val commonTools = Tools
             .map {
                 val example = BuiltinCommand.example(it)

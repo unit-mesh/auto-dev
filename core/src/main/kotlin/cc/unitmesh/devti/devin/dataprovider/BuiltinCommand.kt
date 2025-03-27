@@ -148,7 +148,7 @@ enum class BuiltinCommand(
             }
         }
 
-        fun fromString(commandName: String): BuiltinCommand? {
+        suspend fun fromString(commandName: String): BuiltinCommand? {
             val builtinCommand = entries.find { it.commandName == commandName }
             if (builtinCommand == null) {
                 val providerName = toolchainProviderName(commandName)
@@ -177,7 +177,7 @@ enum class BuiltinCommand(
             return providerName
         }
 
-        fun allToolchains(): List<String> {
+        suspend fun allToolchains(): List<String> {
             return ToolchainFunctionProvider.all().map {
                 val toolInfo: List<AgentTool> = it.toolInfos()
                 if (toolInfo.isNotEmpty()) {

@@ -9,11 +9,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 
 class ComponentViewFunctionProvider : ToolchainFunctionProvider {
-    override fun funcNames(): List<String> = listOf(ArchViewCommand.ComponentView.name)
+    override suspend fun funcNames(): List<String> = listOf(ArchViewCommand.ComponentView.name)
 
-    override fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.ComponentView.name
+    override suspend fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.ComponentView.name
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,

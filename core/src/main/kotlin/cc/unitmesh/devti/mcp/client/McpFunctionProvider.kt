@@ -9,12 +9,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 
 class McpFunctionProvider : ToolchainFunctionProvider {
-    override fun funcNames(): List<String> {
+    override suspend fun funcNames(): List<String> {
         val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return emptyList()
         return CustomMcpServerManager.instance(project).collectServerInfos().map { it.name }
     }
 
-    override fun toolInfos(): List<AgentTool> {
+    override suspend fun toolInfos(): List<AgentTool> {
         val manager = CustomMcpServerManager.instance(
             ProjectManager.getInstance().openProjects.firstOrNull() ?: return emptyList()
         )
@@ -28,11 +28,11 @@ class McpFunctionProvider : ToolchainFunctionProvider {
         }
     }
 
-    override fun isApplicable(project: Project, funcName: String): Boolean {
+    override suspend fun isApplicable(project: Project, funcName: String): Boolean {
         return CustomMcpServerManager.instance(project).collectServerInfos().any { it.name == funcName }
     }
 
-    override fun execute(
+    override suspend fun execute(
         project: Project,
         prop: String,
         args: List<Any>,
