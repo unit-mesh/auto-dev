@@ -24,6 +24,8 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
 
@@ -41,7 +43,7 @@ class DevInsCompiler(
     /**
      * Todo: build AST tree, then compile
      */
-    suspend fun compile(): DevInsCompiledResult {
+    suspend fun compile(): DevInsCompiledResult = withContext(Dispatchers.IO) {
         result.input = runReadAction { file.text }
         val children = runReadAction { file.children }
         children.forEach {
@@ -82,7 +84,7 @@ class DevInsCompiler(
         result.output = output.toString()
 
         CACHED_COMPILE_RESULT[file.name] = result
-        return result
+        return@withContext result
     }
 
     suspend fun processUsed(used: DevInUsed) {
