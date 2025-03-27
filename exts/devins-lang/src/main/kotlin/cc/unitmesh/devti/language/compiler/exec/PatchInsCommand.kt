@@ -18,10 +18,12 @@ import com.intellij.openapi.util.Disposer
 
 class PatchInsCommand(val myProject: Project, val prop: String, val codeContent: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.PATCH
+    private val logger = logger<PatchInsCommand>()
 
     override suspend fun execute(): String? {
         val filePatches = parsePatches(codeContent)
         if (filePatches == null) {
+            logger.warn("Failed to parse patches from content: \n$codeContent")
             AutoDevNotifications.warn(myProject, "Failed to parse patches from content")
             return "$DEVINS_ERROR: Failed to parse patches"
         }
