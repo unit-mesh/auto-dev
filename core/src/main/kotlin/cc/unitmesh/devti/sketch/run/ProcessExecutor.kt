@@ -27,7 +27,6 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
@@ -194,14 +193,14 @@ class ProcessExecutor(val project: Project) {
     companion object {
         fun getJdkVersion(project: Project): String? {
             val projectSdk = ProjectRootManager.getInstance(project).projectSdk
-            if (projectSdk != null && projectSdk.sdkType is JavaSdk) {
+            if (projectSdk != null && projectSdk.sdkType.name == "JavaSDK") {
                 return projectSdk.homePath
             }
 
             val projectJdkTable = ProjectJdkTable.getInstance()
             if (projectJdkTable.allJdks.isNotEmpty()) {
                 for (jdk in projectJdkTable.allJdks) {
-                    if (jdk.sdkType is JavaSdk) {
+                    if (jdk.sdkType.name == "JavaSDK") {
                         return jdk.homePath
                     }
                 }
