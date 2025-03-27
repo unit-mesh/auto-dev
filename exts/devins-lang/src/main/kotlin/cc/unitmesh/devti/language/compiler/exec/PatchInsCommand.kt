@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.sketch.AutoSketchMode
-import cc.unitmesh.devti.sketch.ui.patch.SingleFileDiffSketch
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import cc.unitmesh.devti.sketch.ui.patch.writeText
 import com.intellij.openapi.diagnostic.logger
@@ -19,13 +19,15 @@ import com.intellij.openapi.util.Disposer
 class PatchInsCommand(val myProject: Project, val prop: String, val codeContent: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.PATCH
 
-    private val logger = logger<PatchInsCommand>()
-
     override suspend fun execute(): String? {
-
         val filePatches = parsePatches(codeContent)
+        if (filePatches == null) {
+            AutoDevNotifications.warn(myProject, "Failed to parse patches from content")
+            return "$DEVINS_ERROR: Failed to parse patches"
+        }
+
         if (filePatches.isEmpty()) {
-            logger.warn("No patches found in content")
+            AutoDevNotifications.warn(myProject, "No patches found in content")
             return "$DEVINS_ERROR: No patches found"
         }
 
@@ -63,12 +65,13 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
         return result
     }
 
-    private fun parsePatches(content: String): List<TextFilePatch> {
+    private fun parsePatches(content: String): List<TextFilePatch>? {
         return try {
-            PatchReader(content).apply { parseAllPatches() }.textPatches
+            PatchReader(content).apply {
+                parseAllPatches()
+            }.textPatches
         } catch (e: Exception) {
-            logger.error("Failed to parse patches", e)
-            emptyList()
+            null
         }
     }
 }
