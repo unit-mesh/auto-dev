@@ -7,7 +7,6 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import cc.unitmesh.devti.sketch.ui.patch.writeText
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
 import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
@@ -18,13 +17,15 @@ import com.intellij.openapi.util.Disposer
 
 class PatchInsCommand(val myProject: Project, val prop: String, val codeContent: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.PATCH
-    private val logger = logger<PatchInsCommand>()
 
     override suspend fun execute(): String? {
         val filePatches = parsePatches(codeContent)
         if (filePatches == null) {
-            logger.warn("Failed to parse patches from content: \n$codeContent")
-            AutoDevNotifications.warn(myProject, "Failed to parse patches from content")
+            val shouldShowNotification = shouldShowParseErrorNotification()
+            if (shouldShowNotification) {
+                AutoDevNotifications.warn(myProject, "Failed to parse patches from content")
+            }
+
             return "$DEVINS_ERROR: Failed to parse patches"
         }
 
@@ -75,5 +76,25 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
         } catch (e: Exception) {
             null
         }
+    }
+    
+    private fun shouldShowParseErrorNotification(): Boolean {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastErrorTime > ERROR_TIME_WINDOW_MS) {
+            parseErrorCount = 0
+            lastErrorTime = currentTime
+        }
+        
+        parseErrorCount++
+        
+        return parseErrorCount <= MAX_ERRORS_IN_WINDOW
+    }
+    
+    companion object {
+        private const val MAX_ERRORS_IN_WINDOW = 3
+        // Time window in milliseconds (e.g., 60000ms = 1 minute)
+        private const val ERROR_TIME_WINDOW_MS = 60000L
+        private var parseErrorCount = 0
+        private var lastErrorTime = 0L
     }
 }
