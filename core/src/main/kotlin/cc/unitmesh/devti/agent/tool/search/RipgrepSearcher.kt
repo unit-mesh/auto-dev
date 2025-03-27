@@ -55,25 +55,77 @@ object RipgrepSearcher {
         val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
         val binName = if (osName.contains("win")) "rg.exe" else "rg"
 
-        // try get from /usr/local/bin/rg if macos
-        if (osName.contains("mac")) {
+        return when {
+            osName.contains("win") -> findRipgrepBinaryOnWindows(binName)
+            else -> findRipgrepBinaryOnUnix(binName)
+        }
+    }
+
+    private fun findRipgrepBinaryOnWindows(binName: String): Path? {
+        try {
+            val pb = ProcessBuilder("where", binName)
+            val process = pb.start()
+            if (process.waitFor(1, TimeUnit.SECONDS) && process.exitValue() == 0) {
+                val path = String(process.inputStream.readAllBytes(), StandardCharsets.UTF_8)
+                    .lines().firstOrNull()?.trim()
+                if (path != null) {
+                    return Paths.get(path)
+                }
+            }
+        } catch (e: Exception) {
+            LOG.debug("Failed to locate rg using 'where' command", e)
+        }
+
+        // Check common installation locations on Windows
+        val commonPaths = listOf(
+            Paths.get(System.getenv("ProgramFiles"), "ripgrep", binName),
+            Paths.get(System.getenv("ProgramFiles(x86)"), "ripgrep", binName),
+            Paths.get(System.getenv("USERPROFILE"), ".cargo", "bin", binName)
+        )
+
+        for (path in commonPaths) {
+            if (path.toFile().exists()) {
+                return path
+            }
+        }
+
+        return findInPath(binName)
+    }
+
+    private fun findRipgrepBinaryOnUnix(binName: String): Path? {
+        // Check macOS specific location
+        if (System.getProperty("os.name").lowercase(Locale.getDefault()).contains("mac")) {
             val path = Paths.get("/usr/local/bin/rg")
             if (path.toFile().exists()) {
                 return path
             }
         }
 
-        val pb = ProcessBuilder("which", binName)
-        val process = pb.start()
         try {
+            val pb = ProcessBuilder("which", binName)
+            val process = pb.start()
             if (process.waitFor(1, TimeUnit.SECONDS) && process.exitValue() == 0) {
                 val path = String(process.inputStream.readAllBytes(), StandardCharsets.UTF_8).trim { it <= ' ' }
                 return Paths.get(path)
             }
-        } catch (_: InterruptedException) {
-            return null
+        } catch (e: Exception) {
+            LOG.debug("Failed to locate rg using 'which' command", e)
         }
 
+        return findInPath(binName)
+    }
+
+    private fun findInPath(executable: String): Path? {
+        val pathEnv = System.getenv("PATH") ?: return null
+        val pathSeparator = if (System.getProperty("os.name").lowercase().contains("win")) ";" else ":"
+        
+        for (dir in pathEnv.split(pathSeparator)) {
+            val path = Paths.get(dir, executable)
+            if (path.toFile().exists() && path.toFile().canExecute()) {
+                return path
+            }
+        }
+        
         return null
     }
 
@@ -170,3 +222,4 @@ object RipgrepSearcher {
         return base.relativize(target).toString().replace('\\', '/')
     }
 }
+
