@@ -8,6 +8,7 @@ import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -36,7 +37,7 @@ class AutoSketchMode(val project: Project) {
 
         val language = CodeFence.findLanguage("DevIn")
         commands += devinCodeFence.mapNotNull {
-            val psiFile = PsiFileFactory.getInstance(project).createFileFromText(language, it.text)
+            val psiFile = runReadAction {  PsiFileFactory.getInstance(project).createFileFromText(language, it.text) }
                 ?: return@mapNotNull null
 
             LanguageProcessor.devin()?.transpileCommand(project, psiFile) ?: emptyList()

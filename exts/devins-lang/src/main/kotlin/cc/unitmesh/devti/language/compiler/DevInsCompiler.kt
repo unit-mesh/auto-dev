@@ -408,7 +408,8 @@ class DevInsCompiler(
 
     companion object {
         suspend fun transpileCommand(file: DevInFile): List<BuiltinCommand> {
-            val result = file.children.mapNotNull { it ->
+            val children = runReadAction { file.children }
+            val result = children.mapNotNull { it ->
                 when (it.elementType) {
                     DevInTypes.USED -> {
                         val used = it as DevInUsed
