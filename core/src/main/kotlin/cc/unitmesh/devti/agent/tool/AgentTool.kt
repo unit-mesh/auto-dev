@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
 data class AgentTool(
     override val name: String, override val description: String,
     val example: String,
-    val isMcp: Boolean = false
+    val isMcp: Boolean = false,
+    val completion: String = "",
 ) : Tool {
     override fun toString(): String {
         val string = if (description.isEmpty()) "" else """desc: $description"""

@@ -347,7 +347,7 @@ class DevInsCompiler(
         prop: String,
         provider: ToolchainFunctionProvider
     ): PrintInsCommand {
-        val codeContent: String? = lookupNextCode(used)?.text
+        val codeContent: String? = lookupNextCode(used)?.codeText()
         val args = if (codeContent != null) {
             val code = CodeFence.parse(codeContent).text
             listOf(code)

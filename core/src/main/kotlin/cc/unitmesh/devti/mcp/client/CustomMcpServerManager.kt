@@ -44,12 +44,7 @@ class CustomMcpServerManager(val project: Project) {
                 return@mapNotNull null
             }
 
-            val client = Client(
-                clientInfo = Implementation(
-                    name = it.key,
-                    version = "1.0.0"
-                )
-            )
+            val client = Client(clientInfo = Implementation(name = it.key, version = "1.0.0"))
 
             val processBuilder = ProcessBuilder(it.value.command, *it.value.args.toTypedArray())
             val process = processBuilder.start()

@@ -24,7 +24,8 @@ class McpFunctionProvider : ToolchainFunctionProvider {
                 it.name,
                 it.description ?: "",
                 "Here is command and JSON schema\n/${it.name}\n```json\n$encodeToString\n```",
-                isMcp = true
+                isMcp = true,
+                completion = encodeToString
             )
         }
     }

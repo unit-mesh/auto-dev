@@ -24,12 +24,18 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
     }
 
     private fun createCommandCompletionCandidate(tool: AgentTool): LookupElement {
-        val icon = if (tool.isMcp) {
-            AutoDevIcons.MCP
-        } else {
-            AutoDevIcons.TOOLCHAIN
+        if (!tool.isMcp) {
+            val element = LookupElementBuilder.create(tool.name).withIcon(AutoDevIcons.TOOLCHAIN)
+            return PrioritizedLookupElement.withPriority(element, 98.0)
         }
 
-        return PrioritizedLookupElement.withPriority(LookupElementBuilder.create(tool.name).withIcon(icon), 98.0)
+        val element = LookupElementBuilder.create(tool.name).withIcon(AutoDevIcons.MCP)
+            .withTailText(tool.description)
+            .withInsertHandler { context, _ ->
+                context.editor.caretModel.moveToOffset(context.tailOffset)
+                context.editor.document.insertString(context.tailOffset, tool.completion)
+            }
+
+        return PrioritizedLookupElement.withPriority(element, 97.0)
     }
 }
