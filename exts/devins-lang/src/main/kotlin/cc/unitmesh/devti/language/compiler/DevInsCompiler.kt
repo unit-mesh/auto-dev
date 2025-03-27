@@ -279,7 +279,7 @@ class DevInsCompiler(
 
         BuiltinCommand.DATABASE -> {
             result.isLocalCommand = true
-            val shireCode: String? = lookupNextCode(used)?.text
+            val shireCode: String? = lookupNextCode(used)?.codeText()
             DatabaseInsCommand(myProject, prop, shireCode)
         }
 
@@ -290,13 +290,13 @@ class DevInsCompiler(
 
         BuiltinCommand.LOCAL_SEARCH -> {
             result.isLocalCommand = true
-            val shireCode: String? = lookupNextCode(used)?.text
+            val shireCode: String? = lookupNextCode(used)?.codeText()
             LocalSearchInsCommand(myProject, prop, shireCode)
         }
 
         BuiltinCommand.RIPGREP_SEARCH -> {
             result.isLocalCommand = true
-            val shireCode: String? = lookupNextCode(used)?.text
+            val shireCode: String? = lookupNextCode(used)?.codeText()
             RipgrepSearchInsCommand(myProject, prop, shireCode)
         }
 
