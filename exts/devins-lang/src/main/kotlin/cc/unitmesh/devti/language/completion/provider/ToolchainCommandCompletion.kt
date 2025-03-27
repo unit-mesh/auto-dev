@@ -33,7 +33,7 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
             .withTailText(tool.description)
             .withInsertHandler { context, _ ->
                 context.editor.caretModel.moveToOffset(context.tailOffset)
-                context.editor.document.insertString(context.tailOffset, tool.completion)
+                context.editor.document.insertString(context.tailOffset, "\n````json\n${tool.completion}\n```")
             }
 
         return PrioritizedLookupElement.withPriority(element, 97.0)

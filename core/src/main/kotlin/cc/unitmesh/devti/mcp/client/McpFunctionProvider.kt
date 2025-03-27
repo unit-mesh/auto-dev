@@ -19,13 +19,14 @@ class McpFunctionProvider : ToolchainFunctionProvider {
             ProjectManager.getInstance().openProjects.firstOrNull() ?: return emptyList()
         )
         return manager.collectServerInfos().map {
-            val encodeToString = Json.encodeToString<Input>(it.inputSchema)
+            val schemaJson = Json.encodeToString<Input>(it.inputSchema)
+            val mockData = Json.encodeToString(MockDataGenerator.generateMockData(it.inputSchema))
             AgentTool(
                 it.name,
                 it.description ?: "",
-                "Here is command and JSON schema\n/${it.name}\n```json\n$encodeToString\n```",
+                "Here is command and JSON schema\n/${it.name}\n```json\n$schemaJson\n```",
                 isMcp = true,
-                completion = encodeToString
+                completion = mockData
             )
         }
     }
