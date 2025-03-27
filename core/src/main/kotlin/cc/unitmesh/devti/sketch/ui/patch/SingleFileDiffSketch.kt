@@ -7,6 +7,8 @@ import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
+import cc.unitmesh.devti.util.AutoDevAppScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
@@ -33,6 +35,7 @@ import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.LocalTimeCounter
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -74,7 +77,7 @@ class SingleFileDiffSketch(
             this@SingleFileDiffSketch.appliedPatch,
             this@SingleFileDiffSketch.patch
         )
-        
+
         val fileName = if (currentFile.name.contains("/")) {
             currentFile.name.substringAfterLast("/")
         } else {
@@ -84,15 +87,15 @@ class SingleFileDiffSketch(
         val filepathLabel = JBLabel(fileName).apply {
             icon = currentFile.fileType.icon
             border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
-            
+
             val originalColor = foreground
             val hoverColor = JBColor(0x4A7EB3, 0x589DF6) // Blue color for hover state
-            
+
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
                     FileEditorManager.getInstance(myProject).openFile(currentFile, true)
                 }
-                
+
                 override fun mouseEntered(e: MouseEvent?) {
                     foreground = hoverColor
                     cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
@@ -101,7 +104,7 @@ class SingleFileDiffSketch(
                         BorderFactory.createEmptyBorder(2, 10, 1, 10)
                     )
                 }
-                
+
                 override fun mouseExited(e: MouseEvent?) {
                     foreground = originalColor
                     cursor = java.awt.Cursor.getDefaultCursor()
@@ -264,7 +267,7 @@ class SingleFileDiffSketch(
     fun runAutoLint(file: VirtualFile) {
         ApplicationManager.getApplication().invokeLater {
             val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
-                override fun run(indicator: ProgressIndicator ) {
+                override fun run(indicator: ProgressIndicator) {
                     lintCheckForNewCode(file)
                 }
             }

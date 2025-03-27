@@ -36,8 +36,8 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         }
 
         val virtualFile = runReadAction { myProject.lookupFile(filepath) }!!
-        virtualFile.writeText(content)
         runInEdt {
+            virtualFile.writeText(content)
             FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
         }
 
