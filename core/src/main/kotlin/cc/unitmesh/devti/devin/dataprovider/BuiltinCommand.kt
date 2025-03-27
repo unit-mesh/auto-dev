@@ -177,14 +177,16 @@ enum class BuiltinCommand(
             return providerName
         }
 
-        suspend fun allToolchains(): List<String> {
+        suspend fun allToolchains(): List<AgentTool> {
             return ToolchainFunctionProvider.all().map {
                 val toolInfo: List<AgentTool> = it.toolInfos()
                 if (toolInfo.isNotEmpty()) {
-                    return@map toolInfo.map { it.name }
+                    return@map toolInfo
                 }
 
-                it.funcNames()
+                it.funcNames().map { funcName ->
+                    AgentTool(funcName, "", "")
+                }
             }.flatten()
         }
     }

@@ -23,7 +23,8 @@ class McpFunctionProvider : ToolchainFunctionProvider {
             AgentTool(
                 it.name,
                 it.description ?: "",
-                "Here is command and JSON schema\n/${it.name}\n```json\n$encodeToString\n```"
+                "Here is command and JSON schema\n/${it.name}\n```json\n$encodeToString\n```",
+                isMcp = true
             )
         }
     }

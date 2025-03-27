@@ -76,4 +76,7 @@ object AutoDevIcons {
 
     @JvmField
     val RULE: Icon = IconLoader.getIcon("/icons/rule.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val MCP: Icon = IconLoader.getIcon("/icons/mcp.svg", AutoDevIcons::class.java)
 }

@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
 import kotlinx.coroutines.runBlocking
@@ -21,9 +23,13 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
         }
     }
 
-    private fun createCommandCompletionCandidate(it: String) =
-        PrioritizedLookupElement.withPriority(
-            LookupElementBuilder.create(it).withIcon(AutoDevIcons.TOOLCHAIN),
-            98.0
-        )
+    private fun createCommandCompletionCandidate(tool: AgentTool): LookupElement {
+        val icon = if (tool.isMcp) {
+            AutoDevIcons.MCP
+        } else {
+            AutoDevIcons.TOOLCHAIN
+        }
+
+        return PrioritizedLookupElement.withPriority(LookupElementBuilder.create(tool.name).withIcon(icon), 98.0)
+    }
 }
