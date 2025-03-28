@@ -12,7 +12,7 @@ import com.jetbrains.python.sdk.mostPreferred
 class PythonFrameworkContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext) = creationContext.element?.language?.displayName == "Python"
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         var items = mutableListOf<ChatContextItem>()
         val allSdks = PythonSdkUtil.getAllSdks()
         val preferred = mostPreferred(allSdks)

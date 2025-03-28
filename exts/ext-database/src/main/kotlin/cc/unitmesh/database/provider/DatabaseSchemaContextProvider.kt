@@ -11,7 +11,7 @@ class DatabaseSchemaContextProvider : ChatContextProvider {
         return DbUtil.getDataSources(project).isNotEmpty
     }
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val dataSources = DbUtil.getDataSources(project)
         if (dataSources.isEmpty) return emptyList()
 

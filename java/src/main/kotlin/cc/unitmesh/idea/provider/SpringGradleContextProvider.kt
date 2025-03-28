@@ -5,6 +5,7 @@ import cc.unitmesh.devti.prompting.code.TechStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.devti.util.relativePath
 import cc.unitmesh.idea.context.library.LibraryDescriptor
 import cc.unitmesh.idea.context.library.SpringLibrary
 import com.intellij.openapi.externalSystem.model.project.LibraryData
@@ -28,7 +29,7 @@ open class SpringGradleContextProvider : ChatContextProvider {
         return false
     }
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val techStacks = convertTechStack(project)
 
         if (techStacks.coreFrameworks().isEmpty() && techStacks.testFrameworks().isEmpty()) {
@@ -38,11 +39,13 @@ open class SpringGradleContextProvider : ChatContextProvider {
         val fileName = creationContext.sourceFile?.name ?: ""
         val formattedTechStacks = techStacks.coreFrameworks.keys.joinToString(",")
 
-        val baseMessages = buildContextMessage(fileName, formattedTechStacks)
+        val configFile = SpringFrameworkConfigProvider().collect(project).map {
+            it.relativePath(project)
+        }
 
-        return listOf(
-            ChatContextItem(SpringGradleContextProvider::class, baseMessages)
-        )
+        val baseMessages = buildContextMessage(fileName, formattedTechStacks) + "Configured with files: ${configFile.joinToString(",")}"
+
+        return listOf(ChatContextItem(SpringGradleContextProvider::class, baseMessages))
     }
 
     private fun buildContextMessage(fileName: String, techStacks: String): String {
@@ -147,8 +150,6 @@ fun prepareGradleLibrary(project: Project): List<SimpleLibraryData>? {
     }?.map {
         it.data as LibraryData
     }
-
-    // to SimpleLibraryData
 
     return libraryDataList?.map {
         SimpleLibraryData(it.groupId, it.artifactId, it.version)

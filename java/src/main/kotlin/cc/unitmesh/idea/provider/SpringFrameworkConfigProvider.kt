@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.FrameworkConfigProvider
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -24,7 +25,7 @@ class SpringFrameworkConfigProvider : FrameworkConfigProvider {
         return modules.map { module ->
             val scope: GlobalSearchScope = module.getModuleScope(false)
             files.map { file ->
-                FilenameIndex.getVirtualFilesByName(file, scope)
+                runReadAction { FilenameIndex.getVirtualFilesByName(file, scope) }
             }.flatten()
         }.flatten()
     }

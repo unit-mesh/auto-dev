@@ -14,7 +14,7 @@ class DockerContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean =
         DockerFileSearch.getInstance().getDockerFiles(project).isNotEmpty()
 
-    override fun collect(
+    override suspend fun collect(
         project: Project,
         creationContext: ChatCreationContext
     ): List<ChatContextItem> {

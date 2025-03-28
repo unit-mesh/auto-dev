@@ -17,7 +17,7 @@ class GoVersionChatContextProvider : ChatContextProvider {
         return creationContext.sourceFile is GoFile
     }
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val sourceFile = creationContext.sourceFile ?: return emptyList()
 
         return ReadAction.compute<List<ChatContextItem>, Throwable> {

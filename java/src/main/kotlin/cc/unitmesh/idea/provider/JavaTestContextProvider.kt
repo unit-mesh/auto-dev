@@ -29,7 +29,7 @@ open class JavaTestContextProvider : ChatContextProvider {
             |- Instead of using `@BeforeEach` methods for setup, include all necessary code initialization within each individual test method, do not write parameterized tests.
             |""".trimMargin()
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val fileName = creationContext.sourceFile?.name
 
         val isSpringRelated = checkIsSpringRelated(creationContext)

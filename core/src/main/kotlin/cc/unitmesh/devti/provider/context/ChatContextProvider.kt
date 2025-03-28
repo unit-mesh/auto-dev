@@ -10,12 +10,12 @@ interface ChatContextProvider {
     fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean
 
     @RequiresBackgroundThread
-    fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem>
+    suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem>
 
     companion object {
         val EP_NAME = ExtensionPointName<ChatContextProvider>("cc.unitmesh.chatContextProvider")
 
-        fun collectChatContextList(
+        suspend fun collectChatContextList(
             project: Project,
             chatCreationContext: ChatCreationContext,
         ): List<ChatContextItem> {

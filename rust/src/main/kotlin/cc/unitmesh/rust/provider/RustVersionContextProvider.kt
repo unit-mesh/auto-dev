@@ -13,7 +13,7 @@ class RustVersionContextProvider : ChatContextProvider {
         return creationContext.sourceFile?.language is RsLanguage
     }
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val cargoProjectsService = project.service<CargoProjectsService>()
         val rustcInfo = cargoProjectsService.allProjects.firstOrNull()?.rustcInfo ?: return emptyList()
 

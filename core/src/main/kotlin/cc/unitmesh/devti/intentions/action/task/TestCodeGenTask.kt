@@ -71,7 +71,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         val creationContext =
             ChatCreationContext(ChatOrigin.Intention, actionType, request.file, listOf(), element = request.element)
 
-        val contextItems: List<ChatContextItem> = ChatContextProvider.collectChatContextList(request.project, creationContext)
+        val contextItems: List<ChatContextItem> = runBlocking {
+            ChatContextProvider.collectChatContextList(request.project, creationContext)
+        }
 
         testPromptContext.frameworkContext = contextItems.joinToString("\n", transform = ChatContextItem::text)
         ReadAction.compute<Unit, Throwable> {
