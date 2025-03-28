@@ -31,7 +31,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+#      fail-fast: true
       matrix:
         platform-version: [ 223, 233, 241 ]
     env:
