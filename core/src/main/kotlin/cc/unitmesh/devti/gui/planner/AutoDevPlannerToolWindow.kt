@@ -38,14 +38,13 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private var currentCallback: ((String) -> Unit)? = null
     private var issueInputCallback: ((String) -> Unit)? = null
     private val planPanel: JPanel by lazy { createPlanPanel() }
-    private val issueInputPanel: JPanel by lazy { createIssueInputPanel() }
-    private var issueTextArea: JTextArea? = null
+    private lateinit var issueInputPanel: ShadowPanel
 
     init {
         // Check if there's no plan content and conditionally show the appropriate panel
         if (content.isBlank()) {
             isIssueInputMode = true
-            contentPanel.add(issueInputPanel, BorderLayout.CENTER)
+            contentPanel.add(createIssueInputPanel(), BorderLayout.CENTER)
         } else {
             contentPanel.add(planPanel, BorderLayout.CENTER)
         }
@@ -80,53 +79,21 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     }
 
     private fun createIssueInputPanel(): JPanel {
-        val panel = JPanel(BorderLayout())
-        panel.border = JBUI.Borders.empty(10)
-        panel.background = JBUI.CurrentTheme.ToolWindow.background()
-
-        val headerLabel = JLabel("Enter Issue Description").apply {
-            font = font.deriveFont(font.size + 2f)
-            border = JBUI.Borders.emptyBottom(10)
-        }
-
-        issueTextArea = JTextArea().apply {
-            lineWrap = true
-            wrapStyleWord = true
-            border = JBUI.Borders.empty(5)
-            text = ""
-            rows = 15
-        }
-
-        val scrollPane = JBScrollPane(issueTextArea).apply {
-            preferredSize = Dimension(400, 300)
-        }
-
-        val buttonPanel = JPanel(BorderLayout())
-        val buttonsBox = Box.createHorizontalBox().apply {
-            add(JButton("Generate Tasks").apply {
-                addActionListener {
-                    val issueText = issueTextArea?.text ?: ""
-                    if (issueText.isNotBlank()) {
-                        issueInputCallback?.invoke(issueText)
-                        switchToPlanView()
-                    }
-                }
-            })
-            add(Box.createHorizontalStrut(10))
-            add(JButton("Cancel").apply {
-                addActionListener {
+        issueInputPanel = ShadowPanel(
+            title = "Enter Issue Description",
+            submitButtonText = "Generate Tasks",
+            cancelButtonText = "Cancel",
+            onSubmit = { issueText ->
+                if (issueText.isNotBlank()) {
+                    issueInputCallback?.invoke(issueText)
                     switchToPlanView()
                 }
-            })
-        }
-        buttonPanel.add(buttonsBox, BorderLayout.EAST)
-        buttonPanel.border = JBUI.Borders.emptyTop(10)
-
-        panel.add(headerLabel, BorderLayout.NORTH)
-        panel.add(scrollPane, BorderLayout.CENTER)
-        panel.add(buttonPanel, BorderLayout.SOUTH)
-
-        return panel
+            },
+            onCancel = {
+                switchToPlanView()
+            }
+        )
+        return issueInputPanel
     }
 
     private fun switchToEditorView() {
@@ -169,8 +136,8 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         contentPanel.repaint()
 
         isIssueInputMode = true
-        issueTextArea?.text = ""
-        issueTextArea?.requestFocus()
+        issueInputPanel.setText("")
+        issueInputPanel.requestTextAreaFocus()
     }
 
     fun switchToPlanView(newContent: String? = null) {
@@ -192,7 +159,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
     override fun dispose() {
         markdownEditor = null
-        issueTextArea = null
     }
 
     companion object {
@@ -231,4 +197,3 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         }
     }
 }
-
