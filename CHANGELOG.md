@@ -1,8 +1,68 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v2.0.0...v) (2025-03-25)
+# [](https://github.com/unit-mesh/auto-dev/compare/v2.0.2...v) (2025-03-28)
 
-## [Unreleased]
 
-## [2.0.0] - 2025-03-25
+
+## [2.0.2](https://github.com/unit-mesh/auto-dev/compare/v2.0.2-SNAPSHOT...v2.0.2) (2025-03-27)
+
+
+### Bug Fixes
+
+* **core, terminal:** handle JDK resolution exceptions ([c180cc8](https://github.com/unit-mesh/auto-dev/commit/c180cc88e65c2fa97e169a4cbce192872a4c270f))
+* **devins-lang:** improve patch command error handling and UI feedback ([b19ca92](https://github.com/unit-mesh/auto-dev/commit/b19ca920f0188f4b026fef9209d0c5e241604800))
+
+
+### Features
+
+* **agent:** add MCP support and improve toolchain representation ([7ce703c](https://github.com/unit-mesh/auto-dev/commit/7ce703c74cfbe0fa2781daee4bdb80578f4f41e8))
+* **core:** add completion support for MCP tools and refactor related classes ([38abbf7](https://github.com/unit-mesh/auto-dev/commit/38abbf772d3944b02b788f8fb1fd6487c6df434d))
+* **core:** add mock data generation for MCP tooltips ([4b19877](https://github.com/unit-mesh/auto-dev/commit/4b19877dbf6b6479a66d6316750f4cb73db2d361))
+* **devti:** add module information to SketchRunContext [#350](https://github.com/unit-mesh/auto-dev/issues/350) ([88ca1b7](https://github.com/unit-mesh/auto-dev/commit/88ca1b7d370ba5f5cc52ea9bed779693b8dbc1c5))
+
+
+
+## [2.0.2-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v2.0.1...v2.0.2-SNAPSHOT) (2025-03-27)
+
+
+### Features
+
+* **core:** add support for .devin files in project rules [#349](https://github.com/unit-mesh/auto-dev/issues/349) ([d343e5b](https://github.com/unit-mesh/auto-dev/commit/d343e5b28371f6007cade363f029dead064e048c))
+* **core:** add support for user-defined coding rules [#349](https://github.com/unit-mesh/auto-dev/issues/349) ([584e2f5](https://github.com/unit-mesh/auto-dev/commit/584e2f53232198a8a8db8c5f4978b828331d22b7))
+* **devins-lang:** add rule completion and update rule path ([68589b8](https://github.com/unit-mesh/auto-dev/commit/68589b8f5d77d192f80416ccb8cceb27be64fa74))
+* **devti:** add 'rule' command to retrieve code quality guidelines [#349](https://github.com/unit-mesh/auto-dev/issues/349) ([58d8bcc](https://github.com/unit-mesh/auto-dev/commit/58d8bcc10bea17c4b2d65f64a6db684199f06d0a))
+* **devti:** add support for user-defined coding rules [#349](https://github.com/unit-mesh/auto-dev/issues/349) ([c8f4393](https://github.com/unit-mesh/auto-dev/commit/c8f43939d8441446a03e96e3b1a57a7ea0598aeb))
+* **devti:** enhance ripgrep binary search for Windows and Unix systems [#344](https://github.com/unit-mesh/auto-dev/issues/344) ([cf348f2](https://github.com/unit-mesh/auto-dev/commit/cf348f2597e1cfee728cbfb0fe5d5b0c96f05e60))
+* **devti:** support project rule in AutoDev Sketch/Composer [#349](https://github.com/unit-mesh/auto-dev/issues/349) ([4a02594](https://github.com/unit-mesh/auto-dev/commit/4a02594d37a6f04e43225bff9d6d14cd307a0b5c))
+
+
+### Performance Improvements
+
+* **devins-lang:** move DevInsCompiler.compile() to IO dispatcher ([1e8baf2](https://github.com/unit-mesh/auto-dev/commit/1e8baf2b89b16ba06b7553ab891023cb040677f8))
+
+
+
+## [2.0.1](https://github.com/unit-mesh/auto-dev/compare/v2.0.0...v2.0.1) (2025-03-26)
+
+
+### Bug Fixes
+
+* **devti:** optimize diff repair prompt and streaming processing ([2ce2e76](https://github.com/unit-mesh/auto-dev/commit/2ce2e7657f725a71bad1c369cb2cf7c7fae6ae74))
+
+
+### Features
+
+* **devti:** enhance file list UI and functionality [#344](https://github.com/unit-mesh/auto-dev/issues/344) ([de652f7](https://github.com/unit-mesh/auto-dev/commit/de652f7293edba0b3703742df80d4b77f59689ba))
+* **gui:** add clear all button and improve file display in AutoDev input section ([bad095f](https://github.com/unit-mesh/auto-dev/commit/bad095f74469e4a0cb6a106bc03953375d96acfc))
+* **gui:** add toolbar with clear button and file selection reminder [#344](https://github.com/unit-mesh/auto-dev/issues/344) ([105a990](https://github.com/unit-mesh/auto-dev/commit/105a99020fd11a0adf3af446cd1a4fafdbd441b0))
+
+
+### Performance Improvements
+
+* **devti:** optimize code application in DiffRepair ([b1411c1](https://github.com/unit-mesh/auto-dev/commit/b1411c1649b1a36e8247026ca2e70d27b27b6229))
+
+
+
+# [2.0.0](https://github.com/unit-mesh/auto-dev/compare/v1.9.0...v2.0.0) (2025-03-25)
+
 
 ### Bug Fixes
 
@@ -170,20 +230,320 @@
 * **web-api:** format web API endpoints output with code block ([6b07457](https://github.com/unit-mesh/auto-dev/commit/6b07457af5439c36a0d7e0110070caef484b6382))
 * 修复错误 import ([7fa2e1f](https://github.com/unit-mesh/auto-dev/commit/7fa2e1fddfac123cc639069051529e5a5511fcdb))
 
+
 ### Code Refactoring
 
 * remove system block and adjust related tests ([c60086e](https://github.com/unit-mesh/auto-dev/commit/c60086e6863a5878ae3f38400613c91b3d38e9a0))
 
+
 ### Features
 
-* **build:** add support for platform version 223 [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([ec85cfb](https://github.com/unit-mesh/auto-dev/commit/ec85cfb934ed4833514b8ebe63d0bbf1cea8c021))
-* **release-note:** add template-based release note generation [#256](https://github.com/unit-mesh/auto-dev/issues/256) ([76943cf](https://github.com/unit-mesh/auto-dev/commit/76943cf3940211a52b708c5d076f733450f49f93))
-* **settings:** add DevOps configurable provider [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([5153032](https://github.com/unit-mesh/auto-dev/commit/51530326d65158cda633c6f9c602e1241bcaa6d6))
+* add dependencies check action [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([8eb88bf](https://github.com/unit-mesh/auto-dev/commit/8eb88bf3c6250582ba18d6c932565d4a8621afc1))
+* add dependencies function provider and auto check [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([566d173](https://github.com/unit-mesh/auto-dev/commit/566d1738a93a92f5296d4fb7e2a4bfdcd8556f0c))
+* Add script path to run config and enhance dir listing checks ([ffa8030](https://github.com/unit-mesh/auto-dev/commit/ffa8030b0fbcc815c8ee5bd32747d7c87a69d53b))
+* add Swagger plugin support to Gradle properties ([4d29865](https://github.com/unit-mesh/auto-dev/commit/4d2986503b7c0f40ac43b945bec739546f67935a))
+* add toolchain command support and dependencies function provider [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([5953d61](https://github.com/unit-mesh/auto-dev/commit/5953d61b8ed6cd9541c0b656edbd6e46eb30faf5))
+* **agent:** add resetMessages method to AgentStateService ([06598a1](https://github.com/unit-mesh/auto-dev/commit/06598a1e44674cdf7dd73940c8e551eb9efc7f63))
+* **agent:** add state reset and message preprocessing [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([01bedd6](https://github.com/unit-mesh/auto-dev/commit/01bedd608f0b1df96feca2d80383283c2af731eb))
+* **agent:** add token-based message compression ([8ac27e1](https://github.com/unit-mesh/auto-dev/commit/8ac27e1d7cf29602c635c8fdb996c8bbedcb88a0))
+* **agent:** enhance AgentState with additional properties ([821d4e3](https://github.com/unit-mesh/auto-dev/commit/821d4e31d65f268e20625a07c5058adccfd26a47))
+* **agent:** refactor plan structure to use PlanList and PlanTask [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([56bde59](https://github.com/unit-mesh/auto-dev/commit/56bde59abd06bd1d9039997508e80d39840d711f))
+* **archview:** add methods and slots to UiComponent ([e180831](https://github.com/unit-mesh/auto-dev/commit/e1808315fceec0cf203d260c9b4a7e5f33934991))
+* **archview:** enhance component view output with count ([38b3369](https://github.com/unit-mesh/auto-dev/commit/38b33691735fa5f785350b95cb09ea1c94b6d804))
+* **archview:** format module list output as code block ([1fef0f6](https://github.com/unit-mesh/auto-dev/commit/1fef0f621f9c09a0fda16738945495fd79b03815))
+* **assessment:** add SccFunctionProvider for SCC command [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([45fcf80](https://github.com/unit-mesh/auto-dev/commit/45fcf80fa0c9dd6a40cd4d0b14701d35a9198dc5))
+* **assistant:** enhance legacy system migration guidance [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([809ab40](https://github.com/unit-mesh/auto-dev/commit/809ab408a57557a0ecc645552cc6e81bf5b27a42))
+* **bridge:** add bridge.vm template and update bridge components  [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([b1d25cb](https://github.com/unit-mesh/auto-dev/commit/b1d25cb667c7f2f290e8090dbb0ef8a1668708d3))
+* **bridge:** add BridgeToolProvider and update tool list formatting [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([e9c3fbc](https://github.com/unit-mesh/auto-dev/commit/e9c3fbcdaf58e97ca561293bd512c198791772c0))
+* **bridge:** add BridgeToolWindow and enhance SketchToolWindow [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([76ca561](https://github.com/unit-mesh/auto-dev/commit/76ca561befa4718e43e7a5a26c20ae4d668163f8))
+* **bridge:** add ComponentViewFunctionProvider and refactor BridgeCommandProvider [#319](https://github.com/unit-mesh/auto-dev/issues/319) ([3012be0](https://github.com/unit-mesh/auto-dev/commit/3012be003c78b81544ee24918a7c14ab63bfcc26))
+* **bridge:** add PATCH tool and update dependency refresh logic [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([0524922](https://github.com/unit-mesh/auto-dev/commit/052492225d08548fb73432cd048344cbf5d74065))
+* **bridge:** add StylingViewFunctionProvider for CSS file handling [#319](https://github.com/unit-mesh/auto-dev/issues/319) ([e435187](https://github.com/unit-mesh/auto-dev/commit/e4351873c2316cf5d4049aa6fdfea0bb19c42f8d))
+* **bridge:** enhance module info display and migration guidance [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([e912eeb](https://github.com/unit-mesh/auto-dev/commit/e912eeb5cd49c5512de9a301705ca8dbe18e5961))
+* **bridge:** enhance project module info display and migration guidance [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([628ea62](https://github.com/unit-mesh/auto-dev/commit/628ea62fb82a6fbc68c16e3c6701e43e975bb7e5))
+* **bridge:** enhance SCC function provider and documentation [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([e8399e9](https://github.com/unit-mesh/auto-dev/commit/e8399e9cf011759bf07b57121eabf50ba6c1c4ec))
+* **bridge:** refine toolset and enhance dependency output formatting [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([c971e02](https://github.com/unit-mesh/auto-dev/commit/c971e02380a8edcc0b8f73df1045f9b4d221c186))
+* **build:** add support for detecting package files in build systems [#316](https://github.com/unit-mesh/auto-dev/issues/316) ([ac41bb1](https://github.com/unit-mesh/auto-dev/commit/ac41bb18604ba9a3261e1dc695c972d765bd7aa7))
+* **BuiltinCommand:** disable command in sketch mode [#335](https://github.com/unit-mesh/auto-dev/issues/335) ([60f9b02](https://github.com/unit-mesh/auto-dev/commit/60f9b02ae8907c1b0709dc6e600141a978b04fe2))
+* **chat:** add BRIDGE action type and translations [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([bb4be32](https://github.com/unit-mesh/auto-dev/commit/bb4be32a2056e54c7dc2c1fe25f103cdfaa62c75))
+* **chat:** add IDE version context provider ([bc7f724](https://github.com/unit-mesh/auto-dev/commit/bc7f72424709c3f2e9a77515c346a586eea3c7e0))
+* **chat:** implement new chat action and UI enhancements ([659afd5](https://github.com/unit-mesh/auto-dev/commit/659afd5910c623579e41c8dd512a8859d56d0180))
+* **chat:** trigger onFinish callback after message completion [#329](https://github.com/unit-mesh/auto-dev/issues/329) ([ad390a3](https://github.com/unit-mesh/auto-dev/commit/ad390a3c9a72cd1c9263c9896112b209d0de79a8))
+* **code-highlight:** add /write command support for DevIn [#288](https://github.com/unit-mesh/auto-dev/issues/288) ([061c13a](https://github.com/unit-mesh/auto-dev/commit/061c13aaa730184e491f50d0c00d62c214074ddd))
+* **code-highlight:** add fileName support and improve write command [#208](https://github.com/unit-mesh/auto-dev/issues/208) ([4133f23](https://github.com/unit-mesh/auto-dev/commit/4133f23d98dee5d8c2dc2074b72b75e79239bcb1))
+* **code:** default to markdown for code fences and preview ([4d0b823](https://github.com/unit-mesh/auto-dev/commit/4d0b82303c15d1c63ce21c9e5b420df15317b6ff))
+* **coder:** add auto lint code feature ([0afe92f](https://github.com/unit-mesh/auto-dev/commit/0afe92f343ee14a51e576cfc82796b1c8bff6cea))
+* **coder:** add auto repair diff functionality ([60bb370](https://github.com/unit-mesh/auto-dev/commit/60bb3703647580eb7bab2a4b48ae3ae5b62d35d0))
+* **coder:** add auto-scroll feature in sketch and closed [#340](https://github.com/unit-mesh/auto-dev/issues/340) ([acb4833](https://github.com/unit-mesh/auto-dev/commit/acb4833471e69f558268f9fd3f2799b1c76282dc))
+* **code:** support multiple code blocks in CodeHighlightSketch [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([bcbe6bc](https://github.com/unit-mesh/auto-dev/commit/bcbe6bc07a9141ec548f45290731e789cc0583f3))
+* **commands:** add BROWSE to READ_COMMANDS and simplify BrowseInsCommand ([ec7a607](https://github.com/unit-mesh/auto-dev/commit/ec7a60784aeec264ec22e6edb7d584f3618d3515))
+* **commands:** add isApplicable method to InsCommand ([172f8d1](https://github.com/unit-mesh/auto-dev/commit/172f8d14c69c06a37d3f3e7b217debde41560f01))
+* **compatibility:** add 223 compatibility resources [#327](https://github.com/unit-mesh/auto-dev/issues/327) ([b76d2ab](https://github.com/unit-mesh/auto-dev/commit/b76d2aba9cc79cd8ec87128032049f6cc300cc75))
+* **compiler:** add background task for directory processing ([dcb4f48](https://github.com/unit-mesh/auto-dev/commit/dcb4f480faae8267f84794a87ba38274b210ffbf))
+* **compiler:** add DIR command for listing files and directories [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([60378f7](https://github.com/unit-mesh/auto-dev/commit/60378f7b2dc7a2051f55293412a7510a42b6838c))
+* **compiler:** add directory compression for deep nesting [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([0bdb5e6](https://github.com/unit-mesh/auto-dev/commit/0bdb5e6f471dc3c13145e92ed7e475c5c14c3859))
+* **compiler:** add notification for missing commands [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([91ca175](https://github.com/unit-mesh/auto-dev/commit/91ca1753e2c1c8c65dcce5c9f200097a4fcd6289))
+* **compiler:** add parallel directory node support [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([20025bd](https://github.com/unit-mesh/auto-dev/commit/20025bd3e3e06ddf3e4d1594059f0290ab6a96ff))
+* **compiler:** add RipgrepSearchInsCommand and optimize file search ([613090a](https://github.com/unit-mesh/auto-dev/commit/613090ac380b189ba6731a4a60e52e4eff5d7aff))
+* **compiler:** enhance DirInsCommand with smart depth control and compact mode ([b433e8d](https://github.com/unit-mesh/auto-dev/commit/b433e8d5dd69efc84c67688b569d094f7ccf1512))
+* **compiler:** limit directory listing depth to 2 ([d3637f6](https://github.com/unit-mesh/auto-dev/commit/d3637f684dfd9e2619122e7bdd27ab5b1bb1cf96))
+* **compiler:** limit file content to 300 lines ([d4b10b9](https://github.com/unit-mesh/auto-dev/commit/d4b10b996958e1976cd3aceda36dbc94c7c6e413))
+* **completion:** add database function completions ([8509986](https://github.com/unit-mesh/auto-dev/commit/85099864fee4e379b8e519fafa0c157b4ee3318f))
+* **completion:** add directory reference completion support [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([2c4e493](https://github.com/unit-mesh/auto-dev/commit/2c4e493f7fea7148cca3b86001e08b324fd53230))
+* **completion:** add STRUCTURE command to completion options ([cc6862a](https://github.com/unit-mesh/auto-dev/commit/cc6862a7cc71f8c6d52537f35c42b555ec0790f2))
+* **completion:** add toolchain command completion support [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([d83285e](https://github.com/unit-mesh/auto-dev/commit/d83285e0c534ae878f0fe393a301156eb3b68d83))
+* **component-view:** add mode support for component collection ([295ad13](https://github.com/unit-mesh/auto-dev/commit/295ad13f5a98ac34ae528f79ad7ad13494442d94))
+* **config:** enhance JSON schema with password format and language injection [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([7501077](https://github.com/unit-mesh/auto-dev/commit/75010770041e20ae85e058b71e0e9de2d689c401))
+* **container:** add action creation for Docker servers [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([31479d9](https://github.com/unit-mesh/auto-dev/commit/31479d91bbf182a4593bafd89cd611df2ea4bd35))
+* **container:** add dev container support and integrate Docker gateway [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([a66f465](https://github.com/unit-mesh/auto-dev/commit/a66f465e2ab36ffe8184a30bfa7cbb5b2f22705e))
+* **container:** add Docker deployment UI and context creation ([84d4f44](https://github.com/unit-mesh/auto-dev/commit/84d4f443cdce742948bc4ab2386c88923c0ef278)), closes [#306](https://github.com/unit-mesh/auto-dev/issues/306)
+* **container:** add DockerContextProvider for chat context [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([d57bccb](https://github.com/unit-mesh/auto-dev/commit/d57bccbd470cc6f00c594fd43b6062b5238a1863))
+* **container:** add RunDevContainerService for devcontainer.json support [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([72fa299](https://github.com/unit-mesh/auto-dev/commit/72fa299a3df4bb4ee333af97abd0fdb4b82f3fdf))
+* **container:** add support for baseline version 242 in RunDevContainerService [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([93ef6e5](https://github.com/unit-mesh/auto-dev/commit/93ef6e538c171933d1415979019477214b9a6761))
+* **container:** enhance Dockerfile service with Docker connection support [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([88654aa](https://github.com/unit-mesh/auto-dev/commit/88654aa580d3831f19547199bf172c10c34d2842))
+* **core:** add code file link support in task description [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([de78a26](https://github.com/unit-mesh/auto-dev/commit/de78a26f2fec8c87a4fd4688d0a6ad1f653ec5a6))
+* **core:** add create_test_for_file tool for AutoDev ([50c6caf](https://github.com/unit-mesh/auto-dev/commit/50c6caf75e58d46ce24a62d03382a2c1f39f22f5))
+* **core:** add JSON and HTTP extension points ([e48309e](https://github.com/unit-mesh/auto-dev/commit/e48309e5038007a9d2589086afb12d9644f1d28a))
+* **core:** add JsonText and JsonPath param types [#271](https://github.com/unit-mesh/auto-dev/issues/271) ([ffe2bb3](https://github.com/unit-mesh/auto-dev/commit/ffe2bb322c6c2c391d52f5eeef5816df5ed479df))
+* **core:** add option to enable auto run terminal commands [#335](https://github.com/unit-mesh/auto-dev/issues/335) ([597ccf5](https://github.com/unit-mesh/auto-dev/commit/597ccf56afc2ba38070ec826730f37b845569363))
+* **core:** add option to hide toolbar in CodeHighlightSketch ([6c89b64](https://github.com/unit-mesh/auto-dev/commit/6c89b64a69aafef4cb9929fce8ba6396d2114f8e))
+* **core:** add repair functionality to sketch patch ([deab5dc](https://github.com/unit-mesh/auto-dev/commit/deab5dc339522759302c55b736da7994c22587a2))
+* **core:** add save file action to AutoDev tool window ([2c9769e](https://github.com/unit-mesh/auto-dev/commit/2c9769ee6c73eb6864c8e8effb21c90941a5ee3b))
+* **core:** enhance shell command safety check ([4cb55b7](https://github.com/unit-mesh/auto-dev/commit/4cb55b7fb8ca596e69f0f1c82afd37c2ceb7ebaf))
+* **core:** enhance shell safety checks with additional dangerous command patterns ([93c983d](https://github.com/unit-mesh/auto-dev/commit/93c983d3e41d777529912100d4a5da9b19ab6169))
+* **core:** optimize DevIn tag handling in AutoDevInlineChatPanel ([37bf949](https://github.com/unit-mesh/auto-dev/commit/37bf9494c1f09479f3265d3df7d7c263b8613f76))
+* **core:** update icon for AutoDev Planner tool window ([c492fc9](https://github.com/unit-mesh/auto-dev/commit/c492fc9c24d6fd2af2577698f2e7cf97d9ca9f89))
+* **core:** update send icon to version 2 ([adad4d9](https://github.com/unit-mesh/auto-dev/commit/adad4d92e5c5f6399318cae7884a2bae757d3f1e))
+* **coroutine:** add worker thread dispatcher and scope ([7410128](https://github.com/unit-mesh/auto-dev/commit/741012851ef870c027ee32a8e6af4419ae4aaca0))
+* **custom:** add AutoDevNotifications on non-empty output [#271](https://github.com/unit-mesh/auto-dev/issues/271) ([f21ec5c](https://github.com/unit-mesh/auto-dev/commit/f21ec5ce9ee09886b4272acf7c735241e25c5b53))
+* **database:** add MCP tool for fetching database schema [#330](https://github.com/unit-mesh/auto-dev/issues/330) and closed [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([f9a642d](https://github.com/unit-mesh/auto-dev/commit/f9a642dea9b867f41f87f36022ada4fce7529258))
+* **database:** add safety check for dangerous SQL operations ([8f9ea98](https://github.com/unit-mesh/auto-dev/commit/8f9ea98e97f67444f5c12add0be140749ff9f61a))
+* **database:** add SqlRunService and DatabaseFunctionProvider [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([9fcd816](https://github.com/unit-mesh/auto-dev/commit/9fcd816d5558f5da52eb5ba66ed1ab32f2a1710a))
+* **database:** format database schema output as SQL code block ([dff81b6](https://github.com/unit-mesh/auto-dev/commit/dff81b6c1a9a5492902b43f0a7ee849299be12e4))
+* **dependencies:** add action to check dependencies [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([d78a46a](https://github.com/unit-mesh/auto-dev/commit/d78a46a646da3815e92d6c4edf54606a0c9a3213))
+* **dependencies:** add dependency collection for Maven and Gradle [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([b784624](https://github.com/unit-mesh/auto-dev/commit/b7846249ff2a2cbd6b768f91d523e5a27d01e116))
+* **dependencies:** add formatted dependency output to DependenciesFunctionProvider [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([bb5439b](https://github.com/unit-mesh/auto-dev/commit/bb5439b18cf7aeeb9dd9135f93ded4f02c5c591d))
+* **dependencies:** add project dependencies model and inspections [#316](https://github.com/unit-mesh/auto-dev/issues/316) ([16f8bdc](https://github.com/unit-mesh/auto-dev/commit/16f8bdc720db96def7c022728513af35521fa9ee))
+* **devti:** enhance auto-sketch mode with additional commands ([5f10d32](https://github.com/unit-mesh/auto-dev/commit/5f10d3200adc6e5e1d3ee5ace915a332858c3711))
+* **devtools:** add copy action to plan toolbar and improve code execution ([1d5407e](https://github.com/unit-mesh/auto-dev/commit/1d5407ec0f57bf45c64b10b5e6c3f3f3f31bae80))
+* **devtools:** implement file saving functionality for AutoDev ([76a4703](https://github.com/unit-mesh/auto-dev/commit/76a4703f7851c6e1216e545cd25254c88fb71f02))
+* **devtools:** improve shell command execution and output display ([f029612](https://github.com/unit-mesh/auto-dev/commit/f0296126943dda2ff5b3bf0536d03fd4700bf282))
+* **diff-repair:** include user intention in diff repair context ([cf0e478](https://github.com/unit-mesh/auto-dev/commit/cf0e4787af4e9abe41d464cf03bc13f3ecd674a9))
+* **diff:** add related select [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([91abe1b](https://github.com/unit-mesh/auto-dev/commit/91abe1bce1d515b59b8fcc33ddc4ed02a3256bcd))
+* **diff:** add run and repair diff actions ([26e4c76](https://github.com/unit-mesh/auto-dev/commit/26e4c7644d81d5cc3ca196a6857f83a59ab7ce37))
+* **diff:** enhance SingleFileDiffView with editor param and optimize stream handling ([a44f4ea](https://github.com/unit-mesh/auto-dev/commit/a44f4ea6eae4d1ff440c4d677cdb3825cdf04959))
+* **diff:** enhance SingleFileDiffView with editor param and optimize stream handling``` ([0e32fd1](https://github.com/unit-mesh/auto-dev/commit/0e32fd16a56b21848046db31d61a03e1632ffc4b))
+* **diff:** init stream diff code [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([93b8316](https://github.com/unit-mesh/auto-dev/commit/93b83168b58195f7a411ed598c52918123cebddd))
+* **docker:** add Docker connection and runtime support [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([dd0adfc](https://github.com/unit-mesh/auto-dev/commit/dd0adfc2d3b56e8d27d5c17fa65c1157c5801f5a))
+* **docker:** add Docker support to 223 [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([b1e7a1b](https://github.com/unit-mesh/auto-dev/commit/b1e7a1b669916e25720dfc6a38175c4081d3a3ac))
+* **docker:** add Dockerfile parser and enhance context provider [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([12f801c](https://github.com/unit-mesh/auto-dev/commit/12f801c6fec0e82bd7b59c8f2169b8b57a89764e))
+* **docker:** enhance DockerContextProvider with regex and runReadAction [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([2649ffd](https://github.com/unit-mesh/auto-dev/commit/2649ffd5123845e34d9a6bf02a3fb06d184ed4bb))
+* **docker:** implement DockerContextProvider and RunDockerfileService [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([b1a53d3](https://github.com/unit-mesh/auto-dev/commit/b1a53d357951b03a512f592e250c04aedea493e0))
+* **docs:** add custom AI Composer guide and update nav_order ([d015fa6](https://github.com/unit-mesh/auto-dev/commit/d015fa69278d444e245cf8a79960f84315e02526))
+* **editor:** add preview editor support to EditorFragment ([c07eee8](https://github.com/unit-mesh/auto-dev/commit/c07eee80474497db4ff999fa3dcd96bca7f85e53))
+* **editor:** implement right toolbar and preview layout for file editor ([dd53855](https://github.com/unit-mesh/auto-dev/commit/dd53855ddeff1602675307b194b0bfa0920edc4a))
+* **endpoints:** add callee lookup for related classes [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([93756d3](https://github.com/unit-mesh/auto-dev/commit/93756d3622e73d839e3896b2cd2dd0a0a355ad6d))
+* **endpoints:** add EndpointKnowledgeWebApiProvider for API call tree lookup [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([6eab126](https://github.com/unit-mesh/auto-dev/commit/6eab126109d82842e08c626f9e83e7163df4bfe4))
+* **endpoints:** add endpoints plugin support ([dba4c63](https://github.com/unit-mesh/auto-dev/commit/dba4c63a680e8276ae230079f879b7061aec14d1)), closes [#287](https://github.com/unit-mesh/auto-dev/issues/287)
+* **endpoints:** add file name to web API endpoint output [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([685c29c](https://github.com/unit-mesh/auto-dev/commit/685c29c3caf9a83bb9d68537922ab218b5698397))
+* **endpoints:** add Spring support and refine endpoint detection [#287](https://github.com/unit-mesh/auto-dev/issues/287) ([682642f](https://github.com/unit-mesh/auto-dev/commit/682642f198d0c95124f9856f5170239dd921b173))
+* **endpoints:** add WebApiView toolchain function [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([1129c14](https://github.com/unit-mesh/auto-dev/commit/1129c143242ff0c30dfde4c70f324f1a31e7cfd4))
+* **endpoints:** enhance web API endpoint display format ([9e0969d](https://github.com/unit-mesh/auto-dev/commit/9e0969d3480ed6f7cd73d0f6bf7cb397a2e2bca8))
+* **endpoints:** update provider to use new API and filter available providers [#287](https://github.com/unit-mesh/auto-dev/issues/287) ([7c60472](https://github.com/unit-mesh/auto-dev/commit/7c604728416ccd92a64838e90057b95eca6e5e0c))
+* Enhance context checks and tool execution in sketch.vm ([7dbd0e6](https://github.com/unit-mesh/auto-dev/commit/7dbd0e67780664aa5b5714c1dd73eaada777f50a))
+* Enhance terminal UI with new icons and button styles [#265](https://github.com/unit-mesh/auto-dev/issues/265) ([da9527a](https://github.com/unit-mesh/auto-dev/commit/da9527a4c4ab1b40da73b04d4b4999e61da61b96))
+* Enhance WebView buttons with cursor and border styles ([601e0e4](https://github.com/unit-mesh/auto-dev/commit/601e0e4c4973d27d29e778213334d419c9ba87f0))
+* **ext-container:** enhance Docker context provider with error handling [#306](https://github.com/unit-mesh/auto-dev/issues/306) ([d382e71](https://github.com/unit-mesh/auto-dev/commit/d382e7142b15748aeb59d138965bf1c52a348274))
+* **file-utils:** add findFile utility for project file search ([c8db562](https://github.com/unit-mesh/auto-dev/commit/c8db562c7cb54eada3c853d85f9aea49da036bbc)), closes [#257](https://github.com/unit-mesh/auto-dev/issues/257)
+* **go:** add GoBuildSystemProvider for dependency management [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([bd5d893](https://github.com/unit-mesh/auto-dev/commit/bd5d8931d3416e2c9ccac54bc0ba613620083188))
+* **go:** add GoLangPlaygroundSketchProvider ([1b9a5e6](https://github.com/unit-mesh/auto-dev/commit/1b9a5e68bbc8b056a41fc4a4435bacac03f0475c))
+* **go:** implement module retrieval functionality in GoBuildSystemProvider [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([76e0329](https://github.com/unit-mesh/auto-dev/commit/76e03298a724e80284fe040310c0a21d86082643))
+* **gradle:** detect Gradle DSL type in JavaBuildSystemProvider ([b464574](https://github.com/unit-mesh/auto-dev/commit/b464574e56fbc4e639119a6a1a5aecbe44be7b5a))
+* **gui:** add localization for save file action ([c3fd97e](https://github.com/unit-mesh/auto-dev/commit/c3fd97e6d480d161b65691daa3377f60a6a5dadc))
+* **gui:** replace AutoDevIcons with NewChatAction and simplify MessageView- Remove unused import of AutoDevIcons in MessageView.kt ([4cef76c](https://github.com/unit-mesh/auto-dev/commit/4cef76cdb13b43f9d8752ae7a0748537c429bcc6))
+* **gui:** update AutoDev tool window content creation [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([cc5373d](https://github.com/unit-mesh/auto-dev/commit/cc5373d6acda8b9f8f48b0c609da35be069b936c))
+* **inline-chat:** enhance inline chat with context and template rendering [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([38a5fd4](https://github.com/unit-mesh/auto-dev/commit/38a5fd485dbc0091ca5fe4637125bd462d58d406))
+* **inline-chat:** handle ESC key to close panel ([#302](https://github.com/unit-mesh/auto-dev/issues/302)) ([f8019d9](https://github.com/unit-mesh/auto-dev/commit/f8019d9788d97cb44ff63dd897e89e4c26415798)), closes [#301](https://github.com/unit-mesh/auto-dev/issues/301)
+* **inline:** add inline chat [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([0db978c](https://github.com/unit-mesh/auto-dev/commit/0db978c2bcc08927fdf9c0ae567266d3ccba6570))
+* **java:** add related symbol resolution and command [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([8e70b21](https://github.com/unit-mesh/auto-dev/commit/8e70b21d8ebdb7f5eab1e7b46b1a0f742091bae8))
+* **java:** include class inheritors in related classes lookup ([02c539e](https://github.com/unit-mesh/auto-dev/commit/02c539e42278fbca57114fd5e5030b34f0007317))
+* **javascript:** add callee lookup for JS functions [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([eacc191](https://github.com/unit-mesh/auto-dev/commit/eacc191173b907f44abea5792d0705abfaababd7))
+* **javascript:** add framework version ([42ab37b](https://github.com/unit-mesh/auto-dev/commit/42ab37be3e239dce9aa5c762cecbc00f79f7e881))
+* **javascript:** add JavaScript type resolver and related class provider [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([7fd9580](https://github.com/unit-mesh/auto-dev/commit/7fd958005f62110006de5585d0e4267ab8d460f8))
+* **javascript:** add ReactUIComponentProvider for UI component collection [#319](https://github.com/unit-mesh/auto-dev/issues/319) ([5527d13](https://github.com/unit-mesh/auto-dev/commit/5527d13fd0cbbe41bf71620ca82607cd140c96c0))
+* **javascript:** detect build tool and framework dynamically ([d24b458](https://github.com/unit-mesh/auto-dev/commit/d24b458746f382c2d2d4739f1806c2f2b531f254))
+* **json:** add optional JSON module dependency [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([232c801](https://github.com/unit-mesh/auto-dev/commit/232c8010d6582002e6ad49762f8b700123865d7c))
+* **knowledge:** add history function provider for knowledge transfer ([97bfac8](https://github.com/unit-mesh/auto-dev/commit/97bfac88439c322c711bd395da6905b70bbcb8a4))
+* **knowledge:** add KnowledgeWebApiProvider extension [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([696d1a7](https://github.com/unit-mesh/auto-dev/commit/696d1a793c0e7172a9650d7acc22f99e85e533b4))
+* **knowledge:** add support for additional HTTP methods ([a8ac29d](https://github.com/unit-mesh/auto-dev/commit/a8ac29d52ba7d3006d88d97ad7dddbbdef0f6eb8))
+* **knowledge:** init KnowledgeFunctionProvider [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([52f2449](https://github.com/unit-mesh/auto-dev/commit/52f2449a4595da45e8fbfaa536d2e1b096730ea6))
+* **kotlin:** add callee lookup for Kotlin functions [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([55ad595](https://github.com/unit-mesh/auto-dev/commit/55ad595faca8f947517f2d6c35f47af7da368676))
+* **lint:** add PsiSyntaxCheckingVisitor and PsiErrorCollector for syntax linting [#288](https://github.com/unit-mesh/auto-dev/issues/288) ([ddd5be7](https://github.com/unit-mesh/auto-dev/commit/ddd5be72ddff55111cfbd665004f156be698ecde))
+* **lint:** add tool ID to SketchInspectionError ([991cec8](https://github.com/unit-mesh/auto-dev/commit/991cec8b4d3cc8c0ef1730f2d2dfdcb09b720242))
+* **lint:** add UI for displaying lint inspection errors [#288](https://github.com/unit-mesh/auto-dev/issues/288) ([6640073](https://github.com/unit-mesh/auto-dev/commit/6640073c8eabae7aaa8939a38f01c538e5057631))
+* **markdown:** add Markdown preview support ([23f41bc](https://github.com/unit-mesh/auto-dev/commit/23f41bc369e38054a2c8f7d4b9ce0636498be32d))
+* **markdown:** add theme-aware styling for code blocks ([578231c](https://github.com/unit-mesh/auto-dev/commit/578231cb5f9d112cc6b0facc34d3be4d17b15276))
+* **mcp:** add IssueEvaluateTool for issue analysis ([53dca04](https://github.com/unit-mesh/auto-dev/commit/53dca0426c0bc89e2e5bfed346863d7b3a8a900e))
+* **mcp:** add IssueEvaluateTool for issue analysis ([b95f815](https://github.com/unit-mesh/auto-dev/commit/b95f8153a121b735617e1c3375cac6a726436000))
+* **mcp:** add MCP client and configuration support [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([8145db8](https://github.com/unit-mesh/auto-dev/commit/8145db8666cc1f30962de78c6151466eb7b15641))
+* **mcp:** add MCP server support and configuration [#33](https://github.com/unit-mesh/auto-dev/issues/33)- ([fb53c52](https://github.com/unit-mesh/auto-dev/commit/fb53c522c94d3916122c95907b32c1456a8ea620))
+* **mcp:** add McpFunctionProvider and enhance tool handling [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([2d91b91](https://github.com/unit-mesh/auto-dev/commit/2d91b910b340c4f19888bab7371f81bdeaf834ef))
+* **mcp:** add MCPService for handling MCP tool requests [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([caacabb](https://github.com/unit-mesh/auto-dev/commit/caacabbdaa7311f112a70f4af755250f44ac5463))
+* **mcp:** add McpTool extension point and built-in tools [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([e970fbb](https://github.com/unit-mesh/auto-dev/commit/e970fbbaac829b4b5bea7e270f95978726d950f4))
+* **mcp:** add tools for finding commits by message and retrieving VCS status ([03cd25f](https://github.com/unit-mesh/auto-dev/commit/03cd25f5f39ed3919c28ee5134e8dba72ba8faa2))
+* **mcp:** enhance MCP tool execution and documentation [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([5b955c3](https://github.com/unit-mesh/auto-dev/commit/5b955c37eba7f26498657c3c056075c4f108982d))
+* **mcp:** enhance tool execution with JSON argument parsing [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([4acdadd](https://github.com/unit-mesh/auto-dev/commit/4acdadd9bf8c692f2b4633ed7ef5f0bf64eb89e0))
+* **mcp:** skip validation if MCP server is disabled [#330](https://github.com/unit-mesh/auto-dev/issues/330) ([4f7b3d1](https://github.com/unit-mesh/auto-dev/commit/4f7b3d1a4caccfd329dc09d2c4940f6a355de64c))
+* **observer:** add AgentState and AgentStateService [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([33cea27](https://github.com/unit-mesh/auto-dev/commit/33cea27278861c440a9630a9df87028bd387dc85))
+* **observer:** add enable observer setting and validation [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([d330927](https://github.com/unit-mesh/auto-dev/commit/d3309275ac05483d3acc25950e09453e673f036f))
+* **observer:** enable AddDependencyAgentObserver and refactor message processing [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([9ba6e6a](https://github.com/unit-mesh/auto-dev/commit/9ba6e6a826929dd9968cc66a8614bc5dbafa163a))
+* **observer:** enhance test error reporting and console editor handling [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([19cf4ba](https://github.com/unit-mesh/auto-dev/commit/19cf4ba0f10bf35a481117b6d3dbcde9bc7c70de))
+* **observer:** re-enable ExternalTaskAgentObserver and improve error handling [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([9012c1a](https://github.com/unit-mesh/auto-dev/commit/9012c1a2aa06acdab60c0dfd10ab3b89e1688fad))
+* **openapi:** add OpenAPISketchProvider support ([052952a](https://github.com/unit-mesh/auto-dev/commit/052952a70e1f759ebbe71c15190c9158b1f947bf))
+* **openrewrite:** add OpenRewrite plugin integration [#319](https://github.com/unit-mesh/auto-dev/issues/319) ([78d7fed](https://github.com/unit-mesh/auto-dev/commit/78d7fed92fd4b6e9023f628451ab455215279c79))
+* **parser:** add GitHub-style TODO support in MarkdownPlanParser [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([a4abd6b](https://github.com/unit-mesh/auto-dev/commit/a4abd6b0e29cfa3dd165eaf5fe43a15779bef658))
+* **parser:** add support for DevIns code format [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([4c77940](https://github.com/unit-mesh/auto-dev/commit/4c779406acce157501f6afae0c887764a6964633))
+* **parser:** add support for THOUGHT and PLAN tags [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([1262136](https://github.com/unit-mesh/auto-dev/commit/1262136400f828429a661120bfc66d4a3e5088a8))
+* **parser:** add test for Markdown to HTML conversion [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([e17e3a3](https://github.com/unit-mesh/auto-dev/commit/e17e3a3118914584a56603c3ad4ce31997f1f579))
+* **parser:** improve DevIn code block parsing logic [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([f09b369](https://github.com/unit-mesh/auto-dev/commit/f09b369b1c9b6a348b75f32368799031625786f4))
+* **patch:** add repair button and refactor diff repair logic ([3b93202](https://github.com/unit-mesh/auto-dev/commit/3b932028041e7b2164db47031aa1c334df571d58))
+* **patch:** simplify diff repair templates and remove examples ([18a7638](https://github.com/unit-mesh/auto-dev/commit/18a763878005562d4dadee0c0c2545470dd7ddb3))
+* **plan-parser:** enhance markdown section status parsing [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([c7db2d4](https://github.com/unit-mesh/auto-dev/commit/c7db2d44d3ac0b56d18f78425619cd463bc6dd83))
+* **plan:** add edit plan functionality [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([9c0edc8](https://github.com/unit-mesh/auto-dev/commit/9c0edc83be8b6aa05e88b2fe63d417952f2b6218))
+* **plan:** add execute button for incomplete tasks and update plan handling [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([f1e468f](https://github.com/unit-mesh/auto-dev/commit/f1e468f56a9322967cbe821b08aa77752b80f20c))
+* **plan:** add Markdown plan parser and UI integration [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([ee06e6f](https://github.com/unit-mesh/auto-dev/commit/ee06e6f6f0411c8bc5e8a5abb56148fab44ead77))
+* **plan:** add PDCA cycle support to AgentPlan [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([c425059](https://github.com/unit-mesh/auto-dev/commit/c425059300fe309734322fab9d4df60aa8713eea))
+* **plan:** add plan review action and test cases [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([934a985](https://github.com/unit-mesh/auto-dev/commit/934a985c99f54dcd6ce98a0853efe8f88b705405))
+* **plan:** add plan review functionality and scrollable UI ([0d1eae1](https://github.com/unit-mesh/auto-dev/commit/0d1eae1e05dd12785b7a1499dac9655edfd6b676)), closes [#259](https://github.com/unit-mesh/auto-dev/issues/259)
+* **plan:** add subtask support and improve plan structure [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([01b21c0](https://github.com/unit-mesh/auto-dev/commit/01b21c08d6a4c428cf6a5dcdb084e4db56ca9736))
+* **plan:** add task status indicators and UI enhancements ([fe3dfc8](https://github.com/unit-mesh/auto-dev/commit/fe3dfc8e65eef12b5182dbfd813834a928ca80ce)), closes [#331](https://github.com/unit-mesh/auto-dev/issues/331)
+* **plan:** enhance plan structure and verification steps [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([c6c1210](https://github.com/unit-mesh/auto-dev/commit/c6c1210018a13e9dbbbaaf7aacda192fdbaf2139))
+* **planner:** add editor mode and improve plan management [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([31c1c0b](https://github.com/unit-mesh/auto-dev/commit/31c1c0b00a43f08192bdf4920b44b613dcbc8801))
+* **plugins:** add Jupyter support and update plugin configurations ([bc86beb](https://github.com/unit-mesh/auto-dev/commit/bc86bebc72b15419c1f47cd03f1c50cc8da7a665))
+* **preview:** set default layout for file editor preview ([6bc690f](https://github.com/unit-mesh/auto-dev/commit/6bc690f9732d11caf6490992940e21c709c28fec))
+* **project:** add ProjectFileUtil for file project checks [#275](https://github.com/unit-mesh/auto-dev/issues/275) ([a17ab78](https://github.com/unit-mesh/auto-dev/commit/a17ab788028aec956e77bfd4a32f9b50a803899e))
+* **prompting:** add PromptOptimizer to trim code spaces [#317](https://github.com/unit-mesh/auto-dev/issues/317) ([44d00c6](https://github.com/unit-mesh/auto-dev/commit/44d00c6f09e1cc61fda6fc2c014d7d5b13af389b))
+* **prompting:** enhance trimCodeSpace to handle Python code [#316](https://github.com/unit-mesh/auto-dev/issues/316) ([e477111](https://github.com/unit-mesh/auto-dev/commit/e4771116fb99d8adac24cb5a433ddb988efb66b0))
+* **prompting:** expose collectFrameworkContext as public method [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([d672fc2](https://github.com/unit-mesh/auto-dev/commit/d672fc21f3c43973f6888b18bbb4972466ce90b5))
+* **python:** add framework detection logic ([ce7314c](https://github.com/unit-mesh/auto-dev/commit/ce7314c45182e39bca1217a87febd1db6cdbfab7))
+* **python:** add Python build system provider [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([5ffcfa4](https://github.com/unit-mesh/auto-dev/commit/5ffcfa46a96d44ba462707892349cc59bf3985e2))
+* **ripgrep:** add ripgrep search command and implementation ([055c080](https://github.com/unit-mesh/auto-dev/commit/055c08048f55e27083918708f091cd60f4c92db7))
+* **ripgrep:** add support for locating rg in /usr/local/bin on macOS ([ad2286f](https://github.com/unit-mesh/auto-dev/commit/ad2286f269f00a21918c2e28d7533d2dc6b92839))
+* **ripgrep:** buffer JSON lines for incomplete parsing ([1731623](https://github.com/unit-mesh/auto-dev/commit/173162375f68a38c92ea51578d7d84c585f9c796))
+* **run-action:** add Dockerfile support and i18n for run action [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([3c0560c](https://github.com/unit-mesh/auto-dev/commit/3c0560c9c38c83d0bcd5bc2d2e4171af5309e94d))
+* **run-config:** add show console toggle for DevIns run configurations [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([8c278d2](https://github.com/unit-mesh/auto-dev/commit/8c278d29e4693661d832d1160369acb4dc2ab444))
+* **run:** add `isFromToolAction` parameter to `runFile` method ([50eb955](https://github.com/unit-mesh/auto-dev/commit/50eb9551826b9e0ca075391664798790641a30dc))
+* **run:** add DevInRunService for .devin file execution [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([d3ac095](https://github.com/unit-mesh/auto-dev/commit/d3ac095c04187cbc1ddcd690ba3cbd61651380b5))
+* **run:** add project run service for task execution ([83496fb](https://github.com/unit-mesh/auto-dev/commit/83496fbe44f11dfc38eed52006c4740f4af4d832))
+* **run:** fallback to CLI mode when run service fails ([ba3ab9c](https://github.com/unit-mesh/auto-dev/commit/ba3ab9c11df2503a8e7cd7fba27297cbc014e161))
+* **run:** refactor and extend RunService for file execution [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([15656e1](https://github.com/unit-mesh/auto-dev/commit/15656e1b72124d0b80869f83a9461492e320b226))
+* **scc:** add SCC wrapper for code analysis [#319](https://github.com/unit-mesh/auto-dev/issues/319) ([6155a78](https://github.com/unit-mesh/auto-dev/commit/6155a78a79349465e1fb1fe55beb99455c54d887))
+* **schema:** add modelType field with predefined options to JSON schema [#271](https://github.com/unit-mesh/auto-dev/issues/271) ([5092cc0](https://github.com/unit-mesh/auto-dev/commit/5092cc0b74e49d57557df3a9df68f975830dc3b2))
+* **schema:** refactor and extend JSON schema providers [#271](https://github.com/unit-mesh/auto-dev/issues/271) ([49d0bfe](https://github.com/unit-mesh/auto-dev/commit/49d0bfe751027ce2345adeedecf4e9c3b12b3ba7))
+* **search:** display total results in search output ([0afdd8f](https://github.com/unit-mesh/auto-dev/commit/0afdd8f85ac267d0b09ad19d80800eb9d7a1a37a))
+* **search:** enhance local search with context lines and scope support ([fad212f](https://github.com/unit-mesh/auto-dev/commit/fad212f1f5a9f188edf864e64e3d7c05e8cb37f7)), closes [#257](https://github.com/unit-mesh/auto-dev/issues/257)
+* **search:** replace GrepSearch with LocalSearch command [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([f9a112d](https://github.com/unit-mesh/auto-dev/commit/f9a112db2f411922692ed1ce36162f2002d6bc6e))
+* **settings:** add enable render webview option ([2bdb46c](https://github.com/unit-mesh/auto-dev/commit/2bdb46c6f13e7f160309464e1c2e445ad175b3c8))
+* **settings:** add JsonTextProvider import to settings components [#332](https://github.com/unit-mesh/auto-dev/issues/332) ([a4ff169](https://github.com/unit-mesh/auto-dev/commit/a4ff169a62bbce93d35b2a674d263db8cc242976))
+* **settings:** add LLM key validation and connection tips [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([3f71f8e](https://github.com/unit-mesh/auto-dev/commit/3f71f8e12df0088fb20be218199a18406b1c2d91))
+* **settings:** add MCP server port and restart requirement ([5ecf871](https://github.com/unit-mesh/auto-dev/commit/5ecf87126ae352e1e444d8b92ac4e5c8097e70a5))
+* **settings:** add trim code option before sending [#317](https://github.com/unit-mesh/auto-dev/issues/317) ([643bb41](https://github.com/unit-mesh/auto-dev/commit/643bb41d4ce16db45f49bc694ee69e2442594492))
+* **settings:** update UI and schema handling for AutoDev [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([fca0563](https://github.com/unit-mesh/auto-dev/commit/fca0563a1c4ebedd8fbec8b2392bd20e1f579baf))
+* **shell:** add async shell execution with progress tracking [#335](https://github.com/unit-mesh/auto-dev/issues/335) ([c94b3b4](https://github.com/unit-mesh/auto-dev/commit/c94b3b45e8cc4917bdb2020c8d4d9798f102cf50))
+* **shell:** add ShellUtil for detecting available shells [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([02f4293](https://github.com/unit-mesh/auto-dev/commit/02f429381de375b902f12a6f6863fb68fffe408d))
+* **shell:** add support for shell script execution [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([f454226](https://github.com/unit-mesh/auto-dev/commit/f4542265c31b5afafb689b3fd981af7f8b0f5b9b))
+* **shell:** enhance shell cmd exec, refactor service, update examples ([c370c05](https://github.com/unit-mesh/auto-dev/commit/c370c0554e0599c3a8ef471bb14a62e742e0c1a4))
+* **shell:** enhance shell command execution and refactor service [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([4d8c9a6](https://github.com/unit-mesh/auto-dev/commit/4d8c9a658cbee454e14f76045194a9955d3431f6))
+* **shell:** make shell scripts executable before running ([cdc38b4](https://github.com/unit-mesh/auto-dev/commit/cdc38b4c12e2d3c65fd7ecedb775b0a3d73d0181))
+* **shell:** support dynamic shell content execution [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([fb6279a](https://github.com/unit-mesh/auto-dev/commit/fb6279a97c550c545566e2c23710a2f87b84295d))
+* **sketch:** add AutoSketchModeListener and blocking plan review ([0a61e78](https://github.com/unit-mesh/auto-dev/commit/0a61e78137ebf79520268a20fa45573dcff7f0ed))
+* **sketch:** add build tool info and improve UI styling [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([f4780b8](https://github.com/unit-mesh/auto-dev/commit/f4780b85e8235f174d72f4dbd873d7cdc6025bc5))
+* **sketch:** add BuiltinCommand for /write command handling ([0d40170](https://github.com/unit-mesh/auto-dev/commit/0d401708bac7e234928fe2e4c78a0721dabdeb6b))
+* **sketch:** add command transpilation and tool integration [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([77c49e6](https://github.com/unit-mesh/auto-dev/commit/77c49e6f373eac6acb44760ddb9b6a9fe7b887a3))
+* **sketch:** add current and opened files to context [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([8ab56f1](https://github.com/unit-mesh/auto-dev/commit/8ab56f1b9f9dde3aaf0a6ce2971fb4344c7e99c4))
+* **sketch:** add framework context to SketchRunContext [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([5bbd24a](https://github.com/unit-mesh/auto-dev/commit/5bbd24a64939262939b7a9f98a9dced43a1786fb))
+* **sketch:** add history panel for request prompts ([258020f](https://github.com/unit-mesh/auto-dev/commit/258020f5a7b91ea4a59fa33da26f7711d0e5b45e))
+* **sketch:** Add interrupt handling and process listeners ([#300](https://github.com/unit-mesh/auto-dev/issues/300)) ([170e77f](https://github.com/unit-mesh/auto-dev/commit/170e77fc3f245971c188cd576344685671cdc78f))
+* **sketch:** add localized lint error messages ([6f61f81](https://github.com/unit-mesh/auto-dev/commit/6f61f81c94b5ed53a84024ff99a107d8d49efafc))
+* **sketch:** add markdown preview support ([e6d6c38](https://github.com/unit-mesh/auto-dev/commit/e6d6c38c8dffc4ce35ed3ce51961c7735aac1f09))
+* **sketch:** add mermaid and plantuml support [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([5b89cf8](https://github.com/unit-mesh/auto-dev/commit/5b89cf88f4962fa4931b61c1a0c1a9650dc97d0b))
+* **sketch:** add mermaid and plantuml support [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([4420024](https://github.com/unit-mesh/auto-dev/commit/4420024d96a644e24630168df64f2d78c990a5f1))
+* **sketch:** add OpenAPI support and rename SingleFileDiffView [#287](https://github.com/unit-mesh/auto-dev/issues/287) ([a460231](https://github.com/unit-mesh/auto-dev/commit/a4602314cb9f1f06eff6db24693c46fd951f87e2))
+* **sketch:** add plan prompt support for Sketch AI ([c9779b9](https://github.com/unit-mesh/auto-dev/commit/c9779b9108361ae3190322f01e7f8f56e7294002))
+* **sketch:** add send functionality and enableInSketch flag ([4cf2fe6](https://github.com/unit-mesh/auto-dev/commit/4cf2fe60c71bc09586cb2c414c8a9747144277e0))
+* **sketch:** add sketch functionality and rename InlineChatPanelView to ChatSketchView [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([cc762f1](https://github.com/unit-mesh/auto-dev/commit/cc762f1835d4b5540b76efd358c98681b8d50b25))
+* **sketch:** add SketchRunContext and SketchToolchain [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([1399b02](https://github.com/unit-mesh/auto-dev/commit/1399b02c9e9efae354b32b27bc247fef15c3ded2))
+* **sketch:** add thinking text display in SketchToolWindow [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([80e8ea1](https://github.com/unit-mesh/auto-dev/commit/80e8ea1ae1e71148c0947aea5793f36d69b16b92))
+* **sketch:** add toolchain function support in DevIns [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([be0e071](https://github.com/unit-mesh/auto-dev/commit/be0e07142de23ef9238c61a13636498a7c403370))
+* **sketch:** add toolchain provider and refactor sketch UI [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([0ad8531](https://github.com/unit-mesh/auto-dev/commit/0ad8531cf704b235b34baa7364bf7da791982649))
+* **sketch:** add toolList support and refactor toolchain [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([c160a7d](https://github.com/unit-mesh/auto-dev/commit/c160a7d24ee9e8c057bd0e600acefa720cbdff30))
+* **sketch:** add WebpageSketchProvider for HTML support [#265](https://github.com/unit-mesh/auto-dev/issues/265) ([115bb28](https://github.com/unit-mesh/auto-dev/commit/115bb28db37faa590393ea57b829bc55eb0ccf74))
+* **sketch:** enable AutoSketchMode by default ([32f756c](https://github.com/unit-mesh/auto-dev/commit/32f756c55156c8b1d2671acf1b05ddf0b76cd330))
+* **sketch:** enhance DevIn tool integration and UI improvements [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([2e08ad2](https://github.com/unit-mesh/auto-dev/commit/2e08ad29dcb6c398464bd59192900df5ce1a79d6))
+* **sketch:** enhance inspection and error handling in PsiErrorCollector [#288](https://github.com/unit-mesh/auto-dev/issues/288) ([df51262](https://github.com/unit-mesh/auto-dev/commit/df51262ac421a2c6e4434b4e1eddcbd0a276c136))
+* **sketch:** enhance patch repair UI and add editor retrieval ([39d1e71](https://github.com/unit-mesh/auto-dev/commit/39d1e71114bfb8c67c11931c8c80d70280d49a9f))
+* **sketch:** enhance toolchain and add open command [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([7093f33](https://github.com/unit-mesh/auto-dev/commit/7093f3348ab2d6dcc6331fcf94abc618836479a1))
+* **sketch:** enhance updateViewText with complete flag and lint checks [#288](https://github.com/unit-mesh/auto-dev/issues/288) ([df25b1b](https://github.com/unit-mesh/auto-dev/commit/df25b1b4efe5bd7370b9c38e65f278ac51531fc0))
+* **sketch:** enhance updateViewText with complete flag and lint checks [#288](https://github.com/unit-mesh/auto-dev/issues/288) ([83d9b97](https://github.com/unit-mesh/auto-dev/commit/83d9b975d414a9fcc5fc7e62cc7072537ceef97e))
+* **sketch:** update diff stream diff block [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([97159a6](https://github.com/unit-mesh/auto-dev/commit/97159a6c05628a4fa73748c168c1dfa0e3b59f10))
+* **snippet:** add AutoInputService for DevIn language support [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([b3a5b0c](https://github.com/unit-mesh/auto-dev/commit/b3a5b0cc0f155f4f744e9fbd2c529c74d8c0c943))
+* **snippet:** enhance JSON handling for devcontainer files [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([f45c822](https://github.com/unit-mesh/auto-dev/commit/f45c822e1b3a99f72f9e9724e15f91668abe2799))
+* **snippet:** expand snippet file name detection ([2d8988f](https://github.com/unit-mesh/auto-dev/commit/2d8988f9d91791d54bdeac219dce8d4685e6ec94))
+* **structure:** enhance file structure retrieval and presentation [#309](https://github.com/unit-mesh/auto-dev/issues/309) ([561d646](https://github.com/unit-mesh/auto-dev/commit/561d6460449411e0d3c521111c6f2589b7804bad))
+* **templates:** enhance context variable usage in templates ([587d64d](https://github.com/unit-mesh/auto-dev/commit/587d64d1443afd88f8faa1004af51d9a4922bdd9))
+* **terminal:** add "Send to Sketch" button and filter terminal output ([c352e9a](https://github.com/unit-mesh/auto-dev/commit/c352e9ab758fee1668fce7290bc6e2a75b97fe1a))
+* **terminal:** add actions to terminal sketch ([b047edd](https://github.com/unit-mesh/auto-dev/commit/b047edd9ae07b919e65b5ce3c479157add5b70d6))
+* **terminal:** add collapsible panel for shell code display [#335](https://github.com/unit-mesh/auto-dev/issues/335) ([ca98448](https://github.com/unit-mesh/auto-dev/commit/ca98448d2205766e9d0334f537cc25151502fb96))
+* **terminal:** add dynamic title label to terminal widget ([60c78a0](https://github.com/unit-mesh/auto-dev/commit/60c78a009d2010e01f354c5e3ffc9517f58bf220))
+* **terminal:** add executing status and update result panel ([802eddd](https://github.com/unit-mesh/auto-dev/commit/802eddd5bd6afc6df3f5a06d60311790ef65f76e))
+* **terminal:** add resizable terminal panel and improve terminal sketch [#335](https://github.com/unit-mesh/auto-dev/issues/335) ([b24010a](https://github.com/unit-mesh/auto-dev/commit/b24010a307058a2e3d709f7c3772c5e4278b458e))
+* **terminal:** add show/hide terminal action and update related messages ([5ceba0d](https://github.com/unit-mesh/auto-dev/commit/5ceba0d07f39e2d7c53910a8510ed706d2b7e353))
+* **terminal:** add TerminalDiffLangSketchProvider and refactor UI [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([bd949f8](https://github.com/unit-mesh/auto-dev/commit/bd949f8f79fa0a3dc6a8f78bb6f9f4d4ff8c7561))
+* **terminal:** add TerminalDiffLangSketchProvider for bash support ([7102d28](https://github.com/unit-mesh/auto-dev/commit/7102d286e3e25481cba240d0522d8cc2952fd757))
+* **terminal:** add webview for local server in TerminalSketchProvider [#265](https://github.com/unit-mesh/auto-dev/issues/265) ([4ea9609](https://github.com/unit-mesh/auto-dev/commit/4ea96098e049e0f63e15d0d01ea598572fc6604b))
+* **terminal:** enhance shell execution with process output handling ([0068040](https://github.com/unit-mesh/auto-dev/commit/0068040ff8debcd8ee1b15c4538cb3178f61a4ba))
+* **terminal:** implement advanced shell command safety check [#335](https://github.com/unit-mesh/auto-dev/issues/335) ([681b95d](https://github.com/unit-mesh/auto-dev/commit/681b95db48d1fcdb9478065b20ab953d9bb0da67))
+* **terminal:** implement real-time UI updating for terminal output ([e07a0b2](https://github.com/unit-mesh/auto-dev/commit/e07a0b23aaa6288bb6d8cf85d4225e454042ddc4))
+* **terminal:** implement safety check for dangerous shell commands ([6b5666c](https://github.com/unit-mesh/auto-dev/commit/6b5666ccc7fc3a14ba7c458f3bc67c9b20ba9c9f)), closes [#335](https://github.com/unit-mesh/auto-dev/issues/335)
+* **terminal:** implement terminal runner service with enhanced functionality ([efab7b5](https://github.com/unit-mesh/auto-dev/commit/efab7b548e10530b4fd7342d6888fa91d088983c))
+* **terminal:** improve collapsible panel and add execution result feedback && closed [#335](https://github.com/unit-mesh/auto-dev/issues/335) ([92e3b15](https://github.com/unit-mesh/auto-dev/commit/92e3b151a7ed7cee270d07dbfdfb089e75c4ddb8))
+* **terminal:** set JAVA_HOME for terminal sessions ([f56325a](https://github.com/unit-mesh/auto-dev/commit/f56325a1f8f96f9162675623ea998eecd48368c0))
+* **terminal:** store and reuse execution results ([927a7c8](https://github.com/unit-mesh/auto-dev/commit/927a7c83eefa4f8d11ec53a85fa9ab99271e7a40))
+* **terminal:** 添加对平台版本 243 的支持 ([1e9ba5e](https://github.com/unit-mesh/auto-dev/commit/1e9ba5ed0acb053b3c8a8a3c3cb3268ada7edbfe))
+* **test:** add TestAgentObserver for test failure handling [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([a718b80](https://github.com/unit-mesh/auto-dev/commit/a718b80fd3d0b63157201a9ad2f0f7e04207a788))
+* **toolbar:** add NewSketchAction for creating sketch panels [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([8805d5a](https://github.com/unit-mesh/auto-dev/commit/8805d5a831f493b9bc80d24d0d457233fbab432e))
+* **toolbar:** add sketch panel creation in NewChatAction [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([8ee6841](https://github.com/unit-mesh/auto-dev/commit/8ee6841c0a1f25989c629657dd18495d1118f8ad))
+* **toolchain:** add `funcNames` method to `ToolchainFunctionProvider` ([6bbed83](https://github.com/unit-mesh/auto-dev/commit/6bbed8375f13b8475dfcdb48becde9f740b1304b)), closes [#308](https://github.com/unit-mesh/auto-dev/issues/308)
+* **toolchain:** add toolchain function provider and database command [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([dd1b375](https://github.com/unit-mesh/auto-dev/commit/dd1b375d5941cbb2a31c915c3cc2451c5a46ad1f))
+* **toolchain:** add toolchain icon and improve command completion [#307](https://github.com/unit-mesh/auto-dev/issues/307) ([6b3e887](https://github.com/unit-mesh/auto-dev/commit/6b3e887442d3cc30c3bbdccfc92102125ed2c398))
+* **tools:** enhance AgentTool and add new tool examples [#308](https://github.com/unit-mesh/auto-dev/issues/308) ([4cc3dd8](https://github.com/unit-mesh/auto-dev/commit/4cc3dd87d4e8507351b5e77ac6e2ec38235a7fb1))
+* **toolWindow:** add AutoDevPlaner tool window ([e33c82b](https://github.com/unit-mesh/auto-dev/commit/e33c82b7942e62c45c994d289fa59ce4868f7982)), closes [#223](https://github.com/unit-mesh/auto-dev/issues/223)
+* **toolwindow:** add sketch panel and improve editor handling [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([4732572](https://github.com/unit-mesh/auto-dev/commit/4732572f57cc04e19cbafc7c17dc67d04cfbf6e4))
+* **toolwindow:** add test failure observer to AutoDev tool window [#259](https://github.com/unit-mesh/auto-dev/issues/259) ([9fdcb82](https://github.com/unit-mesh/auto-dev/commit/9fdcb829872a9da3e3916200e740ebd5f839b7a1))
+* **ui:** add copy action to message view toolbar ([6571cc5](https://github.com/unit-mesh/auto-dev/commit/6571cc52902f21339890d0d71d0f974660051b55))
+* **ui:** add copy-to-clipboard functionality and cleanup logic [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([a74d2da](https://github.com/unit-mesh/auto-dev/commit/a74d2da482a7dd4efc453572340671c5143a5bbd))
+* **ui:** add custom action and documentation links [#271](https://github.com/unit-mesh/auto-dev/issues/271) ([2d8e8ba](https://github.com/unit-mesh/auto-dev/commit/2d8e8ba665b5098745647d5f8ef1dea076eb3fa8))
+* **ui:** add execute task button to ThoughtPlanSketchProvider [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([5b1be1a](https://github.com/unit-mesh/auto-dev/commit/5b1be1a1aab5ee4750e0754865b9f47b3597b40d))
+* **ui:** add scroll pane to elementsList in AutoDevInputSection ([69d0642](https://github.com/unit-mesh/auto-dev/commit/69d0642cc1ed3cad45234fd1b9f5503c4706ca6b))
+* **ui:** add toolbar and popup for ThoughtPlanSketch [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([0ddbc88](https://github.com/unit-mesh/auto-dev/commit/0ddbc88a4bf3ebdf1a0f6114dec27178b0638ae6))
+* **ui:** conditionally add header for multiple file patches [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([69fd27b](https://github.com/unit-mesh/auto-dev/commit/69fd27b0f27bc767750a85ddee8a98ae274d6bcb))
+* **ui:** enhance section status handling and UI updates [#331](https://github.com/unit-mesh/auto-dev/issues/331) ([45bf139](https://github.com/unit-mesh/auto-dev/commit/45bf139ec5332343aafdeedd74d8cdc1ef7e9d7f))
+* **ui:** include file name in task progress display ([9733140](https://github.com/unit-mesh/auto-dev/commit/9733140d6a86b26e1afd4d324c66596a4ebc93d8))
+* **ui:** set minimum width for URL field and add border to WebView [#265](https://github.com/unit-mesh/auto-dev/issues/265) ([b29be86](https://github.com/unit-mesh/auto-dev/commit/b29be863b59ee5c614da826c2a2e573cb46d7e89))
+* Update UI elements with new icons and improved button styles ([3ae99ad](https://github.com/unit-mesh/auto-dev/commit/3ae99ad82fdf8ae318152d1f5e7ae46db1c29073))
+* **update:** add AutoDevUpdateStartupActivity and refactor UI components [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([0e92133](https://github.com/unit-mesh/auto-dev/commit/0e9213374fb0bb7f16a534bf235c5ad156c615f3))
+* **vcs:** add RevisionProvider interface and improve DiffSimplifier [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([de54736](https://github.com/unit-mesh/auto-dev/commit/de54736a443755fb511eef0c56f812d30d499c72))
+* **vue:** add VueRelatedClassProvider and integrate Vue module [#309](https://github.com/unit-mesh/auto-dev/issues/309) ([0831873](https://github.com/unit-mesh/auto-dev/commit/083187309be8e8344494287e38138f6ff9518a39))
+* **vue:** enhance Vue-related class provider and add tests [#309](https://github.com/unit-mesh/auto-dev/issues/309) ([2734789](https://github.com/unit-mesh/auto-dev/commit/2734789b2d7bac1f03228fefe1832d36dadc25a0))
+* **webview:** add URL field and refresh button to WebViewWindow [#265](https://github.com/unit-mesh/auto-dev/issues/265) ([d798b40](https://github.com/unit-mesh/auto-dev/commit/d798b40804dc3b6c709850639d6c0a92b46fadc8))
+* 多窗口, 优化输出不会刷新Process ([#297](https://github.com/unit-mesh/auto-dev/issues/297)) ([4c442df](https://github.com/unit-mesh/auto-dev/commit/4c442dfa97c2748dff136d0a81adf6aa4c399d82))
+
 
 ### Performance Improvements
 
 * **provider:** wrap file search in runReadAction ([fd3df19](https://github.com/unit-mesh/auto-dev/commit/fd3df192fb7f8724edc2700135cc62bf35fdf3da))
 * **sketch:** disable markdown preview by default ([b1e132e](https://github.com/unit-mesh/auto-dev/commit/b1e132ed47a682877c826d05c144e4f98b01f22f))
+
 
 ### Reverts
 
@@ -191,11 +551,51 @@
 * Revert "refactor(terminal): replace terminal text extraction method" ([065c149](https://github.com/unit-mesh/auto-dev/commit/065c1496fdb7aaddf6e0a251ac0d832d0a3dbda4))
 * Revert "ci(java): comment out failing or unused test cases" ([ad5df09](https://github.com/unit-mesh/auto-dev/commit/ad5df098304301d0fbb6a5c583cf1727b49463e7))
 
+
 ### BREAKING CHANGES
 
 * remove `#` system API syntax support
 
-## [1.8.18](https://github.com/unit-mesh/auto-dev/compare/v1.8.17...v[1.8.18]) (2024-12-28)
+This commit removes the `#` system API syntax support from the DevIn language,
+introducing a breaking change. The following changes have been made:
+
+1. **Grammar Changes**:
+   - Removed the `SYSTEM_START` rule from `DevInParser.bnf`.
+   - Commented out the `SYSTEM_BLOCK` state and related rules in `DevInLexer.flex`.
+   - Updated the `TEXT_SEGMENT` regex to exclude `#` from valid characters.
+
+2. **Compiler Changes**:
+   - Removed the `SYSTEM_START` and `NUMBER` token handling from `DevInSyntaxHighlighter.kt`.
+   - Updated the expected output in `DevInCompilerTest.kt` to reflect the removal of the system API syntax.
+
+3. **Documentation Updates**:
+   - Updated `devins-language.md` to reflect the removal of the `#` system API syntax, marking it as deprecated and removed in version 2.0.0.
+
+**Impact**:
+- Any existing code that relies on the `#` system API syntax will no longer work and will need to be refactored.
+- Developers should update their code to use alternative mechanisms for interacting with third-party systems.
+
+**Migration Guide**:
+- Replace any usage of `#` system API syntax with alternative approaches, such as custom commands or agents.
+- Update any tests or documentation that reference the `#` system API syntax.
+
+This change is part of the effort to simplify the language and remove less commonly used features to improve maintainability and clarity.
+
+
+
+# [1.9.0](https://github.com/unit-mesh/auto-dev/compare/v1.8.18...v1.9.0) (2025-01-11)
+
+
+### Features
+
+* **build:** add support for platform version 223 [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([ec85cfb](https://github.com/unit-mesh/auto-dev/commit/ec85cfb934ed4833514b8ebe63d0bbf1cea8c021))
+* **release-note:** add template-based release note generation [#256](https://github.com/unit-mesh/auto-dev/issues/256) ([76943cf](https://github.com/unit-mesh/auto-dev/commit/76943cf3940211a52b708c5d076f733450f49f93))
+* **settings:** add DevOps configurable provider [#257](https://github.com/unit-mesh/auto-dev/issues/257) ([5153032](https://github.com/unit-mesh/auto-dev/commit/51530326d65158cda633c6f9c602e1241bcaa6d6))
+
+
+
+## [1.8.18](https://github.com/unit-mesh/auto-dev/compare/v1.8.17...v1.8.18) (2024-12-28)
+
 
 ### Bug Fixes
 
@@ -204,6 +604,7 @@
 * **gui:** handle exceptions in AutoDevRunDevInsAction ([9572a61](https://github.com/unit-mesh/auto-dev/commit/9572a614a3189b48353752958d6e92ddc8b04c70))
 * **gui:** simplify document text access in AutoDevInputSection ([f5236c8](https://github.com/unit-mesh/auto-dev/commit/f5236c84b9c6da1ea33934314018c8afc15be7ac))
 * **llms:** skip empty messages in CustomSSEProcessor ([f9337d6](https://github.com/unit-mesh/auto-dev/commit/f9337d6e49163594e797128f259c5e42fccf342a))
+
 
 ### Features
 
@@ -215,18 +616,25 @@
 * **parser:** add support for shell script and HTTP request language names ([c7d5f80](https://github.com/unit-mesh/auto-dev/commit/c7d5f80f4843082f4d7cec2e04bc052e09ef0543))
 * **ui:** enhance cursor positioning and UI adjustments ([ccbe3e2](https://github.com/unit-mesh/auto-dev/commit/ccbe3e23f0d0c6d8b6c61262379450a3960bf9c1))
 
-## [1.8.17](https://github.com/unit-mesh/auto-dev/compare/v1.8.16...v[1.8.17]) (2024-12-11)
+
+
+## [1.8.17](https://github.com/unit-mesh/auto-dev/compare/v1.8.16...v1.8.17) (2024-12-11)
+
 
 ### Bug Fixes
 
 * **parser:** correct newline escaping in test cases ([b0cc99a](https://github.com/unit-mesh/auto-dev/commit/b0cc99a4d4102c993099e247cb66d34b2b3e7956))
 * **parser:** remove unnecessary newline replacement ([831f747](https://github.com/unit-mesh/auto-dev/commit/831f747f5101ef9ad63dcf756adfc40456820daf))
 
+
 ### Features
 
 * **code-completion:** enhance inlay code completion and formatting ([c2585bb](https://github.com/unit-mesh/auto-dev/commit/c2585bba132a5345b1508c51e14185e7efee19a9))
 
-## [1.8.16](https://github.com/unit-mesh/auto-dev/compare/v1.8.15...v[1.8.16]) (2024-12-07)
+
+
+## [1.8.16](https://github.com/unit-mesh/auto-dev/compare/v1.8.15...v1.8.16) (2024-12-07)
+
 
 ### Bug Fixes
 
@@ -239,24 +647,34 @@
 * **LLMSettingComponent:** 修复新装用户引擎未选择情况下的 `Array contains no element matching the predicate.` 异常 ([#247](https://github.com/unit-mesh/auto-dev/issues/247)) ([10848e3](https://github.com/unit-mesh/auto-dev/commit/10848e3a4077bbbaeccb79d35c8349aaad1da31c))
 * **tests:** update Kotlin test cases with proper syntax and semicolon usage ([a54aabd](https://github.com/unit-mesh/auto-dev/commit/a54aabd5fdc61775a519383e1953f872e3348846))
 
+
 ### Features
 
 * **document:** Add examples to custom living doc prompt builder ([dd2cd39](https://github.com/unit-mesh/auto-dev/commit/dd2cd39e04ec002323a927da0065039a2da0c7ef))
 * **java:** add support for AssertJ and update JUnit detection logic ([e1e9c26](https://github.com/unit-mesh/auto-dev/commit/e1e9c26cbf660ed20c180edf65e79ef049d005ca))
 
-## [1.8.15](https://github.com/unit-mesh/auto-dev/compare/v1.8.12...v[1.8.15]) (2024-11-16)
+
+
+## [1.8.15](https://github.com/unit-mesh/auto-dev/compare/v1.8.12...v1.8.15) (2024-11-16)
+
 
 ### Reverts
 
 * Revert "chore(plugin): update IntelliJ dependency and add JSON module config" ([f49134b](https://github.com/unit-mesh/auto-dev/commit/f49134bf550957556a2fcaeb873ee1b7d4230d16))
 
-## [1.8.12](https://github.com/unit-mesh/auto-dev/compare/v[1.8.12]-ALPHA...v[1.8.12]) (2024-10-05)
+
+
+## [1.8.12](https://github.com/unit-mesh/auto-dev/compare/v1.8.12-ALPHA...v1.8.12) (2024-10-05)
+
 
 ### Features
 
 * **build:** add kotlinx serialization plugin and dependency [#239](https://github.com/unit-mesh/auto-dev/issues/239) ([055633c](https://github.com/unit-mesh/auto-dev/commit/055633c1f992483648a54aa10a38cfd040833d4e))
 
-## [1.8.12-ALPHA](https://github.com/unit-mesh/auto-dev/compare/v1.8.11...v[1.8.12-ALPHA]) (2024-09-26)
+
+
+## [1.8.12-ALPHA](https://github.com/unit-mesh/auto-dev/compare/v1.8.11...v1.8.12-ALPHA) (2024-09-26)
+
 
 ### Features
 
@@ -265,7 +683,10 @@
 * **github-actions:** update build workflow and split tasks into separate jobs ([a92966b](https://github.com/unit-mesh/auto-dev/commit/a92966bca0262f885131dbdded5ea6b45bcba4ee))
 * **gradle:** increase JVM memory for Kotlin and Gradle [#236](https://github.com/unit-mesh/auto-dev/issues/236) ([ddd30c1](https://github.com/unit-mesh/auto-dev/commit/ddd30c1a207083b59be2cf2a0beb399c60415b20))
 
-## [1.8.11](https://github.com/unit-mesh/auto-dev/compare/v1.8.9-SNAPSHOT...v[1.8.11]) (2024-09-08)
+
+
+## [1.8.11](https://github.com/unit-mesh/auto-dev/compare/v1.8.9-SNAPSHOT...v1.8.11) (2024-09-08)
+
 
 ### Bug Fixes
 
@@ -273,18 +694,25 @@
 * **provider:** return immediately in handleFromType for PsiClassType ([6c92163](https://github.com/unit-mesh/auto-dev/commit/6c921634ac130289a4ca9ab0e9eec33b5b6157c3))
 * Unable to receive notifications when changes are made to the document ([#228](https://github.com/unit-mesh/auto-dev/issues/228)) ([22cd295](https://github.com/unit-mesh/auto-dev/commit/22cd29579053e60f9695ae4dfc3751039d67c6a9))
 
-## [1.8.9-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v[1.8.9-SNAPSHOT]) (2024-08-09)
+
+
+## [1.8.9-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v1.8.9-SNAPSHOT) (2024-08-09)
+
 
 ### Bug Fixes
 
 * **settings:** update comparison and remove unused dependency ([853dd9d](https://github.com/unit-mesh/auto-dev/commit/853dd9d377f66ee5245e80707cdc36511717b16c))
+
 
 ### Features
 
 * **embedding:** add LocalEmbedding class for text embedding [#200](https://github.com/unit-mesh/auto-dev/issues/200) ([2af87cc](https://github.com/unit-mesh/auto-dev/commit/2af87ccb07d38cdd80b91c55f3a0ea9b1d889770))
 * **embedding:** implement in-memory and disk-synchronized embedding search indices [#200](https://github.com/unit-mesh/auto-dev/issues/200) ([6d5ca70](https://github.com/unit-mesh/auto-dev/commit/6d5ca70311af20d4ac1b84816f6c3194297f22b1))
 
-## [1.8.8](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v[1.8.8]) (2024-08-07)
+
+
+## [1.8.8](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v1.8.8) (2024-08-07)
+
 
 ### Bug Fixes
 
@@ -295,6 +723,7 @@
 * **LLMInlayManager:** use InlayModelImpl for inlay model ([86d0840](https://github.com/unit-mesh/auto-dev/commit/86d08408a031f29ce28743b703932bea9f2ef876))
 * wrong trigger when user typing from code. ([08f8fbb](https://github.com/unit-mesh/auto-dev/commit/08f8fbb5a9ed06337f22b1a2a852969fa472edeb))
 
+
 ### Features
 
 * **diff-simplifier:** Include binary or large changes in output ([8fc6255](https://github.com/unit-mesh/auto-dev/commit/8fc625507fae4fa26c39d6963fa23c87f06662f3))
@@ -302,24 +731,34 @@
 * **service:** add support for creating Maven run configuration [#164](https://github.com/unit-mesh/auto-dev/issues/164) ([cdc003a](https://github.com/unit-mesh/auto-dev/commit/cdc003ae040cbaa20898a3f891295852c4b6f969))
 * **smartpaste:** add SmartCopyPasteProcessor ([4b427b4](https://github.com/unit-mesh/auto-dev/commit/4b427b46cb861544f79cd9e10ae5e5ab66e80677))
 
-## [1.8.7-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-SNAPSHOT...v[1.8.7-RELEASE]) (2024-06-13)
+
+
+## [1.8.7-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-SNAPSHOT...v1.8.7-RELEASE) (2024-06-13)
+
 
 ### Bug Fixes
 
 * **java:** simplify JavaVersionProvider isApplicable method ([4c20a81](https://github.com/unit-mesh/auto-dev/commit/4c20a8123cbc19459548cb1732392463eae2e210))
 
-## [1.8.7-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v[1.8.7-SNAPSHOT]) (2024-06-06)
+
+
+## [1.8.7-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v1.8.7-SNAPSHOT) (2024-06-06)
+
 
 ### Bug Fixes
 
 * **context:** handle exceptions in ClassContextProvider [#199](https://github.com/unit-mesh/auto-dev/issues/199) ([347c452](https://github.com/unit-mesh/auto-dev/commit/347c4522a1b682f5300aaa1372c1592ef243bf58))
+
 
 ### Features
 
 * **api-test:** add API test request generation template [#198](https://github.com/unit-mesh/auto-dev/issues/198) ([177a66c](https://github.com/unit-mesh/auto-dev/commit/177a66ce551564747a035cbac75b6d0762fe6850))
 * **api-test:** add HttpClient API test generation [#198](https://github.com/unit-mesh/auto-dev/issues/198) ([5c982af](https://github.com/unit-mesh/auto-dev/commit/5c982af9264650c0de34f2d9ef2866e791ed6c00))
 
-## [1.8.6-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-SNAPSHOT...v[1.8.6-RELEASE]) (2024-05-30)
+
+
+## [1.8.6-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-SNAPSHOT...v1.8.6-RELEASE) (2024-05-30)
+
 
 ### Bug Fixes
 
@@ -327,6 +766,7 @@
 * **flow:** update code creation flag in JvmAutoDevFlow ([c9cebfe](https://github.com/unit-mesh/auto-dev/commit/c9cebfef375a1238f02990b537a9dca1892b1c5b))
 * **parser:** update regex pattern for code block [#196](https://github.com/unit-mesh/auto-dev/issues/196) ([f08942b](https://github.com/unit-mesh/auto-dev/commit/f08942bc3b8c5e2c59e730993a52cdab999cac16))
 * **runner:** handle null result in test execution [#196](https://github.com/unit-mesh/auto-dev/issues/196) ([b70900c](https://github.com/unit-mesh/auto-dev/commit/b70900c9b7009d80589ce3022ad1ae1622cbc4da))
+
 
 ### Features
 
@@ -339,7 +779,10 @@
 * **intentions:** add test verification feature [#196](https://github.com/unit-mesh/auto-dev/issues/196) ([4080c38](https://github.com/unit-mesh/auto-dev/commit/4080c38f1ffae9ffbdbc9f3885dce166e3222e1c))
 * **prompting:** improve API test request generation ([72225bb](https://github.com/unit-mesh/auto-dev/commit/72225bba7ae2c9f7a18034b9323216b3f372c5ac)), closes [#196](https://github.com/unit-mesh/auto-dev/issues/196)
 
-## [1.8.6-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.5-SNAPSHOT...v[1.8.6-SNAPSHOT]) (2024-05-29)
+
+
+## [1.8.6-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.5-SNAPSHOT...v1.8.6-SNAPSHOT) (2024-05-29)
+
 
 ### Bug Fixes
 
@@ -350,6 +793,7 @@
 * **refactoring:** trim input strings and handle null psiFile [#181](https://github.com/unit-mesh/auto-dev/issues/181) ([4a5c634](https://github.com/unit-mesh/auto-dev/commit/4a5c634c9c84e182957b3f08d51be487114a124d))
 * remove AI_Copilot from floating code toolbar for [#222](https://github.com/unit-mesh/auto-dev/issues/222) ([8875290](https://github.com/unit-mesh/auto-dev/commit/8875290d08638a32c5725180a0482d0526ba285b))
 * **test:** improve error message for test syntax errors ([24f7c16](https://github.com/unit-mesh/auto-dev/commit/24f7c160ec85a3fb8cca4839b0204fe1f2e6e9fc))
+
 
 ### Features
 
@@ -389,7 +833,10 @@
 * **test:** add support for custom RAG context [#195](https://github.com/unit-mesh/auto-dev/issues/195) ([efb06f3](https://github.com/unit-mesh/auto-dev/commit/efb06f3287eb010860d12eda6ed1a9def8205532))
 * **variables:** add ALL variable and glob matcher for batch files [#193](https://github.com/unit-mesh/auto-dev/issues/193) ([66f4588](https://github.com/unit-mesh/auto-dev/commit/66f4588b72739b587a11393b8fe20a366fa1998b))
 
-## [1.8.5-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.4-RC...v[1.8.5-RC]) (2024-05-24)
+
+
+## [1.8.5-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.4-RC...v1.8.5-RC) (2024-05-24)
+
 
 ### Bug Fixes
 
@@ -397,18 +844,23 @@
 * **openai:** dsiable system prompt when empty request preparation [#190](https://github.com/unit-mesh/auto-dev/issues/190) ([b2a9c78](https://github.com/unit-mesh/auto-dev/commit/b2a9c78147ed6c6f567865cc17bae1db1b6e6a43))
 * **provider:** improve error message and handle package declaration ([a494708](https://github.com/unit-mesh/auto-dev/commit/a49470882c007cf1af09ba06b61ce28ae44b0c42))
 
+
 ### Features
 
 * **provider:** add class insertion if KotlinClass not found ([f1864b5](https://github.com/unit-mesh/auto-dev/commit/f1864b5e33d4524a01f53ff52ba511210c5e8274))
 * **rigth-click-actions:** add 'Fix This' action for code refactoring assistance ([ec103c5](https://github.com/unit-mesh/auto-dev/commit/ec103c5c586e5e1b768bb61890427e0798f85bbf))
 * **settings:** implement auto-dev update check on startup ([e317c27](https://github.com/unit-mesh/auto-dev/commit/e317c27835828d114e6605572c098e8a6bca0edc))
 
-## [1.8.4-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.3-RC...v[1.8.4-RC]) (2024-05-23)
+
+
+## [1.8.4-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.3-RC...v1.8.4-RC) (2024-05-23)
+
 
 ### Bug Fixes
 
 * **practise:** correct boolean logic in suggestion filtering ([634fdd9](https://github.com/unit-mesh/auto-dev/commit/634fdd9c9afa7da650bbc29349d5b43edab2257e))
 * **settings:** handle null project in LLMSettingComponent and AutoDevCoderConfigurable [#183](https://github.com/unit-mesh/auto-dev/issues/183) ([c4c7ab8](https://github.com/unit-mesh/auto-dev/commit/c4c7ab8278a596028697a849c2ea5b2674638e7a))
+
 
 ### Features
 
@@ -427,7 +879,10 @@
 * **python:** refactor PythonAutoTestService and related classes for improved performance and maintainability. ([d889c77](https://github.com/unit-mesh/auto-dev/commit/d889c77ba43b3fd2e1b440ed75f9d0f02a117e4f))
 * **rename:** enhance suggestion filtering in RenameLookupManagerListener ([a167e87](https://github.com/unit-mesh/auto-dev/commit/a167e87db96d7566c3414610b1fea937db4cccfb))
 
-## [1.8.3-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.2-RC...v[1.8.3-RC]) (2024-05-08)
+
+
+## [1.8.3-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.2-RC...v1.8.3-RC) (2024-05-08)
+
 
 ### Bug Fixes
 
@@ -451,6 +906,7 @@
 * **spring:** update SpringMVC library detection logic for core frameworks mapping ([cf1fe51](https://github.com/unit-mesh/auto-dev/commit/cf1fe51e2f3216e85bcf936b1cff2ab54a968e39))
 * wrap runReadAction [#154](https://github.com/unit-mesh/auto-dev/issues/154) ([90b99b7](https://github.com/unit-mesh/auto-dev/commit/90b99b7b8e554f0feb70560a954066f7e90b9906))
 
+
 ### Features
 
 * add regex support to custom intention matching for [#174](https://github.com/unit-mesh/auto-dev/issues/174) ([dc1f94e](https://github.com/unit-mesh/auto-dev/commit/dc1f94eccc619b4d86e91b9220c6edd9d3ff28d4))
@@ -473,13 +929,17 @@
 * **stop:** update icon for [#149](https://github.com/unit-mesh/auto-dev/issues/149) && closed [#124](https://github.com/unit-mesh/auto-dev/issues/124) ([3fe1f1a](https://github.com/unit-mesh/auto-dev/commit/3fe1f1a06c2d8dae4f80f8c0c0140e42127ac37d))
 * 增加新特性，可以正则过滤编辑器选中的内容，提问内容更加精简，明确 ([d47aec1](https://github.com/unit-mesh/auto-dev/commit/d47aec107870807f1532722d343c7f2b6bfe908b))
 
-## [1.8.2-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.1...v[1.8.2-RC]) (2024-04-15)
+
+
+## [1.8.2-RC](https://github.com/unit-mesh/auto-dev/compare/v1.8.1...v1.8.2-RC) (2024-04-15)
+
 
 ### Bug Fixes
 
 * **devins-lang:** optimize directory creation logic for file creation [#146](https://github.com/unit-mesh/auto-dev/issues/146) ([42d1219](https://github.com/unit-mesh/auto-dev/commit/42d1219d3c440250fc68f3520db6350d7b4235e6))
 * fix async issue for [#144](https://github.com/unit-mesh/auto-dev/issues/144) ([36923e4](https://github.com/unit-mesh/auto-dev/commit/36923e4e880a4c2b0cef4d70376ea37a3be19736))
 * **test:** improve read access for non-identifier owners in TestCodeGenTask for typescript ([ba8c4a2](https://github.com/unit-mesh/auto-dev/commit/ba8c4a2eeb3745e8425277c85be8451cebe6b78a))
+
 
 ### Features
 
@@ -488,7 +948,42 @@
 * **devins-lang:** optimize directory creation and add runInEdt for smoother execution [#146](https://github.com/unit-mesh/auto-dev/issues/146) ([7724a74](https://github.com/unit-mesh/auto-dev/commit/7724a74dd7e4328ac761cb2b12949cf6383b0a64))
 * **java:** add code parsing for LivingDocumentationTask ([aef1974](https://github.com/unit-mesh/auto-dev/commit/aef197429bfefef04634b748179c9fe55ddabbfa))
 
-## [1.8.1](https://github.com/unit-mesh/auto-dev/compare/v1.8.0...v[1.8.1]) (2024-04-10)
+
+
+## [1.8.1](https://github.com/unit-mesh/auto-dev/compare/v1.8.0...v1.8.1) (2024-04-10)
+
+
+### Bug Fixes
+
+* **connection:** rest result before flow start ([c4718a3](https://github.com/unit-mesh/auto-dev/commit/c4718a301d523e0656434425e9c6098d0e5e0024))
+* **devins:** refactor write action to use runReadAction and WriteCommandAction for better performance and error handling [#143](https://github.com/unit-mesh/auto-dev/issues/143) ([8525a0b](https://github.com/unit-mesh/auto-dev/commit/8525a0b1ece8585e16d6c0d24c6565c85f7859c5))
+* fix import issue [#143](https://github.com/unit-mesh/auto-dev/issues/143) ([f6b3fa9](https://github.com/unit-mesh/auto-dev/commit/f6b3fa947f42bb5a8a8a25259438fbb7e727cec1))
+* fix the wrong path of prompt templete file path ([f38b53a](https://github.com/unit-mesh/auto-dev/commit/f38b53a5652cbadb0d280d1ec3d1f779133c9798))
+* handle null in shortFormat() method ([601120d](https://github.com/unit-mesh/auto-dev/commit/601120d27823f529e8d770bbaf77a7b2bccc2962))
+* psi element text should not be null [#123](https://github.com/unit-mesh/auto-dev/issues/123) ([9a442cb](https://github.com/unit-mesh/auto-dev/commit/9a442cbed22b674e1fdeaaaa0547e097f088a9bf))
+* **rename:** ensure correct handling of target elements and improve error handling. ([37ceab6](https://github.com/unit-mesh/auto-dev/commit/37ceab619fb02b50b9f926ba3ab1e8116d34fa88))
+* should not keep history when complete code ([e79a8b7](https://github.com/unit-mesh/auto-dev/commit/e79a8b79953d980418813b0a3906116929c72e9a))
+* should set isIndeterminate to false if fraction exist [#137](https://github.com/unit-mesh/auto-dev/issues/137) ([91f1875](https://github.com/unit-mesh/auto-dev/commit/91f187593b5c686fbb81207eadbfd1a6d033d9fa))
+* **typescript:** refactor JSDoc comment creation and insertion logic to handle null values and exceptions more gracefully. ([30f301e](https://github.com/unit-mesh/auto-dev/commit/30f301e688cb9bd8ccb8b047051cb904f4866a9b))
+
+
+### Features
+
+* **custom:** Refactor variable resolver and prompt service in `CustomActionBaseIntention.kt` to improve efficiency and readability [#136](https://github.com/unit-mesh/auto-dev/issues/136) ([263e1a8](https://github.com/unit-mesh/auto-dev/commit/263e1a85404014d9d367a3405e12c6a503456eee))
+* **devins:** enable write new content to file [#143](https://github.com/unit-mesh/auto-dev/issues/143) ([ad029f1](https://github.com/unit-mesh/auto-dev/commit/ad029f10207e6e21636a9fd611b5e9fab7359fcc))
+* **devti-lang:** add support for creating files with content in specific directories [#143](https://github.com/unit-mesh/auto-dev/issues/143) ([df38c29](https://github.com/unit-mesh/auto-dev/commit/df38c29f31ee915cf85baca9cbc9d6ae407f8fa5))
+* **devti-lang:** improve directory creation logic for multiple levels [#143](https://github.com/unit-mesh/auto-dev/issues/143) ([23a71e1](https://github.com/unit-mesh/auto-dev/commit/23a71e128961664a577f7ef3c2c39acfa4e7275e))
+* **devti-lang:** improve directory creation logic for multiple levels [#143](https://github.com/unit-mesh/auto-dev/issues/143) ([32f263e](https://github.com/unit-mesh/auto-dev/commit/32f263ecb62732fb34354078fa28da7fc7e9ba61))
+* **exts:database:** Rename and refactor database extension module to `ext-database`, including changes to build.gradle.kts, settings.gradle.kts, and source file names. ([fab0fa5](https://github.com/unit-mesh/auto-dev/commit/fab0fa5d05ae0ed47ca43914799bd7505aad34f7))
+* **intentions:** simplify `TestCodeGenTask` and fix `getElementToAction` logic. ([5f139d9](https://github.com/unit-mesh/auto-dev/commit/5f139d94bb16ce62fc283499e7e374457b3c7f74))
+* **llm:** add simiple fix option to disable history auto-formatting in LLM stream creation [#141](https://github.com/unit-mesh/auto-dev/issues/141) ([dfc3840](https://github.com/unit-mesh/auto-dev/commit/dfc3840f18932aaa9753a913f604e3d3a6388a91))
+* **typescript:** refactor JSDoc comment insertion logic to handle null values and exceptions more gracefully [#2](https://github.com/unit-mesh/auto-dev/issues/2) ([5231b70](https://github.com/unit-mesh/auto-dev/commit/5231b705e14976104c602aaf6549c2113c38afe0))
+* **typescript:** simplify insert logic [#2](https://github.com/unit-mesh/auto-dev/issues/2) ([8083b51](https://github.com/unit-mesh/auto-dev/commit/8083b51d02728e062be6fc7ed8207922fd46a3d9))
+
+
+
+# [1.8.0](https://github.com/unit-mesh/auto-dev/compare/v1.7.5...v1.8.0) (2024-04-05)
+
 
 ### Bug Fixes
 
@@ -511,6 +1006,7 @@
 * **terminal:** resolve compatibility issues in version 222 [#135](https://github.com/unit-mesh/auto-dev/issues/135) ([559edb3](https://github.com/unit-mesh/auto-dev/commit/559edb356523e18c571fce81825ca2bb867fb9d0))
 * **terminal:** resolve compatibility issues in version 222 by refactoring rename lookup manager listener to use custom rename lookup element and improving shell command input popup. This commit fixes the compatibility issues in version 222 of the terminal extension by refactoring the rename lookup manager listener to use a custom rename lookup element. It also improves the shell command input popup by using more appropriate imports and methods from the UIUtil class. ([c5916cd](https://github.com/unit-mesh/auto-dev/commit/c5916cd4026866a23496245e7d15eddb2974da07))
 * **ui:** remove unnecessary todo comments and refactor binding logic for consistency ([dbfa022](https://github.com/unit-mesh/auto-dev/commit/dbfa022f9141200d30da2857f3eecc91d0f292cf))
+
 
 ### Features
 
@@ -587,14 +1083,20 @@
 * **terminal:** update tooltip text for default message ([ae28f7d](https://github.com/unit-mesh/auto-dev/commit/ae28f7d92ae9c0cd80be33b005e3f588576ae372))
 * translate some prompts template to Chinese ([c907ede](https://github.com/unit-mesh/auto-dev/commit/c907eded4acd8c4eb4efba1c18f453ae6238ed96))
 
-## [1.7.5](https://github.com/unit-mesh/auto-dev/compare/v1.7.4...v[1.7.5]) (2024-03-29)
+
+
+## [1.7.5](https://github.com/unit-mesh/auto-dev/compare/v1.7.4...v1.7.5) (2024-03-29)
+
 
 ### Bug Fixes
 
 * **custom-sse-processor:** handle non-standard response format and log parsing errors ([20dda56](https://github.com/unit-mesh/auto-dev/commit/20dda56980c963fce22a92077857f25170ad0ce3))
 * **scala-test-service:** comment out code causing compatibility issues in version 222~232 ([92eb05e](https://github.com/unit-mesh/auto-dev/commit/92eb05e8fb52f34dc3a963c40c47490bcd426637))
 
-## [1.7.4](https://github.com/unit-mesh/auto-dev/compare/v1.7.3...v[1.7.4]) (2024-03-28)
+
+
+## [1.7.4](https://github.com/unit-mesh/auto-dev/compare/v1.7.3...v1.7.4) (2024-03-28)
+
 
 ### Bug Fixes
 
@@ -610,6 +1112,7 @@
 * fix IDEA 222 error in get changes data ([faaa7c9](https://github.com/unit-mesh/auto-dev/commit/faaa7c922df5dd99e7375e289240cd7b07ca3cf0))
 * **java-auto-test:** ensure thread safety when finding and parsing PsiJavaFile ([ee7a79c](https://github.com/unit-mesh/auto-dev/commit/ee7a79c407d2d0d64e4eac1403747c7e1195786b))
 * **run-service:** ensure correct process lifecycle handling and remove unnecessary imports ([cdec106](https://github.com/unit-mesh/auto-dev/commit/cdec106daf1cf1413be870bd80cf8454c8fe5ac8))
+
 
 ### Features
 
@@ -652,7 +1155,10 @@
 * should dispose inlay when esc ([b746704](https://github.com/unit-mesh/auto-dev/commit/b74670426f9b0e5b2e10bb8796cba8700ac12a81))
 * use custom agent when inlay complete code ([d426ab3](https://github.com/unit-mesh/auto-dev/commit/d426ab3a86e5481ac9826a0ed47e95ed33c432df))
 
-## [1.7.3](https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v[1.7.3]) (2024-03-22)
+
+
+## [1.7.3](https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v1.7.3) (2024-03-22)
+
 
 ### Bug Fixes
 
@@ -688,6 +1194,7 @@
 * **runconfig:** remove unnecessary log statements [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([0b976e0](https://github.com/unit-mesh/auto-dev/commit/0b976e0b8638bdaff13a16896bab4c8b9de8508c))
 * **service:** fix canonicalName generation in JavaAutoTestService [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([9c4da21](https://github.com/unit-mesh/auto-dev/commit/9c4da217aea947247ff56ca061ae65e3f31d4bf9))
 * **test:** rename class and modify test case to assert null return for invalid regex pattern. ([b0d0ddf](https://github.com/unit-mesh/auto-dev/commit/b0d0ddf735669e557d6c879aa36ae57efc74a3c3))
+
 
 ### Features
 
@@ -730,12 +1237,16 @@
 * **language:** improve code completion in DevIns language ([1cf4ae3](https://github.com/unit-mesh/auto-dev/commit/1cf4ae3ce2f5c594e6640d0ff3ffc079d878f15f))
 * **provider:** add DevInsCompletionProvider and modify references [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([6136ed5](https://github.com/unit-mesh/auto-dev/commit/6136ed5480b6fe30125c002015cfdf8372e06376))
 
+
 ### Reverts
 
 * Revert "[liujia]update some idea file to setup project in local" ([e8959a7](https://github.com/unit-mesh/auto-dev/commit/e8959a788740ff6560501d21c077cdade19c4311))
 * Revert "refactor: clean inlay model" ([93aa5a8](https://github.com/unit-mesh/auto-dev/commit/93aa5a8ff4dce4ccdb9e1e64a3318871df500f4a))
 
-## [1.7.2](https://github.com/unit-mesh/auto-dev/compare/v1.7.1...v[1.7.2]) (2024-03-17)
+
+
+## [1.7.2](https://github.com/unit-mesh/auto-dev/compare/v1.7.1...v1.7.2) (2024-03-17)
+
 
 ### Bug Fixes
 
@@ -767,6 +1278,7 @@
 * **runconfig:** update AutoDevConfigurationType to use AutoCRUDConfigurationOptions [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([cd98122](https://github.com/unit-mesh/auto-dev/commit/cd981229dcfc8f3354fe2ae343f872807889397c))
 * **run:** rename DevInRunFileAction to DevInsRunFileAction [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([85e75fe](https://github.com/unit-mesh/auto-dev/commit/85e75fe5bb8f10a5f2db51040cb54f0b12249aeb))
 * **text-block-view:** update text listener registration and text parsing for assistant messages ([011f7ab](https://github.com/unit-mesh/auto-dev/commit/011f7ab8a1cadb4a09dc41fb0ea974ed5bb7f1f4))
+
 
 ### Features
 
@@ -824,7 +1336,135 @@
 * **testing:** add support for running individual test files [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([68063b1](https://github.com/unit-mesh/auto-dev/commit/68063b106a188f92bde14519cafa9477d1fe7b6f))
 * **utils:** add isRepository function to MvcUtil.kt ([9e6343c](https://github.com/unit-mesh/auto-dev/commit/9e6343ceba358289cffd8da0d267cf2ef9a24a11))
 
-## [1.7.1](https://github.com/unit-mesh/auto-dev/compare/v1.7.0...v[1.7.1]) (2024-03-13)
+
+
+## [1.7.1](https://github.com/unit-mesh/auto-dev/compare/v1.7.0...v1.7.1) (2024-03-13)
+
+
+### Bug Fixes
+
+* **agent chat processor:** add flow collect to improve concurrency ([7bfe9f0](https://github.com/unit-mesh/auto-dev/commit/7bfe9f01e0fa301146cead11e2f2639b5c1fe605))
+* append slash to openAI custom host [#98](https://github.com/unit-mesh/auto-dev/issues/98) ([510948e](https://github.com/unit-mesh/auto-dev/commit/510948eabca8172f2f7db4b5323e27555679396e))
+* **autodev-core:** disable secondary tool window status ([b28ad10](https://github.com/unit-mesh/auto-dev/commit/b28ad10d4922696547c6ecce62a912e376b0aba1))
+* **chat-coding-service:** handle prompt and response with newChatContext as true ([e1b177f](https://github.com/unit-mesh/auto-dev/commit/e1b177f21af88d47fb6507dce59bc457b4b72f88))
+* **chat:** ignore empty or newline-only prompts in chat input [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([1183caa](https://github.com/unit-mesh/auto-dev/commit/1183caa5187304ce5bcea69a749c7f1a5721a05e))
+* **completion:** improve completion contribution for DevInT language [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([ae27be4](https://github.com/unit-mesh/auto-dev/commit/ae27be4226ddc70b73a4b2b6974f0c10459b4c77))
+* **devin-lang:** add support for variable and command identifiers in grammar and lexer [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([8fc17ec](https://github.com/unit-mesh/auto-dev/commit/8fc17ec2dabc8af6ab13e95da595aec1147012df))
+* **devin-lang:** ensure proper handling of language identifiers [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([cc45cf2](https://github.com/unit-mesh/auto-dev/commit/cc45cf281a532a87829dc660378e685d87ed2102))
+* **devin-lang:** Improve code block parsing and injection logic [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([8a80c12](https://github.com/unit-mesh/auto-dev/commit/8a80c12e509703474e06367ab7fabdc73c5ced0c))
+* **devin-lang:** improve code highlighting and completion [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([cf5359e](https://github.com/unit-mesh/auto-dev/commit/cf5359e09b70f0ad2c37254eb9b4f333988018f4))
+* **devin-lang:** simplify regex patterns and add support for Java code blocks 101 ([b7e6106](https://github.com/unit-mesh/auto-dev/commit/b7e6106c0af37a344b4e21ebc6ca5d01445a9b9a))
+* **devin-language:** update syntax [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([1589eb1](https://github.com/unit-mesh/auto-dev/commit/1589eb17652616ac773043c37366c4ad1c07b8ed))
+* **devin-lang:** update icon loading and add missing package declaration [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d653226](https://github.com/unit-mesh/auto-dev/commit/d653226af6e218bc7053ac9a1b733836019097f1))
+* **devin-lang:** update parser and lexer tokens and rules for improved grammar and tokenization. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([eda58cd](https://github.com/unit-mesh/auto-dev/commit/eda58cdc4668b2065b69cb160b2f4ca7e8135700))
+* **devti:** correct language detection in code blocks [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([437d2f1](https://github.com/unit-mesh/auto-dev/commit/437d2f15c540f9329cff01ec23d9a68fff3233ee))
+* **ErrorMessageProcessor:** simplify null-check logic and enhance readability. ([418cc29](https://github.com/unit-mesh/auto-dev/commit/418cc299d06d7f4769b8e893b08eb54720342739))
+* **exts/devin-lang:** Allow code blocks to start without content [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([2f0b598](https://github.com/unit-mesh/auto-dev/commit/2f0b598602157602426d6ed7676e66779c418287))
+* **exts/devin-lang:** Allow code blocks to start without content [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([50cfdc7](https://github.com/unit-mesh/auto-dev/commit/50cfdc78d5f68161caaa6d15e54b078989e9f02a))
+* **exts/devin-lang:** enhance CodeBlockElement to correctly handle injection host validations [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([3bcf5a6](https://github.com/unit-mesh/auto-dev/commit/3bcf5a6f200b7af80d284770d3d7e5d629fcae9e))
+* **exts/devin-lang:** ensure proper indentation of code blocks in parser grammar [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([f3c1cc5](https://github.com/unit-mesh/auto-dev/commit/f3c1cc5ff8d5229a05240248d13562a63abc4ac3))
+* **exts/devin-lang:** remove CustomVariable class and refactor VariableProvider to use findLanguage method for language injection [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([648a8c7](https://github.com/unit-mesh/auto-dev/commit/648a8c7c24f41dd73cd735906b16bd185b3a1533))
+* fix imports ([5031a54](https://github.com/unit-mesh/auto-dev/commit/5031a54f7c1dc64ac39cd32df9e688b0458c4065))
+* fix issue ([45a72cf](https://github.com/unit-mesh/auto-dev/commit/45a72cfacfdf8205b62333c8fdada9230ab5ba3b))
+* fix tests [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d65daaf](https://github.com/unit-mesh/auto-dev/commit/d65daaf937030bcbbfedff4c2cae171c530a241c))
+* fxi typo ([083b22e](https://github.com/unit-mesh/auto-dev/commit/083b22ea50a1db4a390d840d560ee38398adcdd0))
+* **gui:** correct issue submission link and add hover text ([70f24f4](https://github.com/unit-mesh/auto-dev/commit/70f24f414a1a8da1c341b83de2b1892c903769d9))
+* **gui:** improve focus handling in AutoDevVariableList [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([f774c6d](https://github.com/unit-mesh/auto-dev/commit/f774c6dfb162082c829fcd059e88403c3611330b))
+* **gui:** remove un support call to customize function in ChatCodingPanel.kt ([927561b](https://github.com/unit-mesh/auto-dev/commit/927561b17e9769a1e55dd7e9554af4677ce3930f))
+* handle exceptions consistently in JavaVersionProvider.kt ([3d6e91a](https://github.com/unit-mesh/auto-dev/commit/3d6e91a6429b460621ef350c0b2a9726d51016ed))
+* **java:** ensure test code insertion with proper annotation and handling of full code blocks ([822324b](https://github.com/unit-mesh/auto-dev/commit/822324b09dc95503c74f6c6543c778187071eeb0))
+* **lexer:** handle non-code characters within language identifier [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([fbd0fb9](https://github.com/unit-mesh/auto-dev/commit/fbd0fb9f263e7f8ac95889d5c619c067b1cab399))
+* **parser:** remove redundant element type check and unnecessary code for collecting PsiElements [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([e7a2fd1](https://github.com/unit-mesh/auto-dev/commit/e7a2fd12fc5517329fabf060022901848547bde7))
+* **parsing:** improve regex patterns for DevInParser and DevInLexer to support more complex identifiers and whitespace handling [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([7ea39e3](https://github.com/unit-mesh/auto-dev/commit/7ea39e3fd15a66d660d4cca1dcc42c99dfda7dce))
+* **plugin:** add dynamic action group for AutoDev Chat ([648de34](https://github.com/unit-mesh/auto-dev/commit/648de34985edfd00681ff23e9eb633f007c440a4))
+* **statusbar:** remove unnecessary statusbar service implementation ([cdfc911](https://github.com/unit-mesh/auto-dev/commit/cdfc9112a9637608160ac395fcd1e7ba5851da9a))
+
+
+### Features
+
+* **auto-test:** introduce auto-test design for prompt-based development ([1bee22b](https://github.com/unit-mesh/auto-dev/commit/1bee22b00153f7888b0e9cb75e3f6997fdec1f8a))
+* **autodev-chat:** update group actions and refactor action types ([017810b](https://github.com/unit-mesh/auto-dev/commit/017810b8697a6151ccf8f8ea8078f1d6c2007e1f))
+* **autoin-lang:** add basic infrastructure for AutoDev input language support [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([02c5a04](https://github.com/unit-mesh/auto-dev/commit/02c5a04a1d3fe3a89ad41dd9343f562f7d97c696))
+* **chat-coding-service:** refactor variable template compiler and add support for custom agent state [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([0fbdc91](https://github.com/unit-mesh/auto-dev/commit/0fbdc916a5827d33d24e707f62afdadd2f965d00))
+* **chat:** improve code readability in ChatWithThisAction.kt by simplifying input setting in contentPanel.setInput(). ([31fe212](https://github.com/unit-mesh/auto-dev/commit/31fe212cfd54a6945d1f6ceaba1c27eeb1d7b001))
+* **completion:** add DevInCompletionContributor and remove deprecated TypedHandler from plugin.xml [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([c757888](https://github.com/unit-mesh/auto-dev/commit/c7578881bcd6274f3ad8b69766a3af6f4bf90ae0))
+* **completion:** add support for code fence language detection and completion [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([7fd13e7](https://github.com/unit-mesh/auto-dev/commit/7fd13e79643d18417e59274a6d74a39a4a55b9a4))
+* **devin-lang:** add CodeBlockElement class [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([50f599e](https://github.com/unit-mesh/auto-dev/commit/50f599e27ffc6f6aacc2b384d3400b524547e01d))
+* **devin-lang:** add stub support and refactoring to highlighter and parser [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([035f8b7](https://github.com/unit-mesh/auto-dev/commit/035f8b70b9cf731d67f372af523cdc067aafb878))
+* **devin-lang:** Add support for DevIn language syntax highlighting and completion. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([f7990a6](https://github.com/unit-mesh/auto-dev/commit/f7990a682a3497acdda0930dda7dd6d2f37b510a))
+* **devin-lang:** add support for DevInAstFactory and DevInTypedHandler. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([c3a7b94](https://github.com/unit-mesh/auto-dev/commit/c3a7b947b40f8dc32e205ef86b8daa7f0b3df468))
+* **devin-lang:** add support for Markdown plugin integration and completion provider implementation. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([0a863f7](https://github.com/unit-mesh/auto-dev/commit/0a863f77d74e0d1e2e48de2099eae9e0315b5091))
+* **devin-lang:** add support for variables and commands [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([e36d6f4](https://github.com/unit-mesh/auto-dev/commit/e36d6f4cfacb79bf8c0e392d3448bfad5da30913))
+* **devin-lang:** improve code completion for DevInTypes.VARIABLE_ID [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([9f33f89](https://github.com/unit-mesh/auto-dev/commit/9f33f8979b865655fc98d4f5567ef49f5abfc2fa))
+* **devin-lang:** improve code fence parsing to support embedded languages [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([f07f15f](https://github.com/unit-mesh/auto-dev/commit/f07f15ffa99508c6f54f4d5251c840c7d73e45a4))
+* **devin-lang:** improve code input handling [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([beb6f81](https://github.com/unit-mesh/auto-dev/commit/beb6f81a7ccbcb2dbf92b209b41d6891f9fb8a50))
+* **devin-lang:** init basic code fence support [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d5fa471](https://github.com/unit-mesh/auto-dev/commit/d5fa471303d86b5d62deec763142c401ae1e208e))
+* **devin-lang:** introduce support for agent commands and variables [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([03c6d92](https://github.com/unit-mesh/auto-dev/commit/03c6d9267a0432f44d1dc48e0bda6f262fe47c96))
+* **devin-lang:** introduce variable identifier and completion support [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([6e30a9c](https://github.com/unit-mesh/auto-dev/commit/6e30a9cb698a2370423124aee38ec6c20c4d7904))
+* **devin-language:** add support for code language completion and improve completion provider architecture. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([71099a9](https://github.com/unit-mesh/auto-dev/commit/71099a960ec9fe9a86266cfbae97c86bf9a10b7b))
+* **devin-lang:** update code_content support [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([ca35bca](https://github.com/unit-mesh/auto-dev/commit/ca35bcae91a1473b01bf5b94ef8dc90864f8656f))
+* **devin-lang:** update default icon to devin.svg [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([f12af8d](https://github.com/unit-mesh/auto-dev/commit/f12af8d8e78a964a1332e937953799b3059833fe))
+* **devin-lang:** update language grammar and lexer to support optional language identifiers in code blocks. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([4b03090](https://github.com/unit-mesh/auto-dev/commit/4b03090aed1a2f3b8c13e817d790a08208e3599a))
+* **devin-lang:** update language grammar and lexer to support optional language identifiers in code blocks. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([81ebee4](https://github.com/unit-mesh/auto-dev/commit/81ebee4cc9827d7dbc06cf5def72d4bd40c6e0bd))
+* **exts/devin-lang:** add DevInReferenceFoldingBuilder [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([1e4507a](https://github.com/unit-mesh/auto-dev/commit/1e4507a92b28db1402e69fb2f99b9406fb98eead))
+* **exts:** rename 'autoin-lang' to 'devin-lang' and update dependencies [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([3a35ac6](https://github.com/unit-mesh/auto-dev/commit/3a35ac61f0ae3e2ea02eb4a0a0432f7c3d477ac1))
+* **gui:** add canCloseContents attribute to toolwindow configuration files ([85103d8](https://github.com/unit-mesh/auto-dev/commit/85103d89fcc2aa0910059c407d088df6fde230ac))
+* **gui:** add welcome panel with features description and context-aware code generation introduction. ([c5ae948](https://github.com/unit-mesh/auto-dev/commit/c5ae9488be2b94d4327c3f5d6372656a62bccfdf))
+* **gui:** improve AutoDevStatusBarWidget functionality ([2d42614](https://github.com/unit-mesh/auto-dev/commit/2d42614b0c5d5fb12d3c71055fc42e1d9b15e973))
+* **gui:** optimize chat input section background [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([76a7c47](https://github.com/unit-mesh/auto-dev/commit/76a7c4752959f33b9e7d3e7ebc8516e8f09041f6))
+* **java:** refactor code to use runReadAction and replace string operation ([f0e2372](https://github.com/unit-mesh/auto-dev/commit/f0e2372f800d98822a0d40ea1fbad554c2fd578a))
+* **language-injector:** add DevInLanguageInjector class to support language injection for code blocks in DevIn language. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([ae4134a](https://github.com/unit-mesh/auto-dev/commit/ae4134a627c7d41d707a205fd62c3132eec88c96))
+* **language-injector:** optimize code block injection logic and add support for whitespace-sensitive language injections  [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d804142](https://github.com/unit-mesh/auto-dev/commit/d80414281016349838020f2d2da794e11e6a6523))
+* **parser:** introduce flex-based lexer and BNF-defined parser for the DevInLanguage [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([b2bfd1b](https://github.com/unit-mesh/auto-dev/commit/b2bfd1b88bb17f492ede63d2abb3e9bc8bfdeac8))
+* **recording:** add support for custom model ([d360989](https://github.com/unit-mesh/auto-dev/commit/d360989fa17337dd19bdfb3e7566ad469d26f240))
+
+
+
+# [1.7.0](https://github.com/unit-mesh/auto-dev/compare/v1.7.0-snapshot...v1.7.0) (2024-03-07)
+
+
+### Bug Fixes
+
+* **custom-agent:** fix CustomAgentExecutor requestFormat issue [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([32e7643](https://github.com/unit-mesh/auto-dev/commit/32e764300948d3f227a2891e1a70e864cf382a68))
+* **CustomAgentChatProcessor:** handle response actions more robustly and add logging [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([d49b2c0](https://github.com/unit-mesh/auto-dev/commit/d49b2c0e4608b65dabda59c70fd943d6af84c854))
+* **error:** rename error template file for clarity ([e661651](https://github.com/unit-mesh/auto-dev/commit/e661651f19316a91f9579c581d466b7814bce715))
+* **error:** rename error template file for clarity ([777baf4](https://github.com/unit-mesh/auto-dev/commit/777baf4f8e6ca5855f3a497df5a9af6401c3dd95))
+* fix java gen doc return error format issue [#99](https://github.com/unit-mesh/auto-dev/issues/99) ([1bf9fd6](https://github.com/unit-mesh/auto-dev/commit/1bf9fd6418634f174bde262b8bdc42f5e855bc4a))
+* fix typos ([c19f879](https://github.com/unit-mesh/auto-dev/commit/c19f87966c0fd4e3b9896466a41ee1094b8ce2f6))
+* **gui:** improve focus handling in AutoDevInputSection [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([841d833](https://github.com/unit-mesh/auto-dev/commit/841d833f8c3bd5e2b2b30af242fadd36070cf5db))
+* **provider:** handle findModuleForFile exceptions ([a0df305](https://github.com/unit-mesh/auto-dev/commit/a0df305e4113e524053ccf76f0f4be178bd7b622))
+* **snippet:** fix UpdateThread issu && add logging to AutoDevInsertCodeAction [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([a4e751c](https://github.com/unit-mesh/auto-dev/commit/a4e751c79c53583786942507f8619988475e0322))
+
+
+* feat!: refactor CustomMessage to align OpenAI format which is rename message -> content ([965b594](https://github.com/unit-mesh/auto-dev/commit/965b5944412bb468fcc59a1f450cf8683eb8ab2f))
+
+
+### Features
+
+* **agent:** reset default response format string [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([dfd79ed](https://github.com/unit-mesh/auto-dev/commit/dfd79ed134b2100ad1276005d265488836057863))
+* **chat:** update custom agent chat and input section [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([451f644](https://github.com/unit-mesh/auto-dev/commit/451f644ff61416e825641a2999f3edb317c97b50))
+* **CustomAgentExecutor:** add support for custom format in CustomAgentExecutor [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([583ee94](https://github.com/unit-mesh/auto-dev/commit/583ee94d8ed701d5abbbee90834f435442ada1c2))
+* **custom:** update CustomSSEProcessor's Message class content property ([db2e3b5](https://github.com/unit-mesh/auto-dev/commit/db2e3b53df751dadc1c467c8d1e6090a2fce1b25))
+* **custom:** update key names in CustomSSEProcessor and add token count support [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([4e8f6d3](https://github.com/unit-mesh/auto-dev/commit/4e8f6d31aefcae2784af0538c0b49f5dd00a3edd))
+* **docs:** add custom request/response documentation [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([35c7b87](https://github.com/unit-mesh/auto-dev/commit/35c7b8782d467295a472d1322d6871e6c3052ea5))
+* **model:** add `ConnectorConfig` to `CustomAgentConfig` and refactor `CustomAgentChatProcessor` to use `logger` [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([1754614](https://github.com/unit-mesh/auto-dev/commit/1754614c5c409f7d80af89bee5378af37daa5db9))
+
+
+### BREAKING CHANGES
+
+* rename `message` -> `content`
+
+- Refactored the `CustomAgentExecutor` class in `CustomAgentExecutor.kt` and the `server.py` file.
+- Updated the `requestFormat` property in `CustomAgentExecutor` to an empty string.
+- Renamed the `message` property in the `Message` class to `content
+* **custom:** modify custom Message role from message field to content field
+
+This commit updates the content property name in the Message class of the CustomSSEProcessor. This change provides more clarity in the class's structure.
+
+
+
+# [1.7.0-snapshot](https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v1.7.0-snapshot) (2024-03-06)
+
 
 ### Bug Fixes
 
@@ -856,6 +1496,7 @@
 * **sse-starlette:** handle SSE events with data prefixed with ":ping" and fixed[#97](https://github.com/unit-mesh/auto-dev/issues/97) ([e448c28](https://github.com/unit-mesh/auto-dev/commit/e448c283c2bad2c8310cb25786fcf73af98c0136))
 * **sse:** handle empty lines and comments in SSE event stream [#97](https://github.com/unit-mesh/auto-dev/issues/97) ([d307861](https://github.com/unit-mesh/auto-dev/commit/d307861c149774a69b0df29264a09e9e7c6c8f51))
 * **tasks:** add onFinished() methods to notify application status ([632be81](https://github.com/unit-mesh/auto-dev/commit/632be815fd6e5467851e4afb22a9f3a60452b225))
+
 
 ### Features
 
@@ -894,15 +1535,15 @@
 * **view:** improve web view window background color to JBColor.WHITE [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([467ebbf](https://github.com/unit-mesh/auto-dev/commit/467ebbf7d82c5ffd6cf7516bb7288444a4c13a11))
 * **webview:** add support for custom scheme handler and load methods [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([d49734a](https://github.com/unit-mesh/auto-dev/commit/d49734aaa5954394be706e386cafb8dc68a48d7f))
 
-### BREAKING CHANGES
-
-* rename `message` -> `content`
 
 ### Reverts
 
 * Revert "refactor(custom-agent): improve response action handling and add removeLastMessage function #51" ([214eb79](https://github.com/unit-mesh/auto-dev/commit/214eb7995c64d3c7c3a44812a10972aff2939599)), closes [#51](https://github.com/unit-mesh/auto-dev/issues/51)
 
-## [1.6.5](https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v[1.6.5]) (2024-03-03)
+
+
+## [1.6.5](https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v1.6.5) (2024-03-03)
+
 
 ### Bug Fixes
 
@@ -912,6 +1553,7 @@
 * **prepush:** update background thread for action update since of @Deprecated API changed ([4b2e390](https://github.com/unit-mesh/auto-dev/commit/4b2e39024b73c870fb162947f266a8917985ac56))
 * **provider:** remove unused logger in LivingDocumentation and HarmonyOsLivingDocumentation ([025cb95](https://github.com/unit-mesh/auto-dev/commit/025cb953db258b32043fe8e402ff344f2cd3997e))
 * **SSE response handling:** Skip logging of SSE responses ([8e6affb](https://github.com/unit-mesh/auto-dev/commit/8e6affb963ba25a3da6849cda74f8358016ca57b))
+
 
 ### Features
 
@@ -925,12 +1567,16 @@
 * Improve code insertion in AutoDevInsertCodeAction ([a1a63bb](https://github.com/unit-mesh/auto-dev/commit/a1a63bbd7a4f901e663bfd2233570abfa203826d))
 * init check for openai hosts ([efeb143](https://github.com/unit-mesh/auto-dev/commit/efeb1432208de1c1802f2a73c5a0365e521b0724))
 
-## [1.6.4](https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v[1.6.4]) (2024-02-25)
+
+
+## [1.6.4](https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v1.6.4) (2024-02-25)
+
 
 ### Bug Fixes
 
 * **harmonyos:** convert ArkUiExample to data class ([0c71a69](https://github.com/unit-mesh/auto-dev/commit/0c71a6948c72cc2fc5585d4b38dd05916651ff48))
 * **harmonyos:** update ext-harmonyos README ([37f323d](https://github.com/unit-mesh/auto-dev/commit/37f323d92ca4004ee90cf76fd6053698e730bd3c))
+
 
 ### Features
 
@@ -958,13 +1604,17 @@
 * **provider:** add HarmonyOS chat context provider ([1eeeb23](https://github.com/unit-mesh/auto-dev/commit/1eeeb235f144cc2b52be4fd79865808a708f68bd))
 * **provider:** add logging to HarmonyOsLivingDocumentation ([ebc575f](https://github.com/unit-mesh/auto-dev/commit/ebc575f76b0f8c8c189ea0848979ce1371cd14d4))
 
-## [1.6.3](https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v[1.6.3]) (2024-02-22)
+
+
+## [1.6.3](https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v1.6.3) (2024-02-22)
+
 
 ### Bug Fixes
 
 * **android:** remove space before Android SDK target version ([5f32088](https://github.com/unit-mesh/auto-dev/commit/5f320884626a3fd3b6384a39f9501c29913ae6a8))
 * **go:** improve documentation generation process ([90f446f](https://github.com/unit-mesh/auto-dev/commit/90f446ff5fe7d3796808e5d89d60977c34284437))
 * **goland:** fix 222 version lost interface issue ([e6def78](https://github.com/unit-mesh/auto-dev/commit/e6def7842c08f02dba2e6b0469987cd0cf845251))
+
 
 ### Features
 
@@ -979,7 +1629,46 @@
 * **provider:** add Android extension support ([2860c85](https://github.com/unit-mesh/auto-dev/commit/2860c85f1451d88d4cbfe56189b0c8693b5f33f9))
 * **tests:** add @Ignore annotation to end-point prompt test ([c99ed29](https://github.com/unit-mesh/auto-dev/commit/c99ed29f8080095b248ea7bb65b867cc96c84fc6))
 
-## [1.6.1](https://github.com/unit-mesh/auto-dev/compare/v1.6.0...v[1.6.1]) (2024-02-18)
+
+
+## [1.6.1](https://github.com/unit-mesh/auto-dev/compare/v1.6.0...v1.6.1) (2024-02-18)
+
+
+### Bug Fixes
+
+* fix error ([7f82ed6](https://github.com/unit-mesh/auto-dev/commit/7f82ed669934f93e6ec7b5a2cfa7d8323bb5aedc))
+* fix error ([903f813](https://github.com/unit-mesh/auto-dev/commit/903f813cc51db673e160b2fb76c475e5aaf60475))
+* fix naming typo ([1fa11cf](https://github.com/unit-mesh/auto-dev/commit/1fa11cf2d8a5ad098955790eff1661955a28fd15))
+* **gui:** modify default prompt for FIX_ISSUE action type ([bffe3a5](https://github.com/unit-mesh/auto-dev/commit/bffe3a5b8a27078ed25679580585955121c9cdff))
+* **javascript:** fix file type conversion in JavaScriptTestCodeModifier ([3a1153b](https://github.com/unit-mesh/auto-dev/commit/3a1153ba524bddfc12af73db88d1ce0488fe3fbe))
+* **provider:** fix package name retrieval in KotlinWriteTestService ([e4b228f](https://github.com/unit-mesh/auto-dev/commit/e4b228f635f657b556694a38e2eadc7253adc5d1))
+* **util:** LLMCoroutineScope use SupervisorJob to avoid coroutines affected each other. ([0e1edf1](https://github.com/unit-mesh/auto-dev/commit/0e1edf155353a1aad73c92e26939d0d49308c333))
+* **util:** LLMCoroutineScope use SupervisorJob to avoid coroutines affected each other. print error to intellij platform logger ([8b8f50c](https://github.com/unit-mesh/auto-dev/commit/8b8f50c31e2f78121c4c8d5423b69e808d7efb59))
+
+
+### Features
+
+* **android:** add Android SDK target version to chat context provider ([fadac55](https://github.com/unit-mesh/auto-dev/commit/fadac55920e938c5c844800bd4a254eb0e877fa7))
+* **android:** init method to get project's Android target SDK version ([ee84b6a](https://github.com/unit-mesh/auto-dev/commit/ee84b6ab442a3ea6b9260e21e48021746ce04f44))
+* **cpp:** add getProjectName function to CMakefileUtil ([04690e6](https://github.com/unit-mesh/auto-dev/commit/04690e63e6f759bdae4ef6f4d3d3450c6f37843a))
+* **database:** add SqlChatContextProvider and SqlContextBuilder ([7a73e5c](https://github.com/unit-mesh/auto-dev/commit/7a73e5c50d1f58b883dbfc0946267026649e1fa4))
+* **docs:** add demo video and FAQ page ([f028cb9](https://github.com/unit-mesh/auto-dev/commit/f028cb985f9f0e51259a445b49e8f540845fe85a))
+* **docs:** update legacy migration scene title and content ([f4d05c9](https://github.com/unit-mesh/auto-dev/commit/f4d05c9279a49ffc88456fdd2c65eca5ccc402f5))
+* **error:** add support for error prompt template rendering ([7206530](https://github.com/unit-mesh/auto-dev/commit/7206530089a6ca350b17a15fb4684de3d48232d0))
+* **go:** add GoLivingDocumentationProvider implementation ([9d535de](https://github.com/unit-mesh/auto-dev/commit/9d535dead6cc96f0659bc90fce3d0b6e7317af41))
+* **go:** add support for living documentation ([6a80bc8](https://github.com/unit-mesh/auto-dev/commit/6a80bc8d619005c86247b6bb007941e5f39d1aba))
+* **gradle:** try config for android plugin version ([3df6644](https://github.com/unit-mesh/auto-dev/commit/3df6644aa0369f63a7b5d68d3d89f13e2963c2c8))
+* **gradle:** update platformVersion to 233, add AdSdkFinder ([ea7bb9b](https://github.com/unit-mesh/auto-dev/commit/ea7bb9bb2b84c936c67fe4a3a268f69a0a69299c))
+* **kotlin:** add KotlinPsiUtil for Kotlin context collection ([41a9f2d](https://github.com/unit-mesh/auto-dev/commit/41a9f2def9fe984bba8a074da5ee6ab2dc456ddb))
+* **kotlin:** add support for handling class types in KotlinTestDataBuilder ([7ac35a5](https://github.com/unit-mesh/auto-dev/commit/7ac35a5530ce3189527f203375f155b7887c9823))
+* **plugin:** add basic support for Android extension ([262a0fd](https://github.com/unit-mesh/auto-dev/commit/262a0fd7e390704404f4db04797ddc67d05fc791))
+* **plugins:** add support for Android plugin ([51dec2e](https://github.com/unit-mesh/auto-dev/commit/51dec2e9aa2021328548902d6a0980724045fea4))
+* **util:** add library check in ProjectFileUtil ([e220aa2](https://github.com/unit-mesh/auto-dev/commit/e220aa2b1d1fdc5f6d7a80bbf0524f2f09932cb0))
+
+
+
+# [1.6.0](https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v1.6.0) (2024-01-26)
+
 
 ### Bug Fixes
 
@@ -990,6 +1679,7 @@
 * **javascript:** add logger statements for null values [#81](https://github.com/unit-mesh/auto-dev/issues/81) ([57527d5](https://github.com/unit-mesh/auto-dev/commit/57527d51ec70754a89290157a036c9bda8326bbe))
 * **team:** fix nullability issue in TeamPromptsBuilder ([f36e74d](https://github.com/unit-mesh/auto-dev/commit/f36e74deab9f05efa751959e1103da80c198bd57))
 * **ui:** add lost support for idea 222 vertical alignment in grid layout ([dfa73cc](https://github.com/unit-mesh/auto-dev/commit/dfa73cc8073cce0f44e36f94c5a9ad26617be37b))
+
 
 ### Features
 
@@ -1030,17 +1720,22 @@
 * **tasking:** add Tasking class and test cases [#79](https://github.com/unit-mesh/auto-dev/issues/79) ([f7244e4](https://github.com/unit-mesh/auto-dev/commit/f7244e47b575f18c924429f5c3c2794807bfe814))
 * **template:** add overrideTemplate method && closed [#54](https://github.com/unit-mesh/auto-dev/issues/54) ([0f4ef52](https://github.com/unit-mesh/auto-dev/commit/0f4ef526ce1904fb9b004e3582144b55fa66cd57))
 
+
 ### Reverts
 
 * Revert "refactor(project): update module names and file paths" ([092e029](https://github.com/unit-mesh/auto-dev/commit/092e0291eca860c7a0804dde5bce403da521dc79))
 
-## [1.5.5](https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v[1.5.5]) (2024-01-21)
+
+
+## [1.5.5](https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v1.5.5) (2024-01-21)
+
 
 ### Bug Fixes
 
 * **java:** add Java language check in AutoCrudAction ([6669b4b](https://github.com/unit-mesh/auto-dev/commit/6669b4ba8cfa142805760eb894e59ca6a765753b))
 * **llm:** add trailing slash to customOpenAiHost && fixed [#77](https://github.com/unit-mesh/auto-dev/issues/77) ([f68d124](https://github.com/unit-mesh/auto-dev/commit/f68d12431e5ed774ec22f6acbaaa33810e72f4a8))
 * **test:** add check for now writing test service [#78](https://github.com/unit-mesh/auto-dev/issues/78) ([a4b0d04](https://github.com/unit-mesh/auto-dev/commit/a4b0d04c285a1c702af0d55cc11953fb67beb8ad))
+
 
 ### Features
 
@@ -1053,7 +1748,10 @@
 * **scala:** add ScalaClassContextBuilder and test case ([98ef74f](https://github.com/unit-mesh/auto-dev/commit/98ef74fc68b21399f0e6b58e90f81ffb63dd282d))
 * **sql:** add functionality to update living documentation ([c99b21d](https://github.com/unit-mesh/auto-dev/commit/c99b21d09d42532fffd601e82c0d0a41dda88f61))
 
-## [1.5.4](https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v[1.5.4]) (2024-01-19)
+
+
+## [1.5.4](https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v1.5.4) (2024-01-19)
+
 
 ### Bug Fixes
 
@@ -1076,6 +1774,7 @@
 * **service:** modify JavaWriteTestService to use JavaLanguage ([ea37212](https://github.com/unit-mesh/auto-dev/commit/ea3721287b020d94e49da33593a213442de9bffb))
 * **test:** add error notification when test file creation fails ([45f21b2](https://github.com/unit-mesh/auto-dev/commit/45f21b2fd37d1510b922ae9057bf4f89385ec52c))
 * **util:** rename JsUtil package ([f747922](https://github.com/unit-mesh/auto-dev/commit/f747922f58bd84604f0b81e403f0c475af03fd89))
+
 
 ### Features
 
@@ -1151,7 +1850,10 @@
 * **webstorm:** add support for web chat creation context ([0971813](https://github.com/unit-mesh/auto-dev/commit/09718139bd162e8e9414264d0ca0a541c1bb5002))
 * **webstorm:** add utility functions for JavaScript testing ([10cc3ea](https://github.com/unit-mesh/auto-dev/commit/10cc3ea03f755c9223666c10d02eade53f1d272c))
 
-## [1.5.3](https://github.com/unit-mesh/auto-dev/compare/v1.5.2...v[1.5.3]) (2024-01-12)
+
+
+## [1.5.3](https://github.com/unit-mesh/auto-dev/compare/v1.5.2...v1.5.3) (2024-01-12)
+
 
 ### Bug Fixes
 
@@ -1163,6 +1865,7 @@
 * **provider:** insert method if code does not contain @Test annotation ([d49f41f](https://github.com/unit-mesh/auto-dev/commit/d49f41f6b095d4be9923c135b302e3d3ecffd199))
 * **provider:** refactor KotlinTestContextProvider ([fa3364a](https://github.com/unit-mesh/auto-dev/commit/fa3364a274bba9faa89815e40c3407820f5c70ec))
 * **vcs:** fix CommitMessageSuggestionAction not updating editorField text ([ef6c680](https://github.com/unit-mesh/auto-dev/commit/ef6c6802d0a91085d96e66225ddcce65eca80c5a))
+
 
 ### Features
 
@@ -1207,7 +1910,10 @@
 * **vcs:** add VcsPrompting import and service ([d25f92b](https://github.com/unit-mesh/auto-dev/commit/d25f92be86d38635097c1972e0a28414bb3256a7))
 * **vcs:** generate commit message with prompt ([8d6932e](https://github.com/unit-mesh/auto-dev/commit/8d6932e252a29898204e65a9bedf501a6e056d54))
 
-## [1.5.2](https://github.com/unit-mesh/auto-dev/compare/1.4.4...v[1.5.2]) (2024-01-05)
+
+
+## [1.5.2](https://github.com/unit-mesh/auto-dev/compare/1.4.4...v1.5.2) (2024-01-05)
+
 
 ### Bug Fixes
 
@@ -1251,6 +1957,7 @@
 * make output in file better ([6a25cf3](https://github.com/unit-mesh/auto-dev/commit/6a25cf3375a0ae654e1ee20e41501b0b7b1c13c1))
 * 修复前一提交 SSE 的问题 ([54457f5](https://github.com/unit-mesh/auto-dev/commit/54457f558ce1f8c939fead5562835a6e7a6c13ae))
 
+
 ### Features
 
 * add catch for not ready action ([79286b0](https://github.com/unit-mesh/auto-dev/commit/79286b022a2d759d7198d912afaa1e37714712f6))
@@ -1279,11 +1986,15 @@
 * try to handle for basic class issues ([2897dd7](https://github.com/unit-mesh/auto-dev/commit/2897dd743638ed9504a3c49752ab1b56b1704b52))
 * update java prompts ([d321afe](https://github.com/unit-mesh/auto-dev/commit/d321afe66d2c6e8e87ef2d5f768b6c33dcd34df0))
 
+
 ### Reverts
 
 * Revert "refactor: clean code" ([afe5460](https://github.com/unit-mesh/auto-dev/commit/afe54608c6028b2530b2c734d1e136785300c6b5))
 
-## [1.4.4](https://github.com/unit-mesh/auto-dev/compare/v1.4.3...[1.4.4]) (2023-12-14)
+
+
+## [1.4.4](https://github.com/unit-mesh/auto-dev/compare/v1.4.3...1.4.4) (2023-12-14)
+
 
 ### Bug Fixes
 
@@ -1295,6 +2006,7 @@
 * fix 助手回答为空的情况。 ([e0cca51](https://github.com/unit-mesh/auto-dev/commit/e0cca51f80c4488ddab5c4cf74dc277ddd207a76))
 * state 改为 getter 避免配置更新不生效 ([d53c6aa](https://github.com/unit-mesh/auto-dev/commit/d53c6aaa24cc5988e2301ee8741fd9fac13a9f2b)), closes [#62](https://github.com/unit-mesh/auto-dev/issues/62)
 * state 改为 getter 避免配置更新不生效 ([a3b22ae](https://github.com/unit-mesh/auto-dev/commit/a3b22ae1db2dad0ade8c3d5a4834b39b31ddd28f)), closes [#62](https://github.com/unit-mesh/auto-dev/issues/62)
+
 
 ### Features
 
@@ -1308,7 +2020,10 @@
 * **ts:** init basic doc writing listener ([3786575](https://github.com/unit-mesh/auto-dev/commit/3786575ceaa7b37bde31c553b4d0eeb2ef8fcdd9))
 * 增加自定义请求。可修改请求 Header 及 reqeust body ([a72f085](https://github.com/unit-mesh/auto-dev/commit/a72f0857bd9bec59a63b335cdea4d033027d850b))
 
-## [1.4.3](https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v[1.4.3]) (2023-11-20)
+
+
+## [1.4.3](https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v1.4.3) (2023-11-20)
+
 
 ### Bug Fixes
 
@@ -1320,6 +2035,7 @@
 * fix testing issue ([7fac889](https://github.com/unit-mesh/auto-dev/commit/7fac88917f15e5cd974efbdcf28dc1f37d50ec64))
 * potential IndexOutOfBoundsException when streaming response ([c3f8c43](https://github.com/unit-mesh/auto-dev/commit/c3f8c43bc3501f16d790a0549d893e2094ca7c59))
 * try to six string type issue ([f7aee83](https://github.com/unit-mesh/auto-dev/commit/f7aee83c98b8e0b4d5e6fb1637e70c99d5f45cb9))
+
 
 ### Features
 
@@ -1335,17 +2051,100 @@
 * thinking in prepare context for input and output [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([1923476](https://github.com/unit-mesh/auto-dev/commit/1923476f344b5ea706815717b0d53900fc524275))
 * **writing:** add prompt type for custom action prompt ([0bae8b0](https://github.com/unit-mesh/auto-dev/commit/0bae8b08d1200ef9a9fe94d72a9c5ca7ea0a8401))
 
+
 ### Reverts
 
 * Revert "chore: setjdk to 11 for 213" ([3f34f89](https://github.com/unit-mesh/auto-dev/commit/3f34f89e939206f8a493ab584b84e771e836323f))
 
-## [1.4.1](https://github.com/unit-mesh/auto-dev/compare/v1.4.0...v[1.4.1]) (2023-10-28)
+
+
+## [1.4.1](https://github.com/unit-mesh/auto-dev/compare/v1.4.0...v1.4.1) (2023-10-28)
+
+
+### Bug Fixes
+
+* fix deps issues ([9bd7e8f](https://github.com/unit-mesh/auto-dev/commit/9bd7e8f3ecee4496bd7c397581dfec007979e653))
+* fix isue ([31c0ffe](https://github.com/unit-mesh/auto-dev/commit/31c0ffe44bba839ef76f7ee3bd30230f40fc1e6d))
+* fix js/ts scripts issues ([5b6f892](https://github.com/unit-mesh/auto-dev/commit/5b6f89206e240e21b3b9edb61be252fea807e0ec))
+* fix method no found issue ([8117c6a](https://github.com/unit-mesh/auto-dev/commit/8117c6a2ad2561a9c16917b480ed1b4842700558))
+* fix select element error issue ([a297df8](https://github.com/unit-mesh/auto-dev/commit/a297df87bf0a4ea9bfe64292fa9cc9c11c2ecd4c))
+* fix some read run action issue ([0368563](https://github.com/unit-mesh/auto-dev/commit/0368563b7b21927dcc31f06e1d8bc5d00d05ead4))
+* fix typos ([6d97635](https://github.com/unit-mesh/auto-dev/commit/6d97635b274a810ee14680bbcf411b995a738b7d))
+* fix write to test issues ([6ed83be](https://github.com/unit-mesh/auto-dev/commit/6ed83bec092971cf8116fb4e50c6d7a4a534ce83))
+
+
+### Features
+
+* **custom:** add support for kotlin language [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([b212ee2](https://github.com/unit-mesh/auto-dev/commit/b212ee22b85a2275d023faa1cd28f275c413a2c2))
+* **custom:** init for psi method [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([f7b057f](https://github.com/unit-mesh/auto-dev/commit/f7b057f26d7b61b6758d4863eb7221a8e808d451))
+* **custom:** init test method api for java [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([d67bdb1](https://github.com/unit-mesh/auto-dev/commit/d67bdb18befe7befb19db3ae6011a306aa036b27))
+* init custom promtp context provider for [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([3d912f2](https://github.com/unit-mesh/auto-dev/commit/3d912f2d26f7d95abc5d49048287800ac3c5a2d5))
+* **quick:** add dispose ([f1c2b9e](https://github.com/unit-mesh/auto-dev/commit/f1c2b9e7cf3ae30de260f3ed5aed74c15cfd7715))
+* **quick:** add quick keyboard short ([21eea39](https://github.com/unit-mesh/auto-dev/commit/21eea39c162ded942f38e06826d4e71e2f9fe9cd))
+* **quick:** init basic code insights ([c1df643](https://github.com/unit-mesh/auto-dev/commit/c1df6438f755c494bc4dc8560a50d03185b33fbe))
+* **quick:** init basic quick prompt ([232720f](https://github.com/unit-mesh/auto-dev/commit/232720f4faa4ecfef9250223194ec583d0f1cf06))
+* **quick:** init inlay panel layout ([20116b7](https://github.com/unit-mesh/auto-dev/commit/20116b7bedc816315dc150f3b59b025f8be3fbe6))
+* **quick:** make quick action works ([efaff71](https://github.com/unit-mesh/auto-dev/commit/efaff7183b922dd3bb9d1f77f88e3c8875f89869))
+* **quick:** make simplae code works ([b68f836](https://github.com/unit-mesh/auto-dev/commit/b68f8369e4ba79f122228adf493aca6034c1a8fb))
+* **sre:** add lost genius docker file support ([de075e8](https://github.com/unit-mesh/auto-dev/commit/de075e8a40ac35f45142d8f7c7ec4207157be378))
+* **sre:** init github actions support ([f7fcb86](https://github.com/unit-mesh/auto-dev/commit/f7fcb86316c1d5608f1d94409f04e53152621c37))
+* **sre:** make github action works ([bfd91bb](https://github.com/unit-mesh/auto-dev/commit/bfd91bbf22dd771879df7999cd3654d8f7c19e35))
+* **team:** add output to file support [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([094421f](https://github.com/unit-mesh/auto-dev/commit/094421f9c0d7b81fda54a8b2b4e7e4bb983d7974))
+
+
+
+# [1.4.0](https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v1.4.0) (2023-10-22)
+
+
+### Bug Fixes
+
+* add basic handle for error [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([3d0afcc](https://github.com/unit-mesh/auto-dev/commit/3d0afcc7fd12f21e97d5153e2ba83c80114ee46b))
+* fix import ([37e1f7f](https://github.com/unit-mesh/auto-dev/commit/37e1f7f87cfebfb8fab6d07882bc008634a1ebd7))
+* fix message issue for item ([1fc0b50](https://github.com/unit-mesh/auto-dev/commit/1fc0b50a9f86664ce222f803eddf9796baad6e8b))
+* fix nou found issue ([a9c80fd](https://github.com/unit-mesh/auto-dev/commit/a9c80fd340145c30e993d262c8cbec45a06c744a))
+* **team:** fix split crash [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([bdda28b](https://github.com/unit-mesh/auto-dev/commit/bdda28b1200e439f45103cca8524c984ef8c8b25))
+* update code complete code ([99699a1](https://github.com/unit-mesh/auto-dev/commit/99699a13a87cab66737cf5d9d890502e1813f10a))
+
+
+### Features
+
+* add config for ramework context [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([09d4fe9](https://github.com/unit-mesh/auto-dev/commit/09d4fe9f0ac346a955f6fced84aed8e313e9618e))
+* add more for related code [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([6aefbc5](https://github.com/unit-mesh/auto-dev/commit/6aefbc5ed583886ecd37e91437c50b9ea43d7359))
+* add test finder to lookup tests [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([4c4e8ae](https://github.com/unit-mesh/auto-dev/commit/4c4e8ae79cb285f56c4901a44bd8e908e90b5bc1))
+* create conttext for keep team prompt context ([ac50592](https://github.com/unit-mesh/auto-dev/commit/ac505929fdd4702c937e917807f68d28f76cc3dd))
+* enable keep history parameters for fix issues [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([9200fac](https://github.com/unit-mesh/auto-dev/commit/9200fac46239664a71a8e62120ff03b90f0cacc1))
+* enable to get tasking infos ([1e5b35b](https://github.com/unit-mesh/auto-dev/commit/1e5b35ba8cb3791b39d17aae5ee4fc801810f23a))
+* init basic context ([dd047fa](https://github.com/unit-mesh/auto-dev/commit/dd047fa6852a5c423597c884c113d03a8b6f3a28))
+* init basic insert for curost ([56dc114](https://github.com/unit-mesh/auto-dev/commit/56dc11428144e2f027a0c8ec9093830ce0d6a666))
+* init basic workflow for chat with msg [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([2d7aa42](https://github.com/unit-mesh/auto-dev/commit/2d7aa422d493149000295edc5eb9ac63ae9aa1a2))
+* init team prompt intentions [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([d7172ef](https://github.com/unit-mesh/auto-dev/commit/d7172ef2013ec1b58f617c0729460df91f1c755f))
+* **review:** add code review to changesbrowser ([8adef80](https://github.com/unit-mesh/auto-dev/commit/8adef807f226c394773ba51fbd4eec39b4c1b758))
+* **sre:** add basic tasks for design ([4559c2c](https://github.com/unit-mesh/auto-dev/commit/4559c2ce4484defb78b850529822a8320f467782))
+* **sre:** add extension point build system provider ([789435e](https://github.com/unit-mesh/auto-dev/commit/789435ea86f74cbe7930692050ad670331d9c849))
+* **sre:** add group actions for SRE ([72c0d99](https://github.com/unit-mesh/auto-dev/commit/72c0d9918ab36aee6f08cbeae313dcde810a0923))
+* **sre:** init basic template loader for render items ([1c87cc9](https://github.com/unit-mesh/auto-dev/commit/1c87cc9c2b9706dea7c83c1207d9b61fdf40e6b2))
+* **sre:** init builder for build system ([f452f94](https://github.com/unit-mesh/auto-dev/commit/f452f940a04010607ad9d71f196f29d20e7f2b90))
+* **sre:** init java build system provider ([ce31c9e](https://github.com/unit-mesh/auto-dev/commit/ce31c9eddf640ae74d8ad2b993724a6de7353d0f))
+* **sre:** init JavaScript build system provider ([2085c64](https://github.com/unit-mesh/auto-dev/commit/2085c648a5eaf9e81a2c098a624e0e467efa55e9))
+* **sre:** init Kotlin build system provider ([7dd2b79](https://github.com/unit-mesh/auto-dev/commit/7dd2b79833da39d8d54250db49cf3f80b3529d35))
+* **team:** add basic handler for prompt builder [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([5140049](https://github.com/unit-mesh/auto-dev/commit/51400494d32b653c2cfbdac33ef83a513d0353b6))
+* **team:** add parser for action prompt [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([665d36d](https://github.com/unit-mesh/auto-dev/commit/665d36d5058fb49a786670e49dbce3f8a47b39a2))
+* **team:** create team prompt intention action [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([71019c6](https://github.com/unit-mesh/auto-dev/commit/71019c61daba56dce68afb7fe73a0375bc1a2b50))
+* **team:** init basic config frontmatter for prompt config [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([18f52c7](https://github.com/unit-mesh/auto-dev/commit/18f52c7e36dd8d1cb0c2826c918d1259424d9284))
+* **team:** init prompt library for design ([55c8349](https://github.com/unit-mesh/auto-dev/commit/55c8349ce52f22d7513c9a935317427c8902294b))
+* try to use appen stream [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([1231a23](https://github.com/unit-mesh/auto-dev/commit/1231a23fd305a78251aefa5d95d8c9dbab0b8732))
+
+
+
+# [1.3.0](https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.3.0) (2023-10-18)
+
 
 ### Bug Fixes
 
 * fix document erorr issues ([efedf72](https://github.com/unit-mesh/auto-dev/commit/efedf72c0798c15777a7f69cab5fe3cee907d3d5))
 * **test:** fix instruction error issue ([f7c9e03](https://github.com/unit-mesh/auto-dev/commit/f7c9e0305d823dbca7e6e8d408d09dd3c5867c4d))
 * **test:** fix lost current class for method testing ([7d81858](https://github.com/unit-mesh/auto-dev/commit/7d8185878e0c4d17aa99c15e09c80fbdb3b8af19))
+
 
 ### Features
 
@@ -1355,7 +2154,10 @@
 * **review:** init default file ignore for patterns ([48ee07f](https://github.com/unit-mesh/auto-dev/commit/48ee07f8da7040ea23460b6ce5953e65c034ef9b))
 * **review:** make fetch github issue works ([285da68](https://github.com/unit-mesh/auto-dev/commit/285da68ef7afd5c24a20b3c47162cfd40364d3e7))
 
-## [1.2.5](https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v[1.2.5]) (2023-10-15)
+
+
+## [1.2.5](https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5) (2023-10-15)
+
 
 ### Bug Fixes
 
@@ -1363,31 +2165,51 @@
 * fix inout empty issue ([13e0ab1](https://github.com/unit-mesh/auto-dev/commit/13e0ab11337c03f44b7d26074b0758cbd61fe2c8))
 * fix prompt ([215e7d8](https://github.com/unit-mesh/auto-dev/commit/215e7d85d99c42f73e3c148882b3f2427194d952))
 
+
 ### Features
 
 * **docs:** adjust prompt ([d12ea4a](https://github.com/unit-mesh/auto-dev/commit/d12ea4a71bfb9b53472268ae2238076063bd5f6c))
 * **docs:** init kotlin living documentation ([abf3d74](https://github.com/unit-mesh/auto-dev/commit/abf3d743d4a06b4959e6eaba1ca1e505d582ec93))
 
-## [1.2.3](https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v[1.2.3]) (2023-10-09)
+
+
+## [1.2.3](https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v1.2.3) (2023-10-09)
+
 
 ### Bug Fixes
 
 * add fix for [#47](https://github.com/unit-mesh/auto-dev/issues/47) ([04f9c1b](https://github.com/unit-mesh/auto-dev/commit/04f9c1bd694336402c57c00208d5400e6dda5c59))
 * fix custom prompt emoji issue ([13e7061](https://github.com/unit-mesh/auto-dev/commit/13e7061a54bab06b2b00c07e0a6d5c9119fd0f3c))
 
-## [1.2.2](https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v[1.2.2]) (2023-09-24)
+
+
+## [1.2.2](https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v1.2.2) (2023-09-24)
+
 
 ### Bug Fixes
 
 * [#40](https://github.com/unit-mesh/auto-dev/issues/40) ([010d142](https://github.com/unit-mesh/auto-dev/commit/010d142d630a23f02cdde153483467ad4dedf493))
 * add sleep for debug mode, if machine is slowly ([06a6dbe](https://github.com/unit-mesh/auto-dev/commit/06a6dbe3358f6cc62e413d3e8f8b55dfd19bd55b))
 
+
 ### Features
 
 * **chat:** add delay before rendering last message  The default delay is 20 seconds, but it can be customized. ([17e5585](https://github.com/unit-mesh/auto-dev/commit/17e5585612c7338ab4a17635a2ec1fa35949785e))
 * **settings:** add quest delay seconds parameter ([f423caf](https://github.com/unit-mesh/auto-dev/commit/f423caf969f8a6490221d35b5449276549853e38)), closes [#21](https://github.com/unit-mesh/auto-dev/issues/21)
 
-## [1.2.1](https://github.com/unit-mesh/auto-dev/compare/v1.2.0...v[1.2.1]) (2023-08-25)
+
+
+## [1.2.1](https://github.com/unit-mesh/auto-dev/compare/v1.2.0...v1.2.1) (2023-08-25)
+
+
+### Bug Fixes
+
+* fix load bundle issue ([8f7c245](https://github.com/unit-mesh/auto-dev/commit/8f7c2459daee25a5cfa08d6a53482de8b5d13cd2))
+
+
+
+# [1.2.0](https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.0) (2023-08-25)
+
 
 ### Bug Fixes
 
@@ -1402,6 +2224,7 @@
 * fix url path issue ([b4c2001](https://github.com/unit-mesh/auto-dev/commit/b4c2001b0434f99b627eb1f8b8e13ed1944f1c55))
 * if already used Custom Engine config will not work after changed until reopen project. close [#31](https://github.com/unit-mesh/auto-dev/issues/31) ([624b0bc](https://github.com/unit-mesh/auto-dev/commit/624b0bcfe156012dfb0f26e885c202e0f715da8d))
 * 添加漏掉的 custome request format 选项 ([abfd500](https://github.com/unit-mesh/auto-dev/commit/abfd500b64700fc7c141fe9b6749170c30631c67))
+
 
 ### Features
 
@@ -1422,13 +2245,19 @@
 * **settings:** add new LLMParam components ([dac557b](https://github.com/unit-mesh/auto-dev/commit/dac557be7ee264907da6a85c9836df008b58a95a))
 * **settings:** add XingHuo provider configuration close [#29](https://github.com/unit-mesh/auto-dev/issues/29) ([cca35c6](https://github.com/unit-mesh/auto-dev/commit/cca35c6d8136dc7d4a81edf96e3a38692dbc6746))
 
-## [1.1.4](https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v[1.1.4]) (2023-08-18)
+
+
+## [1.1.4](https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v1.1.4) (2023-08-18)
+
 
 ### Features
 
 * add json path for config ([46efe24](https://github.com/unit-mesh/auto-dev/commit/46efe24a63009dde13142ba941463efa11239293))
 
-## [1.1.3](https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v[1.1.3]) (2023-08-18)
+
+
+## [1.1.3](https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v1.1.3) (2023-08-18)
+
 
 ### Bug Fixes
 
@@ -1442,6 +2271,7 @@
 * openai setting change not affect in same project lifecycle (will affect after reopen project) ([eb74909](https://github.com/unit-mesh/auto-dev/commit/eb74909f08d89d42fbdb10d896df8f8201ea1f3b))
 * remove correnct line in duplicated ([6758260](https://github.com/unit-mesh/auto-dev/commit/67582604967a60558af94b8f6ab36ef434a9b48d))
 * **similar:** fix lost chunk issues ([e003da9](https://github.com/unit-mesh/auto-dev/commit/e003da9ea192d18ebb99383b37d960c0bea5e1b9))
+
 
 ### Features
 
@@ -1461,7 +2291,10 @@
 * try to add prompot schema ([1aff07e](https://github.com/unit-mesh/auto-dev/commit/1aff07e4e17004815cc80f6ccaa48e623942ed6e))
 * update for app settings ui [#25](https://github.com/unit-mesh/auto-dev/issues/25) ([5cef076](https://github.com/unit-mesh/auto-dev/commit/5cef07684a7f5c0ffa7f5b8fc22a66fd0cb27d06))
 
-## [1.1.2](https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v[1.1.2]) (2023-08-09)
+
+
+## [1.1.2](https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v1.1.2) (2023-08-09)
+
 
 ### Bug Fixes
 
@@ -1470,6 +2303,7 @@
 * fix permissions ([f85a28d](https://github.com/unit-mesh/auto-dev/commit/f85a28d59d5edefbceba571429227856af4d91b3))
 * 修复编译失败 ([ccc539b](https://github.com/unit-mesh/auto-dev/commit/ccc539bb0adba83a72b21e4664a81a255f94eaae))
 
+
 ### Features
 
 * **doc:** add basdic prompt ([4fddd6d](https://github.com/unit-mesh/auto-dev/commit/4fddd6d28777fe973dc2c64f26a3e088feec7ea7))
@@ -1477,7 +2311,38 @@
 * **doc:** init java living doc ([9a37dce](https://github.com/unit-mesh/auto-dev/commit/9a37dce7135fa118109b232ba847f9067826e3db))
 * **doc:** make it works ([4d65801](https://github.com/unit-mesh/auto-dev/commit/4d658017d68da4215f536add4056a7f7703b5b5c))
 
-## [1.1.1](https://github.com/unit-mesh/auto-dev/compare/v1.1.0...v[1.1.1]) (2023-08-08)
+
+
+## [1.1.1](https://github.com/unit-mesh/auto-dev/compare/v1.1.0...v1.1.1) (2023-08-08)
+
+
+### Features
+
+* add themes ([0e0b571](https://github.com/unit-mesh/auto-dev/commit/0e0b5716be02be63cad96d0230bcd81530984e8c))
+* **custom:** add class input and output ([ae0db27](https://github.com/unit-mesh/auto-dev/commit/ae0db274afd67b4848db722058911a2ad526fb02))
+* **custom:** add priority ([57afece](https://github.com/unit-mesh/auto-dev/commit/57afece0ee5e3693eb74a898e8e03d821dc70ef9))
+* **custom:** split custom actions ([5c0f42b](https://github.com/unit-mesh/auto-dev/commit/5c0f42bff0ea1077fc9eb57b689d1826feb846b9))
+
+
+
+# [1.1.0](https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v1.1.0) (2023-08-08)
+
+
+### Bug Fixes
+
+* **azure:** fix crash issues ([8d2581d](https://github.com/unit-mesh/auto-dev/commit/8d2581d377381e075cffa8546456f4c96a6f956f))
+* disable for veww ([8bb2063](https://github.com/unit-mesh/auto-dev/commit/8bb20630ad5c8fa266a37bf56e20e5ddbb8f5f4e))
+* disable for welcome board ([7ab469b](https://github.com/unit-mesh/auto-dev/commit/7ab469b0c617adcffceb329c75ff8b9105687024))
+* fix exception issues ([2fa1976](https://github.com/unit-mesh/auto-dev/commit/2fa19766cabeca08f087c485c58ea886f4a83e49))
+* fix format issues ([f83b70f](https://github.com/unit-mesh/auto-dev/commit/f83b70fc3fc7c9771dfd022860b3f5cb858c28dc))
+* fix lost element issue ([3dd043e](https://github.com/unit-mesh/auto-dev/commit/3dd043e334db3e6595fef97a5fad12ffdb953ee2))
+* fix null issue [#19](https://github.com/unit-mesh/auto-dev/issues/19) [#14](https://github.com/unit-mesh/auto-dev/issues/14) ([1fe63fe](https://github.com/unit-mesh/auto-dev/commit/1fe63fe94364e9c434ad661bf6e228174adba7cf))
+* fix tests ([ee67cde](https://github.com/unit-mesh/auto-dev/commit/ee67cde53356947d5c46e4e6833db8a5043ebd2e))
+* fix width issue ([b94ccc0](https://github.com/unit-mesh/auto-dev/commit/b94ccc0ca443737d54fe31b5b1bcb389d1c1e02a))
+* remove dpilicate code ([1a89ed0](https://github.com/unit-mesh/auto-dev/commit/1a89ed03fb4dd22678f25f6f3c66122de1204f66))
+* settings not change but show modified ([e3e327d](https://github.com/unit-mesh/auto-dev/commit/e3e327d6b92008de73312106ae2cefdd769aa698))
+* try add csharp framework context ([d2e7bfe](https://github.com/unit-mesh/auto-dev/commit/d2e7bfe7423a6824903b5690e591458c5c878563))
+
 
 ### Features
 
@@ -1505,22 +2370,10 @@
 * **python:** add to add collect ([b67933f](https://github.com/unit-mesh/auto-dev/commit/b67933f81f24b7dd082a4e33f37589f5c37d2b56))
 * try with new api ([6a94505](https://github.com/unit-mesh/auto-dev/commit/6a945052ed89c43bc0ca337cf29467db3d7d1b8e))
 
-### Bug Fixes
 
-* **azure:** fix crash issues ([8d2581d](https://github.com/unit-mesh/auto-dev/commit/8d2581d377381e075cffa8546456f4c96a6f956f))
-* disable for veww ([8bb2063](https://github.com/unit-mesh/auto-dev/commit/8bb20630ad5c8fa266a37bf56e20e5ddbb8f5f4e))
-* disable for welcome board ([7ab469b](https://github.com/unit-mesh/auto-dev/commit/7ab469b0c617adcffceb329c75ff8b9105687024))
-* fix exception issues ([2fa1976](https://github.com/unit-mesh/auto-dev/commit/2fa19766cabeca08f087c485c58ea886f4a83e49))
-* fix format issues ([f83b70f](https://github.com/unit-mesh/auto-dev/commit/f83b70fc3fc7c9771dfd022860b3f5cb858c28dc))
-* fix lost element issue ([3dd043e](https://github.com/unit-mesh/auto-dev/commit/3dd043e334db3e6595fef97a5fad12ffdb953ee2))
-* fix null issue [#19](https://github.com/unit-mesh/auto-dev/issues/19) [#14](https://github.com/unit-mesh/auto-dev/issues/14) ([1fe63fe](https://github.com/unit-mesh/auto-dev/commit/1fe63fe94364e9c434ad661bf6e228174adba7cf))
-* fix tests ([ee67cde](https://github.com/unit-mesh/auto-dev/commit/ee67cde53356947d5c46e4e6833db8a5043ebd2e))
-* fix width issue ([b94ccc0](https://github.com/unit-mesh/auto-dev/commit/b94ccc0ca443737d54fe31b5b1bcb389d1c1e02a))
-* remove dpilicate code ([1a89ed0](https://github.com/unit-mesh/auto-dev/commit/1a89ed03fb4dd22678f25f6f3c66122de1204f66))
-* settings not change but show modified ([e3e327d](https://github.com/unit-mesh/auto-dev/commit/e3e327d6b92008de73312106ae2cefdd769aa698))
-* try add csharp framework context ([d2e7bfe](https://github.com/unit-mesh/auto-dev/commit/d2e7bfe7423a6824903b5690e591458c5c878563))
 
-## [1.0.2](https://github.com/unit-mesh/auto-dev/compare/v[1.0.2]-beta.1...v[1.0.2]) (2023-08-07)
+## [1.0.2](https://github.com/unit-mesh/auto-dev/compare/v1.0.2-beta.1...v1.0.2) (2023-08-07)
+
 
 ### Bug Fixes
 
@@ -1539,6 +2392,7 @@
 * fix typos ([109db5e](https://github.com/unit-mesh/auto-dev/commit/109db5e5573c9fd6b45fc2e31c94c293399e10a4))
 * try to resolve index issues ([25b2275](https://github.com/unit-mesh/auto-dev/commit/25b2275a4c0d3a7099aafd35aeb24dd15f03664a))
 
+
 ### Features
 
 * add basic for context ([5e6af8e](https://github.com/unit-mesh/auto-dev/commit/5e6af8ee5974c27244c2ee70d8e63b669daa2b9d))
@@ -1550,13 +2404,17 @@
 * try to use refs ([ce3c671](https://github.com/unit-mesh/auto-dev/commit/ce3c67186ce50f847e968455d14e4ec4f3bcea70))
 * update for explain biz logic ([95049b5](https://github.com/unit-mesh/auto-dev/commit/95049b5ebe4b71093e6256fdaa65efe266a54900))
 
-## [1.0.2-beta.1](https://github.com/unit-mesh/auto-dev/compare/[1.0.2-beta.1]...v[1.0.2-beta.1]) (2023-08-05)
+
+
+## [1.0.2-beta.1](https://github.com/unit-mesh/auto-dev/compare/1.0.2-beta.1...v1.0.2-beta.1) (2023-08-05)
+
 
 ### Bug Fixes
 
 * fix issues of internal API ([d3e56ab](https://github.com/unit-mesh/auto-dev/commit/d3e56ab7d9720281938a06a0f1178d19f3427dc1))
 * **ui:** fix genearete code waring ([6955882](https://github.com/unit-mesh/auto-dev/commit/6955882b49b85f7201ed7ab9a829c2dc9a9a1fd0))
 * **ui:** fix magic number ([8554153](https://github.com/unit-mesh/auto-dev/commit/855415349f488b23d2cfc3c221c566a9e832e9fe))
+
 
 ### Features
 
@@ -1565,7 +2423,28 @@
 * make genearte code here ([3bce491](https://github.com/unit-mesh/auto-dev/commit/3bce4914198e7cc942f8519fed761523356003e7))
 * **ui:** thinking in generate in placE ([ec4563d](https://github.com/unit-mesh/auto-dev/commit/ec4563dc7fe601eadc20c9f5a97a2d2d26cdff49))
 
-## [1.0.1](https://github.com/unit-mesh/auto-dev/compare/v1.0.0...v[1.0.1]) (2023-08-05)
+
+
+## [1.0.1](https://github.com/unit-mesh/auto-dev/compare/v1.0.0...v1.0.1) (2023-08-05)
+
+
+### Bug Fixes
+
+* fix inaly issues ([990f0fa](https://github.com/unit-mesh/auto-dev/commit/990f0fa1cbc97969fded1ff270bdf24937657aa6))
+* fix not file issues ([483d647](https://github.com/unit-mesh/auto-dev/commit/483d64794b20e76d2515b7cedbbe4975618fb576))
+
+
+### Features
+
+* add release scripts ([11edbd9](https://github.com/unit-mesh/auto-dev/commit/11edbd96ea379aafdc2804da818de573daeb7857))
+* **ui:** add first version for new chat ([0acbc27](https://github.com/unit-mesh/auto-dev/commit/0acbc277ebc819151759f1106e15f8a16bbfb9e8))
+* **ui:** add new chat ([310d3e1](https://github.com/unit-mesh/auto-dev/commit/310d3e1139d89a7541d144bdb4334451610136a9))
+* **ui:** change to button style ([178853e](https://github.com/unit-mesh/auto-dev/commit/178853eae57386088151e15b187e0c3290b43b8f))
+
+
+
+# [1.0.0](https://github.com/unit-mesh/auto-dev/compare/v0.7.3...v1.0.0) (2023-08-04)
+
 
 ### Bug Fixes
 
@@ -1612,6 +2491,7 @@
 * try to resolve editor issues ([76b698c](https://github.com/unit-mesh/auto-dev/commit/76b698c8edc5263a6a12aa57c2402aa6853efe8e))
 * try to resolve for file ([8cc1c7f](https://github.com/unit-mesh/auto-dev/commit/8cc1c7fd833258b1c09c50d2e87e2c550d3cb67f))
 * update for deps ([ed73604](https://github.com/unit-mesh/auto-dev/commit/ed73604eb33912d21afb15ddb26c3fba10b6a97d))
+
 
 ### Features
 
@@ -1708,7 +2588,10 @@
 * update for samples ([ecffe36](https://github.com/unit-mesh/auto-dev/commit/ecffe365ec0ef613f6f3c22793d681480a683553))
 * update for test code ([fdd3943](https://github.com/unit-mesh/auto-dev/commit/fdd3943b0312f426ddbdb5a7cd4d0b0f4bc43aee))
 
-## [0.7.3](https://github.com/unit-mesh/auto-dev/compare/v0.6.1...v[0.7.3]) (2023-07-25)
+
+
+## [0.7.3](https://github.com/unit-mesh/auto-dev/compare/v0.6.1...v0.7.3) (2023-07-25)
+
 
 ### Bug Fixes
 
@@ -1739,6 +2622,7 @@
 * set default layer name ([e88608d](https://github.com/unit-mesh/auto-dev/commit/e88608d77e44c9dc37004f60d75417ea7292d175))
 * try to make test case ([e8a5d15](https://github.com/unit-mesh/auto-dev/commit/e8a5d152537e57634f1d1487a6a5022c09455676))
 * update for config ([074df5c](https://github.com/unit-mesh/auto-dev/commit/074df5cd4ad6645c6ef42fa63e9ae6a4b32e854e))
+
 
 ### Features
 
@@ -1806,7 +2690,35 @@
 * update for tool Window icon ([9b20afb](https://github.com/unit-mesh/auto-dev/commit/9b20afb7d444d796d63a071c8cfd93dc069be02b))
 * use director action ([76f3952](https://github.com/unit-mesh/auto-dev/commit/76f3952f5e83ffbcd45ee228fbb2df9076b2b366))
 
-## [0.6.1](https://github.com/unit-mesh/auto-dev/compare/v0.6.0...v[0.6.1]) (2023-07-16)
+
+
+## [0.6.1](https://github.com/unit-mesh/auto-dev/compare/v0.6.0...v0.6.1) (2023-07-16)
+
+
+### Bug Fixes
+
+* fix filter error issues ([85ecba6](https://github.com/unit-mesh/auto-dev/commit/85ecba6400add103b98b4604a57226d0925e5a9c))
+* fix tests ([8258a1e](https://github.com/unit-mesh/auto-dev/commit/8258a1e09dc47e17e2a67bfb198051aa386442ea))
+* fix tests ([10e81d2](https://github.com/unit-mesh/auto-dev/commit/10e81d2336980f0efcafc043aa38d2c40dac2b56))
+
+
+### Features
+
+* add basic advice ([4de15e8](https://github.com/unit-mesh/auto-dev/commit/4de15e8a7c3359c53d7f94a38dfb431047c0efc3))
+* add for method lines ([ad75358](https://github.com/unit-mesh/auto-dev/commit/ad753584d6aac17d31ac1f3914fc1d53843f11e3))
+* add some codes for prompt strategy ([6b070f4](https://github.com/unit-mesh/auto-dev/commit/6b070f4518c5ce0ac603a4f88842d7f3edd8797f))
+* add test for java file class ([56dd51b](https://github.com/unit-mesh/auto-dev/commit/56dd51b8c564d56c7d467df538e920f856a7323f))
+* add test for spring layer char ([e66cc52](https://github.com/unit-mesh/auto-dev/commit/e66cc5269df559e26cdfa9e522e7b583689f0d70))
+* init code strategy ([5f5d40d](https://github.com/unit-mesh/auto-dev/commit/5f5d40dbbbf9932ad66cf845224be1cca49e9b87))
+* init java string processor ([cb3103c](https://github.com/unit-mesh/auto-dev/commit/cb3103c877cfc1b9f944ed1ad32f4460df295090))
+* init service name ([14f7269](https://github.com/unit-mesh/auto-dev/commit/14f7269e4707b56d66a27336c7280501c992c43b))
+* inline for pomports ([a7a4d63](https://github.com/unit-mesh/auto-dev/commit/a7a4d6375b0ddcaca7089fd891d21b9e43a9ed75))
+* make auto create controller works ([10e441d](https://github.com/unit-mesh/auto-dev/commit/10e441dacbb4ee6a4b4a5e15dc4eb3b7e6a85b74))
+
+
+
+# [0.6.0](https://github.com/unit-mesh/auto-dev/compare/v0.5.5...v0.6.0) (2023-07-14)
+
 
 ### Bug Fixes
 
@@ -1823,6 +2735,7 @@
 * fix test ([a241a3c](https://github.com/unit-mesh/auto-dev/commit/a241a3c8cd69c289110c843f865d528716ba82c2))
 * make repository works ([0f17226](https://github.com/unit-mesh/auto-dev/commit/0f17226c5b1e065d1d66f490d9e704710fb73345))
 * try to update for dtos & entities ([23a7e5d](https://github.com/unit-mesh/auto-dev/commit/23a7e5d059747f538672aca4bafe1010cf5bc7fe))
+
 
 ### Features
 
@@ -1847,11 +2760,15 @@
 * update for autodev demo ([0e6e759](https://github.com/unit-mesh/auto-dev/commit/0e6e7590ebb1c3bf252d1f622fa6ad1f185ed952))
 * update for cursor position ([12feb34](https://github.com/unit-mesh/auto-dev/commit/12feb34a6949de0d99bcd8f9d526b255145992dd))
 
-## [0.5.5](https://github.com/unit-mesh/auto-dev/compare/v0.5.4...v[0.5.5]) (2023-07-12)
+
+
+## [0.5.5](https://github.com/unit-mesh/auto-dev/compare/v0.5.4...v0.5.5) (2023-07-12)
+
 
 ### Bug Fixes
 
 * fix usage issues ([9cff4fa](https://github.com/unit-mesh/auto-dev/commit/9cff4fa531e9b07e0047c4e62115fae4406e6205))
+
 
 ### Features
 
@@ -1867,11 +2784,97 @@
 * init stream api ([7bc6889](https://github.com/unit-mesh/auto-dev/commit/7bc688996d2af994b1c9277a654736e9319ae3c3))
 * init vcs for detect cchange ([98261d7](https://github.com/unit-mesh/auto-dev/commit/98261d73e5761342a9c10481d84b1760c094a2d5))
 
-## [0.5.4](https://github.com/unit-mesh/auto-dev/compare/v0.4.0...v[0.5.4]) (2023-07-11)
+
+
+## [0.5.4](https://github.com/unit-mesh/auto-dev/compare/v0.4.0...v0.5.4) (2023-07-11)
+
+
+### Bug Fixes
+
+* fix ci ([32c7f25](https://github.com/unit-mesh/auto-dev/commit/32c7f25e738aaf12bcab26c4a358ed08a42f7c9f))
+* fix for context error ([b9a5a54](https://github.com/unit-mesh/auto-dev/commit/b9a5a54c7561da31dd28be038da23ef6130987eb))
+* fix formpat issues ([d7c0cbc](https://github.com/unit-mesh/auto-dev/commit/d7c0cbcef95735af0f125e76eb616d8f81219eb5))
+* fix gpt versions issues ([6583dd2](https://github.com/unit-mesh/auto-dev/commit/6583dd2af4562142b859e5f179883d5659f8f36a))
+* fix model issues ([45aef78](https://github.com/unit-mesh/auto-dev/commit/45aef787f49b3ac2c41307ad6d225130e3b88314))
+* fix not split class issues ([72a1cb8](https://github.com/unit-mesh/auto-dev/commit/72a1cb891768369cb59f1d6796665aa5a1f16081))
+* fix read issues & fixed [#3](https://github.com/unit-mesh/auto-dev/issues/3) ([467cf04](https://github.com/unit-mesh/auto-dev/commit/467cf04e13e2cfc4bc9f754cddc1f1393cbbd84b))
+* fix regex typo ([8677a9e](https://github.com/unit-mesh/auto-dev/commit/8677a9e928a6121916d46f8c66dffaf4acdd22ea))
+* fix request issues ([46d31d7](https://github.com/unit-mesh/auto-dev/commit/46d31d73d74b203150833a60ae9dc92a0291a86c))
+* fix typo ([3668310](https://github.com/unit-mesh/auto-dev/commit/36683109a9597e394bd87f01e4a4f024a3040e81))
+* fix typos ([3badd51](https://github.com/unit-mesh/auto-dev/commit/3badd5106527ca37ec9090c7db8430f4ebad606f))
+* fix typos ([75d83d3](https://github.com/unit-mesh/auto-dev/commit/75d83d32c5ebe6a011e11aa1759c63a85f0da630))
+* fix typos ([7c1a61c](https://github.com/unit-mesh/auto-dev/commit/7c1a61c7f2959f5a9342538ef3a05bb5030c47ed))
+* fix waring ([2ff34ec](https://github.com/unit-mesh/auto-dev/commit/2ff34ecb03523175a86b65794412841f52c8e7fc))
+* make class working ([1771aef](https://github.com/unit-mesh/auto-dev/commit/1771aef6c7a0fc1a34cf5e99a56b40289986d1c8))
+
+
+### Features
+
+* add basic for dt clzss ([75d2998](https://github.com/unit-mesh/auto-dev/commit/75d29984ac5f93d8e807491026fcae17875076f0))
+* add better markdown support ([2ab5272](https://github.com/unit-mesh/auto-dev/commit/2ab5272ee9788672495b2ab5996ab7d9cbd34767))
+* add code complete ([bf17097](https://github.com/unit-mesh/auto-dev/commit/bf17097b90b572b2e163bb1a20f3887897d2af3a))
+* add first version autodeV ([9aa9f9d](https://github.com/unit-mesh/auto-dev/commit/9aa9f9d89a767556c1804ce73baa3b1da61925fb))
+* add for load from review ([94a5313](https://github.com/unit-mesh/auto-dev/commit/94a5313d3e999c8250f964f1d173a6fb51bac61e))
+* add for selected text ([753c9ca](https://github.com/unit-mesh/auto-dev/commit/753c9ca8c0c7bd377decd305407b1f4b23694afd))
+* add for service ([38aaa35](https://github.com/unit-mesh/auto-dev/commit/38aaa3511f80aa39ce3cb3b981eedcbc9eaf8a95))
+* add for spring controller sample ([cd3d6af](https://github.com/unit-mesh/auto-dev/commit/cd3d6af13e5a0a2d8cb1da31ac4fd7926a3f23c2))
+* add history api supports ([cd3b158](https://github.com/unit-mesh/auto-dev/commit/cd3b158a2c6c2d2241c3b59225ed7070a1192f16))
+* add review this ([5da2563](https://github.com/unit-mesh/auto-dev/commit/5da2563532ee3a23b714c4bf0ae83fc0aa3a27b1))
+* add write test action ([920f255](https://github.com/unit-mesh/auto-dev/commit/920f25568e3c02112e0297526583d1fbb4659f47))
+* change text to multiline ([119b99f](https://github.com/unit-mesh/auto-dev/commit/119b99ffae301fd2458dd4f644057d15eed62f83))
+* enable prompt as context ([14fc846](https://github.com/unit-mesh/auto-dev/commit/14fc846aeb04c53ab178321d7adddec6b4904641))
+* init basic azure api ([644e675](https://github.com/unit-mesh/auto-dev/commit/644e67509e67996a7c5f740db8c7e3a2d23250ca))
+* init for co-mate ([55e2783](https://github.com/unit-mesh/auto-dev/commit/55e278377375700ab2b9fdcefc0b2a7349712897))
+* make auto complte can load from contenxt ([3682bb9](https://github.com/unit-mesh/auto-dev/commit/3682bb9c56c45855a9cefff7d386002df0428ed7))
+* make controller nabel to call service ([2f5be15](https://github.com/unit-mesh/auto-dev/commit/2f5be1548a80273e0ee9897a70d1033f7745f8ea))
+* make refactor this ([70f0860](https://github.com/unit-mesh/auto-dev/commit/70f0860d62eb471653e49efb4b5ec06fe1c86ce3))
+* set default cursor for items ([9933b0a](https://github.com/unit-mesh/auto-dev/commit/9933b0a7ea61e1dc4044808437015fc26296a1e4))
+* try to use table ext ([957d616](https://github.com/unit-mesh/auto-dev/commit/957d6165a4d8f72f4cfde63eef92bc28a9266a57))
+* update for template ([a49e1e0](https://github.com/unit-mesh/auto-dev/commit/a49e1e0802d2ce4283add654c7a297b3493e6d2e))
+
+
+
+# [0.4.0](https://github.com/unit-mesh/auto-dev/compare/v0.3.0...v0.4.0) (2023-05-08)
+
+
+### Bug Fixes
+
+* use password field for sensitive info ([1bec18a](https://github.com/unit-mesh/auto-dev/commit/1bec18a18ac9b755b4295ea57d5bf79c97289d69))
+
+
+### Features
+
+* add for expalin code ([ec9c1bc](https://github.com/unit-mesh/auto-dev/commit/ec9c1bc71ec2b4eb319e56c95cff35ababc1164b))
+* init chat bot ([7acd10f](https://github.com/unit-mesh/auto-dev/commit/7acd10f21882dee9cf157f713ef8b04c11de920d))
+* init for expalin in console ([bd5f61c](https://github.com/unit-mesh/auto-dev/commit/bd5f61c94a98f7ae47d80e6fb772fc5a3e183a0b))
+* make chinese prompt support ([9d5e338](https://github.com/unit-mesh/auto-dev/commit/9d5e3381f5505108375ab4509fe137ddd724cf81))
+
+
+
+# [0.3.0](https://github.com/unit-mesh/auto-dev/compare/v0.2.0...v0.3.0) (2023-04-26)
+
+
+### Features
+
+* add custom server connector ([a23a8b8](https://github.com/unit-mesh/auto-dev/commit/a23a8b82f5c2009112db912e276f046c6e1ac040))
+* add did change ([0c66f65](https://github.com/unit-mesh/auto-dev/commit/0c66f651c09efd13ed5973afa25338091422ff68))
+* add engine prompt config ([be15620](https://github.com/unit-mesh/auto-dev/commit/be15620dd7b4a6fcf45c3d4154ffd49456c3e78a))
+* add for prompt by text ([e8ac525](https://github.com/unit-mesh/auto-dev/commit/e8ac525241aacb5acca34daf7675aec4bd4b6cdf))
+* add handle for response ([2fd358e](https://github.com/unit-mesh/auto-dev/commit/2fd358e40c602c1324421b05bfae2fee428d9fd9))
+* add prompt config ([c613ce3](https://github.com/unit-mesh/auto-dev/commit/c613ce31e9880d78a805cfc899b0f3794b6d4eb2))
+* init agent model ([b838ad7](https://github.com/unit-mesh/auto-dev/commit/b838ad7a5ee5f369150bb4757f415ac4b00be5b3))
+* make enable to send request ([c472173](https://github.com/unit-mesh/auto-dev/commit/c472173a030ab1bc3ddc6631a97411d1f4cf0727))
+* update prompot layout ([472b5d0](https://github.com/unit-mesh/auto-dev/commit/472b5d03327cd7cb454a5f4ae8c4fcb1a081d125))
+
+
+
+# [0.2.0](https://github.com/unit-mesh/auto-dev/compare/v0.0.8...v0.2.0) (2023-04-23)
+
 
 ### Bug Fixes
 
 * remove unused parameters ([fb68b71](https://github.com/unit-mesh/auto-dev/commit/fb68b71cf8d0bd75603fba9b2329d9cfc6718f97))
+
 
 ### Features
 
@@ -1882,7 +2885,10 @@
 * init for service template ([a0a1b8a](https://github.com/unit-mesh/auto-dev/commit/a0a1b8aff8970131ffb6aef5f6304b9cee07cb61))
 * make custom open api host works ([f4861ce](https://github.com/unit-mesh/auto-dev/commit/f4861ce82e93b3e3614b435da2b93b7305f046d1))
 
-## [0.0.8](https://github.com/unit-mesh/auto-dev/compare/v0.0.7...v[0.0.8]) (2023-04-21)
+
+
+## [0.0.8](https://github.com/unit-mesh/auto-dev/compare/v0.0.7...v0.0.8) (2023-04-21)
+
 
 ### Bug Fixes
 
@@ -1890,12 +2896,16 @@
 * try to merge configure ([6f0d24b](https://github.com/unit-mesh/auto-dev/commit/6f0d24ba26972eef53815a7ed8da7d3a7cc889ac))
 * update template ([69eb06c](https://github.com/unit-mesh/auto-dev/commit/69eb06c2cc26e5b947aa94524bac8581a125b709))
 
+
 ### Features
 
 * add progressbar for code complete action ([a8b3fdc](https://github.com/unit-mesh/auto-dev/commit/a8b3fdc0e0f7465301d336065747ffa6334d07ce))
 * update config for xml ([d5c70f6](https://github.com/unit-mesh/auto-dev/commit/d5c70f681b3454fa3b77105f34231f2a6890a44d))
 
-## [0.0.7](https://github.com/unit-mesh/auto-dev/compare/v0.0.3...v[0.0.7]) (2023-04-19)
+
+
+## [0.0.7](https://github.com/unit-mesh/auto-dev/compare/v0.0.3...v0.0.7) (2023-04-19)
+
 
 ### Bug Fixes
 
@@ -1907,17 +2917,22 @@
 * modify api usage ([74fb4de](https://github.com/unit-mesh/auto-dev/commit/74fb4dec22a00bdfa9dfa151552a6424def93d74))
 * not follow the openai README ([ac2abd1](https://github.com/unit-mesh/auto-dev/commit/ac2abd1122960b147a2cd191341f30cb1b4f49a7))
 
+
 ### Features
 
 * add auto comment support ([f47572d](https://github.com/unit-mesh/auto-dev/commit/f47572db4e062bafb6c12c2cb43817f8807fe976))
 * make code comments works ([db369d2](https://github.com/unit-mesh/auto-dev/commit/db369d2df86e28c418c4f812fbdaadab7532e25d))
 
-## [0.0.3](https://github.com/unit-mesh/auto-dev/compare/v0.0.2...v[0.0.3]) (2023-04-18)
+
+
+## [0.0.3](https://github.com/unit-mesh/auto-dev/compare/v0.0.2...v0.0.3) (2023-04-18)
+
 
 ### Bug Fixes
 
 * fix line marker leaft psi issue ([3fbacf3](https://github.com/unit-mesh/auto-dev/commit/3fbacf3e903fc30f56dc24b81b151fbfc3d772ba))
 * fix some typos ([14d0b91](https://github.com/unit-mesh/auto-dev/commit/14d0b919aeb4d7497345edd2778b8eb97a036ff1))
+
 
 ### Features
 
@@ -1932,7 +2947,10 @@
 * make it works ([4add40c](https://github.com/unit-mesh/auto-dev/commit/4add40c17b7b723fc5f34d43002b0c82700c194d))
 * udpate code cmplete ([5e05dab](https://github.com/unit-mesh/auto-dev/commit/5e05dab1e70ef6e43572b80400c392777bbdea12))
 
-## [0.0.2](https://github.com/unit-mesh/auto-dev/compare/v0.0.1...v[0.0.2]) (2023-04-17)
+
+
+## [0.0.2](https://github.com/unit-mesh/auto-dev/compare/v0.0.1...v0.0.2) (2023-04-17)
+
 
 ### Bug Fixes
 
@@ -1946,11 +2964,15 @@
 * set tempature to 0.0 ([f2e066e](https://github.com/unit-mesh/auto-dev/commit/f2e066e86871cb16d999b5fafec4aaf6ed8e2c37))
 * update template ([c1749fe](https://github.com/unit-mesh/auto-dev/commit/c1749fe96d7bac007268fb5a6737ce80e7b8267e))
 
+
 ### Features
 
 * add handle for template ([b2a9df5](https://github.com/unit-mesh/auto-dev/commit/b2a9df5396805ac48e1f84f01a77b28125916ac1))
 
-## [0.0.1](https://github.com/unit-mesh/auto-dev/compare/e085cfe3974610d9fe3459ed61639c27dd96af95...v[0.0.1]) (2023-04-17)
+
+
+## [0.0.1](https://github.com/unit-mesh/auto-dev/compare/e085cfe3974610d9fe3459ed61639c27dd96af95...v0.0.1) (2023-04-17)
+
 
 ### Bug Fixes
 
@@ -1969,6 +2991,7 @@
 * fix typos ([118a655](https://github.com/unit-mesh/auto-dev/commit/118a65566522c6aec94bf01e8a91234325588fed))
 * fix ui issues ([da7836b](https://github.com/unit-mesh/auto-dev/commit/da7836b4e84a863a539950c4c49b199fd236c2ce))
 * fix writtings issues ([456a4ec](https://github.com/unit-mesh/auto-dev/commit/456a4ecf2e4ca90a1d705939997546273a549977))
+
 
 ### Features
 
@@ -2007,59 +3030,5 @@
 * update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 * use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/unit-mesh/auto-dev/compare/v1.8.18...v2.0.0
-[1.8.18]: https://github.com/unit-mesh/auto-dev/compare/v1.8.17...v1.8.18
-[1.8.17]: https://github.com/unit-mesh/auto-dev/compare/v1.8.16...v1.8.17
-[1.8.16]: https://github.com/unit-mesh/auto-dev/compare/v1.8.15...v1.8.16
-[1.8.15]: https://github.com/unit-mesh/auto-dev/compare/v1.8.12...v1.8.15
-[1.8.12]: https://github.com/unit-mesh/auto-dev/compare/v1.8.12-ALPHA...v1.8.12
-[1.8.12-ALPHA]: https://github.com/unit-mesh/auto-dev/compare/v1.8.11...v1.8.12-ALPHA
-[1.8.11]: https://github.com/unit-mesh/auto-dev/compare/v1.8.9-SNAPSHOT...v1.8.11
-[1.8.9-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v1.8.9-SNAPSHOT
-[1.8.8]: https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v1.8.8
-[1.8.7-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v1.8.7-SNAPSHOT
-[1.8.7-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.7-SNAPSHOT...v1.8.7-RELEASE
-[1.8.6-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.5-RC...v1.8.6-SNAPSHOT
-[1.8.6-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-SNAPSHOT...v1.8.6-RELEASE
-[1.8.5-RC]: https://github.com/unit-mesh/auto-dev/compare/v1.8.4-RC...v1.8.5-RC
-[1.8.4-RC]: https://github.com/unit-mesh/auto-dev/compare/v1.8.3-RC...v1.8.4-RC
-[1.8.3-RC]: https://github.com/unit-mesh/auto-dev/compare/v1.8.2-RC...v1.8.3-RC
-[1.8.2-RC]: https://github.com/unit-mesh/auto-dev/compare/v1.8.1...v1.8.2-RC
-[1.8.1]: https://github.com/unit-mesh/auto-dev/compare/v1.7.5...v1.8.1
-[1.7.5]: https://github.com/unit-mesh/auto-dev/compare/v1.7.4...v1.7.5
-[1.7.4]: https://github.com/unit-mesh/auto-dev/compare/v1.7.3...v1.7.4
-[1.7.3]: https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v1.7.3
-[1.7.2]: https://github.com/unit-mesh/auto-dev/compare/v1.7.1...v1.7.2
-[1.7.1]: https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v1.7.1
-[1.6.5]: https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v1.6.5
-[1.6.4]: https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v1.6.4
-[1.6.3]: https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v1.6.3
-[1.6.1]: https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v1.6.1
-[1.5.5]: https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v1.5.5
-[1.5.4]: https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v1.5.4
-[1.5.3]: https://github.com/unit-mesh/auto-dev/compare/v1.5.2...v1.5.3
-[1.5.2]: https://github.com/unit-mesh/auto-dev/compare/v1.4.4...v1.5.2
-[1.4.4]: https://github.com/unit-mesh/auto-dev/compare/v1.4.3...v1.4.4
-[1.4.3]: https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v1.4.3
-[1.4.1]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.4.1
-[1.2.5]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5
-[1.2.3]: https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v1.2.3
-[1.2.2]: https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v1.2.2
-[1.2.1]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.1
-[1.1.4]: https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v1.1.4
-[1.1.3]: https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v1.1.3
-[1.1.2]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v1.1.2
-[1.1.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v1.1.1
-[1.0.2]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2-beta.1...v1.0.2
-[1.0.2-beta.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.1...v1.0.2-beta.1
-[1.0.1]: https://github.com/unit-mesh/auto-dev/compare/v0.7.3...v1.0.1
-[0.7.3]: https://github.com/unit-mesh/auto-dev/compare/v0.6.1...v0.7.3
-[0.6.1]: https://github.com/unit-mesh/auto-dev/compare/v0.5.5...v0.6.1
-[0.5.5]: https://github.com/unit-mesh/auto-dev/compare/v0.5.4...v0.5.5
-[0.5.4]: https://github.com/unit-mesh/auto-dev/compare/v0.0.8...v0.5.4
-[0.0.8]: https://github.com/unit-mesh/auto-dev/compare/v0.0.7...v0.0.8
-[0.0.7]: https://github.com/unit-mesh/auto-dev/compare/v0.0.3...v0.0.7
-[0.0.3]: https://github.com/unit-mesh/auto-dev/compare/v0.0.2...v0.0.3
-[0.0.2]: https://github.com/unit-mesh/auto-dev/compare/v0.0.1...v0.0.2
-[0.0.1]: https://github.com/unit-mesh/auto-dev/commits/v0.0.1
+
+
