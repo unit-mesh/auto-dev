@@ -43,4 +43,9 @@ data class AgentTaskEntry(
             status = TaskStatus.COMPLETED
         }
     }
+
+    fun updateStatus(status: TaskStatus) {
+        this.status = status
+        updateCompletionStatus()
+    }
 }
