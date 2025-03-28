@@ -138,7 +138,6 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             runnable: (SketchToolWindow, ChatCodingService) -> Unit,
         ) {
             val chatCodingService = ChatCodingService(actionType, project)
-
             val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID) ?: run {
                 logger<ChatCodingService>().warn("Tool window not found")
                 return

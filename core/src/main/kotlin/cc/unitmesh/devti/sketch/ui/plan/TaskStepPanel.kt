@@ -282,7 +282,6 @@ class TaskStepPanel(
         updateStatusLabel()
         onStatusChange()
 
-        // Send to AI for execution
         AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
             ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + task.step)
         }

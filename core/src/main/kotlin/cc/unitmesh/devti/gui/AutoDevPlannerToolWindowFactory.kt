@@ -86,7 +86,14 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private var issueTextArea: JTextArea? = null
 
     init {
-        contentPanel.add(planPanel, BorderLayout.CENTER)
+        // Check if there's no plan content and conditionally show the appropriate panel
+        if (content.isBlank()) {
+            isIssueInputMode = true
+            contentPanel.add(issueInputPanel, BorderLayout.CENTER)
+        } else {
+            contentPanel.add(planPanel, BorderLayout.CENTER)
+        }
+        
         add(contentPanel, BorderLayout.CENTER)
 
         connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
@@ -272,17 +279,16 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         }
         
         fun showIssueInput(project: Project, callback: (String) -> Unit) {
-            val toolWindow =
-                ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.PlANNER_ID)
-            if (toolWindow != null) {
-                val content = toolWindow.contentManager.getContent(0)
-                val plannerWindow = content?.component as? AutoDevPlannerToolWindow
+            val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.PlANNER_ID)
+            if (toolWindow == null) return
 
-                plannerWindow?.let {
-                    it.issueInputCallback = callback
-                    it.switchToIssueInputView()
-                    toolWindow.show()
-                }
+            val content = toolWindow.contentManager.getContent(0)
+            val plannerWindow = content?.component as? AutoDevPlannerToolWindow
+
+            plannerWindow?.let {
+                it.issueInputCallback = callback
+                it.switchToIssueInputView()
+                toolWindow.show()
             }
         }
     }
@@ -322,3 +328,4 @@ private class MarkdownLanguageField(
         }
     }
 }
+
