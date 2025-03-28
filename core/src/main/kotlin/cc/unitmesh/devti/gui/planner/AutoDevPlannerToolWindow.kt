@@ -136,12 +136,12 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         }
 
         contentPanel.removeAll()
-        val shadowPanel = ShadowPanel(
+        val editPlanPanel = EditPlanPanel(
             project = project,
             content = content,
             onSave = { newContent ->
                 if (newContent == content) {
-                    return@ShadowPanel
+                    return@EditPlanPanel
                 }
                 switchToPlanView(newContent)
                 currentCallback?.invoke(newContent)
@@ -150,7 +150,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                 switchToPlanView()
             }
         )
-        contentPanel.add(shadowPanel, BorderLayout.CENTER)
+        contentPanel.add(editPlanPanel, BorderLayout.CENTER)
         contentPanel.revalidate()
         contentPanel.repaint()
 
