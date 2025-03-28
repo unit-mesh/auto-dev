@@ -43,17 +43,18 @@ open class SpringGradleContextProvider : ChatContextProvider {
             it.relativePath(project)
         }
 
-        val baseMessages = buildContextMessage(fileName, formattedTechStacks) + "Configured with files: ${configFile.joinToString(",")}"
-
+        val baseMessages = buildContextMessage(fileName, formattedTechStacks, configFile)
         return listOf(ChatContextItem(SpringGradleContextProvider::class, baseMessages))
     }
 
-    private fun buildContextMessage(fileName: String, techStacks: String): String {
-        return when {
-            isControllerFile(fileName) -> "You are working on a project that uses $techStacks to build RESTful APIs."
-            isServiceFile(fileName) -> "You are working on a project that uses $techStacks to build business logic."
-            else -> "You are working on a project that uses $techStacks to build business logic."
+    private fun buildContextMessage(fileName: String, techStacks: String, configFiles: List<String>): String {
+        val contextType = when {
+            isControllerFile(fileName) -> "RESTful APIs"
+            isServiceFile(fileName) -> "business logic"
+            else -> "business logic"
         }
+        
+        return "You are working on a project that uses $techStacks to build $contextType, configured with files: ${configFiles.joinToString(",")}."
     }
 
     private fun isControllerFile(fileName: String): Boolean {
