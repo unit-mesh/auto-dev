@@ -23,7 +23,6 @@ import java.awt.Font
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
-import javax.swing.border.CompoundBorder
 import javax.swing.text.AttributeSet
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants

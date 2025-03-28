@@ -42,7 +42,7 @@ class TaskSectionPanel(
         background = JBUI.CurrentTheme.ToolWindow.background()
         border = CompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 1, 0, JBColor.border()),
-            JBUI.Borders.empty(4, 16)
+            JBUI.Borders.empty(4, 0)
         )
 
         val headerPanel = createHeaderPanel()
@@ -50,7 +50,7 @@ class TaskSectionPanel(
 
         stepsPanel.layout = BoxLayout(stepsPanel, BoxLayout.Y_AXIS)
         stepsPanel.background = JBUI.CurrentTheme.ToolWindow.background()
-        stepsPanel.border = JBUI.Borders.emptyLeft(4)
+        stepsPanel.border = JBUI.Borders.emptyLeft(8)
 
         refreshStepsPanel()
 
@@ -158,15 +158,11 @@ class TaskSectionPanel(
 
     private fun toggleStepsVisibility(visible: Boolean) {
         scrollPane.isVisible = visible
-        SwingUtilities.invokeLater {
-            parent?.revalidate()
-            parent?.repaint()
-        }
+        stepsPanel.isVisible = visible
     }
 
     private fun refreshStepsPanel() {
         stepsPanel.removeAll()
-
         planItem.steps.forEach { step ->
             val taskStepPanel = TaskStepPanel(project, step) {
                 updateSectionStatus()
