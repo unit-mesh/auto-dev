@@ -59,5 +59,7 @@
 
         <runProjectService implementation="cc.unitmesh.idea.provider.JvmRunProjectService"/>
 <!--        <agentObserver implementation="cc.unitmesh.idea.observer.GradleTaskAgentObserver" />-->
+
+        <frameworkConfigProvider implementation="cc.unitmesh.idea.provider.SpringFrameworkConfigProvider"/>
     </extensions>
 </idea-plugin>

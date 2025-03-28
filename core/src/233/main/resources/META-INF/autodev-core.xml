@@ -205,6 +205,11 @@
                         dynamic="true">
         </extensionPoint>
 
+        <extensionPoint qualifiedName="cc.unitmesh.frameworkConfigProvider"
+                        interface="cc.unitmesh.devti.provider.FrameworkConfigProvider"
+                        dynamic="true">
+        </extensionPoint>
+
         <!--  Bridge -->
         <extensionPoint qualifiedName="cc.unitmesh.componentProvider"
                         interface="cc.unitmesh.devti.bridge.provider.ComponentViewProvider"
