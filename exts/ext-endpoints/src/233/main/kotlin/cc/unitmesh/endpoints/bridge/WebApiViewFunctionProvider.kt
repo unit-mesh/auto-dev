@@ -60,10 +60,15 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
             }
         }
 
-//        val springFacets = getAllSpringFacets(project).map {
-//            SpringFileSetService.getInstance().getAllSets(it)
+//        runReadAction {
+//            ModuleManager.getInstance(project).modules.forEach { module ->
+//                SpringCommonUtils.withProgress {
+//                    val context = SpringModelsCreationContext.create(module).loadModelsFromDependentModules()
+//                        .loadModelsFromModuleDependencies()
+//                    val allModels = SpringManagerImpl.getAllModels(context)
+//                }
+//            }
 //        }
-
 
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
@@ -74,9 +79,10 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
     private fun getCombinedModelForProject(project: Project): CombinedSpringModel {
         val allCombinedModels: MutableSet<SpringModel> = LinkedHashSet<SpringModel>()
         for (module in ModuleManager.getInstance(project).modules) {
-            val allModels = SpringManager.getInstance(project).getAllModelsWithoutDependencies(module)
-            allCombinedModels.addAll(allModels!!)
+            val allModels = SpringManager.getInstance(project).getAllModels(module)
+            allCombinedModels.addAll(allModels)
         }
+
         return CombinedSpringModelImpl(allCombinedModels, null)
     }
 
