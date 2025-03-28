@@ -38,13 +38,15 @@ class TaskSectionPanel(
     private var expandButton: JButton? = null
     private var statusLabel: JLabel? = null
     private var progressLabel: JLabel? = null
+    private val scrollPane: JBScrollPane
+    private val MAX_TITLE_LENGTH = 50
     
     init {
         layout = BorderLayout()
         background = JBUI.CurrentTheme.ToolWindow.background()
         border = CompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 1, 0, JBColor.border()),
-            JBUI.Borders.empty(8, 16, 8, 16)
+            JBUI.Borders.empty(4, 16)
         )
         
         val headerPanel = createHeaderPanel()
@@ -54,14 +56,15 @@ class TaskSectionPanel(
         stepsPanel.background = JBUI.CurrentTheme.ToolWindow.background()
         stepsPanel.border = JBUI.Borders.emptyLeft(24)
         
-        // Add steps to the steps panel
         refreshStepsPanel()
         
-        // Create a scroll pane for the steps
-        val scrollPane = JBScrollPane(stepsPanel)
-        scrollPane.border = BorderFactory.createEmptyBorder()
-        scrollPane.isOpaque = false
-        scrollPane.viewport.isOpaque = false
+        scrollPane = JBScrollPane(stepsPanel).apply {
+            border = BorderFactory.createEmptyBorder()
+            isOpaque = false
+            viewport.isOpaque = false
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+        }
         
         add(scrollPane, BorderLayout.CENTER)
         
@@ -82,23 +85,23 @@ class TaskSectionPanel(
         
         // Expand/collapse button
         expandButton = JButton(if (isExpanded) "▼" else "▶").apply {
-            preferredSize = Dimension(24, 24)
+            preferredSize = Dimension(20, 20)  // Slightly smaller button
             margin = JBUI.insets(0)
             isBorderPainted = false
             isContentAreaFilled = false
             toolTipText = if (isExpanded) "Collapse section" else "Expand section"
             
-            addActionListener {
+            addActionListener { e ->
                 isExpanded = !isExpanded
                 text = if (isExpanded) "▼" else "▶"
                 toolTipText = if (isExpanded) "Collapse section" else "Expand section"
                 toggleStepsVisibility(isExpanded)
+                e.source = this  // Ensure event propagation
             }
         }
         
         leftPanel.add(expandButton)
         
-        // Status icon
         val statusIcon = when (planItem.status) {
             TaskStatus.COMPLETED -> JLabel(AutoDevIcons.Checked)
             TaskStatus.FAILED -> JLabel(AutoDevIcons.Error)
@@ -107,18 +110,23 @@ class TaskSectionPanel(
         }
         leftPanel.add(statusIcon)
         
-        // Title with section number
-        val titleLabel = JLabel("${index + 1}. ${planItem.title}").apply {
+        val fullTitle = "${index + 1}. ${planItem.title}"
+        val displayTitle = if (planItem.title.length > MAX_TITLE_LENGTH) {
+            "${index + 1}. ${planItem.title.take(MAX_TITLE_LENGTH)}..."
+        } else {
+            fullTitle
+        }
+        
+        val titleLabel = JLabel(displayTitle).apply {
             font = font.deriveFont(Font.BOLD)
+            toolTipText = fullTitle // Show full title on hover
         }
         leftPanel.add(titleLabel)
         
-        // Right side with status, progress and action buttons
         val rightPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0)).apply {
             isOpaque = false
         }
         
-        // Progress indicator
         val completedSteps = planItem.steps.count { it.completed }
         val totalSteps = planItem.steps.size
         val progressPercentage = if (totalSteps > 0) (completedSteps * 100) / totalSteps else 0
@@ -129,7 +137,6 @@ class TaskSectionPanel(
         }
         rightPanel.add(progressLabel)
         
-        // Status label
         statusLabel = JLabel(getStatusText(planItem.status)).apply {
             foreground = getStatusColor(planItem.status)
             font = font.deriveFont(Font.BOLD, 11f)
@@ -158,23 +165,11 @@ class TaskSectionPanel(
     }
     
     private fun toggleStepsVisibility(visible: Boolean) {
-        stepsPanel.isVisible = visible
-        revalidate()
-        repaint()
-        
-        stepsPanel.addComponentListener(object : ComponentAdapter() {
-            override fun componentShown(e: ComponentEvent) {
-                UIUtil.invokeLaterIfNeeded {
-                    parent.revalidate()
-                }
-            }
-            
-            override fun componentHidden(e: ComponentEvent) {
-                UIUtil.invokeLaterIfNeeded {
-                    parent.revalidate()
-                }
-            }
-        })
+        scrollPane.isVisible = visible
+        SwingUtilities.invokeLater {
+            parent?.revalidate()
+            parent?.repaint()
+        }
     }
     
     private fun refreshStepsPanel() {
@@ -188,7 +183,7 @@ class TaskSectionPanel(
             }
             
             stepsPanel.add(taskStepPanel)
-            stepsPanel.add(Box.createVerticalStrut(4))
+            stepsPanel.add(Box.createVerticalStrut(2))  // Reduced spacing between steps
         }
     }
     
@@ -247,3 +242,4 @@ class TaskSectionPanel(
         }
     }
 }
+
