@@ -6,20 +6,16 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.TaskStatus
+import cc.unitmesh.devti.sketch.ui.AutoDevColors
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.util.ui.AnimatedIcon
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.Font
-import java.awt.event.ActionEvent
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import javax.swing.*
 import javax.swing.border.CompoundBorder
 
@@ -37,7 +33,6 @@ class TaskSectionPanel(
     private var isExpanded = true
     private var expandButton: JButton? = null
     private var statusLabel: JLabel? = null
-    private var progressLabel: JLabel? = null
     private val scrollPane: JBScrollPane
     private val MAX_TITLE_LENGTH = 50
     
@@ -54,7 +49,7 @@ class TaskSectionPanel(
         
         stepsPanel.layout = BoxLayout(stepsPanel, BoxLayout.Y_AXIS)
         stepsPanel.background = JBUI.CurrentTheme.ToolWindow.background()
-        stepsPanel.border = JBUI.Borders.emptyLeft(24)
+        stepsPanel.border = JBUI.Borders.emptyLeft(4)
         
         refreshStepsPanel()
         
@@ -67,8 +62,6 @@ class TaskSectionPanel(
         }
         
         add(scrollPane, BorderLayout.CENTER)
-        
-        // Initially show or hide based on state
         toggleStepsVisibility(isExpanded)
     }
     
@@ -78,15 +71,13 @@ class TaskSectionPanel(
             border = JBUI.Borders.empty(2)
         }
         
-        // Left side with expand button and title
         val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 5, 0)).apply {
             isOpaque = false
         }
         
-        // Expand/collapse button
         expandButton = JButton(if (isExpanded) "▼" else "▶").apply {
-            preferredSize = Dimension(20, 20)  // Slightly smaller button
-            margin = JBUI.insets(0)
+            preferredSize = Dimension(20, 20)
+            margin = JBUI.emptyInsets()
             isBorderPainted = false
             isContentAreaFilled = false
             toolTipText = if (isExpanded) "Collapse section" else "Expand section"
@@ -119,7 +110,7 @@ class TaskSectionPanel(
         
         val titleLabel = JLabel(displayTitle).apply {
             font = font.deriveFont(Font.BOLD)
-            toolTipText = fullTitle // Show full title on hover
+            toolTipText = fullTitle
         }
         leftPanel.add(titleLabel)
         
@@ -127,32 +118,32 @@ class TaskSectionPanel(
             isOpaque = false
         }
         
-        val completedSteps = planItem.steps.count { it.completed }
-        val totalSteps = planItem.steps.size
-        val progressPercentage = if (totalSteps > 0) (completedSteps * 100) / totalSteps else 0
-        
-        progressLabel = JLabel("$progressPercentage% complete").apply {
-            foreground = JBColor.GRAY
-            font = font.deriveFont(Font.PLAIN, 10f)
-        }
-        rightPanel.add(progressLabel)
-        
         statusLabel = JLabel(getStatusText(planItem.status)).apply {
             foreground = getStatusColor(planItem.status)
             font = font.deriveFont(Font.BOLD, 11f)
-            border = JBUI.Borders.empty(2, 5)
+            border = JBUI.Borders.empty(2)
+            preferredSize = Dimension(80, 16)
         }
+
         rightPanel.add(statusLabel)
         
         if (planItem.status == TaskStatus.TODO || planItem.status == TaskStatus.FAILED) {
-            val executeButton = JButton("Execute").apply {
+            val executeButton = JButton(AutoDevIcons.Run).apply {
+                margin = JBUI.emptyInsets()
+                isBorderPainted = false
+                isContentAreaFilled = false
+                preferredSize = Dimension(20, 20)
                 addActionListener { executeSection() }
             }
             rightPanel.add(executeButton)
         }
         
         if (planItem.status == TaskStatus.FAILED) {
-            val retryButton = JButton("Retry").apply {
+            val retryButton = JButton(AutoDevIcons.REPAIR).apply {
+                margin = JBUI.emptyInsets()
+                isBorderPainted = false
+                isContentAreaFilled = false
+                preferredSize = Dimension(20, 20)
                 addActionListener { executeSection() }
             }
             rightPanel.add(retryButton)
@@ -207,12 +198,6 @@ class TaskSectionPanel(
     }
     
     private fun updateProgressAndStatus() {
-        val completedSteps = planItem.steps.count { it.completed }
-        val totalSteps = planItem.steps.size
-        val progressPercentage = if (totalSteps > 0) (completedSteps * 100) / totalSteps else 0
-        
-        progressLabel?.text = "$progressPercentage% complete"
-        
         statusLabel?.text = getStatusText(planItem.status)
         statusLabel?.foreground = getStatusColor(planItem.status)
         
@@ -235,10 +220,10 @@ class TaskSectionPanel(
     
     private fun getStatusColor(status: TaskStatus): JBColor {
         return when (status) {
-            TaskStatus.COMPLETED -> JBColor(0x59A869, 0x59A869) // Green
-            TaskStatus.FAILED -> JBColor(0xD94F4F, 0xD94F4F) // Red
-            TaskStatus.IN_PROGRESS -> JBColor(0x3592C4, 0x3592C4) // Blue
-            TaskStatus.TODO -> JBColor(0x808080, 0x808080) // Gray
+            TaskStatus.COMPLETED -> AutoDevColors.COMPLETED_STATUS
+            TaskStatus.FAILED -> AutoDevColors.FAILED_STATUS
+            TaskStatus.IN_PROGRESS -> AutoDevColors.IN_PROGRESS_STATUS
+            TaskStatus.TODO -> AutoDevColors.TODO_STATUS
         }
     }
 }

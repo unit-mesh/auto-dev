@@ -7,8 +7,6 @@ import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
-import cc.unitmesh.devti.util.AutoDevAppScope
-import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
@@ -28,14 +26,12 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
-import com.intellij.ui.DarculaColors
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.LocalTimeCounter
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
-import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -214,7 +210,7 @@ class SingleFileDiffSketch(
             icon = if (isAutoRepair && isFailedPatch) {
                 AutoDevIcons.InProgress
             } else {
-                AutoDevIcons.Repair
+                AutoDevIcons.REPAIR
             }
 
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")

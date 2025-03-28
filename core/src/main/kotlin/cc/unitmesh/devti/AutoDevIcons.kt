@@ -36,7 +36,7 @@ object AutoDevIcons {
     val Checked: Icon = IconLoader.getIcon("/icons/checked.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Repair: Icon = IconLoader.getIcon("/icons/repair.svg", AutoDevIcons::class.java)
+    val REPAIR: Icon = IconLoader.getIcon("/icons/repair.svg", AutoDevIcons::class.java)
 
     @JvmField
     val Build: Icon = IconLoader.getIcon("/icons/build.svg", AutoDevIcons::class.java)
@@ -79,4 +79,7 @@ object AutoDevIcons {
 
     @JvmField
     val MCP: Icon = IconLoader.getIcon("/icons/mcp.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val CHECK: Icon = IconLoader.getIcon("/icons/check.svg", AutoDevIcons::class.java)
 }

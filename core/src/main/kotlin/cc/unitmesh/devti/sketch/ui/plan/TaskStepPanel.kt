@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentPlanStep
 import cc.unitmesh.devti.observer.plan.TaskStatus
+import cc.unitmesh.devti.sketch.ui.AutoDevColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -45,12 +46,8 @@ class TaskStepPanel(
     init {
         layout = BorderLayout()
         background = JBUI.CurrentTheme.ToolWindow.background()
-        border = CompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, JBColor(0xE5E5E5, 0x323232)),
-            JBUI.Borders.empty(3, 2)  // Reduced padding for more compact view
-        )
+        border = JBUI.Borders.empty(3, 2)
 
-        // Left panel for status icon with reduced spacing
         val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 2, 0)).apply {
             isOpaque = false
         }
@@ -58,7 +55,6 @@ class TaskStepPanel(
         val statusIcon = createStatusIcon()
         leftPanel.add(statusIcon)
 
-        // Center panel for task description with links
         taskLabel = createTaskTextPane()
         doc = taskLabel.styledDocument
         updateTaskLabel()
@@ -105,26 +101,30 @@ class TaskStepPanel(
         add(rightPanel, BorderLayout.EAST)
 
         setupContextMenu()
-
-        // Set preferred size for compact view
         preferredSize = Dimension(preferredSize.width, Math.min(preferredSize.height, 28))
     }
 
     private fun createStatusIcon(): JComponent {
         return when (task.status) {
             TaskStatus.COMPLETED -> JLabel(AutoDevIcons.Checked).apply {
-                preferredSize = Dimension(16, 16)
+                preferredSize = Dimension(20, 16)
+                border = JBUI.Borders.empty()
             }
 
             TaskStatus.FAILED -> JLabel(AutoDevIcons.Error).apply {
-                preferredSize = Dimension(16, 16)
+                preferredSize = Dimension(20, 16)
+                border = JBUI.Borders.empty()
             }
 
             TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.Build).apply {
-                preferredSize = Dimension(16, 16)
+                preferredSize = Dimension(20, 16)
+                border = JBUI.Borders.empty()
             }
 
             TaskStatus.TODO -> JCheckBox().apply {
+                border = JBUI.Borders.empty()
+                preferredSize = Dimension(20, 16)
+
                 isSelected = task.completed
                 addActionListener {
                     task.completed = isSelected
@@ -133,10 +133,9 @@ class TaskStepPanel(
                     updateStatusLabel()
                     onStatusChange()
                 }
+
                 isBorderPainted = false
                 isContentAreaFilled = false
-                background = JBUI.CurrentTheme.ToolWindow.background()
-                preferredSize = Dimension(16, 16)
             }
         }
     }
@@ -207,7 +206,7 @@ class TaskStepPanel(
                 currentPos += beforeLink.length
 
                 val linkStyle = SimpleAttributeSet().apply {
-                    StyleConstants.setForeground(this, JBColor(0x3366CC, 0x589DF6))
+                    StyleConstants.setForeground(this, AutoDevColors.LINK_COLOR)
                     StyleConstants.setUnderline(this, true)
                 }
 
@@ -233,15 +232,15 @@ class TaskStepPanel(
         when (status) {
             TaskStatus.COMPLETED -> {
                 StyleConstants.setStrikeThrough(style, true)
-                StyleConstants.setForeground(style, JBColor(0x808080, 0x999999))
+                StyleConstants.setForeground(style, AutoDevColors.COMPLETED_TEXT)
             }
 
             TaskStatus.FAILED -> {
-                StyleConstants.setForeground(style, JBColor(0xD94F4F, 0xFF6B68))
+                StyleConstants.setForeground(style, AutoDevColors.FAILED_TEXT)
             }
 
             TaskStatus.IN_PROGRESS -> {
-                StyleConstants.setForeground(style, JBColor(0x3592C4, 0x589DF6))
+                StyleConstants.setForeground(style, AutoDevColors.IN_PROGRESS_TEXT)
                 StyleConstants.setItalic(style, true)
             }
 
@@ -356,10 +355,10 @@ class TaskStepPanel(
 
     private fun getStatusColor(status: TaskStatus): JBColor {
         return when (status) {
-            TaskStatus.COMPLETED -> JBColor(0x59A869, 0x59A869) // Green
-            TaskStatus.FAILED -> JBColor(0xD94F4F, 0xD94F4F) // Red
-            TaskStatus.IN_PROGRESS -> JBColor(0x3592C4, 0x3592C4) // Blue
-            TaskStatus.TODO -> JBColor(0x808080, 0x808080) // Gray
+            TaskStatus.COMPLETED -> AutoDevColors.COMPLETED_STATUS
+            TaskStatus.FAILED -> AutoDevColors.FAILED_STATUS
+            TaskStatus.IN_PROGRESS -> AutoDevColors.IN_PROGRESS_STATUS
+            TaskStatus.TODO -> AutoDevColors.TODO_STATUS
         }
     }
 }
