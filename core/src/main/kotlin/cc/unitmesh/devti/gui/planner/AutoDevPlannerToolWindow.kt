@@ -135,41 +135,22 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             isIssueInputMode = false
         }
 
-        if (markdownEditor == null) {
-            markdownEditor = MarkdownLanguageField(project, content, "Edit your plan here...", "plan.md")
-        } else {
-            markdownEditor?.text = content
-        }
-
-        val buttonPanel = JPanel(BorderLayout())
-        val buttonsBox = Box.createHorizontalBox().apply {
-            add(JButton("Save").apply {
-                addActionListener {
-                    val newContent = markdownEditor?.text ?: ""
-                    if (newContent == content) {
-                        return@addActionListener
-                    }
-
-                    switchToPlanView(newContent)
-                    currentCallback?.invoke(newContent)
-                }
-            })
-            add(Box.createHorizontalStrut(10))
-            add(JButton("Cancel").apply {
-                addActionListener {
-                    switchToPlanView()
-                }
-            })
-        }
-        buttonPanel.add(buttonsBox, BorderLayout.EAST)
-        buttonPanel.border = JBUI.Borders.empty(5)
-
         contentPanel.removeAll()
-        val editorPanel = JPanel(BorderLayout())
-        editorPanel.add(JBScrollPane(markdownEditor), BorderLayout.CENTER)
-        editorPanel.add(buttonPanel, BorderLayout.SOUTH)
-
-        contentPanel.add(editorPanel, BorderLayout.CENTER)
+        val shadowPanel = ShadowPanel(
+            project = project,
+            content = content,
+            onSave = { newContent ->
+                if (newContent == content) {
+                    return@ShadowPanel
+                }
+                switchToPlanView(newContent)
+                currentCallback?.invoke(newContent)
+            },
+            onCancel = {
+                switchToPlanView()
+            }
+        )
+        contentPanel.add(shadowPanel, BorderLayout.CENTER)
         contentPanel.revalidate()
         contentPanel.repaint()
 
