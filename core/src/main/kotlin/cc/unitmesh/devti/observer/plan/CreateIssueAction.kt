@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.observer.plan
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.AutoDevPlannerToolWindow
+import cc.unitmesh.devti.gui.planner.AutoDevPlannerToolWindow
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
