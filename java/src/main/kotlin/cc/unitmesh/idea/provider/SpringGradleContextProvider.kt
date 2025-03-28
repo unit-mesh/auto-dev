@@ -77,12 +77,19 @@ fun convertTechStack(project: Project): TechStack {
     val techStack = TechStack()
     var hasMatchSpringMvc = false
     var hasMatchSpringData = false
+    var hasMatchSpringCloud = false
 
     libraryDataList?.forEach {
         val name = it.groupId + ":" + it.artifactId
-        // sprint boot start with version
         if (name.startsWith("org.springframework.boot")) {
             techStack.coreFrameworks.putIfAbsent("Spring Boot " + it.version, true)
+        }
+
+        if (!hasMatchSpringCloud) {
+            if (name.startsWith("org.springframework.cloud")) {
+                techStack.coreFrameworks.putIfAbsent("Spring Cloud " + it.version, true)
+                hasMatchSpringCloud = true
+            }
         }
 
         if (!hasMatchSpringMvc) {
