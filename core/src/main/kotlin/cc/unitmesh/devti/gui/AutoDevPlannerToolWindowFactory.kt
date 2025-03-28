@@ -33,6 +33,9 @@ import java.awt.BorderLayout
 import javax.swing.JPanel
 import javax.swing.JButton
 import javax.swing.Box
+import javax.swing.JTextArea
+import javax.swing.JLabel
+import java.awt.Dimension
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListener, DumbAware {
@@ -75,8 +78,12 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private var markdownEditor: MarkdownLanguageField? = null
     private val contentPanel = JPanel(BorderLayout())
     private var isEditorMode = false
+    private var isIssueInputMode = false
     private var currentCallback: ((String) -> Unit)? = null
+    private var issueInputCallback: ((String) -> Unit)? = null
     private val planPanel: JPanel by lazy { createPlanPanel() }
+    private val issueInputPanel: JPanel by lazy { createIssueInputPanel() }
+    private var issueTextArea: JTextArea? = null
 
     init {
         contentPanel.add(planPanel, BorderLayout.CENTER)
@@ -84,7 +91,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
         connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
             override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
-                if (!isEditorMode) {
+                if (!isEditorMode && !isIssueInputMode) {
                     runInEdt {
                         planLangSketch.updatePlan(items)
                     }
@@ -109,8 +116,61 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         }
     }
 
+    private fun createIssueInputPanel(): JPanel {
+        val panel = JPanel(BorderLayout())
+        panel.border = JBUI.Borders.empty(10)
+        panel.background = JBUI.CurrentTheme.ToolWindow.background()
+
+        val headerLabel = JLabel("Enter Issue Description").apply {
+            font = font.deriveFont(font.size + 2f)
+            border = JBUI.Borders.emptyBottom(10)
+        }
+        
+        issueTextArea = JTextArea().apply {
+            lineWrap = true
+            wrapStyleWord = true
+            border = JBUI.Borders.empty(5)
+            text = ""
+            rows = 15
+        }
+        
+        val scrollPane = JBScrollPane(issueTextArea).apply {
+            preferredSize = Dimension(400, 300)
+        }
+        
+        val buttonPanel = JPanel(BorderLayout())
+        val buttonsBox = Box.createHorizontalBox().apply {
+            add(JButton("Generate Tasks").apply {
+                addActionListener {
+                    val issueText = issueTextArea?.text ?: ""
+                    if (issueText.isNotBlank()) {
+                        issueInputCallback?.invoke(issueText)
+                        switchToPlanView()
+                    }
+                }
+            })
+            add(Box.createHorizontalStrut(10))
+            add(JButton("Cancel").apply {
+                addActionListener {
+                    switchToPlanView()
+                }
+            })
+        }
+        buttonPanel.add(buttonsBox, BorderLayout.EAST)
+        buttonPanel.border = JBUI.Borders.emptyTop(10)
+        
+        panel.add(headerLabel, BorderLayout.NORTH)
+        panel.add(scrollPane, BorderLayout.CENTER)
+        panel.add(buttonPanel, BorderLayout.SOUTH)
+        
+        return panel
+    }
+
     private fun switchToEditorView() {
         if (isEditorMode) return
+        if (isIssueInputMode) {
+            isIssueInputMode = false
+        }
 
         if (markdownEditor == null) {
             markdownEditor = MarkdownLanguageField(project, content, "Edit your plan here...", "plan.md")
@@ -152,6 +212,22 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
         isEditorMode = true
     }
+    
+    private fun switchToIssueInputView() {
+        if (isIssueInputMode) return
+        if (isEditorMode) {
+            isEditorMode = false
+        }
+
+        contentPanel.removeAll()
+        contentPanel.add(issueInputPanel, BorderLayout.CENTER)
+        contentPanel.revalidate()
+        contentPanel.repaint()
+
+        isIssueInputMode = true
+        issueTextArea?.text = ""
+        issueTextArea?.requestFocus()
+    }
 
     fun switchToPlanView(newContent: String? = null) {
         if (newContent != null && newContent != content) {
@@ -167,10 +243,12 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         contentPanel.repaint()
 
         isEditorMode = false
+        isIssueInputMode = false
     }
 
     override fun dispose() {
         markdownEditor = null
+        issueTextArea = null
     }
 
     companion object {
@@ -188,6 +266,21 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                     }
 
                     it.switchToEditorView()
+                    toolWindow.show()
+                }
+            }
+        }
+        
+        fun showIssueInput(project: Project, callback: (String) -> Unit) {
+            val toolWindow =
+                ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.PlANNER_ID)
+            if (toolWindow != null) {
+                val content = toolWindow.contentManager.getContent(0)
+                val plannerWindow = content?.component as? AutoDevPlannerToolWindow
+
+                plannerWindow?.let {
+                    it.issueInputCallback = callback
+                    it.switchToIssueInputView()
                     toolWindow.show()
                 }
             }
@@ -229,4 +322,3 @@ private class MarkdownLanguageField(
         }
     }
 }
-

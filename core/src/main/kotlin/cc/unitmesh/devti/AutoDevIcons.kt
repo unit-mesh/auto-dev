@@ -72,7 +72,7 @@ object AutoDevIcons {
     val PLANNER: Icon = IconLoader.getIcon("/icons/planner.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val EDIT: Icon = IconLoader.getIcon("/icons/edit.svg", AutoDevIcons::class.java)
+    val EDIT_TASK: Icon = IconLoader.getIcon("/icons/edit-task.svg", AutoDevIcons::class.java)
 
     @JvmField
     val RULE: Icon = IconLoader.getIcon("/icons/rule.svg", AutoDevIcons::class.java)
@@ -82,4 +82,7 @@ object AutoDevIcons {
 
     @JvmField
     val CHECK: Icon = IconLoader.getIcon("/icons/check.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val INPUT: Icon = IconLoader.getIcon("/icons/input.svg", AutoDevIcons::class.java)
 }

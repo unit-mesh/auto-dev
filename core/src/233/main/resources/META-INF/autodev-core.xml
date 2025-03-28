@@ -428,8 +428,10 @@
         <group id="AutoDevPlanner.ToolWindow.TitleActions">
             <action id="ReviewPlan" icon="cc.unitmesh.devti.AutoDevIcons.REVIEWER"
                     class="cc.unitmesh.devti.observer.plan.PlanReviewAction"/>
-            <action id="EditPlan" icon="cc.unitmesh.devti.AutoDevIcons.EDIT"
+            <action id="EditPlan" icon="cc.unitmesh.devti.AutoDevIcons.EDIT_TASK"
                     class="cc.unitmesh.devti.observer.plan.EditPlanAction"/>
+            <action id="CreateIssue" icon="cc.unitmesh.devti.AutoDevIcons.INPUT"
+                    class="cc.unitmesh.devti.observer.plan.CreateIssueAction"/>
             <separator/>
         </group>
     </actions>
