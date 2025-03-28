@@ -36,38 +36,30 @@ open class SpringGradleContextProvider : ChatContextProvider {
         }
 
         val fileName = creationContext.sourceFile?.name ?: ""
+        val formattedTechStacks = techStacks.coreFrameworks.keys.joinToString(",")
 
-        fun isController() = fileName.endsWith("Controller.java") || fileName.endsWith("Controller.kt")
-        fun isService() =
-            fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
-                    || fileName.endsWith("Service.kt") || fileName.endsWith("ServiceImpl.kt")
-
-        when {
-            isController() -> {
-                return listOf(
-                    ChatContextItem(
-                        SpringGradleContextProvider::class,
-                        "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build RESTful APIs."
-                    )
-                )
-            }
-
-            isService() -> {
-                return listOf(
-                    ChatContextItem(
-                        SpringGradleContextProvider::class,
-                        "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
-                    )
-                )
-            }
-        }
+        val baseMessages = buildContextMessage(fileName, formattedTechStacks)
 
         return listOf(
-            ChatContextItem(
-                SpringGradleContextProvider::class,
-                "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
-            )
+            ChatContextItem(SpringGradleContextProvider::class, baseMessages)
         )
+    }
+
+    private fun buildContextMessage(fileName: String, techStacks: String): String {
+        return when {
+            isControllerFile(fileName) -> "You are working on a project that uses $techStacks to build RESTful APIs."
+            isServiceFile(fileName) -> "You are working on a project that uses $techStacks to build business logic."
+            else -> "You are working on a project that uses $techStacks to build business logic."
+        }
+    }
+
+    private fun isControllerFile(fileName: String): Boolean {
+        return fileName.endsWith("Controller.java") || fileName.endsWith("Controller.kt")
+    }
+
+    private fun isServiceFile(fileName: String): Boolean {
+        return fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java") ||
+                fileName.endsWith("Service.kt") || fileName.endsWith("ServiceImpl.kt")
     }
 }
 
@@ -164,9 +156,10 @@ fun prepareGradleLibrary(project: Project): List<SimpleLibraryData>? {
 }
 
 fun prepareMavenLibrary(project: Project): List<SimpleLibraryData> {
-    val projectDependencies: List<org.jetbrains.idea.maven.model.MavenArtifact> = MavenProjectsManager.getInstance(project).projects.flatMap {
-        it.dependencies
-    }
+    val projectDependencies: List<org.jetbrains.idea.maven.model.MavenArtifact> =
+        MavenProjectsManager.getInstance(project).projects.flatMap {
+            it.dependencies
+        }
 
     return projectDependencies.map {
         SimpleLibraryData(it.groupId, it.artifactId, it.version)
