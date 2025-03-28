@@ -12,7 +12,7 @@ object AutoDevIcons {
     val DARK: Icon = IconLoader.getIcon("/icons/autodev-dark.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val ERROR: Icon = IconLoader.getIcon("/icons/autodev-error.svg", AutoDevIcons::class.java)
+    val AUTODEV_ERROR: Icon = IconLoader.getIcon("/icons/autodev-error.svg", AutoDevIcons::class.java)
 
     @JvmField
     val COMMAND: Icon = IconLoader.getIcon("/icons/devins-command.svg", AutoDevIcons::class.java)
@@ -30,10 +30,10 @@ object AutoDevIcons {
     val Run: Icon = IconLoader.getIcon("/icons/run.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Error: Icon = IconLoader.getIcon("/icons/error.svg", AutoDevIcons::class.java)
+    val ERROR: Icon = IconLoader.getIcon("/icons/error.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Checked: Icon = IconLoader.getIcon("/icons/checked.svg", AutoDevIcons::class.java)
+    val CHECKED: Icon = IconLoader.getIcon("/icons/checked.svg", AutoDevIcons::class.java)
 
     @JvmField
     val REPAIR: Icon = IconLoader.getIcon("/icons/repair.svg", AutoDevIcons::class.java)

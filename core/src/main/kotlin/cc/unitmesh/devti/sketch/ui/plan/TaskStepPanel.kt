@@ -105,12 +105,12 @@ class TaskStepPanel(
 
     private fun createStatusIcon(): JComponent {
         return when (task.status) {
-            TaskStatus.COMPLETED -> JLabel(AutoDevIcons.Checked).apply {
+            TaskStatus.COMPLETED -> JLabel(AutoDevIcons.CHECKED).apply {
                 preferredSize = Dimension(20, 16)
                 border = JBUI.Borders.empty()
             }
 
-            TaskStatus.FAILED -> JLabel(AutoDevIcons.Error).apply {
+            TaskStatus.FAILED -> JLabel(AutoDevIcons.ERROR).apply {
                 preferredSize = Dimension(20, 16)
                 border = JBUI.Borders.empty()
             }

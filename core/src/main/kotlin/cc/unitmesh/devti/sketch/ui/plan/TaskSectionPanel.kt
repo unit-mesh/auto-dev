@@ -95,8 +95,8 @@ class TaskSectionPanel(
         leftPanel.add(expandButton)
 
         val statusIcon = when (planItem.status) {
-            TaskStatus.COMPLETED -> JLabel(AutoDevIcons.Checked)
-            TaskStatus.FAILED -> JLabel(AutoDevIcons.Error)
+            TaskStatus.COMPLETED -> JLabel(AutoDevIcons.CHECKED)
+            TaskStatus.FAILED -> JLabel(AutoDevIcons.ERROR)
             TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.InProgress)
             TaskStatus.TODO -> JLabel(AutoDevIcons.Build)
         }
@@ -129,13 +129,13 @@ class TaskSectionPanel(
         rightPanel.add(statusLabel)
 
         if (planItem.status == TaskStatus.TODO || planItem.status == TaskStatus.FAILED) {
-            val executeButton = JButton(AutoDevIcons.Run).apply {
-                margin = JBUI.emptyInsets()
-                isBorderPainted = false
-                isContentAreaFilled = false
-                preferredSize = Dimension(20, 20)
+            val executeButton = JButton("Execute").apply {
+                font = font.deriveFont(Font.PLAIN, 12f)
+                border = JBUI.Borders.empty(4, 8)
+                preferredSize = Dimension(60, 20)
                 addActionListener { executeSection() }
             }
+
             rightPanel.add(executeButton)
         }
 
@@ -224,4 +224,3 @@ class TaskSectionPanel(
         }
     }
 }
-

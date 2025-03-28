@@ -16,7 +16,7 @@ enum class AutoDevStatus {
                 WAITING -> AutoDevIcons.DARK
                 Ready -> AutoDevIcons.AI_COPILOT
                 InProgress -> AutoDevIcons.InProgress
-                Error -> AutoDevIcons.ERROR
+                Error -> AutoDevIcons.AUTODEV_ERROR
                 Done -> AutoDevIcons.AI_COPILOT
             }
         }
