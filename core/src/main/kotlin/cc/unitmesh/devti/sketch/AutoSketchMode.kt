@@ -5,16 +5,15 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.*
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
+import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
-import kotlinx.coroutines.runBlocking
 
 @Service(Service.Level.PROJECT)
 class AutoSketchMode(val project: Project) {
@@ -37,7 +36,7 @@ class AutoSketchMode(val project: Project) {
 
         val language = CodeFence.findLanguage("DevIn")
         commands += devinCodeFence.mapNotNull {
-            val psiFile = runReadAction {  PsiFileFactory.getInstance(project).createFileFromText(language, it.text) }
+            val psiFile = runReadAction { PsiFileFactory.getInstance(project).createFileFromText(language, it.text) }
                 ?: return@mapNotNull null
 
             LanguageProcessor.devin()?.transpileCommand(project, psiFile) ?: emptyList()
@@ -71,26 +70,30 @@ class AutoSketchMode(val project: Project) {
         listener?.manualSend(text)
     }
 
-    private fun hasReadCommand(fence: CodeFence): Boolean = AUTOABLE_COMMANDS.any { command ->
+    private fun hasReadCommand(fence: CodeFence): Boolean = buildAutoCommands().any { command ->
         fence.text.contains("/" + command.commandName + ":")
     }
 
-    val AUTOABLE_COMMANDS =
-        setOf(
+    private fun buildAutoCommands(): Set<BuiltinCommand> {
+        val of = mutableSetOf(
             DIR,
             LOCAL_SEARCH,
             FILE,
             REV,
             STRUCTURE,
             SYMBOL,
-            DATABASE, // should be handle in run sql
             RELATED,
             RIPGREP_SEARCH,
             RULE,
             BROWSE,
-            PATCH,
-            WRITE
         )
+
+        of += setOf(
+            PATCH, DATABASE, WRITE
+        )
+
+        return of
+    }
 
     private suspend fun hasToolchainFunctionCommand(fence: CodeFence): Boolean {
         val toolchainCmds = ToolchainFunctionProvider.all().map { it.funcNames() }.flatten()

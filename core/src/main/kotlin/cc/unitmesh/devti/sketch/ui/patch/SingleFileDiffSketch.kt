@@ -180,7 +180,24 @@ class SingleFileDiffSketch(
             override fun requestFocusInWindow() = Unit
         }, diffRequest)
         diffViewer.init()
-        return diffViewer.component
+        
+        val wrapperPanel = JPanel(BorderLayout())
+        wrapperPanel.add(diffViewer.component, BorderLayout.CENTER)
+        
+        // Set preferred height to 25% of parent (will be determined when laid out)
+        // with a minimum of 200 pixels
+        wrapperPanel.preferredSize = java.awt.Dimension(
+            wrapperPanel.preferredSize.width,
+            maxOf(200, (mainPanel.height * 0.25).toInt())
+        )
+        
+        // Set maximum height to prevent excessive growth
+        wrapperPanel.maximumSize = java.awt.Dimension(
+            Int.MAX_VALUE,
+            maxOf(200, (mainPanel.height * 0.25).toInt())
+        )
+        
+        return wrapperPanel
     }
 
     private fun createActionButtons(
@@ -381,3 +398,4 @@ fun saveText(file: VirtualFile, text: String) {
         }
     }
 }
+
