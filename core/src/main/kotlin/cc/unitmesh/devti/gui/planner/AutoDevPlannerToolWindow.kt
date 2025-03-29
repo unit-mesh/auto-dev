@@ -17,6 +17,7 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
+import javax.swing.JLabel
 import javax.swing.JPanel
 
 class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(true, true), Disposable {
@@ -77,7 +78,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             title = "Enter Issue Description",
             onSubmit = { issueText ->
                 if (issueText.isNotBlank()) {
-                    switchToPlanView()
+                    showLoadingState(issueText)
                 }
             },
             onCancel = {
@@ -134,13 +135,33 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     fun switchToPlanView(newContent: String? = null) {
         if (newContent != null && newContent != content) {
             content = newContent
-
             val parsedItems = MarkdownPlanParser.parse(newContent).toMutableList()
             planLangSketch.updatePlan(parsedItems)
         }
 
         contentPanel.removeAll()
         contentPanel.add(planPanel, BorderLayout.CENTER)
+        contentPanel.revalidate()
+        contentPanel.repaint()
+
+        isEditorMode = false
+        isIssueInputMode = false
+    }
+
+    private fun showLoadingState(issueText: String) {
+        content = issueText
+        val parsedItems = MarkdownPlanParser.parse(issueText).toMutableList()
+        planLangSketch.updatePlan(parsedItems)
+
+        contentPanel.removeAll()
+        contentPanel.add(planPanel, BorderLayout.CENTER)
+
+        val loadingPanel = JPanel(BorderLayout()).apply {
+            add(JLabel("Processing your request..."), BorderLayout.NORTH)
+            background = JBUI.CurrentTheme.ToolWindow.background()
+        }
+        contentPanel.add(loadingPanel, BorderLayout.NORTH)
+
         contentPanel.revalidate()
         contentPanel.repaint()
 
