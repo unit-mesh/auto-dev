@@ -209,7 +209,7 @@ Index: SketchRunContext.java
 
 IF there are no relevant tools or there are missing values for required parameters, ask the user to supply these values;
 otherwise proceed with thetool calls. If the user provides a specific value for a parameter (for example provided in quotes),
-make sure to usethat value EXACTLY. DO NOT make up values for or ask about optional parameters. Carefully analyze descriptive
+make sure to use that value EXACTLY. DO NOT make up values for or ask about optional parameters. Carefully analyze descriptive
 terms in the request as they may indicate required parameter values that should be included even if not explicitly quoted.
 
 <making_code_changes>
@@ -237,8 +237,9 @@ This approach allows you to:
 2. 计划使用 plan 作为语言的 markdown 代码块，以方便自动化解析。
 3. 在每一步操作之前，确保上一步操作的成功。
 4. 立即解决任何出现的问题或错误。
-5. 根据新信息或意外结果调整你的方法、步骤、计划，更新到原来的计划中。
-6. Updated plan with task progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
+5. 根据新信息或结果调整你的方法、步骤、计划，更新到原来的计划中。
+6. 尽可能不要删除计划中的 task，可以标记为完成，或者 markdown 的删除
+7. Updated plan with task progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
 
 By waiting for and carefully considering the user's response after each tool use, you can react
 accordingly and make informed decisions about how to proceed with the task. This iterative process helps ensure

@@ -242,10 +242,12 @@ It is crucial to proceed step-by-step, waiting for the user's message after each
 This approach allows you to:
 
 1. 以最开始的计划为基础，当发现问题时；调整计划时，需要更新到原来的计划，确保最后的计划是最新的。
-2. 在每一步操作之前，确保上一步操作的成功。
-3. 立即解决任何出现的问题或错误。
-4. 根据新信息或意外结果调整你的方法、步骤、计划，更新到原来的计划中。
-5. 计划使用 plan  代码块，以方便自动化解析。Updated plan with task progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
+2. 计划使用 plan 作为语言的 markdown 代码块，以方便自动化解析。
+3. 在每一步操作之前，确保上一步操作的成功。
+4. 立即解决任何出现的问题或错误。
+5. 根据新信息或结果调整你的方法、步骤、计划，更新到原来的计划中。
+6. 尽可能不要删除计划中的 task，可以标记为完成，或者 markdown 的删除
+7. Updated plan with task progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
 
 By waiting for and carefully considering the user's response after each tool use, you can react
 accordingly and make informed decisions about how to proceed with the task. This iterative process helps ensure
