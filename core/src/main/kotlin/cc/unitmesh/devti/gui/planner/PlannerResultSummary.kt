@@ -1,12 +1,14 @@
 package cc.unitmesh.devti.gui.planner
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
@@ -15,6 +17,7 @@ import java.awt.GridLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JPanel
+import javax.swing.JButton
 import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
 
@@ -38,7 +41,11 @@ class PlannerResultSummary(
     }
     
     private var changeActionListener: ChangeActionListener = object : ChangeActionListener {
-        override fun onView(change: Change) {}
+        override fun onView(change: Change) {
+            change.virtualFile?.also {
+                FileEditorManager.getInstance(project).openFile(it, true)
+            }
+        }
         override fun onDiscard(change: Change) {
             rollbackWorker.doRollback(listOf(change), false)
         }
@@ -170,64 +177,36 @@ class PlannerResultSummary(
                 add(fileLabel, BorderLayout.CENTER)
             }
             
-            val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 2, 0)).apply {
-                isOpaque = false
-                
-                val viewButton = HyperlinkLabel("").apply {
+            val actionsPanel = JPanel(HorizontalLayout(4)).apply {
+                val viewButton = JButton().apply {
                     icon = AllIcons.Actions.Preview
                     toolTipText = "View changes"
-                    addHyperlinkListener(object : HyperlinkListener {
-                        override fun hyperlinkUpdate(e: HyperlinkEvent) {
-                            if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                                changeActionListener?.onView(change)
-                            }
-                        }
-                    })
+                    isBorderPainted = false
+                    isContentAreaFilled = false
+                    isFocusPainted = false
+                    addActionListener {
+                        changeActionListener?.onView(change)
+                    }
                 }
                 
-                val discardButton = HyperlinkLabel("").apply {
+                val discardButton = JButton().apply {
                     icon = AllIcons.Actions.Cancel
                     toolTipText = "Discard changes"
-                    addHyperlinkListener(object : HyperlinkListener {
-                        override fun hyperlinkUpdate(e: HyperlinkEvent) {
-                            if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                                changeActionListener?.onDiscard(change)
-                            }
-                        }
-                    })
+                    isBorderPainted = false
+                    isContentAreaFilled = false
+                    isFocusPainted = false
+                    addActionListener {
+                        changeActionListener?.onDiscard(change)
+                    }
                 }
-                
-                val acceptButton = HyperlinkLabel("").apply {
-                    icon = AllIcons.Actions.Commit
-                    toolTipText = "Accept changes"
-                    addHyperlinkListener(object : HyperlinkListener {
-                        override fun hyperlinkUpdate(e: HyperlinkEvent) {
-                            if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                                changeActionListener?.onAccept(change)
-                            }
-                        }
-                    })
-                }
-                
+
                 add(viewButton)
                 add(discardButton)
-                add(acceptButton)
             }
             
             add(infoPanel, BorderLayout.CENTER)
             add(actionsPanel, BorderLayout.EAST)
-            
-            addMouseListener(object : MouseAdapter() {
-                override fun mouseEntered(e: MouseEvent) {
-                    background = UIUtil.getListSelectionBackground(false)
-                    repaint()
-                }
-                
-                override fun mouseExited(e: MouseEvent) {
-                    background = UIUtil.getListBackground()
-                    repaint()
-                }
-            })
         }
     }
 }
+
