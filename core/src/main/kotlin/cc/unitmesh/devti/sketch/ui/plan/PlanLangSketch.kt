@@ -16,11 +16,43 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 
-class PlanController(
+class PlanLangSketch(
     private val project: Project,
-    private val contentPanel: JPanel,
-    private var agentTaskItems: MutableList<AgentTaskEntry>
-) {
+    private var content: String,
+    private var agentTaskItems: MutableList<AgentTaskEntry>,
+    private val isInToolwindow: Boolean = false
+) : JBPanel<PlanLangSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
+    private val contentPanel = JPanel(VerticalLayout(JBUI.scale(0)))
+    val scrollPane: JBScrollPane
+    private val toolbarFactory = PlanToolbarFactory(project)
+    private var hasUpdated = false
+
+    init {
+        if (!isInToolwindow) {
+            add(toolbarFactory.createToolbar(this), BorderLayout.NORTH)
+            border = JBUI.Borders.empty(8)
+        }
+
+        renderPlan()
+
+        scrollPane = JBScrollPane(contentPanel).apply {
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            border = JBUI.Borders.empty()
+
+            viewport.isOpaque = false
+            viewport.view = contentPanel
+        }
+
+        val wrapperPanel = JPanel(BorderLayout())
+        wrapperPanel.add(scrollPane, BorderLayout.CENTER)
+        wrapperPanel.background = JBUI.CurrentTheme.ToolWindow.background()
+
+        add(wrapperPanel, BorderLayout.CENTER)
+
+        minimumSize = Dimension(200, 0)
+    }
+
     fun renderPlan() {
         contentPanel.removeAll()
         agentTaskItems.forEachIndexed { index, planItem ->
@@ -64,44 +96,6 @@ class PlanController(
     fun savePlanToService() {
         project.getService(AgentStateService::class.java).updatePlan(agentTaskItems)
     }
-}
-
-class PlanLangSketch(
-    private val project: Project,
-    private var content: String,
-    private var agentTaskItems: MutableList<AgentTaskEntry>,
-    private val isInToolwindow: Boolean = false
-) : JBPanel<PlanLangSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
-    private val contentPanel = JPanel(VerticalLayout(JBUI.scale(0)))
-    val scrollPane: JBScrollPane
-    private val toolbarFactory = PlanToolbarFactory(project)
-    private val planController = PlanController(project, contentPanel, agentTaskItems)
-
-    init {
-        if (!isInToolwindow) {
-            add(toolbarFactory.createToolbar(this), BorderLayout.NORTH)
-            border = JBUI.Borders.empty(8)
-        }
-
-        planController.renderPlan()
-
-        scrollPane = JBScrollPane(contentPanel).apply {
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-            border = JBUI.Borders.empty()
-
-            viewport.isOpaque = false
-            viewport.view = contentPanel
-        }
-        
-        val wrapperPanel = JPanel(BorderLayout())
-        wrapperPanel.add(scrollPane, BorderLayout.CENTER)
-        wrapperPanel.background = JBUI.CurrentTheme.ToolWindow.background()
-
-        add(wrapperPanel, BorderLayout.CENTER)
-
-        minimumSize = Dimension(200, 0)
-    }
 
     override fun getExtensionName(): String = "ThoughtPlan"
 
@@ -110,27 +104,21 @@ class PlanLangSketch(
     override fun updateViewText(text: String, complete: Boolean) {
         this.content = text
         val agentPlans = MarkdownPlanParser.parse(text)
-        planController.updatePlan(agentPlans)
+        updatePlan(agentPlans)
     }
 
-    private var hasUpdated = false
     override fun onComplete(code: String) {
         if (hasUpdated) return
         if (!isInToolwindow) {
             val agentPlans = MarkdownPlanParser.parse(content).toMutableList()
-            planController.updatePlan(agentPlans)
-            planController.savePlanToService()
+            updatePlan(agentPlans)
+            savePlanToService()
 
             hasUpdated = true
         }
-    }
-
-    fun updatePlan(newPlanItems: List<AgentTaskEntry>) {
-        planController.updatePlan(newPlanItems)
     }
 
     override fun getComponent(): JComponent = this
 
     override fun dispose() {}
 }
-
