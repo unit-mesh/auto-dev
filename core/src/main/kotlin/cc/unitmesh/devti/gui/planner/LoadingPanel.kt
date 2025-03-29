@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.gui.planner
 
+import com.intellij.ide.ui.LafManagerListener
 import com.intellij.openapi.project.Project
+import com.intellij.util.ui.StartupUiUtil.isDarkTheme
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -50,6 +52,16 @@ class LoadingPanel(val project: Project) : JPanel() {
     private val darkProgressBackground = Color(55, 65, 81)
 
     init {
+        isDarkMode = isDarkTheme
+        project.messageBus.connect().subscribe(
+            LafManagerListener.TOPIC,
+            LafManagerListener { 
+                isDarkMode = isDarkTheme
+                updateColors()
+                glassPanel.repaint()
+            }
+        )
+        
         setLayout(BorderLayout())
         setBorder(EmptyBorder(20, 20, 20, 20))
         setOpaque(false)
@@ -191,11 +203,7 @@ class LoadingPanel(val project: Project) : JPanel() {
 
         updateEmojiLabel()
         startAnimations()
-
-        val darkModeToggle = JToggleButton("Dark Mode")
-        darkModeToggle.addActionListener(ActionListener { e: ActionEvent? -> toggleDarkMode() })
-        add(darkModeToggle, BorderLayout.SOUTH)
-
+        
         updateColors()
     }
 
@@ -251,12 +259,6 @@ class LoadingPanel(val project: Project) : JPanel() {
         val message = loadingMessages.get(messageIndex)
         val emoji = message.substring(0, message.indexOf(' '))
         emojiLabel.setText(emoji)
-    }
-
-    private fun toggleDarkMode() {
-        isDarkMode = !isDarkMode
-        updateColors()
-        glassPanel.repaint()
     }
 
     private fun updateColors() {
