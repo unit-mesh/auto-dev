@@ -276,12 +276,18 @@ class SingleFileDiffSketch(
                     filePatch.singleHunkPatchText
                 }
 
-                DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch) { newCode ->
-                    createDiffViewer(oldCode, newCode).let { diffViewer ->
-                        mainPanel.add(diffViewer)
-                        mainPanel.revalidate()
-                        mainPanel.repaint()
+                if (myProject.coderSetting.state.enableDiffViewer) {
+                    DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, failurePatch) { fixedCode ->
+                        runInEdt {
+                            createDiffViewer(oldCode, fixedCode).let { diffViewer ->
+                                mainPanel.add(diffViewer)
+                                mainPanel.revalidate()
+                                mainPanel.repaint()
+                            }
+                        }
                     }
+                } else {
+                    DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
                 }
             }
         }

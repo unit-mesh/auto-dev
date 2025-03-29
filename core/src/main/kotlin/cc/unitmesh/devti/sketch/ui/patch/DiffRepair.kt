@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 
 object DiffRepair {
     private const val TEMPLATE_NAME = "repair-diff.vm"
+    private const val systemPrompt = "You are professional programmer."
 
     fun applyDiffRepairSuggestion(
         project: Project,
@@ -25,7 +26,7 @@ object DiffRepair {
         callback: ((newContent: String) -> Unit)? = null
     ) {
         val prompt = createDiffRepairPrompt(project, oldCode, patchedCode)
-        val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "You are professional program", false)
+        val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, systemPrompt, false)
 
         processStreamRealtime(project, flow) { code ->
             callback?.invoke(code)
@@ -39,13 +40,12 @@ object DiffRepair {
         project: Project,
         oldCode: String,
         patchedCode: String,
-        callback: (newContent: String) -> Unit
+        onComplete: (newContent: String) -> Unit
     ) {
         val prompt = createDiffRepairPrompt(project, oldCode, patchedCode)
-        val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "You are professional program", false)
-
+        val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, systemPrompt, false)
         processStreamBatch(project, flow) { code ->
-            callback.invoke(code)
+            onComplete.invoke(code)
         }
     }
 

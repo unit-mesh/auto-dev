@@ -39,7 +39,18 @@ class PlannerResultSummary(
         fun onDiscardAll()
         fun onAcceptAll()
     }
-    
+
+    private var globalActionListener: GlobalActionListener? = object : GlobalActionListener {
+        override fun onDiscardAll() {
+            rollbackWorker.doRollback(changes, false)
+            updateChanges(mutableListOf())
+        }
+        override fun onAcceptAll() {
+
+        }
+    }
+
+
     private var changeActionListener: ChangeActionListener = object : ChangeActionListener {
         override fun onView(change: Change) {
             change.virtualFile?.also {
@@ -48,16 +59,11 @@ class PlannerResultSummary(
         }
         override fun onDiscard(change: Change) {
             rollbackWorker.doRollback(listOf(change), false)
+            val newChanges = changes.toMutableList()
+            newChanges.remove(change)
+            updateChanges(newChanges)
         }
         override fun onAccept(change: Change) {}
-    }
-    private var globalActionListener: GlobalActionListener? = object : GlobalActionListener {
-        override fun onDiscardAll() {
-            rollbackWorker.doRollback(changes, false)
-        }
-        override fun onAcceptAll() {
-
-        }
     }
 
     init {
@@ -177,13 +183,17 @@ class PlannerResultSummary(
                 add(fileLabel, BorderLayout.CENTER)
             }
             
-            val actionsPanel = JPanel(HorizontalLayout(4)).apply {
+            val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 2, 0)).apply {
+                isOpaque = false
+                
                 val viewButton = JButton().apply {
                     icon = AllIcons.Actions.Preview
                     toolTipText = "View changes"
                     isBorderPainted = false
                     isContentAreaFilled = false
                     isFocusPainted = false
+                    margin = JBUI.emptyInsets()
+                    preferredSize = JBUI.size(20, 20)
                     addActionListener {
                         changeActionListener?.onView(change)
                     }
@@ -195,6 +205,8 @@ class PlannerResultSummary(
                     isBorderPainted = false
                     isContentAreaFilled = false
                     isFocusPainted = false
+                    margin = JBUI.emptyInsets()
+                    preferredSize = JBUI.size(20, 20)
                     addActionListener {
                         changeActionListener?.onDiscard(change)
                     }
