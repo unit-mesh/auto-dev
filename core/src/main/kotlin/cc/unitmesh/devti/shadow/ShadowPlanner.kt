@@ -16,7 +16,7 @@ object ShadowPlanner {
      * Call llm to make prompt better
      */
     fun enhancePrompt(prompt: String): String {
-        return prompt.replace("{{", "{{{").replace("}}", "}}}")
+        return prompt
     }
 
     suspend fun generatePlan(project: Project, input: String, handleCancel: ((String) -> Unit)?) {
