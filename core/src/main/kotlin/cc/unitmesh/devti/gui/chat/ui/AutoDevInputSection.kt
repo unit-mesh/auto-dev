@@ -450,7 +450,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 }
 
 private const val FONT_KEY = "FontFunction"
-private fun JComponent.mediumFontFunction() {
+
+fun JComponent.mediumFontFunction() {
     font = JBFont.medium()
     val f: (JComponent) -> Unit = {
         it.font = JBFont.medium()

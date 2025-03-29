@@ -22,9 +22,6 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-/**
- * Toolbar factory for creating the plan sketch toolbar
- */
 class PlanToolbarFactory(private val project: Project) {
     fun createToolbar(component: JComponent): JComponent {
         val actionGroup = DefaultActionGroup(createToolbarActions())

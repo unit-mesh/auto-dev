@@ -35,7 +35,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private lateinit var issueInputPanel: ShadowPanel
 
     init {
-        // Check if there's no plan content and conditionally show the appropriate panel
         if (content.isBlank()) {
             isIssueInputMode = true
             contentPanel.add(createIssueInputPanel(), BorderLayout.CENTER)

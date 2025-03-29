@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -130,9 +131,7 @@ class TaskSectionPanel(
 
         if (planItem.status == TaskStatus.TODO || planItem.status == TaskStatus.FAILED) {
             val executeButton = JButton("Execute").apply {
-                font = font.deriveFont(Font.PLAIN, 12f)
-                border = JBUI.Borders.empty(4, 8)
-                preferredSize = Dimension(60, 20)
+                font = JBFont.medium()
                 addActionListener { executeSection() }
             }
 
@@ -141,10 +140,7 @@ class TaskSectionPanel(
 
         if (planItem.status == TaskStatus.FAILED) {
             val retryButton = JButton(AutoDevIcons.REPAIR).apply {
-                margin = JBUI.emptyInsets()
-                isBorderPainted = false
-                isContentAreaFilled = false
-                preferredSize = Dimension(20, 20)
+                font = JBFont.medium()
                 addActionListener { executeSection() }
             }
             rightPanel.add(retryButton)

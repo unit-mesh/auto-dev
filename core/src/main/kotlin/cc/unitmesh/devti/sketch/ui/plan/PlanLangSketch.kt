@@ -16,9 +16,6 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 
-/**
- * Controller class for managing the plan data and UI updates
- */
 class PlanController(
     private val project: Project,
     private val contentPanel: JPanel,
@@ -69,9 +66,6 @@ class PlanController(
     }
 }
 
-/**
- * Main PlanSketch class that integrates all components
- */
 class PlanLangSketch(
     private val project: Project,
     private var content: String,
