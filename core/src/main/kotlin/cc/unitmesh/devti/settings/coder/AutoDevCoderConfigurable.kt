@@ -165,6 +165,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
+        row(jLabel("settings.autodev.coder.enableDiffViewer")) {
+            fullWidthCell(JCheckBox())
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::enableDiffViewer.toMutableProperty()
+                )
+        }
+
         row(jLabel("settings.external.team.prompts.path")) {
             fullWidthCell(teamPromptsField)
                 .bind(
@@ -190,6 +199,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.enableAutoLintCode = state.enableAutoLintCode
                 it.enableRenderWebview = state.enableRenderWebview
                 it.enableAutoScrollInSketch = state.enableAutoScrollInSketch
+                it.enableDiffViewer = state.enableDiffViewer
             }
         }
     }

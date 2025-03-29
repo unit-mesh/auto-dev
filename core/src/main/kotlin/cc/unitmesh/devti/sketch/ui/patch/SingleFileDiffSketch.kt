@@ -157,9 +157,11 @@ class SingleFileDiffSketch(
         contentPanel.add(fileContainer, BorderLayout.CENTER)
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
-        invokeLater {
-            val diffPanel = createDiffViewer()
-            mainPanel.add(diffPanel)
+        if (myProject.coderSetting.state.enableDiffViewer) {
+            invokeLater {
+                val diffPanel = createDiffViewer()
+                mainPanel.add(diffPanel)
+            }
         }
     }
 
