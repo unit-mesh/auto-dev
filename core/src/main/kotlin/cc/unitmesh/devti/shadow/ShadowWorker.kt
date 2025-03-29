@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 
-object ShadowPlanner {
+object ShadowWorker {
     /**
      * Call llm to make prompt better
      */

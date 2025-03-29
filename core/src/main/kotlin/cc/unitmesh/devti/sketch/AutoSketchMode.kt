@@ -60,6 +60,13 @@ class AutoSketchMode(val project: Project) {
         }
     }
 
+    fun enableComposerMode() {
+        ApplicationManager.getApplication().messageBus
+            .syncPublisher(AutoSketchModeListener.TOPIC)
+            .start()
+        isEnable = true
+    }
+
     fun send(text: String) {
         listener?.manualSend(text)
     }

@@ -44,6 +44,10 @@ class IssueEvaluateTool : AbstractMcpTool<IssueArgs>() {
         val future = CompletableFuture<String>()
         val connection = ApplicationManager.getApplication().messageBus.connect(hintDisposable)
         connection.subscribe(AutoSketchModeListener.TOPIC, object : AutoSketchModeListener {
+            override fun start() {
+                /// do nothing
+            }
+
             override fun done() {
                 val messages = project.getService(AgentStateService::class.java).getAllMessages()
                 var plan = ""

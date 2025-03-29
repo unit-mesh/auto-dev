@@ -2,6 +2,7 @@ package cc.unitmesh.devti.shadow
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
@@ -94,6 +95,7 @@ class ShadowPanel(
 
     fun handlingExecute(newPlan: String) {
         AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
+            AutoSketchMode.getInstance(project).enableComposerMode()
             ui.sendInput(newPlan)
         }
     }

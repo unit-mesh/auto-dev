@@ -5,6 +5,8 @@ import java.util.EventListener
 
 @FunctionalInterface
 interface AutoSketchModeListener : EventListener {
+    fun start()
+
     fun done()
 
     companion object {

@@ -12,6 +12,7 @@ import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.agent.AgentStateService
+import cc.unitmesh.devti.observer.plan.reviewPlan
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
@@ -130,6 +131,18 @@ open class SketchToolWindow(
                         this.component.addActionListener {
                             AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
                         }
+
+                        val connection = ApplicationManager.getApplication().messageBus.connect(this@SketchToolWindow)
+                        connection.subscribe(AutoSketchModeListener.TOPIC, object : AutoSketchModeListener {
+                            override fun start() {
+                                this@apply.component.isSelected = true
+                            }
+
+                            override fun done() {
+                                // do nothing
+                            }
+                        })
+
                     }
 
                     val buttonBox = Box.createHorizontalBox()
