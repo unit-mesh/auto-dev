@@ -1,11 +1,9 @@
 package cc.unitmesh.devti.shadow
 
-import com.intellij.ui.Gray
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.*
 import javax.swing.*
-import javax.swing.border.AbstractBorder
 import javax.swing.border.LineBorder
 
 class ShadowPanel(
@@ -64,19 +62,15 @@ class ShadowPanel(
                 }
             }
 
-            background = Color(63, 81, 181)
             preferredSize = Dimension(90, 32)
-            border = RoundedBorder(10, background)
         }
-        
+
         val cancelButton = JButton("Cancel").apply {
             addActionListener {
                 onCancel()
             }
 
-            background = Gray._240
             preferredSize = Dimension(90, 32)
-            border = RoundedBorder(10, background)
         }
 
         buttonsPanel.add(submitButton)
@@ -100,23 +94,5 @@ class ShadowPanel(
 
     fun requestTextAreaFocus() {
         textArea.requestFocus()
-    }
-
-    private class RoundedBorder(private val radius: Int, private val color: Color) : AbstractBorder() {
-        override fun paintBorder(c: Component, g: Graphics, x: Int, y: Int, width: Int, height: Int) {
-            val g2 = g.create() as Graphics2D
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            g2.color = color
-            g2.fillRoundRect(x, y, width, height, radius, radius)
-            g2.dispose()
-        }
-
-        override fun getBorderInsets(c: Component): Insets {
-            return JBUI.insets(4, 8)
-        }
-
-        override fun isBorderOpaque(): Boolean {
-            return true
-        }
     }
 }
