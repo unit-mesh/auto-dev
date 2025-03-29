@@ -160,10 +160,8 @@ class SingleFileDiffSketch(
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
 
-        invokeLater {
-            myProject.getService<AgentStateService>(AgentStateService::class.java)
-                .addToChange(currentFile.toNioPath(), patch)
-        }
+        myProject.getService<AgentStateService>(AgentStateService::class.java)
+            .addToChange(currentFile.toNioPath(), patch)
 
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
             invokeLater {
