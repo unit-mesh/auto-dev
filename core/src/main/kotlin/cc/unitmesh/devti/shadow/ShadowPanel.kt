@@ -1,5 +1,8 @@
 package cc.unitmesh.devti.shadow
 
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.*
@@ -7,11 +10,13 @@ import javax.swing.*
 import javax.swing.border.LineBorder
 
 class ShadowPanel(
+    private val project: Project,
     private val title: String,
     private val onSubmit: (String) -> Unit,
     private val onCancel: () -> Unit
 ) : JPanel(BorderLayout()) {
     private val textArea: JTextArea
+
     init {
         background = JBUI.CurrentTheme.ToolWindow.background()
 
@@ -58,6 +63,7 @@ class ShadowPanel(
             addActionListener {
                 val text = textArea.text
                 if (text.isNotBlank()) {
+                    handlingExecute(text)
                     onSubmit(text)
                 }
             }
@@ -84,6 +90,12 @@ class ShadowPanel(
         mainPanel.add(controlsPanel, BorderLayout.SOUTH)
 
         add(mainPanel, BorderLayout.CENTER)
+    }
+
+    fun handlingExecute(newPlan: String) {
+        AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
+            ui.sendInput(newPlan)
+        }
     }
 
     fun getText(): String = textArea.text

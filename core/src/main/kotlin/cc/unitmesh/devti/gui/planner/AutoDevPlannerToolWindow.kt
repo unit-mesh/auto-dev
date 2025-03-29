@@ -13,17 +13,11 @@ import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
-import java.awt.Dimension
-import javax.swing.Box
-import javax.swing.JButton
-import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.JTextArea
 
 class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(true, true), Disposable {
     override fun getName(): String = "AutoDev Planner"
@@ -37,7 +31,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private var isEditorMode = false
     private var isIssueInputMode = false
     private var currentCallback: ((String) -> Unit)? = null
-    private var issueInputCallback: ((String) -> Unit)? = null
     private val planPanel: JPanel by lazy { createPlanPanel() }
     private lateinit var issueInputPanel: ShadowPanel
 
@@ -81,10 +74,10 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
     private fun createIssueInputPanel(): JPanel {
         issueInputPanel = ShadowPanel(
+            project,
             title = "Enter Issue Description",
             onSubmit = { issueText ->
                 if (issueText.isNotBlank()) {
-                    issueInputCallback?.invoke(issueText)
                     switchToPlanView()
                 }
             },
@@ -180,7 +173,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             }
         }
 
-        fun showIssueInput(project: Project, callback: (String) -> Unit) {
+        fun showIssueInput(project: Project) {
             val toolWindow = ToolWindowManager.Companion.getInstance(project).getToolWindow(
                 AutoDevPlannerToolWindowFactory.Companion.PlANNER_ID)
             if (toolWindow == null) return
@@ -189,7 +182,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             val plannerWindow = content?.component as? AutoDevPlannerToolWindow
 
             plannerWindow?.let {
-                it.issueInputCallback = callback
                 it.switchToIssueInputView()
                 toolWindow.show()
             }
