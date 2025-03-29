@@ -7,7 +7,15 @@ import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
+import com.intellij.diff.DiffContentFactoryEx
+import com.intellij.diff.DiffContextEx
 import com.intellij.diff.editor.DiffVirtualFileBase
+import com.intellij.diff.requests.SimpleDiffRequest
+import com.intellij.diff.tools.simple.SimpleDiffViewer
+import com.intellij.diff.tools.simple.SimpleOnesideDiffViewer
+import com.intellij.diff.util.DiffPlaces
+import com.intellij.diff.util.DiffUserDataKeys
+import com.intellij.diff.util.DiffUtil
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
 import com.intellij.openapi.command.CommandProcessor
@@ -22,6 +30,8 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsContexts
+import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -151,9 +161,38 @@ class SingleFileDiffSketch(
             it.add(patchActionPanel)
         }
         contentPanel.add(fileContainer, BorderLayout.CENTER)
-
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
+//        invokeLater {
+//            val diffPanel = createDiffPanel()
+//            mainPanel.add(diffPanel)
+//        }
+    }
+
+    private fun createDiffPanel(): JComponent {
+        val diffFactory = DiffContentFactoryEx.getInstanceEx()
+        val currentDocContent = diffFactory.create(myProject, oldCode)
+        val newDocContent = diffFactory.create(newCode)
+
+        val diffRequest =
+            SimpleDiffRequest("Shire Diff - ${patch.beforeFileName}", currentDocContent, newDocContent, "Original", "AI generated")
+
+//        val producer = SimpleDiffRequestProducer.create(currentFile.path) {
+//            diffRequest
+//        }
+//        val chain = SimpleDiffRequestChain.fromProducer(producer)
+//        val holderBase = DiffUtil.createUserDataHolder<String>(DiffUserDataKeys.PLACE, DiffPlaces.EXTERNAL)
+        val simpleOnesideDiffViewer = SimpleDiffViewer(object : DiffContextEx() {
+            override fun reopenDiffRequest() {}
+            override fun reloadDiffRequest() {}
+            override fun showProgressBar(enable: Boolean) {}
+            override fun setWindowTitle(title: @NlsContexts.DialogTitle String) {}
+            override fun getProject() = myProject
+            override fun isWindowFocused() = false
+            override fun isFocusedInWindow() = false
+            override fun requestFocusInWindow() = Unit
+        }, diffRequest)
+        return simpleOnesideDiffViewer.component
     }
 
     private fun createActionButtons(
