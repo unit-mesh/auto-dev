@@ -82,8 +82,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private fun createIssueInputPanel(): JPanel {
         issueInputPanel = ShadowPanel(
             title = "Enter Issue Description",
-            submitButtonText = "Generate Tasks",
-            cancelButtonText = "Cancel",
             onSubmit = { issueText ->
                 if (issueText.isNotBlank()) {
                     issueInputCallback?.invoke(issueText)
