@@ -57,7 +57,8 @@ class SingleFileDiffSketch(
     private var patchActionPanel: JPanel? = null
     private val oldCode = currentFile.readText()
     private var appliedPatch = try {
-        GenericPatchApplier.apply(oldCode, patch.hunks)
+        val apply = GenericPatchApplier.apply(oldCode, patch.hunks)
+        apply
     } catch (e: Exception) {
         logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
         null
@@ -157,15 +158,16 @@ class SingleFileDiffSketch(
         contentPanel.add(fileContainer, BorderLayout.CENTER)
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
+
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
             invokeLater {
-                val diffPanel = createDiffViewer()
+                val diffPanel = createDiffViewer(oldCode, newCode)
                 mainPanel.add(diffPanel)
             }
         }
     }
 
-    private fun createDiffViewer(): JComponent {
+    private fun createDiffViewer(oldCode: String, newCode: String): JComponent {
         val diffFactory = DiffContentFactoryEx.getInstanceEx()
         val currentDocContent = diffFactory.create(myProject, oldCode)
         val newDocContent = diffFactory.create(newCode)
@@ -270,7 +272,13 @@ class SingleFileDiffSketch(
                     filePatch.singleHunkPatchText
                 }
 
-                DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
+                DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch) { newCode ->
+                    createDiffViewer(oldCode, newCode).let { diffViewer ->
+                        mainPanel.add(diffViewer)
+                        mainPanel.revalidate()
+                        mainPanel.repaint()
+                    }
+                }
             }
         }
 

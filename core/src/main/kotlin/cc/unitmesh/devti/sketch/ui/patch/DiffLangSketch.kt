@@ -103,18 +103,15 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     private fun createDiffPanel(patch: TextFilePatch): SingleFileDiffSketch? {
         return when {
             patch.beforeName != null -> {
-                val originFile = myProject.findFile(patch.beforeName!!) ?: LightVirtualFile(
-                    patch.beforeName!!,
-                    getChunkText(patch)
-                )
+                val originFile = myProject.findFile(patch.beforeName!!)
+                /// if before file is empty, should set new code empty, it should be new file
+                    ?: LightVirtualFile(patch.beforeName!!, "")
                 createSingleFileDiffSketch(originFile, patch)
             }
 
             patch.afterName != null -> {
-                val virtualFile = myProject.findFile(patch.afterName!!) ?: LightVirtualFile(
-                    patch.afterName!!,
-                    getChunkText(patch)
-                )
+                val virtualFile = myProject.findFile(patch.afterName!!)
+                    ?: LightVirtualFile(patch.afterName!!, "")
                 createSingleFileDiffSketch(virtualFile, patch)
             }
 

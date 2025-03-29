@@ -7,8 +7,6 @@ import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -19,11 +17,18 @@ import kotlinx.coroutines.launch
 object DiffRepair {
     private const val TEMPLATE_NAME = "repair-diff.vm"
 
-    fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String, patchedCode: String) {
+    fun applyDiffRepairSuggestion(
+        project: Project,
+        editor: Editor,
+        oldCode: String,
+        patchedCode: String,
+        callback: ((newContent: String) -> Unit)? = null
+    ) {
         val prompt = createDiffRepairPrompt(project, oldCode, patchedCode)
         val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "You are professional program", false)
 
         processStreamRealtime(project, flow) { code ->
+            callback?.invoke(code)
             runWriteAction {
                 editor.document.setText(code)
             }
