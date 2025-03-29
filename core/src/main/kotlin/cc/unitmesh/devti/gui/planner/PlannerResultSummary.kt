@@ -3,6 +3,7 @@ package cc.unitmesh.devti.gui.planner
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -23,12 +24,12 @@ class PlannerResultSummary(
 ) : JPanel(BorderLayout()) {
     private val changesPanel = JPanel(GridLayout(0, 1, 0, 1))
     private val statsLabel = JBLabel("No changes")
-    
+    private val rollbackWorker = RollbackWorker(project)
+
     interface ChangeActionListener {
         fun onView(change: Change)
         fun onDiscard(change: Change)
         fun onAccept(change: Change)
-        fun onRemove(change: Change)
     }
     
     interface GlobalActionListener {
@@ -36,8 +37,21 @@ class PlannerResultSummary(
         fun onAcceptAll()
     }
     
-    private var changeActionListener: ChangeActionListener? = null
-    private var globalActionListener: GlobalActionListener? = null
+    private var changeActionListener: ChangeActionListener = object : ChangeActionListener {
+        override fun onView(change: Change) {}
+        override fun onDiscard(change: Change) {
+            rollbackWorker.doRollback(listOf(change), false)
+        }
+        override fun onAccept(change: Change) {}
+    }
+    private var globalActionListener: GlobalActionListener? = object : GlobalActionListener {
+        override fun onDiscardAll() {
+            rollbackWorker.doRollback(changes, false)
+        }
+        override fun onAcceptAll() {
+
+        }
+    }
 
     init {
         background = JBUI.CurrentTheme.ToolWindow.background()
@@ -195,28 +209,14 @@ class PlannerResultSummary(
                     })
                 }
                 
-                val removeButton = HyperlinkLabel("").apply {
-                    icon = AllIcons.Actions.GC
-                    toolTipText = "Remove from list"
-                    addHyperlinkListener(object : HyperlinkListener {
-                        override fun hyperlinkUpdate(e: HyperlinkEvent) {
-                            if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                                changeActionListener?.onRemove(change)
-                            }
-                        }
-                    })
-                }
-                
                 add(viewButton)
                 add(discardButton)
                 add(acceptButton)
-                add(removeButton)
             }
             
             add(infoPanel, BorderLayout.CENTER)
             add(actionsPanel, BorderLayout.EAST)
             
-            // Add hover effect
             addMouseListener(object : MouseAdapter() {
                 override fun mouseEntered(e: MouseEvent) {
                     background = UIUtil.getListSelectionBackground(false)
@@ -229,14 +229,5 @@ class PlannerResultSummary(
                 }
             })
         }
-    }
-    
-    // Set action listeners
-    fun setChangeActionListener(listener: ChangeActionListener) {
-        this.changeActionListener = listener
-    }
-    
-    fun setGlobalActionListener(listener: GlobalActionListener) {
-        this.globalActionListener = listener
     }
 }
