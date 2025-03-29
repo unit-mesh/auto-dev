@@ -8,13 +8,15 @@ import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.util.parser.MarkdownCodeHelper
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diff.impl.patch.FilePatch
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.FileStatus
+import com.intellij.openapi.vcs.changes.shelf.ShelvedChange
+import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
 class AgentStateService(val project: Project) {
@@ -32,9 +34,30 @@ class AgentStateService(val project: Project) {
         logger<AgentStateService>().info("Called agent tools:\n ${state.usedTools.joinToString("\n")}")
     }
 
-    fun updateChanges(changes: Collection<Change?>?) {
-        val allChanges = changes?.filterNotNull()?.map { it } ?: emptyList()
-        state.changes = allChanges.toMutableList()
+    fun addToChange(path: Path, change: FilePatch) {
+        val shelvedChange = createShelvedChange(project, path, change)
+        if (shelvedChange != null) {
+            state.changes.add(shelvedChange.change)
+        }
+    }
+
+    fun createShelvedChange(project: Project, patchPath: Path, patch: FilePatch): ShelvedChange? {
+        val beforeName: String? = patch.beforeName
+        val afterName: String? = patch.afterName
+        if (beforeName == null || afterName == null) {
+            logger<AgentStateService>().warn("Failed to parse the file patch: [$patchPath]:$patch")
+            return null
+        }
+
+        val status = if (patch.isNewFile) {
+            FileStatus.ADDED
+        } else if (patch.isDeletedFile) {
+            FileStatus.DELETED
+        } else {
+            FileStatus.MODIFIED
+        }
+
+        return ShelvedChange.create(project, patchPath, beforeName, afterName, status)
     }
 
     fun buildOriginIntention(): String? {

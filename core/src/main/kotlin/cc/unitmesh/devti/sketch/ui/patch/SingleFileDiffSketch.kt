@@ -2,6 +2,7 @@ package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
@@ -159,6 +160,11 @@ class SingleFileDiffSketch(
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
 
+        invokeLater {
+            myProject.getService<AgentStateService>(AgentStateService::class.java)
+                .addToChange(currentFile.toNioPath(), patch)
+        }
+
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
             invokeLater {
                 val diffPanel = createDiffViewer(oldCode, newCode)
@@ -182,23 +188,23 @@ class SingleFileDiffSketch(
             override fun requestFocusInWindow() = Unit
         }, diffRequest)
         diffViewer.init()
-        
+
         val wrapperPanel = JPanel(BorderLayout())
         wrapperPanel.add(diffViewer.component, BorderLayout.CENTER)
-        
+
         // Set preferred height to 25% of parent (will be determined when laid out)
         // with a minimum of 200 pixels
         wrapperPanel.preferredSize = java.awt.Dimension(
             wrapperPanel.preferredSize.width,
             maxOf(200, (mainPanel.height * 0.25).toInt())
         )
-        
+
         // Set maximum height to prevent excessive growth
         wrapperPanel.maximumSize = java.awt.Dimension(
             Int.MAX_VALUE,
             maxOf(200, (mainPanel.height * 0.25).toInt())
         )
-        
+
         return wrapperPanel
     }
 
