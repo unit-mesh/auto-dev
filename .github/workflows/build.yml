@@ -35,7 +35,7 @@ jobs:
       matrix:
         platform-version: [
           223,
-#          233,
+          233,
           241
         ]
     env:
