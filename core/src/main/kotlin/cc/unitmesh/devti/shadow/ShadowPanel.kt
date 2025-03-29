@@ -1,10 +1,14 @@
-package cc.unitmesh.devti.gui.planner
+package cc.unitmesh.devti.shadow
 
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
-import javax.swing.*
+import javax.swing.Box
+import javax.swing.JButton
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextArea
 
 class ShadowPanel(
     private val title: String,
@@ -14,16 +18,16 @@ class ShadowPanel(
     private val onCancel: () -> Unit
 ) : JPanel(BorderLayout()) {
     private val textArea: JTextArea
-    
+
     init {
         border = JBUI.Borders.empty(10)
         background = JBUI.CurrentTheme.ToolWindow.background()
-        
+
         val headerLabel = JLabel(title).apply {
             font = font.deriveFont(font.size + 2f)
             border = JBUI.Borders.emptyBottom(10)
         }
-        
+
         textArea = JTextArea().apply {
             lineWrap = true
             wrapStyleWord = true
@@ -31,11 +35,11 @@ class ShadowPanel(
             text = ""
             rows = 15
         }
-        
+
         val scrollPane = JBScrollPane(textArea).apply {
             preferredSize = Dimension(400, 300)
         }
-        
+
         val buttonPanel = JPanel(BorderLayout())
         val buttonsBox = Box.createHorizontalBox().apply {
             add(JButton(submitButtonText).apply {
@@ -55,18 +59,18 @@ class ShadowPanel(
         }
         buttonPanel.add(buttonsBox, BorderLayout.EAST)
         buttonPanel.border = JBUI.Borders.emptyTop(10)
-        
+
         add(headerLabel, BorderLayout.NORTH)
         add(scrollPane, BorderLayout.CENTER)
         add(buttonPanel, BorderLayout.SOUTH)
     }
-    
+
     fun getText(): String = textArea.text
-    
+
     fun setText(text: String) {
         textArea.text = text
     }
-    
+
     fun requestTextAreaFocus() {
         textArea.requestFocus()
     }

@@ -5,6 +5,7 @@ import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
+import cc.unitmesh.devti.shadow.ShadowPanel
 import cc.unitmesh.devti.sketch.ui.plan.PlanLangSketch
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
