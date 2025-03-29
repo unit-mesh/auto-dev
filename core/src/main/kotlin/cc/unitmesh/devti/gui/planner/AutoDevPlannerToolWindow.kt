@@ -12,6 +12,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
@@ -33,6 +34,9 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private var currentCallback: ((String) -> Unit)? = null
     private val planPanel: JPanel by lazy { createPlanPanel() }
     private lateinit var issueInputPanel: ShadowPanel
+    private val plannerResultSummary: PlannerResultSummary by lazy {
+        PlannerResultSummary(project, mutableListOf())
+    }
 
     init {
         if (content.isBlank()) {
@@ -42,6 +46,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             contentPanel.add(planPanel, BorderLayout.CENTER)
         }
 
+        add(contentPanel, BorderLayout.CENTER)
         add(contentPanel, BorderLayout.CENTER)
 
         connection.subscribe(PlanUpdateListener.Companion.TOPIC, object : PlanUpdateListener {
@@ -56,6 +61,13 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                         }
                     }
                 }
+            }
+
+            override fun onUpdateChange(changes: MutableList<Change>) {
+                plannerResultSummary.updateChanges(changes)
+
+                contentPanel.revalidate()
+                contentPanel.repaint()
             }
         })
     }
@@ -145,6 +157,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
         contentPanel.removeAll()
         contentPanel.add(planPanel, BorderLayout.CENTER)
+        contentPanel.add(plannerResultSummary, BorderLayout.SOUTH)
         contentPanel.revalidate()
         contentPanel.repaint()
 

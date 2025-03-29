@@ -38,6 +38,10 @@ class AgentStateService(val project: Project) {
         val shelvedChange = createShelvedChange(project, path, change)
         if (shelvedChange != null) {
             state.changes.add(shelvedChange.change)
+
+            ApplicationManager.getApplication().messageBus
+                .syncPublisher(PlanUpdateListener.TOPIC)
+                .onUpdateChange(state.changes)
         }
     }
 
