@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.undo.UndoManager
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.editor.Editor
@@ -46,7 +47,12 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             null
         }
     }
-    private val filePatches: MutableList<TextFilePatch> = myReader?.textPatches ?: mutableListOf()
+    private val filePatches: MutableList<TextFilePatch> = try {
+        myReader?.textPatches
+    } catch (e: Exception) {
+        logger<DiffLangSketch>().warn("Failed to parse patch: ${e.message}")
+        mutableListOf()
+    } ?: mutableListOf()
 
     init {
         if (filePatches.size > 1 || filePatches.any { it.beforeName == null }) {
