@@ -34,9 +34,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private var currentCallback: ((String) -> Unit)? = null
     private val planPanel: JPanel by lazy { createPlanPanel() }
     private lateinit var issueInputPanel: ShadowPanel
-    private val plannerResultSummary: PlannerResultSummary by lazy {
-        PlannerResultSummary(project, mutableListOf())
-    }
+    private val plannerResultSummary = PlannerResultSummary(project, mutableListOf())
 
     init {
         if (content.isBlank()) {
@@ -44,9 +42,9 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             contentPanel.add(createIssueInputPanel(), BorderLayout.CENTER)
         } else {
             contentPanel.add(planPanel, BorderLayout.CENTER)
+            contentPanel.add(plannerResultSummary, BorderLayout.SOUTH)
         }
 
-        add(contentPanel, BorderLayout.CENTER)
         add(contentPanel, BorderLayout.CENTER)
 
         connection.subscribe(PlanUpdateListener.Companion.TOPIC, object : PlanUpdateListener {
@@ -64,10 +62,17 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             }
 
             override fun onUpdateChange(changes: MutableList<Change>) {
-                plannerResultSummary.updateChanges(changes)
+                runInEdt {
+                    plannerResultSummary.updateChanges(changes)
+                    if (!isEditorMode && !isIssueInputMode) {
+                        if (contentPanel.components.none { it == plannerResultSummary }) {
+                            contentPanel.add(plannerResultSummary, BorderLayout.SOUTH)
+                        }
 
-                contentPanel.revalidate()
-                contentPanel.repaint()
+                        contentPanel.revalidate()
+                        contentPanel.repaint()
+                    }
+                }
             }
         })
     }

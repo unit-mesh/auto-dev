@@ -14,7 +14,6 @@ class PlannerResultSummary(
     private val project: Project,
     private var changes: List<Change>
 ) : JPanel(BorderLayout()) {
-
     private val changesPanel = JPanel(GridLayout(0, 1, 0, 5))
     private val statsLabel = JBLabel("No changes")
 
@@ -73,5 +72,9 @@ class PlannerResultSummary(
 
         changesPanel.revalidate()
         changesPanel.repaint()
+        
+        isVisible = true
+        revalidate()
+        repaint()
     }
 }
