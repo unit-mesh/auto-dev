@@ -18,14 +18,13 @@ import javax.swing.JPanel
 
 class IssueInputPanel(
     private val project: Project,
-    private val placeholder: String,
     private val onSubmit: (String) -> Unit,
     private val onCancel: () -> Unit
 ) : JPanel(BorderLayout()) {
     private var textArea: MarkdownLanguageField? = null
 
     init {
-        textArea = MarkdownLanguageField(project, "", placeholder, "issue.md").apply {
+        textArea = MarkdownLanguageField(project, "", "Enter Issue Description", "issue.md").apply {
             border = AutoDevLineBorder(JBColor.namedColor("Focus.borderColor", JBColor.BLUE), 1, true, 4)
         }
         
@@ -67,11 +66,7 @@ class IssueInputPanel(
     fun getText(): String = textArea?.text ?: ""
 
     fun setText(text: String) {
-        if (text.isNotBlank()) {
-            textArea?.text = text
-        } else {
-            textArea?.text = placeholder
-        }
+        textArea?.text = text
     }
 
     fun requestTextAreaFocus() {
