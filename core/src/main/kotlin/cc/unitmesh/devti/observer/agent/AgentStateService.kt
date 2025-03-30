@@ -10,13 +10,30 @@ import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.util.parser.MarkdownCodeHelper
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.diff.impl.patch.FilePatch
+import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.ThrowableComputable
+import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.FileStatus
-import com.intellij.openapi.vcs.changes.shelf.ShelvedChange
+import com.intellij.openapi.vcs.VcsBundle
+import com.intellij.openapi.vcs.VcsException
+import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.changes.ContentRevision
+import com.intellij.openapi.vcs.changes.CurrentContentRevision
+import com.intellij.openapi.vcs.changes.TextRevisionNumber
+import com.intellij.openapi.vcs.history.VcsRevisionNumber
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.vcsUtil.VcsUtil
+import org.jetbrains.annotations.NonNls
+import java.io.File
+import java.io.IOException
 import java.nio.file.Path
+import java.util.*
 
 @Service(Service.Level.PROJECT)
 class AgentStateService(val project: Project) {
@@ -34,26 +51,21 @@ class AgentStateService(val project: Project) {
         logger<AgentStateService>().info("Called agent tools:\n ${state.usedTools.joinToString("\n")}")
     }
 
-    fun addToChange(path: Path, change: FilePatch) {
-        val shelvedChange = createShelvedChange(project, path, change)
-        if (shelvedChange != null) {
-            state.changes.add(shelvedChange.change)
+    fun addToChange(path: Path, patch: TextFilePatch) {
+        val change = createChange(patch)
+        state.changes.add(change)
 
-            ApplicationManager.getApplication().messageBus
-                .syncPublisher(PlanUpdateListener.TOPIC)
-                .onUpdateChange(state.changes)
-        }
+        ApplicationManager.getApplication().messageBus
+            .syncPublisher(PlanUpdateListener.TOPIC)
+            .onUpdateChange(state.changes)
     }
 
-    fun createShelvedChange(project: Project, patchPath: Path, patch: FilePatch): ShelvedChange? {
-        val beforeName: String? = patch.beforeName
-        val afterName: String? = patch.afterName
-        if (beforeName == null || afterName == null) {
-            logger<AgentStateService>().warn("Failed to parse the file patch: [$patchPath]:$patch")
-            return null
-        }
+    private fun createChange(patch: TextFilePatch): Change {
+        val baseDir = File(project.basePath!!)
+        val beforePath = patch.beforeName
+        val afterPath = patch.afterName
 
-        val status = if (patch.isNewFile) {
+        val fileStatus = if (patch.isNewFile) {
             FileStatus.ADDED
         } else if (patch.isDeletedFile) {
             FileStatus.DELETED
@@ -61,7 +73,67 @@ class AgentStateService(val project: Project) {
             FileStatus.MODIFIED
         }
 
-        return ShelvedChange.create(project, patchPath, beforeName, afterName, status)
+        val beforeFilePath = VcsUtil.getFilePath(getAbsolutePath(baseDir, beforePath), false)
+        val afterFilePath = VcsUtil.getFilePath(getAbsolutePath(baseDir, afterPath), false)
+
+        var beforeRevision: ContentRevision? = null
+        if (fileStatus !== FileStatus.ADDED) {
+            beforeRevision = object : CurrentContentRevision(beforeFilePath) {
+                override fun getRevisionNumber(): VcsRevisionNumber {
+                    return TextRevisionNumber(VcsBundle.message("local.version.title"))
+                }
+            }
+        }
+
+        var afterRevision: ContentRevision? = null
+        if (fileStatus !== FileStatus.DELETED) {
+            afterRevision = object : CurrentContentRevision(beforeFilePath) {
+                override fun getRevisionNumber(): VcsRevisionNumber =
+                    TextRevisionNumber(VcsBundle.message("local.version.title"))
+
+                override fun getVirtualFile(): VirtualFile? = afterFilePath.virtualFile
+                override fun getFile(): FilePath = afterFilePath
+                override fun getContent(): @NonNls String? {
+                    if (patch.isNewFile) {
+                        return patch.singleHunkPatchText
+                    }
+                    if (patch.isDeletedFile) {
+                        return null
+                    }
+
+                    val localContent: String = loadLocalContent()
+                    val appliedPatch = GenericPatchApplier.apply(localContent, patch.getHunks())
+                    if (appliedPatch != null) {
+                        return appliedPatch.patchedText
+                    }
+                    throw VcsException(VcsBundle.message("patch.apply.error.conflict"))
+                }
+
+                @Throws(VcsException::class)
+                private fun loadLocalContent(): String {
+                    return ReadAction.compute<String?, VcsException?>(ThrowableComputable {
+                        val file: VirtualFile? = beforeFilePath.virtualFile
+                        if (file == null) throw VcsException("File $beforeFilePath not found")
+                        val doc = FileDocumentManager.getInstance().getDocument(file)
+                        if (doc == null) throw VcsException("Document $file not found")
+                        doc.text
+                    })
+                }
+            }
+        }
+        return Change(beforeRevision, afterRevision, fileStatus)
+    }
+
+    private fun getAbsolutePath(baseDir: File, relativePath: String): File {
+        var file: File?
+        try {
+            file = File(baseDir, relativePath).getCanonicalFile()
+        } catch (e: IOException) {
+            logger<AgentStateService>().info(e)
+            file = File(baseDir, relativePath)
+        }
+
+        return file
     }
 
     fun buildOriginIntention(): String? {

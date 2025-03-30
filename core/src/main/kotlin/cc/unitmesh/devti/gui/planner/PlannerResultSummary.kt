@@ -3,11 +3,17 @@ package cc.unitmesh.devti.gui.planner
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.util.relativePath
+import com.intellij.diff.DiffContentFactoryEx
+import com.intellij.diff.DiffContext
+import com.intellij.diff.requests.SimpleDiffRequest
+import com.intellij.diff.tools.simple.SimpleDiffViewer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.ui.HyperlinkLabel
@@ -48,15 +54,49 @@ class PlannerResultSummary(
         }
 
         override fun onAcceptAll() {
-
+            changes.forEach { change ->
+                changeActionListener.onAccept(change)
+            }
         }
     }
-
 
     private var changeActionListener: ChangeActionListener = object : ChangeActionListener {
         override fun onView(change: Change) {
             change.virtualFile?.also {
-                FileEditorManager.getInstance(project).openFile(it, true)
+                val diffFactory = DiffContentFactoryEx.getInstanceEx()
+                val oldCode = change.beforeRevision?.content ?: return
+                val newCode = change.afterRevision?.content ?: return
+                val currentDocContent = diffFactory.create(project, oldCode)
+                val newDocContent = diffFactory.create(newCode)
+
+                val diffRequest =
+                    SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
+
+                val diffViewer = SimpleDiffViewer(object : DiffContext() {
+                    override fun getProject() = this@PlannerResultSummary.project
+                    override fun isWindowFocused() = false
+                    override fun isFocusedInWindow() = false
+                    override fun requestFocusInWindow() = Unit
+                }, diffRequest)
+                diffViewer.init()
+
+                val dialog = object : DialogWrapper(project) {
+                    init {
+                        init()
+                        title = "Diff Viewer"
+                    }
+
+                    override fun createCenterPanel(): JComponent = diffViewer.component
+                    override fun doOKAction() {
+                        super.doOKAction()
+                        changeActionListener.onAccept(change)
+                    }
+                    override fun doCancelAction() {
+                        super.doCancelAction()
+                    }
+                }
+
+                dialog.show()
             }
         }
 
@@ -67,7 +107,17 @@ class PlannerResultSummary(
             updateChanges(newChanges)
         }
 
-        override fun onAccept(change: Change) {}
+        override fun onAccept(change: Change) {
+            val file = change.virtualFile ?: return
+            val content = change.afterRevision?.content ?: change.beforeRevision?.content
+
+            runInEdt {
+                if (content != null) {
+                    val document = FileDocumentManager.getInstance().getDocument(file)
+                    document?.setText(content)
+                }
+            }
+        }
     }
 
     init {
