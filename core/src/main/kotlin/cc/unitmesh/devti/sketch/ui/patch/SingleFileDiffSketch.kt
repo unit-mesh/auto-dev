@@ -13,6 +13,7 @@ import com.intellij.diff.DiffContext
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.simple.SimpleDiffViewer
+import com.intellij.diff.tools.simple.SimpleOnesideDiffViewer
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
 import com.intellij.openapi.command.CommandProcessor
@@ -38,6 +39,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.LocalTimeCounter
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.IOException
@@ -190,18 +192,10 @@ class SingleFileDiffSketch(
         val wrapperPanel = JPanel(BorderLayout())
         wrapperPanel.add(diffViewer.component, BorderLayout.CENTER)
 
-        // Set preferred height to 25% of parent (will be determined when laid out)
-        // with a minimum of 200 pixels
-        wrapperPanel.preferredSize = java.awt.Dimension(
-            wrapperPanel.preferredSize.width,
-            maxOf(200, (mainPanel.height * 0.25).toInt())
-        )
+        val minHeight = (mainPanel.height * 0.25).toInt()
 
-        // Set maximum height to prevent excessive growth
-        wrapperPanel.maximumSize = java.awt.Dimension(
-            Int.MAX_VALUE,
-            maxOf(200, (mainPanel.height * 0.25).toInt())
-        )
+        wrapperPanel.preferredSize = Dimension(wrapperPanel.preferredSize.width, maxOf(200, minHeight))
+        wrapperPanel.maximumSize = Dimension(Int.MAX_VALUE, maxOf(200, minHeight))
 
         return wrapperPanel
     }
