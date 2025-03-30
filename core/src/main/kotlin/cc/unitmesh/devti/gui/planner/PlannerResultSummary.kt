@@ -14,6 +14,8 @@ import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridLayout
+import javax.swing.Box
+import javax.swing.BoxLayout
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JPanel
@@ -163,10 +165,11 @@ class PlannerResultSummary(
     }
 
     private fun createChangeItemPanel(change: Change, fileName: String, filePath: String): JPanel {
-        return JPanel(BorderLayout()).apply {
+        return JPanel().apply {
             isOpaque = true
             background = UIUtil.getListBackground()
             border = JBUI.Borders.empty(5, 8)
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
 
             val changeIcon = when (change.type) {
                 Change.Type.NEW -> AllIcons.Actions.New
@@ -175,16 +178,21 @@ class PlannerResultSummary(
                 else -> AllIcons.Actions.Edit
             }
 
-            val infoPanel = JPanel(BorderLayout()).apply {
-                isOpaque = false
-
-                val fileLabel = JBLabel(fileName, changeIcon, JBLabel.LEFT).apply {
-                    toolTipText = filePath
-                }
-
-                add(fileLabel, BorderLayout.CENTER)
+            val fileLabel = HyperlinkLabel(fileName).apply {
+                icon = changeIcon
+                toolTipText = filePath
+                addHyperlinkListener(object : HyperlinkListener {
+                    override fun hyperlinkUpdate(e: HyperlinkEvent) {
+                        if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
+                            changeActionListener.onView(change)
+                        }
+                    }
+                })
             }
-
+            
+            add(fileLabel)
+            add(Box.createHorizontalStrut(5))
+            
             val pathLabel = JBLabel(filePath).apply {
                 foreground = UIUtil.getLabelDisabledForeground()
                 toolTipText = filePath
@@ -193,17 +201,19 @@ class PlannerResultSummary(
                 putClientProperty("JComponent.truncateText", true)
                 putClientProperty("truncateAtWord", false)
                 putClientProperty("html.disable", true)
+                minimumSize = JBUI.size(20, preferredSize.height)
+                preferredSize = JBUI.size(100, preferredSize.height)
                 maximumSize = JBUI.size(Int.MAX_VALUE, preferredSize.height)
             }
-
-            val pathPanel = JPanel(BorderLayout()).apply {
+            
+            add(pathLabel)
+            add(Box.createHorizontalGlue()) // This pushes the action buttons to the right
+            
+            // Action buttons
+            val actionsPanel = JPanel().apply {
                 isOpaque = false
-                add(pathLabel, BorderLayout.CENTER)
-            }
-
-            val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 2, 0)).apply {
-                isOpaque = false
-
+                layout = BoxLayout(this, BoxLayout.X_AXIS)
+                
                 val viewButton = createActionButton(
                     AllIcons.Actions.Preview,
                     "View changes"
@@ -215,12 +225,11 @@ class PlannerResultSummary(
                 ) { changeActionListener.onDiscard(change) }
 
                 add(viewButton)
+                add(Box.createHorizontalStrut(2))
                 add(discardButton)
             }
-
-            add(infoPanel, BorderLayout.NORTH)
-            add(pathPanel, BorderLayout.CENTER)
-            add(actionsPanel, BorderLayout.EAST)
+            
+            add(actionsPanel)
         }
     }
 
