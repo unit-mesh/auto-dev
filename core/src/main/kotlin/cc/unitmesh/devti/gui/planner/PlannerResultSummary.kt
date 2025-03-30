@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.planner
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
@@ -169,10 +170,10 @@ class PlannerResultSummary(
             layout = BoxLayout(this, BoxLayout.X_AXIS)
 
             val changeIcon = when (change.type) {
-                Change.Type.NEW -> AllIcons.Actions.New
-                Change.Type.DELETED -> AllIcons.Actions.GC
-                Change.Type.MOVED -> AllIcons.Actions.Forward
-                else -> AllIcons.Actions.Edit
+                Change.Type.NEW -> AutoDevIcons.GIT_NEW
+                Change.Type.DELETED -> AutoDevIcons.GIT_DELETE
+                Change.Type.MOVED -> AutoDevIcons.GIT_MOVE
+                else -> AutoDevIcons.GIT_EDIT
             }
 
             val fileLabel = HyperlinkLabel(fileName).apply {
@@ -188,7 +189,7 @@ class PlannerResultSummary(
             }
 
             add(fileLabel)
-            add(Box.createHorizontalStrut(4))
+            add(Box.createHorizontalStrut(2))
 
             val pathLabel = JBLabel(filePath).apply {
                 foreground = UIUtil.getLabelDisabledForeground()
@@ -204,7 +205,7 @@ class PlannerResultSummary(
             }
 
             add(pathLabel)
-            add(Box.createHorizontalGlue()) // This pushes the action buttons to the right
+            add(Box.createHorizontalGlue())
 
             val actionsPanel = JPanel().apply {
                 isOpaque = false

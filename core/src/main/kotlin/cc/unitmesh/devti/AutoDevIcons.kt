@@ -85,4 +85,16 @@ object AutoDevIcons {
 
     @JvmField
     val INPUT: Icon = IconLoader.getIcon("/icons/input.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val GIT_NEW: Icon = IconLoader.getIcon("/icons/git-new.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val GIT_DELETE: Icon = IconLoader.getIcon("/icons/git-delete.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val GIT_EDIT: Icon = IconLoader.getIcon("/icons/git-edit.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val GIT_MOVE: Icon = IconLoader.getIcon("/icons/git-move.svg", AutoDevIcons::class.java)
 }
