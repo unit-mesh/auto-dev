@@ -5,7 +5,7 @@ import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
-import cc.unitmesh.devti.shadow.IssueInputPanel
+import cc.unitmesh.devti.shadow.IssueInputViewPanel
 import cc.unitmesh.devti.sketch.ui.plan.PlanLangSketch
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -52,12 +52,12 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         if (content.isBlank()) {
             switchToView(IssueInputView())
         } else {
-            switchToView(PlanView())
+            switchToView(PlanSketchView())
         }
 
         connection.subscribe(PlanUpdateListener.Companion.TOPIC, object : PlanUpdateListener {
             override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
-                if (currentView is PlanView) {
+                if (currentView is PlanSketchView) {
                     runInEdt {
                         planLangSketch.updatePlan(items)
                         contentPanel.components.find { it is LoadingPanel }?.let {
@@ -72,7 +72,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             override fun onUpdateChange(changes: MutableList<Change>) {
                 runInEdt {
                     plannerResultSummary.updateChanges(changes)
-                    if (currentView is PlanView) {
+                    if (currentView is PlanSketchView) {
                         if (contentPanel.components.none { it == plannerResultSummary }) {
                             contentPanel.add(plannerResultSummary, BorderLayout.SOUTH)
                         }
@@ -103,7 +103,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             planLangSketch.updatePlan(parsedItems)
         }
 
-        switchToView(PlanView())
+        switchToView(PlanSketchView())
     }
 
     fun showLoadingState(issueText: String) {
@@ -127,7 +127,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         PLAN, EDITOR, ISSUE_INPUT, LOADING
     }
     
-    inner class PlanView : PlannerView {
+    inner class PlanSketchView : PlannerView {
         override val viewType = PlannerViewType.PLAN
         override fun initialize(window: AutoDevPlannerToolWindow) {
             val planPanel = panel {
@@ -143,15 +143,15 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         }
     }
     
-    inner class EditorView : PlannerView {
+    inner class EditPlanView : PlannerView {
         override val viewType = PlannerViewType.EDITOR
         override fun initialize(window: AutoDevPlannerToolWindow) {
-            val editPlanPanel = EditPlanPanel(
+            val editPlanViewPanel = EditPlanViewPanel(
                 project = project,
                 content = content,
                 onSave = { newContent ->
                     if (newContent == content) {
-                        return@EditPlanPanel
+                        return@EditPlanViewPanel
                     }
                     switchToPlanView(newContent)
                     currentCallback?.invoke(newContent)
@@ -161,16 +161,16 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                 }
             )
 
-            contentPanel.add(editPlanPanel, BorderLayout.CENTER)
+            contentPanel.add(editPlanViewPanel, BorderLayout.CENTER)
         }
     }
     
     inner class IssueInputView : PlannerView {
         override val viewType = PlannerViewType.ISSUE_INPUT
-        private lateinit var issueInputPanel: IssueInputPanel
+        private lateinit var viewPanel: IssueInputViewPanel
         
         override fun initialize(window: AutoDevPlannerToolWindow) {
-            issueInputPanel = IssueInputPanel(
+            viewPanel = IssueInputViewPanel(
                 project,
                 onSubmit = { issueText ->
                     if (issueText.isNotBlank()) {
@@ -182,15 +182,14 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                 }
             )
             
-            contentPanel.add(issueInputPanel, BorderLayout.CENTER)
-            issueInputPanel.setText("")
-            issueInputPanel.requestTextAreaFocus()
+            contentPanel.add(viewPanel, BorderLayout.CENTER)
+            viewPanel.setText("")
+            viewPanel.requestTextAreaFocus()
         }
     }
     
     inner class LoadingView : PlannerView {
         override val viewType = PlannerViewType.LOADING
-        
         override fun initialize(window: AutoDevPlannerToolWindow) {
             val planPanel = panel {
                 row {
@@ -226,7 +225,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                 if (planText.isNotEmpty() && planText != plannerWindow.content) {
                     plannerWindow.content = planText
                 }
-                plannerWindow.switchToView(plannerWindow.EditorView())
+                plannerWindow.switchToView(plannerWindow.EditPlanView())
             }
         }
 

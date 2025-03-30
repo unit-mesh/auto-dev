@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.planner.MarkdownLanguageField
-import cc.unitmesh.devti.inline.AutoDevLineBorder
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
@@ -15,7 +14,7 @@ import javax.swing.Box
 import javax.swing.JButton
 import javax.swing.JPanel
 
-class IssueInputPanel(
+class IssueInputViewPanel(
     private val project: Project,
     private val onSubmit: (String) -> Unit,
     private val onCancel: () -> Unit
