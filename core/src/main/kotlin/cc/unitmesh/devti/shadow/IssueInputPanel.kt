@@ -7,10 +7,10 @@ import cc.unitmesh.devti.gui.planner.MarkdownLanguageField
 import cc.unitmesh.devti.inline.AutoDevLineBorder
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.JBColor
-import com.intellij.util.ui.JBUI.Borders.emptyLeft
+import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
-import java.awt.FlowLayout
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.JButton
@@ -22,49 +22,39 @@ class IssueInputPanel(
     private val onSubmit: (String) -> Unit,
     private val onCancel: () -> Unit
 ) : JPanel(BorderLayout()) {
-    private val textArea: MarkdownLanguageField = MarkdownLanguageField(project, "", placeholder, "issue.md")
-        .apply {
-            border = AutoDevLineBorder(JBColor.namedColor("Focus.borderColor", JBColor.BLUE), 1, true, 4)
-        }
+    private var textArea: MarkdownLanguageField? = null
 
     init {
-        val buttonsPanel = createActionButtons()
-
-        add(textArea, BorderLayout.CENTER)
-        add(buttonsPanel, BorderLayout.SOUTH)
-
-        background = JBColor.WHITE
-        setBorder(BorderFactory.createEmptyBorder())
-    }
-
-    private fun createActionButtons(): JPanel {
-        val buttonsPanel = JPanel().apply {
-            layout = FlowLayout(FlowLayout.RIGHT, 8, 0)
-            isOpaque = false
-            border = null
+        textArea = MarkdownLanguageField(project, "", placeholder, "issue.md").apply {
+            border = AutoDevLineBorder(JBColor.namedColor("Focus.borderColor", JBColor.BLUE), 1, true, 4)
         }
-
-        val submitButton = JButton("Submit").apply {
-            addActionListener {
-                if (text.isNotBlank()) {
-                    handlingExecute(text)
-                    onSubmit(text)
-                } else {
-                    AutoDevNotifications.notify(project, "Input cannot be empty")
+        
+        val buttonPanel = JPanel(BorderLayout())
+        val buttonsBox = Box.createHorizontalBox().apply {
+            add(JButton("Submit").apply {
+                addActionListener {
+                    val text = textArea?.text ?: ""
+                    if (text.isNotBlank()) {
+                        handlingExecute(text)
+                        onSubmit(text)
+                    } else {
+                        AutoDevNotifications.notify(project, "Input cannot be empty")
+                    }
                 }
-            }
+            })
+            add(Box.createHorizontalStrut(10))
+            add(JButton("Cancel").apply {
+                addActionListener {
+                    onCancel()
+                }
+            })
         }
+        buttonPanel.add(buttonsBox, BorderLayout.EAST)
+        buttonPanel.border = JBUI.Borders.empty(5)
 
-        val cancelButton = JButton("Cancel").apply {
-            addActionListener {
-                onCancel()
-            }
-        }
-
-        buttonsPanel.add(submitButton)
-        buttonsPanel.add(Box.createHorizontalStrut(4))
-        buttonsPanel.add(cancelButton)
-        return buttonsPanel
+        add(JBScrollPane(textArea), BorderLayout.CENTER)
+        add(buttonPanel, BorderLayout.SOUTH)
+        setBorder(BorderFactory.createEmptyBorder())
     }
 
     fun handlingExecute(newPlan: String) {
@@ -74,17 +64,21 @@ class IssueInputPanel(
         }
     }
 
-    fun getText(): String = textArea.text
+    fun getText(): String = textArea?.text ?: ""
 
     fun setText(text: String) {
         if (text.isNotBlank()) {
-            textArea.text = text
+            textArea?.text = text
         } else {
-            textArea.text = placeholder
+            textArea?.text = placeholder
         }
     }
 
     fun requestTextAreaFocus() {
-        textArea.requestFocus()
+        textArea?.requestFocus()
+    }
+
+    fun dispose() {
+        textArea = null
     }
 }
