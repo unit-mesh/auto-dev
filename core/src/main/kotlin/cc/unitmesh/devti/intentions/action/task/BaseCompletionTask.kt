@@ -70,19 +70,18 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
                     return@collect
                 }
 
-                val parsedContent = CodeFence.parse(char).text;
-
-                suggestion.append(parsedContent)
+                suggestion.append(char)
                 invokeLater {
                     if (!isCanceled && !request.isReplacement) {
-                        InsertUtil.insertStreamingToDoc(project, parsedContent, editor, currentOffset)
+                        InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)
                         currentOffset += char.length
                     }
                 }
             }
 
             if (request.isReplacement) {
-                InsertUtil.replaceText(project, editor, request.element, suggestion.toString())
+                val parsedContent = CodeFence.parse(suggestion.toString()).text
+                InsertUtil.replaceText(project, editor, request.element, parsedContent)
             }
 
             indicator.fraction = 0.8
