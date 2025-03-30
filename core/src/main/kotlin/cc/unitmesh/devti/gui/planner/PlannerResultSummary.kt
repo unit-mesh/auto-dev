@@ -1,35 +1,23 @@
 package cc.unitmesh.devti.gui.planner
 
-import cc.unitmesh.devti.inline.AutoDevLineBorder
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.ui.HyperlinkLabel
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
-import io.modelcontextprotocol.kotlin.sdk.UnknownReference
-import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridLayout
-import java.awt.event.ActionEvent
-import java.awt.event.FocusEvent
-import java.awt.event.FocusListener
-import java.awt.event.KeyEvent
-import java.beans.PropertyChangeEvent
-import java.beans.PropertyChangeListener
 import javax.swing.*
-import javax.swing.border.Border
 import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
 
@@ -38,7 +26,7 @@ class PlannerResultSummary(
     private var changes: List<Change>
 ) : JPanel(BorderLayout()) {
     private val changesPanel = JPanel(GridLayout(0, 1, 0, 1))
-    private val statsLabel = JBLabel("No changes")
+    private val statsLabel = JBLabel(AutoDevBundle.message("planner.stats.changes.empty"))
     private val rollbackWorker = RollbackWorker(project)
 
     interface ChangeActionListener {
@@ -91,7 +79,7 @@ class PlannerResultSummary(
 
             val titleLabelPanel = JPanel(BorderLayout()).apply {
                 isOpaque = false
-                add(JBLabel("Change list").apply {
+                add(JBLabel(AutoDevBundle.message("planner.change.list.title")).apply {
                     foreground = UIUtil.getLabelForeground()
                     font = JBUI.Fonts.label().asBold()
                 }, BorderLayout.WEST)
@@ -101,7 +89,7 @@ class PlannerResultSummary(
             val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0)).apply {
                 isOpaque = false
 
-                val discardAllButton = HyperlinkLabel("Discard all").apply {
+                val discardAllButton = HyperlinkLabel(AutoDevBundle.message("planner.action.discard.all")).apply {
                     icon = AllIcons.Actions.Cancel
                     addHyperlinkListener(object : HyperlinkListener {
                         override fun hyperlinkUpdate(e: HyperlinkEvent) {
@@ -112,7 +100,7 @@ class PlannerResultSummary(
                     })
                 }
 
-                val acceptAllButton = HyperlinkLabel("Accept all").apply {
+                val acceptAllButton = HyperlinkLabel(AutoDevBundle.message("planner.action.accept.all")).apply {
                     icon = AllIcons.Actions.Commit
                     addHyperlinkListener(object : HyperlinkListener {
                         override fun hyperlinkUpdate(e: HyperlinkEvent) {
@@ -151,13 +139,13 @@ class PlannerResultSummary(
         changesPanel.removeAll()
 
         if (changes.isEmpty()) {
-            statsLabel.text = " No changes"
-            changesPanel.add(JBLabel("No code changes").apply {
+            statsLabel.text = AutoDevBundle.message("planner.stats.no.changes")
+            changesPanel.add(JBLabel(AutoDevBundle.message("planner.no.code.changes")).apply {
                 foreground = UIUtil.getLabelDisabledForeground()
                 border = JBUI.Borders.empty(10)
             })
         } else {
-            statsLabel.text = " (Total ${changes.size} files changed)"
+            statsLabel.text = AutoDevBundle.message("planner.stats.changes.count", changes.size)
             changes.forEach { change ->
                 val filePath = change.virtualFile?.relativePath(project) ?: "Unknown"
                 val fileName = filePath.substringAfterLast('/')
@@ -226,12 +214,12 @@ class PlannerResultSummary(
 
                 val viewButton = createActionButton(
                     AllIcons.Actions.Preview,
-                    "View changes"
+                    AutoDevBundle.message("planner.action.view.changes")
                 ) { changeActionListener.onView(change) }
 
                 val discardButton = createActionButton(
                     AllIcons.Actions.Cancel,
-                    "Discard changes"
+                    AutoDevBundle.message("planner.action.discard.changes")
                 ) { changeActionListener.onDiscard(change) }
 
                 add(viewButton)
@@ -255,58 +243,5 @@ class PlannerResultSummary(
         }
         return KeyboardAccessibleActionButton(anAction)
     }
-
-    private class KeyboardAccessibleActionButton(@NotNull action: AnAction) : ActionButton(
-        action,
-        action.templatePresentation.clone(),
-        "unknown",
-        ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    ) {
-        init {
-            isFocusable = true
-            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "executeAction")
-            actionMap.put("executeAction", object : AbstractAction() {
-                override fun actionPerformed(e: ActionEvent) {
-                    click()
-                }
-            })
-            val focusListener = AccessibleFocusListener()
-            addPropertyChangeListener("border", focusListener)
-            addFocusListener(focusListener)
-        }
-
-        override fun processKeyEvent(e: KeyEvent?) {
-            if (e != null && e.keyCode == KeyEvent.VK_ENTER && e.id == KeyEvent.KEY_PRESSED) {
-                click()
-            } else {
-                super.processKeyEvent(e)
-            }
-        }
-
-        private inner class AccessibleFocusListener : FocusListener, PropertyChangeListener {
-            private var originalBorder: Border? = null
-            private var focusedBorder: Border? = null
-
-            override fun focusGained(e: FocusEvent?) {
-                val insideBorder = AutoDevLineBorder(JBColor.namedColor("Focus.borderColor", JBColor.BLUE), 1, true, 4)
-                focusedBorder = BorderFactory.createCompoundBorder(originalBorder, insideBorder)
-                border = focusedBorder
-                repaint()
-            }
-
-            override fun focusLost(e: FocusEvent?) {
-                border = originalBorder
-                repaint()
-            }
-
-            override fun propertyChange(evt: PropertyChangeEvent?) {
-                if (originalBorder == null && evt?.propertyName == "border") {
-                    val newBorder = evt.newValue as? Border
-                    if (newBorder != null && newBorder != focusedBorder) {
-                        originalBorder = newBorder
-                    }
-                }
-            }
-        }
-    }
 }
+
