@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.gui.planner.AutoDevPlannerToolWindow
-import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Splittable
@@ -22,7 +21,6 @@ class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerList
         val manager = toolWindow.contentManager
         manager.addContent(manager.factory.createContent(panel, null, false).apply { isCloseable = false })
         project.messageBus.connect(manager).subscribe(ToolWindowManagerListener.TOPIC, this)
-        toolWindow.setTitleActions(listOfNotNull(ActionUtil.getAction("AutoDevPlanner.ToolWindow.TitleActions")))
     }
 
     override fun stateChanged(manager: ToolWindowManager) {

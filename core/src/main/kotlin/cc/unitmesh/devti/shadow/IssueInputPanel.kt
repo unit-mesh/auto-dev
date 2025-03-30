@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.shadow
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.sketch.AutoSketchMode
@@ -8,7 +9,6 @@ import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.ui.*
 import com.intellij.util.containers.ContainerUtil
-import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import javax.swing.BorderFactory
@@ -22,21 +22,19 @@ class IssueInputPanel(
     private val onSubmit: (String) -> Unit,
     private val onCancel: () -> Unit
 ) : JPanel(BorderLayout()) {
-    private val textArea: EditorTextField
-    private var isPlaceholderVisible = true
+    private val textArea: EditorTextField = createEditor(project).apply {
+        setPlaceholder(placeholder)
+        setShowPlaceholderWhenFocused(true)
+        setBorder(BorderFactory.createEmptyBorder())
+    }
 
     init {
-        textArea = createEditor(project).apply {
-            setPlaceholder(placeholder)
-            setShowPlaceholderWhenFocused(true)
-        }
-
         val buttonsPanel = createActionButtons()
 
         add(textArea, BorderLayout.CENTER)
         add(buttonsPanel, BorderLayout.SOUTH)
 
-        background = textArea.editor?.component?.background ?: JBUI.CurrentTheme.ToolWindow.background()
+        background = JBColor.WHITE
         setBorder(BorderFactory.createEmptyBorder())
     }
 
@@ -49,10 +47,11 @@ class IssueInputPanel(
 
         val submitButton = JButton("Submit").apply {
             addActionListener {
-                val text = if (isPlaceholderVisible) "" else textArea.text
                 if (text.isNotBlank()) {
                     handlingExecute(text)
                     onSubmit(text)
+                } else {
+                    AutoDevNotifications.notify(project, "Input cannot be empty")
                 }
             }
         }
@@ -76,15 +75,13 @@ class IssueInputPanel(
         }
     }
 
-    fun getText(): String = if (isPlaceholderVisible) "" else textArea.text
+    fun getText(): String = textArea.text
 
     fun setText(text: String) {
         if (text.isNotBlank()) {
             textArea.text = text
-            isPlaceholderVisible = false
         } else {
             textArea.text = placeholder
-            isPlaceholderVisible = true
         }
     }
 

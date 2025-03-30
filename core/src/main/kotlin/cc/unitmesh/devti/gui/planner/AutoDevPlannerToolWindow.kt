@@ -8,6 +8,9 @@ import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import cc.unitmesh.devti.shadow.IssueInputPanel
 import cc.unitmesh.devti.sketch.ui.plan.PlanLangSketch
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.project.Project
@@ -37,6 +40,18 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private val plannerResultSummary = PlannerResultSummary(project, mutableListOf())
 
     init {
+        val toolbar = ActionManager.getInstance()
+            .createActionToolbar(
+                AutoDevPlannerToolWindowFactory.Companion.PlANNER_ID,
+                ActionUtil.getAction("AutoDevPlanner.ToolWindow.TitleActions") as ActionGroup,
+                true
+            )
+            
+        val toolbarPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
+        toolbarPanel.add(toolbar.component)
+        
+        contentPanel.add(toolbarPanel, BorderLayout.NORTH)
+
         if (content.isBlank()) {
             isIssueInputMode = true
             contentPanel.add(createIssueInputPanel(), BorderLayout.CENTER)
