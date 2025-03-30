@@ -5,7 +5,7 @@ import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
-import cc.unitmesh.devti.shadow.ShadowPanel
+import cc.unitmesh.devti.shadow.IssueInputPanel
 import cc.unitmesh.devti.sketch.ui.plan.PlanLangSketch
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -33,7 +33,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private var isIssueInputMode = false
     private var currentCallback: ((String) -> Unit)? = null
     private val planPanel: JPanel by lazy { createPlanPanel() }
-    private lateinit var issueInputPanel: ShadowPanel
+    private lateinit var issueInputPanel: IssueInputPanel
     private val plannerResultSummary = PlannerResultSummary(project, mutableListOf())
 
     init {
@@ -94,7 +94,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     }
 
     private fun createIssueInputPanel(): JPanel {
-        issueInputPanel = ShadowPanel(
+        issueInputPanel = IssueInputPanel(
             project,
             title = "Enter Issue Description",
             onSubmit = { issueText ->

@@ -4,13 +4,14 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.project.Project
+import com.intellij.ui.Gray
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.*
 import javax.swing.*
 import javax.swing.border.LineBorder
 
-class ShadowPanel(
+class IssueInputPanel(
     private val project: Project,
     private val title: String,
     private val onSubmit: (String) -> Unit,
@@ -24,8 +25,7 @@ class ShadowPanel(
         val mainPanel = JPanel(BorderLayout(8, 8)).apply {
             border = BorderFactory.createCompoundBorder(
                 JBUI.Borders.empty(8),
-                BorderFactory.createCompoundBorder(
-                    LineBorder(Color(230, 230, 230), 1, true),
+                BorderFactory.createCompoundBorder(LineBorder(Gray._230, 1, true),
                     JBUI.Borders.empty(8)
                 )
             )

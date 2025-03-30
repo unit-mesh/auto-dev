@@ -277,7 +277,9 @@ class SingleFileDiffSketch(
                 }
 
                 if (myProject.coderSetting.state.enableDiffViewer) {
+                    icon = AutoDevIcons.InProgress
                     DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, failurePatch) { fixedCode ->
+                        icon = AutoDevIcons.REPAIR
                         newCode = fixedCode
                         try {
                             createPatchFromCode(oldCode, fixedCode)?.also {
@@ -286,7 +288,10 @@ class SingleFileDiffSketch(
                                 }
                             }
                         } catch (e: Exception) {
-                            logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${this@SingleFileDiffSketch.patch.beforeFileName}", e)
+                            logger<SingleFileDiffSketch>().warn(
+                                "Failed to apply patch: ${this@SingleFileDiffSketch.patch.beforeFileName}",
+                                e
+                            )
                             return@applyDiffRepairSuggestionSync
                         }
 
