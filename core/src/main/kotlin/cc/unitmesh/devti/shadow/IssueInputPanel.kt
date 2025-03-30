@@ -3,75 +3,48 @@ package cc.unitmesh.devti.shadow
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.sketch.AutoSketchMode
+import com.intellij.openapi.editor.SpellCheckingEditorCustomizationProvider
+import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
-import com.intellij.ui.Gray
-import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.*
+import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.UIUtil
-import java.awt.*
-import java.awt.event.FocusEvent
-import java.awt.event.FocusListener
-import javax.swing.*
-import javax.swing.border.LineBorder
+import java.awt.BorderLayout
+import java.awt.FlowLayout
+import javax.swing.BorderFactory
+import javax.swing.Box
+import javax.swing.JButton
+import javax.swing.JPanel
 
 class IssueInputPanel(
     private val project: Project,
-    private val title: String,
+    private val placeholder: String,
     private val onSubmit: (String) -> Unit,
     private val onCancel: () -> Unit
 ) : JPanel(BorderLayout()) {
-    private val textArea: JTextArea
+    private val textArea: EditorTextField
     private var isPlaceholderVisible = true
 
     init {
-        background = JBUI.CurrentTheme.ToolWindow.background()
-        border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 0, 1, 0)
-
-        val mainPanel = JPanel(BorderLayout(8, 8)).apply {
-            background = JBUI.CurrentTheme.ToolWindow.background()
+        textArea = createEditor(project).apply {
+            setPlaceholder(placeholder)
+            setShowPlaceholderWhenFocused(true)
         }
 
-        textArea = JTextArea().apply {
-            lineWrap = true
-            wrapStyleWord = true
-            font = Font("Arial", Font.PLAIN, 16)
-            rows = 10
-            text = title
-            foreground = JBColor.GRAY
+        val buttonsPanel = createActionButtons()
 
-            addFocusListener(object : FocusListener {
-                override fun focusGained(e: FocusEvent?) {
-                    if (isPlaceholderVisible) {
-                        text = ""
-                        foreground = UIManager.getColor("TextArea.foreground")
-                        isPlaceholderVisible = false
-                    }
-                }
+        add(textArea, BorderLayout.CENTER)
+        add(buttonsPanel, BorderLayout.SOUTH)
 
-                override fun focusLost(e: FocusEvent?) {
-                    if (text.isEmpty()) {
-                        text = title
-                        foreground = JBColor.GRAY
-                        isPlaceholderVisible = true
-                    }
-                }
-            })
-        }
+        background = textArea.editor?.component?.background ?: JBUI.CurrentTheme.ToolWindow.background()
+        setBorder(BorderFactory.createEmptyBorder())
+    }
 
-        val scrollPane = JBScrollPane(textArea).apply {
-            border = null
-            preferredSize = Dimension(preferredSize.width, 300)
-        }
-
-        val controlsPanel = JPanel(BorderLayout(10, 0)).apply {
-            background = JBUI.CurrentTheme.ToolWindow.background()
-        }
-
+    private fun createActionButtons(): JPanel {
         val buttonsPanel = JPanel().apply {
             layout = FlowLayout(FlowLayout.RIGHT, 8, 0)
-            background = JBUI.CurrentTheme.ToolWindow.background()
             isOpaque = false
+            border = null
         }
 
         val submitButton = JButton("Submit").apply {
@@ -93,13 +66,7 @@ class IssueInputPanel(
         buttonsPanel.add(submitButton)
         buttonsPanel.add(Box.createHorizontalStrut(4))
         buttonsPanel.add(cancelButton)
-
-        controlsPanel.add(buttonsPanel, BorderLayout.EAST)
-
-        mainPanel.add(scrollPane, BorderLayout.CENTER)
-        mainPanel.add(controlsPanel, BorderLayout.SOUTH)
-
-        add(mainPanel, BorderLayout.CENTER)
+        return buttonsPanel
     }
 
     fun handlingExecute(newPlan: String) {
@@ -114,11 +81,9 @@ class IssueInputPanel(
     fun setText(text: String) {
         if (text.isNotBlank()) {
             textArea.text = text
-            textArea.foreground = UIManager.getColor("TextArea.foreground")
             isPlaceholderVisible = false
         } else {
-            textArea.text = title
-            textArea.foreground = JBColor.GRAY
+            textArea.text = placeholder
             isPlaceholderVisible = true
         }
     }
@@ -127,3 +92,21 @@ class IssueInputPanel(
         textArea.requestFocus()
     }
 }
+
+private fun createEditor(project: Project): EditorTextField {
+    val features: MutableSet<EditorCustomization?> = HashSet<EditorCustomization?>()
+
+    features.add(SoftWrapsEditorCustomization.ENABLED)
+    features.add(AdditionalPageAtBottomEditorCustomization.DISABLED)
+    ContainerUtil.addIfNotNull<EditorCustomization?>(
+        features,
+        SpellCheckingEditorCustomizationProvider.getInstance().enabledCustomization
+    )
+
+    val editorField =
+        EditorTextFieldProvider.getInstance().getEditorField(FileTypes.PLAIN_TEXT.language, project, features)
+
+    editorField.setFontInheritedFromLAF(false)
+    return editorField
+}
+

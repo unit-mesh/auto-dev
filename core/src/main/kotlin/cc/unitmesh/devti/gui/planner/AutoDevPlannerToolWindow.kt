@@ -96,7 +96,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     private fun createIssueInputPanel(): JPanel {
         issueInputPanel = IssueInputPanel(
             project,
-            title = "Enter Issue Description",
+            placeholder = "Enter Issue Description",
             onSubmit = { issueText ->
                 if (issueText.isNotBlank()) {
                     showLoadingState(issueText)
