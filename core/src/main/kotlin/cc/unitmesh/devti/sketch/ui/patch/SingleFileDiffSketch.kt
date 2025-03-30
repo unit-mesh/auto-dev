@@ -69,7 +69,7 @@ class SingleFileDiffSketch(
         isOpaque = true
     }
 
-    private val newCode = appliedPatch?.patchedText ?: ""
+    private var newCode = appliedPatch?.patchedText ?: ""
     private val isAutoRepair = myProject.coderSetting.state.enableAutoRepairDiff
 
     init {
@@ -208,7 +208,7 @@ class SingleFileDiffSketch(
 
     private fun createActionButtons(
         file: VirtualFile,
-        appliedPatch: GenericPatchApplier.AppliedPatch?,
+        patch: GenericPatchApplier.AppliedPatch?,
         filePatch: TextFilePatch,
         isRepaired: Boolean = false
     ): List<JButton> {
@@ -226,7 +226,7 @@ class SingleFileDiffSketch(
         val applyButton = JButton(AutoDevBundle.message("sketch.patch.apply")).apply {
             icon = AutoDevIcons.Run
             toolTipText = AutoDevBundle.message("sketch.patch.action.applyDiff.tooltip")
-            isEnabled = !isFailure(appliedPatch)
+            isEnabled = !isFailure(patch)
 
             addActionListener {
                 val document = FileDocumentManager.getInstance().getDocument(file)
@@ -237,7 +237,7 @@ class SingleFileDiffSketch(
 
                 CommandProcessor.getInstance().executeCommand(myProject, {
                     WriteCommandAction.runWriteCommandAction(myProject) {
-                        document.setText(appliedPatch!!.patchedText)
+                        document.setText(patch!!.patchedText)
 
                         if (file is DiffVirtualFileBase) {
                             FileEditorManager.getInstance(myProject).closeFile(file)
@@ -255,7 +255,7 @@ class SingleFileDiffSketch(
             AutoDevBundle.message("sketch.patch.repair")
         }
         val repairButton = JButton(text).apply {
-            val isFailedPatch = isFailure(appliedPatch)
+            val isFailedPatch = isFailure(patch)
             isEnabled = isFailedPatch
             icon = if (isAutoRepair && isFailedPatch) {
                 AutoDevIcons.InProgress
@@ -278,6 +278,18 @@ class SingleFileDiffSketch(
 
                 if (myProject.coderSetting.state.enableDiffViewer) {
                     DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, failurePatch) { fixedCode ->
+                        newCode = fixedCode
+                        try {
+                            createPatchFromCode(oldCode, fixedCode)?.also {
+                                updatePatchPanel(it, fixedCode) {
+                                    /// do nothing
+                                }
+                            }
+                        } catch (e: Exception) {
+                            logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${this@SingleFileDiffSketch.patch.beforeFileName}", e)
+                            return@applyDiffRepairSuggestionSync
+                        }
+
                         runInEdt {
                             createDiffViewer(oldCode, fixedCode).let { diffViewer ->
                                 mainPanel.add(diffViewer)
@@ -350,32 +362,36 @@ class SingleFileDiffSketch(
         DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode: String ->
             createPatchFromCode(oldCode, fixedCode)?.let { patch ->
                 this.patch = patch
-                appliedPatch = try {
-                    GenericPatchApplier.apply(oldCode, patch.hunks)
-                } catch (e: Exception) {
-                    logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
-                    null
-                }
-
-                runInEdt {
-                    WriteAction.compute<Unit, Throwable> {
-                        currentFile.writeText(fixedCode)
-                    }
-                }
-
-                createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
-                    actionPanel.removeAll()
-                    actions.forEach { button ->
-                        actionPanel.add(button)
-                    }
-                }
-
-                postAction()
-
-                mainPanel.revalidate()
-                mainPanel.repaint()
+                updatePatchPanel(patch, fixedCode, postAction)
             }
         })
+    }
+
+    private fun updatePatchPanel(patch: TextFilePatch, fixedCode: String, postAction: () -> Unit) {
+        appliedPatch = try {
+            GenericPatchApplier.apply(oldCode, patch.hunks)
+        } catch (e: Exception) {
+            logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+            null
+        }
+
+        runInEdt {
+            WriteAction.compute<Unit, Throwable> {
+                currentFile.writeText(fixedCode)
+            }
+        }
+
+        createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
+            actionPanel.removeAll()
+            actions.forEach { button ->
+                actionPanel.add(button)
+            }
+        }
+
+        postAction()
+
+        mainPanel.revalidate()
+        mainPanel.repaint()
     }
 
     override fun dispose() {}
