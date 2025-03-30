@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.planner
 
+import cc.unitmesh.devti.sketch.ui.AutoDevColors
 import com.intellij.ide.ui.LafManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.JBUI
@@ -8,7 +9,6 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.geom.RoundRectangle2D
 import javax.swing.*
-import javax.swing.border.EmptyBorder
 import javax.swing.border.LineBorder
 import javax.swing.plaf.basic.BasicProgressBarUI
 import javax.swing.text.BadLocationException
@@ -41,16 +41,6 @@ class LoadingPanel(val project: Project) : JPanel() {
     private var gradientPosition = 0.0f
     private val gradientSpeed = 0.005f
 
-    private val lightBackground = Color(245, 247, 250)
-    private val darkBackground = Color(30, 32, 40)
-    private val lightForeground = Color(50, 50, 50)
-    private val darkForeground = Color(220, 220, 220)
-    private val lightBorder = Color(200, 210, 230)
-    private val darkBorder = Color(60, 65, 80)
-    private val progressColor = Color(59, 130, 246)
-    private val progressBackground = Color(229, 231, 235)
-    private val darkProgressBackground = Color(55, 65, 81)
-
     init {
         val isDarkTheme = UIManager.getLookAndFeelDefaults().getBoolean("ui.theme.is.dark")
 
@@ -81,8 +71,14 @@ class LoadingPanel(val project: Project) : JPanel() {
                     RoundRectangle2D.Float(0f, 0f, width.toFloat(), height.toFloat(), 15f, 15f)
                 g2d.clip = roundedRect
 
-                val color1 = if (isDarkMode) Color(30, 40, 70, 200) else Color(240, 245, 255, 200)
-                val color2 = if (isDarkMode) Color(40, 30, 70, 200) else Color(245, 240, 255, 200)
+                val color1 = if (isDarkMode) 
+                    AutoDevColors.LoadingPanel.GRADIENT_COLOR1.darker() 
+                else 
+                    AutoDevColors.LoadingPanel.GRADIENT_COLOR1
+                val color2 = if (isDarkMode) 
+                    AutoDevColors.LoadingPanel.GRADIENT_COLOR2.darker() 
+                else 
+                    AutoDevColors.LoadingPanel.GRADIENT_COLOR2
 
                 val pos1 = (gradientPosition) % 1.0f
                 val pos2 = (gradientPosition + 0.33f) % 1.0f
@@ -104,7 +100,7 @@ class LoadingPanel(val project: Project) : JPanel() {
             }
         }
 
-        glassPanel.setBorder(LineBorder(if (isDarkMode) darkBorder else lightBorder, 1, true))
+        glassPanel.setBorder(LineBorder(AutoDevColors.LoadingPanel.BORDER, 1, true))
         glassPanel.setOpaque(false)
 
         contentPanel = JPanel(BorderLayout(10, 10))
@@ -135,12 +131,12 @@ class LoadingPanel(val project: Project) : JPanel() {
                 val width = c.getWidth()
                 val height = c.getHeight()
 
-                g2d.setColor(if (isDarkMode) darkProgressBackground else progressBackground)
+                g2d.setColor(AutoDevColors.LoadingPanel.PROGRESS_BACKGROUND)
                 g2d.fillRoundRect(0, 0, width, height, height, height)
 
                 val progressWidth = (width * progressBar.getPercentComplete()).toInt()
                 if (progressWidth > 0) {
-                    g2d.setColor(progressColor)
+                    g2d.setColor(AutoDevColors.LoadingPanel.PROGRESS_COLOR)
                     g2d.fillRoundRect(0, 0, progressWidth, height, height, height)
                 }
 
@@ -238,7 +234,7 @@ class LoadingPanel(val project: Project) : JPanel() {
     private fun updateMessageText() {
         val doc = messagePane.styledDocument
         val style = messagePane.addStyle("MessageStyle", null)
-        StyleConstants.setForeground(style, if (isDarkMode) darkForeground else lightForeground)
+        StyleConstants.setForeground(style, AutoDevColors.LoadingPanel.FOREGROUND)
         StyleConstants.setFontFamily(style, "Monospaced")
         StyleConstants.setFontSize(style, 14)
 
@@ -246,7 +242,7 @@ class LoadingPanel(val project: Project) : JPanel() {
             doc.remove(0, doc.length)
             doc.insertString(0, currentText, style)
 
-            StyleConstants.setForeground(style, progressColor)
+            StyleConstants.setForeground(style, AutoDevColors.LoadingPanel.PROGRESS_COLOR)
             doc.insertString(doc.length, "|", style)
         } catch (e: BadLocationException) {
             e.printStackTrace()
@@ -260,9 +256,9 @@ class LoadingPanel(val project: Project) : JPanel() {
     }
 
     private fun updateColors() {
-        setBackground(if (isDarkMode) darkBackground else lightBackground)
-        messagePane.setForeground(if (isDarkMode) darkForeground else lightForeground)
-        glassPanel.setBorder(LineBorder(if (isDarkMode) darkBorder else lightBorder, 1, true))
+        setBackground(AutoDevColors.LoadingPanel.BACKGROUND)
+        messagePane.setForeground(AutoDevColors.LoadingPanel.FOREGROUND)
+        glassPanel.setBorder(LineBorder(AutoDevColors.LoadingPanel.BORDER, 1, true))
         updateMessageText()
     }
 
