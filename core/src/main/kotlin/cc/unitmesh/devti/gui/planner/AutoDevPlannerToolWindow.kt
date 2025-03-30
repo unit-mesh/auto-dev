@@ -31,7 +31,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
     private var markdownEditor: MarkdownLanguageField? = null
     private val contentPanel = JBUI.Panels.simplePanel()
-    
+
     private var currentView: PlannerView? = null
     private var currentCallback: ((String) -> Unit)? = null
     private val plannerResultSummary = PlannerResultSummary(project, mutableListOf())
@@ -43,10 +43,10 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                 ActionUtil.getAction("AutoDevPlanner.ToolWindow.TitleActions") as ActionGroup,
                 true
             )
-            
+
         val toolbarPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
         toolbarPanel.add(toolbar.component)
-        
+
         add(toolbarPanel, BorderLayout.NORTH)
         add(contentPanel, BorderLayout.CENTER)
 
@@ -58,14 +58,14 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
         connection.subscribe(PlanUpdateListener.Companion.TOPIC, object : PlanUpdateListener {
             override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
-                if (currentView is PlanSketchView) {
-                    runInEdt {
-                        planLangSketch.updatePlan(items)
-                        contentPanel.components.find { it is LoadingPanel }?.let {
-                            contentPanel.remove(it)
-                            contentPanel.revalidate()
-                            contentPanel.repaint()
-                        }
+                switchToPlanView()
+
+                runInEdt {
+                    planLangSketch.updatePlan(items)
+                    contentPanel.components.find { it is LoadingPanel }?.let {
+                        contentPanel.remove(it)
+                        contentPanel.revalidate()
+                        contentPanel.repaint()
                     }
                 }
             }
@@ -92,7 +92,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
         currentView = view
         view.initialize(this)
-        
+
         contentPanel.revalidate()
         contentPanel.repaint()
     }
@@ -118,16 +118,16 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     override fun dispose() {
         markdownEditor = null
     }
-    
+
     interface PlannerView {
         val viewType: PlannerViewType
         fun initialize(window: AutoDevPlannerToolWindow)
     }
-    
+
     enum class PlannerViewType {
         PLAN, EDITOR, ISSUE_INPUT, LOADING
     }
-    
+
     inner class PlanSketchView : PlannerView {
         override val viewType = PlannerViewType.PLAN
         override fun initialize(window: AutoDevPlannerToolWindow) {
@@ -138,12 +138,12 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                         .resizableColumn()
                 }
             }
-            
+
             contentPanel.add(planPanel, BorderLayout.CENTER)
             contentPanel.add(plannerResultSummary, BorderLayout.SOUTH)
         }
     }
-    
+
     inner class EditPlanView : PlannerView {
         override val viewType = PlannerViewType.EDITOR
         override fun initialize(window: AutoDevPlannerToolWindow) {
@@ -165,11 +165,11 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             contentPanel.add(editPlanViewPanel, BorderLayout.CENTER)
         }
     }
-    
+
     inner class IssueInputView : PlannerView {
         override val viewType = PlannerViewType.ISSUE_INPUT
         private lateinit var viewPanel: IssueInputViewPanel
-        
+
         override fun initialize(window: AutoDevPlannerToolWindow) {
             viewPanel = IssueInputViewPanel(
                 project,
@@ -182,13 +182,13 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                     switchToPlanView()
                 }
             )
-            
+
             contentPanel.add(viewPanel, BorderLayout.CENTER)
             viewPanel.setText("")
             viewPanel.requestTextAreaFocus()
         }
     }
-    
+
     inner class LoadingView : PlannerView {
         override val viewType = PlannerViewType.LOADING
         override fun initialize(window: AutoDevPlannerToolWindow) {
@@ -199,7 +199,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                         .resizableColumn()
                 }
             }
-            
+
             contentPanel.add(planPanel, BorderLayout.CENTER)
             contentPanel.add(LoadingPanel(project), BorderLayout.NORTH)
         }

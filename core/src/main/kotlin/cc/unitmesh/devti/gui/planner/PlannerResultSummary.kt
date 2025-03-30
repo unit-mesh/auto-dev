@@ -70,15 +70,15 @@ class PlannerResultSummary(
     }
 
     init {
-        background = JBUI.CurrentTheme.ToolWindow.background()
-        border = JBUI.Borders.empty(10)
+        border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 0, 0, 0)
 
         val titlePanel = JPanel(BorderLayout()).apply {
-            isOpaque = false
-            border = JBUI.Borders.emptyBottom(10)
+            border = JBUI.Borders.compound(
+                JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0),
+                JBUI.Borders.empty(4)
+            )
 
             val titleLabelPanel = JPanel(BorderLayout()).apply {
-                isOpaque = false
                 add(JBLabel(AutoDevBundle.message("planner.change.list.title")).apply {
                     foreground = UIUtil.getLabelForeground()
                     font = JBUI.Fonts.label().asBold()
@@ -86,9 +86,7 @@ class PlannerResultSummary(
                 add(statsLabel, BorderLayout.EAST)
             }
 
-            val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0)).apply {
-                isOpaque = false
-
+            val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0)).apply {
                 val discardAllButton = HyperlinkLabel(AutoDevBundle.message("planner.action.discard.all")).apply {
                     icon = AllIcons.Actions.Cancel
                     addHyperlinkListener(object : HyperlinkListener {
@@ -139,13 +137,13 @@ class PlannerResultSummary(
         changesPanel.removeAll()
 
         if (changes.isEmpty()) {
-            statsLabel.text = AutoDevBundle.message("planner.stats.no.changes")
+            statsLabel.text = " - " + AutoDevBundle.message("planner.stats.no.changes")
             changesPanel.add(JBLabel(AutoDevBundle.message("planner.no.code.changes")).apply {
                 foreground = UIUtil.getLabelDisabledForeground()
-                border = JBUI.Borders.empty(10)
+                border = JBUI.Borders.empty(8)
             })
         } else {
-            statsLabel.text = AutoDevBundle.message("planner.stats.changes.count", changes.size)
+            statsLabel.text = " - " + AutoDevBundle.message("planner.stats.changes.count", changes.size)
             changes.forEach { change ->
                 val filePath = change.virtualFile?.relativePath(project) ?: "Unknown"
                 val fileName = filePath.substringAfterLast('/')
@@ -167,7 +165,7 @@ class PlannerResultSummary(
         return JPanel().apply {
             isOpaque = true
             background = UIUtil.getListBackground()
-            border = JBUI.Borders.empty(5, 8)
+            border = JBUI.Borders.empty(4, 8)
             layout = BoxLayout(this, BoxLayout.X_AXIS)
 
             val changeIcon = when (change.type) {
@@ -190,7 +188,7 @@ class PlannerResultSummary(
             }
 
             add(fileLabel)
-            add(Box.createHorizontalStrut(5))
+            add(Box.createHorizontalStrut(4))
 
             val pathLabel = JBLabel(filePath).apply {
                 foreground = UIUtil.getLabelDisabledForeground()
