@@ -114,7 +114,12 @@ class PlannerResultSummary(
     private fun showDiffView(change: Change) {
         val diffFactory = DiffContentFactoryEx.getInstanceEx()
         val oldCode = change.beforeRevision?.content ?: return
-        val newCode = change.afterRevision?.content ?: return
+        val newCode = try {
+            change.afterRevision?.content ?: "No Content"
+        } catch (e: Exception) {
+            "Error: ${e.message}"
+        }
+
         val currentDocContent = diffFactory.create(project, oldCode)
         val newDocContent = diffFactory.create(newCode)
 

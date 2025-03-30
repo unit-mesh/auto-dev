@@ -162,10 +162,10 @@ class SingleFileDiffSketch(
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
 
-        myProject.getService<AgentStateService>(AgentStateService::class.java)
-            .addToChange(currentFile.toNioPath(), patch)
-
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
+            myProject.getService<AgentStateService>(AgentStateService::class.java)
+                .addToChange(currentFile.toNioPath(), patch)
+
             invokeLater {
                 val diffPanel = createDiffViewer(oldCode, newCode)
                 mainPanel.add(diffPanel)
@@ -379,6 +379,9 @@ class SingleFileDiffSketch(
                 currentFile.writeText(fixedCode)
             }
         }
+
+        myProject.getService<AgentStateService>(AgentStateService::class.java)
+            .addToChange(currentFile.toNioPath(), patch)
 
         createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
             actionPanel.removeAll()

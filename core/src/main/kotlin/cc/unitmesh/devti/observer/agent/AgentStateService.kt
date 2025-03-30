@@ -97,15 +97,17 @@ class AgentStateService(val project: Project) {
                     if (patch.isNewFile) {
                         return patch.singleHunkPatchText
                     }
+
                     if (patch.isDeletedFile) {
                         return null
                     }
 
                     val localContent: String = loadLocalContent()
-                    val appliedPatch = GenericPatchApplier.apply(localContent, patch.getHunks())
+                    val appliedPatch = GenericPatchApplier.apply(localContent, patch.hunks)
                     if (appliedPatch != null) {
                         return appliedPatch.patchedText
                     }
+
                     throw VcsException(VcsBundle.message("patch.apply.error.conflict"))
                 }
 
@@ -121,6 +123,7 @@ class AgentStateService(val project: Project) {
                 }
             }
         }
+
         return Change(beforeRevision, afterRevision, fileStatus)
     }
 
