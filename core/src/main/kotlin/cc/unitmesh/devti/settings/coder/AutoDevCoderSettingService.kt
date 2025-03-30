@@ -30,10 +30,10 @@ class AutoDevCoderSettingService(
         var trimCodeBeforeSend by property(false)
         var enableRenameSuggestion by property(false)
         var enableAutoRunTerminal by property(false)
-        var enableAutoLintCode by property(false)
+        var enableAutoLintCode by property(true)
         var enableRenderWebview by property(false)
         var enableAutoScrollInSketch by property(false)
-        var enableDiffViewer by property(false)
+        var enableDiffViewer by property(true)
         var teamPromptsDir by property("prompts") { it.isEmpty() }
 
         override fun copy(): AutoDevCoderSettings {
