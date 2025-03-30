@@ -8,7 +8,6 @@ import cc.unitmesh.devti.inline.AutoDevLineBorder
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import javax.swing.BorderFactory
@@ -24,10 +23,8 @@ class IssueInputPanel(
     private var textArea: MarkdownLanguageField? = null
 
     init {
-        textArea = MarkdownLanguageField(project, "", "Enter Issue Description", "issue.md").apply {
-            border = AutoDevLineBorder(JBColor.namedColor("Focus.borderColor", JBColor.BLUE), 1, true, 4)
-        }
-        
+        textArea = MarkdownLanguageField(project, "", "Enter Issue Description", "issue.md")
+
         val buttonPanel = JPanel(BorderLayout())
         val buttonsBox = Box.createHorizontalBox().apply {
             add(JButton("Submit").apply {
@@ -41,7 +38,7 @@ class IssueInputPanel(
                     }
                 }
             })
-            add(Box.createHorizontalStrut(10))
+            add(Box.createHorizontalStrut(8))
             add(JButton("Cancel").apply {
                 addActionListener {
                     onCancel()
@@ -49,7 +46,7 @@ class IssueInputPanel(
             })
         }
         buttonPanel.add(buttonsBox, BorderLayout.EAST)
-        buttonPanel.border = JBUI.Borders.empty(5)
+        buttonPanel.border = JBUI.Borders.empty(4)
 
         add(JBScrollPane(textArea), BorderLayout.CENTER)
         add(buttonPanel, BorderLayout.SOUTH)

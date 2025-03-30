@@ -87,9 +87,8 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
     private fun switchToView(view: PlannerView) {
         if (currentView?.viewType == view.viewType) return
-        
         contentPanel.removeAll()
-        
+
         currentView = view
         view.initialize(this)
         
@@ -130,7 +129,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     
     inner class PlanView : PlannerView {
         override val viewType = PlannerViewType.PLAN
-        
         override fun initialize(window: AutoDevPlannerToolWindow) {
             val planPanel = panel {
                 row {
@@ -147,7 +145,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     
     inner class EditorView : PlannerView {
         override val viewType = PlannerViewType.EDITOR
-        
         override fun initialize(window: AutoDevPlannerToolWindow) {
             val editPlanPanel = EditPlanPanel(
                 project = project,
@@ -209,38 +206,33 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     }
 
     companion object {
-        fun showPlanEditor(project: Project, planText: String, callback: (String) -> Unit) {
-            val toolWindow =
-                ToolWindowManager.Companion.getInstance(project)
-                    .getToolWindow(AutoDevPlannerToolWindowFactory.Companion.PlANNER_ID)
-            if (toolWindow != null) {
-                val content = toolWindow.contentManager.getContent(0)
-                val plannerWindow = content?.component as? AutoDevPlannerToolWindow
-
-                plannerWindow?.let {
-                    it.currentCallback = callback
-                    if (planText.isNotEmpty() && planText != it.content) {
-                        it.content = planText
-                    }
-
-                    it.switchToView(it.EditorView())
-                    toolWindow.show()
-                }
-            }
-        }
-
-        fun showIssueInput(project: Project) {
-            val toolWindow = ToolWindowManager.Companion.getInstance(project).getToolWindow(
-                AutoDevPlannerToolWindowFactory.Companion.PlANNER_ID
-            )
+        private fun withPlannerWindow(project: Project, action: (AutoDevPlannerToolWindow) -> Unit) {
+            val toolWindow = ToolWindowManager.getInstance(project)
+                .getToolWindow(AutoDevPlannerToolWindowFactory.Companion.PlANNER_ID)
             if (toolWindow == null) return
 
             val content = toolWindow.contentManager.getContent(0)
             val plannerWindow = content?.component as? AutoDevPlannerToolWindow
 
             plannerWindow?.let {
-                it.switchToView(it.IssueInputView())
+                action(it)
                 toolWindow.show()
+            }
+        }
+
+        fun showPlanEditor(project: Project, planText: String, callback: (String) -> Unit) {
+            withPlannerWindow(project) { plannerWindow ->
+                plannerWindow.currentCallback = callback
+                if (planText.isNotEmpty() && planText != plannerWindow.content) {
+                    plannerWindow.content = planText
+                }
+                plannerWindow.switchToView(plannerWindow.EditorView())
+            }
+        }
+
+        fun showIssueInput(project: Project) {
+            withPlannerWindow(project) { plannerWindow ->
+                plannerWindow.switchToView(plannerWindow.IssueInputView())
             }
         }
     }

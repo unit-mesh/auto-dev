@@ -27,7 +27,7 @@ class EditPlanPanel(
                     onSave(newContent)
                 }
             })
-            add(Box.createHorizontalStrut(10))
+            add(Box.createHorizontalStrut(8))
             add(JButton("Cancel").apply {
                 addActionListener {
                     onCancel()
@@ -35,7 +35,7 @@ class EditPlanPanel(
             })
         }
         buttonPanel.add(buttonsBox, BorderLayout.EAST)
-        buttonPanel.border = JBUI.Borders.empty(5)
+        buttonPanel.border = JBUI.Borders.empty(4)
 
         add(JBScrollPane(markdownEditor), BorderLayout.CENTER)
         add(buttonPanel, BorderLayout.SOUTH)
