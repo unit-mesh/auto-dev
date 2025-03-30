@@ -24,7 +24,10 @@ class IssueInputViewPanel(
     init {
         textArea = MarkdownLanguageField(project, "", "Enter Issue Description", "issue.md")
 
-        val buttonPanel = JPanel(BorderLayout())
+        val buttonPanel = JPanel(BorderLayout()).apply {
+            background = textArea?.getEditor(true)?.backgroundColor
+        }
+
         val buttonsBox = Box.createHorizontalBox().apply {
             add(JButton("Submit").apply {
                 addActionListener {

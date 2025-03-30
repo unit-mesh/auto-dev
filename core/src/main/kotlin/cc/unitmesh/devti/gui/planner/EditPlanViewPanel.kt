@@ -18,8 +18,11 @@ class EditPlanViewPanel(
 
     init {
         markdownEditor = MarkdownLanguageField(project, content, "Edit your plan here...", "plan.md")
-        
-        val buttonPanel = JPanel(BorderLayout())
+
+        val buttonPanel = JPanel(BorderLayout()).apply {
+            background = markdownEditor?.getEditor(true)?.backgroundColor
+        }
+
         val buttonsBox = Box.createHorizontalBox().apply {
             add(JButton("Save").apply {
                 addActionListener {

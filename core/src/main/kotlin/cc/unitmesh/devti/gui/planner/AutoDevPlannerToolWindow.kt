@@ -18,6 +18,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.ui.JBUI
 import java.awt.*
 import javax.swing.*
 
@@ -29,7 +30,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         PlanLangSketch(project, content, MarkdownPlanParser.parse(content).toMutableList(), true)
 
     private var markdownEditor: MarkdownLanguageField? = null
-    private val contentPanel = JPanel(BorderLayout())
+    private val contentPanel = JBUI.Panels.simplePanel()
     
     private var currentView: PlannerView? = null
     private var currentCallback: ((String) -> Unit)? = null
