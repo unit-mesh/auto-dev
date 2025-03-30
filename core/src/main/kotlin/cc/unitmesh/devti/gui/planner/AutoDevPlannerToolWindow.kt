@@ -18,8 +18,6 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.UIUtil
 import java.awt.*
 import javax.swing.*
 
@@ -32,6 +30,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
 
     private var markdownEditor: MarkdownLanguageField? = null
     private val contentPanel = JPanel(BorderLayout())
+
     private var isEditorMode = false
     private var isIssueInputMode = false
     private var currentCallback: ((String) -> Unit)? = null
@@ -50,7 +49,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         val toolbarPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
         toolbarPanel.add(toolbar.component)
         
-        contentPanel.add(toolbarPanel, BorderLayout.NORTH)
+        add(toolbarPanel, BorderLayout.NORTH)
 
         if (content.isBlank()) {
             isIssueInputMode = true
@@ -99,12 +98,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                     .fullWidth()
                     .resizableColumn()
             }
-        }.apply {
-            border = JBUI.Borders.compound(
-                JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0),
-                JBUI.Borders.empty(8)
-            )
-            background = JBUI.CurrentTheme.ToolWindow.background()
         }
     }
 

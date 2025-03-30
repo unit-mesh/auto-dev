@@ -3,12 +3,12 @@ package cc.unitmesh.devti.shadow
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.planner.MarkdownLanguageField
+import cc.unitmesh.devti.inline.AutoDevLineBorder
 import cc.unitmesh.devti.sketch.AutoSketchMode
-import com.intellij.openapi.editor.SpellCheckingEditorCustomizationProvider
-import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
-import com.intellij.ui.*
-import com.intellij.util.containers.ContainerUtil
+import com.intellij.ui.JBColor
+import com.intellij.util.ui.JBUI.Borders.emptyLeft
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import javax.swing.BorderFactory
@@ -22,11 +22,10 @@ class IssueInputPanel(
     private val onSubmit: (String) -> Unit,
     private val onCancel: () -> Unit
 ) : JPanel(BorderLayout()) {
-    private val textArea: EditorTextField = createEditor(project).apply {
-        setPlaceholder(placeholder)
-        setShowPlaceholderWhenFocused(true)
-        setBorder(BorderFactory.createEmptyBorder())
-    }
+    private val textArea: MarkdownLanguageField = MarkdownLanguageField(project, "", placeholder, "issue.md")
+        .apply {
+            border = AutoDevLineBorder(JBColor.namedColor("Focus.borderColor", JBColor.BLUE), 1, true, 4)
+        }
 
     init {
         val buttonsPanel = createActionButtons()
@@ -89,21 +88,3 @@ class IssueInputPanel(
         textArea.requestFocus()
     }
 }
-
-private fun createEditor(project: Project): EditorTextField {
-    val features: MutableSet<EditorCustomization?> = HashSet<EditorCustomization?>()
-
-    features.add(SoftWrapsEditorCustomization.ENABLED)
-    features.add(AdditionalPageAtBottomEditorCustomization.DISABLED)
-    ContainerUtil.addIfNotNull<EditorCustomization?>(
-        features,
-        SpellCheckingEditorCustomizationProvider.getInstance().enabledCustomization
-    )
-
-    val editorField =
-        EditorTextFieldProvider.getInstance().getEditorField(FileTypes.PLAIN_TEXT.language, project, features)
-
-    editorField.setFontInheritedFromLAF(false)
-    return editorField
-}
-

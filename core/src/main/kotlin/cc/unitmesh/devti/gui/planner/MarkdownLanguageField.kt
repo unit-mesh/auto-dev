@@ -30,14 +30,14 @@ class MarkdownLanguageField(
     override fun createEditor(): EditorEx {
         return super.createEditor().apply {
             setShowPlaceholderWhenFocused(true)
-            setHorizontalScrollbarVisible(true)
-            setVerticalScrollbarVisible(true)
+            setHorizontalScrollbarVisible(false)
+            setVerticalScrollbarVisible(false)
             setPlaceholder(placeholder)
 
             val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
             this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
 
-            settings.isLineNumbersShown = true
+            settings.isLineNumbersShown = false
             settings.isLineMarkerAreaShown = false
             settings.isFoldingOutlineShown = false
             settings.isUseSoftWraps = true
