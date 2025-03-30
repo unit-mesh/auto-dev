@@ -1,24 +1,35 @@
 package cc.unitmesh.devti.gui.planner
 
+import cc.unitmesh.devti.inline.AutoDevLineBorder
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.ui.HyperlinkLabel
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import io.modelcontextprotocol.kotlin.sdk.UnknownReference
+import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridLayout
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.Icon
-import javax.swing.JButton
-import javax.swing.JPanel
+import java.awt.event.ActionEvent
+import java.awt.event.FocusEvent
+import java.awt.event.FocusListener
+import java.awt.event.KeyEvent
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
+import javax.swing.*
+import javax.swing.border.Border
 import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
 
@@ -189,10 +200,10 @@ class PlannerResultSummary(
                     }
                 })
             }
-            
+
             add(fileLabel)
             add(Box.createHorizontalStrut(5))
-            
+
             val pathLabel = JBLabel(filePath).apply {
                 foreground = UIUtil.getLabelDisabledForeground()
                 toolTipText = filePath
@@ -205,15 +216,14 @@ class PlannerResultSummary(
                 preferredSize = JBUI.size(100, preferredSize.height)
                 maximumSize = JBUI.size(Int.MAX_VALUE, preferredSize.height)
             }
-            
+
             add(pathLabel)
             add(Box.createHorizontalGlue()) // This pushes the action buttons to the right
-            
-            // Action buttons
+
             val actionsPanel = JPanel().apply {
                 isOpaque = false
                 layout = BoxLayout(this, BoxLayout.X_AXIS)
-                
+
                 val viewButton = createActionButton(
                     AllIcons.Actions.Preview,
                     "View changes"
@@ -228,7 +238,7 @@ class PlannerResultSummary(
                 add(Box.createHorizontalStrut(2))
                 add(discardButton)
             }
-            
+
             add(actionsPanel)
         }
     }
@@ -237,14 +247,66 @@ class PlannerResultSummary(
         icon: Icon,
         tooltip: String,
         action: () -> Unit
-    ): JButton = JButton().apply {
-        this.icon = icon
-        toolTipText = tooltip
-        isBorderPainted = false
-        isContentAreaFilled = false
-        isFocusPainted = false
-        margin = JBUI.emptyInsets()
-        preferredSize = JBUI.size(20, 20)
-        addActionListener { action() }
+    ): JComponent {
+        val anAction = object : AnAction(tooltip, tooltip, icon) {
+            override fun actionPerformed(e: AnActionEvent) {
+                action()
+            }
+        }
+        return KeyboardAccessibleActionButton(anAction)
+    }
+
+    private class KeyboardAccessibleActionButton(@NotNull action: AnAction) : ActionButton(
+        action,
+        action.templatePresentation.clone(),
+        "unknown",
+        ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+    ) {
+        init {
+            isFocusable = true
+            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "executeAction")
+            actionMap.put("executeAction", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent) {
+                    click()
+                }
+            })
+            val focusListener = AccessibleFocusListener()
+            addPropertyChangeListener("border", focusListener)
+            addFocusListener(focusListener)
+        }
+
+        override fun processKeyEvent(e: KeyEvent?) {
+            if (e != null && e.keyCode == KeyEvent.VK_ENTER && e.id == KeyEvent.KEY_PRESSED) {
+                click()
+            } else {
+                super.processKeyEvent(e)
+            }
+        }
+
+        private inner class AccessibleFocusListener : FocusListener, PropertyChangeListener {
+            private var originalBorder: Border? = null
+            private var focusedBorder: Border? = null
+
+            override fun focusGained(e: FocusEvent?) {
+                val insideBorder = AutoDevLineBorder(JBColor.namedColor("Focus.borderColor", JBColor.BLUE), 1, true, 4)
+                focusedBorder = BorderFactory.createCompoundBorder(originalBorder, insideBorder)
+                border = focusedBorder
+                repaint()
+            }
+
+            override fun focusLost(e: FocusEvent?) {
+                border = originalBorder
+                repaint()
+            }
+
+            override fun propertyChange(evt: PropertyChangeEvent?) {
+                if (originalBorder == null && evt?.propertyName == "border") {
+                    val newBorder = evt.newValue as? Border
+                    if (newBorder != null && newBorder != focusedBorder) {
+                        originalBorder = newBorder
+                    }
+                }
+            }
+        }
     }
 }
