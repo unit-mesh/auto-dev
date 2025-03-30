@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.planner
 
 import com.intellij.ide.ui.LafManagerListener
 import com.intellij.openapi.project.Project
-import com.intellij.util.ui.StartupUiUtil.isDarkTheme
+import com.intellij.util.ui.JBUI
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -52,6 +52,8 @@ class LoadingPanel(val project: Project) : JPanel() {
     private val darkProgressBackground = Color(55, 65, 81)
 
     init {
+        val isDarkTheme = UIManager.getLookAndFeelDefaults().getBoolean("ui.theme.is.dark")
+
         isDarkMode = isDarkTheme
         project.messageBus.connect().subscribe(
             LafManagerListener.TOPIC,
@@ -63,7 +65,7 @@ class LoadingPanel(val project: Project) : JPanel() {
         )
         
         setLayout(BorderLayout())
-        setBorder(EmptyBorder(20, 20, 20, 20))
+        setBorder(JBUI.Borders.empty(20))
         setOpaque(false)
 
         glassPanel = object : JPanel(BorderLayout()) {
@@ -75,33 +77,29 @@ class LoadingPanel(val project: Project) : JPanel() {
                 val width = getWidth()
                 val height = getHeight()
 
-
-                // Create rounded rectangle for the panel
                 val roundedRect: RoundRectangle2D =
                     RoundRectangle2D.Float(0f, 0f, width.toFloat(), height.toFloat(), 15f, 15f)
-                g2d.setClip(roundedRect)
+                g2d.clip = roundedRect
 
                 val color1 = if (isDarkMode) Color(30, 40, 70, 200) else Color(240, 245, 255, 200)
                 val color2 = if (isDarkMode) Color(40, 30, 70, 200) else Color(245, 240, 255, 200)
-                val color3 = if (isDarkMode) Color(35, 35, 60, 200) else Color(250, 245, 255, 200)
 
                 val pos1 = (gradientPosition) % 1.0f
                 val pos2 = (gradientPosition + 0.33f) % 1.0f
-                val pos3 = (gradientPosition + 0.66f) % 1.0f
 
                 val gradient = GradientPaint(
                     width * pos1, 0f, color1,
                     width * pos2, height.toFloat(), color2
                 )
 
-                g2d.setPaint(gradient)
+                g2d.paint = gradient
                 g2d.fill(roundedRect)
 
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f))
-                g2d.setColor(Color.WHITE)
+                g2d.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f)
+                g2d.color = Color.WHITE
                 g2d.fillRect(0, 0, width, height / 2)
 
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity))
+                g2d.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity)
                 g2d.dispose()
             }
         }
@@ -111,15 +109,15 @@ class LoadingPanel(val project: Project) : JPanel() {
 
         contentPanel = JPanel(BorderLayout(10, 10))
         contentPanel.setOpaque(false)
-        contentPanel.setBorder(EmptyBorder(15, 15, 15, 15))
+        contentPanel.setBorder(JBUI.Borders.empty(12))
 
         emojiLabel = JLabel()
         emojiLabel.setFont(Font("Segoe UI Emoji", Font.PLAIN, 24))
         emojiLabel.setHorizontalAlignment(SwingConstants.CENTER)
-        emojiLabel.setPreferredSize(Dimension(40, 40))
+        emojiLabel.preferredSize = Dimension(40, 40)
 
         messagePane = JTextPane()
-        messagePane.setEditable(false)
+        messagePane.isEditable = false
         messagePane.setOpaque(false)
         messagePane.setFont(Font("Monospaced", Font.PLAIN, 14))
         messagePane.setBorder(null)
@@ -128,7 +126,7 @@ class LoadingPanel(val project: Project) : JPanel() {
         progressBar.setStringPainted(false)
         progressBar.setBorderPainted(false)
         progressBar.setOpaque(false)
-        progressBar.setPreferredSize(Dimension(0, 5))
+        progressBar.preferredSize = Dimension(0, 5)
         progressBar.setUI(object : BasicProgressBarUI() {
             override fun paintDeterminate(g: Graphics, c: JComponent) {
                 val g2d = g.create() as Graphics2D
@@ -215,7 +213,7 @@ class LoadingPanel(val project: Project) : JPanel() {
     }
 
     private fun updateTypingAnimation() {
-        val message = loadingMessages.get(messageIndex)
+        val message = loadingMessages[messageIndex]
         val textPart = message.substring(message.indexOf(' ') + 1)
 
         if (charIndex < textPart.length) {
@@ -238,25 +236,25 @@ class LoadingPanel(val project: Project) : JPanel() {
     }
 
     private fun updateMessageText() {
-        val doc = messagePane.getStyledDocument()
+        val doc = messagePane.styledDocument
         val style = messagePane.addStyle("MessageStyle", null)
         StyleConstants.setForeground(style, if (isDarkMode) darkForeground else lightForeground)
         StyleConstants.setFontFamily(style, "Monospaced")
         StyleConstants.setFontSize(style, 14)
 
         try {
-            doc.remove(0, doc.getLength())
+            doc.remove(0, doc.length)
             doc.insertString(0, currentText, style)
 
             StyleConstants.setForeground(style, progressColor)
-            doc.insertString(doc.getLength(), "|", style)
+            doc.insertString(doc.length, "|", style)
         } catch (e: BadLocationException) {
             e.printStackTrace()
         }
     }
 
     private fun updateEmojiLabel() {
-        val message = loadingMessages.get(messageIndex)
+        val message = loadingMessages[messageIndex]
         val emoji = message.substring(0, message.indexOf(' '))
         emojiLabel.setText(emoji)
     }

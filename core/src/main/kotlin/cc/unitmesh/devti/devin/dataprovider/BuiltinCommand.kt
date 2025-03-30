@@ -47,7 +47,8 @@ enum class BuiltinCommand(
         "Write content to a file with markdown code block, /write:path/to/file:L1-L2",
         AllIcons.Actions.Edit,
         true,
-        true
+        true,
+        enableInSketch = false
     ),
     PATCH(
         "patch",

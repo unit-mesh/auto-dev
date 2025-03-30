@@ -105,10 +105,10 @@ say 'I will edit your file'.
 # 第一步. 创建 routes.py
 我将创建了 routes.py 来定义 "/upload" 和 "/query" 端点。此外，我还添加了 "/" 作为 main.html 的端点。
 <devin>
-/write:src/main/route.py [注释：当确定文件不存在时，才能创建文件]
-```python
-// the route code
-// from flask import Flask
+/patch:src/main/route.py [注释：当确定文件不存在时，才能创建文件]
+```patch
+Index: src/main/route.py
+// the rest code
 ```
 </devin>
 # 第二步. 创建 main.js
@@ -130,9 +130,10 @@ Index: src/main/index.html
 我将使用 Flask 的测试框架编写自动化测试用例，以确保应用程序的功能正常。
 // step 4.1, call tools to create test code and run test code
 <devin>
-/write:src/test/test_routes.py
-```python
-// the test code
+/patch:src/test/test_routes.py
+```patch
+Index: src/test/test_routes.py
+// the rest code
 ```
 </devin>
 现在，你可以执行代码

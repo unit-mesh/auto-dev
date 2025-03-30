@@ -129,10 +129,10 @@ have created a routes.py and main.js file, and updated the main.html file.
 // then you can start coding with DevIn language. When you need to or patch, write execute the code, you should use the DevIn language
 // If you need to create a new file, you should use `/write` command, then write the code in the code block
 <devin>
-/write:src/main/route.py [注释：当确定文件不存在时，才能创建文件]
-```python
-// the route code
-// from flask import Flask
+/patch:src/main/route.py [注释：当确定文件不存在时，才能创建文件]
+```patch
+Index: src/main/route.py
+// the rest code
 ```
 </devin>
 // patch to call tools for step 3 with DevIn language, should use `<devin />` tag with DevIn language
@@ -146,9 +146,10 @@ Index: src/main/index.html
 </devin>
 // step 4.1, call tools to create test code and run test code
 <devin>
-/write:src/test/test_routes.py
-```python
-// the test code
+/patch:src/test/test_routes.py
+```patch
+Index: src/test/test_routes.py
+// the rest code
 ```
 </devin>
 // step 4.2, run test code
