@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.planner
 
+import cc.unitmesh.devti.util.relativePath
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -8,16 +9,13 @@ import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridLayout
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import javax.swing.JPanel
 import javax.swing.JButton
+import javax.swing.JPanel
 import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
 
@@ -34,7 +32,7 @@ class PlannerResultSummary(
         fun onDiscard(change: Change)
         fun onAccept(change: Change)
     }
-    
+
     interface GlobalActionListener {
         fun onDiscardAll()
         fun onAcceptAll()
@@ -45,6 +43,7 @@ class PlannerResultSummary(
             rollbackWorker.doRollback(changes, false)
             updateChanges(mutableListOf())
         }
+
         override fun onAcceptAll() {
 
         }
@@ -57,12 +56,14 @@ class PlannerResultSummary(
                 FileEditorManager.getInstance(project).openFile(it, true)
             }
         }
+
         override fun onDiscard(change: Change) {
             rollbackWorker.doRollback(listOf(change), false)
             val newChanges = changes.toMutableList()
             newChanges.remove(change)
             updateChanges(newChanges)
         }
+
         override fun onAccept(change: Change) {}
     }
 
@@ -73,7 +74,7 @@ class PlannerResultSummary(
         val titlePanel = JPanel(BorderLayout()).apply {
             isOpaque = false
             border = JBUI.Borders.emptyBottom(10)
-            
+
             val titleLabelPanel = JPanel(BorderLayout()).apply {
                 isOpaque = false
                 add(JBLabel("Change list").apply {
@@ -82,10 +83,10 @@ class PlannerResultSummary(
                 }, BorderLayout.WEST)
                 add(statsLabel, BorderLayout.EAST)
             }
-            
+
             val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 0)).apply {
                 isOpaque = false
-                
+
                 val discardAllButton = HyperlinkLabel("Discard all").apply {
                     icon = AllIcons.Actions.Cancel
                     addHyperlinkListener(object : HyperlinkListener {
@@ -96,7 +97,7 @@ class PlannerResultSummary(
                         }
                     })
                 }
-                
+
                 val acceptAllButton = HyperlinkLabel("Accept all").apply {
                     icon = AllIcons.Actions.Commit
                     addHyperlinkListener(object : HyperlinkListener {
@@ -107,11 +108,11 @@ class PlannerResultSummary(
                         }
                     })
                 }
-                
+
                 add(discardAllButton)
                 add(acceptAllButton)
             }
-            
+
             add(titleLabelPanel, BorderLayout.WEST)
             add(actionsPanel, BorderLayout.EAST)
         }
@@ -120,13 +121,13 @@ class PlannerResultSummary(
 
         changesPanel.isOpaque = false
         changesPanel.border = JBUI.Borders.empty(1)
-        
+
         val scrollPane = JBScrollPane(changesPanel).apply {
             border = JBUI.Borders.empty()
             background = background
             viewport.background = background
         }
-        
+
         add(scrollPane, BorderLayout.CENTER)
         updateChanges(changes.toMutableList())
     }
@@ -144,7 +145,7 @@ class PlannerResultSummary(
         } else {
             statsLabel.text = " (Total ${changes.size} files changed)"
             changes.forEach { change ->
-                val filePath = change.virtualFile?.path ?: "Unknown"
+                val filePath = change.virtualFile?.relativePath(project) ?: "Unknown"
                 val fileName = filePath.substringAfterLast('/')
 
                 val changePanel = createChangeItemPanel(change, fileName, filePath)
@@ -154,38 +155,43 @@ class PlannerResultSummary(
 
         changesPanel.revalidate()
         changesPanel.repaint()
-        
+
         isVisible = true
         revalidate()
         repaint()
     }
-    
+
     private fun createChangeItemPanel(change: Change, fileName: String, filePath: String): JPanel {
         return JPanel(BorderLayout()).apply {
             isOpaque = true
             background = UIUtil.getListBackground()
             border = JBUI.Borders.empty(5, 8)
-            
+
             val changeIcon = when (change.type) {
                 Change.Type.NEW -> AllIcons.Actions.New
                 Change.Type.DELETED -> AllIcons.Actions.GC
                 Change.Type.MOVED -> AllIcons.Actions.Forward
                 else -> AllIcons.Actions.Edit
             }
-            
+
             val infoPanel = JPanel(BorderLayout()).apply {
                 isOpaque = false
 
                 val fileLabel = JBLabel(fileName, changeIcon, JBLabel.LEFT).apply {
                     toolTipText = filePath
                 }
-                
+
                 add(fileLabel, BorderLayout.CENTER)
             }
-            
+
+            val pathLabel = JBLabel(filePath).apply {
+                foreground = UIUtil.getLabelDisabledForeground()
+                toolTipText = filePath
+            }
+
             val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 2, 0)).apply {
                 isOpaque = false
-                
+
                 val viewButton = JButton().apply {
                     icon = AllIcons.Actions.Preview
                     toolTipText = "View changes"
@@ -198,7 +204,7 @@ class PlannerResultSummary(
                         changeActionListener?.onView(change)
                     }
                 }
-                
+
                 val discardButton = JButton().apply {
                     icon = AllIcons.Actions.Cancel
                     toolTipText = "Discard changes"
@@ -215,8 +221,9 @@ class PlannerResultSummary(
                 add(viewButton)
                 add(discardButton)
             }
-            
-            add(infoPanel, BorderLayout.CENTER)
+
+            add(infoPanel, BorderLayout.NORTH)
+            add(pathLabel, BorderLayout.CENTER)
             add(actionsPanel, BorderLayout.EAST)
         }
     }
