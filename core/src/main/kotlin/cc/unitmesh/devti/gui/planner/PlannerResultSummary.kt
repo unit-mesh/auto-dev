@@ -14,6 +14,7 @@ import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridLayout
+import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.event.HyperlinkEvent
@@ -187,45 +188,54 @@ class PlannerResultSummary(
             val pathLabel = JBLabel(filePath).apply {
                 foreground = UIUtil.getLabelDisabledForeground()
                 toolTipText = filePath
+                isOpaque = false
+                componentStyle = UIUtil.ComponentStyle.SMALL
+                putClientProperty("JComponent.truncateText", true)
+                putClientProperty("truncateAtWord", false)
+                putClientProperty("html.disable", true)
+                maximumSize = JBUI.size(Int.MAX_VALUE, preferredSize.height)
+            }
+
+            val pathPanel = JPanel(BorderLayout()).apply {
+                isOpaque = false
+                add(pathLabel, BorderLayout.CENTER)
             }
 
             val actionsPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 2, 0)).apply {
                 isOpaque = false
 
-                val viewButton = JButton().apply {
-                    icon = AllIcons.Actions.Preview
-                    toolTipText = "View changes"
-                    isBorderPainted = false
-                    isContentAreaFilled = false
-                    isFocusPainted = false
-                    margin = JBUI.emptyInsets()
-                    preferredSize = JBUI.size(20, 20)
-                    addActionListener {
-                        changeActionListener?.onView(change)
-                    }
-                }
+                val viewButton = createActionButton(
+                    AllIcons.Actions.Preview,
+                    "View changes"
+                ) { changeActionListener.onView(change) }
 
-                val discardButton = JButton().apply {
-                    icon = AllIcons.Actions.Cancel
-                    toolTipText = "Discard changes"
-                    isBorderPainted = false
-                    isContentAreaFilled = false
-                    isFocusPainted = false
-                    margin = JBUI.emptyInsets()
-                    preferredSize = JBUI.size(20, 20)
-                    addActionListener {
-                        changeActionListener?.onDiscard(change)
-                    }
-                }
+                val discardButton = createActionButton(
+                    AllIcons.Actions.Cancel,
+                    "Discard changes"
+                ) { changeActionListener.onDiscard(change) }
 
                 add(viewButton)
                 add(discardButton)
             }
 
             add(infoPanel, BorderLayout.NORTH)
-            add(pathLabel, BorderLayout.CENTER)
+            add(pathPanel, BorderLayout.CENTER)
             add(actionsPanel, BorderLayout.EAST)
         }
     }
-}
 
+    private fun createActionButton(
+        icon: Icon,
+        tooltip: String,
+        action: () -> Unit
+    ): JButton = JButton().apply {
+        this.icon = icon
+        toolTipText = tooltip
+        isBorderPainted = false
+        isContentAreaFilled = false
+        isFocusPainted = false
+        margin = JBUI.emptyInsets()
+        preferredSize = JBUI.size(20, 20)
+        addActionListener { action() }
+    }
+}
