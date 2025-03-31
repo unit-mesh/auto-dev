@@ -109,7 +109,7 @@ class PlannerResultSummary(
         }
 
         override fun onAccept(change: Change) {
-            val file = change.virtualFile
+            val file = change.afterRevision?.file?.virtualFile
             val content = change.afterRevision?.content ?: change.beforeRevision?.content
 
             runWriteAction {

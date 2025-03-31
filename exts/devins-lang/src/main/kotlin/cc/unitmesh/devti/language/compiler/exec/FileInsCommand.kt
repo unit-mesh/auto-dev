@@ -44,7 +44,12 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             }
         }
 
-        val content = virtualFile?.readText()
+        val content = try {
+            virtualFile?.readText()
+        } catch (e: Exception) {
+            null
+        }
+
         if (content == null) {
             AutoDevNotifications.warn(myProject, "File not found: $prop")
             return "File not found: $prop"
