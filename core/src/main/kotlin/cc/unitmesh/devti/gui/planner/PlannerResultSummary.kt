@@ -16,6 +16,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.ui.HyperlinkLabel
@@ -23,6 +24,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import org.jetbrains.annotations.SystemIndependent
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridLayout
@@ -85,9 +87,7 @@ class PlannerResultSummary(
     private var changeActionListener: ChangeActionListener = object : ChangeActionListener {
         override fun onView(change: Change) {
             runWriteAction {
-                change.virtualFile?.also {
-                    showDiffView(change)
-                }
+                showDiffView(change)
             }
         }
 
@@ -99,13 +99,29 @@ class PlannerResultSummary(
         }
 
         override fun onAccept(change: Change) {
-            val file = change.virtualFile ?: return
+            val file = change.virtualFile
             val content = change.afterRevision?.content ?: change.beforeRevision?.content
 
             runWriteAction {
-                if (content != null) {
-                    val document = FileDocumentManager.getInstance().getDocument(file)
-                    document?.setText(content)
+                when {
+                    file != null && content != null -> {
+                        val document = FileDocumentManager.getInstance().getDocument(file)
+                        document?.setText(content)
+                    }
+                    content != null -> {
+                        val afterFile = calculateNewPath(change)
+                        if (afterFile == null) {
+                            val message = AutoDevBundle.message("planner.error.no.after.file",)
+                            cc.unitmesh.devti.AutoDevNotifications.warn(project, message)
+                            return@runWriteAction
+                        }
+
+                        val newFile = project.baseDir?.createChildData(this, afterFile)
+                        newFile?.let {
+                            it.setBinaryContent(content.toByteArray())
+                            FileEditorManager.getInstance(project).openFile(it, true)
+                        }
+                    }
                 }
             }
         }
@@ -113,9 +129,9 @@ class PlannerResultSummary(
 
     private fun showDiffView(change: Change) {
         val diffFactory = DiffContentFactoryEx.getInstanceEx()
-        val oldCode = change.beforeRevision?.content ?: return
+        val oldCode = change.beforeRevision?.content ?: "null"
         val newCode = try {
-            change.afterRevision?.content ?: "No Content"
+            change.afterRevision?.content ?: "null"
         } catch (e: Exception) {
             "Error: ${e.message}"
         }
@@ -212,7 +228,8 @@ class PlannerResultSummary(
         } else {
             statsLabel.text = " - " + AutoDevBundle.message("planner.stats.changes.count", changes.size)
             changes.forEach { change ->
-                val filePath = change.virtualFile?.relativePath(project) ?: "Unknown"
+                val filePath = change.virtualFile?.relativePath(project)
+                    ?: calculateNewPath(change) ?: "Unknown"
                 val fileName = filePath.substringAfterLast('/')
 
                 val changePanel = createChangeItemPanel(change, fileName, filePath)
@@ -229,6 +246,13 @@ class PlannerResultSummary(
         isVisible = true
         revalidate()
         repaint()
+    }
+
+    private fun calculateNewPath(change: Change): @NlsSafe @SystemIndependent String? {
+        val path = change.afterRevision?.file?.path ?: return null
+        val baseDir = project.basePath ?: return path
+        val relativePath = path.substringAfter(baseDir)
+        return relativePath.trimStart('/')
     }
 
     private fun createChangeItemPanel(change: Change, fileName: String, filePath: String): JPanel {
@@ -248,6 +272,7 @@ class PlannerResultSummary(
             val fileLabel = HyperlinkLabel(fileName).apply {
                 icon = changeIcon
                 toolTipText = filePath
+                isEnabled = change.type != Change.Type.NEW
                 addHyperlinkListener(object : HyperlinkListener {
                     override fun hyperlinkUpdate(e: HyperlinkEvent) {
                         if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
@@ -287,11 +312,18 @@ class PlannerResultSummary(
                     AutoDevBundle.message("planner.action.view.changes")
                 ) { changeActionListener.onView(change) }
 
+                val acceptButton = createActionButton(
+                    AllIcons.Actions.Commit,
+                    AutoDevBundle.message("planner.action.accept.changes")
+                ) { changeActionListener.onAccept(change) }
+
                 val discardButton = createActionButton(
                     AllIcons.Actions.Cancel,
                     AutoDevBundle.message("planner.action.discard.changes")
                 ) { changeActionListener.onDiscard(change) }
 
+                add(acceptButton)
+                add(Box.createHorizontalStrut(2))
                 add(viewButton)
                 add(Box.createHorizontalStrut(2))
                 add(discardButton)
