@@ -418,3 +418,5 @@ class PlannerResultSummary(
         }
     }
 }
+
+val VirtualFile.isFile: Boolean get() = isValid && !isDirectory
