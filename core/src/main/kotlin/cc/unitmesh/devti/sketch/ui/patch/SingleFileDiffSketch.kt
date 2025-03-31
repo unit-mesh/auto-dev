@@ -381,7 +381,7 @@ class SingleFileDiffSketch(
         }
 
         myProject.getService<AgentStateService>(AgentStateService::class.java)
-            .addToChange(currentFile.toNioPath(), patch)
+            .addToChange(patch)
 
         createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
             actionPanel.removeAll()
