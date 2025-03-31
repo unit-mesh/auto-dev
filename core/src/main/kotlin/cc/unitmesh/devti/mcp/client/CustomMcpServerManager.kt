@@ -18,6 +18,14 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.jsonObject
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import com.intellij.openapi.util.SystemInfo
+import java.io.File
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withTimeout
 
 @Service(Service.Level.PROJECT)
 class CustomMcpServerManager(val project: Project) {
@@ -26,52 +34,44 @@ class CustomMcpServerManager(val project: Project) {
 
     suspend fun collectServerInfos(): List<Tool> {
         val mcpServerConfig = project.customizeSetting.mcpServerConfig
-        if (mcpServerConfig.isEmpty()) {
-            return emptyList()
-        }
-
-        if (cached.containsKey(mcpServerConfig)) {
-            return cached[mcpServerConfig]!!
-        }
-
+        if (mcpServerConfig.isEmpty()) return emptyList()
+        if (cached.containsKey(mcpServerConfig)) return cached[mcpServerConfig]!!
         val mcpConfig = McpServer.load(mcpServerConfig)
-        if (mcpConfig == null) {
-            return emptyList()
+        if (mcpConfig == null) return emptyList()
+
+        val tools: List<Tool> = try {
+            withTimeout(30_000L) {
+                coroutineScope {
+                    mcpConfig.mcpServers.map { entry ->
+                        async {
+                            if (entry.value.disabled == true) return@async emptyList<Tool>()
+                            val resolvedCommand = resolveCommand(entry.value.command)
+                            val client = Client(clientInfo = Implementation(name = entry.key, version = "0.3.0"))
+                            val processBuilder = ProcessBuilder(resolvedCommand, *entry.value.args.toTypedArray())
+                            val process = processBuilder.start()
+                            val input = process.inputStream.asSource().buffered()
+                            val output = process.outputStream.asSink().buffered()
+                            val transport = StdioClientTransport(input, output)
+
+                            try {
+                                client.connect(transport)
+                                val listTools = client.listTools()
+                                listTools?.tools?.forEach { tool ->
+                                    toolClientMap[tool] = client
+                                }
+                                listTools?.tools ?: emptyList()
+                            } catch (e: Exception) {
+                                logger<CustomMcpServerManager>().warn("Failed to list tools from ${entry.key}: $e")
+                                emptyList<Tool>()
+                            }
+                        }
+                    }.awaitAll().flatten()
+                }
+            }
+        } catch (e: Exception) {
+            logger<CustomMcpServerManager>().warn("Timeout or error during collecting server infos: $e")
+            emptyList()
         }
-
-        val tools: List<Tool> = mcpConfig.mcpServers.mapNotNull { it: Map.Entry<String, McpServer> ->
-            if (it.value.disabled == true) {
-                return@mapNotNull null
-            }
-
-            val client = Client(clientInfo = Implementation(name = it.key, version = "1.0.0"))
-
-            val processBuilder = ProcessBuilder(it.value.command, *it.value.args.toTypedArray())
-            val process = processBuilder.start()
-
-            val input = process.inputStream.asSource().buffered()
-            val output = process.outputStream.asSink().buffered()
-
-            val transport = StdioClientTransport(input, output)
-            var tools = listOf<Tool>()
-
-            try {
-                client.connect(transport)
-                val listTools = client.listTools()
-                if (listTools?.tools != null) {
-                    tools = listTools.tools
-                }
-
-                listTools?.tools?.map {
-                    toolClientMap[it] = client
-                }
-            } catch (e: java.lang.Error) {
-                logger<CustomMcpServerManager>().warn("Failed to list tools from ${it.key}: $e")
-                null
-            }
-
-            tools
-        }.flatten()
 
         cached[mcpServerConfig] = tools
         return tools
@@ -116,3 +116,55 @@ class CustomMcpServerManager(val project: Project) {
     }
 }
 
+
+fun resolveCommand(command: String): String {
+    if (SystemInfo.isWindows) {
+        try {
+            val pb = ProcessBuilder("where", command)
+            val process = pb.start()
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            val resolved = reader.readLine() // take first non-null output
+            if (!resolved.isNullOrBlank()) return resolved.trim()
+        } catch (e: Exception) {
+            logger<CustomMcpServerManager>().warn("Failed to resolve command using where: $e")
+        }
+    } else {
+        val homeDir = System.getProperty("user.home")
+        if (command == "npx") {
+            val knownPaths = listOf(
+                "/opt/homebrew/bin/npx",
+                "/usr/local/bin/npx",
+                "/usr/bin/npx",
+                "$homeDir/.volta/bin/npx",
+                "$homeDir/.nvm/current/bin/npx",
+                "$homeDir/.npm-global/bin/npx"
+            )
+            knownPaths.forEach { path ->
+                if (File(path).exists()) return path
+            }
+        }
+        try {
+            val pb = ProcessBuilder("which", command)
+            val currentPath = System.getenv("PATH") ?: ""
+            val additionalPaths = if (command == "npx") {
+                listOf(
+                    "/opt/homebrew/bin",
+                    "/opt/homebrew/sbin",
+                    "/usr/local/bin",
+                    "$homeDir/.volta/bin",
+                    "$homeDir/.nvm/current/bin",
+                    "$homeDir/.npm-global/bin"
+                ).joinToString(":")
+            } else ""
+            pb.environment()["PATH"] =
+                if (additionalPaths.isNotBlank()) "$additionalPaths:$currentPath" else currentPath
+            val process = pb.start()
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            val resolved = reader.readLine()
+            if (!resolved.isNullOrBlank()) return resolved.trim()
+        } catch (e: Exception) {
+            logger<CustomMcpServerManager>().warn("Failed to resolve command using which: $e")
+        }
+    }
+    return command
+}
