@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.planner
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
@@ -11,6 +12,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -73,8 +75,13 @@ class PlannerResultSummary(
 
     private var globalActionListener: GlobalActionListener? = object : GlobalActionListener {
         override fun onDiscardAll() {
-            rollbackWorker.doRollback(changes, false)
-            updateChanges(mutableListOf())
+            try {
+                rollbackWorker.doRollback(changes, true)
+            } catch (e: Exception) {
+                logger<PlannerResultSummary>().warn("Failed to discard all changes: ${e.message}")
+            } finally {
+                updateChanges(mutableListOf())
+            }
         }
 
         override fun onAcceptAll() {
@@ -90,7 +97,12 @@ class PlannerResultSummary(
         }
 
         override fun onDiscard(change: Change) {
-            rollbackWorker.doRollback(listOf(change), false)
+            try {
+                rollbackWorker.doRollback(listOf(change), false)
+            } catch (e: Exception) {
+                logger<PlannerResultSummary>().warn("Failed to discard change: ${e.message}")
+            }
+
             val newChanges = changes.toMutableList()
             newChanges.remove(change)
             updateChanges(newChanges)
@@ -104,26 +116,38 @@ class PlannerResultSummary(
                 when {
                     file != null && content != null -> {
                         val document = FileDocumentManager.getInstance().getDocument(file)
-                        document?.setText(content)
+                        if (document != null) {
+                            document.setText(content)
+                        } else {
+                            createNewFile(change, content)
+                        }
                     }
-                    content != null -> {
-                        val afterFile = calculateNewPath(change)
-                        if (afterFile == null) {
-                            val message = AutoDevBundle.message("planner.error.no.after.file",)
-                            cc.unitmesh.devti.AutoDevNotifications.warn(project, message)
-                            return@runWriteAction
-                        }
 
-                        getOrCreateDirectory(project.baseDir, afterFile)
-                        val fileName = afterFile.substringAfterLast('/')
-                        val newFile = project.baseDir?.createChildData(this, fileName)
-                        newFile?.let {
-                            it.setBinaryContent(content.toByteArray())
-                            FileEditorManager.getInstance(project).openFile(it, true)
-                        }
+                    content != null -> {
+                        createNewFile(change, content)
                     }
                 }
             }
+        }
+    }
+
+    private fun createNewFile(change: Change, content: String) {
+        val afterFile = calculateNewPath(change)
+        if (afterFile == null) {
+            val message = AutoDevBundle.message("planner.error.no.after.file")
+            AutoDevNotifications.warn(project, message)
+            return
+        }
+
+        getOrCreateDirectory(project.baseDir, afterFile)
+        val fileName = afterFile.substringAfterLast('/')
+        val newFile = project.baseDir?.createChildData(this, fileName)
+        if (newFile != null) {
+            newFile.setBinaryContent(content.toByteArray())
+            FileEditorManager.getInstance(project).openFile(newFile, true)
+        } else {
+            val message = AutoDevBundle.message("planner.error.create.file", afterFile)
+            AutoDevNotifications.warn(project, message)
         }
     }
 
@@ -160,9 +184,9 @@ class PlannerResultSummary(
 
     private fun createDiffRequest(change: Change): SimpleDiffRequest {
         val diffFactory = DiffContentFactoryEx.getInstanceEx()
-        val oldCode = change.beforeRevision?.content ?: "null"
+        val oldCode = change.beforeRevision?.content ?: ""
         val newCode = try {
-            change.afterRevision?.content ?: "null"
+            change.afterRevision?.content ?: ""
         } catch (e: Exception) {
             "Error: ${e.message}"
         }
