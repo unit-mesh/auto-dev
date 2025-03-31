@@ -32,8 +32,6 @@ import com.intellij.vcsUtil.VcsUtil
 import org.jetbrains.annotations.NonNls
 import java.io.File
 import java.io.IOException
-import java.nio.file.Path
-import java.util.*
 
 @Service(Service.Level.PROJECT)
 class AgentStateService(val project: Project) {
@@ -53,10 +51,12 @@ class AgentStateService(val project: Project) {
 
     fun addToChange(patch: TextFilePatch) {
         val baseDir = File(project.basePath!!)
-        val newChangePath = getAbsolutePath(baseDir, patch.afterName).canonicalPath
-        state.changes.removeIf {
-            val afterRevision = it.afterRevision
-            afterRevision != null && File(afterRevision.file.path).canonicalPath == newChangePath
+        if (patch.afterName != null) {
+            val newChangePath = getAbsolutePath(baseDir, patch.afterName).canonicalPath
+            state.changes.removeIf {
+                val afterRevision = it.afterRevision
+                afterRevision != null && File(afterRevision.file.path).canonicalPath == newChangePath
+            }
         }
 
         val change = createChange(patch)
