@@ -208,7 +208,6 @@ class PlannerResultSummary(
         return SimpleDiffRequest("Diff", newDocContent, newDocContent, "AI suggestion", "AI suggestion")
     }
 
-
     private fun createTwoSideDiffRequest(change: Change): SimpleDiffRequest {
         val diffFactory = DiffContentFactoryEx.getInstanceEx()
         val oldCode = change.beforeRevision?.content ?: ""

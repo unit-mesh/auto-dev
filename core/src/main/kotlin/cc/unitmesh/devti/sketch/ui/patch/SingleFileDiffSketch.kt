@@ -13,6 +13,7 @@ import com.intellij.diff.DiffContext
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.simple.SimpleDiffViewer
+import com.intellij.diff.tools.simple.SimpleOnesideDiffViewer
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
 import com.intellij.openapi.command.CommandProcessor
@@ -182,18 +183,30 @@ class SingleFileDiffSketch(
     }
 
     private fun createDiffViewer(oldCode: String, newCode: String): JComponent {
-        val diffRequest = runWriteAction { createDiffRequest(oldCode, newCode) }
-
-        val diffViewer = SimpleDiffViewer(object : DiffContext() {
-            override fun getProject() = myProject
-            override fun isWindowFocused() = false
-            override fun isFocusedInWindow() = false
-            override fun requestFocusInWindow() = Unit
-        }, diffRequest)
-        diffViewer.init()
+        val component: JComponent = if (oldCode == "") {
+            val diffRequest = runWriteAction { createOneSideDiffRequest(newCode) }
+            val diffViewer = SimpleOnesideDiffViewer(object : DiffContext() {
+                override fun getProject() = myProject
+                override fun isWindowFocused() = false
+                override fun isFocusedInWindow() = false
+                override fun requestFocusInWindow() = Unit
+            }, diffRequest)
+            diffViewer.init()
+            diffViewer.component
+        } else {
+            val diffRequest = runWriteAction { createTwoSideDiffRequest(oldCode, newCode) }
+            val diffViewer = SimpleDiffViewer(object : DiffContext() {
+                override fun getProject() = myProject
+                override fun isWindowFocused() = false
+                override fun isFocusedInWindow() = false
+                override fun requestFocusInWindow() = Unit
+            }, diffRequest)
+            diffViewer.init()
+            diffViewer.component
+        }
 
         val wrapperPanel = JPanel(BorderLayout())
-        wrapperPanel.add(diffViewer.component, BorderLayout.CENTER)
+        wrapperPanel.add(component, BorderLayout.CENTER)
 
         val minHeight = (mainPanel.height * 0.25).toInt()
 
@@ -203,13 +216,22 @@ class SingleFileDiffSketch(
         return wrapperPanel
     }
 
-    private fun createDiffRequest(oldCode: String, newCode: String): SimpleDiffRequest {
+    private fun createTwoSideDiffRequest(oldCode: String, newCode: String): SimpleDiffRequest {
         val diffFactory = DiffContentFactoryEx.getInstanceEx()
         val currentDocContent = diffFactory.create(myProject, oldCode)
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
             SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
+        return diffRequest
+    }
+
+    private fun createOneSideDiffRequest(newCode: String): SimpleDiffRequest {
+        val diffFactory = DiffContentFactoryEx.getInstanceEx()
+        val newDocContent = diffFactory.create(newCode)
+
+        val diffRequest =
+            SimpleDiffRequest("Diff", newDocContent, newDocContent, "AI suggestion", "AI suggestion")
         return diffRequest
     }
 
