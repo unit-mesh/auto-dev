@@ -27,7 +27,7 @@ object AutoDevIcons {
     val InsertCode: Icon = IconLoader.getIcon("/icons/insert-code.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Run: Icon = IconLoader.getIcon("/icons/run.svg", AutoDevIcons::class.java)
+    val RUN: Icon = IconLoader.getIcon("/icons/run.svg", AutoDevIcons::class.java)
 
     @JvmField
     val ERROR: Icon = IconLoader.getIcon("/icons/error.svg", AutoDevIcons::class.java)
@@ -48,7 +48,7 @@ object AutoDevIcons {
     val Idea: Icon = IconLoader.getIcon("/icons/idea.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val View: Icon = IconLoader.getIcon("/icons/view.svg", AutoDevIcons::class.java)
+    val VIEW: Icon = IconLoader.getIcon("/icons/view.svg", AutoDevIcons::class.java)
 
     @JvmField
     val Terminal: Icon = IconLoader.getIcon("/icons/terminal.svg", AutoDevIcons::class.java)

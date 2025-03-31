@@ -13,7 +13,6 @@ import com.intellij.diff.DiffContext
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.simple.SimpleDiffViewer
-import com.intellij.diff.tools.simple.SimpleOnesideDiffViewer
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
 import com.intellij.openapi.command.CommandProcessor
@@ -207,7 +206,7 @@ class SingleFileDiffSketch(
         isRepaired: Boolean = false
     ): List<JButton> {
         val viewButton = JButton(AutoDevBundle.message("sketch.patch.view")).apply {
-            icon = AutoDevIcons.View
+            icon = AutoDevIcons.VIEW
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
 
             addMouseListener(object : MouseAdapter() {
@@ -218,7 +217,7 @@ class SingleFileDiffSketch(
         }
 
         val applyButton = JButton(AutoDevBundle.message("sketch.patch.apply")).apply {
-            icon = AutoDevIcons.Run
+            icon = AutoDevIcons.RUN
             toolTipText = AutoDevBundle.message("sketch.patch.action.applyDiff.tooltip")
             isEnabled = !isFailure(patch)
 

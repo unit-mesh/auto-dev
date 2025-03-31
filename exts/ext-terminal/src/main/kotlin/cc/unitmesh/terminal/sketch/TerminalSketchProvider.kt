@@ -326,7 +326,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     inner class TerminalExecuteAction :
-        AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AutoDevIcons.Run) {
+        AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AutoDevIcons.RUN) {
         override fun actionPerformed(e: AnActionEvent) {
             titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
 

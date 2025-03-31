@@ -10,7 +10,6 @@ import com.intellij.diff.tools.simple.SimpleDiffViewer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -308,12 +307,12 @@ class PlannerResultSummary(
                 layout = BoxLayout(this, BoxLayout.X_AXIS)
 
                 val viewButton = createActionButton(
-                    AllIcons.Actions.Preview,
+                    AutoDevIcons.VIEW,
                     AutoDevBundle.message("planner.action.view.changes")
                 ) { changeActionListener.onView(change) }
 
                 val acceptButton = createActionButton(
-                    AllIcons.Actions.Commit,
+                    AutoDevIcons.RUN,
                     AutoDevBundle.message("planner.action.accept.changes")
                 ) { changeActionListener.onAccept(change) }
 

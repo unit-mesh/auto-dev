@@ -75,7 +75,7 @@ class TaskStepPanel(
         rightPanel.add(statusLabel)
 
         if (task.status == TaskStatus.TODO || task.status == TaskStatus.FAILED) {
-            val executeButton = JButton(AutoDevIcons.Run).apply {
+            val executeButton = JButton(AutoDevIcons.RUN).apply {
                 preferredSize = Dimension(20, 20)
                 margin = JBUI.emptyInsets()
                 isBorderPainted = false
@@ -313,7 +313,7 @@ class TaskStepPanel(
             add(statusLabel)
 
             if (task.status == TaskStatus.TODO || task.status == TaskStatus.FAILED) {
-                val executeButton = JButton(AutoDevIcons.Run).apply {
+                val executeButton = JButton(AutoDevIcons.RUN).apply {
                     preferredSize = Dimension(24, 24)
                     margin = JBUI.insets(0)
                     isBorderPainted = false
