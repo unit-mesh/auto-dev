@@ -52,6 +52,13 @@ class AgentStateService(val project: Project) {
     }
 
     fun addToChange(patch: TextFilePatch) {
+        val baseDir = File(project.basePath!!)
+        val newChangePath = getAbsolutePath(baseDir, patch.afterName).canonicalPath
+        state.changes.removeIf {
+            val afterRevision = it.afterRevision
+            afterRevision != null && File(afterRevision.file.path).canonicalPath == newChangePath
+        }
+
         val change = createChange(patch)
         state.changes.add(change)
 
