@@ -50,7 +50,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             null
         }
 
-        if (content == null) {
+        if (virtualFile == null || content == null) {
             AutoDevNotifications.warn(myProject, "File not found: $prop")
             return "File not found: $prop"
         }
