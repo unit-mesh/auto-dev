@@ -26,6 +26,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withTimeout
+import com.intellij.execution.configurations.GeneralCommandLine
 
 @Service(Service.Level.PROJECT)
 class CustomMcpServerManager(val project: Project) {
@@ -46,13 +47,18 @@ class CustomMcpServerManager(val project: Project) {
                         async {
                             if (entry.value.disabled == true) return@async emptyList<Tool>()
                             val resolvedCommand = resolveCommand(entry.value.command)
-                            val client = Client(clientInfo = Implementation(name = entry.key, version = "0.3.0"))
-                            val processBuilder = ProcessBuilder(resolvedCommand, *entry.value.args.toTypedArray())
-                            val process = processBuilder.start()
+                            logger<CustomMcpServerManager>().info("Found MCP command: $resolvedCommand")
+                            val client = Client(clientInfo = Implementation(name = entry.key, version = "1.0.0"))
+                            
+                            // Replaced ProcessBuilder with GeneralCommandLine
+                            val cmd = GeneralCommandLine(resolvedCommand)
+                            cmd.addParameters(*entry.value.args.toTypedArray())
+
+                            val process = cmd.createProcess()
                             val input = process.inputStream.asSource().buffered()
                             val output = process.outputStream.asSink().buffered()
                             val transport = StdioClientTransport(input, output)
-
+                            
                             try {
                                 client.connect(transport)
                                 val listTools = client.listTools()
@@ -61,6 +67,7 @@ class CustomMcpServerManager(val project: Project) {
                                 }
                                 listTools?.tools ?: emptyList()
                             } catch (e: Exception) {
+                                throw e
                                 logger<CustomMcpServerManager>().warn("Failed to list tools from ${entry.key}: $e")
                                 emptyList<Tool>()
                             }
