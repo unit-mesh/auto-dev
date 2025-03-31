@@ -107,17 +107,17 @@ class AgentStateService(val project: Project) {
                     if (appliedPatch != null) {
                         return appliedPatch.patchedText
                     }
-
-                    throw VcsException(VcsBundle.message("patch.apply.error.conflict"))
+                    /// sometimes llm will return a wrong patch which the content is not correct
+                    return patch.singleHunkPatchText
                 }
 
                 @Throws(VcsException::class)
                 private fun loadLocalContent(): String {
                     return ReadAction.compute<String?, VcsException?>(ThrowableComputable {
                         val file: VirtualFile? = beforeFilePath.virtualFile
-                        if (file == null) throw VcsException("File $beforeFilePath not found")
+                        if (file == null) return@ThrowableComputable null
                         val doc = FileDocumentManager.getInstance().getDocument(file)
-                        if (doc == null) throw VcsException("Document $file not found")
+                        if (doc == null) return@ThrowableComputable null
                         doc.text
                     })
                 }

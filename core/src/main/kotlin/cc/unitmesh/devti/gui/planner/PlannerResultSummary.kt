@@ -142,15 +142,11 @@ class PlannerResultSummary(
 
         val fileName = afterFile.substringAfterLast('/')
         val parentDir = afterFile.substringBeforeLast('/')
-        getOrCreateDirectory(project.baseDir, parentDir)
-        val newFile = project.baseDir?.createChildData(this, afterFile)
-        if (newFile != null) {
-            newFile.setBinaryContent(content.toByteArray())
-            FileEditorManager.getInstance(project).openFile(newFile, true)
-        } else {
-            val message = AutoDevBundle.message("planner.error.create.file", afterFile)
-            AutoDevNotifications.warn(project, message)
-        }
+        val dir = getOrCreateDirectory(project.baseDir, parentDir)
+        val newFile = dir.createChildData(this, fileName)
+
+        newFile.setBinaryContent(content.toByteArray())
+        FileEditorManager.getInstance(project).openFile(newFile, true)
     }
 
     private fun showDiffView(change: Change) {
