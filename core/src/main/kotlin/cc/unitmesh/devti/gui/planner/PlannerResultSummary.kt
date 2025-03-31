@@ -298,12 +298,15 @@ class PlannerResultSummary(
             val fileLabel = HyperlinkLabel(fileName).apply {
                 icon = changeIcon
                 toolTipText = filePath
-                isEnabled = change.type != Change.Type.NEW
                 addHyperlinkListener(object : HyperlinkListener {
                     override fun hyperlinkUpdate(e: HyperlinkEvent) {
                         if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                            change.virtualFile?.also {
-                                FileEditorManager.getInstance(project).openFile(it, true)
+                            if (change.type != Change.Type.NEW) {
+                                change.virtualFile?.also {
+                                    FileEditorManager.getInstance(project).openFile(it, true)
+                                }
+                            } else {
+                                changeActionListener.onView(change)
                             }
                         }
                     }
