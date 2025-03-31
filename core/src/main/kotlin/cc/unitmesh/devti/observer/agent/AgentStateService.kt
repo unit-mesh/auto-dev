@@ -51,7 +51,7 @@ class AgentStateService(val project: Project) {
         logger<AgentStateService>().info("Called agent tools:\n ${state.usedTools.joinToString("\n")}")
     }
 
-    fun addToChange(path: Path, patch: TextFilePatch) {
+    fun addToChange(patch: TextFilePatch) {
         val change = createChange(patch)
         state.changes.add(change)
 

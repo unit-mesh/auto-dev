@@ -164,7 +164,7 @@ class SingleFileDiffSketch(
 
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
             myProject.getService<AgentStateService>(AgentStateService::class.java)
-                .addToChange(currentFile.toNioPath(), patch)
+                .addToChange(patch)
 
             invokeLater {
                 val diffPanel = createDiffViewer(oldCode, newCode)
