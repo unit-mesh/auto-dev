@@ -58,7 +58,12 @@ class SingleFileDiffSketch(
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var patchActionPanel: JPanel? = null
     private val oldCode = if (currentFile.isValid && currentFile.exists()) {
-        currentFile.readText()
+        try {
+            currentFile.readText()
+        } catch (e: IOException) {
+            logger<SingleFileDiffSketch>().warn("Failed to read file: ${currentFile.path}", e)
+            ""
+        }
     } else ""
 
     private var appliedPatch = try {
