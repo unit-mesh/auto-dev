@@ -22,7 +22,6 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.isFile
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
