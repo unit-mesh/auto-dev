@@ -8,6 +8,7 @@ import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.simple.SimpleDiffViewer
+import com.intellij.diff.tools.simple.SimpleOnesideDiffViewer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -150,14 +151,7 @@ class PlannerResultSummary(
     }
 
     private fun showDiffView(change: Change) {
-        val diffRequest = runWriteAction { createDiffRequest(change) }
-        val diffViewer = SimpleDiffViewer(object : DiffContext() {
-            override fun getProject() = this@PlannerResultSummary.project
-            override fun isWindowFocused() = false
-            override fun isFocusedInWindow() = false
-            override fun requestFocusInWindow() = Unit
-        }, diffRequest)
-        diffViewer.init()
+        val diffViewer = createViewer(change)
 
         val dialog = object : DialogWrapper(project) {
             init {
@@ -166,7 +160,7 @@ class PlannerResultSummary(
                 setOKButtonText("Apply")
             }
 
-            override fun createCenterPanel(): JComponent = diffViewer.component
+            override fun createCenterPanel(): JComponent = diffViewer
             override fun doOKAction() {
                 super.doOKAction()
                 changeActionListener.onAccept(change)
@@ -180,7 +174,42 @@ class PlannerResultSummary(
         dialog.show()
     }
 
-    private fun createDiffRequest(change: Change): SimpleDiffRequest {
+    private fun createViewer(change: Change): JComponent {
+        when {
+            change.type == Change.Type.NEW -> {
+                val diffRequest = runWriteAction { createOneSideDiffRequest(change) }
+                val diffViewer = SimpleOnesideDiffViewer(object : DiffContext() {
+                    override fun getProject() = this@PlannerResultSummary.project
+                    override fun isWindowFocused() = false
+                    override fun isFocusedInWindow() = false
+                    override fun requestFocusInWindow() = Unit
+                }, diffRequest)
+                diffViewer.init()
+                return diffViewer.component
+            }
+            else -> {
+                val diffRequest = runWriteAction { createTwoSideDiffRequest(change) }
+                val diffViewer = SimpleDiffViewer(object : DiffContext() {
+                    override fun getProject() = this@PlannerResultSummary.project
+                    override fun isWindowFocused() = false
+                    override fun isFocusedInWindow() = false
+                    override fun requestFocusInWindow() = Unit
+                }, diffRequest)
+                diffViewer.init()
+                return diffViewer.component
+            }
+        }
+    }
+
+    private fun createOneSideDiffRequest(change: Change): SimpleDiffRequest {
+        val diffFactory = DiffContentFactoryEx.getInstanceEx()
+        val newCode = change.afterRevision?.content ?: ""
+        val newDocContent = diffFactory.create(newCode)
+        return SimpleDiffRequest("Diff", newDocContent, newDocContent, "AI suggestion", "AI suggestion")
+    }
+
+
+    private fun createTwoSideDiffRequest(change: Change): SimpleDiffRequest {
         val diffFactory = DiffContentFactoryEx.getInstanceEx()
         val oldCode = change.beforeRevision?.content ?: ""
         val newCode = try {
