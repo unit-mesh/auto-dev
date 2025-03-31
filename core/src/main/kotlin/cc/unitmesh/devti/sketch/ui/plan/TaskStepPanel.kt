@@ -74,7 +74,7 @@ class TaskStepPanel(
         }
         rightPanel.add(statusLabel)
 
-        if (task.status == TaskStatus.TODO || task.status == TaskStatus.FAILED) {
+        if (task.status == TaskStatus.TODO) {
             val executeButton = JButton(AutoDevIcons.RUN).apply {
                 preferredSize = Dimension(20, 20)
                 margin = JBUI.emptyInsets()
@@ -84,14 +84,16 @@ class TaskStepPanel(
                 addActionListener { executeTask() }
             }
             rightPanel.add(executeButton)
-        }
-
-        if (task.status == TaskStatus.FAILED) {
-            val retryButton = JButton("Retry").apply {
-                margin = JBUI.insets(0, 2)  // Less margin
-                font = font.deriveFont(Font.PLAIN, 9f)  // Smaller font size
-                addActionListener { executeTask() }
+        } else if (task.status == TaskStatus.FAILED) {
+            val retryButton = JButton(AutoDevIcons.RERUN).apply {
+                preferredSize = Dimension(24, 24)
+                margin = JBUI.emptyInsets()
+                isBorderPainted = false
+                isContentAreaFilled = false
+                toolTipText = "Rerun"
+                addActionListener { executeTask(isRerun = true) }
             }
+
             rightPanel.add(retryButton)
         }
 
