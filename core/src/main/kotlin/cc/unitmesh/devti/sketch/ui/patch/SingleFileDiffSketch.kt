@@ -29,6 +29,7 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.JBColor
@@ -57,7 +58,7 @@ class SingleFileDiffSketch(
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var patchActionPanel: JPanel? = null
-    private val oldCode = if (currentFile.isValid && currentFile.exists()) {
+    private val oldCode = if (currentFile.isFile && currentFile.exists()) {
         try {
             currentFile.readText()
         } catch (e: IOException) {

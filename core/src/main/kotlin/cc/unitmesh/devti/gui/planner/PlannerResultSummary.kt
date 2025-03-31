@@ -21,6 +21,7 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -114,7 +115,7 @@ class PlannerResultSummary(
 
             runWriteAction {
                 when {
-                    file != null && content != null -> {
+                    file?.isFile == true && content != null -> {
                         val document = FileDocumentManager.getInstance().getDocument(file)
                         if (document != null) {
                             document.setText(content)
@@ -139,9 +140,10 @@ class PlannerResultSummary(
             return
         }
 
-        getOrCreateDirectory(project.baseDir, afterFile)
         val fileName = afterFile.substringAfterLast('/')
-        val newFile = project.baseDir?.createChildData(this, fileName)
+        val parentDir = afterFile.substringBeforeLast('/')
+        getOrCreateDirectory(project.baseDir, parentDir)
+        val newFile = project.baseDir?.createChildData(this, afterFile)
         if (newFile != null) {
             newFile.setBinaryContent(content.toByteArray())
             FileEditorManager.getInstance(project).openFile(newFile, true)
