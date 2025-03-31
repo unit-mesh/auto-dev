@@ -1,6 +1,53 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v2.0.2...v) (2025-03-28)
+# [](https://github.com/unit-mesh/auto-dev/compare/v2.0.3...v) (2025-03-31)
 
-## Unreleased
+
+
+## [2.0.3](https://github.com/unit-mesh/auto-dev/compare/v2.0.2...v2.0.3) (2025-03-31)
+
+
+### Bug Fixes
+
+* **devins-lang:** enhance file not found check in FileInsCommand [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([0518c5c](https://github.com/unit-mesh/auto-dev/commit/0518c5c0fba1c8ed054733101381e6d265ef3381))
+* **devti:** handle click event for NEW type changes in planner result ([93a91e9](https://github.com/unit-mesh/auto-dev/commit/93a91e97f3dfffcf3182dd893c790dc33dca853c)), closes [#352](https://github.com/unit-mesh/auto-dev/issues/352)
+* **devti:** handle file creation errors in planner result summary ([230a3af](https://github.com/unit-mesh/auto-dev/commit/230a3af628711f3d347ca7828f964fb3e0a3d5af)), closes [#352](https://github.com/unit-mesh/auto-dev/issues/352)
+* **devti:** handle file read errors and improve null safety [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([bb8da4c](https://github.com/unit-mesh/auto-dev/commit/bb8da4ccb57d4aa9e9ba61cbcc258ac551de0877))
+* **devti:** handle file read errors in SingleFileDiffSketch [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([0cd223f](https://github.com/unit-mesh/auto-dev/commit/0cd223ff167f43aa1e729db917efe833508f97d4))
+* **devti:** handle patch parsing exceptions ([153b69f](https://github.com/unit-mesh/auto-dev/commit/153b69fbc45a1b99391780e9ec8d4704d52380a4))
+* **devti:** prevent duplicate changes in agent state service [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([f65d325](https://github.com/unit-mesh/auto-dev/commit/f65d325215f7bdfcbc038c6e715b48995ce1d8c2))
+* **devti:** remove ending newline and +``` from diff content ([4cd7c4c](https://github.com/unit-mesh/auto-dev/commit/4cd7c4c3009f2e372427cda80c4a3c0d966e6b6e))
+* **devtools:** improve diff view handling for deleted files and exceptions [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([4ca5a31](https://github.com/unit-mesh/auto-dev/commit/4ca5a31e3a62ce08688fe1aecf10dfc518475f40))
+
+
+### Features
+
+* **core:** add create issue functionality in AutoDev Planner [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([b07bc69](https://github.com/unit-mesh/auto-dev/commit/b07bc69a63adeabd350c561abdbec1fb27de18af))
+* **core:** add framework configuration provider for Spring [#338](https://github.com/unit-mesh/auto-dev/issues/338) ([7e2faf1](https://github.com/unit-mesh/auto-dev/commit/7e2faf10909940a206e5e953e209ab6d3ae8b0ed))
+* **core:** add ShadowPlanner for generating development plans [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([932850c](https://github.com/unit-mesh/auto-dev/commit/932850c81f8570548244ac081a100e46b4067a5e))
+* **core:** update git-delete and git-edit icons [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([58e5762](https://github.com/unit-mesh/auto-dev/commit/58e576266b1023cf77bb4d97a9a579ca4dcb2144))
+* **dev-planner:** add loading state indication when processing issue text [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([c857509](https://github.com/unit-mesh/auto-dev/commit/c8575097834e10cb3b9b52ea1fc82cc2f192786b))
+* **dev-planner:** implement issue input functionality and enhance tool window logic [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([6d20c1a](https://github.com/unit-mesh/auto-dev/commit/6d20c1afb807659f48ebe74501a7e8f056c811af))
+* **devin:** update disable /write in sketch and use patch only [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([8fc0567](https://github.com/unit-mesh/auto-dev/commit/8fc0567d70df8e1109e98bca5e1dc44e99511572))
+* **devti:** enhance issue input panel with placeholder functionality ([09fda6e](https://github.com/unit-mesh/auto-dev/commit/09fda6e4643deb96ebc6dbd20ced126b21569ab7)), closes [#353](https://github.com/unit-mesh/auto-dev/issues/353)
+* **devti:** improve task step UI and add retry functionality closed [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([61eaa16](https://github.com/unit-mesh/auto-dev/commit/61eaa16031ab8c1ca9f74ebe6709286913b19b34))
+* **devtools:** add option to enable/disable diff viewer in settings [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([3a8606e](https://github.com/unit-mesh/auto-dev/commit/3a8606ee732795505df22b840a3695449fad03cf))
+* **devtools:** enable auto lint and diff viewer by default ([e1b0e78](https://github.com/unit-mesh/auto-dev/commit/e1b0e7837dc8e584fd05200db0a689b908171c3e))
+* **diff:** improve diff viewer layout and auto-command handling [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([53f1c25](https://github.com/unit-mesh/auto-dev/commit/53f1c250636e3d266519a508f9d8dff5c2a2cc25))
+* **endpoints:** try to add Spring framework support for Web API views [#338](https://github.com/unit-mesh/auto-dev/issues/338) ([75adef1](https://github.com/unit-mesh/auto-dev/commit/75adef18fe9fd5661dae906b1c893bb116d0c1ca))
+* **gui:** add change summary to AutoDevPlannerToolWindow [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([7b4ae3e](https://github.com/unit-mesh/auto-dev/commit/7b4ae3e28761964894025ad4a563f0906b54281f))
+* **gui:** add hyperlink to file name in planner result [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([6b40d4c](https://github.com/unit-mesh/auto-dev/commit/6b40d4c362939f209aa617151a9074413308a708))
+* **gui:** add toolbar to AutoDevPlannerToolWindow and update IssueInputPanel [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([e70f265](https://github.com/unit-mesh/auto-dev/commit/e70f26545ca97523f358ec98e70bf2cfba9fb559))
+* **gui:** enhance change management in planner results [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([94a39b3](https://github.com/unit-mesh/auto-dev/commit/94a39b37c7cabfbaa4847dd34dfe70f4fa59f9a7))
+* **gui:** enhance planner result summary with actions and details [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([1981d60](https://github.com/unit-mesh/auto-dev/commit/1981d607403589fa85a5cc186b60fd3770fd427d))
+* **gui:** implement a loading panel with animation for AutoDev Planner [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([c1eec6f](https://github.com/unit-mesh/auto-dev/commit/c1eec6f3682fcab8f1287cdf9cdf28498d7e4695))
+* **gui:** improve keyboard accessibility for action buttons [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([e0ba5c2](https://github.com/unit-mesh/auto-dev/commit/e0ba5c20798016a7d7323e8a1533bffce78f0a39))
+* **gui:** redesign LoadingPanel with advanced animation and dark mode support [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([b650ad4](https://github.com/unit-mesh/auto-dev/commit/b650ad49f064afcad17b61303c80ce825828f176))
+* **gui:** show relative file path in planner result [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([72b81b0](https://github.com/unit-mesh/auto-dev/commit/72b81b0286729c1d827ad406eab4c0a251f0ee85))
+* **gui:** support create new file and optimize change actions [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([dd16174](https://github.com/unit-mesh/auto-dev/commit/dd161745be4c63eb1a0e3e7a65c7fb14ef22d47a))
+* **gui:** use custom icons for planner changes [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([3af249f](https://github.com/unit-mesh/auto-dev/commit/3af249f9ddb2ee801ff694a571f33d4109ae3f46))
+* **provider:** add Spring Cloud detection in Gradle projects [#338](https://github.com/unit-mesh/auto-dev/issues/338) ([39e24f5](https://github.com/unit-mesh/auto-dev/commit/39e24f587c6db323663271a47f1693e36aa43267))
+* **sketch:** add rerun functionality for failed tasks [#352](https://github.com/unit-mesh/auto-dev/issues/352) ([59b5353](https://github.com/unit-mesh/auto-dev/commit/59b5353ef882dc06138cd6fd25f6f576dbd4f7c0))
+
+
 
 ## [2.0.2](https://github.com/unit-mesh/auto-dev/compare/v2.0.2-SNAPSHOT...v2.0.2) (2025-03-27)
 
