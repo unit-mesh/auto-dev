@@ -92,17 +92,17 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                 return@invokeLater
             }
 
-            try {
-                filePatches.forEach { patch ->
-                    val diffPanel = createDiffPanel(patch)
-                    if (diffPanel != null) {
-                        mainPanel.add(diffPanel.getComponent())
-                        mainPanel.revalidate()
-                    }
+//            try {
+            filePatches.forEach { patch ->
+                val diffPanel = createDiffPanel(patch)
+                if (diffPanel != null) {
+                    mainPanel.add(diffPanel.getComponent())
+                    mainPanel.revalidate()
                 }
-            } catch (e: Exception) {
-                AutoDevNotifications.error(myProject, "Failed to create diff panel: ${e.message}")
             }
+//            } catch (e: Exception) {
+//                AutoDevNotifications.error(myProject, "Failed to create diff panel: ${e.message}")
+//            }
         }
     }
 
@@ -111,13 +111,13 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             patch.beforeName != null -> {
                 val originFile = myProject.findFile(patch.beforeName!!)
                 /// if before file is empty, should set new code empty, it should be new file
-                    ?: LightVirtualFile(patch.beforeName!!, "")
+                    ?: LightVirtualFile(patch.beforeFileName!!, "")
                 createSingleFileDiffSketch(originFile, patch)
             }
 
             patch.afterName != null -> {
                 val virtualFile = myProject.findFile(patch.afterName!!)
-                    ?: LightVirtualFile(patch.afterName!!, "")
+                    ?: LightVirtualFile(patch.afterFileName!!, "")
                 createSingleFileDiffSketch(virtualFile, patch)
             }
 

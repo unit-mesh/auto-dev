@@ -57,7 +57,10 @@ class SingleFileDiffSketch(
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var patchActionPanel: JPanel? = null
-    private val oldCode = currentFile.readText()
+    private val oldCode = if (currentFile.isValid && currentFile.exists()) {
+        currentFile.readText()
+    } else ""
+
     private var appliedPatch = try {
         val apply = GenericPatchApplier.apply(oldCode, patch.hunks)
         apply
@@ -173,12 +176,7 @@ class SingleFileDiffSketch(
     }
 
     private fun createDiffViewer(oldCode: String, newCode: String): JComponent {
-        val diffFactory = DiffContentFactoryEx.getInstanceEx()
-        val currentDocContent = diffFactory.create(myProject, oldCode)
-        val newDocContent = diffFactory.create(newCode)
-
-        val diffRequest =
-            SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
+        val diffRequest = runWriteAction { createDiffRequest(oldCode, newCode) }
 
         val diffViewer = SimpleDiffViewer(object : DiffContext() {
             override fun getProject() = myProject
@@ -197,6 +195,16 @@ class SingleFileDiffSketch(
         wrapperPanel.maximumSize = Dimension(Int.MAX_VALUE, maxOf(200, minHeight))
 
         return wrapperPanel
+    }
+
+    private fun createDiffRequest(oldCode: String, newCode: String): SimpleDiffRequest {
+        val diffFactory = DiffContentFactoryEx.getInstanceEx()
+        val currentDocContent = diffFactory.create(myProject, oldCode)
+        val newDocContent = diffFactory.create(newCode)
+
+        val diffRequest =
+            SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
+        return diffRequest
     }
 
     private fun createActionButtons(

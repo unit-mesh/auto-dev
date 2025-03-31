@@ -128,20 +128,7 @@ class PlannerResultSummary(
     }
 
     private fun showDiffView(change: Change) {
-        val diffFactory = DiffContentFactoryEx.getInstanceEx()
-        val oldCode = change.beforeRevision?.content ?: "null"
-        val newCode = try {
-            change.afterRevision?.content ?: "null"
-        } catch (e: Exception) {
-            "Error: ${e.message}"
-        }
-
-        val currentDocContent = diffFactory.create(project, oldCode)
-        val newDocContent = diffFactory.create(newCode)
-
-        val diffRequest =
-            SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
-
+        val diffRequest = runWriteAction { createDiffRequest(change) }
         val diffViewer = SimpleDiffViewer(object : DiffContext() {
             override fun getProject() = this@PlannerResultSummary.project
             override fun isWindowFocused() = false
@@ -169,6 +156,23 @@ class PlannerResultSummary(
         }
 
         dialog.show()
+    }
+
+    private fun createDiffRequest(change: Change): SimpleDiffRequest {
+        val diffFactory = DiffContentFactoryEx.getInstanceEx()
+        val oldCode = change.beforeRevision?.content ?: "null"
+        val newCode = try {
+            change.afterRevision?.content ?: "null"
+        } catch (e: Exception) {
+            "Error: ${e.message}"
+        }
+
+        val currentDocContent = diffFactory.create(project, oldCode)
+        val newDocContent = diffFactory.create(newCode)
+
+        val diffRequest =
+            SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
+        return diffRequest
     }
 
     init {
