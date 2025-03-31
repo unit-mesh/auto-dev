@@ -276,14 +276,19 @@ class TaskStepPanel(
         taskLabel.componentPopupMenu = taskPopupMenu
     }
 
-    private fun executeTask() {
+    private fun executeTask(isRerun: Boolean = false) {
         task.updateStatus(TaskStatus.IN_PROGRESS)
         updateTaskLabel()
         updateStatusLabel()
         onStatusChange()
 
+        val message = if (isRerun) {
+            AutoDevBundle.message("sketch.plan.rerun.task")
+        } else {
+            AutoDevBundle.message("sketch.plan.finish.task")
+        }
         AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
-            ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + task.step)
+            ui.sendInput(message + task.step)
         }
 
         refreshPanel()
@@ -312,25 +317,30 @@ class TaskStepPanel(
             isOpaque = false
             add(statusLabel)
 
-            if (task.status == TaskStatus.TODO || task.status == TaskStatus.FAILED) {
-                val executeButton = JButton(AutoDevIcons.RUN).apply {
-                    preferredSize = Dimension(24, 24)
-                    margin = JBUI.insets(0)
-                    isBorderPainted = false
-                    isContentAreaFilled = false
-                    toolTipText = "Execute this step"
-                    addActionListener { executeTask() }
+            when (task.status) {
+                TaskStatus.TODO -> {
+                    val executeButton = JButton(AutoDevIcons.RUN).apply {
+                        preferredSize = Dimension(24, 24)
+                        margin = JBUI.emptyInsets()
+                        isBorderPainted = false
+                        isContentAreaFilled = false
+                        toolTipText = "Execute this step"
+                        addActionListener { executeTask() }
+                    }
+                    add(executeButton)
                 }
-                add(executeButton)
-            }
-
-            if (task.status == TaskStatus.FAILED) {
-                val retryButton = JButton("Retry").apply {
-                    margin = JBUI.insets(0, 3)
-                    font = font.deriveFont(Font.PLAIN, 10f)
-                    addActionListener { executeTask() }
+                TaskStatus.FAILED -> {
+                    val retryButton = JButton(AutoDevIcons.RERUN).apply {
+                        preferredSize = Dimension(24, 24)
+                        margin = JBUI.emptyInsets()
+                        isBorderPainted = false
+                        isContentAreaFilled = false
+                        toolTipText = "Rerun"
+                        addActionListener { executeTask(isRerun = true) }
+                    }
+                    add(retryButton)
                 }
-                add(retryButton)
+                else -> {}
             }
         }
 

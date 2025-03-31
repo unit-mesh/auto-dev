@@ -97,4 +97,7 @@ object AutoDevIcons {
 
     @JvmField
     val GIT_MOVE: Icon = IconLoader.getIcon("/icons/git-move.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val RERUN: Icon = IconLoader.getIcon("/icons/rerun.svg", AutoDevIcons::class.java)
 }
