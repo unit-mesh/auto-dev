@@ -18,6 +18,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -85,9 +86,7 @@ class PlannerResultSummary(
 
     private var changeActionListener: ChangeActionListener = object : ChangeActionListener {
         override fun onView(change: Change) {
-            runWriteAction {
-                showDiffView(change)
-            }
+            showDiffView(change)
         }
 
         override fun onDiscard(change: Change) {
@@ -115,7 +114,9 @@ class PlannerResultSummary(
                             return@runWriteAction
                         }
 
-                        val newFile = project.baseDir?.createChildData(this, afterFile)
+                        getOrCreateDirectory(project.baseDir, afterFile)
+                        val fileName = afterFile.substringAfterLast('/')
+                        val newFile = project.baseDir?.createChildData(this, fileName)
                         newFile?.let {
                             it.setBinaryContent(content.toByteArray())
                             FileEditorManager.getInstance(project).openFile(it, true)
@@ -343,5 +344,20 @@ class PlannerResultSummary(
             }
         }
         return KeyboardAccessibleActionButton(anAction)
+    }
+
+    companion object {
+        private val pathSeparator = "/"
+        fun getOrCreateDirectory(baseDir: VirtualFile, path: String): VirtualFile {
+            var currentDir = baseDir
+            val pathSegments = path.split(pathSeparator).filter { it.isNotEmpty() }
+
+            for (segment in pathSegments) {
+                val childDir = currentDir.findChild(segment)
+                currentDir = childDir ?: currentDir.createChildDirectory(this, segment)
+            }
+
+            return currentDir
+        }
     }
 }

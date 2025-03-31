@@ -16,12 +16,11 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
+import kotlin.text.isNotEmpty
 
 class WriteInsCommand(val myProject: Project, val argument: String, val content: String, val used: DevInUsed) :
     InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.WRITE
-
-    private val pathSeparator = "/"
 
     override suspend fun execute(): String? {
         val filepath = argument.split("#")[0]
@@ -83,16 +82,19 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         }
     }
 
-    private fun getOrCreateDirectory(baseDir: VirtualFile, path: String): VirtualFile {
-        var currentDir = baseDir
-        val pathSegments = path.split(pathSeparator).filter { it.isNotEmpty() }
+    companion object {
+        private val pathSeparator = "/"
+        fun getOrCreateDirectory(baseDir: VirtualFile, path: String): VirtualFile {
+            var currentDir = baseDir
+            val pathSegments = path.split(pathSeparator).filter { it.isNotEmpty() }
 
-        for (segment in pathSegments) {
-            val childDir = currentDir.findChild(segment)
-            currentDir = childDir ?: currentDir.createChildDirectory(this, segment)
+            for (segment in pathSegments) {
+                val childDir = currentDir.findChild(segment)
+                currentDir = childDir ?: currentDir.createChildDirectory(this, segment)
+            }
+
+            return currentDir
         }
-
-        return currentDir
     }
 }
 

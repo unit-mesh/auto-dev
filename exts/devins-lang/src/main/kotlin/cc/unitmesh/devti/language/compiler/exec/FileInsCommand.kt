@@ -38,7 +38,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
         if (virtualFile == null) {
             val filename = filepath.split("/").last()
             try {
-                virtualFile = myProject.findFile(filename, false)
+                virtualFile = runReadAction { myProject.findFile(filename, false) }
             } catch (e: Exception) {
                 return "File not found: $prop"
             }
