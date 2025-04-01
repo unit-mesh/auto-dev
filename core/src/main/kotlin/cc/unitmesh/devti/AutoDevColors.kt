@@ -22,6 +22,16 @@ object AutoDevColors {
     val SEPARATOR_BORDER = JBColor(0xE5E5E5, 0x323232)
     val LINK_COLOR = JBColor(0x3366CC, 0x589DF6)
 
+    // Diff and UI specific colors
+    // Color for diff new line highlighter (as an Int used in TextAttributes)
+    val DIFF_NEW_LINE_COLOR: Int = 0x3000FF00
+    // Background color for deletion inlay
+    val DELETION_INLAY_COLOR: JBColor = JBColor(0x30FF0000, 0x30FF0000)
+    // Reject button background color
+    val REJECT_BUTTON_COLOR: JBColor = JBColor(0x99FF0000.toInt(), 0x99FF0000.toInt())
+    // Accept button background color
+    val ACCEPT_BUTTON_COLOR: JBColor = JBColor(0x8AA653, 0x8AA653)
+    
     // Loading panel colors
     object LoadingPanel {
         // Background colors

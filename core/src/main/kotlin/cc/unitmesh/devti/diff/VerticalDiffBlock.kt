@@ -32,6 +32,7 @@ import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JTextArea
 import kotlin.math.min
+import cc.unitmesh.devti.AutoDevColors
 
 class VerticalDiffBlock(
     private val editor: Editor,
@@ -48,7 +49,7 @@ class VerticalDiffBlock(
     private var textArea: JTextArea? = null // Used for calculation of the text area height when rendering buttons
     private var hasRenderedDiffBlock: Boolean = false
     private val editorComponentInlaysManager = EditorComponentInlaysManager.from(editor, false)
-    private val greenKey = createTextAttributesKey("CONTINUE_DIFF_NEW_LINE", 0x3000FF00, editor)
+    private val greenKey = createTextAttributesKey("CONTINUE_DIFF_NEW_LINE", AutoDevColors.DIFF_NEW_LINE_COLOR, editor)
 
     init {
         val (acceptBtn, rejectBtn) = createButtons()
@@ -163,7 +164,7 @@ class VerticalDiffBlock(
         val rejectBtn =
             createButton(
                 cc.unitmesh.devti.AutoDevBundle.message("sketch.patch.action.reject"),
-                JBColor(0x99FF0000.toInt(), 0x99FF0000.toInt())
+                AutoDevColors.REJECT_BUTTON_COLOR
             ).apply {
                 addActionListener {
                     handleReject()
@@ -175,7 +176,7 @@ class VerticalDiffBlock(
         val acceptBtn =
             createButton(
                 cc.unitmesh.devti.AutoDevBundle.message("sketch.patch.action.accept"),
-                JBColor(0x8AA653, 0x8AA653)
+                AutoDevColors.ACCEPT_BUTTON_COLOR
             ).apply {
                 addActionListener {
                     handleAccept()
@@ -231,7 +232,7 @@ class VerticalDiffBlock(
 
     private fun createDeletionTextArea(text: String) = JTextArea(text).apply {
         isEditable = false
-        background = JBColor(0x30FF0000, 0x30FF0000)
+        background = AutoDevColors.DELETION_INLAY_COLOR
         foreground = JBColor.GRAY
         border = BorderFactory.createEmptyBorder()
         lineWrap = false
@@ -282,3 +283,4 @@ fun createTextAttributesKey(name: String, color: Int, editor: Editor): TextAttri
         editor.colorsScheme.setAttributes(it, attributes)
     }
 }
+
