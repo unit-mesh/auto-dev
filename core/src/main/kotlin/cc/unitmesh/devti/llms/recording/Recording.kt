@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.coder.recording
+package cc.unitmesh.devti.llms.recording
 
 interface Recording {
     fun write(instruction: RecordingInstruction)

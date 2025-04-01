@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.coder.recording
+package cc.unitmesh.devti.llms.recording
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
