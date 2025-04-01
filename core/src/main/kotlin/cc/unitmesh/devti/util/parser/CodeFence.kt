@@ -1,4 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/util/parser/CodeFence.kt
 package cc.unitmesh.devti.util.parser
 
 import com.intellij.lang.Language
