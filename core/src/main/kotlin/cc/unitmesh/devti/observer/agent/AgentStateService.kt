@@ -193,9 +193,11 @@ class AgentStateService(val project: Project) {
 
     fun resetState() {
         state = AgentState()
-        ApplicationManager.getApplication().messageBus
+        val syncPublisher = ApplicationManager.getApplication().messageBus
             .syncPublisher(PlanUpdateListener.TOPIC)
-            .onPlanUpdate(mutableListOf())
+
+        syncPublisher.onUpdateChange(mutableListOf())
+        syncPublisher.onPlanUpdate(mutableListOf())
     }
 
     fun getPlan(): MutableList<AgentTaskEntry> {
