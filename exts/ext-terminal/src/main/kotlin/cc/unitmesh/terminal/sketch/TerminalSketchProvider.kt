@@ -49,6 +49,7 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.border.LineBorder
+import cc.unitmesh.devti.AutoDevColors
 
 class TerminalSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
@@ -90,9 +91,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 0, 0, 0)
         add(resultSketch.getComponent(), BorderLayout.CENTER)
     }
-
-    private val successColor = JBColor(Color(233, 255, 233), Color(0, 77, 0))
-    private val errorColor = JBColor(Color(255, 233, 233), Color(77, 0, 0))
 
     val collapsibleResultPanel = CollapsiblePanel("Execution Results", resultPanel, initiallyCollapsed = true)
 
@@ -145,14 +143,14 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         ApplicationManager.getApplication().invokeLater {
             when {
                 success -> {
-                    resultPanel.background = successColor
-                    resultPanel.border = LineBorder(JBColor(Color(0, 128, 0), Color(0, 100, 0)), 1)
+                    resultPanel.background = AutoDevColors.EXECUTION_SUCCESS_BACKGROUND
+                    resultPanel.border = LineBorder(AutoDevColors.EXECUTION_SUCCESS_BORDER, 1)
                     collapsibleResultPanel.setTitle("✅ Execution Successful")
                 }
 
                 else -> {
-                    resultPanel.background = errorColor
-                    resultPanel.border = LineBorder(JBColor(Color(128, 0, 0), Color(100, 0, 0)), 1)
+                    resultPanel.background = AutoDevColors.EXECUTION_ERROR_BACKGROUND
+                    resultPanel.border = LineBorder(AutoDevColors.EXECUTION_ERROR_BORDER, 1)
                     val errorText = errorMessage?.let { ": $it" } ?: ""
                     collapsibleResultPanel.setTitle("❌ Execution Failed$errorText")
                 }

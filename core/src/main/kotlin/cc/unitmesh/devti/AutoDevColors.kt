@@ -4,9 +4,6 @@ import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import java.awt.Color
 
-/**
- * Color constants used throughout the AutoDev UI
- */
 object AutoDevColors {
     // Status colors
     val COMPLETED_STATUS = JBColor(0x59A869, 0x59A869) // Green
@@ -37,6 +34,12 @@ object AutoDevColors {
     val FILE_HOVER_COLOR = JBColor(0x4A7EB3, 0x589DF6) // Blue color for hover state
     val ADD_LINE_COLOR = JBColor(0x00FF00, 0x00FF00)
     val REMOVE_LINE_COLOR = JBColor(0xFF0000, 0xFF0000)
+
+    // Execution result colors
+    val EXECUTION_SUCCESS_BACKGROUND = JBColor(Color(233, 255, 233), Color(0, 77, 0))
+    val EXECUTION_ERROR_BACKGROUND = JBColor(Color(255, 233, 233), Color(77, 0, 0))
+    val EXECUTION_SUCCESS_BORDER = JBColor(Color(0, 128, 0), Color(0, 100, 0))
+    val EXECUTION_ERROR_BORDER = JBColor(Color(128, 0, 0), Color(100, 0, 0))
 
     // Loading panel colors
     object LoadingPanel {
