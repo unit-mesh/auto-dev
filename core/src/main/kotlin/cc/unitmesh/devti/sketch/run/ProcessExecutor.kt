@@ -143,7 +143,8 @@ class ProcessExecutor(val project: Project) {
             AutoDevNotifications.notify(project, "Failed to get JAVA_HOME: ${e.message}")
         }
 
-        val commands: List<String> = listOf("bash", "--noprofile", "--norc", "-c", formatCommand(shellScript))
+        val shell = ShellUtil.detectShells().firstOrNull() ?: "bash"
+        val commands: List<String> = listOf(shell, "--noprofile", "--norc", "-c", formatCommand(shellScript))
 
         if (basedir != null) {
             commandLine.withWorkDirectory(basedir)

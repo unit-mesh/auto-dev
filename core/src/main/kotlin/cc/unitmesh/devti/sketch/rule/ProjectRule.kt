@@ -25,7 +25,6 @@ class ProjectRule(private val project: Project) {
             return "<user-rule>\n$content\n</user-rule>"
         }
 
-        /// try .devin file
         val devinFile = project.lookupFile("$RULE_PATH/$filename.devin")
         if (devinFile != null) {
             val content = devinFile.readText()
