@@ -63,7 +63,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     var lastExecutionResults: String = ""
     var hasExecutionResults: Boolean = false
-    
+
     var isExecuting = false
     var currentExecutionJob: Job? = null
 
@@ -137,12 +137,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
     }
 
-    /**
-     * 设置终端执行结果的状态
-     * 
-     * @param state 执行状态
-     * @param message 附加消息（如错误信息）
-     */
     fun setResultStatus(state: TerminalExecutionState, message: String? = null) {
         ApplicationManager.getApplication().invokeLater {
             when (state) {
@@ -151,38 +145,38 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                     resultPanel.border = JBUI.Borders.emptyTop(1)
                     collapsibleResultPanel.setTitle("准备执行")
                 }
-                
+
                 TerminalExecutionState.EXECUTING -> {
                     resultPanel.background = UIUtil.getPanelBackground()
                     resultPanel.border = LineBorder(AutoDevColors.EXECUTION_RUNNING_BORDER, 1)
                     collapsibleResultPanel.setTitle("⏳ 正在执行...")
                 }
-                
+
                 TerminalExecutionState.SUCCESS -> {
                     resultPanel.background = AutoDevColors.EXECUTION_SUCCESS_BACKGROUND
                     resultPanel.border = LineBorder(AutoDevColors.EXECUTION_SUCCESS_BORDER, 1)
                     collapsibleResultPanel.setTitle("✅ 执行成功")
                 }
-                
+
                 TerminalExecutionState.FAILED -> {
                     resultPanel.background = AutoDevColors.EXECUTION_ERROR_BACKGROUND
                     resultPanel.border = LineBorder(AutoDevColors.EXECUTION_ERROR_BORDER, 1)
                     val errorText = message?.let { ": $it" } ?: ""
                     collapsibleResultPanel.setTitle("❌ 执行失败$errorText")
                 }
-                
+
                 TerminalExecutionState.TERMINATED -> {
                     resultPanel.background = UIUtil.getPanelBackground()
                     resultPanel.border = LineBorder(AutoDevColors.EXECUTION_WARNING_BORDER, 1)
                     collapsibleResultPanel.setTitle("⚠️ 执行已终止")
                 }
             }
-            
+
             currentExecutionState = state
             resultPanel.repaint()
         }
     }
-    
+
     private fun toggleTerminalAction() {
         resizableTerminalPanel.isVisible = !resizableTerminalPanel.isVisible
         resizableTerminalPanel.revalidate()
@@ -191,18 +185,17 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     fun createConsoleActions(): List<AnAction> {
-        // 修改这里，直接实例化外部的 TerminalExecuteAction 类
         executeAction = TerminalExecuteAction(this)
 
-        val showTerminalAction = object :
-            AnAction(AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevBundle.message("sketch.terminal.show.hide"), AutoDevIcons.Terminal) {
+        val showText = AutoDevBundle.message("sketch.terminal.show.hide")
+        val showTerminalAction = object : AnAction(showText, showText, AutoDevIcons.Terminal) {
             override fun actionPerformed(e: AnActionEvent) {
                 toggleTerminalAction()
             }
         }
 
-        val copyAction = object :
-            AnAction(AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevIcons.Copy) {
+        val copyText = AutoDevBundle.message("sketch.terminal.copy.text")
+        val copyAction = object : AnAction(copyText, copyText, AutoDevIcons.Copy) {
             override fun actionPerformed(e: AnActionEvent) {
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 val textToCopy = if (hasExecutionResults) {
@@ -216,8 +209,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             }
         }
 
-        val sendAction = object :
-            AnAction(AutoDevBundle.message("sketch.terminal.send.chat"), AutoDevBundle.message("sketch.terminal.send.chat"), AutoDevIcons.Send) {
+        val sendText = AutoDevBundle.message("sketch.terminal.send.chat")
+        val sendAction = object : AnAction(sendText, sendText, AutoDevIcons.Send) {
             override fun actionPerformed(e: AnActionEvent) {
                 try {
                     val output = if (hasExecutionResults) {
@@ -233,12 +226,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             }
         }
 
-        val popupAction = object :
-            AnAction(
-                "Popup",
-                AutoDevBundle.message("sketch.terminal.popup"),
-                AllIcons.Ide.External_link_arrow
-            ) {
+        val popup = AutoDevBundle.message("sketch.terminal.popup")
+        val popupAction = object : AnAction(popup, popup, AllIcons.Ide.External_link_arrow) {
             override fun displayTextInToolbar(): Boolean = true
 
             override fun actionPerformed(e: AnActionEvent) {
@@ -328,16 +317,13 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         ApplicationManager.getApplication().invokeLater {
             terminalWidget!!.terminalStarter?.sendString(content, false)
 
-            if (enableAutoRunTerminal && ::executeAction.isInitialized) {
-                executeAction.actionPerformed(
-                    AnActionEvent.createFromAnAction(
-                        executeAction,
-                        null,
-                        "AutoExecuteTerminal",
-                        DataContext.EMPTY_CONTEXT
-                    )
-                )
+            if (!enableAutoRunTerminal || !::executeAction.isInitialized) {
+                return@invokeLater
             }
+
+            val action =
+                AnActionEvent.createFromAnAction(executeAction, null, "AutoExecuteTerminal", DataContext.EMPTY_CONTEXT)
+            executeAction.actionPerformed(action)
         }
     }
 
