@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.practise
+package cc.unitmesh.devti.actions.rename
 
 import cc.unitmesh.devti.AutoDevIcons
 import com.intellij.codeInsight.completion.InsertionContext

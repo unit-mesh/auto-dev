@@ -229,7 +229,7 @@
     </extensionPoints>
 
     <projectListeners>
-        <listener class="cc.unitmesh.devti.practise.RenameLookupManagerListener"
+        <listener class="cc.unitmesh.devti.actions.rename.RenameLookupManagerListener"
                   topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>
     </projectListeners>
 

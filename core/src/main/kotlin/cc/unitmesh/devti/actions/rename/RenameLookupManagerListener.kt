@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.practise
+package cc.unitmesh.devti.actions.rename
 
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
