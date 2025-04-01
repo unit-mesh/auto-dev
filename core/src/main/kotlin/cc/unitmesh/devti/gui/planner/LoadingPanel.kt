@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.planner
 
-import cc.unitmesh.devti.sketch.ui.AutoDevColors
+import cc.unitmesh.devti.AutoDevColors
 import com.intellij.ide.ui.LafManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.JBUI

@@ -6,7 +6,7 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentPlanStep
 import cc.unitmesh.devti.observer.plan.TaskStatus
-import cc.unitmesh.devti.sketch.ui.AutoDevColors
+import cc.unitmesh.devti.AutoDevColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
