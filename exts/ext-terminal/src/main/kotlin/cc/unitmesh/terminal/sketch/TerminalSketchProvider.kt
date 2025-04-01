@@ -5,13 +5,10 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.SketchToolWindow
-import cc.unitmesh.devti.sketch.run.ProcessExecutor
 import cc.unitmesh.devti.sketch.run.ShellSafetyCheck
-import cc.unitmesh.devti.sketch.run.UIUpdatingWriter
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
-import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.terminal.service.TerminalRunnerService
 import com.intellij.icons.AllIcons
@@ -30,16 +27,11 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
-import org.jetbrains.ide.PooledThreadExecutor
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -50,7 +42,6 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.border.LineBorder
 import cc.unitmesh.devti.AutoDevColors
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import kotlinx.coroutines.Job
 
 class TerminalSketchProvider : LanguageSketchProvider {
@@ -70,12 +61,13 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         this.component.border = JBUI.Borders.empty()
     }
 
-    private var lastExecutionResults: String = ""
-    private var hasExecutionResults: Boolean = false
+    // 将内部变量公开，以便 TerminalExecuteAction 可以访问
+    var lastExecutionResults: String = ""
+    var hasExecutionResults: Boolean = false
     
-    // 添加变量追踪执行状态和执行任务
-    private var isExecuting = false
-    private var currentExecutionJob: Job? = null
+    // 将这些变量从私有变成公开
+    var isExecuting = false
+    var currentExecutionJob: Job? = null
 
     val titleLabel = JLabel("Terminal").apply {
         border = JBUI.Borders.empty(0, 10)
@@ -145,7 +137,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
     }
 
-    private fun setResultStatus(success: Boolean, errorMessage: String? = null) {
+    // 将 setResultStatus 从 private 改为 public
+    fun setResultStatus(success: Boolean, errorMessage: String? = null) {
         ApplicationManager.getApplication().invokeLater {
             when {
                 success -> {
@@ -173,7 +166,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     fun createConsoleActions(): List<AnAction> {
-        executeAction = TerminalExecuteAction()
+        // 修改这里，直接实例化外部的 TerminalExecuteAction 类
+        executeAction = TerminalExecuteAction(this)
 
         val showTerminalAction = object :
             AnAction(AutoDevBundle.message("sketch.terminal.copy.text"), AutoDevBundle.message("sketch.terminal.show.hide"), AutoDevIcons.Terminal) {
@@ -327,120 +321,6 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     override fun dispose() {
         codeSketch.dispose()
         resultSketch.dispose()
-    }
-
-    inner class TerminalExecuteAction :
-        AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AutoDevIcons.RUN) {
-        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
-
-        override fun update(e: AnActionEvent) {
-            super.update(e)
-            // 根据当前执行状态更新图标和文本
-            if (isExecuting) {
-                e.presentation.icon = AllIcons.Actions.Suspend
-                e.presentation.text = "Stop"
-                e.presentation.description = AutoDevBundle.message("sketch.terminal.stop")
-            } else {
-                e.presentation.icon = AutoDevIcons.RUN
-                e.presentation.text = "Execute"
-                e.presentation.description = AutoDevBundle.message("sketch.terminal.execute")
-            }
-        }
-            
-        override fun actionPerformed(e: AnActionEvent) {
-            if (isExecuting) {
-                // 如果正在执行，则停止执行
-                currentExecutionJob?.cancel()
-                
-                ApplicationManager.getApplication().invokeLater {
-                    isExecuting = false
-                    titleLabel.icon = null
-                    
-                    // 更新UI以反映停止状态
-                    resultSketch.updateViewText(lastExecutionResults + "\n\n[执行已手动停止]", true)
-                    setResultStatus(false, "执行已手动停止")
-                    
-                    // 更新工具栏
-                    actionGroup.update(e)
-                    toolbar.updateActionsImmediately()
-                }
-                return
-            }
-            
-            // 开始执行
-            isExecuting = true
-            titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
-            
-            // 更新工具栏以显示停止按钮
-            actionGroup.update(e)
-            toolbar.updateActionsImmediately()
-
-            hasExecutionResults = false
-            lastExecutionResults = ""
-
-            val stdWriter = UIUpdatingWriter(
-                onTextUpdate = { text, complete ->
-                    resultSketch.updateViewText(text, complete)
-                    lastExecutionResults = text
-                },
-                onPanelUpdate = { title, _ ->
-                    collapsibleResultPanel.setTitle(title)
-                },
-                checkCollapsed = {
-                    collapsibleResultPanel.isCollapsed()
-                },
-                expandPanel = {
-                    collapsibleResultPanel.expand()
-                }
-            )
-
-            resultSketch.updateViewText("", true)
-            stdWriter.setExecuting(true)
-            setResultStatus(false)
-
-            currentExecutionJob = AutoDevCoroutineScope.scope(project).launch {
-                val executor = project.getService(ProcessExecutor::class.java)
-                try {
-                    val dispatcher = PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
-                    val exitCode = executor.exec(getViewText(), stdWriter, stdWriter, dispatcher)
-                    ApplicationManager.getApplication().invokeLater {
-                        stdWriter.setExecuting(false)
-                        if (collapsibleResultPanel.isCollapsed()) {
-                            collapsibleResultPanel.expand()
-                        }
-
-                        val content = stdWriter.getContent()
-                        lastExecutionResults = content
-                        hasExecutionResults = true
-
-                        titleLabel.icon = null
-                        isExecuting = false
-                        
-                        // 更新工具栏以显示执行按钮
-                        actionGroup.update(e)
-                        toolbar.updateActionsImmediately()
-                        
-                        val success = exitCode == 0
-                        setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
-                    }
-                } catch (ex: Exception) {
-                    AutoDevNotifications.notify(project, "Error executing command: ${ex.message}")
-                    ApplicationManager.getApplication().invokeLater {
-                        stdWriter.setExecuting(false)
-                        // Clear the running icon.
-                        titleLabel.icon = null
-                        isExecuting = false
-                        
-                        // 更新工具栏以显示执行按钮
-                        actionGroup.update(e)
-                        toolbar.updateActionsImmediately()
-                        
-                        resultSketch.updateViewText("${stdWriter.getContent()}\nError: ${ex.message}", true)
-                        setResultStatus(false, ex.message)
-                    }
-                }
-            }
-        }
     }
 
     private fun sendToSketch(project: Project, output: String) {
