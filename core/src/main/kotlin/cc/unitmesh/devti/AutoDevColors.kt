@@ -33,6 +33,11 @@ object AutoDevColors {
     // Accept button background color
     val ACCEPT_BUTTON_COLOR: JBColor = JBColor(0x8AA653, 0x8AA653)
     
+    // Additional colors extracted from SingleFileDiffSketch
+    val FILE_HOVER_COLOR = JBColor(0x4A7EB3, 0x589DF6) // Blue color for hover state
+    val ADD_LINE_COLOR = JBColor(0x00FF00, 0x00FF00)
+    val REMOVE_LINE_COLOR = JBColor(0xFF0000, 0xFF0000)
+
     // Loading panel colors
     object LoadingPanel {
         // Background colors

@@ -2,6 +2,7 @@ package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.AutoDevColors
 import cc.unitmesh.devti.gui.planner.isFile
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.settings.coder.coderSetting
@@ -102,7 +103,7 @@ class SingleFileDiffSketch(
             border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
 
             val originalColor = foreground
-            val hoverColor = JBColor(0x4A7EB3, 0x589DF6) // Blue color for hover state
+            val hoverColor = AutoDevColors.FILE_HOVER_COLOR // Extracted from inline JBColor definition
 
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
@@ -131,7 +132,7 @@ class SingleFileDiffSketch(
         }
         val addLabel = JBLabel("+$addLine").apply {
             border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
-            foreground = JBColor(0x00FF00, 0x00FF00)
+            foreground = AutoDevColors.ADD_LINE_COLOR // Extracted from inline JBColor definition
         }
 
         val removeLine = patch.hunks.sumOf {
@@ -139,7 +140,7 @@ class SingleFileDiffSketch(
         }
         val removeLabel = JBLabel("-$removeLine").apply {
             border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
-            foreground = JBColor(0xFF0000, 0xFF0000)
+            foreground = AutoDevColors.REMOVE_LINE_COLOR // Extracted from inline JBColor definition
         }
 
         val filePanel: JPanel = if (patch.beforeFileName != null) {
@@ -293,7 +294,7 @@ class SingleFileDiffSketch(
             }
 
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
-            foreground = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
+            foreground = if (isEnabled) AutoDevColors.REMOVE_LINE_COLOR else JPanel().background // Replacing inline JBColor
 
             addActionListener {
                 FileEditorManager.getInstance(myProject).openFile(file, true)
