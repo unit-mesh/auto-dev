@@ -24,11 +24,12 @@ object AutoDevColors {
 
     // Diff and UI specific colors
     // Color for diff new line highlighter (as an Int used in TextAttributes)
+    val DIFF_NEW_LINE_COLOR_SHADOW = JBColor(0x3000FF00, 0x3000FF00)
     val DIFF_NEW_LINE_COLOR: Int = 0x3000FF00
     // Background color for deletion inlay
     val DELETION_INLAY_COLOR: JBColor = JBColor(0x30FF0000, 0x30FF0000)
     // Reject button background color
-    val REJECT_BUTTON_COLOR: JBColor = JBColor(0x99FF0000.toInt(), 0x99FF0000.toInt())
+    val REJECT_BUTTON_COLOR: JBColor = JBColor(Color(255, 0, 0, 153), Color(255, 0, 0, 153))
     // Accept button background color
     val ACCEPT_BUTTON_COLOR: JBColor = JBColor(0x8AA653, 0x8AA653)
     
