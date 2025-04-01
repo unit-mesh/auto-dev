@@ -29,7 +29,6 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     var planLangSketch: PlanLangSketch =
         PlanLangSketch(project, content, MarkdownPlanParser.parse(content).toMutableList(), true)
 
-    private var markdownEditor: MarkdownLanguageField? = null
     private val contentPanel = JBUI.Panels.simplePanel()
 
     private var currentView: PlannerView? = null
@@ -116,16 +115,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     }
 
     override fun dispose() {
-        markdownEditor = null
-    }
 
-    interface PlannerView {
-        val viewType: PlannerViewType
-        fun initialize(window: AutoDevPlannerToolWindow)
-    }
-
-    enum class PlannerViewType {
-        PLAN, EDITOR, ISSUE_INPUT, LOADING
     }
 
     inner class PlanSketchView : PlannerView {
@@ -236,4 +226,13 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             }
         }
     }
+}
+
+interface PlannerView {
+    val viewType: PlannerViewType
+    fun initialize(window: AutoDevPlannerToolWindow)
+}
+
+enum class PlannerViewType {
+    PLAN, EDITOR, ISSUE_INPUT, LOADING
 }
