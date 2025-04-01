@@ -61,11 +61,9 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         this.component.border = JBUI.Borders.empty()
     }
 
-    // 将内部变量公开，以便 TerminalExecuteAction 可以访问
     var lastExecutionResults: String = ""
     var hasExecutionResults: Boolean = false
     
-    // 将这些变量从私有变成公开
     var isExecuting = false
     var currentExecutionJob: Job? = null
 
@@ -105,6 +103,8 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     private var resizableTerminalPanel: ResizableTerminalPanel
     private var isTerminalPanelVisible = false
 
+    var currentExecutionState: TerminalExecutionState = TerminalExecutionState.READY
+
     init {
         val projectDir = project.guessProjectDir()?.path
 
@@ -137,27 +137,52 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
     }
 
-    // 将 setResultStatus 从 private 改为 public
-    fun setResultStatus(success: Boolean, errorMessage: String? = null) {
+    /**
+     * 设置终端执行结果的状态
+     * 
+     * @param state 执行状态
+     * @param message 附加消息（如错误信息）
+     */
+    fun setResultStatus(state: TerminalExecutionState, message: String? = null) {
         ApplicationManager.getApplication().invokeLater {
-            when {
-                success -> {
+            when (state) {
+                TerminalExecutionState.READY -> {
+                    resultPanel.background = UIUtil.getPanelBackground()
+                    resultPanel.border = JBUI.Borders.emptyTop(1)
+                    collapsibleResultPanel.setTitle("准备执行")
+                }
+                
+                TerminalExecutionState.EXECUTING -> {
+                    resultPanel.background = UIUtil.getPanelBackground()
+                    resultPanel.border = LineBorder(AutoDevColors.EXECUTION_RUNNING_BORDER, 1)
+                    collapsibleResultPanel.setTitle("⏳ 正在执行...")
+                }
+                
+                TerminalExecutionState.SUCCESS -> {
                     resultPanel.background = AutoDevColors.EXECUTION_SUCCESS_BACKGROUND
                     resultPanel.border = LineBorder(AutoDevColors.EXECUTION_SUCCESS_BORDER, 1)
-                    collapsibleResultPanel.setTitle("✅ Execution Successful")
+                    collapsibleResultPanel.setTitle("✅ 执行成功")
                 }
-
-                else -> {
+                
+                TerminalExecutionState.FAILED -> {
                     resultPanel.background = AutoDevColors.EXECUTION_ERROR_BACKGROUND
                     resultPanel.border = LineBorder(AutoDevColors.EXECUTION_ERROR_BORDER, 1)
-                    val errorText = errorMessage?.let { ": $it" } ?: ""
-                    collapsibleResultPanel.setTitle("❌ Execution Failed$errorText")
+                    val errorText = message?.let { ": $it" } ?: ""
+                    collapsibleResultPanel.setTitle("❌ 执行失败$errorText")
+                }
+                
+                TerminalExecutionState.TERMINATED -> {
+                    resultPanel.background = UIUtil.getPanelBackground()
+                    resultPanel.border = LineBorder(AutoDevColors.EXECUTION_WARNING_BORDER, 1)
+                    collapsibleResultPanel.setTitle("⚠️ 执行已终止")
                 }
             }
+            
+            currentExecutionState = state
             resultPanel.repaint()
         }
     }
-
+    
     private fun toggleTerminalAction() {
         resizableTerminalPanel.isVisible = !resizableTerminalPanel.isVisible
         resizableTerminalPanel.revalidate()
@@ -289,7 +314,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                     "⚠️ WARNING: $reason\nThe command was not auto-executed for safety reasons.\nPlease review and run manually if you're sure.",
                     true
                 )
-                setResultStatus(false, reason)
+                setResultStatus(TerminalExecutionState.TERMINATED, reason)
                 collapsibleResultPanel.expand()
             }
             return

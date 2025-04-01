@@ -39,6 +39,8 @@ object AutoDevColors {
     val EXECUTION_SUCCESS_BACKGROUND = JBColor(Color(233, 255, 233), Color(0, 77, 0))
     val EXECUTION_ERROR_BACKGROUND = JBColor(Color(255, 233, 233), Color(77, 0, 0))
     val EXECUTION_SUCCESS_BORDER = JBColor(Color(0, 128, 0), Color(0, 100, 0))
+    val EXECUTION_RUNNING_BORDER = JBColor(Color(0, 0, 255), Color(0, 0, 200))
+    val EXECUTION_WARNING_BORDER = JBColor(Color(255, 165, 0), Color(200, 100, 0))
     val EXECUTION_ERROR_BORDER = JBColor(Color(128, 0, 0), Color(100, 0, 0))
 
     // Loading panel colors

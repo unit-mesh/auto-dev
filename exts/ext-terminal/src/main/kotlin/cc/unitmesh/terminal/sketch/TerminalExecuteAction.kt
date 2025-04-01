@@ -7,6 +7,7 @@ import cc.unitmesh.devti.sketch.run.ProcessExecutor
 import cc.unitmesh.devti.sketch.run.UIUpdatingWriter
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -17,6 +18,7 @@ import org.jetbrains.ide.PooledThreadExecutor
 class TerminalExecuteAction(
     private val sketch: TerminalLangSketch
 ) : AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AutoDevIcons.RUN) {
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
         super.update(e)
@@ -42,7 +44,7 @@ class TerminalExecuteAction(
 
                 // 更新UI以反映停止状态
                 sketch.resultSketch.updateViewText(sketch.lastExecutionResults + "\n\n[执行已手动停止]", true)
-                sketch.setResultStatus(false, "执行已手动停止")
+                sketch.setResultStatus(TerminalExecutionState.TERMINATED)
 
                 // 更新工具栏
                 sketch.actionGroup.update(e)
@@ -80,7 +82,7 @@ class TerminalExecuteAction(
 
         sketch.resultSketch.updateViewText("", true)
         stdWriter.setExecuting(true)
-        sketch.setResultStatus(false)
+        sketch.setResultStatus(TerminalExecutionState.EXECUTING)
 
         sketch.currentExecutionJob = AutoDevCoroutineScope.Companion.scope(sketch.project).launch {
             val executor = sketch.project.getService(ProcessExecutor::class.java)
@@ -105,13 +107,16 @@ class TerminalExecuteAction(
                     sketch.toolbar.updateActionsImmediately()
 
                     val success = exitCode == 0
-                    sketch.setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
+                    sketch.setResultStatus(
+                        if (success) TerminalExecutionState.SUCCESS else TerminalExecutionState.FAILED,
+                        if (!success) "进程退出码 $exitCode" else null
+                    )
                 }
             } catch (ex: Exception) {
-                AutoDevNotifications.notify(sketch.project, "Error executing command: ${ex.message}")
+                AutoDevNotifications.notify(sketch.project, "执行命令时出错: ${ex.message}")
                 ApplicationManager.getApplication().invokeLater {
                     stdWriter.setExecuting(false)
-                    // Clear the running icon.
+                    // 清除运行图标
                     sketch.titleLabel.icon = null
                     sketch.isExecuting = false
 
@@ -119,8 +124,8 @@ class TerminalExecuteAction(
                     sketch.actionGroup.update(e)
                     sketch.toolbar.updateActionsImmediately()
 
-                    sketch.resultSketch.updateViewText("${stdWriter.getContent()}\nError: ${ex.message}", true)
-                    sketch.setResultStatus(false, ex.message)
+                    sketch.resultSketch.updateViewText("${stdWriter.getContent()}\n错误: ${ex.message}", true)
+                    sketch.setResultStatus(TerminalExecutionState.FAILED, ex.message)
                 }
             }
         }
