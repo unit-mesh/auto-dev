@@ -50,6 +50,8 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.border.LineBorder
 import cc.unitmesh.devti.AutoDevColors
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import kotlinx.coroutines.Job
 
 class TerminalSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
@@ -70,6 +72,10 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     private var lastExecutionResults: String = ""
     private var hasExecutionResults: Boolean = false
+    
+    // 添加变量追踪执行状态和执行任务
+    private var isExecuting = false
+    private var currentExecutionJob: Job? = null
 
     val titleLabel = JLabel("Terminal").apply {
         border = JBUI.Borders.empty(0, 10)
@@ -325,8 +331,49 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
 
     inner class TerminalExecuteAction :
         AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AutoDevIcons.RUN) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+
+        override fun update(e: AnActionEvent) {
+            super.update(e)
+            // 根据当前执行状态更新图标和文本
+            if (isExecuting) {
+                e.presentation.icon = AllIcons.Actions.Suspend
+                e.presentation.text = "Stop"
+                e.presentation.description = AutoDevBundle.message("sketch.terminal.stop")
+            } else {
+                e.presentation.icon = AutoDevIcons.RUN
+                e.presentation.text = "Execute"
+                e.presentation.description = AutoDevBundle.message("sketch.terminal.execute")
+            }
+        }
+            
         override fun actionPerformed(e: AnActionEvent) {
+            if (isExecuting) {
+                // 如果正在执行，则停止执行
+                currentExecutionJob?.cancel()
+                
+                ApplicationManager.getApplication().invokeLater {
+                    isExecuting = false
+                    titleLabel.icon = null
+                    
+                    // 更新UI以反映停止状态
+                    resultSketch.updateViewText(lastExecutionResults + "\n\n[执行已手动停止]", true)
+                    setResultStatus(false, "执行已手动停止")
+                    
+                    // 更新工具栏
+                    actionGroup.update(e)
+                    toolbar.updateActionsImmediately()
+                }
+                return
+            }
+            
+            // 开始执行
+            isExecuting = true
             titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
+            
+            // 更新工具栏以显示停止按钮
+            actionGroup.update(e)
+            toolbar.updateActionsImmediately()
 
             hasExecutionResults = false
             lastExecutionResults = ""
@@ -334,6 +381,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             val stdWriter = UIUpdatingWriter(
                 onTextUpdate = { text, complete ->
                     resultSketch.updateViewText(text, complete)
+                    lastExecutionResults = text
                 },
                 onPanelUpdate = { title, _ ->
                     collapsibleResultPanel.setTitle(title)
@@ -350,7 +398,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
             stdWriter.setExecuting(true)
             setResultStatus(false)
 
-            AutoDevCoroutineScope.scope(project).launch {
+            currentExecutionJob = AutoDevCoroutineScope.scope(project).launch {
                 val executor = project.getService(ProcessExecutor::class.java)
                 try {
                     val dispatcher = PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
@@ -366,6 +414,12 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                         hasExecutionResults = true
 
                         titleLabel.icon = null
+                        isExecuting = false
+                        
+                        // 更新工具栏以显示执行按钮
+                        actionGroup.update(e)
+                        toolbar.updateActionsImmediately()
+                        
                         val success = exitCode == 0
                         setResultStatus(success, if (!success) "Process exited with code $exitCode" else null)
                     }
@@ -375,6 +429,12 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                         stdWriter.setExecuting(false)
                         // Clear the running icon.
                         titleLabel.icon = null
+                        isExecuting = false
+                        
+                        // 更新工具栏以显示执行按钮
+                        actionGroup.update(e)
+                        toolbar.updateActionsImmediately()
+                        
                         resultSketch.updateViewText("${stdWriter.getContent()}\nError: ${ex.message}", true)
                         setResultStatus(false, ex.message)
                     }
