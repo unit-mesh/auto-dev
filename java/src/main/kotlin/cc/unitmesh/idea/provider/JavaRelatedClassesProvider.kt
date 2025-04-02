@@ -43,6 +43,7 @@ class JavaRelatedClassesProvider : RelatedClassesProvider {
     ): List<PsiNamedElement> {
         return when (element) {
             is PsiMethod -> runReadAction { JavaCallHelper.findCallers(project, element) }
+            is PsiClass -> runReadAction { JavaCallHelper.findCallers(project, element) }
             else -> emptyList()
         }
     }
