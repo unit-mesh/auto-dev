@@ -13,6 +13,7 @@ import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.devti.util.getOrCreateDirectory
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
+import com.intellij.diff.contents.EmptyContent
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.simple.SimpleDiffViewer
@@ -232,7 +233,7 @@ class SingleFileDiffSketch(
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
-            SimpleDiffRequest("Diff", newDocContent, newDocContent, "AI suggestion", "AI suggestion")
+            SimpleDiffRequest("Diff", EmptyContent(), newDocContent, "", "AI suggestion")
         return diffRequest
     }
 
@@ -262,11 +263,11 @@ class SingleFileDiffSketch(
                 if (file is LightVirtualFile) {
                     var fileName = file.name.substringAfterLast("/")
                     val filePath = file.path.substringBeforeLast(fileName)
-                    val directory = getOrCreateDirectory(myProject.baseDir, filePath)
 
                     try {
-                        val vfile = directory.createChildData(this, fileName)
                         runReadAction {
+                            val directory = getOrCreateDirectory(myProject.baseDir, filePath)
+                            val vfile = directory.createChildData(this, fileName)
                             vfile.writeText(patch!!.patchedText)
                         }
                     } catch (e: Exception) {
