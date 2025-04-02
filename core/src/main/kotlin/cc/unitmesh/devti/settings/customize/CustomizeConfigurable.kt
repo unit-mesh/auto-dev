@@ -90,7 +90,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
         row {
             cell(jBLabel("counit.mcp.services.placeholder", 1))
             
-            button(AutoDevBundle.message("settings.autodev.coder.testConnectionButton.tips")) {
+            button(AutoDevBundle.message("sketch.mcp.testMcp")) {
                 val dialog = McpServicesTestDialog(project)
                 dialog.show()
             }
