@@ -7,6 +7,7 @@ import cc.unitmesh.devti.custom.schema.MCP_SERVERS_FILE_NAME
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.mcp.client.McpServicesTestDialog
 import cc.unitmesh.devti.provider.local.JsonTextProvider
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
@@ -17,20 +18,9 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.toMutableProperty
-import com.intellij.ui.table.JBTable
-import io.modelcontextprotocol.kotlin.sdk.Tool
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.awt.BorderLayout
-import javax.swing.JComponent
-import javax.swing.table.DefaultTableModel
 
 class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBundle.message("customize.title")),
     Disposable {
@@ -130,64 +120,6 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
                 it.agentJsonConfig = state.agentJsonConfig
                 it.customPrompts = state.customPrompts
                 it.mcpServerConfig = state.mcpServerConfig
-            }
-        }
-    }
-
-    class McpServicesTestDialog(private val project: Project) : DialogWrapper(project) {
-        private val loadingPanel = JBLoadingPanel(BorderLayout(), this.disposable)
-        private val tableModel = DefaultTableModel(arrayOf("Server", "Tool Name", "Description"), 0)
-        private val table = JBTable(tableModel)
-        
-        init {
-            title = "MCP Services Test Results"
-            init()
-            loadServices()
-        }
-        
-        override fun createCenterPanel(): JComponent {
-            loadingPanel.add(table, BorderLayout.CENTER)
-            loadingPanel.setLoadingText("Loading MCP services...")
-            return loadingPanel
-        }
-        
-        private fun loadServices() {
-            loadingPanel.startLoading()
-            
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val serverManager = CustomMcpServerManager.instance(project)
-                    val serverInfos = serverManager.collectServerInfos()
-                    
-                    withContext(Dispatchers.IO) {
-                        updateTable(serverInfos)
-                        loadingPanel.stopLoading()
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.IO) {
-                        tableModel.addRow(arrayOf("Error", e.message, ""))
-                        loadingPanel.stopLoading()
-                    }
-                }
-            }
-        }
-        
-        private fun updateTable(serverInfos: Map<String, List<Tool>>) {
-            tableModel.rowCount = 0
-            
-            if (serverInfos.isEmpty()) {
-                tableModel.addRow(arrayOf("No servers found", "", ""))
-                return
-            }
-            
-            serverInfos.forEach { (server, tools) ->
-                if (tools.isEmpty()) {
-                    tableModel.addRow(arrayOf(server, "No tools found", ""))
-                } else {
-                    tools.forEach { tool ->
-                        tableModel.addRow(arrayOf(server, tool.name, tool.description))
-                    }
-                }
             }
         }
     }
