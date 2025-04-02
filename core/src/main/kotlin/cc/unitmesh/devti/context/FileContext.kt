@@ -41,4 +41,10 @@ class FileContext(
             if (classDetails.isNotEmpty()) append("$classDetails\n")
         }
     }
+
+    fun formatClass(): String {
+        return classes.joinToString(separator = "\n") { classContext ->
+            ClassContextProvider(false).from(classContext).format()
+        }
+    }
 }
