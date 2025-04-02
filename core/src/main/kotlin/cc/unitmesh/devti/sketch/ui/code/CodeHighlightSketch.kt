@@ -44,7 +44,7 @@ open class CodeHighlightSketch(
     val fileName: String? = null,
     val withLeftRightBorder: Boolean = true,
     val showToolbar: Boolean = true
-) : JBPanel<CodeHighlightSketch>(VerticalLayout(4)), DataProvider, LangSketch, Disposable {
+) : JBPanel<CodeHighlightSketch>(VerticalLayout(2)), DataProvider, LangSketch, Disposable {
     private val devinLineThreshold = 10
     private val minDevinLineThreshold = 1
     private var isDevIns = false
@@ -74,9 +74,9 @@ open class CodeHighlightSketch(
         val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
 
         border = if (withLeftRightBorder) {
-            JBEmptyBorder(8, 8, 8, 8)
+            JBEmptyBorder(4, 4, 4, 4)
         } else {
-            JBEmptyBorder(8, 0, 0, 0)
+            JBEmptyBorder(4, 0, 0, 0)
         }
 
         editor.component.isOpaque = true

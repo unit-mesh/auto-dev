@@ -382,7 +382,7 @@ open class SketchToolWindow(
                 else -> null
             } ?: return@map null
 
-            panel.border = JBEmptyBorder(4)
+            panel.border = JBEmptyBorder(0, 4, 0, 4)
             panel
         }.filterNotNull()
 
@@ -390,7 +390,7 @@ open class SketchToolWindow(
 
         val blockedPanel = JPanel(VerticalLayout(JBUI.scale(0))).apply {
             this.isOpaque = true
-            this.border = JBEmptyBorder(4)
+            this.border = JBEmptyBorder(0, 4, 0, 4)
             panels.forEach { this.add(it) }
         }
 

@@ -101,7 +101,7 @@ class SingleFileDiffSketch(
 
         val filepathLabel = JBLabel(fileName).apply {
             icon = currentFile.fileType.icon
-            border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
+            border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
 
             val originalColor = foreground
             val hoverColor = AutoDevColors.FILE_HOVER_COLOR // Extracted from inline JBColor definition
@@ -116,14 +116,14 @@ class SingleFileDiffSketch(
                     cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
                     border = BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 0, 1, 0, hoverColor),
-                        BorderFactory.createEmptyBorder(2, 10, 1, 10)
+                        BorderFactory.createEmptyBorder(2, 4, 1, 4)
                     )
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
                     foreground = originalColor
                     cursor = java.awt.Cursor.getDefaultCursor()
-                    border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
+                    border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
                 }
             })
         }
@@ -163,7 +163,7 @@ class SingleFileDiffSketch(
         patchActionPanel = JPanel(BorderLayout()).apply {
             add(filePanel, BorderLayout.WEST)
             add(actionPanel, BorderLayout.EAST)
-            border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            border = BorderFactory.createEmptyBorder(4, 4, 4, 4)
         }
 
         val fileContainer = JPanel(BorderLayout(10, 10)).also {

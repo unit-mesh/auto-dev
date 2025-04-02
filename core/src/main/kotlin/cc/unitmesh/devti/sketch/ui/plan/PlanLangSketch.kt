@@ -21,7 +21,7 @@ class PlanLangSketch(
     private var content: String,
     private var agentTaskItems: MutableList<AgentTaskEntry>,
     private val isInToolwindow: Boolean = false
-) : JBPanel<PlanLangSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
+) : JBPanel<PlanLangSketch>(BorderLayout(JBUI.scale(0), 0)), ExtensionLangSketch {
     private val contentPanel = JPanel(VerticalLayout(JBUI.scale(0)))
     val scrollPane: JBScrollPane
     private val toolbarFactory = PlanToolbarFactory(project)
@@ -30,7 +30,7 @@ class PlanLangSketch(
     init {
         if (!isInToolwindow) {
             add(toolbarFactory.createToolbar(this), BorderLayout.NORTH)
-            border = JBUI.Borders.empty(8)
+            border = JBUI.Borders.empty(4)
         }
 
         renderPlan()
