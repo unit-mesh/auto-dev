@@ -3,7 +3,7 @@ package cc.unitmesh.idea.provider
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.idea.context.JavaContextCollection
 import cc.unitmesh.idea.service.JavaTypeUtil.resolveByType
-import cc.unitmesh.idea.util.JavaCallHelper.findCallees
+import cc.unitmesh.idea.util.JavaCallHelper
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -32,7 +32,17 @@ class JavaRelatedClassesProvider : RelatedClassesProvider {
 
     override fun lookupCallee(project: Project, element: PsiElement): List<PsiNamedElement> {
         return when (element) {
-            is PsiMethod -> runReadAction { findCallees(project, element) }
+            is PsiMethod -> runReadAction { JavaCallHelper.findCallees(project, element) }
+            else -> emptyList()
+        }
+    }
+
+    override fun lookupCaller(
+        project: Project,
+        element: PsiElement
+    ): List<PsiNamedElement> {
+        return when (element) {
+            is PsiMethod -> runReadAction { JavaCallHelper.findCallers(project, element) }
             else -> emptyList()
         }
     }

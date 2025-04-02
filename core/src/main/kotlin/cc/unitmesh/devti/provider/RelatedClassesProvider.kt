@@ -2,10 +2,15 @@ package cc.unitmesh.devti.provider
 
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.util.ProgressIndicatorBase
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.search.searches.MethodReferencesSearch
+import com.intellij.psi.util.PsiTreeUtil
 
 /**
  * The `RelatedClassesProvider` interface is used to provide related classes for a given element.
@@ -32,6 +37,8 @@ interface RelatedClassesProvider {
     fun lookupIO(element: PsiFile): List<PsiElement>
 
     fun lookupCallee(project: Project, element: PsiElement): List<PsiNamedElement> = emptyList()
+
+    fun lookupCaller(project: Project, element: PsiElement): List<PsiNamedElement> = emptyList()
 
     companion object {
         private val languageExtension: LanguageExtension<RelatedClassesProvider> =

@@ -19,11 +19,13 @@ class UsageInsCommand(val myProject: Project, private val symbol: String) : InsC
         if (elements.isEmpty()) return "$DEVINS_ERROR: No symbol found for $symbol"
 
         val psiElements = elements.mapNotNull {
-            RelatedClassesProvider.provide(it.language)?.lookupCallee(myProject, it)
+            RelatedClassesProvider.provide(it.language)?.lookupCaller(myProject, it)
         }.flatten()
 
         if (psiElements.isEmpty()) return "$DEVINS_ERROR: No usage found for $symbol"
 
-        return psiElements.joinToString("\n") { it.text }
+        return "Here is related to $symbol usage" + psiElements.joinToString("\n\n") {
+            runReadAction { it.text }
+        }
     }
 }
