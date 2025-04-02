@@ -19,8 +19,9 @@ object BridgeToolProvider {
         val functions = ToolchainFunctionProvider.all()
 
         commonTools += functions.flatMap {
-            if (it.toolInfos().isNotEmpty()) {
-                return@flatMap it.toolInfos()
+            val toolInfos = it.toolInfos(project)
+            if (toolInfos.isNotEmpty()) {
+                return@flatMap toolInfos
             }
 
             val funcNames = it.funcNames()

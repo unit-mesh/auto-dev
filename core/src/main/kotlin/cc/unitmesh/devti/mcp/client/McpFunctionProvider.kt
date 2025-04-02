@@ -14,10 +14,8 @@ class McpFunctionProvider : ToolchainFunctionProvider {
         return CustomMcpServerManager.instance(project).collectServerInfos().map { it.name }
     }
 
-    override suspend fun toolInfos(): List<AgentTool> {
-        val manager = CustomMcpServerManager.instance(
-            ProjectManager.getInstance().openProjects.firstOrNull() ?: return emptyList()
-        )
+    override suspend fun toolInfos(project: Project): List<AgentTool> {
+        val manager = CustomMcpServerManager.instance(project)
         return manager.collectServerInfos().map {
             val schemaJson = Json.encodeToString<Input>(it.inputSchema)
             val mockData = Json.encodeToString(MockDataGenerator.generateMockData(it.inputSchema))
@@ -26,6 +24,7 @@ class McpFunctionProvider : ToolchainFunctionProvider {
                 it.description ?: "",
                 "Here is command and JSON schema\n/${it.name}\n```json\n$schemaJson\n```",
                 isMcp = true,
+                mcpGroup = it.name,
                 completion = mockData
             )
         }

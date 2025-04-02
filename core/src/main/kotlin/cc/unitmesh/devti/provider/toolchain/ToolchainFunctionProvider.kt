@@ -5,7 +5,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 
 interface ToolchainFunctionProvider {
-    suspend fun toolInfos(): List<AgentTool> = emptyList()
+    suspend fun toolInfos(project: Project): List<AgentTool> = emptyList()
 
     suspend fun funcNames(): List<String>
 

@@ -9,6 +9,7 @@ data class AgentTool(
     val example: String,
     val isMcp: Boolean = false,
     val completion: String = "",
+    val mcpGroup: String = "",
 ) : Tool {
     override fun toString(): String {
         val string = if (description.isEmpty()) "" else """desc: $description"""

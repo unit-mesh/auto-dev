@@ -6,6 +6,7 @@ import cc.unitmesh.devti.agent.Tool
 import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import java.nio.charset.StandardCharsets
 import javax.swing.Icon
@@ -178,9 +179,11 @@ enum class BuiltinCommand(
             return providerName
         }
 
-        suspend fun allToolchains(): List<AgentTool> {
+        suspend fun allToolchains(project: Project?): List<AgentTool> {
+            if (project == null) return emptyList()
+
             return ToolchainFunctionProvider.all().map {
-                val toolInfo: List<AgentTool> = it.toolInfos()
+                val toolInfo: List<AgentTool> = it.toolInfos(project)
                 if (toolInfo.isNotEmpty()) {
                     return@map toolInfo
                 }

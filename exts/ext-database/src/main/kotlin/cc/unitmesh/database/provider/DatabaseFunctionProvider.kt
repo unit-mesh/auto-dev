@@ -13,7 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 
 class DatabaseFunctionProvider : ToolchainFunctionProvider {
-    override suspend fun toolInfos(): List<AgentTool> {
+    override suspend fun toolInfos(project: Project): List<AgentTool> {
         val example = BuiltinCommand.example("database")
         return listOf(AgentTool("database", "Database schema and query tool", example))
     }

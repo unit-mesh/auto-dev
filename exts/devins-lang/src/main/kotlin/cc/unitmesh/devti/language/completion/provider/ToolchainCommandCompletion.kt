@@ -16,7 +16,7 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
         result: CompletionResultSet,
     ) {
         runBlocking {
-            BuiltinCommand.allToolchains().forEach {
+            BuiltinCommand.allToolchains(parameters.originalFile.project).forEach {
                 val lookupElement = createCommandCompletionCandidate(it)
                 result.addElement(lookupElement)
             }
@@ -30,12 +30,20 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
         }
 
         val element = LookupElementBuilder.create(tool.name).withIcon(AutoDevIcons.MCP)
-            .withTailText(tool.description)
+            .withTailText(getText(tool))
             .withInsertHandler { context, _ ->
                 context.editor.caretModel.moveToOffset(context.tailOffset)
                 context.editor.document.insertString(context.tailOffset, "\n````json\n${tool.completion}\n```")
             }
 
         return PrioritizedLookupElement.withPriority(element, 97.0)
+    }
+
+    private fun getText(tool: AgentTool): String {
+        return return if (tool.mcpGroup.isNotEmpty()) {
+            " ${tool.mcpGroup}: ${tool.description}"
+        } else {
+            tool.description
+        }
     }
 }
