@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.shadow
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
@@ -22,26 +23,26 @@ class IssueInputViewPanel(
     private var textArea: MarkdownLanguageField? = null
 
     init {
-        textArea = MarkdownLanguageField(project, "", "Enter Issue Description", "issue.md")
+        textArea = MarkdownLanguageField(project, "", AutoDevBundle.message("sketch.issue.input.placeholder"), "issue.md")
 
         val buttonPanel = JPanel(BorderLayout()).apply {
             background = textArea?.getEditor(true)?.backgroundColor
         }
 
         val buttonsBox = Box.createHorizontalBox().apply {
-            add(JButton("Submit").apply {
+            add(JButton(AutoDevBundle.message("sketch.issue.input.submit")).apply {
                 addActionListener {
                     val text = textArea?.text ?: ""
                     if (text.isNotBlank()) {
                         handlingExecute(text)
                         onSubmit(text)
                     } else {
-                        AutoDevNotifications.notify(project, "Input cannot be empty")
+                        AutoDevNotifications.notify(project, AutoDevBundle.message("chat.input.tips"))
                     }
                 }
             })
             add(Box.createHorizontalStrut(8))
-            add(JButton("Cancel").apply {
+            add(JButton(AutoDevBundle.message("sketch.issue.input.cancel")).apply {
                 addActionListener {
                     onCancel()
                 }

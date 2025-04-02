@@ -87,7 +87,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
         }
         row {
             cell(jBLabel("counit.mcp.services.placeholder", 1))
-            link(AutoDevBundle.message("counit.mcp.services.docs"), {
+            link(AutoDevBundle.message("sketch.mcp.services.docs"), {
                 BrowserUtil.browse("https://ide.unitmesh.cc/mcp")
             })
             button(AutoDevBundle.message("sketch.mcp.testMcp")) {
