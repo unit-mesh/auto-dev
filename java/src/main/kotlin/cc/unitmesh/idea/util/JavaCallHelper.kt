@@ -17,6 +17,7 @@ import com.intellij.psi.search.searches.ClassInheritorsSearch
 import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.usageView.UsageInfo
+import com.intellij.usages.UsageInfo2UsageAdapter
 import com.intellij.util.CommonProcessors
 import com.intellij.util.Function
 
@@ -79,7 +80,7 @@ object JavaCallHelper {
 
     fun findCallers(project: Project, clazz: PsiClass): List<PsiMethod> {
         val options = JavaClassFindUsagesOptions(project)
-        val processor = CommonProcessors.CollectProcessor<UsageInfo?>()
+        val processor = CommonProcessors.CollectProcessor<UsageInfo>()
         val findUsagesManager = (FindManager.getInstance(project) as FindManagerImpl).findUsagesManager
         val handler = findUsagesManager.getFindUsagesHandler(clazz, true)
 
@@ -87,11 +88,12 @@ object JavaCallHelper {
 
         ProgressManager.getInstance().runProcess(Runnable {
             handler!!.processElementUsages(clazz, processor, options)
-
-            val usages = processor.getResults()
-            val text = StringUtil.join<UsageInfo?>(usages, Function { u: UsageInfo? -> u!!.element!!.text }, ",")
-
-            println("Find usages: $text")
+            processor.getResults().map {
+                val parent = PsiTreeUtil.getParentOfType(it.element, PsiMethod::class.java)
+                if (parent != null) {
+                    callers.add(parent)
+                }
+            }
         }, ProgressIndicatorBase())
 
         return callers
