@@ -30,18 +30,19 @@ import com.intellij.execution.configurations.GeneralCommandLine
 
 @Service(Service.Level.PROJECT)
 class CustomMcpServerManager(val project: Project) {
-    val cached = mutableMapOf<String, List<Tool>>()
+    val cached = mutableMapOf<String, Map<String, List<Tool>>>()
     val toolClientMap = mutableMapOf<Tool, Client>()
 
-    suspend fun collectServerInfos(): List<Tool> {
+    suspend fun collectServerInfos(): Map<String, List<Tool>> {
         val mcpServerConfig = project.customizeSetting.mcpServerConfig
-        if (mcpServerConfig.isEmpty()) return emptyList()
+        if (mcpServerConfig.isEmpty()) return emptyMap()
         if (cached.containsKey(mcpServerConfig)) return cached[mcpServerConfig]!!
         val mcpConfig = McpServer.load(mcpServerConfig)
-        if (mcpConfig == null) return emptyList()
+        if (mcpConfig == null) return emptyMap()
 
-        val tools: List<Tool> = mcpConfig.mcpServers.map { entry ->
-            if (entry.value.disabled == true) return@map emptyList<Tool>()
+        val toolsMap = mutableMapOf<String, List<Tool>>()
+        mcpConfig.mcpServers.forEach { entry ->
+            if (entry.value.disabled == true) return@forEach
             val resolvedCommand = resolveCommand(entry.value.command)
             logger<CustomMcpServerManager>().info("Found MCP command: $resolvedCommand")
             val client = Client(clientInfo = Implementation(name = entry.key, version = "1.0.0"))
@@ -62,16 +63,15 @@ class CustomMcpServerManager(val project: Project) {
                 }
                 listTools?.tools ?: emptyList()
             } catch (e: Exception) {
-                throw e
                 logger<CustomMcpServerManager>().warn("Failed to list tools from ${entry.key}: $e")
                 emptyList<Tool>()
             }
+            
+            toolsMap[entry.key] = tools
+        }
 
-            return@map tools
-        }.flatMap { it }
-
-        cached[mcpServerConfig] = tools
-        return tools
+        cached[mcpServerConfig] = toolsMap
+        return toolsMap
     }
 
     fun execute(project: Project, tool: Tool, map: String): String {
@@ -165,3 +165,4 @@ fun resolveCommand(command: String): String {
     }
     return command
 }
+
