@@ -6,13 +6,15 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtImportList
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtPackageDirective
 
 class KotlinFileContextBuilder : FileContextBuilder {
-    @NotNull
-    override fun getFileContext(psiFile: PsiFile): FileContext {
+    override fun getFileContext(psiFile: PsiFile): FileContext? {
+        if (psiFile !is KtFile) return null
+
         val name = psiFile.name
         val path = psiFile.virtualFile?.path ?: ""
 

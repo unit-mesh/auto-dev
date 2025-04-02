@@ -21,7 +21,7 @@ class JavaClassContextBuilder : ClassContextBuilder {
         val usages =
             if (gatherUsages) ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
-        val annotations: List<String> = psiElement.annotations.mapNotNull {
+        val annotations: List<String> = runReadAction { psiElement.annotations }.mapNotNull {
             it.text
         }
 

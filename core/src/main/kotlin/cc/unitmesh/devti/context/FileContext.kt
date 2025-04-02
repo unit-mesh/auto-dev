@@ -35,11 +35,10 @@ class FileContext(
         val filePath = getFieldString("file path", path)
 
         return buildString {
-            append("file name: $name\n")
+            append("$filePath\n")
             if (filePackage.isNotEmpty()) append("$filePackage\n")
             if (fileImports.isNotEmpty()) append("$fileImports\n")
             if (classDetails.isNotEmpty()) append("$classDetails\n")
-            append("$filePath\n")
         }
     }
 }

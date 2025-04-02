@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.context.FileContextProvider
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ui.relativePath
@@ -8,6 +9,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
 
 /**
  * Todo: Spike different search API in Intellij
@@ -37,9 +39,11 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
 
         val textSearch = runReadAction { search(myProject, text, OVERLAP) }
         val results = textSearch.map { (file, lines) ->
+            val fileInfo = runReadAction { collectAdditionalFileInfo(file) }
+
             val filePath = file.relativePath(myProject)
             val linesWithContext = lines.joinToString("\n")
-            "file: $filePath\n$linesWithContext"
+            "file: $filePath\n$fileInfo\n$linesWithContext"
         }.joinToString("\n")
 
         if (results.isEmpty()) {
@@ -47,6 +51,12 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
         }
 
         return results
+    }
+
+    private fun collectAdditionalFileInfo(file: VirtualFile): String? {
+        val psiFile = PsiManager.getInstance(myProject).findFile(file) ?: return null
+        val from = FileContextProvider().from(psiFile) ?: return null
+        return "```plantuml\n" + from.format() + "\n```"
     }
 
     /**
@@ -70,7 +80,6 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
             }
 
             if (ProjectFileIndex.getInstance(project).isUnderIgnored(file)) return@iterateContent true
-            /// skip for .idea/
             if (file.path.contains(".idea")) return@iterateContent true
 
             val content = file.contentsToByteArray().toString(Charsets.UTF_8).lines()

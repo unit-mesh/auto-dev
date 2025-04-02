@@ -48,6 +48,10 @@ class ClassContext(
             "\n'" + annotations.joinToString(separator = ", ")
         }
 
+        if (className == "_") {
+            return ""
+        }
+
         return """
         |'package: $filePath$annotations
         |class $className$superClasses {
