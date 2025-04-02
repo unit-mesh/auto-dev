@@ -77,7 +77,7 @@ enum class BuiltinCommand(
     REFACTOR(
         "refactor",
         "Refactor the content of a file, only support for rename, safeDelete and move.",
-        AutoDevIcons.Idea,
+        AutoDevIcons.IDEA,
         true,
         true
     ),

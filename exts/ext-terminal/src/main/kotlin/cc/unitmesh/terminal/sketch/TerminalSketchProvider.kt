@@ -188,14 +188,14 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         executeAction = TerminalExecuteAction(this)
 
         val showText = AutoDevBundle.message("sketch.terminal.show.hide")
-        val showTerminalAction = object : AnAction(showText, showText, AutoDevIcons.Terminal) {
+        val showTerminalAction = object : AnAction(showText, showText, AutoDevIcons.TERMINAL) {
             override fun actionPerformed(e: AnActionEvent) {
                 toggleTerminalAction()
             }
         }
 
         val copyText = AutoDevBundle.message("sketch.terminal.copy.text")
-        val copyAction = object : AnAction(copyText, copyText, AutoDevIcons.Copy) {
+        val copyAction = object : AnAction(copyText, copyText, AutoDevIcons.COPY) {
             override fun actionPerformed(e: AnActionEvent) {
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 val textToCopy = if (hasExecutionResults) {

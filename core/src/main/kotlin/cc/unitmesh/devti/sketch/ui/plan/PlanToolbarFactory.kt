@@ -75,7 +75,7 @@ class PlanToolbarFactory(private val project: Project) {
             }
         }
 
-        val copyAction = object : AnAction("Copy", "Copy plan to clipboard", AutoDevIcons.Copy) {
+        val copyAction = object : AnAction("Copy", "Copy plan to clipboard", AutoDevIcons.COPY) {
             override fun actionPerformed(e: AnActionEvent) {
                 val agentStateService = project.getService(AgentStateService::class.java)
                 val currentPlan = agentStateService.getPlan()

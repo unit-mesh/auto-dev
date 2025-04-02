@@ -19,7 +19,7 @@ class CustomRenameLookupElement(val name: String) : LookupElement() {
     }
 
     override fun renderElement(presentation: LookupElementPresentation) {
-        presentation.icon = AutoDevIcons.Idea
+        presentation.icon = AutoDevIcons.IDEA
         super.renderElement(presentation)
     }
 }

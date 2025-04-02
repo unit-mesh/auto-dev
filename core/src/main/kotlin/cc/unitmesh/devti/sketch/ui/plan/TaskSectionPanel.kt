@@ -99,7 +99,7 @@ class TaskSectionPanel(
             TaskStatus.COMPLETED -> JLabel(AutoDevIcons.CHECKED)
             TaskStatus.FAILED -> JLabel(AutoDevIcons.ERROR)
             TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.InProgress)
-            TaskStatus.TODO -> JLabel(AutoDevIcons.Build)
+            TaskStatus.TODO -> JLabel(AutoDevIcons.BUILD)
         }
         leftPanel.add(statusIcon)
 

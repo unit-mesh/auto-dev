@@ -107,7 +107,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         this.sendButtonPresentation = sendButtonPresentation
 
         val stopButtonPresentation = Presentation("Stop")
-        stopButtonPresentation.icon = AutoDevIcons.Stop
+        stopButtonPresentation.icon = AutoDevIcons.STOP
         this.stopButtonPresentation = stopButtonPresentation
 
         sendButton = ActionButton(

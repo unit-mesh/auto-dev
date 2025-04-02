@@ -366,7 +366,7 @@
                     class="cc.unitmesh.devti.gui.snippet.AutoDevLanguageLabelAction"/>
 
             <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
-                    icon="cc.unitmesh.devti.AutoDevIcons.Copy"
+                    icon="cc.unitmesh.devti.AutoDevIcons.COPY"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
             <action id="AutoDev.ToolWindow.Snippet.InsertCode"
                     icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
@@ -375,7 +375,7 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.RUN"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevRunAction"/>
             <action id="AutoDev.ToolWindow.Snippet.SaveFile"
-                    icon="cc.unitmesh.devti.AutoDevIcons.SaveFile"
+                    icon="cc.unitmesh.devti.AutoDevIcons.SAVE_FILE"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevSaveFileAction"/>
         </group>
 

@@ -39,28 +39,28 @@ object AutoDevIcons {
     val REPAIR: Icon = IconLoader.getIcon("/icons/repair.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Build: Icon = IconLoader.getIcon("/icons/build.svg", AutoDevIcons::class.java)
+    val BUILD: Icon = IconLoader.getIcon("/icons/build.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Copy: Icon = IconLoader.getIcon("/icons/copy.svg", AutoDevIcons::class.java)
+    val COPY: Icon = IconLoader.getIcon("/icons/copy.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Idea: Icon = IconLoader.getIcon("/icons/idea.svg", AutoDevIcons::class.java)
+    val IDEA: Icon = IconLoader.getIcon("/icons/idea.svg", AutoDevIcons::class.java)
 
     @JvmField
     val VIEW: Icon = IconLoader.getIcon("/icons/view.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Terminal: Icon = IconLoader.getIcon("/icons/terminal.svg", AutoDevIcons::class.java)
+    val TERMINAL: Icon = IconLoader.getIcon("/icons/terminal.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val SaveFile: Icon = IconLoader.getIcon("/icons/save-file.svg", AutoDevIcons::class.java)
+    val SAVE_FILE: Icon = IconLoader.getIcon("/icons/save-file.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Stop: Icon = IconLoader.getIcon("/icons/stop.svg", AutoDevIcons::class.java)
+    val STOP: Icon = IconLoader.getIcon("/icons/stop.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val Clear: Icon = IconLoader.getIcon("/icons/clear.svg", AutoDevIcons::class.java)
+    val CLEAR: Icon = IconLoader.getIcon("/icons/clear.svg", AutoDevIcons::class.java)
 
     @JvmField
     val TOOLCHAIN: Icon = IconLoader.getIcon("/icons/toolchain.svg", AutoDevIcons::class.java)

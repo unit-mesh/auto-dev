@@ -117,7 +117,7 @@ class TaskStepPanel(
                 border = JBUI.Borders.empty()
             }
 
-            TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.Build).apply {
+            TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.BUILD).apply {
                 preferredSize = Dimension(20, 16)
                 border = JBUI.Borders.empty()
             }

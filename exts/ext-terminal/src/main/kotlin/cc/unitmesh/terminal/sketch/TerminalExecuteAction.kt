@@ -23,7 +23,7 @@ class TerminalExecuteAction(
     override fun update(e: AnActionEvent) {
         super.update(e)
         if (sketch.isExecuting) {
-            e.presentation.icon = AllIcons.Actions.Suspend
+            e.presentation.icon = AutoDevIcons.STOP
             e.presentation.text = "Stop"
             e.presentation.description = AutoDevBundle.message("sketch.terminal.stop")
         } else {
