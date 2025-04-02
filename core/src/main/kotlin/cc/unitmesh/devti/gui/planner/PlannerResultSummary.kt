@@ -3,6 +3,8 @@ package cc.unitmesh.devti.gui.planner
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.util.getOrCreateDirectory
+import cc.unitmesh.devti.util.isFile
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
@@ -21,7 +23,6 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.RollbackWorker
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -401,21 +402,5 @@ class PlannerResultSummary(
         }
         return KeyboardAccessibleActionButton(anAction)
     }
-
-    companion object {
-        private val pathSeparator = "/"
-        fun getOrCreateDirectory(baseDir: VirtualFile, path: String): VirtualFile {
-            var currentDir = baseDir
-            val pathSegments = path.split(pathSeparator).filter { it.isNotEmpty() }
-
-            for (segment in pathSegments) {
-                val childDir = currentDir.findChild(segment)
-                currentDir = childDir ?: currentDir.createChildDirectory(this, segment)
-            }
-
-            return currentDir
-        }
-    }
 }
 
-val VirtualFile.isFile: Boolean get() = isValid && !isDirectory

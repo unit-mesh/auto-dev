@@ -38,7 +38,7 @@ class DevInCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            (valuePatterns(listOf(BuiltinCommand.SYMBOL, BuiltinCommand.RELATED))),
+            (valuePatterns(listOf(BuiltinCommand.SYMBOL, BuiltinCommand.RELATED, BuiltinCommand.USAGE))),
             SymbolReferenceLanguageProvider()
         )
         extend(

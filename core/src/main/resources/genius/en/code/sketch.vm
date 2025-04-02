@@ -191,7 +191,13 @@ feat: add delete blog functionality
 <user.answer.step1>
 // here the tools will be called and send to your result.
 </user.answer.step1>
-<your.answer.step2>
+<you.answer.step2>
+现在我已经知道 SketchRunContext 的代码结构了，我还需要知道对应的调用代码和相关的测试代码，以便更好地理解代码的上下文。请允许我调用工具来获取相关的调用代码和测试代码。
+<devin>
+/call:cc.unitmesh.sketch.SketchRunContext
+</devin>
+</you.answer.step2>
+<your.answer.step3>
 根据您提供的代码库上下文信息，我建议按照以下步骤来优化 `SketchRunContext` 代码结构：
 
 ```plan
@@ -217,7 +223,7 @@ Index: SketchRunContext.java
 ```bash
 ./gradlew :bootRun
 ```
-</your.answer.step2>
+</your.answer.step3>
 </example>
 
 IF there are no relevant tools or there are missing values for required parameters, ask the user to supply these values;

@@ -1,17 +1,25 @@
 package cc.unitmesh.idea.util
 
+import com.intellij.find.FindManager
+import com.intellij.find.findUsages.JavaClassFindUsagesOptions
+import com.intellij.find.impl.FindManagerImpl
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.util.ProgressIndicatorBase
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.JavaRecursiveElementVisitor
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.searches.ClassInheritorsSearch
 import com.intellij.psi.search.searches.MethodReferencesSearch
-import com.intellij.psi.util.*
-import kotlin.collections.flatten
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.usageView.UsageInfo
+import com.intellij.usages.UsageInfo2UsageAdapter
+import com.intellij.util.CommonProcessors
+import com.intellij.util.Function
 
 object JavaCallHelper {
     /**
@@ -69,4 +77,26 @@ object JavaCallHelper {
 
         return callers.distinct()
     }
+
+    fun findCallers(project: Project, clazz: PsiClass): List<PsiMethod> {
+        val options = JavaClassFindUsagesOptions(project)
+        val processor = CommonProcessors.CollectProcessor<UsageInfo>()
+        val findUsagesManager = (FindManager.getInstance(project) as FindManagerImpl).findUsagesManager
+        val handler = findUsagesManager.getFindUsagesHandler(clazz, true)
+
+        val callers: MutableList<PsiMethod> = ArrayList()
+
+        ProgressManager.getInstance().runProcess(Runnable {
+            handler!!.processElementUsages(clazz, processor, options)
+            processor.getResults().map {
+                val parent = PsiTreeUtil.getParentOfType(it.element, PsiMethod::class.java)
+                if (parent != null) {
+                    callers.add(parent)
+                }
+            }
+        }, ProgressIndicatorBase())
+
+        return callers
+    }
 }
+

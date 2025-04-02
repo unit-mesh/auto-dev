@@ -134,11 +134,9 @@ class VueRelatedClassProvider : RelatedClassesProvider {
     private fun symbolLocationFromPropertySignature(property: TypeScriptPropertySignature): WebTypesSymbolLocation? {
         if (!property.isValid) return null
 
-        // TypeScript GlobalComponents definition
         val symbolName = property.memberName.takeIf { it.isNotEmpty() }
             ?: return null
 
-        // Locate module
         val packageName =
             property.containingFile?.originalFile?.virtualFile?.let { PackageJsonUtil.findUpPackageJson(it) }
                 ?.let { PackageJsonData.getOrCreate(it) }

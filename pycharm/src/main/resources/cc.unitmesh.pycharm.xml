@@ -27,5 +27,8 @@
 
         <runService implementation="cc.unitmesh.python.provider.PythonRunService"/>
 
+        <relatedClassProvider
+                language="Python"
+                implementationClass="cc.unitmesh.python.provider.PythonRelatedClassProvider"/>
     </extensions>
 </idea-plugin>
