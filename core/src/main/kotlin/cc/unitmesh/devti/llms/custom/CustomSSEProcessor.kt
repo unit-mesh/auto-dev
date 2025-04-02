@@ -242,10 +242,14 @@ fun JsonObject.updateCustomBody(customRequest: String, stream: Boolean? = null):
                     put(key, value)
                 }
 
-                // stream 参数优先级高于 customFields.stream
-                if (stream != null) {
-                    put("stream", stream)
+                val streamInCustomFields = customFields.jsonObject.get("stream")
+                if (streamInCustomFields == null || streamInCustomFields.jsonPrimitive.booleanOrNull == true || streamInCustomFields.jsonPrimitive.booleanOrNull == false) {
+                    // stream 参数优先级高于 customFields.stream
+                    if (stream != null) {
+                        put("stream", stream)
+                    }
                 }
+
              }
 
             // TODO clean code with magic literals
