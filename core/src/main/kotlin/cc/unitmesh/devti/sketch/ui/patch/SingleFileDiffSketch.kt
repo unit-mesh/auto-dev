@@ -58,7 +58,7 @@ class SingleFileDiffSketch(
     var patch: TextFilePatch,
     val viewDiffAction: () -> Unit
 ) : LangSketch {
-    private val mainPanel: JPanel = JPanel(VerticalLayout(5))
+    private val mainPanel: JPanel = JPanel(VerticalLayout(0))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var patchActionPanel: JPanel? = null
     private val oldCode = if (currentFile.isFile && currentFile.exists()) {
@@ -163,10 +163,10 @@ class SingleFileDiffSketch(
         patchActionPanel = JPanel(BorderLayout()).apply {
             add(filePanel, BorderLayout.WEST)
             add(actionPanel, BorderLayout.EAST)
-            border = BorderFactory.createEmptyBorder(4, 4, 4, 4)
+            border = BorderFactory.createEmptyBorder(0, 4, 0, 4)
         }
 
-        val fileContainer = JPanel(BorderLayout(10, 10)).also {
+        val fileContainer = JPanel(BorderLayout(8, 8)).also {
             it.add(patchActionPanel)
         }
         contentPanel.add(fileContainer, BorderLayout.CENTER)

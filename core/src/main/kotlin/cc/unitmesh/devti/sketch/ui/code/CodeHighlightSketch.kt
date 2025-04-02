@@ -100,7 +100,11 @@ open class CodeHighlightSketch(
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
         }
 
-        editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
+        if (lowercase == "devin") {
+            editorFragment?.editor?.setBorder(JBEmptyBorder(1, 1, 0, 1))
+        } else if(lowercase != "markdown") {
+            editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
+        }
     }
 
     override fun getViewText(): String {

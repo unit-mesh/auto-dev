@@ -30,7 +30,10 @@ class PlanLangSketch(
     init {
         if (!isInToolwindow) {
             add(toolbarFactory.createToolbar(this), BorderLayout.NORTH)
-            border = JBUI.Borders.empty(4)
+            border = JBUI.Borders.compound(
+                JBUI.Borders.empty(0, 4),
+                JBUI.Borders.customLine(JBUI.CurrentTheme.ToolWindow.borderColor(), 1)
+            )
         }
 
         renderPlan()
