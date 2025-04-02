@@ -43,6 +43,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
                 true
             )
 
+        toolbar.targetComponent = this
         val toolbarPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
         toolbarPanel.add(toolbar.component)
 

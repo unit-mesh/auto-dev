@@ -7,199 +7,198 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.components.BorderLayoutPanel
+import com.intellij.util.ui.UIUtil
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.*
 import java.awt.*
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.event.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.*
+import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
+import javax.swing.border.MatteBorder
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
-import javax.swing.table.TableRowSorter
 
 class McpServicesTestDialog(private val project: Project) : DialogWrapper(project) {
     private val loadingPanel = JBLoadingPanel(BorderLayout(), this.disposable)
-    private val tableModel = GroupableTableModel(arrayOf("Server", "Tool Name", "Description"))
-    private val table = JBTable(tableModel)
+    private val contentPanel = JPanel()
+    private val searchField = JBTextField()
     private val job = SupervisorJob()
     private val isLoading = AtomicBoolean(false)
-    private val searchField = JBTextField()
-    private val rowSorter = TableRowSorter<GroupableTableModel>(tableModel)
 
-    // Custom table model that supports grouping
-    class GroupableTableModel(columnNames: Array<String>) : DefaultTableModel(columnNames, 0) {
-        val groupRows = mutableMapOf<Int, String>() // Maps row index to group name
-        val expandedGroups = mutableSetOf<String>() // Set of expanded group names
-
-        fun addGroupRow(groupName: String): Int {
-            val rowIndex = rowCount
-            addRow(arrayOf(groupName, "", ""))
-            groupRows[rowIndex] = groupName
-            return rowIndex
-        }
-
-        fun isGroupRow(row: Int): Boolean {
-            return groupRows.containsKey(row)
-        }
-
-        fun getGroupForRow(row: Int): String? {
-            if (isGroupRow(row)) {
-                return groupRows[row]
-            }
-
-            for (i in row downTo 0) {
-                if (isGroupRow(i)) {
-                    return groupRows[i]
-                }
-            }
-
-            return null
-        }
-
-        fun toggleGroupExpansion(groupName: String) {
-            if (expandedGroups.contains(groupName)) {
-                expandedGroups.remove(groupName)
-            } else {
-                expandedGroups.add(groupName)
-            }
-        }
-
-        fun isGroupExpanded(groupName: String): Boolean {
-            return expandedGroups.contains(groupName)
-        }
-    }
+    // Track server panels and their expansion state
+    private val serverPanels = mutableMapOf<String, ServerPanel>()
+    private val expandedServers = mutableSetOf<String>()
 
     init {
         title = AutoDevBundle.message("sketch.mcp.testMcp")
-        table.preferredScrollableViewportSize = Dimension(800, 400)
-        table.rowSorter = rowSorter
-        table.rowHeight = 30
-        table.setShowGrid(false)
-        table.intercellSpacing = Dimension(0, 0)
 
-        setupTableRenderers()
+        // Setup content panel with vertical BoxLayout
+        contentPanel.layout = BoxLayout(contentPanel, BoxLayout.Y_AXIS)
+
+        // Setup search functionality
         setupSearch()
+
         init()
         loadServices()
     }
 
-    private fun setupTableRenderers() {
-        val serverRenderer = object : DefaultTableCellRenderer() {
-            override fun getTableCellRendererComponent(
-                table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-            ): Component {
-                val panel = BorderLayoutPanel()
-                panel.background = if (isSelected) table.selectionBackground else table.background
+    // Inner class for server panels
+    inner class ServerPanel(val server: String, val tools: List<Tool>) {
+        val panel = JPanel(BorderLayout())
+        val headerPanel = JPanel(BorderLayout())
+        val contentPanel = JPanel(BorderLayout())
+        val toolsTable: JBTable
+        val tableModel: DefaultTableModel
 
-                val modelRow = table.convertRowIndexToModel(row)
-                val isGroupRow = (tableModel as GroupableTableModel).isGroupRow(modelRow)
+        init {
+            // Setup header panel
+            headerPanel.background = UIUtil.getPanelBackground().brighter()
+            headerPanel.border = CompoundBorder(
+                MatteBorder(0, 0, 1, 0, JBColor.border()),
+                JBUI.Borders.empty(8, 12)
+            )
 
-                if (isGroupRow && column == 0) {
-                    val groupName = value.toString()
-                    val isExpanded = tableModel.isGroupExpanded(groupName)
+            val serverLabel = JBLabel(server)
+            serverLabel.font = serverLabel.font.deriveFont(Font.BOLD)
 
-                    val icon = if (isExpanded) AllIcons.General.ArrowDown else AllIcons.General.ArrowRight
-                    val iconLabel = JLabel(icon)
-                    iconLabel.border = JBUI.Borders.empty(0, 4, 0, 8)
+            val toolCountLabel = JBLabel("(${tools.size} ${if (tools.size == 1) "tool" else "tools"})")
+            toolCountLabel.foreground = JBColor.GRAY
+            toolCountLabel.border = JBUI.Borders.emptyLeft(8)
 
-                    val textLabel = JLabel(groupName)
-                    textLabel.font = textLabel.font.deriveFont(Font.BOLD)
+            val expandIcon = JLabel(AllIcons.General.ArrowDown)
+            expandIcon.border = JBUI.Borders.emptyRight(8)
 
-                    panel.add(iconLabel, BorderLayout.WEST)
-                    panel.add(textLabel, BorderLayout.CENTER)
+            val headerLeft = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
+            headerLeft.isOpaque = false
+            headerLeft.add(expandIcon)
+            headerLeft.add(serverLabel)
+            headerLeft.add(toolCountLabel)
 
-                    val toolCount = getToolCountForServer(groupName)
-                    if (toolCount > 0) {
-                        val countLabel = JLabel("($toolCount)")
-                        countLabel.foreground = JBColor.GRAY
-                        countLabel.border = JBUI.Borders.emptyLeft(8)
-                        panel.add(countLabel, BorderLayout.EAST)
-                    }
+            headerPanel.add(headerLeft, BorderLayout.WEST)
 
-                    panel.border = JBUI.Borders.empty(4, 8, 4, 0)
-                    panel.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-
-                    if (isSelected) {
-                        panel.background = table.selectionBackground.brighter()
-                    } else {
-                        panel.background = JBColor.background().brighter()
-                    }
-                } else {
-                    val label = JLabel(value?.toString() ?: "")
-
-                    if (column == 0) {
-                        label.border = JBUI.Borders.empty(4, 32, 4, 0)
-                    } else {
-                        label.border = JBUI.Borders.empty(4, 8, 4, 0)
-                    }
-
-                    panel.add(label, BorderLayout.CENTER)
+            // Make header clickable for expand/collapse
+            headerPanel.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+            headerPanel.addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    toggleExpansion()
                 }
+            })
 
-                return panel
-            }
-        }
+            // Setup content panel with tools table
+            tableModel = DefaultTableModel(arrayOf("Tool Name", "Description"), 0)
+            toolsTable = JBTable(tableModel)
+            toolsTable.rowHeight = 30
+            toolsTable.setShowGrid(false)
+            toolsTable.intercellSpacing = Dimension(0, 0)
 
-        val toolRenderer = object : DefaultTableCellRenderer() {
-            override fun getTableCellRendererComponent(
-                table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-            ): Component {
-                val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
-                border = JBUI.Borders.empty(4, 8, 4, 0)
-                return component
-            }
-        }
-
-        val descriptionRenderer = object : DefaultTableCellRenderer() {
-            override fun getTableCellRendererComponent(
-                table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-            ): Component {
-                val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
-                border = JBUI.Borders.empty(4, 8)
-                return component
-            }
-        }
-
-        table.getColumnModel().getColumn(0).cellRenderer = serverRenderer
-        table.getColumnModel().getColumn(1).cellRenderer = toolRenderer
-        table.getColumnModel().getColumn(2).cellRenderer = descriptionRenderer
-
-        table.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                val row = table.rowAtPoint(e.point)
-                if (row >= 0) {
-                    val modelRow = table.convertRowIndexToModel(row)
-                    if (tableModel.isGroupRow(modelRow)) {
-                        val groupName = tableModel.getValueAt(modelRow, 0) as String
-                        tableModel.toggleGroupExpansion(groupName)
-                        updateRowFilter()
-                        table.repaint()
-                    }
+            // Custom cell renderers
+            val toolNameRenderer = object : DefaultTableCellRenderer() {
+                override fun getTableCellRendererComponent(
+                    table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+                ): Component {
+                    val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
+                    border = JBUI.Borders.empty(6, 12, 6, 4)
+                    font = font.deriveFont(Font.PLAIN)
+                    return component
                 }
             }
-        })
-    }
 
-    private fun getToolCountForServer(server: String): Int {
-        var count = 0
-        for (i in 0 until tableModel.rowCount) {
-            if (!tableModel.isGroupRow(i) &&
-                tableModel.getValueAt(i, 0) == server &&
-                tableModel.getValueAt(i, 1) != "No tools found") {
-                count++
+            val descriptionRenderer = object : DefaultTableCellRenderer() {
+                override fun getTableCellRendererComponent(
+                    table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+                ): Component {
+                    val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
+                    border = JBUI.Borders.empty(6, 4, 6, 12)
+                    return component
+                }
+            }
+
+            toolsTable.getColumnModel().getColumn(0).cellRenderer = toolNameRenderer
+            toolsTable.getColumnModel().getColumn(1).cellRenderer = descriptionRenderer
+            toolsTable.getColumnModel().getColumn(0).preferredWidth = 200
+            toolsTable.getColumnModel().getColumn(1).preferredWidth = 600
+
+            // Populate table
+            if (tools.isEmpty()) {
+                tableModel.addRow(arrayOf("No tools found", ""))
+            } else {
+                tools.forEach { tool ->
+                    tableModel.addRow(arrayOf(tool.name, tool.description))
+                }
+            }
+
+            val scrollPane = JBScrollPane(toolsTable)
+            scrollPane.border = JBUI.Borders.empty()
+            contentPanel.add(scrollPane, BorderLayout.CENTER)
+
+            // Assemble panel
+            panel.add(headerPanel, BorderLayout.NORTH)
+            panel.add(contentPanel, BorderLayout.CENTER)
+            panel.border = MatteBorder(0, 0, 1, 0, JBColor.border())
+        }
+
+        fun toggleExpansion() {
+            if (expandedServers.contains(server)) {
+                expandedServers.remove(server)
+                contentPanel.isVisible = false
+                (headerPanel.getComponent(0) as JPanel).getComponent(0).let {
+                    if (it is JLabel) it.icon = AllIcons.General.ArrowRight
+                }
+            } else {
+                expandedServers.add(server)
+                contentPanel.isVisible = true
+                (headerPanel.getComponent(0) as JPanel).getComponent(0).let {
+                    if (it is JLabel) it.icon = AllIcons.General.ArrowDown
+                }
+            }
+
+            // Revalidate and repaint the main content panel
+            this@McpServicesTestDialog.contentPanel.revalidate()
+            this@McpServicesTestDialog.contentPanel.repaint()
+        }
+
+        fun setExpanded(expanded: Boolean) {
+            if (expanded != expandedServers.contains(server)) {
+                toggleExpansion()
             }
         }
-        return count
+
+        fun applyFilter(searchText: String) {
+            if (searchText.isEmpty()) {
+                panel.isVisible = true
+                return
+            }
+
+            val serverMatches = server.lowercase().contains(searchText)
+            var anyToolMatches = false
+
+            // Check if any tool matches
+            for (i in 0 until tableModel.rowCount) {
+                val toolName = tableModel.getValueAt(i, 0).toString()
+                val description = tableModel.getValueAt(i, 1)?.toString() ?: ""
+
+                if (toolName.lowercase().contains(searchText) ||
+                    description.lowercase().contains(searchText)) {
+                    anyToolMatches = true
+                    break
+                }
+            }
+
+            panel.isVisible = serverMatches || anyToolMatches
+
+            // If searching and this panel is visible, make sure it's expanded
+            if (panel.isVisible && !expandedServers.contains(server)) {
+                setExpanded(true)
+            }
+        }
     }
 
     private fun setupSearch() {
@@ -208,67 +207,36 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
 
         searchField.addKeyListener(object : KeyAdapter() {
             override fun keyReleased(e: KeyEvent) {
-                updateRowFilter()
+                applyFilter(searchField.text)
             }
         })
     }
 
-    private fun updateRowFilter() {
-        val searchText = searchField.text.lowercase()
-
-        rowSorter.rowFilter = object : RowFilter<GroupableTableModel, Int>() {
-            override fun include(entry: RowFilter.Entry<out GroupableTableModel, out Int>): Boolean {
-                val modelRow = entry.identifier as Int
-                val model = entry.model as GroupableTableModel
-
-                if (model.isGroupRow(modelRow)) {
-                    if (searchText.isNotEmpty()) {
-                        val groupName = model.getValueAt(modelRow, 0) as String
-
-                        for (i in 0 until model.rowCount) {
-                            if (!model.isGroupRow(i) && model.getGroupForRow(i) == groupName) {
-                                val server = model.getValueAt(i, 0) as String
-                                val toolName = model.getValueAt(i, 1) as String
-                                val description = model.getValueAt(i, 2)?.toString() ?: ""
-
-                                if (server.lowercase().contains(searchText) ||
-                                    toolName.lowercase().contains(searchText) ||
-                                    description.lowercase().contains(searchText)) {
-                                    return true
-                                }
-                            }
-                        }
-                        return false
-                    }
-                    return true
-                }
-
-                val groupName = model.getGroupForRow(modelRow)
-                if (searchText.isNotEmpty()) {
-                    val server = model.getValueAt(modelRow, 0) as String
-                    val toolName = model.getValueAt(modelRow, 1) as String
-                    val description = model.getValueAt(modelRow, 2)?.toString() ?: ""
-
-                    return server.lowercase().contains(searchText) ||
-                            toolName.lowercase().contains(searchText) ||
-                            description.lowercase().contains(searchText)
-                }
-
-                return groupName != null && model.isGroupExpanded(groupName)
-            }
+    private fun applyFilter(searchText: String) {
+        val text = searchText.lowercase()
+        serverPanels.values.forEach { serverPanel ->
+            serverPanel.applyFilter(text)
         }
+
+        // Revalidate and repaint
+        contentPanel.revalidate()
+        contentPanel.repaint()
     }
 
     override fun createCenterPanel(): JComponent {
         val mainPanel = JPanel(BorderLayout())
 
+        // Add search field at the top
         val searchPanel = JPanel(BorderLayout())
         searchPanel.border = EmptyBorder(0, 0, 8, 0)
         searchPanel.add(searchField, BorderLayout.CENTER)
 
-        val scrollPane = JBScrollPane(table)
+        // Add scroll pane for content
+        val scrollPane = JBScrollPane(contentPanel)
+        scrollPane.border = JBUI.Borders.empty()
         scrollPane.preferredSize = Dimension(800, 400)
 
+        // Add components to loading panel
         loadingPanel.add(searchPanel, BorderLayout.NORTH)
         loadingPanel.add(scrollPane, BorderLayout.CENTER)
 
@@ -291,22 +259,30 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
                 val serverManager = CustomMcpServerManager.instance(project)
                 val serverInfos: Map<String, List<Tool>> = serverManager.collectServerInfos()
 
-                updateTable(serverInfos)
+                updateServerPanels(serverInfos)
 
                 // Expand all servers by default
                 serverInfos.keys.forEach { server ->
-                    tableModel.expandedGroups.add(server)
+                    expandedServers.add(server)
                 }
-                updateRowFilter()
 
                 loadingPanel.stopLoading()
                 isLoading.set(false)
             } catch (e: Exception) {
-                tableModel.rowCount = 0
-                val errorGroupRow = tableModel.addGroupRow("Error")
-                tableModel.addRow(arrayOf("Error", e.message ?: "Unknown error", ""))
-                tableModel.expandedGroups.add("Error")
-                updateRowFilter()
+                // Clear existing panels
+                contentPanel.removeAll()
+                serverPanels.clear()
+
+                // Add error panel
+                val errorPanel = JPanel(BorderLayout())
+                errorPanel.border = JBUI.Borders.empty(16)
+
+                val errorLabel = JBLabel("Failed to fetch MCP services: ${e.message}")
+                errorLabel.icon = AllIcons.General.Error
+                errorLabel.foreground = JBColor.RED
+
+                errorPanel.add(errorLabel, BorderLayout.CENTER)
+                contentPanel.add(errorPanel)
 
                 loadingPanel.stopLoading()
                 isLoading.set(false)
@@ -316,27 +292,35 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
         }
     }
 
-    private fun updateTable(serverInfos: Map<String, List<Tool>>) {
-        tableModel.rowCount = 0
-        tableModel.groupRows.clear()
+    private fun updateServerPanels(serverInfos: Map<String, List<Tool>>) {
+        // Run on UI thread
+        SwingUtilities.invokeLater {
+            // Clear existing panels
+            contentPanel.removeAll()
+            serverPanels.clear()
 
-        if (serverInfos.isEmpty()) {
-            val noServersRow = tableModel.addGroupRow("No servers found")
-            tableModel.expandedGroups.add("No servers found")
-            return
-        }
+            if (serverInfos.isEmpty()) {
+                val emptyPanel = JPanel(BorderLayout())
+                emptyPanel.border = JBUI.Borders.empty(16)
 
-        serverInfos.forEach { (server, tools) ->
-            // Add server group row
-            val serverRowIndex = tableModel.addGroupRow(server)
+                val emptyLabel = JBLabel("No servers found")
+                emptyLabel.horizontalAlignment = SwingConstants.CENTER
 
-            if (tools.isEmpty()) {
-                tableModel.addRow(arrayOf(server, "No tools found", ""))
-            } else {
-                tools.forEach { tool ->
-                    tableModel.addRow(arrayOf(server, tool.name, tool.description))
-                }
+                emptyPanel.add(emptyLabel, BorderLayout.CENTER)
+                contentPanel.add(emptyPanel)
+                return@invokeLater
             }
+
+            // Create panel for each server
+            serverInfos.forEach { (server, tools) ->
+                val serverPanel = ServerPanel(server, tools)
+                serverPanels[server] = serverPanel
+                contentPanel.add(serverPanel.panel)
+            }
+
+            // Revalidate and repaint
+            contentPanel.revalidate()
+            contentPanel.repaint()
         }
     }
 
