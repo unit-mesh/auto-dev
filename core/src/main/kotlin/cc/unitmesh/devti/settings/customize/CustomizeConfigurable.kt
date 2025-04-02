@@ -21,7 +21,7 @@ import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.toMutableProperty
 
-class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBundle.message("customize.title")),
+class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBundle.message("settings.customize.title")),
     Disposable {
     val settings = project.service<AutoDevCustomizeSettings>()
     val state = settings.state.copy()

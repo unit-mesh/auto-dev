@@ -15,20 +15,20 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <projectConfigurable provider="cc.unitmesh.devti.settings.devops.AutoDevDevOpsConfigurableProvider"
-                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
-                             id="cc.unitmesh.autodevDevOps"
-                             bundle="messages.AutoDevBundle" key="settings.autodev.devops"/>
-
-        <projectConfigurable provider="cc.unitmesh.devti.settings.customize.CustomizeConfigurableProvider"
-                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
-                             id="cc.unitmesh.counit"
-                             bundle="messages.AutoDevBundle" key="customize.title"/>
-
         <projectConfigurable provider="cc.unitmesh.devti.settings.coder.AutoDevCoderConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.autodevCoder"
                              bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
+
+        <projectConfigurable provider="cc.unitmesh.devti.settings.customize.CustomizeConfigurableProvider"
+                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                             id="cc.unitmesh.counit"
+                             bundle="messages.AutoDevBundle" key="settings.customize.title"/>
+
+        <projectConfigurable provider="cc.unitmesh.devti.settings.devops.AutoDevDevOpsConfigurableProvider"
+                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                             id="cc.unitmesh.autodevDevOps"
+                             bundle="messages.AutoDevBundle" key="settings.autodev.devops"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
