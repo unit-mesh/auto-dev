@@ -1,1 +1,3 @@
+Query usage of some method, should use following format: <package>.<class>.<method>
 /usage:cc.unitmesh.untitled.demo.service.BlogService.createBlog
+the return include file path, usage's method (caller) text.
