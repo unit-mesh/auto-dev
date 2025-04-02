@@ -58,12 +58,6 @@ class JsonLanguageField(
             this.settings.isCaretRowShown = false
 
             isOneLineMode = oneLineMode
-
-            if (!oneLineMode) {
-                val metrics: FontMetrics = getFontMetrics(font)
-                val columnWidth = metrics.charWidth('m')
-                preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
-            }
         }
     }
 }

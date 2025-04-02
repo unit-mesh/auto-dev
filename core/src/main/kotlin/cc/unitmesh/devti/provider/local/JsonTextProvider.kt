@@ -54,11 +54,7 @@ class DefaultLanguageField(
 
             val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
             this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
-
-            val metrics: FontMetrics = getFontMetrics(font)
-            val columnWidth = metrics.charWidth('m')
             isOneLineMode = false
-            preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
         }
     }
 }

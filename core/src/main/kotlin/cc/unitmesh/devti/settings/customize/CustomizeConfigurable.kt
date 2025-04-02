@@ -6,7 +6,6 @@ import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.custom.schema.MCP_SERVERS_FILE_NAME
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
-import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.client.McpServicesTestDialog
 import cc.unitmesh.devti.provider.local.JsonTextProvider
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
@@ -29,7 +28,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
 
     override fun createPanel(): DialogPanel = panel {
         row {
-            cell(jBLabel("settings.autodev.coder.customEnginePrompt", 1))
+            cell(jBLabel("settings.autodev.coder.customActions", 1))
 
             link(AutoDevBundle.message("custom.action"), {
                 BrowserUtil.browse("https://ide.unitmesh.cc/custom/action")
@@ -49,7 +48,6 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
             }
 
             fullWidthCell(customPrompt)
-                .fullHeight()
                 .bind(
                     componentGet = { it.text },
                     componentSet = { component, value -> component.text = value },
@@ -89,13 +87,14 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
         }
         row {
             cell(jBLabel("counit.mcp.services.placeholder", 1))
-            
+            link(AutoDevBundle.message("counit.mcp.services.docs"), {
+                BrowserUtil.browse("https://ide.unitmesh.cc/mcp")
+            })
             button(AutoDevBundle.message("sketch.mcp.testMcp")) {
                 val dialog = McpServicesTestDialog(project)
                 dialog.show()
             }
         }
-
         row {
             val mcpServices = JsonTextProvider.create(
                 project,
