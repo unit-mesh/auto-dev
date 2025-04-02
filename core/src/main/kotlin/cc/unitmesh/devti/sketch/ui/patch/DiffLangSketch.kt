@@ -110,8 +110,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         return when {
             patch.beforeName != null -> {
                 /// if before file is empty, should set new code empty, it should be new file
-                val originFile = myProject.findFile(patch.beforeName!!)
-                    ?: LightVirtualFile(patch.beforeName!!, "")
+                val originFile = myProject.findFile(patch.beforeName!!) ?: LightVirtualFile(patch.beforeName!!, "")
                 createSingleFileDiffSketch(originFile, patch)
             }
 

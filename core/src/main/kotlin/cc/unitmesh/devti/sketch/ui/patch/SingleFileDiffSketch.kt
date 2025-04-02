@@ -1,15 +1,16 @@
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevColors
-import cc.unitmesh.devti.gui.planner.isFile
+import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.util.isFile
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
+import cc.unitmesh.devti.util.getOrCreateDirectory
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
 import com.intellij.diff.editor.DiffVirtualFileBase
@@ -34,7 +35,6 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
@@ -259,6 +259,24 @@ class SingleFileDiffSketch(
             isEnabled = !isFailure(patch)
 
             addActionListener {
+                if (file is LightVirtualFile) {
+                    var fileName = file.name.substringAfterLast("/")
+                    val filePath = file.path.substringBeforeLast(fileName)
+                    val directory = getOrCreateDirectory(myProject.baseDir, filePath)
+
+                    try {
+                        val vfile = directory.createChildData(this, fileName)
+                        runReadAction {
+                            vfile.writeText(patch!!.patchedText)
+                        }
+                    } catch (e: Exception) {
+                        logger<SingleFileDiffSketch>().error("Failed to create file: ${file.path}", e)
+                        return@addActionListener
+                    }
+
+                    return@addActionListener
+                }
+
                 val document = FileDocumentManager.getInstance().getDocument(file)
                 if (document == null) {
                     logger<SingleFileDiffSketch>().error("Document is null for file: ${file.path}")
