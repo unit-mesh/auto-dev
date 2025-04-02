@@ -310,6 +310,11 @@ class DevInsCompiler(
             RuleInsCommand(myProject, prop)
         }
 
+        BuiltinCommand.USAGE -> {
+            result.isLocalCommand = true
+            UsageInsCommand(myProject, prop)
+        }
+
         BuiltinCommand.OPEN -> {
             result.isLocalCommand = true
             OpenInsCommand(myProject, prop)

@@ -85,6 +85,7 @@ class AutoSketchMode(val project: Project) {
             RELATED,
             RIPGREP_SEARCH,
             RULE,
+            USAGE,
             BROWSE,
         )
 

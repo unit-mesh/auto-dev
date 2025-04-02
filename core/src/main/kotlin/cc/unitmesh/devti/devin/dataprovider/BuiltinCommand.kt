@@ -121,6 +121,13 @@ enum class BuiltinCommand(
         true,
         true
     ),
+    USAGE(
+        "usage",
+        "Get the usage of a class, method, or field in the project",
+        AllIcons.Actions.DynamicUsages,
+        true,
+        true
+    ),
     TOOLCHAIN_COMMAND(
         "x",
         "Execute custom toolchain command",
