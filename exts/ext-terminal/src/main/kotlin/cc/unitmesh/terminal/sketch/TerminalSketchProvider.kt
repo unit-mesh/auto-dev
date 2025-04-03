@@ -1,6 +1,7 @@
 package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevColors
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.settings.coder.coderSetting
@@ -17,7 +18,8 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -31,6 +33,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.Job
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Toolkit
@@ -41,8 +44,6 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.border.LineBorder
-import cc.unitmesh.devti.AutoDevColors
-import kotlinx.coroutines.Job
 
 class TerminalSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
@@ -321,9 +322,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
                 return@invokeLater
             }
 
-            val action =
-                AnActionEvent.createFromAnAction(executeAction, null, "AutoExecuteTerminal", DataContext.EMPTY_CONTEXT)
-            executeAction.actionPerformed(action)
+            ActionUtil.invokeAction(executeAction, SimpleDataContext.getProjectContext(project), "AutoExecuteTerminal", null , null)
         }
     }
 

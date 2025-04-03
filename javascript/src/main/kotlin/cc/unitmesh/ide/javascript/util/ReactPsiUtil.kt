@@ -66,7 +66,7 @@ object ReactPsiUtil {
                     val typeElement = parameter.typeElement ?: return@mapNotNull null
                     when (typeElement) {
                         is TypeScriptSingleType -> {
-                            val resolve = typeElement.referenceExpression?.resolve()
+                            val resolve = typeElement.reference?.resolve()
                             resolve?.text
                         }
 

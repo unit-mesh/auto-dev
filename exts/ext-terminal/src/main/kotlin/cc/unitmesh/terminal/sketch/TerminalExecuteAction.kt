@@ -35,31 +35,24 @@ class TerminalExecuteAction(
 
     override fun actionPerformed(e: AnActionEvent) {
         if (sketch.isExecuting) {
-            // 如果正在执行，则停止执行
             sketch.currentExecutionJob?.cancel()
 
             ApplicationManager.getApplication().invokeLater {
                 sketch.isExecuting = false
                 sketch.titleLabel.icon = null
 
-                // 更新UI以反映停止状态
                 sketch.resultSketch.updateViewText(sketch.lastExecutionResults + "\n\n[执行已手动停止]", true)
                 sketch.setResultStatus(TerminalExecutionState.TERMINATED)
 
-                // 更新工具栏
-                sketch.actionGroup.update(e)
-                sketch.toolbar.updateActionsImmediately()
+                sketch.toolbar.updateActionsAsync()
             }
             return
         }
 
-        // 开始执行
         sketch.isExecuting = true
         sketch.titleLabel.icon = AllIcons.RunConfigurations.TestState.Run
 
-        // 更新工具栏以显示停止按钮
-        sketch.actionGroup.update(e)
-        sketch.toolbar.updateActionsImmediately()
+        sketch.toolbar.updateActionsAsync()
 
         sketch.hasExecutionResults = false
         sketch.lastExecutionResults = ""
@@ -102,9 +95,7 @@ class TerminalExecuteAction(
                     sketch.titleLabel.icon = null
                     sketch.isExecuting = false
 
-                    // 更新工具栏以显示执行按钮
-                    sketch.actionGroup.update(e)
-                    sketch.toolbar.updateActionsImmediately()
+                    sketch.toolbar.updateActionsAsync()
 
                     val success = exitCode == 0
                     sketch.setResultStatus(
@@ -116,13 +107,11 @@ class TerminalExecuteAction(
                 AutoDevNotifications.notify(sketch.project, "执行命令时出错: ${ex.message}")
                 ApplicationManager.getApplication().invokeLater {
                     stdWriter.setExecuting(false)
-                    // 清除运行图标
+
                     sketch.titleLabel.icon = null
                     sketch.isExecuting = false
 
-                    // 更新工具栏以显示执行按钮
-                    sketch.actionGroup.update(e)
-                    sketch.toolbar.updateActionsImmediately()
+                    sketch.toolbar.updateActionsAsync()
 
                     sketch.resultSketch.updateViewText("${stdWriter.getContent()}\n错误: ${ex.message}", true)
                     sketch.setResultStatus(TerminalExecutionState.FAILED, ex.message)
