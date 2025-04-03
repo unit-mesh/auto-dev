@@ -23,6 +23,19 @@ object InputFileToolbar {
 
         toolbar.add(Box.createHorizontalGlue())
 
+        val recentFiles = LinkLabel(AutoDevBundle.message("chat.panel.add.openFiles"), null) { _: LinkLabel<Unit>, _: Unit? ->
+            val files = getRecentlyOpenedFiles(project)
+            files.forEach { file ->
+                if (model.elements().asSequence().none { it.virtualFile == file.virtualFile }) {
+                    model.addElement(file)
+                }
+            }
+        }
+        
+        recentFiles.mediumFontFunction()
+        recentFiles.border = JBUI.Borders.emptyRight(10)
+        toolbar.add(recentFiles)
+
         val clearAll = LinkLabel(AutoDevBundle.message("chat.panel.clear.all"), null) { _: LinkLabel<Unit>, _: Unit? ->
             model.removeAllElements()
         }
