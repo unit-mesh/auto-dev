@@ -4,7 +4,11 @@ import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence
-import com.intellij.lang.Language
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.TextEditorWithPreview.Layout
@@ -52,23 +56,23 @@ abstract class FileEditorPreviewSketch(
         return VfsUtilCore.loadText(this)
     }
 
-//    fun createRightToolbar(target: JComponent): ActionToolbar {
-//        val rightToolbar = ActionManager.getInstance()
-//            .createActionToolbar(ActionPlaces.TEXT_EDITOR_WITH_PREVIEW, createViewActionGroup(), true)
-//        rightToolbar.targetComponent = target
-//        rightToolbar.isReservePlaceAutoPopupIcon = false
-//
-//        return rightToolbar
-//    }
-//
-//    protected open fun createViewActionGroup(): ActionGroup {
-//        val actionManager = ActionManager.getInstance()
-//        return DefaultActionGroup(
-//            actionManager.getAction("TextEditorWithPreview.Layout.EditorOnly"),
-//            actionManager.getAction("TextEditorWithPreview.Layout.EditorAndPreview"),
-//            actionManager.getAction("TextEditorWithPreview.Layout.PreviewOnly")
-//        )
-//    }
+    fun createRightToolbar(target: JComponent): ActionToolbar {
+        val rightToolbar = ActionManager.getInstance()
+            .createActionToolbar(ActionPlaces.TEXT_EDITOR_WITH_PREVIEW, createViewActionGroup(), true)
+        rightToolbar.targetComponent = target
+        rightToolbar.isReservePlaceAutoPopupIcon = false
+
+        return rightToolbar
+    }
+
+    protected open fun createViewActionGroup(): ActionGroup {
+        val actionManager = ActionManager.getInstance()
+        return DefaultActionGroup(
+            actionManager.getAction("TextEditorWithPreview.Layout.EditorOnly"),
+            actionManager.getAction("TextEditorWithPreview.Layout.EditorAndPreview"),
+            actionManager.getAction("TextEditorWithPreview.Layout.PreviewOnly")
+        )
+    }
 
     override fun dispose() {}
 
