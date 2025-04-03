@@ -12,10 +12,10 @@ import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
 
-class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FilePresentationWrapper> {
+class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FilePresentation> {
     override fun getListCellRendererComponent(
-        list: JList<out FilePresentationWrapper>,
-        value: FilePresentationWrapper,
+        list: JList<out FilePresentation>,
+        value: FilePresentation,
         index: Int,
         isSelected: Boolean,
         cellHasFocus: Boolean,
@@ -36,7 +36,7 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
     /**
      * Creates a panel for displaying a file item in the list.
      */
-    private fun createFileItemPanel(value: FilePresentationWrapper): JPanel {
+    private fun createFileItemPanel(value: FilePresentation): JPanel {
         return JPanel(FlowLayout(FlowLayout.LEFT, 3, 0)).apply {
             accessibleContext.accessibleName = "Element Panel"
             border = JBUI.Borders.empty(2, 5)
@@ -44,7 +44,7 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
             
             val fileIconLabel = JLabel(value.virtualFile.fileType.icon ?: AllIcons.FileTypes.Unknown)
             fileInfoPanel.add(fileIconLabel)
-            fileInfoPanel.toolTipText = value.virtualFile.relativePath(project)
+            fileInfoPanel.toolTipText = value.relativePath(project)
 
             val fileNameLabel = JLabel(buildDisplayName(value))
             fileInfoPanel.add(fileNameLabel)
@@ -57,19 +57,14 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
 
             value.panel = this
             value.namePanel = fileInfoPanel
-            this.toolTipText = value.virtualFile.relativePath(project)
+            this.toolTipText = value.relativePath(project)
         }
     }
 
     /**
-     * Constructs a display name for the given `ModelWrapper` based on the associated virtual file.
-     * If the file name starts with "index." (e.g., index.js, index.ts, index.vue, index.html, index.css),
-     * the parent folder name is prepended to the file name to provide more context. Otherwise, the file name is returned as is.
-     *
-     * @param value The `ModelWrapper` instance containing the virtual file for which the display name is to be constructed.
-     * @return A user-friendly, context-aware display name for the file as a `@NlsSafe` string.
+     * Constructs a display name for the given file presentation based on the associated virtual file.
      */
-    private fun buildDisplayName(value: FilePresentationWrapper): @NlsSafe String {
+    private fun buildDisplayName(value: FilePresentation): @NlsSafe String {
         val filename = value.virtualFile.name
         if (filename.startsWith("index.")) {
             val parent = value.virtualFile.parent?.name

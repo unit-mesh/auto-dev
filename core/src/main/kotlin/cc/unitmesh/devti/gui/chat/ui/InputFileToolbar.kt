@@ -12,7 +12,7 @@ import javax.swing.DefaultListModel
 import javax.swing.JToolBar
 
 object InputFileToolbar {
-    fun createToolbar(project: Project, model: DefaultListModel<FilePresentationWrapper>): JToolBar {
+    fun createToolbar(project: Project, model: DefaultListModel<FilePresentation>): JToolBar {
         val toolbar = JToolBar()
         toolbar.isFloatable = false
 

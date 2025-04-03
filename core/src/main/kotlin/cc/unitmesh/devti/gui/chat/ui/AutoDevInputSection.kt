@@ -72,7 +72,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val buttonPanel = JPanel(CardLayout())
     private val inputPanel = BorderLayoutPanel()
 
-    private val listModel = DefaultListModel<FilePresentationWrapper>()
+    private val listModel = DefaultListModel<FilePresentation>()
     private val elementsList = JBList(listModel)
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
@@ -407,17 +407,17 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     val focusableComponent: JComponent get() = input
 
-    fun DefaultListModel<FilePresentationWrapper>.addIfAbsent(vfile: VirtualFile, first: Boolean = false) {
+    fun DefaultListModel<FilePresentation>.addIfAbsent(vfile: VirtualFile, first: Boolean = false) {
         if (!vfile.isValid || vfile.fileType.isBinary) return
         if (!isInProject(vfile, project)) return
         if (vfile is DiffVirtualFileBase) return
 
         if (elements().asSequence().none { it.virtualFile == vfile }) {
-            val modelWrapper = FilePresentationWrapper(vfile)
+            val filePresentation = FilePresentation(vfile)
             if (first) {
-                insertElementAt(modelWrapper, 0)
+                insertElementAt(filePresentation, 0)
             } else {
-                addElement(modelWrapper)
+                addElement(filePresentation)
             }
         }
     }
@@ -432,4 +432,5 @@ fun JComponent.mediumFontFunction() {
     }
     putClientProperty(FONT_KEY, f)
 }
+
 
