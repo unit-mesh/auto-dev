@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch.rule
 
 import cc.unitmesh.devti.bridge.knowledge.lookupFile
+import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -9,9 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile
 
 @Service(Service.Level.PROJECT)
 class ProjectRule(private val project: Project) {
-    companion object {
-        const val RULE_PATH = "prompts/rules"
-    }
+    val RULE_PATH = project.coderSetting.state.teamPromptsDir + "/" + "rules"
 
     /**
      * Get rule content by filename

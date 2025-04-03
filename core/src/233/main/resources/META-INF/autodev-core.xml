@@ -268,7 +268,6 @@
         <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver" />
         <agentObserver implementation="cc.unitmesh.devti.observer.BuiltTaskAgentObserver" />
         <agentObserver implementation="cc.unitmesh.devti.observer.AddDependencyAgentObserver" />
-<!--        <agentObserver implementation="cc.unitmesh.devti.observer.ChangeListObserver" />-->
     </extensions>
 
     <actions>

@@ -2,9 +2,6 @@ package cc.unitmesh.devti.observer.plan
 
 import kotlinx.serialization.Serializable
 
-/**
- * 表示PDCA循环中的阶段
- */
 @Serializable
 enum class PlanPhase {
     PLAN,   // 计划阶段

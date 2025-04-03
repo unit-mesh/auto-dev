@@ -1,8 +1,5 @@
 package cc.unitmesh.devti.prompting.code
 
-/**
- * TODO: change to dependency tree
- */
 data class TechStack(
     val coreFrameworks: MutableMap<String, Boolean> = mutableMapOf(),
     val testFrameworks: MutableMap<String, Boolean> = mutableMapOf(),
