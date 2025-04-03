@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.bridge
 
 import cc.unitmesh.devti.agent.tool.AgentTool
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.*
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand.*
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 

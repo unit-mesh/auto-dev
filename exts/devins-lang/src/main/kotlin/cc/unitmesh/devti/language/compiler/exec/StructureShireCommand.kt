@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.bridge.utils.StructureCommandUtil
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction

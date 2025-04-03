@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.devin
+package cc.unitmesh.devti.command
 
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 
 interface InsCommand {
     val commandName: BuiltinCommand

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.sketch.ui.code
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.ui.LangSketch

@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinRefactorCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinRefactorCommand
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.lang.Language
 import com.intellij.openapi.application.runReadAction

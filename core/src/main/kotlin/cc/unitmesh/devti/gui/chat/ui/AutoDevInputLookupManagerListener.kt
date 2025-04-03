@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat.ui
 
-import cc.unitmesh.devti.gui.chat.AutoDevFileLookupElement
+import cc.unitmesh.devti.completion.AutoDevFileLookupElement
 import com.intellij.codeInsight.lookup.Lookup
 import com.intellij.codeInsight.lookup.LookupEvent
 import com.intellij.codeInsight.lookup.LookupListener

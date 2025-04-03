@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion
 
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.completion.provider.*
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed

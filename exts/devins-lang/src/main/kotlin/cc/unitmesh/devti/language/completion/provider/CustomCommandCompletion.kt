@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion.provider
 
-import cc.unitmesh.devti.devin.dataprovider.CustomCommand
+import cc.unitmesh.devti.command.dataprovider.CustomCommand
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet

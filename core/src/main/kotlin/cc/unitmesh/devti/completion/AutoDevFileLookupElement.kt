@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator

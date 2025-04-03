@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion.dataprovider
 
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 

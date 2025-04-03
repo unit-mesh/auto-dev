@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion.provider
 
-import cc.unitmesh.devti.gui.chat.AutoDevFileLookupElement
+import cc.unitmesh.devti.completion.AutoDevFileLookupElement
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet

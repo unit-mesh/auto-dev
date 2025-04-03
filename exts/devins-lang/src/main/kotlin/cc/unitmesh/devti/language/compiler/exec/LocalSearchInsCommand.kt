@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.context.FileContextProvider
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ui.relativePath
 import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.openapi.application.runReadAction

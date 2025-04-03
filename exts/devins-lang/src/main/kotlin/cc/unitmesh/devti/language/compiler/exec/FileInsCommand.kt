@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.InsCommandListener
-import cc.unitmesh.devti.devin.InsCommandStatus
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.InsCommandListener
+import cc.unitmesh.devti.command.InsCommandStatus
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.utils.findFile
 import cc.unitmesh.devti.language.utils.lookupFile

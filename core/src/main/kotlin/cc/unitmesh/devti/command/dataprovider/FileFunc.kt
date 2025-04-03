@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.devin.dataprovider
+package cc.unitmesh.devti.command.dataprovider
 
 import com.intellij.icons.AllIcons
 import javax.swing.Icon

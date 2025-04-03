@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.utils.lookupFile

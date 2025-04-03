@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.devin.dataprovider
+package cc.unitmesh.devti.command.dataprovider
 
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import com.intellij.openapi.project.Project

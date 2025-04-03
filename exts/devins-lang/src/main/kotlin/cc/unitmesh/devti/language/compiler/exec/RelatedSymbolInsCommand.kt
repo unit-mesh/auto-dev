@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import com.intellij.openapi.project.Project

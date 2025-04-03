@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.observer.agent
 
 import cc.unitmesh.devti.agent.tool.AgentTool
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry

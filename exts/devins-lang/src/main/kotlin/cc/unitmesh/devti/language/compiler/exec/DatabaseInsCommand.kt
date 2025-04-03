@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import com.intellij.openapi.project.Project
 import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider

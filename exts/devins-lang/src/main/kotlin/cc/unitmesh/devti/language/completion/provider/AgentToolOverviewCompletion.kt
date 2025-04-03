@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.language.DevInIcons
-import cc.unitmesh.devti.devin.dataprovider.ToolHubVariable
+import cc.unitmesh.devti.command.dataprovider.ToolHubVariable
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet

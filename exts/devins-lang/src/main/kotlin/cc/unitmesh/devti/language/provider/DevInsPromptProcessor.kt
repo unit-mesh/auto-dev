@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.provider
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile

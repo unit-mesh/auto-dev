@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.provider.devins
 
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile

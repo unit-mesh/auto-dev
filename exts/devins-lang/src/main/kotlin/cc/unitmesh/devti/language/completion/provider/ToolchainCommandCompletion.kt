@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.tool.AgentTool
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder

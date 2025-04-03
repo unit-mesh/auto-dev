@@ -1,11 +1,10 @@
 package cc.unitmesh.devti.sketch
 
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.*
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand.*
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
-import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction

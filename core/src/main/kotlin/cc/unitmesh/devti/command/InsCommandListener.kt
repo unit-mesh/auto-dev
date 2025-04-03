@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.devin
+package cc.unitmesh.devti.command
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFile

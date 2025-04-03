@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.InsCommand
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
@@ -14,7 +14,6 @@ import com.intellij.openapi.vcs.FileStatus
 import com.intellij.openapi.vcs.FileStatusManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
