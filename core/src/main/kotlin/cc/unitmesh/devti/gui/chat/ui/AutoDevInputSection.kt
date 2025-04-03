@@ -246,32 +246,23 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         val wrapper = fileListViewModel.getListModel().getElementAt(index)
         val cellBounds = list.getCellBounds(index, index)
-        wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }
-            ?.let { component ->
-                when {
-                    component is JPanel -> {
-                        fileListViewModel.removeFile(wrapper)
-                        val vfile = wrapper.virtualFile
-                        val relativePath = vfile.path.substringAfter(project.basePath!!).removePrefix("/")
-                        fileListViewModel.addFileIfAbsent(vfile)
-
-                        input.appendText("\n/" + "file" + ":${relativePath}")
-                        fileListViewModel.removeFileByVirtualFile(wrapper.virtualFile)
-
-                        ApplicationManager.getApplication().invokeLater {
-                            if (!vfile.isValid) return@invokeLater
-                            val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
-                            val relatedElements =
-                                RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
-                            updateElements(relatedElements)
-                        }
-                    }
-
-                    component is JLabel && component.icon == AllIcons.Actions.Close -> fileListViewModel.removeFile(wrapper)
-
-                    else -> list.clearSelection()
+        
+        val actionType = fileListViewModel.determineFileAction(wrapper, e.point, cellBounds)
+        val actionPerformed = fileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
+            if (relativePath != null) {
+                input.appendText("\n/" + "file" + ":${relativePath}")
+                ApplicationManager.getApplication().invokeLater {
+                    if (!vfile.isValid) return@invokeLater
+                    val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
+                    val relatedElements = RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
+                    updateElements(relatedElements)
                 }
-            } ?: list.clearSelection()
+            }
+        }
+
+        if (!actionPerformed) {
+            list.clearSelection()
+        }
     }
 
     private fun updateElements(elements: List<PsiElement>?) {
@@ -405,3 +396,4 @@ fun JComponent.mediumFontFunction() {
     }
     putClientProperty(FONT_KEY, f)
 }
+

@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.EventListener
 import javax.swing.DefaultListModel
+import java.awt.Point
 
 /**
  * ViewModel for managing the list of file presentations.
@@ -20,6 +21,12 @@ class FileListViewModel(private val project: Project) : Disposable {
         fun onFileAdded(file: FilePresentation)
         fun onFileRemoved(file: FilePresentation)
         fun onListCleared()
+    }
+    
+    enum class FileActionType {
+        INSERT,
+        REMOVE,
+        NONE
     }
     
     private val listeners = mutableListOf<FileListChangeListener>()
@@ -88,6 +95,73 @@ class FileListViewModel(private val project: Project) : Disposable {
                 listModel.addElement(file)
                 listeners.forEach { it.onFileAdded(file) }
             }
+        }
+    }
+    
+    /**
+     * Handles file operations based on the action type.
+     * 
+     * @param filePresentation The file presentation to operate on
+     * @param actionType The type of action to perform
+     * @param callback Callback to handle UI-specific operations
+     * @return True if an action was performed, false otherwise
+     */
+    fun handleFileAction(filePresentation: FilePresentation,
+                         actionType: FileActionType,
+                         callback: (VirtualFile, String?) -> Unit): Boolean {
+        when (actionType) {
+            FileActionType.INSERT -> {
+                val vfile = filePresentation.virtualFile
+                if (!vfile.isValid) return false
+                
+                // Get relative path for display
+                val relativePath = try {
+                    project.basePath?.let { basePath ->
+                        vfile.path.substringAfter(basePath).removePrefix("/")
+                    } ?: vfile.path
+                } catch (e: Exception) {
+                    vfile.path
+                }
+                
+                // Remove and re-add to prioritize
+                removeFile(filePresentation)
+                addFileIfAbsent(vfile)
+                
+                // Call back to UI with file and path
+                callback(vfile, relativePath)
+                
+                // Remove from list after processing
+                removeFileByVirtualFile(vfile)
+                return true
+            }
+            FileActionType.REMOVE -> {
+                removeFile(filePresentation)
+                return true
+            }
+            FileActionType.NONE -> return false
+        }
+    }
+    
+    /**
+     * Determines the appropriate action for a file based on component coordinates.
+     * 
+     * @param filePresentation The file presentation
+     * @param componentPoint The local point in the component
+     * @param componentBounds The bounds of the component cell
+     * @return The appropriate action type
+     */
+    fun determineFileAction(filePresentation: FilePresentation, componentPoint: Point, 
+                            componentBounds: java.awt.Rectangle): FileActionType {
+        // Extract component hit detection logic
+        val hitComponent = filePresentation.panel?.components?.firstOrNull { 
+            it.contains(componentPoint.x - componentBounds.x - it.x, it.height - 1) 
+        }
+        
+        return when {
+            hitComponent is javax.swing.JPanel -> FileActionType.INSERT
+            hitComponent is javax.swing.JLabel && 
+                hitComponent.icon == com.intellij.icons.AllIcons.Actions.Close -> FileActionType.REMOVE
+            else -> FileActionType.NONE
         }
     }
     
