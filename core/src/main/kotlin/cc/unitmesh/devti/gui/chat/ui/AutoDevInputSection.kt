@@ -5,6 +5,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
+import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
@@ -72,8 +73,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val buttonPanel = JPanel(CardLayout())
     private val inputPanel = BorderLayoutPanel()
 
-    private val listModel = DefaultListModel<FilePresentation>()
-    private val elementsList = JBList(listModel)
+    private val fileListViewModel = FileListViewModel(project)
+    private val elementsList = JBList(fileListViewModel.getListModel())
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
     private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
@@ -173,7 +174,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val toolbar = InputFileToolbar.createToolbar(project, this@AutoDevInputSection.listModel)
+        val toolbar = InputFileToolbar.createToolbar(project, fileListViewModel)
 
         val headerPanel = JPanel(BorderLayout())
         headerPanel.add(toolbar, BorderLayout.NORTH)
@@ -199,12 +200,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
         currentFile?.let {
-            listModel.addIfAbsent(currentFile, first = true)
-            val index = listModel.indexOf(currentFile)
-            if (index != -1) {
-                listModel.remove(index)
-                listModel.insertElementAt(listModel.getElementAt(index), 0)
-            }
+            fileListViewModel.addFileIfAbsent(currentFile, first = true)
         }
     }
 
@@ -215,7 +211,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 override fun selectionChanged(event: FileEditorManagerEvent) {
                     val file = event.newFile ?: return
                     ApplicationManager.getApplication().invokeLater {
-                        listModel.addIfAbsent(file, true)
+                        fileListViewModel.addFileIfAbsent(file, true)
                     }
                 }
             }
@@ -251,20 +247,19 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val index = list.locationToIndex(e.point)
         if (index == -1) return
 
-        val wrapper = listModel.getElementAt(index)
+        val wrapper = fileListViewModel.getListModel().getElementAt(index)
         val cellBounds = list.getCellBounds(index, index)
         wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }
             ?.let { component ->
                 when {
                     component is JPanel -> {
-                        listModel.removeElement(wrapper)
+                        fileListViewModel.removeFile(wrapper)
                         val vfile = wrapper.virtualFile
                         val relativePath = vfile.path.substringAfter(project.basePath!!).removePrefix("/")
-                        listModel.addIfAbsent(vfile)
+                        fileListViewModel.addFileIfAbsent(vfile)
 
                         input.appendText("\n/" + "file" + ":${relativePath}")
-                        listModel.indexOf(wrapper.virtualFile).takeIf { it != -1 }
-                            ?.let { listModel.remove(it) }
+                        fileListViewModel.removeFileByVirtualFile(wrapper.virtualFile)
 
                         ApplicationManager.getApplication().invokeLater {
                             if (!vfile.isValid) return@invokeLater
@@ -275,9 +270,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                         }
                     }
 
-                    component is JLabel && component.icon == AllIcons.Actions.Close -> listModel.removeElement(
-                        wrapper
-                    )
+                    component is JLabel && component.icon == AllIcons.Actions.Close -> fileListViewModel.removeFile(wrapper)
 
                     else -> list.clearSelection()
                 }
@@ -285,7 +278,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     private fun updateElements(elements: List<PsiElement>?) {
-        elements?.forEach { listModel.addIfAbsent(it.containingFile.virtualFile) }
+        elements?.forEach { fileListViewModel.addFileIfAbsent(it.containingFile.virtualFile) }
     }
 
     fun showStopButton() {
@@ -432,5 +425,3 @@ fun JComponent.mediumFontFunction() {
     }
     putClientProperty(FONT_KEY, f)
 }
-
-

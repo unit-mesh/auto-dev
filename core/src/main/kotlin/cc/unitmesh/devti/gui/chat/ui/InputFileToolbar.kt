@@ -1,18 +1,17 @@
 package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.openapi.fileEditor.FileEditorManager
+import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import javax.swing.Box
-import javax.swing.DefaultListModel
 import javax.swing.JToolBar
 
 object InputFileToolbar {
-    fun createToolbar(project: Project, model: DefaultListModel<FilePresentation>): JToolBar {
+    fun createToolbar(project: Project, viewModel: FileListViewModel): JToolBar {
         val toolbar = JToolBar()
         toolbar.isFloatable = false
 
@@ -24,12 +23,7 @@ object InputFileToolbar {
         toolbar.add(Box.createHorizontalGlue())
 
         val recentFiles = LinkLabel(AutoDevBundle.message("chat.panel.add.openFiles"), null) { _: LinkLabel<Unit>, _: Unit? ->
-            val files = getRecentlyOpenedFiles(project)
-            files.forEach { file ->
-                if (model.elements().asSequence().none { it.virtualFile == file.virtualFile }) {
-                    model.addElement(file)
-                }
-            }
+            viewModel.addRecentlyOpenedFiles()
         }
         
         recentFiles.mediumFontFunction()
@@ -37,7 +31,7 @@ object InputFileToolbar {
         toolbar.add(recentFiles)
 
         val clearAll = LinkLabel(AutoDevBundle.message("chat.panel.clear.all"), null) { _: LinkLabel<Unit>, _: Unit? ->
-            model.removeAllElements()
+            viewModel.clearAllFiles()
         }
 
         clearAll.mediumFontFunction()
@@ -46,18 +40,5 @@ object InputFileToolbar {
         toolbar.add(clearAll)
 
         return toolbar
-    }
-
-    private const val DEFAULT_FILE_LIMIT = 12
-
-    fun getRecentlyOpenedFiles(
-        project: Project,
-        maxFiles: Int = DEFAULT_FILE_LIMIT
-    ): List<FilePresentation> {
-        val fileEditorManager = FileEditorManager.getInstance(project)
-        return fileEditorManager.openFiles
-            .take(maxFiles)
-            .map { FilePresentation.from(project, it) }
-            .toMutableList()
     }
 }
