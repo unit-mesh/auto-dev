@@ -42,7 +42,6 @@ import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.HintHint
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
-import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
@@ -60,7 +59,7 @@ import javax.swing.*
 import kotlin.math.max
 import kotlin.math.min
 
-data class ModelWrapper(val virtualFile: VirtualFile, var panel: JPanel? = null, var namePanel: JPanel? = null)
+data class FilePresentationWrapper(val virtualFile: VirtualFile, var panel: JPanel? = null, var namePanel: JPanel? = null)
 
 class AutoDevInputSection(private val project: Project, val disposable: Disposable?, showAgent: Boolean = true) :
     BorderLayoutPanel() {
@@ -73,7 +72,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val buttonPanel = JPanel(CardLayout())
     private val inputPanel = BorderLayoutPanel()
 
-    private val listModel = DefaultListModel<ModelWrapper>()
+    private val listModel = DefaultListModel<FilePresentationWrapper>()
     private val elementsList = JBList(listModel)
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
@@ -408,17 +407,16 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     val focusableComponent: JComponent get() = input
 
-    private fun DefaultListModel<ModelWrapper>.addIfAbsent(vfile: VirtualFile, first: Boolean = false) {
+    fun DefaultListModel<FilePresentationWrapper>.addIfAbsent(vfile: VirtualFile, first: Boolean = false) {
         if (!vfile.isValid || vfile.fileType.isBinary) return
         if (!isInProject(vfile, project)) return
         if (vfile is DiffVirtualFileBase) return
 
         if (elements().asSequence().none { it.virtualFile == vfile }) {
-            val modelWrapper = ModelWrapper(vfile)
+            val modelWrapper = FilePresentationWrapper(vfile)
             if (first) {
                 insertElementAt(modelWrapper, 0)
             } else {
-                // 保持最近使用的文件在前面
                 addElement(modelWrapper)
             }
         }

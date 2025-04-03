@@ -12,10 +12,10 @@ import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListCellRenderer
 
-class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<ModelWrapper> {
+class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FilePresentationWrapper> {
     override fun getListCellRendererComponent(
-        list: JList<out ModelWrapper>,
-        value: ModelWrapper,
+        list: JList<out FilePresentationWrapper>,
+        value: FilePresentationWrapper,
         index: Int,
         isSelected: Boolean,
         cellHasFocus: Boolean,
@@ -63,7 +63,7 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<Model
      * @param value The `ModelWrapper` instance containing the virtual file for which the display name is to be constructed.
      * @return A user-friendly, context-aware display name for the file as a `@NlsSafe` string.
      */
-    private fun buildDisplayName(value: ModelWrapper): @NlsSafe String {
+    private fun buildDisplayName(value: FilePresentationWrapper): @NlsSafe String {
         val filename = value.virtualFile.name
         if (filename.startsWith("index.")) {
             val parent = value.virtualFile.parent?.name
