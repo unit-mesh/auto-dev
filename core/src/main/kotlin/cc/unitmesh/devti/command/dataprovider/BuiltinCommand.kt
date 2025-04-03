@@ -159,25 +159,25 @@ enum class BuiltinCommand(
 
         suspend fun fromString(commandName: String): BuiltinCommand? {
             val builtinCommand = entries.find { it.commandName == commandName }
-            if (builtinCommand == null) {
-                val providerName = toolchainProviderName(commandName)
-                val provider = ToolchainFunctionProvider.lookup(providerName)
-                if (provider != null) {
-                    return TOOLCHAIN_COMMAND
-                }
-
-                ToolchainFunctionProvider.all().forEach {
-                    if (it.funcNames().contains(commandName)) {
-                        return TOOLCHAIN_COMMAND
-                    }
-                }
-
-                val project = ProjectManager.getInstance().openProjects.first()
-                AutoDevNotifications.warn(project, "Command not found: $commandName")
-                return null
+            if (builtinCommand != null) {
+                return builtinCommand
             }
 
-            return builtinCommand
+            val providerName = toolchainProviderName(commandName)
+            val provider = ToolchainFunctionProvider.lookup(providerName)
+            if (provider != null) {
+                return TOOLCHAIN_COMMAND
+            }
+
+            ToolchainFunctionProvider.all().forEach {
+                if (it.funcNames().contains(commandName)) {
+                    return TOOLCHAIN_COMMAND
+                }
+            }
+
+            val project = ProjectManager.getInstance().openProjects.first()
+            AutoDevNotifications.warn(project, "Command not found: $commandName")
+            return null
         }
 
         fun toolchainProviderName(commandName: String): String {

@@ -21,7 +21,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +58,7 @@ class DevInsCompiler(
 
                     output.append(text)
                 }
+
                 DevInTypes.USED -> processUsed(it as DevInUsed)
                 DevInTypes.COMMENTS -> {
                     if (text.startsWith("[flow]:")) {
@@ -74,6 +74,7 @@ class DevInsCompiler(
                         }
                     }
                 }
+
                 else -> {
                     output.append(text)
                     logger.warn("Unknown element type: ${it.elementType}")
@@ -129,7 +130,7 @@ class DevInsCompiler(
                     return
                 }
 
-                val propText = runReadAction { propElement?.text }  ?: ""
+                val propText = runReadAction { propElement?.text } ?: ""
                 processingCommand(command, propText, used, fallbackText = usedText, originCmdName)
             }
 
@@ -176,13 +177,13 @@ class DevInsCompiler(
         prop: String,
         used: DevInUsed,
         fallbackText: String,
-        originCmdName: @NlsSafe String
+        originCmdName: String
     ) {
         val command: InsCommand = toInsCommand(commandNode, prop, used, originCmdName)
 
         val execResult = command.execute()
 
-        val isSucceed = execResult?.contains("$DEVINS_ERROR") == false
+        val isSucceed = execResult?.contains(DEVINS_ERROR) == false
         val result = if (isSucceed) {
             val hasReadCodeBlock = commandNode in listOf(
                 BuiltinCommand.WRITE,
@@ -206,7 +207,12 @@ class DevInsCompiler(
         output.append(result)
     }
 
-    suspend fun toInsCommand(commandNode: BuiltinCommand, prop: String, used: DevInUsed, originCmdName: String): InsCommand = when (commandNode) {
+    suspend fun toInsCommand(
+        commandNode: BuiltinCommand,
+        prop: String,
+        used: DevInUsed,
+        originCmdName: String
+    ): InsCommand = when (commandNode) {
         BuiltinCommand.FILE -> {
             FileInsCommand(myProject, prop)
         }
@@ -362,12 +368,12 @@ class DevInsCompiler(
 
         val result = try {
             val cmd = runReadAction { used.text.removePrefix("/") }
-            provider.execute(myProject!!, prop, args, emptyMap(), cmd).toString()
+            provider.execute(myProject, prop, args, emptyMap(), cmd).toString()
         } catch (e: Exception) {
             logger<DevInsCompiler>().warn(e)
             val text = runReadAction { used.text }
             val error = "Error executing toolchain function: $text + $prop"
-            AutoDevNotifications.notify(myProject!!, error)
+            AutoDevNotifications.notify(myProject, error)
             error
         }
 
@@ -414,7 +420,7 @@ class DevInsCompiler(
     companion object {
         suspend fun transpileCommand(file: DevInFile): List<BuiltinCommand> {
             val children = runReadAction { file.children }
-            val result = children.mapNotNull { it ->
+            return children.mapNotNull { it ->
                 when (it.elementType) {
                     DevInTypes.USED -> {
                         val used = it as DevInUsed
@@ -431,14 +437,14 @@ class DevInsCompiler(
 
                                 command
                             }
+
                             else -> null
                         }
                     }
+
                     else -> null
                 }
             }
-
-            return result
         }
     }
 }
