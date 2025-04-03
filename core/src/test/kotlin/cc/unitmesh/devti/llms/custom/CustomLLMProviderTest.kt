@@ -3,6 +3,7 @@ package cc.unitmesh.devti.llms.custom
 import junit.framework.TestCase.assertEquals
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import cc.unitmesh.devti.llms.custom.updateCustomFormat
 import okhttp3.Request
 import org.junit.Test
 
