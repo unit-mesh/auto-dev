@@ -60,8 +60,6 @@ class WorkspacePanel(
         if (workspaceFiles.none { it.virtualFile == file }) {
             workspaceFiles.add(filePresentation)
             updateFilesPanel()
-
-//            input.appendText("\n/file:${filePresentation.relativePath(project)}")
         }
     }
     

@@ -98,7 +98,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     init {
         input = AutoDevInput(project, listOf(), disposable, this)
-        // Initialize WorkspacePanel
         workspacePanel = WorkspacePanel(project, input)
 
         setupElementsList()

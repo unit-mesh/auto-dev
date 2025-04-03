@@ -49,7 +49,6 @@ object InputFileToolbar {
                     workspace.addFileToWorkspace(file.virtualFile)
                 }
             } else {
-                // Fallback to original behavior
                 val fileReferences = StringBuilder()
                 addedFiles.forEach { vfile ->
                     fileReferences.append("\n/file:${vfile.presentablePath}")
