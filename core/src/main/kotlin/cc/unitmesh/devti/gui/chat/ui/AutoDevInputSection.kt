@@ -70,6 +70,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     private val fileListViewModel = FileListViewModel(project)
     private val elementsList = JBList(fileListViewModel.getListModel())
+    
+    private val workspacePanel: WorkspacePanel
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
     private var customAgent: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
@@ -95,6 +97,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     init {
         input = AutoDevInput(project, listOf(), disposable, this)
+        // Initialize WorkspacePanel
+        workspacePanel = WorkspacePanel(project, input)
 
         setupElementsList()
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
@@ -164,6 +168,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         inputPanel.add(input, BorderLayout.CENTER)
         inputPanel.addToBottom(layoutPanel)
+        
+        // Add workspace panel to the input panel
+        inputPanel.addToTop(workspacePanel)
 
         val scrollPane = JBScrollPane(elementsList)
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
@@ -248,7 +255,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val actionType = fileListViewModel.determineFileAction(wrapper, e.point, cellBounds)
         val actionPerformed = fileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
             if (relativePath != null) {
-                input.appendText("\n/" + "file" + ":${relativePath}")
+                workspacePanel.addFileToWorkspace(vfile)
+                
                 ApplicationManager.getApplication().invokeLater {
                     if (!vfile.isValid) return@invokeLater
                     val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
@@ -361,6 +369,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         return customAgent.selectedItem as CustomAgentConfig
     }
 
+    // Reset workspace panel when resetting agent
     fun resetAgent() {
         (customAgent.selectedItem as? CustomAgentConfig)?.let {
             it.state = CustomAgentState.START
@@ -368,6 +377,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         customAgent.selectedItem = defaultRag
         text = ""
+        workspacePanel.clear()
     }
 
     fun moveCursorToStart() {

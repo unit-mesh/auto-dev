@@ -60,7 +60,6 @@ class AutoDevInput(
 
         DumbAwareAction.create {
             val editor = editor ?: return@create
-            // Insert a new line
             CommandProcessor.getInstance().executeCommand(project, {
                 val eol = "\n"
                 val document = editor.document
@@ -115,7 +114,6 @@ class AutoDevInput(
         editor.caretModel.moveToOffset(0)
         editor.scrollPane.setBorder(border)
         editor.contentComponent.setOpaque(false)
-
         return editor
     }
 
@@ -160,14 +158,10 @@ class AutoDevInput(
     }
 
     fun appendText(text: String) {
-        WriteCommandAction.runWriteCommandAction(
-            project,
-            "Append text",
-            "intentions.write.action",
-            {
-                val document = this.editor?.document ?: return@runWriteCommandAction
-                InsertUtil.insertStringAndSaveChange(project, text, document, document.textLength, false)
-            })
+        WriteCommandAction.runWriteCommandAction(project, "Append text", "intentions.write.action", {
+            val document = this.editor?.document ?: return@runWriteCommandAction
+            InsertUtil.insertStringAndSaveChange(project, text, document, document.textLength, false)
+        })
     }
 }
 
