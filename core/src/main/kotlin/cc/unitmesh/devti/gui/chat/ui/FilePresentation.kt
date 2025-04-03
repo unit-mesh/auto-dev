@@ -15,7 +15,8 @@ data class FilePresentation(
     val icon: Icon? = null,
     val presentablePath: String = "",
     var panel: JPanel? = null,
-    var namePanel: JPanel? = null
+    var namePanel: JPanel? = null,
+    var isRecentFile: Boolean = false
 ) {
     companion object {
         fun from(project: Project, file: VirtualFile): FilePresentation {

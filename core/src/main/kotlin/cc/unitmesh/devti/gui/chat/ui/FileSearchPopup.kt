@@ -29,11 +29,11 @@ class FileSearchPopup(
     private val onFilesSelected: (List<VirtualFile>) -> Unit
 ) {
     private var popup: JBPopup? = null
-    private val fileListModel = DefaultListModel<FileItem>()
+    private val fileListModel = DefaultListModel<FilePresentation>()
     private val fileList = JBList(fileListModel)
     private val searchField = JTextField()
     private val contentPanel = JPanel(BorderLayout())
-    private val allProjectFiles = mutableListOf<FileItem>()
+    private val allProjectFiles = mutableListOf<FilePresentation>()
     private val minPopupSize = Dimension(435, 300)
 
     init {
@@ -45,7 +45,9 @@ class FileSearchPopup(
         allProjectFiles.clear()
         EditorHistoryManager.Companion.getInstance(project).fileList.forEach { file ->
             if (file.canBeAdded(project)) {
-                allProjectFiles.add(FileItem(file, isRecentFile = true))
+                val presentation = FilePresentation.from(project, file)
+                presentation.isRecentFile = true
+                allProjectFiles.add(presentation)
             }
         }
 
@@ -53,10 +55,9 @@ class FileSearchPopup(
             if (file.canBeAdded(project) &&
                 !ProjectFileIndex.getInstance(project).isUnderIgnored(file) &&
                 ProjectFileIndex.getInstance(project).isInContent(file) &&
-                !allProjectFiles.any { it.file.path == file.path }
+                !allProjectFiles.any { it.path == file.path }
             ) {
-
-                allProjectFiles.add(FileItem(file))
+                allProjectFiles.add(FilePresentation.from(project, file))
             }
             true
         }
@@ -79,7 +80,7 @@ class FileSearchPopup(
         fileList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
-                    val selectedFiles = fileList.selectedValuesList.map { it.file }
+                    val selectedFiles = fileList.selectedValuesList.map { it.virtualFile }
                     if (selectedFiles.isNotEmpty()) {
                         onFilesSelected(selectedFiles)
                         popup?.cancel()
@@ -100,8 +101,8 @@ class FileSearchPopup(
             allProjectFiles
         } else {
             allProjectFiles.filter { item ->
-                item.file.name.contains(searchText, ignoreCase = true) ||
-                        item.file.path.contains(searchText, ignoreCase = true)
+                item.name.contains(searchText, ignoreCase = true) ||
+                        item.path.contains(searchText, ignoreCase = true)
             }
         }
 
@@ -125,22 +126,13 @@ class FileSearchPopup(
         popup?.show(RelativePoint(component, Point(leftOffset, -minPopupSize.height + topOffset)))
     }
 
-    data class FileItem(
-        val file: VirtualFile,
-        val isRecentFile: Boolean = false
-    ) {
-        val icon = file.fileType.icon
-        val name = file.name
-        val path = file.path
-    }
-
-    class FileListCellRenderer : ListCellRenderer<FileItem> {
+    class FileListCellRenderer() : ListCellRenderer<FilePresentation> {
         private val noBorderFocus = BorderFactory.createEmptyBorder(1, 1, 1, 1)
 
         @NotNull
         override fun getListCellRendererComponent(
-            list: JList<out FileItem>?,
-            value: FileItem,
+            list: JList<out FilePresentation>?,
+            value: FilePresentation,
             index: Int,
             isSelected: Boolean,
             cellHasFocus: Boolean
@@ -152,7 +144,7 @@ class FileSearchPopup(
             val fileLabel = JBLabel(value.name, value.icon, JBLabel.LEFT)
             fileLabel.border = JBUI.Borders.emptyRight(8)
 
-            val relativePath = getRelativePath(value)
+            val relativePath = value.presentablePath
             val pathLabel = JBLabel(" - $relativePath", JBLabel.LEFT)
             pathLabel.font = UIUtil.getFont(UIUtil.FontSize.SMALL, pathLabel.font)
             pathLabel.foreground = UIUtil.getContextHelpForeground()
@@ -182,16 +174,6 @@ class FileSearchPopup(
             }
 
             return mainPanel
-        }
-
-        private fun getRelativePath(item: FileItem): String {
-            // Try to make the path shorter for display purposes
-            return try {
-                val basePath = item.path.substringBeforeLast(item.name, "")
-                if (basePath.isEmpty()) item.path else basePath
-            } catch (e: Exception) {
-                item.path
-            }
         }
     }
 }
