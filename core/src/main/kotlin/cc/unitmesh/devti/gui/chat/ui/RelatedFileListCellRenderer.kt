@@ -20,39 +20,45 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
         isSelected: Boolean,
         cellHasFocus: Boolean,
     ): Component {
-        val panel = value.panel ?: JPanel(FlowLayout(FlowLayout.LEFT, 3, 0)).apply {
+        val fileItemPanel = value.panel ?: createFileItemPanel(value)
+        val fileInfoPanel = value.namePanel
+        if (isSelected) {
+            fileInfoPanel?.background = list.selectionBackground
+            fileInfoPanel?.foreground = list.selectionForeground
+        } else {
+            fileInfoPanel?.background = fileItemPanel.background
+            fileInfoPanel?.foreground = list.foreground
+        }
+
+        return fileItemPanel
+    }
+
+    /**
+     * Creates a panel for displaying a file item in the list.
+     */
+    private fun createFileItemPanel(value: FilePresentationWrapper): JPanel {
+        return JPanel(FlowLayout(FlowLayout.LEFT, 3, 0)).apply {
             accessibleContext.accessibleName = "Element Panel"
-
             border = JBUI.Borders.empty(2, 5)
+            val fileInfoPanel = JPanel(layout)
+            
+            val fileIconLabel = JLabel(value.virtualFile.fileType.icon ?: AllIcons.FileTypes.Unknown)
+            fileInfoPanel.add(fileIconLabel)
+            fileInfoPanel.toolTipText = value.virtualFile.relativePath(project)
 
-            val namePanel = JPanel(layout)
-            val iconLabel = JLabel(value.virtualFile.fileType.icon ?: AllIcons.FileTypes.Unknown)
-            namePanel.add(iconLabel)
-            namePanel.toolTipText = value.virtualFile.relativePath(project)
+            val fileNameLabel = JLabel(buildDisplayName(value))
+            fileInfoPanel.add(fileNameLabel)
+            
+            add(fileInfoPanel)
 
-            val nameLabel = JLabel(buildDisplayName(value))
-            namePanel.add(nameLabel)
-            add(namePanel)
-
-            val closeLabel = JLabel(AllIcons.Actions.Close)
-            closeLabel.border = JBUI.Borders.empty()
-
-            add(closeLabel, BorderLayout.EAST)
+            val closeButton = JLabel(AllIcons.Actions.Close)
+            closeButton.border = JBUI.Borders.empty()
+            add(closeButton, BorderLayout.EAST)
 
             value.panel = this
-            value.namePanel = namePanel
+            value.namePanel = fileInfoPanel
             this.toolTipText = value.virtualFile.relativePath(project)
         }
-        val namePanel = value.namePanel
-        if (isSelected) {
-            namePanel?.background = list.selectionBackground
-            namePanel?.foreground = list.selectionForeground
-        } else {
-            namePanel?.background = panel.background
-            namePanel?.foreground = list.foreground
-        }
-
-        return panel
     }
 
     /**
