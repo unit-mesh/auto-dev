@@ -25,8 +25,12 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.util.ui.UIUtil
 import org.jetbrains.annotations.NotNull
+import javax.swing.Box
+import javax.swing.BoxLayout
+import javax.swing.JComponent
 
 class WorkspacePanel(
     private val project: Project,
@@ -52,15 +56,16 @@ class WorkspacePanel(
         addButton.border = JBUI.Borders.empty(2, 4)
         addButton.background = JBColor(0xEDF4FE, 0x313741)
         addButton.isOpaque = true
+
         addButton.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                showFileSearchPopup(e.component)
+                showFileSearchPopup(this@WorkspacePanel)
             }
         })
         return addButton
     }
     
-    private fun showFileSearchPopup(component: Component) {
+    private fun showFileSearchPopup(component: JComponent) {
         val popup = FileSearchPopup(project) { files ->
             for (file in files) {
                 addFileToWorkspace(file)
@@ -135,6 +140,7 @@ class FileSearchPopup(
     private val searchField = JTextField()
     private val contentPanel = JPanel(BorderLayout())
     private val allProjectFiles = mutableListOf<FileItem>()
+    private val minPopupSize = Dimension(435, 300)
     
     init {
         loadProjectFiles()
@@ -157,7 +163,6 @@ class FileSearchPopup(
     }
     
     private fun setupUI() {
-        // Setup search field
         searchField.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent) = updateSearch()
             override fun removeUpdate(e: DocumentEvent) = updateSearch()
@@ -185,7 +190,7 @@ class FileSearchPopup(
         // Layout components
         contentPanel.add(searchField, BorderLayout.NORTH)
         contentPanel.add(JScrollPane(fileList), BorderLayout.CENTER)
-        contentPanel.preferredSize = Dimension(400, 300)
+        contentPanel.preferredSize = minPopupSize
     }
     
     private fun updateFileList(searchText: String) {
@@ -203,16 +208,21 @@ class FileSearchPopup(
         filteredFiles.forEach { fileListModel.addElement(it) }
     }
     
-    fun show(component: Component) {
+    fun show(component: JComponent) {
         popup = JBPopupFactory.getInstance()
             .createComponentPopupBuilder(contentPanel, searchField)
             .setTitle("Search Files")
             .setMovable(true)
             .setResizable(true)
             .setRequestFocus(true)
+            .setFocusable(true)
+            .setMinSize(minPopupSize)
             .createPopup()
             
-        popup?.showUnderneathOf(component)
+        val topOffset = (component.border?.getBorderInsets(component)?.top ?: 0)
+        val leftOffset = (component.border?.getBorderInsets(component)?.left ?: 0)
+        
+        popup?.show(RelativePoint(component, Point(leftOffset, -minPopupSize.height + topOffset)))
     }
     
     data class FileItem(val file: VirtualFile) {
@@ -234,15 +244,23 @@ class FileSearchPopup(
         ): Component {
             val panel = JPanel(BorderLayout())
             value?.let {
+                // Create a panel with horizontal layout to display file name and path inline
+                val infoPanel = JPanel()
+                infoPanel.layout = BoxLayout(infoPanel, BoxLayout.X_AXIS)
+                infoPanel.isOpaque = false
+                
+                // File name with icon
                 val fileLabel = JBLabel(it.name, it.icon, JBLabel.LEFT)
-                val pathLabel = JBLabel(it.path, JBLabel.LEFT)
+                fileLabel.border = JBUI.Borders.emptyRight(8)
+                
+                // Path with smaller, grayed-out text
+                val pathLabel = JBLabel(" - ${getRelativePath(it)}", JBLabel.LEFT)
                 pathLabel.font = UIUtil.getFont(UIUtil.FontSize.SMALL, pathLabel.font)
                 pathLabel.foreground = UIUtil.getContextHelpForeground()
                 
-                val infoPanel = JPanel(BorderLayout())
-                infoPanel.add(fileLabel, BorderLayout.NORTH)
-                infoPanel.add(pathLabel, BorderLayout.SOUTH)
-                infoPanel.isOpaque = false
+                infoPanel.add(fileLabel)
+                infoPanel.add(pathLabel)
+                infoPanel.add(Box.createHorizontalGlue()) // This makes the layout adapt to width
                 
                 panel.add(infoPanel, BorderLayout.CENTER)
                 
@@ -262,6 +280,16 @@ class FileSearchPopup(
             }
             
             return panel
+        }
+        
+        private fun getRelativePath(item: FileItem): String {
+            // Try to make the path shorter for display purposes
+            return try {
+                val basePath = item.path.substringBeforeLast(item.name, "")
+                if (basePath.isEmpty()) item.path else basePath
+            } catch (e: Exception) {
+                item.path
+            }
         }
     }
 }
@@ -382,3 +410,4 @@ class WrapLayout : FlowLayout {
         }
     }
 }
+
