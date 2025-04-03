@@ -215,7 +215,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
     }
 
     private fun getCustomAgentTestContext(testPromptContext: TestCodeGenContext): String {
-        if (!project.customizeSetting.enableCustomRag) return ""
+        if (!project.customizeSetting.enableCustomAgent) return ""
 
         val agent = loadTestRagConfig() ?: return ""
 

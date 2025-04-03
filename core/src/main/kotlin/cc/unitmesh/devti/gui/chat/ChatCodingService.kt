@@ -44,7 +44,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         var requestPrompt = prompter.requestPrompt()
         var displayPrompt = prompter.displayPrompt()
 
-        if (project.customizeSetting.enableCustomRag && ui.hasSelectedCustomAgent()) {
+        if (project.customizeSetting.enableCustomAgent && ui.hasSelectedCustomAgent()) {
             val selectedCustomAgent = ui.getSelectedCustomAgent()
             when {
                 selectedCustomAgent.state === CustomAgentState.START -> {

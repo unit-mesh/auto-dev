@@ -142,7 +142,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         })
         layoutPanel.setOpaque(false)
 
-        if (project.customizeSetting.enableCustomRag && showAgent) {
+        if (project.customizeSetting.enableCustomAgent && showAgent) {
             customAgent = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
             customAgent.renderer = SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
                 if (value != null) {
@@ -352,7 +352,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun hasSelectedAgent(): Boolean {
-        if (!project.customizeSetting.enableCustomRag) return false
+        if (!project.customizeSetting.enableCustomAgent) return false
         if (customAgent.selectedItem == null) return false
         return customAgent.selectedItem != defaultRag
     }

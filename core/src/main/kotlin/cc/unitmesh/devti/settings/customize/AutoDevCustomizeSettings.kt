@@ -11,7 +11,7 @@ val Project.customizeSetting: AutoDevCustomizeSettings
 class AutoDevCustomizeSettings(
     val project: Project,
 ) : SimplePersistentStateComponent<AutoDevCustomizeSettings.CustomizeProjectSettings>(CustomizeProjectSettings()) {
-    val enableCustomRag: Boolean get() = state.enableCustomRag
+    val enableCustomAgent: Boolean get() = state.enableCustomAgent
     val customPrompts: String get() = state.customPrompts
     val mcpServerConfig: String get() = state.mcpServerConfig
 
@@ -29,7 +29,7 @@ class AutoDevCustomizeSettings(
     }
 
     class CustomizeProjectSettings : AdProjectSettingsBase<CustomizeProjectSettings>() {
-        var enableCustomRag by property(false)
+        var enableCustomAgent by property(false)
         var agentJsonConfig by property("") { it.isEmpty() }
         var customPrompts by property("") { it.isEmpty() }
         var mcpServerConfig by property("") { it.isEmpty() }

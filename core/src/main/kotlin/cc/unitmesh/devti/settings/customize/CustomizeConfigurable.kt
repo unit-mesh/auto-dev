@@ -56,7 +56,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
         }
 
         row {
-            checkBox(AutoDevBundle.message("counit.agent.enable.label")).bindSelected(state::enableCustomRag)
+            checkBox(AutoDevBundle.message("counit.agent.enable.label")).bindSelected(state::enableCustomAgent)
                 .apply {
                     componentStateChanged("counit.agent.enable.label", this.component) { c, k ->
                         c.text = k
@@ -115,7 +115,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
 
         onApply {
             settings.modify {
-                it.enableCustomRag = state.enableCustomRag
+                it.enableCustomAgent = state.enableCustomAgent
                 it.agentJsonConfig = state.agentJsonConfig
                 it.customPrompts = state.customPrompts
                 it.mcpServerConfig = state.mcpServerConfig
