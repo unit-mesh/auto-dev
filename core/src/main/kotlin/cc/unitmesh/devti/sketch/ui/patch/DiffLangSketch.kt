@@ -36,7 +36,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 class DiffLangSketch(private val myProject: Project, private var patchContent: String) : ExtensionLangSketch {
-    private val mainPanel: JPanel = JPanel(VerticalLayout(5))
+    private val mainPanel: JPanel = JPanel(VerticalLayout(2))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private val shelfExecutor = ApplyPatchDefaultExecutor(myProject)
     private val myReader: PatchReader? = PatchReader(patchContent).also {
@@ -61,7 +61,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             mainPanel.add(myHeaderPanel)
         }
 
-        mainPanel.border = JBUI.Borders.compound(JBUI.Borders.empty(0, 10))
+        mainPanel.border = JBUI.Borders.compound(JBUI.Borders.empty(0, 4))
 
         ApplicationManager.getApplication().invokeLater {
             if (filePatches.isEmpty()) {
@@ -92,7 +92,6 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                 return@invokeLater
             }
 
-//            try {
             filePatches.forEach { patch ->
                 val diffPanel = createDiffPanel(patch)
                 if (diffPanel != null) {
@@ -100,9 +99,6 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                     mainPanel.revalidate()
                 }
             }
-//            } catch (e: Exception) {
-//                AutoDevNotifications.error(myProject, "Failed to create diff panel: ${e.message}")
-//            }
         }
     }
 

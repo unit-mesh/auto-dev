@@ -59,12 +59,16 @@ class AgentStateService(val project: Project) {
             }
         }
 
-        val change = createChange(patch)
-        state.changes.add(change)
+        try {
+            val change = createChange(patch)
+            state.changes.add(change)
 
-        ApplicationManager.getApplication().messageBus
-            .syncPublisher(PlanUpdateListener.TOPIC)
-            .onUpdateChange(state.changes)
+            ApplicationManager.getApplication().messageBus
+                .syncPublisher(PlanUpdateListener.TOPIC)
+                .onUpdateChange(state.changes)
+        } catch (e: IOException) {
+            logger<AgentStateService>().info(e)
+        }
     }
 
     private fun createChange(patch: TextFilePatch): Change {
