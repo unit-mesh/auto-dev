@@ -60,8 +60,7 @@ abstract class FileEditorPreviewSketch(
         val rightToolbar = ActionManager.getInstance()
             .createActionToolbar(ActionPlaces.TEXT_EDITOR_WITH_PREVIEW, createViewActionGroup(), true)
         rightToolbar.targetComponent = target
-        rightToolbar.isReservePlaceAutoPopupIcon = false
-
+//        rightToolbar.isReservePlaceAutoPopupIcon = false
         return rightToolbar
     }
 
