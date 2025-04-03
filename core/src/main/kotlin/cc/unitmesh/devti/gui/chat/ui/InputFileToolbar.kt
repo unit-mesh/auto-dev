@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.labels.LinkLabel
@@ -11,7 +12,7 @@ import javax.swing.Box
 import javax.swing.JToolBar
 
 object InputFileToolbar {
-    fun createToolbar(project: Project, viewModel: FileListViewModel): JToolBar {
+    fun createToolbar(project: Project, viewModel: FileListViewModel, input: AutoDevInput): JToolBar {
         val toolbar = JToolBar()
         toolbar.isFloatable = false
 
@@ -23,7 +24,15 @@ object InputFileToolbar {
         toolbar.add(Box.createHorizontalGlue())
 
         val recentFiles = LinkLabel(AutoDevBundle.message("chat.panel.add.openFiles"), null) { _: LinkLabel<Unit>, _: Unit? ->
-            viewModel.addRecentlyOpenedFiles()
+            val addedFiles = viewModel.addRecentlyOpenedFiles()
+            val fileReferences = StringBuilder()
+            addedFiles.forEach { vfile ->
+                fileReferences.append("\n/file:${vfile.presentablePath}")
+            }
+            
+            if (fileReferences.isNotEmpty()) {
+                input.appendText(fileReferences.toString())
+            }
         }
         
         recentFiles.mediumFontFunction()

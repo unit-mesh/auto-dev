@@ -88,7 +88,7 @@ class FileListViewModel(private val project: Project) : Disposable {
             .toMutableList()
     }
     
-    fun addRecentlyOpenedFiles() {
+    fun addRecentlyOpenedFiles(): List<FilePresentation> {
         val files = getRecentlyOpenedFiles()
         files.forEach { file ->
             if (listModel.elements().asSequence().none { it.virtualFile == file.virtualFile }) {
@@ -96,6 +96,8 @@ class FileListViewModel(private val project: Project) : Disposable {
                 listeners.forEach { it.onFileAdded(file) }
             }
         }
+
+        return files
     }
     
     /**

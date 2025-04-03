@@ -11,7 +11,6 @@ import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.codeInsight.lookup.LookupManagerListener
-import com.intellij.icons.AllIcons
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.Disposable
@@ -32,7 +31,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.popup.Balloon.Position
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.psi.PsiElement
@@ -171,7 +169,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val toolbar = InputFileToolbar.createToolbar(project, fileListViewModel)
+        val toolbar = InputFileToolbar.createToolbar(project, fileListViewModel, input)
 
         val headerPanel = JPanel(BorderLayout())
         headerPanel.add(toolbar, BorderLayout.NORTH)
