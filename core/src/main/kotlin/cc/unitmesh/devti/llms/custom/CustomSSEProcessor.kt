@@ -200,12 +200,8 @@ fun Request.Builder.appendCustomHeaders(customRequestHeader: String): Request.Bu
     }
 }
 
-
-/**
- * [stream] 值优先于 [fields] 中的 customFileds.stream 字段
- */
 @VisibleForTesting
-fun JsonObject.updateCustomBody(customRequest: String, stream: Boolean? = null): JsonObject {
+fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
     return runCatching {
         buildJsonObject {
             // copy origin object
@@ -241,11 +237,6 @@ fun JsonObject.updateCustomBody(customRequest: String, stream: Boolean? = null):
                 customFields.jsonObject.forEach { (key, value) ->
                     put(key, value)
                 }
-
-                // stream 参数优先级高于 customFields.stream
-                if (stream != null) {
-                    put("stream", stream)
-                }
              }
 
             // TODO clean code with magic literals
@@ -274,11 +265,11 @@ fun JsonObject.updateCustomBody(customRequest: String, stream: Boolean? = null):
     }
 }
 
-fun CustomRequest.updateCustomFormat(format: String, stream: Boolean? = null): String {
+fun CustomRequest.updateCustomFormat(format: String): String {
     val requestContentOri = Json.encodeToString<CustomRequest>(this)
     val updateCustomBody = kotlin.runCatching {
         Json.parseToJsonElement(requestContentOri)
-            .jsonObject.updateCustomBody(format, stream)
+            .jsonObject.updateCustomBody(format)
     }.getOrElse {
         logger<CustomLLMProvider>().error("Failed to update custom request body: ${format}", it)
         requestContentOri

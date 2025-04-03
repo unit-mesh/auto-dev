@@ -178,7 +178,7 @@ private class DefaultLLMTextProvider(
             val cm = it.chatMessage
             Message(cm.role, cm.content ?: "")
         })
-        val requestBodyText = customRequest.updateCustomFormat(requestCustomize, stream)
+        val requestBodyText = customRequest.updateCustomFormat(requestCustomize)
         val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), requestBodyText.toByteArray())
         println("requestUrl: $requestUrl")
         val request: Request = requestBuilder.url(requestUrl).post(requestBody).build()
