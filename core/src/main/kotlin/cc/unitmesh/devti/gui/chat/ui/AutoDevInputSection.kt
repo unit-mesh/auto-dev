@@ -2,7 +2,6 @@ package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
 import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
@@ -10,9 +9,8 @@ import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.util.isInProject
+import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.codeInsight.lookup.LookupManagerListener
-import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.icons.AllIcons
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
@@ -60,8 +58,6 @@ import javax.swing.*
 import kotlin.math.max
 import kotlin.math.min
 
-data class FilePresentationWrapper(val virtualFile: VirtualFile, var panel: JPanel? = null, var namePanel: JPanel? = null)
-
 class AutoDevInputSection(private val project: Project, val disposable: Disposable?, showAgent: Boolean = true) :
     BorderLayoutPanel() {
     private val input: AutoDevInput
@@ -72,6 +68,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val stopButton: ActionButton
     private val buttonPanel = JPanel(CardLayout())
     private val inputPanel = BorderLayoutPanel()
+    val focusableComponent: JComponent get() = input
 
     private val fileListViewModel = FileListViewModel(project)
     private val elementsList = JBList(fileListViewModel.getListModel())
@@ -397,23 +394,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             val contentManager = decorator?.contentManager ?: return JBUI.scale(200)
             return contentManager.component.height / 2
         }
-
-    val focusableComponent: JComponent get() = input
-
-    fun DefaultListModel<FilePresentation>.addIfAbsent(vfile: VirtualFile, first: Boolean = false) {
-        if (!vfile.isValid || vfile.fileType.isBinary) return
-        if (!isInProject(vfile, project)) return
-        if (vfile is DiffVirtualFileBase) return
-
-        if (elements().asSequence().none { it.virtualFile == vfile }) {
-            val filePresentation = FilePresentation(vfile)
-            if (first) {
-                insertElementAt(filePresentation, 0)
-            } else {
-                addElement(filePresentation)
-            }
-        }
-    }
 }
 
 private const val FONT_KEY = "FontFunction"
