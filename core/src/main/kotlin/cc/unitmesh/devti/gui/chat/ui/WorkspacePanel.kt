@@ -1,36 +1,27 @@
 package cc.unitmesh.devti.gui.chat.ui
 
+import cc.unitmesh.devti.util.canBeAdded
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.ui.popup.JBPopup
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
+import org.jetbrains.annotations.NotNull
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JPanel
-import javax.swing.JList
-import javax.swing.ListCellRenderer
-import javax.swing.UIManager
-import javax.swing.JTextField
-import javax.swing.JScrollPane
-import javax.swing.DefaultListModel
-import javax.swing.BorderFactory
+import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
-import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.ui.popup.JBPopup
-import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.ui.awt.RelativePoint
-import com.intellij.util.ui.UIUtil
-import org.jetbrains.annotations.NotNull
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.JComponent
 
 class WorkspacePanel(
     private val project: Project,
@@ -148,15 +139,22 @@ class FileSearchPopup(
     }
     
     private fun loadProjectFiles() {
-        val projectRootManager = ProjectRootManager.getInstance(project)
-        val roots = projectRootManager.contentRoots
-        
-        roots.forEach { root ->
-            VfsUtil.collectChildrenRecursively(root).forEach { file ->
-                if (!file.isDirectory) {
-                    allProjectFiles.add(FileItem(file))
-                }
+        allProjectFiles.clear()
+        EditorHistoryManager.getInstance(project).fileList.forEach { file ->
+            if (file.canBeAdded(project)) {
+                allProjectFiles.add(FileItem(file, isRecentFile = true))
             }
+        }
+        
+        ProjectFileIndex.getInstance(project).iterateContent { file ->
+            if (file.canBeAdded(project) &&
+                !ProjectFileIndex.getInstance(project).isUnderIgnored(file) && 
+                ProjectFileIndex.getInstance(project).isInContent(file) &&
+                !allProjectFiles.any { it.file.path == file.path }) {
+                
+                allProjectFiles.add(FileItem(file))
+            }
+            true
         }
         
         updateFileList("")
@@ -173,7 +171,6 @@ class FileSearchPopup(
             }
         })
         
-        // Setup file list
         fileList.cellRenderer = FileListCellRenderer()
         fileList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
@@ -187,7 +184,6 @@ class FileSearchPopup(
             }
         })
         
-        // Layout components
         contentPanel.add(searchField, BorderLayout.NORTH)
         contentPanel.add(JScrollPane(fileList), BorderLayout.CENTER)
         contentPanel.preferredSize = minPopupSize
@@ -225,7 +221,10 @@ class FileSearchPopup(
         popup?.show(RelativePoint(component, Point(leftOffset, -minPopupSize.height + topOffset)))
     }
     
-    data class FileItem(val file: VirtualFile) {
+    data class FileItem(
+        val file: VirtualFile, 
+        val isRecentFile: Boolean = false
+    ) {
         val icon = file.fileType.icon
         val name = file.name
         val path = file.path
@@ -257,6 +256,11 @@ class FileSearchPopup(
                 val pathLabel = JBLabel(" - ${getRelativePath(it)}", JBLabel.LEFT)
                 pathLabel.font = UIUtil.getFont(UIUtil.FontSize.SMALL, pathLabel.font)
                 pathLabel.foreground = UIUtil.getContextHelpForeground()
+                
+                // Special styling for recent files
+                if (it.isRecentFile) {
+                    fileLabel.foreground = JBColor(0x0087FF, 0x589DF6)
+                }
                 
                 infoPanel.add(fileLabel)
                 infoPanel.add(pathLabel)
@@ -410,4 +414,3 @@ class WrapLayout : FlowLayout {
         }
     }
 }
-
