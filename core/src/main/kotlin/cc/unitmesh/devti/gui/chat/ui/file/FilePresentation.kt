@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.ui
+package cc.unitmesh.devti.gui.chat.ui.file
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project

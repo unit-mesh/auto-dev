@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.ui
+package cc.unitmesh.devti.gui.chat.ui.file
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileChooser.FileChooser
@@ -13,39 +13,37 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
-class WorkspacePanel(
-    private val project: Project,
-    private val input: AutoDevInput
-) : JPanel(BorderLayout()) {
+class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) {
     private val workspaceFiles = mutableListOf<FilePresentation>()
     private val filesPanel = JPanel(WrapLayout(FlowLayout.LEFT, 2, 2))
-    
+
     init {
         border = JBUI.Borders.empty()
 
         filesPanel.isOpaque = false
         filesPanel.add(createAddButton())
-        
+
         add(filesPanel, BorderLayout.NORTH)
         isOpaque = false
     }
 
     private fun createAddButton(): JBLabel {
-        val addButton = JBLabel(AllIcons.General.Add)
-        addButton.cursor = Cursor(Cursor.HAND_CURSOR)
-        addButton.toolTipText = "Add files to workspace"
-        addButton.border = JBUI.Borders.empty(2, 4)
-        addButton.background = JBColor(0xEDF4FE, 0x313741)
-        addButton.isOpaque = true
+        val button = JBLabel(AllIcons.General.Add)
+        button.cursor = Cursor(Cursor.HAND_CURSOR)
+        button.toolTipText = "Add files to workspace"
+        button.border = JBUI.Borders.empty(2)
+        button.background = JBColor(0xEDF4FE, 0x313741)
+        button.isOpaque = true
 
-        addButton.addMouseListener(object : MouseAdapter() {
+        button.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                showFileSearchPopup(this@WorkspacePanel)
+                showFileSearchPopup(this@WorkspaceFilePanel)
             }
         })
-        return addButton
+
+        return button
     }
-    
+
     private fun showFileSearchPopup(component: JComponent) {
         val popup = FileSearchPopup(project) { files ->
             for (file in files) {
@@ -54,19 +52,19 @@ class WorkspacePanel(
         }
         popup.show(component)
     }
-    
+
     private fun addFile() {
         val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
             .withTitle("Select Files for Workspace")
             .withDescription("Choose files to add to your workspace")
-        
+
         FileChooser.chooseFiles(descriptor, project, null) { files ->
             for (file in files) {
                 addFileToWorkspace(file)
             }
         }
     }
-    
+
     fun addFileToWorkspace(file: VirtualFile) {
         val filePresentation = FilePresentation.from(project, file)
         if (workspaceFiles.none { it.virtualFile == file }) {
@@ -74,32 +72,32 @@ class WorkspacePanel(
             updateFilesPanel()
         }
     }
-    
+
     private fun updateFilesPanel() {
         filesPanel.removeAll()
         filesPanel.add(createAddButton())
-        
+
         for (filePresentation in workspaceFiles) {
-            val fileLabel = FileItemPanel(project, filePresentation) { 
+            val fileLabel = FileItemPanel(project, filePresentation) {
                 removeFile(filePresentation)
             }
             filesPanel.add(fileLabel)
         }
-        
+
         filesPanel.revalidate()
         filesPanel.repaint()
     }
-    
+
     private fun removeFile(filePresentation: FilePresentation) {
         workspaceFiles.remove(filePresentation)
         updateFilesPanel()
     }
-    
+
     fun clear() {
         workspaceFiles.clear()
         updateFilesPanel()
     }
-    
+
     fun getAllFiles(): List<FilePresentation> {
         return workspaceFiles.toList()
     }
@@ -123,9 +121,9 @@ class FileItemPanel(
         )
         background = JBColor(0xEDF4FE, 0x313741)
         isOpaque = true
-        
+
         val fileLabel = JBLabel(filePresentation.name, filePresentation.icon, JBLabel.LEFT)
-        
+
         val removeLabel = JBLabel(AllIcons.Actions.Close)
         removeLabel.cursor = Cursor(Cursor.HAND_CURSOR)
         removeLabel.addMouseListener(object : MouseAdapter() {
@@ -133,10 +131,10 @@ class FileItemPanel(
                 onRemove()
             }
         })
-        
+
         add(fileLabel)
         add(removeLabel)
-        
+
         this.border = JBUI.Borders.empty(2)
     }
 }
@@ -179,7 +177,7 @@ class WrapLayout : FlowLayout {
         synchronized(target.treeLock) {
             // Each row must fit within the target container width
             var targetWidth = target.width
-            
+
             if (targetWidth == 0) {
                 targetWidth = Int.MAX_VALUE
             }
@@ -200,7 +198,7 @@ class WrapLayout : FlowLayout {
                 val m = target.getComponent(i)
                 if (m.isVisible) {
                     val d = if (preferred) m.preferredSize else m.minimumSize
-                    
+
                     // If this component doesn't fit in the current row, start a new row
                     if (rowWidth + d.width > maxWidth && rowWidth > 0) {
                         dim.width = maxWidth.coerceAtLeast(rowWidth)

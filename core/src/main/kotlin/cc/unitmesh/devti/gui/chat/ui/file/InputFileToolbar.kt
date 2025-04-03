@@ -1,8 +1,10 @@
-package cc.unitmesh.devti.gui.chat.ui
+package cc.unitmesh.devti.gui.chat.ui.file
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInput
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
+import cc.unitmesh.devti.gui.chat.ui.mediumFontFunction
 import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.labels.LinkLabel
@@ -12,6 +14,7 @@ import javax.swing.Box
 import javax.swing.JToolBar
 import java.awt.Component
 import java.awt.Container
+import kotlin.collections.forEach
 
 object InputFileToolbar {
     fun createToolbar(project: Project, viewModel: FileListViewModel, input: AutoDevInput): JToolBar {
@@ -25,11 +28,11 @@ object InputFileToolbar {
 
         toolbar.add(Box.createHorizontalGlue())
 
-        val findWorkspacePanel: () -> WorkspacePanel? = lambda@{
+        val findWorkspaceFilePanel: () -> WorkspaceFilePanel? = lambda@{
             var component: Component? = input.parent
             while (component != null) {
                 if (component is AutoDevInputSection) {
-                    val workspace = component.findComponentOfType(WorkspacePanel::class.java)
+                    val workspace = component.findComponentOfType(WorkspaceFilePanel::class.java)
                     if (workspace != null) {
                         return@lambda workspace
                     }
@@ -43,7 +46,7 @@ object InputFileToolbar {
         val recentFiles = LinkLabel(AutoDevBundle.message("chat.panel.add.openFiles"), null) { _: LinkLabel<Unit>, _: Unit? ->
             val addedFiles = viewModel.addRecentlyOpenedFiles()
             
-            val workspace = findWorkspacePanel()
+            val workspace = findWorkspaceFilePanel()
             if (workspace != null) {
                 addedFiles.forEach { file ->
                     workspace.addFileToWorkspace(file.virtualFile)
@@ -66,7 +69,7 @@ object InputFileToolbar {
 
         val clearAll = LinkLabel(AutoDevBundle.message("chat.panel.clear.all"), null) { _: LinkLabel<Unit>, _: Unit? ->
             viewModel.clearAllFiles()
-            findWorkspacePanel()?.clear()
+            findWorkspaceFilePanel()?.clear()
         }
 
         clearAll.mediumFontFunction()

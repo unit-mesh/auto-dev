@@ -4,6 +4,9 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
+import cc.unitmesh.devti.gui.chat.ui.file.InputFileToolbar
+import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
+import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
 import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
@@ -71,7 +74,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val fileListViewModel = FileListViewModel(project)
     private val elementsList = JBList(fileListViewModel.getListModel())
     
-    private val workspacePanel: WorkspacePanel
+    private val workspaceFilePanel: WorkspaceFilePanel
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
     private var customAgent: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
@@ -88,7 +91,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     var text: String
         get() {
-            val files = workspacePanel.getAllFilesFormat()
+            val files = workspaceFilePanel.getAllFilesFormat()
             return input.text + "\n" + files
         }
         set(text) {
@@ -98,7 +101,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     init {
         input = AutoDevInput(project, listOf(), disposable, this)
-        workspacePanel = WorkspacePanel(project, input)
+        workspaceFilePanel = WorkspaceFilePanel(project)
 
         setupElementsList()
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
@@ -169,8 +172,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         inputPanel.add(input, BorderLayout.CENTER)
         inputPanel.addToBottom(layoutPanel)
         
-        // Add workspace panel to the input panel
-        inputPanel.addToTop(workspacePanel)
+        inputPanel.addToTop(workspaceFilePanel)
 
         val scrollPane = JBScrollPane(elementsList)
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
@@ -255,7 +257,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val actionType = fileListViewModel.determineFileAction(wrapper, e.point, cellBounds)
         val actionPerformed = fileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
             if (relativePath != null) {
-                workspacePanel.addFileToWorkspace(vfile)
+                workspaceFilePanel.addFileToWorkspace(vfile)
                 ApplicationManager.getApplication().invokeLater {
                     if (!vfile.isValid) return@invokeLater
                     val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
@@ -376,7 +378,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         customAgent.selectedItem = defaultRag
         text = ""
-        workspacePanel.clear()
+        workspaceFilePanel.clear()
     }
 
     fun moveCursorToStart() {

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat.ui.viewmodel
 
-import cc.unitmesh.devti.gui.chat.ui.FilePresentation
+import cc.unitmesh.devti.gui.chat.ui.file.FilePresentation
 import cc.unitmesh.devti.util.isInProject
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.openapi.Disposable

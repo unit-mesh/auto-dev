@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.ui
+package cc.unitmesh.devti.gui.chat.ui.file
 
 import cc.unitmesh.devti.util.canBeAdded
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
@@ -143,7 +143,7 @@ class FileSearchPopup(
             infoPanel.isOpaque = false
 
             val fileLabel = JBLabel(value.name, value.icon, JBLabel.LEFT)
-            fileLabel.border = JBUI.Borders.emptyRight(8)
+            fileLabel.border = JBUI.Borders.emptyRight(4)
 
             val relativePath = value.presentablePath
             val pathLabel = JBLabel(" - $relativePath", JBLabel.LEFT)
