@@ -174,7 +174,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val toolbar = setupToolbar()
+        val toolbar = InputFileToolbar.createToolbar(project, this@AutoDevInputSection.listModel)
 
         val headerPanel = JPanel(BorderLayout())
         headerPanel.add(toolbar, BorderLayout.NORTH)
@@ -287,30 +287,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     private fun updateElements(elements: List<PsiElement>?) {
         elements?.forEach { listModel.addIfAbsent(it.containingFile.virtualFile) }
-    }
-
-    private fun setupToolbar(): JToolBar {
-        val toolbar = JToolBar()
-        toolbar.isFloatable = false
-
-        val reminderLabel = JBLabel(AutoDevBundle.message("chat.panel.select.files"))
-        reminderLabel.border = JBUI.Borders.empty(5)
-        reminderLabel.foreground = UIUtil.getContextHelpForeground()
-        toolbar.add(reminderLabel)
-
-        toolbar.add(Box.createHorizontalGlue())
-
-
-        val clearAll = LinkLabel(AutoDevBundle.message("chat.panel.clear.all"), null) { _: LinkLabel<Unit>, _: Unit? ->
-            listModel.removeAllElements()
-        }
-
-        clearAll.mediumFontFunction()
-        clearAll.border = JBUI.Borders.emptyRight(20)
-
-        toolbar.add(clearAll)
-
-        return toolbar
     }
 
     fun showStopButton() {
@@ -458,3 +434,4 @@ fun JComponent.mediumFontFunction() {
     }
     putClientProperty(FONT_KEY, f)
 }
+
