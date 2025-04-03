@@ -132,7 +132,7 @@ class SimilarChunksWithPaths(private var snippetLength: Int = 60, private var ma
         }
     }
 
-    private fun getMostRecentFiles(element: PsiElement): List<VirtualFile> {
+    fun getMostRecentFiles(element: PsiElement): List<VirtualFile> {
         val fileType: FileType = element.containingFile?.fileType ?: return emptyList()
 
         val recentFiles: List<VirtualFile> = EditorHistoryManager.getInstance(element.project).fileList.filter { file ->

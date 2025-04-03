@@ -43,7 +43,8 @@ class FileSearchPopup(
 
     private fun loadProjectFiles() {
         allProjectFiles.clear()
-        EditorHistoryManager.Companion.getInstance(project).fileList.forEach { file ->
+        val fileList = EditorHistoryManager.getInstance(project).fileList
+        fileList.forEach { file ->
             if (file.canBeAdded(project)) {
                 val presentation = FilePresentation.from(project, file)
                 presentation.isRecentFile = true
