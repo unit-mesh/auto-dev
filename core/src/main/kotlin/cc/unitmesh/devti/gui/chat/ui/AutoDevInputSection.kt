@@ -72,7 +72,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val elementsList = JBList(fileListViewModel.getListModel())
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
-    private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
+    private var customAgent: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
 
     private val logger = logger<AutoDevInputSection>()
 
@@ -143,16 +143,16 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         layoutPanel.setOpaque(false)
 
         if (project.customizeSetting.enableCustomRag && showAgent) {
-            customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
-            customRag.renderer = SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
+            customAgent = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
+            customAgent.renderer = SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
                 if (value != null) {
                     label.text = value.name
                 }
             }
-            customRag.selectedItem = defaultRag
+            customAgent.selectedItem = defaultRag
 
             input.minimumSize = Dimension(input.minimumSize.width, 64)
-            layoutPanel.addToLeft(customRag)
+            layoutPanel.addToLeft(customAgent)
         }
 
 
@@ -316,7 +316,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun selectAgent(config: CustomAgentConfig) {
-        customRag.selectedItem = config
+        customAgent.selectedItem = config
     }
 
     fun setContent(trimMargin: String) {
@@ -353,20 +353,20 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     fun hasSelectedAgent(): Boolean {
         if (!project.customizeSetting.enableCustomRag) return false
-        if (customRag.selectedItem == null) return false
-        return customRag.selectedItem != defaultRag
+        if (customAgent.selectedItem == null) return false
+        return customAgent.selectedItem != defaultRag
     }
 
     fun getSelectedAgent(): CustomAgentConfig {
-        return customRag.selectedItem as CustomAgentConfig
+        return customAgent.selectedItem as CustomAgentConfig
     }
 
     fun resetAgent() {
-        (customRag.selectedItem as? CustomAgentConfig)?.let {
+        (customAgent.selectedItem as? CustomAgentConfig)?.let {
             it.state = CustomAgentState.START
         }
 
-        customRag.selectedItem = defaultRag
+        customAgent.selectedItem = defaultRag
         text = ""
     }
 
