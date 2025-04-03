@@ -11,8 +11,22 @@ import com.intellij.util.ui.JBUI
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.BorderFactory
 import javax.swing.JPanel
+import javax.swing.JList
+import javax.swing.ListCellRenderer
+import javax.swing.UIManager
+import javax.swing.JTextField
+import javax.swing.JScrollPane
+import javax.swing.DefaultListModel
+import javax.swing.BorderFactory
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.ui.popup.JBPopup
+import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.util.ui.UIUtil
+import org.jetbrains.annotations.NotNull
 
 class WorkspacePanel(
     private val project: Project,
@@ -24,6 +38,14 @@ class WorkspacePanel(
     init {
         border = JBUI.Borders.empty()
 
+        filesPanel.isOpaque = false
+        filesPanel.add(createAddButton())
+        
+        add(filesPanel, BorderLayout.NORTH)
+        isOpaque = false
+    }
+
+    private fun createAddButton(): JBLabel {
         val addButton = JBLabel(AllIcons.General.Add)
         addButton.cursor = Cursor(Cursor.HAND_CURSOR)
         addButton.toolTipText = "Add files to workspace"
@@ -32,15 +54,19 @@ class WorkspacePanel(
         addButton.isOpaque = true
         addButton.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                addFile()
+                showFileSearchPopup(e.component)
             }
         })
-        
-        filesPanel.isOpaque = false
-        filesPanel.add(addButton)
-        
-        add(filesPanel, BorderLayout.NORTH)
-        isOpaque = false
+        return addButton
+    }
+    
+    private fun showFileSearchPopup(component: Component) {
+        val popup = FileSearchPopup(project) { files ->
+            for (file in files) {
+                addFileToWorkspace(file)
+            }
+        }
+        popup.show(component)
     }
     
     private fun addFile() {
@@ -65,19 +91,7 @@ class WorkspacePanel(
     
     private fun updateFilesPanel() {
         filesPanel.removeAll()
-        
-        val addButton = JBLabel(AllIcons.General.Add)
-        addButton.cursor = Cursor(Cursor.HAND_CURSOR)
-        addButton.toolTipText = "Add files to workspace"
-        addButton.border = JBUI.Borders.empty(2, 4)
-        addButton.background = JBColor(0xEDF4FE, 0x313741)
-        addButton.isOpaque = true
-        addButton.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                addFile()
-            }
-        })
-        filesPanel.add(addButton)
+        filesPanel.add(createAddButton())
         
         for (filePresentation in workspaceFiles) {
             val fileLabel = FileItemPanel(project, filePresentation) { 
@@ -107,6 +121,147 @@ class WorkspacePanel(
     fun getAllFilesFormat(): String {
         return workspaceFiles.joinToString(separator = "\n") {
             "\n/file:${it.presentablePath}"
+        }
+    }
+}
+
+class FileSearchPopup(
+    private val project: Project,
+    private val onFilesSelected: (List<VirtualFile>) -> Unit
+) {
+    private var popup: JBPopup? = null
+    private val fileListModel = DefaultListModel<FileItem>()
+    private val fileList = JList(fileListModel)
+    private val searchField = JTextField()
+    private val contentPanel = JPanel(BorderLayout())
+    private val allProjectFiles = mutableListOf<FileItem>()
+    
+    init {
+        loadProjectFiles()
+        setupUI()
+    }
+    
+    private fun loadProjectFiles() {
+        val projectRootManager = ProjectRootManager.getInstance(project)
+        val roots = projectRootManager.contentRoots
+        
+        roots.forEach { root ->
+            VfsUtil.collectChildrenRecursively(root).forEach { file ->
+                if (!file.isDirectory) {
+                    allProjectFiles.add(FileItem(file))
+                }
+            }
+        }
+        
+        updateFileList("")
+    }
+    
+    private fun setupUI() {
+        // Setup search field
+        searchField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) = updateSearch()
+            override fun removeUpdate(e: DocumentEvent) = updateSearch()
+            override fun changedUpdate(e: DocumentEvent) = updateSearch()
+            
+            private fun updateSearch() {
+                updateFileList(searchField.text)
+            }
+        })
+        
+        // Setup file list
+        fileList.cellRenderer = FileListCellRenderer()
+        fileList.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (e.clickCount == 2) {
+                    val selectedFiles = fileList.selectedValuesList.map { it.file }
+                    if (selectedFiles.isNotEmpty()) {
+                        onFilesSelected(selectedFiles)
+                        popup?.cancel()
+                    }
+                }
+            }
+        })
+        
+        // Layout components
+        contentPanel.add(searchField, BorderLayout.NORTH)
+        contentPanel.add(JScrollPane(fileList), BorderLayout.CENTER)
+        contentPanel.preferredSize = Dimension(400, 300)
+    }
+    
+    private fun updateFileList(searchText: String) {
+        fileListModel.clear()
+        
+        val filteredFiles = if (searchText.isBlank()) {
+            allProjectFiles
+        } else {
+            allProjectFiles.filter { item ->
+                item.file.name.contains(searchText, ignoreCase = true) ||
+                item.file.path.contains(searchText, ignoreCase = true)
+            }
+        }
+        
+        filteredFiles.forEach { fileListModel.addElement(it) }
+    }
+    
+    fun show(component: Component) {
+        popup = JBPopupFactory.getInstance()
+            .createComponentPopupBuilder(contentPanel, searchField)
+            .setTitle("Search Files")
+            .setMovable(true)
+            .setResizable(true)
+            .setRequestFocus(true)
+            .createPopup()
+            
+        popup?.showUnderneathOf(component)
+    }
+    
+    data class FileItem(val file: VirtualFile) {
+        val icon = file.fileType.icon
+        val name = file.name
+        val path = file.path
+    }
+    
+    class FileListCellRenderer : ListCellRenderer<FileItem> {
+        private val noBorderFocus = BorderFactory.createEmptyBorder(1, 1, 1, 1)
+        
+        @NotNull
+        override fun getListCellRendererComponent(
+            list: JList<out FileItem>?,
+            value: FileItem?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val panel = JPanel(BorderLayout())
+            value?.let {
+                val fileLabel = JBLabel(it.name, it.icon, JBLabel.LEFT)
+                val pathLabel = JBLabel(it.path, JBLabel.LEFT)
+                pathLabel.font = UIUtil.getFont(UIUtil.FontSize.SMALL, pathLabel.font)
+                pathLabel.foreground = UIUtil.getContextHelpForeground()
+                
+                val infoPanel = JPanel(BorderLayout())
+                infoPanel.add(fileLabel, BorderLayout.NORTH)
+                infoPanel.add(pathLabel, BorderLayout.SOUTH)
+                infoPanel.isOpaque = false
+                
+                panel.add(infoPanel, BorderLayout.CENTER)
+                
+                if (isSelected) {
+                    panel.background = list?.selectionBackground
+                    panel.foreground = list?.selectionForeground
+                } else {
+                    panel.background = list?.background
+                    panel.foreground = list?.foreground
+                }
+                
+                panel.border = if (cellHasFocus) {
+                    UIManager.getBorder("List.focusCellHighlightBorder") ?: noBorderFocus
+                } else {
+                    noBorderFocus
+                }
+            }
+            
+            return panel
         }
     }
 }
@@ -227,4 +382,3 @@ class WrapLayout : FlowLayout {
         }
     }
 }
-
