@@ -129,21 +129,23 @@ class TaskSectionPanel(
 
         rightPanel.add(statusLabel)
 
-        if (planItem.status == TaskStatus.TODO || planItem.status == TaskStatus.FAILED) {
-            val executeButton = JButton("Execute").apply {
-                font = JBFont.medium()
-                addActionListener { executeSection() }
-            }
+        when (planItem.status) {
+            TaskStatus.TODO -> {
+                val executeButton = JButton(AutoDevBundle.message("planner.task.execute")).apply {
+                    font = JBFont.medium()
+                    addActionListener { executeSection() }
+                }
 
-            rightPanel.add(executeButton)
-        }
-
-        if (planItem.status == TaskStatus.FAILED) {
-            val retryButton = JButton(AutoDevIcons.REPAIR).apply {
-                font = JBFont.medium()
-                addActionListener { executeSection() }
+                rightPanel.add(executeButton)
             }
-            rightPanel.add(retryButton)
+            TaskStatus.FAILED -> {
+                val retryButton = JButton(AutoDevIcons.REPAIR).apply {
+                    font = JBFont.medium()
+                    addActionListener { executeSection() }
+                }
+                rightPanel.add(retryButton)
+            }
+            else -> {}
         }
 
         headerPanel.add(leftPanel, BorderLayout.WEST)
@@ -204,10 +206,10 @@ class TaskSectionPanel(
 
     private fun getStatusText(status: TaskStatus): String {
         return when (status) {
-            TaskStatus.COMPLETED -> "Completed"
-            TaskStatus.FAILED -> "Failed"
-            TaskStatus.IN_PROGRESS -> "In Progress"
-            TaskStatus.TODO -> "To Do"
+            TaskStatus.COMPLETED -> AutoDevBundle.message("planner.task.status.completed")
+            TaskStatus.FAILED -> AutoDevBundle.message("planner.task.status.failed")
+            TaskStatus.IN_PROGRESS -> AutoDevBundle.message("planner.task.status.in_progress")
+            TaskStatus.TODO -> AutoDevBundle.message("planner.task.status.todo")
         }
     }
 
