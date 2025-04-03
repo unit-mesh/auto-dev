@@ -242,13 +242,14 @@ fun JsonObject.updateCustomBody(customRequest: String, stream: Boolean? = null):
                     put(key, value)
                 }
 
-                val streamInCustomFields = customFields.jsonObject.get("stream")
+                // #361 把 stream 参数去掉，不允许强制设置 stream ，而全由 json 设置
+               /* val streamInCustomFields = customFields.jsonObject.get("stream")
                 if (streamInCustomFields == null || streamInCustomFields.jsonPrimitive.booleanOrNull == true || streamInCustomFields.jsonPrimitive.booleanOrNull == false) {
                     // stream 参数优先级高于 customFields.stream
                     if (stream != null) {
                         put("stream", stream)
                     }
-                }
+                }*/
 
              }
 
