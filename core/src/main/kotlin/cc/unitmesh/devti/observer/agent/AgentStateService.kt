@@ -76,12 +76,16 @@ class AgentStateService(val project: Project) {
         val beforePath = patch.beforeName
         val afterPath = patch.afterName
 
-        val fileStatus = if (patch.isNewFile) {
-            FileStatus.ADDED
-        } else if (patch.isDeletedFile) {
-            FileStatus.DELETED
-        } else {
-            FileStatus.MODIFIED
+        val fileStatus = when {
+            patch.isNewFile -> {
+                FileStatus.ADDED
+            }
+            patch.isDeletedFile -> {
+                FileStatus.DELETED
+            }
+            else -> {
+                FileStatus.MODIFIED
+            }
         }
 
         val beforeFilePath = VcsUtil.getFilePath(getAbsolutePath(baseDir, beforePath), false)
@@ -105,21 +109,24 @@ class AgentStateService(val project: Project) {
                 override fun getVirtualFile(): VirtualFile? = afterFilePath.virtualFile
                 override fun getFile(): FilePath = afterFilePath
                 override fun getContent(): @NonNls String? {
-                    if (patch.isNewFile) {
-                        return patch.singleHunkPatchText
-                    }
+                    when {
+                        patch.isNewFile -> {
+                            return patch.singleHunkPatchText
+                        }
+                        patch.isDeletedFile -> {
+                            return null
+                        }
+                        else -> {
+                            val localContent: String = loadLocalContent()
+                            val appliedPatch = GenericPatchApplier.apply(localContent, patch.hunks)
+                            /// sometimes llm will return a wrong patch which the content is not correct
+                            if (appliedPatch != null) {
+                                return appliedPatch.patchedText
+                            }
 
-                    if (patch.isDeletedFile) {
-                        return null
+                            return patch.singleHunkPatchText
+                        }
                     }
-
-                    val localContent: String = loadLocalContent()
-                    val appliedPatch = GenericPatchApplier.apply(localContent, patch.hunks)
-                    if (appliedPatch != null) {
-                        return appliedPatch.patchedText
-                    }
-                    /// sometimes llm will return a wrong patch which the content is not correct
-                    return patch.singleHunkPatchText
                 }
 
                 @Throws(VcsException::class)
