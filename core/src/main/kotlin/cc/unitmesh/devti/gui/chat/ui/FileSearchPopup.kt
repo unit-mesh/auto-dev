@@ -53,7 +53,8 @@ class FileSearchPopup(
             if (file.canBeAdded(project) &&
                 !ProjectFileIndex.getInstance(project).isUnderIgnored(file) &&
                 ProjectFileIndex.getInstance(project).isInContent(file) &&
-                !allProjectFiles.any { it.file.path == file.path }) {
+                !allProjectFiles.any { it.file.path == file.path }
+            ) {
 
                 allProjectFiles.add(FileItem(file))
             }
@@ -100,7 +101,7 @@ class FileSearchPopup(
         } else {
             allProjectFiles.filter { item ->
                 item.file.name.contains(searchText, ignoreCase = true) ||
-                item.file.path.contains(searchText, ignoreCase = true)
+                        item.file.path.contains(searchText, ignoreCase = true)
             }
         }
 
@@ -139,50 +140,48 @@ class FileSearchPopup(
         @NotNull
         override fun getListCellRendererComponent(
             list: JList<out FileItem>?,
-            value: FileItem?,
+            value: FileItem,
             index: Int,
             isSelected: Boolean,
             cellHasFocus: Boolean
         ): Component {
-            val panel = JPanel(BorderLayout())
-            value?.let {
-                val infoPanel = JPanel()
-                infoPanel.layout = BoxLayout(infoPanel, BoxLayout.X_AXIS)
-                infoPanel.isOpaque = false
+            val mainPanel = JPanel(BorderLayout())
+            val infoPanel = JPanel(BorderLayout())
+            infoPanel.isOpaque = false
 
-                val fileLabel = JBLabel(it.name, it.icon, JBLabel.LEFT)
-                fileLabel.border = JBUI.Borders.emptyRight(8)
+            val fileLabel = JBLabel(value.name, value.icon, JBLabel.LEFT)
+            fileLabel.border = JBUI.Borders.emptyRight(8)
 
-                val pathLabel = JBLabel(" - ${getRelativePath(it)}", JBLabel.LEFT)
-                pathLabel.font = UIUtil.getFont(UIUtil.FontSize.SMALL, pathLabel.font)
-                pathLabel.foreground = UIUtil.getContextHelpForeground()
+            val relativePath = getRelativePath(value)
+            val pathLabel = JBLabel(" - $relativePath", JBLabel.LEFT)
+            pathLabel.font = UIUtil.getFont(UIUtil.FontSize.SMALL, pathLabel.font)
+            pathLabel.foreground = UIUtil.getContextHelpForeground()
+            pathLabel.toolTipText = relativePath
 
-                if (it.isRecentFile) {
-                    fileLabel.foreground = JBColor(0x0087FF, 0x589DF6)
-                }
-
-                infoPanel.add(fileLabel)
-                infoPanel.add(pathLabel)
-                infoPanel.add(Box.createHorizontalGlue()) // This makes the layout adapt to width
-
-                panel.add(infoPanel, BorderLayout.CENTER)
-
-                if (isSelected) {
-                    panel.background = list?.selectionBackground
-                    panel.foreground = list?.selectionForeground
-                } else {
-                    panel.background = list?.background
-                    panel.foreground = list?.foreground
-                }
-
-                panel.border = if (cellHasFocus) {
-                    UIManager.getBorder("List.focusCellHighlightBorder") ?: noBorderFocus
-                } else {
-                    noBorderFocus
-                }
+            if (value.isRecentFile) {
+                fileLabel.foreground = JBColor(0x0087FF, 0x589DF6)
             }
 
-            return panel
+            infoPanel.add(fileLabel, BorderLayout.WEST)
+            infoPanel.add(pathLabel, BorderLayout.CENTER)
+
+            mainPanel.add(infoPanel, BorderLayout.CENTER)
+
+            if (isSelected) {
+                mainPanel.background = list?.selectionBackground
+                mainPanel.foreground = list?.selectionForeground
+            } else {
+                mainPanel.background = list?.background
+                mainPanel.foreground = list?.foreground
+            }
+
+            mainPanel.border = if (cellHasFocus) {
+                UIManager.getBorder("List.focusCellHighlightBorder") ?: noBorderFocus
+            } else {
+                noBorderFocus
+            }
+
+            return mainPanel
         }
 
         private fun getRelativePath(item: FileItem): String {
