@@ -14,6 +14,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.editor.actions.EnterAction
 import com.intellij.openapi.editor.actions.IncrementalFindAction
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -57,6 +58,8 @@ class AutoDevInput(
             it.isEmbeddedIntoDialogWrapper = true
             it.contentComponent.setOpaque(false)
         }
+
+        background = EditorColorsManager.getInstance().globalScheme.defaultBackground
 
         DumbAwareAction.create {
             val editor = editor ?: return@create
