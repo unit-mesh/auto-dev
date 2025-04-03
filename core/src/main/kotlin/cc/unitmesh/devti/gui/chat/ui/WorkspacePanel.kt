@@ -18,7 +18,7 @@ class WorkspacePanel(
     private val project: Project,
     private val input: AutoDevInput
 ) : JPanel(BorderLayout()) {
-    private val workspaceFiles = mutableListOf<VirtualFile>()
+    private val workspaceFiles = mutableListOf<FilePresentation>()
     private val filesPanel = JPanel(WrapLayout(FlowLayout.LEFT, 2, 2))
     
     init {
@@ -56,19 +56,12 @@ class WorkspacePanel(
     }
     
     fun addFileToWorkspace(file: VirtualFile) {
-        if (!workspaceFiles.contains(file)) {
-            workspaceFiles.add(file)
+        val filePresentation = FilePresentation.from(project, file)
+        if (workspaceFiles.none { it.virtualFile == file }) {
+            workspaceFiles.add(filePresentation)
             updateFilesPanel()
 
-            val relativePath = try {
-                project.basePath?.let { basePath ->
-                    file.path.substringAfter(basePath).removePrefix("/")
-                } ?: file.path
-            } catch (e: Exception) {
-                file.path
-            }
-            
-            input.appendText("\n/file:$relativePath")
+//            input.appendText("\n/file:${filePresentation.relativePath(project)}")
         }
     }
     
@@ -88,9 +81,9 @@ class WorkspacePanel(
         })
         filesPanel.add(addButton)
         
-        for (file in workspaceFiles) {
-            val fileLabel = FileItemPanel(project, file) { 
-                removeFile(file)
+        for (filePresentation in workspaceFiles) {
+            val fileLabel = FileItemPanel(project, filePresentation) { 
+                removeFile(filePresentation)
             }
             filesPanel.add(fileLabel)
         }
@@ -99,8 +92,8 @@ class WorkspacePanel(
         filesPanel.repaint()
     }
     
-    private fun removeFile(file: VirtualFile) {
-        workspaceFiles.remove(file)
+    private fun removeFile(filePresentation: FilePresentation) {
+        workspaceFiles.remove(filePresentation)
         updateFilesPanel()
     }
     
@@ -108,11 +101,21 @@ class WorkspacePanel(
         workspaceFiles.clear()
         updateFilesPanel()
     }
+    
+    fun getAllFiles(): List<FilePresentation> {
+        return workspaceFiles.toList()
+    }
+
+    fun getAllFilesFormat(): String {
+        return workspaceFiles.joinToString(separator = "\n") {
+            "\n/file:${it.presentablePath}"
+        }
+    }
 }
 
 class FileItemPanel(
     private val project: Project,
-    private val file: VirtualFile,
+    private val filePresentation: FilePresentation,
     private val onRemove: () -> Unit
 ) : JPanel(FlowLayout(FlowLayout.LEFT, 2, 0)) {
     init {
@@ -123,8 +126,7 @@ class FileItemPanel(
         background = JBColor(0xEDF4FE, 0x313741)
         isOpaque = true
         
-        val icon = file.fileType.icon
-        val fileLabel = JBLabel(file.name, icon, JBLabel.LEFT)
+        val fileLabel = JBLabel(filePresentation.name, filePresentation.icon, JBLabel.LEFT)
         
         val removeLabel = JBLabel(AllIcons.Actions.Close)
         removeLabel.cursor = Cursor(Cursor.HAND_CURSOR)
@@ -227,3 +229,4 @@ class WrapLayout : FlowLayout {
         }
     }
 }
+

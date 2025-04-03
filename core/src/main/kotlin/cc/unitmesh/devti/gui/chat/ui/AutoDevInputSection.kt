@@ -88,7 +88,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     var text: String
         get() {
-            return input.text
+            val files = workspacePanel.getAllFilesFormat()
+            return input.text + "\n" + files
         }
         set(text) {
             input.recreateDocument()
@@ -256,7 +257,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val actionPerformed = fileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
             if (relativePath != null) {
                 workspacePanel.addFileToWorkspace(vfile)
-                
                 ApplicationManager.getApplication().invokeLater {
                     if (!vfile.isValid) return@invokeLater
                     val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
