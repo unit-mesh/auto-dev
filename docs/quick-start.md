@@ -34,7 +34,7 @@ different from the one in the custom repository and GitHub releases.
 
 After installation, configure the plugin in `Settings` → `Tools` → `AutoDev`
 
-### Legacy Configuration (Before 2.0.0-beta.4)
+### Default LLM
 
 Supported providers: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, Moonshot AI, Deepseek ([#96](https://github.com/unit-mesh/auto-dev/issues/96)), ChatGLM(#90)
 
@@ -50,14 +50,13 @@ Supported providers: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/
 
 For more details, see [Customize LLM Server](/custom/llm-server)
 
-### Current Configuration (2.0.0-beta.4+)
+### Additional Model
 
 Available model types:
-- `Default`: Used for all cases if not specified
 - `Plan`: For reasoning and planning (recommended: DeepSeek R1)
-- `Act`: For action execution (e.g., DeepSeek V3, Qwen 72B)
+- ~~Act~~: (Not Ready yet) For action execution (e.g., DeepSeek V3, Qwen 72B)
 - `Completion`: For code completion
-- `Embedding`: For embedding functions (e.g., sentence-transformers/all-MiniLM-L6-v2)
+- ~~Embedding~~: (Not Ready yet) For embedding functions (e.g., sentence-transformers/all-MiniLM-L6-v2)
 - `FastApply`: For fix patch generation (e.g., Kortix/FastApply-1.5B-v1.0)
 - `Others`: Generic placeholder
 
