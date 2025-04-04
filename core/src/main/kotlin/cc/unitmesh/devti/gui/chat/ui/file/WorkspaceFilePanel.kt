@@ -12,6 +12,7 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
+import cc.unitmesh.devti.AutoDevBundle
 
 class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) {
     private val workspaceFiles = mutableListOf<FilePresentation>()
@@ -30,7 +31,7 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
     private fun createAddButton(): JBLabel {
         val button = JBLabel(AllIcons.General.Add)
         button.cursor = Cursor(Cursor.HAND_CURSOR)
-        button.toolTipText = "Add files to workspace"
+        button.toolTipText = AutoDevBundle.message("chat.panel.add.files.tooltip")
         button.border = JBUI.Borders.empty(2)
         button.background = JBColor(0xEDF4FE, 0x313741)
         button.isOpaque = true
@@ -55,8 +56,8 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
 
     private fun addFile() {
         val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
-            .withTitle("Select Files for Workspace")
-            .withDescription("Choose files to add to your workspace")
+            .withTitle(AutoDevBundle.message("chat.panel.select.files.title"))
+            .withDescription(AutoDevBundle.message("chat.panel.select.files.description"))
 
         FileChooser.chooseFiles(descriptor, project, null) { files ->
             for (file in files) {
@@ -126,6 +127,7 @@ class FileItemPanel(
 
         val removeLabel = JBLabel(AllIcons.Actions.Close)
         removeLabel.cursor = Cursor(Cursor.HAND_CURSOR)
+        removeLabel.toolTipText = AutoDevBundle.message("chat.panel.remove.file.tooltip")
         removeLabel.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 onRemove()
