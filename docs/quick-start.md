@@ -7,9 +7,12 @@ permalink: /quick-start
 
 # Installation and Setup
 
-## Option 1: JetBrains Marketplace
+## Option 1: JetBrains Marketplace for 241+ (2024.1+)
 
-~~Install directly from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)~~
+Install directly from JetBrains Marketplace Repository: [AutoDev Sketch](https://plugins.jetbrains.com/plugin/26988-autodev-sketch)
+
+Notes: the plugin is named `AutoDev Sketch` in the JetBrains Marketplace, and the id is `com.unitmesh.autodev`. It's
+different from the one in the custom repository and GitHub releases.
 
 ## Option 2: Custom Repository
 
