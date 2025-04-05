@@ -7,7 +7,7 @@ import cc.unitmesh.devti.agent.custom.model.CustomAgentState
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
-import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
+import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListViewModel
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
@@ -71,8 +71,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val inputPanel = BorderLayoutPanel()
     val focusableComponent: JComponent get() = input
 
-    private val fileListViewModel = FileListViewModel(project)
-    private val elementsList = JBList(fileListViewModel.getListModel())
+    private val relatedFileListViewModel = RelatedFileListViewModel(project)
+    private val elementsList = JBList(relatedFileListViewModel.getListModel())
     
     private val workspaceFilePanel: WorkspaceFilePanel
 
@@ -178,7 +178,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val toolbar = WorkspaceFileToolbar.createToolbar(project, fileListViewModel, input)
+        val toolbar = WorkspaceFileToolbar.createToolbar(project, relatedFileListViewModel, input)
 
         val headerPanel = JPanel(BorderLayout())
         headerPanel.add(toolbar, BorderLayout.NORTH)
@@ -204,7 +204,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
         currentFile?.let {
-            fileListViewModel.addFileIfAbsent(currentFile, first = true)
+            relatedFileListViewModel.addFileIfAbsent(currentFile, first = true)
         }
     }
 
@@ -215,7 +215,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 override fun selectionChanged(event: FileEditorManagerEvent) {
                     val file = event.newFile ?: return
                     ApplicationManager.getApplication().invokeLater {
-                        fileListViewModel.addFileIfAbsent(file, true)
+                        relatedFileListViewModel.addFileIfAbsent(file, true)
                     }
                 }
             }
@@ -251,11 +251,11 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val index = list.locationToIndex(e.point)
         if (index == -1) return
 
-        val wrapper = fileListViewModel.getListModel().getElementAt(index)
+        val wrapper = relatedFileListViewModel.getListModel().getElementAt(index)
         val cellBounds = list.getCellBounds(index, index)
         
-        val actionType = fileListViewModel.determineFileAction(wrapper, e.point, cellBounds)
-        val actionPerformed = fileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
+        val actionType = relatedFileListViewModel.determineFileAction(wrapper, e.point, cellBounds)
+        val actionPerformed = relatedFileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
             if (relativePath != null) {
                 workspaceFilePanel.addFileToWorkspace(vfile)
                 ApplicationManager.getApplication().invokeLater {
@@ -273,7 +273,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     private fun updateElements(elements: List<PsiElement>?) {
-        elements?.forEach { fileListViewModel.addFileIfAbsent(it.containingFile.virtualFile) }
+        elements?.forEach { relatedFileListViewModel.addFileIfAbsent(it.containingFile.virtualFile) }
     }
 
     fun showStopButton() {

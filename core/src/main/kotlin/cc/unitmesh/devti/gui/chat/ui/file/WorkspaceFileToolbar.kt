@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInput
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.mediumFontFunction
-import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.labels.LinkLabel
@@ -17,7 +16,7 @@ import java.awt.Container
 import kotlin.collections.forEach
 
 object WorkspaceFileToolbar {
-    fun createToolbar(project: Project, viewModel: FileListViewModel, input: AutoDevInput): JToolBar {
+    fun createToolbar(project: Project, viewModel: RelatedFileListViewModel, input: AutoDevInput): JToolBar {
         val toolbar = JToolBar()
         toolbar.isFloatable = false
 

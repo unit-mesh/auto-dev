@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.gui.chat.ui.viewmodel
+package cc.unitmesh.devti.gui.chat.ui.file
 
-import cc.unitmesh.devti.gui.chat.ui.file.FilePresentation
 import cc.unitmesh.devti.util.isInProject
 import com.intellij.diff.editor.DiffVirtualFileBase
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -10,24 +10,27 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.util.EventListener
 import javax.swing.DefaultListModel
 import java.awt.Point
+import java.awt.Rectangle
+import javax.swing.JLabel
+import javax.swing.JPanel
+
+interface FileListChangeListener : EventListener {
+    fun onFileAdded(file: FilePresentation)
+    fun onFileRemoved(file: FilePresentation)
+    fun onListCleared()
+}
+
+enum class FileActionType {
+    INSERT,
+    REMOVE,
+    NONE
+}
 
 /**
  * ViewModel for managing the list of file presentations.
  */
-class FileListViewModel(private val project: Project) : Disposable {
+class RelatedFileListViewModel(private val project: Project) : Disposable {
     private val listModel = DefaultListModel<FilePresentation>()
-    
-    interface FileListChangeListener : EventListener {
-        fun onFileAdded(file: FilePresentation)
-        fun onFileRemoved(file: FilePresentation)
-        fun onListCleared()
-    }
-    
-    enum class FileActionType {
-        INSERT,
-        REMOVE,
-        NONE
-    }
     
     private val listeners = mutableListOf<FileListChangeListener>()
     
@@ -153,16 +156,16 @@ class FileListViewModel(private val project: Project) : Disposable {
      * @return The appropriate action type
      */
     fun determineFileAction(filePresentation: FilePresentation, componentPoint: Point, 
-                            componentBounds: java.awt.Rectangle): FileActionType {
+                            componentBounds: Rectangle): FileActionType {
         // Extract component hit detection logic
         val hitComponent = filePresentation.panel?.components?.firstOrNull { 
             it.contains(componentPoint.x - componentBounds.x - it.x, it.height - 1) 
         }
         
         return when {
-            hitComponent is javax.swing.JPanel -> FileActionType.INSERT
-            hitComponent is javax.swing.JLabel && 
-                hitComponent.icon == com.intellij.icons.AllIcons.Actions.Close -> FileActionType.REMOVE
+            hitComponent is JPanel -> FileActionType.INSERT
+            hitComponent is JLabel &&
+                hitComponent.icon == AllIcons.Actions.Close -> FileActionType.REMOVE
             else -> FileActionType.NONE
         }
     }
