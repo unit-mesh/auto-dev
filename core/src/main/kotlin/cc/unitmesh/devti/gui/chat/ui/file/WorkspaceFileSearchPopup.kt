@@ -24,7 +24,7 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class FileSearchPopup(
+class WorkspaceFileSearchPopup(
     private val project: Project,
     private val onFilesSelected: (List<VirtualFile>) -> Unit
 ) {

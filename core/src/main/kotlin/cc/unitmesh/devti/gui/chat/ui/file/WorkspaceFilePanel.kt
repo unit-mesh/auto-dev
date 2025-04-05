@@ -46,7 +46,7 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
     }
 
     private fun showFileSearchPopup(component: JComponent) {
-        val popup = FileSearchPopup(project) { files ->
+        val popup = WorkspaceFileSearchPopup(project) { files ->
             for (file in files) {
                 addFileToWorkspace(file)
             }

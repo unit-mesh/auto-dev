@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
-import cc.unitmesh.devti.gui.chat.ui.file.InputFileToolbar
+import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
 import cc.unitmesh.devti.gui.chat.ui.viewmodel.FileListViewModel
@@ -178,7 +178,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val toolbar = InputFileToolbar.createToolbar(project, fileListViewModel, input)
+        val toolbar = WorkspaceFileToolbar.createToolbar(project, fileListViewModel, input)
 
         val headerPanel = JPanel(BorderLayout())
         headerPanel.add(toolbar, BorderLayout.NORTH)

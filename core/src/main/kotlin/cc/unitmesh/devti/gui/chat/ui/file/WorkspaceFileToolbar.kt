@@ -16,7 +16,7 @@ import java.awt.Component
 import java.awt.Container
 import kotlin.collections.forEach
 
-object InputFileToolbar {
+object WorkspaceFileToolbar {
     fun createToolbar(project: Project, viewModel: FileListViewModel, input: AutoDevInput): JToolBar {
         val toolbar = JToolBar()
         toolbar.isFloatable = false
