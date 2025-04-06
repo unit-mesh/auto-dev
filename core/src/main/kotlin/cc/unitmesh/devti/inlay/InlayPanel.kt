@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.inlay
 
-import cc.unitmesh.devti.gui.quick.QuickPromptField
+import cc.unitmesh.devti.actions.quick.QuickPromptField
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.InlayProperties

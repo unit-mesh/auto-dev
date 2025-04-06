@@ -3,9 +3,9 @@ package cc.unitmesh.devti.actions.quick
 import cc.unitmesh.devti.custom.TeamPromptBaseIntention
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
-import cc.unitmesh.devti.gui.quick.QuickPromptField
-import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CANCEL_ACTION
-import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
+import cc.unitmesh.devti.actions.quick.QuickPromptField
+import cc.unitmesh.devti.actions.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CANCEL_ACTION
+import cc.unitmesh.devti.actions.quick.QuickPromptField.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText

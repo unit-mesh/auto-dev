@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
+import cc.unitmesh.devti.completion.AutoDevInputLookupManagerListener
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel

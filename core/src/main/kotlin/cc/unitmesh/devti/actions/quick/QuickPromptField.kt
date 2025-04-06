@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.quick
+package cc.unitmesh.devti.actions.quick
 
 import com.intellij.ide.KeyboardAwareFocusOwner
 import java.awt.Dimension

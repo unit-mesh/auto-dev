@@ -33,15 +33,7 @@ class RelatedFileListViewModel(private val project: Project) : Disposable {
     private val listModel = DefaultListModel<FilePresentation>()
     
     private val listeners = mutableListOf<FileListChangeListener>()
-    
-    fun addChangeListener(listener: FileListChangeListener) {
-        listeners.add(listener)
-    }
-    
-    fun removeChangeListener(listener: FileListChangeListener) {
-        listeners.remove(listener)
-    }
-    
+
     fun getListModel(): DefaultListModel<FilePresentation> = listModel
     
     fun addFileIfAbsent(vfile: VirtualFile, first: Boolean = false) {
