@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.util
 
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.vfs.VirtualFile
 
 fun getOrCreateDirectory(baseDir: VirtualFile, path: String): VirtualFile {
@@ -14,7 +15,7 @@ object MyVirtualFileUtil {
 
         for (segment in pathSegments) {
             val childDir = currentDir.findChild(segment)
-            currentDir = childDir ?: currentDir.createChildDirectory(MyVirtualFileUtil.javaClass, segment)
+            currentDir = childDir ?: runWriteAction { currentDir.createChildDirectory(MyVirtualFileUtil.javaClass, segment) }
         }
 
         return currentDir
