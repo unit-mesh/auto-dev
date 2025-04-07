@@ -1,18 +1,29 @@
 package cc.unitmesh.devti.bridge.utils
 
+import com.intellij.concurrency.currentThreadContext
 import com.intellij.ide.structureView.StructureView
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.lang.LanguageStructureViewBuilder
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.CompletableFuture
 
 object StructureCommandUtil {
     private const val MAX_LINES_FOR_SHOW_LINENO = 60
@@ -20,7 +31,8 @@ object StructureCommandUtil {
     fun getFileStructure(project: Project, file: VirtualFile, psiFile: PsiFile): String {
         val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
         val fileEditor: FileEditor = FileEditorManager.getInstance(project).getEditors(file).firstOrNull()
-            ?: FileEditorManager.getInstance(project).openFile(file, false, false).firstOrNull()
+            ?: runBlocking { createFileEditor(project, file) }
+            ?: openEditor(project, file)
             ?: return "No FileEditor found."
 
         if (viewFactory != null) {
@@ -37,6 +49,31 @@ object StructureCommandUtil {
         }
 
         return "No StructureViewModel found."
+    }
+
+    private fun openEditor(
+        project: Project,
+        file: VirtualFile
+    ): FileEditor? {
+        var fileEditors = emptyArray<FileEditor>()
+        runReadAction {
+            fileEditors = FileEditorManager.getInstance(project).openFile(file, false, true)
+        }
+
+        return fileEditors.firstOrNull()
+    }
+
+    private fun createFileEditor(
+        project: Project,
+        file: VirtualFile
+    ): TextEditor? {
+        val future = CompletableFuture<FileEditor>()
+        runInEdt(ModalityState.any()) {
+            var createEditor = TextEditorProvider.getInstance().createEditor(project, file)
+            future.complete(createEditor)
+        }
+
+        return future.get() as? TextEditor
     }
 
     /**
