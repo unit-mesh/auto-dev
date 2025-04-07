@@ -6,6 +6,7 @@ import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.diagnostic.logger
 
 interface AgentObserver {
     fun onRegister(project: Project)
@@ -28,7 +29,11 @@ interface AgentObserver {
 
         fun register(project: Project) {
             EP_NAME.extensions.forEach { observer ->
-                observer.onRegister(project)
+                try {
+                    observer.onRegister(project)
+                } catch (e: Exception) {
+                    logger<AgentObserver>().warn("Failed to register AgentObserver: ${observer.javaClass.name}", e)
+                }
             }
         }
     }
