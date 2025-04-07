@@ -20,8 +20,7 @@ class NewChatAction : AnAction("New Chat", "Create new Chat", AllIcons.General.A
     val AVOID_EXTENDING_BORDER_GRAPHICS = Key.create<Boolean>("JButton.avoidExtendingBorderGraphics")
 
     override fun actionPerformed(e: AnActionEvent) {
-        val dataContext: DataContext = e.dataContext
-        val project = dataContext.getData(CommonDataKeys.PROJECT)
+        val project = e.project
         if (project == null) {
             logger.error("project is null")
             return
@@ -61,7 +60,7 @@ class NewChatAction : AnAction("New Chat", "Create new Chat", AllIcons.General.A
                     val contentManager = toolWindowManager.contentManager
 
                     val codingPanel =
-                        contentManager?.component?.components?.filterIsInstance<NormalChatCodingPanel>()?.firstOrNull()
+                        contentManager.component?.components?.filterIsInstance<NormalChatCodingPanel>()?.firstOrNull()
 
                     AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager)
                     if (codingPanel == null) {
