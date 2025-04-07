@@ -43,7 +43,6 @@ class DocumentCleaner {
     fun articleNode(doc: Document): String? {
         var bodyElement: Element? = doc.select("html").select("body").first()
         val firstBodyElement = bodyElement ?: return null
-        // the Microdata
         for ((attr, value) in ARTICLE_BODY_ATTR) {
             bodyElement = doc.selectFirst("[$attr=$value]")
             if (bodyElement != null) {
