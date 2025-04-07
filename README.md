@@ -71,15 +71,16 @@ Here is the AutoDev architecture:
 
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC (TBC), or others...
+- Sketch coding Agent
+    - Agentic drive coding workflow with Sketch viewer.
 - Auto development mode
     - ~~AutoCRUD (Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
       generate Model-Controller-Service-Repository code.~~
     - AutoSQL (required Database plugin). Context-aware SQL generation.
     - AutoPage (React). Context-aware Web Page generation.
-    - AutoArkUI (HarmonyOS). Auto generate HarmonyOS ArkUI code.
-    - AutoTesting. create unit test intention, auto run unit test and try to fix test.
-    - AutoDocument. Auto generate document.
+    - ~~AutoArkUI (HarmonyOS). Auto generate HarmonyOS ArkUI code.~~
+    - Auto Testing. create unit test intention, auto run unit test and try to fix test.
+    - Auto Document. Auto generate document.
 - Copilot mode
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
     - Pattern specific. Based on your code context like (Controller, Service `import`), AutoDev will suggest the best
@@ -122,13 +123,13 @@ download from [HuggingFace](https://huggingface.co/unit-mesh)
 
 We follow [Chapi](https://github.com/phodal/chapi) AST analysis engine for language support tier.
 
-| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust | ArkTS |
-|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|-------|
-| Chat Language Context     | ✅    | ✅      | ✅  | ✅      | ✅     | ✅     |    |       | ✅    | ✅     | 
-| Structure AST             | ✅    |        | ✅  | ✅      | ✅     | ✅     |    |       |      |       | 
-| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | ✅     | 
-| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    |       | 
-| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      |       | 
+| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust |
+|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|
+| Chat Language Context     | ✅    | ✅      | ✅  | ✅      | ✅     | ✅     |    |       | ✅    | 
+| Structure AST             | ✅    |        | ✅  | ✅      | ✅     | ✅     |    |       |      | 
+| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | 
+| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | 
+| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | 
 
 ### Extensions
 

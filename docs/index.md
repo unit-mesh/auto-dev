@@ -28,7 +28,6 @@ permalink: /
 - IntelliJ IDEA version: Android Studio, PyCharm, WebStorm, GoLand, RubyMine, AppCode and more.
 - VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
 
-
 🆕🆕🆕: New AI agent language: [https://github.com/phodal/shire](https://github.com/phodal/shire)
 
 ## AutoDev 2.0 Sketch - the Cursor Composer in Intellij IDEA
@@ -37,7 +36,8 @@ Video demo (YouTube) — English
 
 [![Watch the video](https://img.youtube.com/vi/b1pO641-A54/sddefault.jpg)](https://youtu.be/b1pO641-A54)
 
-**AutoDev Sketch** is an IDE canvas feature provided by [Shire](https://github.com/phodal/shire), designed to simplify interactions and enhance the
+**AutoDev Sketch** is an IDE canvas feature provided by [Shire](https://github.com/phodal/shire), designed to simplify
+interactions and enhance the
 developer experience within the IDE.
 
 | Sketch Name                 | Description                                                                                                  | Screenshots                                                      |
@@ -79,15 +79,16 @@ Here is the AutoDev architecture:
 
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC (TBC), or others...
+- Sketch coding Agent
+    - Agentic drive coding workflow with Sketch viewer.
 - Auto development mode
     - ~~AutoCRUD (Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
       generate Model-Controller-Service-Repository code.~~
     - AutoSQL (required Database plugin). Context-aware SQL generation.
     - AutoPage (React). Context-aware Web Page generation.
-    - AutoArkUI (HarmonyOS). Auto generate HarmonyOS ArkUI code.
-    - AutoTesting. create unit test intention, auto run unit test and try to fix test.
-    - AutoDocument. Auto generate document.
+    - ~~AutoArkUI (HarmonyOS). Auto generate HarmonyOS ArkUI code.~~
+    - Auto Testing. create unit test intention, auto run unit test and try to fix test.
+    - Auto Document. Auto generate document.
 - Copilot mode
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
     - Pattern specific. Based on your code context like (Controller, Service `import`), AutoDev will suggest the best
@@ -128,10 +129,10 @@ AutoDev fine-tune models:
 
 We follow [Chapi](https://github.com/phodal/chapi) AST analysis engine for language support tier.
 
-| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust | ArkTS |
-|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|-------|
-| Chat Language Context     | ✅    | ✅      | ✅  | ✅      | ✅     | ✅     |    |       | ✅    | ✅     | 
-| Structure AST             | ✅    |        | ✅  | ✅      | ✅     | ✅     |    |       |      |       | 
-| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | ✅     | 
-| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    |       | 
-| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      |       | 
+| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust |
+|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|
+| Chat Language Context     | ✅    | ✅      | ✅  | ✅      | ✅     | ✅     |    |       | ✅    | 
+| Structure AST             | ✅    |        | ✅  | ✅      | ✅     | ✅     |    |       |      | 
+| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | 
+| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | 
+| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | 
