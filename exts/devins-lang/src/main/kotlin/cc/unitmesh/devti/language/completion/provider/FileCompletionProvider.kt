@@ -15,6 +15,7 @@ import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.IconUtil
 import com.intellij.util.ProcessingContext
 
 class FileCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -25,9 +26,6 @@ class FileCompletionProvider : CompletionProvider<CompletionParameters>() {
     ) {
         val project = parameters.position.project
 
-        /**
-         * Recent open files
-         */
         var recentlyFiles: MutableList<VirtualFile> = mutableListOf()
         EditorHistoryManager.getInstance(project).fileList.forEach {
             if (!it.canBeAdded()) return@forEach
@@ -49,12 +47,12 @@ class FileCompletionProvider : CompletionProvider<CompletionParameters>() {
         val filepath = virtualFile.relativePath(project)
 
         val elementBuilder = LookupElementBuilder.create(filepath)
-            .withIcon(VirtualFilePresentation.getIcon(virtualFile))
             .withCaseSensitivity(false)
             .withRenderer(object : LookupElementRenderer<LookupElement>() {
                 override fun renderElement(element: LookupElement, presentation: LookupElementPresentation) {
                     presentation.itemText = virtualFile.name
                     presentation.tailText = filepath
+                    presentation.icon = IconUtil.computeFileIcon(virtualFile, 0, project)
                 }
             })
             .withInsertHandler { context, _ ->
