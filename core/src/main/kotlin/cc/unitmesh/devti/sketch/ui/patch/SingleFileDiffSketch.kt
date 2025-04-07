@@ -3,7 +3,6 @@ package cc.unitmesh.devti.sketch.ui.patch
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevColors
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.util.isFile
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.AutoSketchMode
@@ -11,6 +10,7 @@ import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.devti.util.getOrCreateDirectory
+import cc.unitmesh.devti.util.isFile
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
 import com.intellij.diff.contents.EmptyContent
