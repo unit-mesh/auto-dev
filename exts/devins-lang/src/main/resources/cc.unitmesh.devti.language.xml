@@ -21,7 +21,7 @@
 
         <completion.contributor language="DevIn"
                                 id="devInCompletionContributor"
-                                order="first"
+                                order="last"
                                 implementationClass="cc.unitmesh.devti.language.completion.DevInCompletionContributor"/>
         <completion.contributor language="DevIn"
                                 order="last"
