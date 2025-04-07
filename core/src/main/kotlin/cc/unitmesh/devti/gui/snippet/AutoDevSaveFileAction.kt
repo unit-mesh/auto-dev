@@ -37,20 +37,18 @@ class AutoDevSaveFileAction : AnAction(AutoDevBundle.message("autodev.save.actio
         
         val dialog: FileSaverDialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, project)
         val dir = project.baseDir
-        val virtualFileWrapper: VirtualFileWrapper? = dialog.save(dir, virtualFile.name)
-        
-        if (virtualFileWrapper != null) {
-            try {
-                ApplicationManager.getApplication().runWriteAction {
-                    val file = virtualFileWrapper.file
-                    file.writeText(content)
-                    
-                    LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
-                    AutoDevNotifications.notify(project, "File saved successfully to: ${file.absolutePath}")
-                }
-            } catch (ex: IOException) {
-                AutoDevNotifications.error(project, "Failed to save file: ${ex.message}")
+        val virtualFileWrapper: VirtualFileWrapper = dialog.save(dir, virtualFile.name) ?: return
+
+        try {
+            ApplicationManager.getApplication().runWriteAction {
+                val file = virtualFileWrapper.file
+                file.writeText(content)
+
+                LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+                AutoDevNotifications.notify(project, "File saved successfully to: ${file.absolutePath}")
             }
+        } catch (ex: IOException) {
+            AutoDevNotifications.error(project, "Failed to save file: ${ex.message}")
         }
     }
 }

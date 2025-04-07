@@ -14,7 +14,7 @@ import javax.swing.plaf.basic.BasicProgressBarUI
 import javax.swing.text.BadLocationException
 import javax.swing.text.StyleConstants
 
-class LoadingPanel(val project: Project) : JPanel() {
+class PlanLoadingPanel(val project: Project) : JPanel() {
     private val loadingMessages: MutableList<String> = mutableListOf<String>(
         "🤔 Analyzing your request...",
         "💡 Generating a plan...",

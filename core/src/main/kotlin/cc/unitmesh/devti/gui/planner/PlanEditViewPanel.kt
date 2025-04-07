@@ -18,7 +18,7 @@ import javax.swing.Box
 import javax.swing.JButton
 import javax.swing.JPanel
 
-class EditPlanViewPanel(
+class PlanEditViewPanel(
     private val project: Project,
     private val content: String,
     private val onSave: (String) -> Unit,
