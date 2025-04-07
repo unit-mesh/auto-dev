@@ -8,7 +8,9 @@ import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiPackageStatement
 import com.intellij.psi.impl.file.impl.JavaFileManagerImpl
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -38,25 +40,38 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
     ): List<LookupElement> {
         val lookupElements: MutableList<LookupElement> = SmartList()
         val searchScope = ProjectScope.getProjectScope(project)
+        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+        if (javaFiles.isEmpty()) return lookupElements
 
         val prefixMatcher = CompletionUtil.findReferenceOrAlphanumericPrefix(parameters)
         result.withPrefixMatcher(prefixMatcher)
 
         val text = parameters.position.text.removePrefix(CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED)
 
+        val packageStatements = javaFiles.mapNotNull {
+            val psi = PsiManager.getInstance(project).findFile(it) ?: return@mapNotNull null
+            PsiTreeUtil.getChildrenOfTypeAsList(psi, PsiPackageStatement::class.java).firstOrNull()
+        }
+
+        packageStatements.forEach {
+            if (it.packageName.startsWith(text)) {
+                val element = LookupElementBuilder.create(it.packageName)
+                    .withIcon(JavaFileType.INSTANCE.icon)
+                    .withTypeText("package")
+                lookupElements.add(element)
+            }
+        }
+
         val psiShortNamesCache = PsiShortNamesCache.getInstance(project)
         val classNames = psiShortNamesCache.allClassNames
-
         classNames.forEach { className ->
-            if (className.startsWith(text) || text.isEmpty()) {
-                val psiClasses = psiShortNamesCache.getClassesByName(className, searchScope)
-                psiClasses.forEach { psiClass ->
-                    val qualifiedName = psiClass.qualifiedName ?: return@forEach
-                    val element = LookupElementBuilder.create(qualifiedName)
-                        .withIcon(JavaFileType.INSTANCE.icon)
-                        .withTypeText("class")
-                    lookupElements.add(element)
-                }
+            val psiClasses = psiShortNamesCache.getClassesByName(className, searchScope)
+            psiClasses.forEach { psiClass ->
+                val qualifiedName = psiClass.qualifiedName ?: return@forEach
+                val element = LookupElementBuilder.create(qualifiedName)
+                    .withIcon(JavaFileType.INSTANCE.icon)
+                    .withTypeText("class")
+                lookupElements.add(element)
             }
         }
 
@@ -72,28 +87,19 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         if (symbol.contains(".").not()) {
             val psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope)
             if (psiClasses.isNotEmpty()) {
-                return psiClasses.mapNotNull { it.qualifiedName }
+                return psiClasses.map { it.qualifiedName!! }
             }
         }
 
         // for package name only, like `cc.unitmesh`
         JavaFileManagerImpl(project).findPackage(symbol)?.let { pkg ->
-            return pkg.classes.mapNotNull { it.qualifiedName }
+            return pkg.classes.map { it.qualifiedName!! }
         }
 
         // for single class, with function name, like `cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider`
         val clazz = JavaFileManagerImpl(project).findClass(symbol, scope)
         if (clazz != null) {
-            // Return class details if no specific method is requested
-            val classInfo = mutableListOf(clazz.qualifiedName ?: "")
-
-            // Add methods information
-            classInfo.addAll(clazz.methods.map { "${clazz.qualifiedName ?: ""}#${it.name}" })
-
-            // Add field information
-            classInfo.addAll(clazz.fields.map { "${clazz.qualifiedName ?: ""}.${it.name}" })
-
-            return classInfo
+            return clazz.methods.map { "${clazz.qualifiedName}#${it.name}" }
         }
 
         // for lookup for method
@@ -148,21 +154,6 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
             return lookupElementWithMethodName(project, clazzName, scope, methodName)
         }
 
-        // for lookup class field
-        val fieldSplit = symbol.split(".")
-        if (fieldSplit.size >= 2) {
-            val className = fieldSplit.dropLast(1).joinToString(".")
-            val fieldName = fieldSplit.last()
-
-            val psiClass = JavaFileManagerImpl(project).findClass(className, scope)
-            if (psiClass != null) {
-                val field = psiClass.findFieldByName(fieldName, true)
-                if (field != null) {
-                    return listOf(field)
-                }
-            }
-        }
-
         // may by not our format, like <package>.<class>.<method> split last
         val lastDotIndex = symbol.lastIndexOf(".")
         if (lastDotIndex != -1) {
@@ -173,6 +164,7 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
 
         return emptyList()
     }
+
 
     private fun lookupWithMethodName(
         project: Project,
