@@ -32,20 +32,20 @@ class AutoDevRunAction : AnAction(AutoDevBundle.message("autodev.run.action")) {
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document)
 
-        if (file != null) {
-            val lightFile = file as? LightVirtualFile
-            if (lightFile?.language == JsonLanguage.INSTANCE) {
-                val virtualFile = AutoDevContainer.updateForDevContainer(project, file, document.text)
-                    ?: lightFile
-                e.presentation.isEnabled = RunService.provider(project, virtualFile) != null
-                return
-            }
-
-            e.presentation.isEnabled = RunService.provider(project, file) != null
+        if (file == null) {
+            e.presentation.isEnabled = false
             return
         }
 
-        e.presentation.isEnabled = false
+        val lightFile = file as? LightVirtualFile
+        if (lightFile?.language == JsonLanguage.INSTANCE) {
+            val virtualFile = AutoDevContainer.updateForDevContainer(project, file, document.text)
+                ?: lightFile
+            e.presentation.isEnabled = RunService.provider(project, virtualFile) != null
+            return
+        }
+
+        e.presentation.isEnabled = RunService.provider(project, file) != null
     }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -60,10 +60,20 @@ class AutoDevRunAction : AnAction(AutoDevBundle.message("autodev.run.action")) {
         var scratchFile: VirtualFile? = ScratchRootType.getInstance()
             .createScratchFile(project, file.name, originPsiFile.language, document.text)
 
-        if (scratchFile?.extension == "Dockerfile") {
-            scratchFile = createDockerFile(project, document.text) ?: scratchFile
-        } else if (scratchFile?.extension?.lowercase() == "json") {
-            scratchFile = AutoDevContainer.updateForDevContainer(project, file as LightVirtualFile, document.text) ?: scratchFile
+        val extension = scratchFile?.extension
+        when {
+            extension == "Dockerfile" -> {
+                scratchFile = createDockerFile(project, document.text) ?: scratchFile
+            }
+
+            extension?.lowercase() == "json" -> {
+                scratchFile = AutoDevContainer.updateForDevContainer(project, file as LightVirtualFile, document.text)
+                    ?: scratchFile
+            }
+
+            scratchFile?.extension == "sh" -> {
+                File(scratchFile.path).setExecutable(true)
+            }
         }
 
         if (scratchFile == null) {
@@ -71,12 +81,7 @@ class AutoDevRunAction : AnAction(AutoDevBundle.message("autodev.run.action")) {
             return
         }
 
-        if (scratchFile.extension == "sh") {
-            File(scratchFile.path).setExecutable(true)
-        }
-
-        var psiFile = PsiManager.getInstance(project).findFile(scratchFile)
-            ?: return
+        var psiFile = PsiManager.getInstance(project).findFile(scratchFile) ?: return
 
         try {
             RunService.provider(project, scratchFile)
@@ -88,25 +93,18 @@ class AutoDevRunAction : AnAction(AutoDevBundle.message("autodev.run.action")) {
         }
     }
 
-    private fun createDockerFile(project: Project, text: @NlsSafe String): VirtualFile? {
-        val projectDir = project.guessProjectDir()
-        if (projectDir == null) {
-            return null
-        }
-
-        return runWriteAction {
-            try {
-                // 在项目根目录创建名为 dockerfile 的文件
-                var dockerfile = projectDir.findChild("Dockerfile")
-                if (dockerfile == null) {
-                    dockerfile = projectDir.createChildData(null, "Dockerfile")
-                }
-
-                dockerfile.setBinaryContent(text.toByteArray())
-                return@runWriteAction dockerfile
-            } catch (e: IOException) {
-                return@runWriteAction null
+    private fun createDockerFile(project: Project, text: String): VirtualFile? = runWriteAction {
+        val projectDir = project.guessProjectDir()!!
+        try {
+            var dockerfile = projectDir.findChild("Dockerfile")
+            if (dockerfile == null) {
+                dockerfile = projectDir.createChildData(null, "Dockerfile")
             }
+
+            dockerfile.setBinaryContent(text.toByteArray())
+            return@runWriteAction dockerfile
+        } catch (e: IOException) {
+            return@runWriteAction null
         }
     }
 }

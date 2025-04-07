@@ -11,16 +11,12 @@ object AutoDevContainer {
     private val DEV_CONTAINER_PROPS =
         setOf("image", "dockerFile", "containerEnv", "remoteUser", "customizations", "features")
 
-    fun updateForDevContainer(
-        project: Project,
-        lightVirtualFile: LightVirtualFile,
-        content: String
-    ): LightVirtualFile? {
-        val fileName = lightVirtualFile.name.lowercase()
+    fun updateForDevContainer(project: Project, vfile: LightVirtualFile, content: String): LightVirtualFile? {
+        val fileName = vfile.name.lowercase()
         if ((!content.startsWith("{") && !content.endsWith("}"))) return null
 
         if (fileName == "devcontainer.json" || fileName.contains("devcontainer")) {
-            return lightVirtualFile
+            return vfile
         }
 
         val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
@@ -52,8 +48,6 @@ object AutoDevContainer {
         }
 
         if (!isDevContainer) return null
-        val newFile = LightVirtualFile("devcontainer.json", JsonLanguage.INSTANCE, content)
-
-        return newFile
+        return LightVirtualFile("devcontainer.json", JsonLanguage.INSTANCE, content)
     }
 }
