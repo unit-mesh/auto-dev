@@ -10,9 +10,7 @@ class AutoDevFileLookupElement<T : LookupElement> private constructor(
     val priority: Double,
     val virtualFile: VirtualFile,
 ) : LookupElementDecorator<T>(delegate) {
-    fun getFile(): VirtualFile {
-        return virtualFile
-    }
+    fun getFile(): VirtualFile = virtualFile
 
     companion object {
         private val CLASS_CONDITION_KEY: ClassConditionKey<AutoDevFileLookupElement<*>> = ClassConditionKey.create(
