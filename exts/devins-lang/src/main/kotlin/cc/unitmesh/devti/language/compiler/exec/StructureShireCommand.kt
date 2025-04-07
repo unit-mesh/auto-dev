@@ -4,6 +4,7 @@ import cc.unitmesh.devti.bridge.utils.StructureCommandUtil
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
+import cc.unitmesh.devti.util.relativePath
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
@@ -37,7 +38,7 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
 
         val structure = StructureCommandUtil.getFileStructure(myProject, virtualFile, psiFile)
         val baseDir = myProject.guessProjectDir().toString()
-        val filepath = virtualFile.path.removePrefix(baseDir)
+        val filepath = virtualFile.relativePath(myProject)
         return "// $filepath\n```\n$structure\n```"
     }
 

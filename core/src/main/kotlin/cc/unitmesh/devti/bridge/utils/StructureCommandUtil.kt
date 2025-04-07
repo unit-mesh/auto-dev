@@ -4,6 +4,7 @@ import com.intellij.ide.structureView.StructureView
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.lang.LanguageStructureViewBuilder
 import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -32,7 +33,7 @@ object StructureCommandUtil {
             }
 
             val root: StructureViewTreeElement = view.treeModel.root
-            return traverseStructure(root, 0, StringBuilder()).toString()
+            return runReadAction { traverseStructure(root, 0, StringBuilder()).toString() }
         }
 
         return "No StructureViewModel found."

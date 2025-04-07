@@ -16,7 +16,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ProcessingContext
 
-class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>() {
+class FileCompletionProvider : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
