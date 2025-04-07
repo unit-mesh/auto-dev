@@ -267,7 +267,7 @@ class SingleFileDiffSketch(
                     try {
                         runReadAction {
                             val directory = getOrCreateDirectory(myProject.baseDir, filePath)
-                            val vfile = directory.createChildData(this, fileName)
+                            val vfile = runReadAction { directory.createChildData(this, fileName) }
                             vfile.writeText(patch!!.patchedText)
                         }
                     } catch (e: Exception) {
