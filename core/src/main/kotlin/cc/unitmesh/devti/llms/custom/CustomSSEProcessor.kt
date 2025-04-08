@@ -14,8 +14,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.nfeld.jsonpathkt.JsonPath
-import com.nfeld.jsonpathkt.extension.read
+import com.jayway.jsonpath.JsonPath
 import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.FlowableEmitter
@@ -103,19 +102,37 @@ open class CustomSSEProcessor(private val project: Project) {
                                 // in some case, the response maybe not equal to our response format, so we need to ignore it
                                 // {"id":"cmpl-ac26a17e","object":"chat.completion.chunk","created":1858403,"model":"yi-34b-chat","choices":[{"delta":{"role":"assistant"},"index":0}],"content":"","lastOne":false}
 
-                                val chunk: String? = JsonPath.parse(sse!!.data)?.read(responseFormat)
+                                val chunk: String? = try {
+                                    val parsed = JsonPath.parse(sse!!.data)?.read<Any>(responseFormat)
+                                    when (parsed) {
+                                        is String -> parsed
+                                        is ArrayList<*> -> {
+                                            parsed.joinToString(" ") { it.toString() }
+                                        }
+                                        else -> parsed?.toString()
+                                    }
+                                } catch (e: Exception) {
+                                    null
+                                }
+
                                 // new JsonPath lib caught the exception, so we need to handle when it is null
                                 if (chunk == null) {
                                     // try handle it's thinking model: $.choices[0].delta.reasoning_content
-                                    val reasoningContent: String? = JsonPath.parse(sse.data)?.read("\$.choices[0].delta.reasoning_content")
-                                    if (reasoningContent != null) {
-                                        reasonerOutput += reasoningContent
-                                        ApplicationManager.getApplication().invokeLater {
-                                            AutoDevToolWindowFactory.getSketchWindow(project)?.printThinking(reasonerOutput)
+                                    try {
+                                        val reasoningContent: String? =
+                                            JsonPath.parse(sse.data)?.read("\$.choices[0].delta.reasoning_content")
+                                        if (reasoningContent != null) {
+                                            reasonerOutput += reasoningContent
+                                            ApplicationManager.getApplication().invokeLater {
+                                                AutoDevToolWindowFactory.getSketchWindow(project)
+                                                    ?.printThinking(reasonerOutput)
+                                            }
+                                        } else {
+                                            parseFailedResponses.add(sse.data)
+                                            logger.warn("Failed to parse response.origin response is: ${sse.data}, response format: $responseFormat")
                                         }
-                                    } else {
-                                        parseFailedResponses.add(sse.data)
-                                        logger.warn("Failed to parse response.origin response is: ${sse.data}, response format: $responseFormat")
+                                    } catch (e: Exception) {
+
                                     }
                                 } else {
                                     hasSuccessRequest = true

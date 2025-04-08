@@ -10,8 +10,7 @@ import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.nfeld.jsonpathkt.JsonPath
-import com.nfeld.jsonpathkt.extension.read
+import com.jayway.jsonpath.JsonPath
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
