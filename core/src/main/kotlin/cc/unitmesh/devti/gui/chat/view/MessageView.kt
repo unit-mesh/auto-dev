@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat.view
 
+import cc.unitmesh.devti.AutoDevColors
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
@@ -19,6 +20,7 @@ import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
@@ -27,10 +29,12 @@ import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.border.EmptyBorder
 
 class MessageView(val project: Project, val message: String, val role: ChatRole, private var displayText: String) :
     JBPanel<MessageView>() {
@@ -59,10 +63,16 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
         val toolbarPanel = createToolbar()
         centerPanel.add(toolbarPanel, BorderLayout.NORTH)
 
-        runInEdt {
-            if (role == ChatRole.User) {
-                myList.add(createSingleTextView(project, message))
+        if (role == ChatRole.User) {
+            var bg = AutoDevColors.USER_ROLE_BG
+
+            runInEdt {
+                val comp = createSingleTextView(project, message, background = bg)
+                myList.add(comp)
             }
+
+            toolbarPanel.background = bg
+            centerPanel.background = bg
         }
 
         centerPanel.add(myList, BorderLayout.CENTER)
@@ -179,13 +189,24 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
     }
 
     companion object {
-        fun createSingleTextView(project: Project, text: String, language: String = "markdown"): DialogPanel {
+        fun createSingleTextView(
+            project: Project,
+            text: String,
+            language: String = "markdown",
+            background: JBColor? = null
+        ): DialogPanel {
             val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage(language)).apply {
                 initEditor(text)
             }
 
             codeBlockViewer.editorFragment!!.setCollapsed(true)
             codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
+
+            if (background != null) {
+                codeBlockViewer.border = JBUI.Borders.empty()
+                codeBlockViewer.background = background
+                codeBlockViewer.editorFragment?.editor?.backgroundColor = background
+            }
 
             val panel = panel {
                 row {
