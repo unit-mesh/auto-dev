@@ -9,7 +9,7 @@ import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
-import cc.unitmesh.devti.util.getOrCreateDirectory
+import cc.unitmesh.devti.util.DirUtil
 import cc.unitmesh.devti.util.isFile
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
@@ -266,7 +266,7 @@ class SingleFileDiffSketch(
 
                     try {
                         runReadAction {
-                            val directory = getOrCreateDirectory(myProject.baseDir, filePath)
+                            val directory = DirUtil.getOrCreateDirectory(myProject.baseDir, filePath)
                             val vfile = runWriteAction { directory.createChildData(this, fileName) }
                             vfile.writeText(patch!!.patchedText)
                         }
