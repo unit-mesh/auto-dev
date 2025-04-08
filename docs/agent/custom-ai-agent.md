@@ -89,7 +89,7 @@ Notes: Dify API support by [#251](https://github.com/unit-mesh/auto-dev/issues/2
     },
     "connector": {
       "requestFormat": "{\"fields\":{\"stream\": true, \"user_id\": \"user\",\"bot_id\": \"749xxx\",\"additional_messages\": [{\"role\": \"user\", \"content_type\":\"text\", \"content\": \"$content\" }]}}",
-      "responseFormat": "$.content[?(@.type == 'answer')]"
+      "responseFormat": "$[?(@.type == 'answer' && !(@.created_at))].content"
     },
     "responseAction": "Stream"
   }
