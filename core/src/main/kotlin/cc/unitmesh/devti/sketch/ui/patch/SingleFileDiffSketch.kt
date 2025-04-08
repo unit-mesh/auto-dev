@@ -74,7 +74,7 @@ class SingleFileDiffSketch(
         val apply = GenericPatchApplier.apply(oldCode, patch.hunks)
         apply
     } catch (e: Exception) {
-        logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+        logger<SingleFileDiffSketch>().warn(AutoDevBundle.message("sketch.patch.failed.apply", patch.beforeFileName ?: ""), e)
         null
     }
 
@@ -224,7 +224,7 @@ class SingleFileDiffSketch(
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
-            SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
+            SimpleDiffRequest("Diff", currentDocContent, newDocContent, AutoDevBundle.message("sketch.diff.original"), AutoDevBundle.message("sketch.diff.aiSuggestion"))
         return diffRequest
     }
 
@@ -233,7 +233,7 @@ class SingleFileDiffSketch(
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
-            SimpleDiffRequest("Diff", EmptyContent(), newDocContent, "", "AI suggestion")
+            SimpleDiffRequest("Diff", EmptyContent(), newDocContent, "", AutoDevBundle.message("sketch.diff.aiSuggestion"))
         return diffRequest
     }
 
@@ -280,7 +280,7 @@ class SingleFileDiffSketch(
 
                 val document = FileDocumentManager.getInstance().getDocument(file)
                 if (document == null) {
-                    logger<SingleFileDiffSketch>().error("Document is null for file: ${file.path}")
+                    logger<SingleFileDiffSketch>().error(AutoDevBundle.message("sketch.patch.document.null", file.path))
                     return@addActionListener
                 }
 
