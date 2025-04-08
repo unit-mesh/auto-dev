@@ -104,14 +104,21 @@ class SingleFileDiffSketch(
             border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
 
             val originalColor = foreground
-            val hoverColor = AutoDevColors.FILE_HOVER_COLOR // Extracted from inline JBColor definition
+            val hoverColor = if (currentFile !is LightVirtualFile) {
+                AutoDevColors.FILE_HOVER_COLOR
+            } else {
+                foreground
+            }
 
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
+                    if (currentFile is LightVirtualFile) return
                     FileEditorManager.getInstance(myProject).openFile(currentFile, true)
                 }
 
                 override fun mouseEntered(e: MouseEvent?) {
+                    if (currentFile is LightVirtualFile) return
+
                     foreground = hoverColor
                     cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
                     border = BorderFactory.createCompoundBorder(
@@ -121,6 +128,8 @@ class SingleFileDiffSketch(
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
+                    if (currentFile is LightVirtualFile) return
+
                     foreground = originalColor
                     cursor = java.awt.Cursor.getDefaultCursor()
                     border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
@@ -269,6 +278,8 @@ class SingleFileDiffSketch(
                             val directory = DirUtil.getOrCreateDirectory(myProject.baseDir, filePath)
                             val vfile = runWriteAction { directory.createChildData(this, fileName) }
                             vfile.writeText(patch!!.patchedText)
+
+                            FileEditorManager.getInstance(myProject).openFile(vfile, true)
                         }
                     } catch (e: Exception) {
                         logger<SingleFileDiffSketch>().error("Failed to create file: ${file.path}", e)
