@@ -74,6 +74,28 @@ Demo:
 
 Notes: Dify API support by [#251](https://github.com/unit-mesh/auto-dev/issues/251), since 1.8.18 version
 
+#### Coze Example
+
+
+```json
+[
+  {
+    "name": "CozeAI",
+    "description": "Dify Example",
+    "url": "https://api.coze.cn/v3/chat",
+    "auth": {
+      "type": "Bearer",
+      "token": "xxx"
+    },
+    "connector": {
+      "requestFormat": "{\"fields\":{\"stream\": true, \"user_id\": \"user\",\"bot_id\": \"749xxx\",\"additional_messages\": [{\"role\": \"user\", \"content_type\":\"text\", \"content\": \"$content\" }]}}",
+      "responseFormat": "$.content[?(@.type == 'answer')]"
+    },
+    "responseAction": "Stream"
+  }
+]
+```
+
 ### responseAction
 
 ```kotlin

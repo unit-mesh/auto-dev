@@ -26,4 +26,3 @@ response format under the `connector` field.
   "interactive": "ChatPanel"
 }
 ```
-
