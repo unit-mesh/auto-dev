@@ -106,8 +106,8 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
 
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
-                var prompt = component.text
-                component.text = ""
+                var prompt = component.renderText()
+                component.clearText()
 
 
                 if (prompt.isEmpty() || prompt.isBlank()) {
@@ -282,7 +282,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     }
 
     fun setInput(trimMargin: String) {
-        inputSection.text = trimMargin.trim()
+        inputSection.setText(trimMargin.trim())
         this.focusInput()
     }
 

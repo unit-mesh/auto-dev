@@ -52,8 +52,8 @@ open class SketchInputListener(
     }
 
     override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
-        val userInput = component.text
-        component.text = ""
+        val userInput = component.renderText()
+        component.clearText()
 
         if (userInput.isEmpty() || userInput.isBlank()) {
             component.showTooltip(AutoDevBundle.message("chat.input.tips"))

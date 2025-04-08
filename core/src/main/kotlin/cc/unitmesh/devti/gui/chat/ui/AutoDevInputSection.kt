@@ -91,18 +91,22 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         null
     }
 
-    // TODO: refactor
-    var text: String
-        get() {
-            val files = workspaceFilePanel.getAllFilesFormat()
-            relatedFileListViewModel.clearAllFiles()
-            workspaceFilePanel.clear()
-            return input.text + "\n" + files
-        }
-        set(text) {
-            input.recreateDocument()
-            input.text = text
-        }
+    fun renderText(): String {
+        val files = workspaceFilePanel.getAllFilesFormat()
+        relatedFileListViewModel.clearAllFiles()
+        workspaceFilePanel.clear()
+        return input.text + "\n" + files
+    }
+
+    fun clearText() {
+        input.recreateDocument()
+        input.text = ""
+    }
+
+    fun setText(text: String) {
+        input.recreateDocument()
+        input.text = text
+    }
 
     init {
         input = AutoDevInput(project, listOf(), disposable, this)
@@ -382,7 +386,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
         customAgent.selectedItem = defaultRag
-        text = ""
+        input.text = ""
         workspaceFilePanel.clear()
     }
 

@@ -281,7 +281,7 @@ open class SketchToolWindow(
     }
 
     fun setInput(text: String) {
-        inputSection.text = text.trim()
+        inputSection.setText(text.trim())
     }
 
     fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
@@ -426,7 +426,7 @@ open class SketchToolWindow(
     }
 
     fun sendInput(text: String) {
-        inputSection.text += text.trim()
+        inputSection.setText(text.trim())
         ApplicationManager.getApplication().invokeLater {
             inputSection.send()
         }
@@ -434,7 +434,7 @@ open class SketchToolWindow(
 
     fun putText(text: String) {
         runInEdt {
-            inputSection.text = text
+            inputSection.setText(text.trim())
         }
     }
 
