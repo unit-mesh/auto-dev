@@ -34,10 +34,16 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 
         val customRequest = CustomRequest(listOf(Message("user", promptText)))
-        val request = if (requestFormat.isNotEmpty()) {
+        var request = if (requestFormat.isNotEmpty()) {
             customRequest.updateCustomFormat(requestFormat)
         } else {
             Json.encodeToString<CustomRequest>(customRequest)
+        }
+
+        // fix for custom fields in message replace \"content\": \"$content\" with \"$content\": promptText
+        val errorContent = "\"content\":\"\$content\""
+        if (request.contains(errorContent)) {
+            request = request.replace(errorContent, "\"content\": \"$promptText\"")
         }
 
         val body = request.toRequestBody("application/json".toMediaTypeOrNull())
