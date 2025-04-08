@@ -244,7 +244,9 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView(chatCodingService.project, "", ChatRole.Assistant, "")
-        myList.add(messageView)
+        runInEdt {
+            myList.add(messageView)
+        }
 
         val startTime = System.currentTimeMillis()
         var text = ""
