@@ -50,6 +50,10 @@ class CustomMcpServerManager(val project: Project) {
             val cmd = GeneralCommandLine(resolvedCommand)
             cmd.addParameters(*entry.value.args.toTypedArray())
 
+            entry.value.env?.forEach { (key, value) ->
+                cmd.environment[key] = value
+            }
+
             val process = cmd.createProcess()
             val input = process.inputStream.asSource().buffered()
             val output = process.outputStream.asSink().buffered()
