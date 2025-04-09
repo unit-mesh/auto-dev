@@ -21,5 +21,7 @@
         <buildSystemProvider implementation="cc.unitmesh.go.provider.GoBuildSystemProvider"/>
 
         <langSketchProvider implementation="cc.unitmesh.go.provider.GoLangPlaygroundSketchProvider"/>
+
+        <langDictProvider implementation="cc.unitmesh.go.indexer.provider.GoLangDictProvider"/>
     </extensions>
 </idea-plugin>
