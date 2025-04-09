@@ -438,9 +438,8 @@ project(":core") {
 
         implementation("org.yaml:snakeyaml:2.2")
 
-        implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
-
-        implementation("org.jetbrains:markdown:0.6.1")
+//        implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
+        implementation("com.jayway.jsonpath:json-path:2.9.0")
 
         // chocolate factorys
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html

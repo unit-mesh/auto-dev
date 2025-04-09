@@ -23,16 +23,6 @@ import com.intellij.util.SmartList
 class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
     override val language: String = JavaLanguage.INSTANCE.displayName
 
-    /**
-     * Spike use `PackageIndex` to get all package name, maybe fast?
-     * 
-     * ```kotlin
-     * PackageIndex.getInstance(project).getDirectoriesByPackageName(text, true).forEach {
-     *     val element = LookupElementBuilder.create(it.name).withIcon(JavaFileType.INSTANCE.icon)
-     *     lookupElements.add(element)
-     * }
-     * ```
-     */
     override fun lookupSymbol(
         project: Project,
         parameters: CompletionParameters,
@@ -55,7 +45,22 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
 
         packageStatements.forEach {
             if (it.packageName.startsWith(text)) {
-                val element = LookupElementBuilder.create(it.packageName).withIcon(JavaFileType.INSTANCE.icon)
+                val element = LookupElementBuilder.create(it.packageName)
+                    .withIcon(JavaFileType.INSTANCE.icon)
+                    .withTypeText("package")
+                lookupElements.add(element)
+            }
+        }
+
+        val psiShortNamesCache = PsiShortNamesCache.getInstance(project)
+        val classNames = psiShortNamesCache.allClassNames
+        classNames.forEach { className ->
+            val psiClasses = psiShortNamesCache.getClassesByName(className, searchScope)
+            psiClasses.forEach { psiClass ->
+                val qualifiedName = psiClass.qualifiedName ?: return@forEach
+                val element = LookupElementBuilder.create(qualifiedName)
+                    .withIcon(JavaFileType.INSTANCE.icon)
+                    .withTypeText("class")
                 lookupElements.add(element)
             }
         }

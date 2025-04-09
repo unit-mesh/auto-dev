@@ -5,10 +5,10 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
 import cc.unitmesh.devti.completion.AutoDevInputLookupManagerListener
-import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
-import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListViewModel
+import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
+import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
@@ -21,6 +21,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.event.DocumentEvent
@@ -90,15 +91,22 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         null
     }
 
-    var text: String
-        get() {
-            val files = workspaceFilePanel.getAllFilesFormat()
-            return input.text + "\n" + files
-        }
-        set(text) {
-            input.recreateDocument()
-            input.text = text
-        }
+    fun renderText(): String {
+        val files = workspaceFilePanel.getAllFilesFormat()
+        relatedFileListViewModel.clearAllFiles()
+        workspaceFilePanel.clear()
+        return input.text + "\n" + files
+    }
+
+    fun clearText() {
+        input.recreateDocument()
+        input.text = ""
+    }
+
+    fun setText(text: String) {
+        input.recreateDocument()
+        input.text = text
+    }
 
     init {
         input = AutoDevInput(project, listOf(), disposable, this)
@@ -378,7 +386,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
         customAgent.selectedItem = defaultRag
-        text = ""
+        input.text = ""
         workspaceFilePanel.clear()
     }
 

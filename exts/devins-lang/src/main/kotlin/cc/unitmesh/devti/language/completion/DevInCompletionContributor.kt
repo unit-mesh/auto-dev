@@ -14,48 +14,35 @@ import com.intellij.psi.PsiElement
 class DevInCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.LANGUAGE_ID), CodeFenceLanguageCompletion())
-
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.VARIABLE_ID), VariableCompletionProvider())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.VARIABLE_ID), AgentToolOverviewCompletion())
-
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), BuiltinCommandCompletion())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.AGENT_ID), CustomAgentCompletion())
 
         extend(
             CompletionType.BASIC,
-            (valuePatterns(listOf(BuiltinCommand.FILE, BuiltinCommand.RUN, BuiltinCommand.WRITE, BuiltinCommand.STRUCTURE))),
+            (valuePatterns(
+                listOf(
+                    BuiltinCommand.FILE,
+                    BuiltinCommand.RUN,
+                    BuiltinCommand.WRITE,
+                    BuiltinCommand.STRUCTURE
+                )
+            )),
             FileCompletionProvider()
         )
-        extend(
-            CompletionType.BASIC,
-            (valuePatterns(listOf(BuiltinCommand.DIR))),
-            DirReferenceLanguageProvider()
-        )
-        extend(
-            CompletionType.BASIC,
-            valuePattern(BuiltinCommand.REV.commandName),
-            RevisionReferenceLanguageProvider()
-        )
+
         extend(
             CompletionType.BASIC,
             (valuePatterns(listOf(BuiltinCommand.SYMBOL, BuiltinCommand.RELATED, BuiltinCommand.USAGE))),
             SymbolReferenceLanguageProvider()
         )
-        extend(
-            CompletionType.BASIC,
-            valuePattern(BuiltinCommand.REFACTOR.commandName),
-            RefactoringFuncProvider()
-        )
-        extend(
-            CompletionType.BASIC,
-            valuePattern(BuiltinCommand.DATABASE.commandName),
-            DatabaseFuncCompletionProvider()
-        )
-        extend(
-            CompletionType.BASIC,
-            valuePattern(BuiltinCommand.RULE.commandName),
-            RuleCompletionProvider()
-        )
+
+        extend(CompletionType.BASIC, (valuePatterns(listOf(BuiltinCommand.DIR))), DirReferenceLanguageProvider())
+        extend(CompletionType.BASIC, valuePattern(BuiltinCommand.REV), RevisionReferenceLanguageProvider())
+        extend(CompletionType.BASIC, valuePattern(BuiltinCommand.REFACTOR), RefactoringFuncProvider())
+        extend(CompletionType.BASIC, valuePattern(BuiltinCommand.DATABASE), DatabaseFuncCompletionProvider())
+        extend(CompletionType.BASIC, valuePattern(BuiltinCommand.RULE), RuleCompletionProvider())
     }
 
     private inline fun <reified I : PsiElement> psiElement() = PlatformPatterns.psiElement(I::class.java)
@@ -71,6 +58,8 @@ class DevInCompletionContributor : CompletionContributor() {
                 PlatformPatterns.psiElement(DevInTypes.COLON),
                 PlatformPatterns.psiElement().withText(text)
             )
+
+    private fun valuePattern(cmd: BuiltinCommand): PsiElementPattern.Capture<PsiElement> = valuePattern(cmd.commandName)
 
     private fun valuePatterns(listOf: List<BuiltinCommand>): ElementPattern<out PsiElement> {
         val patterns = listOf.map { valuePattern(it.commandName) }

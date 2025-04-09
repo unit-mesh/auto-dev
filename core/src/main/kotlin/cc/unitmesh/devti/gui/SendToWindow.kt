@@ -22,13 +22,13 @@ fun sendToChatWindow(
         return
     }
 
-    val contentPanel = AutoDevToolWindowFactory.labelNormalChat(chatCodingService) ?: run {
-        logger<ChatCodingService>().warn("Content panel not found")
-        return
-    }
+    runInEdt {
+        toolWindowManager.activate {
+            val contentPanel = AutoDevToolWindowFactory.labelNormalChat(chatCodingService) ?: run {
+                logger<ChatCodingService>().warn("Content panel not found")
+                return@activate
+            }
 
-    toolWindowManager.activate {
-        runInEdt {
             runnable(contentPanel, chatCodingService)
         }
     }
@@ -39,7 +39,11 @@ fun sendToChatPanel(project: Project, runnable: (NormalChatCodingPanel, ChatCodi
     sendToChatWindow(project, actionType, runnable)
 }
 
-fun sendToChatPanel(project: Project, actionType: ChatActionType, runnable: (NormalChatCodingPanel, ChatCodingService) -> Unit) {
+fun sendToChatPanel(
+    project: Project,
+    actionType: ChatActionType,
+    runnable: (NormalChatCodingPanel, ChatCodingService) -> Unit
+) {
     sendToChatWindow(project, actionType, runnable)
 }
 

@@ -4,6 +4,7 @@ import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 
 class SymbolInsCommand(val myProject: Project, val prop: String) : InsCommand {
@@ -11,7 +12,7 @@ class SymbolInsCommand(val myProject: Project, val prop: String) : InsCommand {
 
     override suspend fun execute(): String {
         val result = DevInsSymbolProvider.all().mapNotNull {
-            val found = it.resolveSymbol(myProject, prop)
+            val found = runReadAction { it.resolveSymbol(myProject, prop) }
             if (found.isEmpty()) return@mapNotNull null
             "```${it.language}\n${found.joinToString("\n")}\n```\n"
         }

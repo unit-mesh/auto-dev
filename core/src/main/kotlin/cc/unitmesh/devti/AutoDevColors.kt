@@ -5,11 +5,12 @@ import com.intellij.ui.JBColor
 import java.awt.Color
 
 object AutoDevColors {
-    // Status colors
     val COMPLETED_STATUS = JBColor(0x59A869, 0x59A869) // Green
     val FAILED_STATUS = JBColor(0xD94F4F, 0xD94F4F) // Red
     val IN_PROGRESS_STATUS = JBColor(0x3592C4, 0x3592C4) // Blue
     val TODO_STATUS = JBColor(0x808080, 0x808080) // Gray
+
+    val USER_ROLE_BG = JBColor(Gray._240, Gray._240)
 
     // Text colors
     val COMPLETED_TEXT = JBColor(0x808080, 0x999999)

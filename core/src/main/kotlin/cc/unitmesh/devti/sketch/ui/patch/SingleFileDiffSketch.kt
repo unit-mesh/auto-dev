@@ -3,14 +3,14 @@ package cc.unitmesh.devti.sketch.ui.patch
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevColors
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.util.isFile
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
-import cc.unitmesh.devti.util.getOrCreateDirectory
+import cc.unitmesh.devti.util.DirUtil
+import cc.unitmesh.devti.util.isFile
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
 import com.intellij.diff.contents.EmptyContent
@@ -74,7 +74,7 @@ class SingleFileDiffSketch(
         val apply = GenericPatchApplier.apply(oldCode, patch.hunks)
         apply
     } catch (e: Exception) {
-        logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+        logger<SingleFileDiffSketch>().warn(AutoDevBundle.message("sketch.patch.failed.apply", patch.beforeFileName ?: ""), e)
         null
     }
 
@@ -104,14 +104,21 @@ class SingleFileDiffSketch(
             border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
 
             val originalColor = foreground
-            val hoverColor = AutoDevColors.FILE_HOVER_COLOR // Extracted from inline JBColor definition
+            val hoverColor = if (currentFile !is LightVirtualFile) {
+                AutoDevColors.FILE_HOVER_COLOR
+            } else {
+                foreground
+            }
 
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
+                    if (currentFile is LightVirtualFile) return
                     FileEditorManager.getInstance(myProject).openFile(currentFile, true)
                 }
 
                 override fun mouseEntered(e: MouseEvent?) {
+                    if (currentFile is LightVirtualFile) return
+
                     foreground = hoverColor
                     cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
                     border = BorderFactory.createCompoundBorder(
@@ -121,6 +128,8 @@ class SingleFileDiffSketch(
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
+                    if (currentFile is LightVirtualFile) return
+
                     foreground = originalColor
                     cursor = java.awt.Cursor.getDefaultCursor()
                     border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
@@ -224,7 +233,7 @@ class SingleFileDiffSketch(
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
-            SimpleDiffRequest("Diff", currentDocContent, newDocContent, "Original", "AI suggestion")
+            SimpleDiffRequest("Diff", currentDocContent, newDocContent, AutoDevBundle.message("sketch.diff.original"), AutoDevBundle.message("sketch.diff.aiSuggestion"))
         return diffRequest
     }
 
@@ -233,7 +242,7 @@ class SingleFileDiffSketch(
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
-            SimpleDiffRequest("Diff", EmptyContent(), newDocContent, "", "AI suggestion")
+            SimpleDiffRequest("Diff", EmptyContent(), newDocContent, "", AutoDevBundle.message("sketch.diff.aiSuggestion"))
         return diffRequest
     }
 
@@ -266,9 +275,11 @@ class SingleFileDiffSketch(
 
                     try {
                         runReadAction {
-                            val directory = getOrCreateDirectory(myProject.baseDir, filePath)
-                            val vfile = directory.createChildData(this, fileName)
+                            val directory = DirUtil.getOrCreateDirectory(myProject.baseDir, filePath)
+                            val vfile = runWriteAction { directory.createChildData(this, fileName) }
                             vfile.writeText(patch!!.patchedText)
+
+                            FileEditorManager.getInstance(myProject).openFile(vfile, true)
                         }
                     } catch (e: Exception) {
                         logger<SingleFileDiffSketch>().error("Failed to create file: ${file.path}", e)
@@ -280,7 +291,7 @@ class SingleFileDiffSketch(
 
                 val document = FileDocumentManager.getInstance().getDocument(file)
                 if (document == null) {
-                    logger<SingleFileDiffSketch>().error("Document is null for file: ${file.path}")
+                    logger<SingleFileDiffSketch>().error(AutoDevBundle.message("sketch.patch.document.null", file.path))
                     return@addActionListener
                 }
 

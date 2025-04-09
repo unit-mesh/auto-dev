@@ -3,7 +3,7 @@ package cc.unitmesh.devti.gui.planner
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.util.getOrCreateDirectory
+import cc.unitmesh.devti.util.DirUtil
 import cc.unitmesh.devti.util.isFile
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.diff.DiffContentFactoryEx
@@ -143,7 +143,7 @@ class PlannerResultSummary(
 
         val fileName = afterFile.substringAfterLast('/')
         val parentDir = afterFile.substringBeforeLast('/')
-        val dir = getOrCreateDirectory(project.baseDir, parentDir)
+        val dir = DirUtil.getOrCreateDirectory(project.baseDir, parentDir)
         val newFile = dir.createChildData(this, fileName)
 
         newFile.setBinaryContent(content.toByteArray())

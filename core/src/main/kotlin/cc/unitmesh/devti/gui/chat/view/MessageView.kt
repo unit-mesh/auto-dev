@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat.view
 
+import cc.unitmesh.devti.AutoDevColors
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
@@ -19,16 +20,21 @@ import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
+import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.border.EmptyBorder
 
 class MessageView(val project: Project, val message: String, val role: ChatRole, private var displayText: String) :
     JBPanel<MessageView>() {
@@ -50,36 +56,70 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
         isDoubleBuffered = true
         isOpaque = true
 
-        val authorLabel = JLabel()
-        authorLabel.setFont(JBFont.h4())
-        authorLabel.setText(
-            when (role) {
-                ChatRole.System -> "System"
-                ChatRole.Assistant -> "Assistant"
-                ChatRole.User -> "User"
+        layout = BorderLayout(0, 0)
+
+        val centerPanel = JPanel(BorderLayout())
+
+        val toolbarPanel = createToolbar()
+        centerPanel.add(toolbarPanel, BorderLayout.NORTH)
+
+        if (role == ChatRole.User) {
+            var bg = AutoDevColors.USER_ROLE_BG
+
+            runInEdt {
+                val comp = createSingleTextView(project, message, background = bg)
+                myList.add(comp)
             }
-        )
 
-        layout = BorderLayout(JBUI.scale(4), 0)
-
-        val centerPanel = JPanel(VerticalLayout(JBUI.scale(4)))
-        centerPanel.add(authorLabel)
-
-        val toolbar = createViewActionGroup().component
-        runInEdt {
-            centerPanel.add(toolbar)
-            if (role == ChatRole.User) {
-                myList.add(createSingleTextView(project, message))
-            }
+            toolbarPanel.background = bg
+            centerPanel.background = bg
         }
 
-        centerPanel.add(myList)
+        centerPanel.add(myList, BorderLayout.CENTER)
         add(centerPanel, BorderLayout.CENTER)
 
         ApplicationManager.getApplication().invokeLater {
             this@MessageView.revalidate()
             this@MessageView.repaint()
         }
+    }
+
+    private fun createToolbar(): JPanel {
+        val authorLabel = JLabel().apply {
+            font = JBFont.h4()
+            text = when (role) {
+                ChatRole.System -> "System"
+                ChatRole.Assistant -> "Assistant"
+                ChatRole.User -> "User"
+            }
+            border = JBUI.Borders.empty(0, 10)
+        }
+
+        val actionGroup = DefaultActionGroup(createToolbarActions())
+        val toolbar = ActionManager.getInstance()
+            .createActionToolbar("MessageViewToolbar", actionGroup, true).apply {
+                this.targetComponent = this@MessageView
+            }
+
+        val toolbarPanel = JPanel(BorderLayout()).apply {
+            add(authorLabel, BorderLayout.WEST)
+            add(toolbar.component, BorderLayout.EAST)
+        }
+
+        toolbarPanel.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0)
+        return toolbarPanel
+    }
+
+    private fun createToolbarActions(): List<AnAction> {
+        val copyAction = object : AnAction("Copy", "Copy text", AllIcons.Actions.Copy) {
+            override fun actionPerformed(e: AnActionEvent) {
+                val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                val selection = StringSelection(displayText)
+                clipboard.setContents(selection, null)
+            }
+        }
+
+        return listOf(copyAction)
     }
 
     fun onFinish(text: String) {
@@ -148,32 +188,25 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
         }
     }
 
-
-    fun createViewActionGroup(): ActionToolbar {
-        val copyAction = object : AnAction("Copy", "Copy text", AllIcons.Actions.Copy) {
-            override fun actionPerformed(e: AnActionEvent) {
-                val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                val selection = StringSelection(displayText)
-                clipboard.setContents(selection, null)
-            }
-        }
-
-        val actionGroup = DefaultActionGroup(listOf(copyAction))
-        val rightToolbar = ActionManager.getInstance()
-            .createActionToolbar("AutoDevCopyView", actionGroup, true)
-
-        rightToolbar.targetComponent = this
-        return rightToolbar
-    }
-
     companion object {
-        fun createSingleTextView(project: Project, text: String, language: String = "markdown"): DialogPanel {
+        fun createSingleTextView(
+            project: Project,
+            text: String,
+            language: String = "markdown",
+            background: JBColor? = null
+        ): DialogPanel {
             val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage(language)).apply {
                 initEditor(text)
             }
 
             codeBlockViewer.editorFragment!!.setCollapsed(true)
             codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
+
+            if (background != null) {
+                codeBlockViewer.border = JBUI.Borders.empty()
+                codeBlockViewer.background = background
+                codeBlockViewer.editorFragment?.editor?.backgroundColor = background
+            }
 
             val panel = panel {
                 row {

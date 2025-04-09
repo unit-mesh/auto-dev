@@ -23,6 +23,7 @@ import cc.unitmesh.devti.sketch.createActionButton
 import cc.unitmesh.devti.sketch.ui.code.HtmlHighlightSketch
 import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -105,8 +106,8 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
 
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
-                var prompt = component.text
-                component.text = ""
+                var prompt = component.renderText()
+                component.clearText()
 
 
                 if (prompt.isEmpty() || prompt.isBlank()) {
@@ -180,7 +181,10 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         val displayText = displayPrompt.ifEmpty { message }
 
         val messageView = MessageView(chatCodingService.project, message, role, displayText)
-        myList.add(messageView)
+        runInEdt {
+            myList.add(messageView)
+        }
+
         scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
@@ -240,7 +244,9 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView(chatCodingService.project, "", ChatRole.Assistant, "")
-        myList.add(messageView)
+        runInEdt {
+            myList.add(messageView)
+        }
 
         val startTime = System.currentTimeMillis()
         var text = ""
@@ -278,7 +284,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     }
 
     fun setInput(trimMargin: String) {
-        inputSection.text = trimMargin.trim()
+        inputSection.setText(trimMargin.trim())
         this.focusInput()
     }
 

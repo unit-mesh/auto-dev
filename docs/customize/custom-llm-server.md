@@ -68,7 +68,7 @@ $.choices[0].delta.content
 
 ## Custom response format
 
-We used [JsonPathKt](https://github.com/codeniko/JsonPathKt) to parse response,
+We used [JsonPath](https://github.com/json-path/JsonPath) to parse response,
 currently we only extract the first choice and only the response message.
 If your response is this format:
 

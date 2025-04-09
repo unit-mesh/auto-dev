@@ -54,8 +54,14 @@ Demo:
     "url": "http://127.0.0.1:8765/api/agent/devins-sample",
     "responseAction": "DevIns",
     "defaultTimeout": 20
-  },
-  {
+  }
+]
+```
+
+#### Dif Example
+
+```json
+{
     "name": "DifyAI",
     "description": "Dify Example",
     "url": "https://api.dify.ai/v1/completion-messages",
@@ -68,11 +74,30 @@ Demo:
       "responseFormat": "$.answer"
     },
     "responseAction": "Stream"
+}
+```
+
+#### Coze Example
+
+
+```json
+[
+  {
+    "name": "CozeAI",
+    "description": "Coze Example",
+    "url": "https://api.coze.cn/v3/chat",
+    "auth": {
+      "type": "Bearer",
+      "token": "xxx"
+    },
+    "connector": {
+      "requestFormat": "{\"fields\":{\"stream\": true, \"user_id\": \"user\",\"bot_id\": \"749xxx\",\"additional_messages\": [{\"role\": \"user\", \"content_type\":\"text\", \"content\": \"$content\" }]}}",
+      "responseFormat": "$[?(@.type == 'answer' && !(@.created_at))].content"
+    },
+    "responseAction": "Stream"
   }
 ]
 ```
-
-Notes: Dify API support by [#251](https://github.com/unit-mesh/auto-dev/issues/251), since 1.8.18 version
 
 ### responseAction
 
