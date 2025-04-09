@@ -18,6 +18,7 @@ import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.customize.customizeSetting
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.ide.IdeTooltip
@@ -58,6 +59,7 @@ import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
+import kotlinx.coroutines.launch
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -148,7 +150,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         enhanceButton = ActionButton(
             DumbAwareAction.create {
-                enhancePrompt()
+                AutoDevCoroutineScope.scope(project).launch {
+                    enhancePrompt()
+                }
             },
             this.enhanceButtonPresentation, "", Dimension(20, 20)
         )
@@ -233,7 +237,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
     }
 
-    private fun enhancePrompt() {
+    private suspend fun enhancePrompt() {
         val originalIcon = enhanceButtonPresentation.icon
         enhanceButtonPresentation.icon = AutoDevIcons.InProgress
         enhanceButtonPresentation.isEnabled = false
@@ -241,7 +245,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         try {
             val content = project.service<PromptEnhancer>().create(input.text)
             val code = CodeFence.parse(content).text
-            this.setText(code)
+            runInEdt {
+                input.text = code
+            }
         } catch (e: Exception) {
             logger.error("Failed to enhance prompt", e)
             AutoDevNotifications.error(project, e.message ?: "An error occurred while enhancing the prompt")
