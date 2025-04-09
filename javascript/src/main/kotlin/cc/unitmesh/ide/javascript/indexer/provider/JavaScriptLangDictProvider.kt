@@ -1,4 +1,4 @@
-package cc.unitmesh.javascript.indexer.provider
+package cc.unitmesh.ide.javascript.indexer.provider
 
 import cc.unitmesh.devti.indexer.provider.LangDictProvider
 import com.intellij.lang.javascript.JavaScriptFileType
