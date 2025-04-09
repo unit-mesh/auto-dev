@@ -18,9 +18,7 @@ class PromptEnhancer(val project: Project) {
 
     suspend fun create(input: String): String {
         val dict = project.getService(DomainDictService::class.java).loadContent() ?: ""
-        val readme = findReadme(project)?.let {
-            runCatching { it.readText() }.getOrNull() ?: ""
-        } ?: ""
+        val readme = readmeFile(project)
         val context = PromptEnhancerContext(dict, input, readme)
         val prompt = templateRender.renderTemplate(template, context)
 
@@ -47,6 +45,11 @@ class PromptEnhancer(val project: Project) {
             }
             
             return null
+        }
+
+        fun readmeFile(project: Project): String {
+            val readme = findReadme(project) ?: return ""
+            return runCatching { readme.readText() }.getOrNull() ?: ""
         }
     }
 }

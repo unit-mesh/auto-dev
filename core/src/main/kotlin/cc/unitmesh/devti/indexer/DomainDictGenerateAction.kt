@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.guessProjectDir
 import kotlinx.coroutines.launch
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.indexer.usage.PromptEnhancer
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.diagnostic.logger
 import kotlin.io.path.createDirectories
@@ -35,7 +36,9 @@ class DomainDictGenerateAction : AnAction() {
             val baseDir = project.coderSetting.state.teamPromptsDir
             val templateRender = TemplateRender(GENIUS_CODE)
             val template = templateRender.getTemplate("indexer.vm")
-            val context = DomainDictGenerateContext(names.joinToString(", "))
+            val readmeMe = PromptEnhancer.readmeFile(project)
+
+            val context = DomainDictGenerateContext(names.joinToString(", "), readmeMe)
             val prompt = templateRender.renderTemplate(template, context)
 
             try {
@@ -79,5 +82,6 @@ class DomainDictGenerateAction : AnAction() {
 }
 
 data class DomainDictGenerateContext(
-    val code: String
+    val code: String,
+    val readme: String
 ) : TemplateContext

@@ -4,6 +4,10 @@
 - 它是关键业务概念、无法理解的单词或者拼音缩写
 - 代码翻译中，不包含任何技术词汇，比如：Controller、Exception、Request、Response、Code、Service、Repository、Mapper、DTO、VO、PO 等
 
+项目的 README 文件信息如下：
+
+$context.readme
+
 你的返回格式：
 
 | 中文 | 代码翻译 | 描述 |

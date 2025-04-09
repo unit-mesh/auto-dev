@@ -2,8 +2,11 @@
 
 - 它不是公共的库 API（如 Spring 等标准库或者平台的 API）、三方库 API（如 OkHttp、Retrofit 等），也不是常用的类名（如 List、Map 等）
 - 它是关键业务概念、无法理解的单词或者拼音缩写
-- 代码翻译中，不包含任何技术词汇，比如：Controller、Exception、Set、Code、Service、Repository、Mapper、DTO、VO、PO 等
-- 通用测试类和工具类（如 MathHelper）不应该被包含在内
+- 代码翻译中，不包含任何技术词汇，比如：Controller、Exception、Request、Response、Code、Service、Repository、Mapper、DTO、VO、PO 等
+
+项目的 README 文件信息如下：
+
+$context.readme
 
 你的返回格式：
 
