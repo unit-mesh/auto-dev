@@ -126,10 +126,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         sendButtonPresentation.icon = AutoDevIcons.SEND
         this.sendButtonPresentation = sendButtonPresentation
 
-        this.stopButtonPresentation = Presentation("Stop").apply {
+        this.stopButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.stop")).apply {
             icon = AutoDevIcons.STOP
         }
-        this.enhanceButtonPresentation = Presentation("Enhance").apply {
+        this.enhanceButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.enhance")).apply {
             icon = AutoDevIcons.MAGIC
             isEnabled = project.service<DomainDictService>().loadContent()?.isNotEmpty() == true
         }
