@@ -12,8 +12,6 @@ import org.rust.lang.core.psi.RsStructItem
 import org.rust.lang.core.psi.ext.RsStructOrEnumItemElement
 import org.rust.lang.core.psi.ext.expandedFields
 import org.rust.lang.core.psi.ext.implementingType
-import org.rust.lang.core.types.asTy
-import org.rust.lang.core.types.implLookup
 
 class RustClassContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {

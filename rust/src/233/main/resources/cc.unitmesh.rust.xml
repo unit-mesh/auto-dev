@@ -22,5 +22,7 @@
 
         <testContextProvider language="Rust" implementation="cc.unitmesh.rust.provider.RustTestService"/>
         <codeModifier language="Rust" implementationClass="cc.unitmesh.rust.provider.RustCodeModifier"/>
+
+        <langDictProvider implementation="cc.unitmesh.rust.indexer.provider.RustLangDictProvider"/>
     </extensions>
 </idea-plugin>
