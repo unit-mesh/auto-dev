@@ -10,11 +10,15 @@ import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListViewModel
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
+import cc.unitmesh.devti.indexer.DomainDictService
+import cc.unitmesh.devti.indexer.usage.PromptEnhancer
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.customize.customizeSetting
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
@@ -23,6 +27,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
@@ -124,6 +129,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
         this.enhanceButtonPresentation = Presentation("Enhance").apply {
             icon = AutoDevIcons.MAGIC
+            isEnabled = project.service<DomainDictService>().loadContent()?.isNotEmpty() == true
         }
 
         sendButton = ActionButton(
@@ -142,7 +148,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         enhanceButton = ActionButton(
             DumbAwareAction.create {
-                AutoDevNotifications.notify(project, "Enhancing input text...")
+                enhancePrompt()
             },
             this.enhanceButtonPresentation, "", Dimension(20, 20)
         )
@@ -224,6 +230,24 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
         currentFile?.let {
             relatedFileListViewModel.addFileIfAbsent(currentFile, first = true)
+        }
+    }
+
+    private fun enhancePrompt() {
+        val originalIcon = enhanceButtonPresentation.icon
+        enhanceButtonPresentation.icon = AutoDevIcons.InProgress
+        enhanceButtonPresentation.isEnabled = false
+
+        try {
+            val content = project.service<PromptEnhancer>().create(input.text)
+            val code = CodeFence.parse(content).text
+            this.setText(code)
+        } catch (e: Exception) {
+            logger.error("Failed to enhance prompt", e)
+            AutoDevNotifications.error(project, e.message ?: "An error occurred while enhancing the prompt")
+        } finally {
+            enhanceButtonPresentation.icon = originalIcon
+            enhanceButtonPresentation.isEnabled = true
         }
     }
 

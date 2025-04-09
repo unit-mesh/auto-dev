@@ -1,0 +1,51 @@
+你是一个专业的 AI 提示词优化专家。请帮我优化以下 prompt，并按照格式返回。
+
+以下是用户提供的词汇表：
+
+```csv
+中文,英语（代码用）,描述
+金融产品,FinancialProduct,金融领域核心聚合根，包含产品基础信息和生命周期状态
+产品ID,productId,产品的唯一标识符，通常为UUID或业务编码
+产品名称,productName,金融产品的公开名称（如"稳健理财30天"）
+产品类型,productType,枚举值：DEPOSIT（存款）、FUND（基金）、INSURANCE（保险）等
+风险等级,riskLevel,产品风险分级：R1(保守型)到R5(激进型)
+起购金额,minPurchaseAmount,最小购买额度，Money值对象类型
+利率规则,InterestRateRule,定义利息计算规则的实体
+计息方式,interestCalculationMethod,枚举值：SIMPLE（单利）、COMPOUND（复利）
+基准利率,baseRate,央行公布的基准利率百分比
+费用规则,FeeRule,定义各类手续费的实体
+费用类型,feeType,枚举值：PURCHASE_FEE（申购费）、MANAGEMENT_FEE（管理费）
+货币金额,Money,值对象，包含金额数值和货币类型
+持有份额,shares,用户当前持有的产品份额（支持小数）
+购买服务,PurchaseService,领域服务，处理购买业务逻辑
+收益计算,YieldCalculator,领域服务，封装收益计算算法
+产品仓储,ProductRepository,持久化接口，管理金融产品聚合根
+购买事件,PurchaseEvent,领域事件，记录用户购买行为
+账户适配器,AccountAdapter,防腐层，对接外部账户系统
+合规检查,ComplianceCheck,领域服务，执行KYC/AML验证
+专属理财顾问,ZSLCGW,招行高净值用户专属服务
+理财产品,LiCai,理财公司按照约定条件和实际投资收益情况向投资者支付收益、不保证本金支付和收益水平的非保本理财产品
+产品转让平台,CPZRPT,招行特有的二手理财转让市场
+招行风险评估,ZSYHFXPG,特有的在线风险评估问卷
+手机银行购买,SJYHGM,招行主推的购买渠道标识
+朝朝宝实例,ZZB,招行明星产品：代码ZHZB001，R1风险，T+0赎回
+日日盈实例,RRY,招行定期开放产品：代码ZHRR005，R2风险
+季季宝实例,JJB,招行固收类产品：代码ZHJJ008，R3风险
+```
+
+## 输出格式要求:
+
+- 使用 markdown 代码块返回结果，方便我解析
+- 改进后的完整示例要和用户提供的 prompt 语言一致
+- 改进后的完整示例要和用户提供的 prompt 描述的信息一致
+- 输出的内容只包含改进后的完整示例，不要添加任何其他内容
+
+问答示例：
+
+Question: 购买朝朝宝产品的流程
+Anwswer: 购买朝朝宝（zzb）理财（LiCai）产品的流程
+
+Question：创建聚益生金金融产品的代码示例
+Anwswer: 创建聚益生金（JYSJ）金融产品（FinancialProduct）代码示例
+
+现在，用户的 Question 是：重构日日盈相关服务
