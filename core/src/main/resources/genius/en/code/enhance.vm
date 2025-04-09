@@ -6,6 +6,13 @@
 $context.dict
 ```
 
+#if( $context.readme.length() > 0 )
+以下是项目的 README 信息
+==========
+$context.readme
+==========
+#end
+
 输出格式要求:
 
 - 使用 markdown 代码块返回结果，方便我解析
