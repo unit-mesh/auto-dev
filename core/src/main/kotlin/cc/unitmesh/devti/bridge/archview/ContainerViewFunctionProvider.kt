@@ -21,7 +21,7 @@ class ContainerViewFunctionProvider : ToolchainFunctionProvider {
     ): String {
         val modules = ModuleManager.getInstance(project).modules
         return "Here is current project modules:\n```\n" + modules.joinToString("\n") {
-            "module: ${it.moduleTypeName} - ${it.name}"
+            "module: ${it.getOptionValue("type")} - ${it.name}"
         } + "\n```"
     }
 }
