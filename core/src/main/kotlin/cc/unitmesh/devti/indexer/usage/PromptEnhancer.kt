@@ -9,6 +9,7 @@ import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.diagnostic.logger
 
 @Service(Service.Level.PROJECT)
 class PromptEnhancer(val project: Project) {

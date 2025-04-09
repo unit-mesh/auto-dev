@@ -16,6 +16,9 @@ import com.intellij.openapi.project.guessProjectDir
 import kotlinx.coroutines.launch
 import cc.unitmesh.devti.AutoDevIcons
 import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.diagnostic.logger
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
 
 class DomainDictGenerateAction : AnAction() {
     init {
@@ -38,14 +41,21 @@ class DomainDictGenerateAction : AnAction() {
             try {
                 updatePresentation(presentation, AutoDevIcons.InProgress, false)
                 AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
-                
+
+                logger<DomainDictGenerateAction>().debug("Prompt: $prompt")
+
                 val result = StringBuilder()
                 LlmFactory.create(project).stream(prompt, "").collect {
                     result.append(it)
                 }
 
                 val dict = result.toString()
-                val file = project.guessProjectDir()!!.toNioPath().resolve(baseDir).resolve("domain.csv").toFile()
+                val resolve = project.guessProjectDir()!!.toNioPath().resolve(baseDir)
+                if (!resolve.exists()) {
+                    resolve.createDirectories()
+                }
+
+                val file = resolve.resolve("domain.csv").toFile()
                 if (!file.exists()) {
                     file.createNewFile()
                 }
