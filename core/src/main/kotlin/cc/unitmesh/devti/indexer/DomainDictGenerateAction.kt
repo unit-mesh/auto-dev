@@ -41,6 +41,10 @@ class DomainDictGenerateAction : AnAction() {
             try {
                 updatePresentation(presentation, AutoDevIcons.InProgress, false)
                 AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
+                val promptDir = project.guessProjectDir()!!.toNioPath().resolve(baseDir)
+                if (!promptDir.exists()) {
+                    promptDir.createDirectories()
+                }
 
                 logger<DomainDictGenerateAction>().debug("Prompt: $prompt")
 
@@ -50,12 +54,8 @@ class DomainDictGenerateAction : AnAction() {
                 }
 
                 val dict = result.toString()
-                val resolve = project.guessProjectDir()!!.toNioPath().resolve(baseDir)
-                if (!resolve.exists()) {
-                    resolve.createDirectories()
-                }
 
-                val file = resolve.resolve("domain.csv").toFile()
+                val file = promptDir.resolve("domain.csv").toFile()
                 if (!file.exists()) {
                     file.createNewFile()
                 }
