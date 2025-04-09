@@ -45,5 +45,7 @@
         <customPromptProvider
                 language="kotlin"
                 implementationClass="cc.unitmesh.kotlin.provider.KotlinCustomPromptProvider" />
+
+        <langDictProvider implementation="cc.unitmesh.kotlin.indexer.provider.KotlinLangDictProvider"/>
     </extensions>
 </idea-plugin>
