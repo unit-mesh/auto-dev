@@ -9,7 +9,7 @@ import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.vfs.VirtualFile
 
 @Service(Service.Level.PROJECT)
 class PromptEnhancer(val project: Project) {
@@ -18,7 +18,7 @@ class PromptEnhancer(val project: Project) {
 
     suspend fun create(input: String): String {
         val dict = project.getService(DomainDictService::class.java).loadContent() ?: ""
-        val readme = project.guessProjectDir()?.findChild("README.md")?.let {
+        val readme = findReadme(project)?.let {
             runCatching { it.readText() }.getOrNull() ?: ""
         } ?: ""
         val context = PromptEnhancerContext(dict, input, readme)
@@ -30,6 +30,24 @@ class PromptEnhancer(val project: Project) {
         }
 
         return result.toString()
+    }
+
+    companion object {
+        private val README_VARIATIONS = listOf(
+            "README.md", "Readme.md", "readme.md",
+            "README.txt", "Readme.txt", "readme.txt",
+            "README", "Readme", "readme"
+        )
+        
+        fun findReadme(project: Project): VirtualFile? {
+            val projectDir = project.guessProjectDir() ?: return null
+            
+            for (readmeVariation in README_VARIATIONS) {
+                projectDir.findChild(readmeVariation)?.let { return it }
+            }
+            
+            return null
+        }
     }
 }
 
