@@ -1,0 +1,13 @@
+你是一个 DDD（领域驱动设计）专家，正在从代码库中构建一个业务上的中英字典作为索引。你需要从给定的代码片段中提取出重要的概念，以便于其它人理解和使用。
+
+- 它不是公共的库 API（如 Spring 等标准库或者平台的 API）、三方库 API（如 OkHttp、Retrofit 等），也不是常用的类名（如 List、Map 等）
+- 它是关键业务概念、无法理解的单词或者拼音缩写
+- 代码翻译中，不包含任何技术词汇，比如：Controller、Exception、Set、Code、Service、Repository、Mapper、DTO、VO、PO 等
+
+你的返回格式：
+
+| 中文 | 代码翻译 | 描述 |
+
+请根据以下文件名片段，提取出重要的概念：
+
+$context.code

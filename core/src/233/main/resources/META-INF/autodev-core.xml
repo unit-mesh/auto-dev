@@ -226,6 +226,12 @@
         <extensionPoint qualifiedName="cc.unitmesh.agentObserver"
                         interface="cc.unitmesh.devti.provider.observer.AgentObserver"
                         dynamic="true"/>
+
+        <!-- Indexer -->
+        <extensionPoint qualifiedName="cc.unitmesh.langDictProvider"
+                        interface="cc.unitmesh.devti.indexer.provider.LangDictProvider"
+                        dynamic="true"
+        />
     </extensionPoints>
 
     <projectListeners>
@@ -249,7 +255,7 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
-        
+
         <chatContextProvider implementation="cc.unitmesh.devti.provider.context.IdeVersionChatContextProvider"/>
 
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider"/>
@@ -265,9 +271,9 @@
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.knowledge.KnowledgeFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.mcp.client.McpFunctionProvider"/>
 
-        <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver" />
-        <agentObserver implementation="cc.unitmesh.devti.observer.BuiltTaskAgentObserver" />
-        <agentObserver implementation="cc.unitmesh.devti.observer.AddDependencyAgentObserver" />
+        <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver"/>
+        <agentObserver implementation="cc.unitmesh.devti.observer.BuiltTaskAgentObserver"/>
+        <agentObserver implementation="cc.unitmesh.devti.observer.AddDependencyAgentObserver"/>
     </extensions>
 
     <actions>

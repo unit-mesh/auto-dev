@@ -224,6 +224,12 @@
         <extensionPoint qualifiedName="cc.unitmesh.agentObserver"
                         interface="cc.unitmesh.devti.provider.observer.AgentObserver"
                         dynamic="true"/>
+
+        <!-- Indexer -->
+        <extensionPoint qualifiedName="cc.unitmesh.langDictProvider"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.indexer.provider.LangDictProvider"/>
+        </extensionPoint>
     </extensionPoints>
 
     <projectListeners>

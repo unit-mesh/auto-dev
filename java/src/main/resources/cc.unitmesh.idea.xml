@@ -61,5 +61,7 @@
 <!--        <agentObserver implementation="cc.unitmesh.idea.observer.GradleTaskAgentObserver" />-->
 
         <frameworkConfigProvider implementation="cc.unitmesh.idea.provider.SpringFrameworkConfigProvider"/>
+
+        <langDictProvider implementation="cc.unitmesh.idea.indexer.provider.JavaLangDictProvider"/>
     </extensions>
 </idea-plugin>
