@@ -14,8 +14,10 @@ class JavaLangDictProvider : LangDictProvider {
             FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
         }
 
-        return javaFiles.mapNotNull {
+        val filenames = javaFiles.mapNotNull {
             it.nameWithoutExtension
         }
+
+        return filenames
     }
 }

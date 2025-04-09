@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.indexer
 
-import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.indexer.provider.LangDictProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
@@ -15,6 +14,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.guessProjectDir
 import kotlinx.coroutines.launch
+import cc.unitmesh.devti.AutoDevIcons
+import com.intellij.openapi.actionSystem.Presentation
 
 class DomainDictGenerateAction : AnAction() {
     init {
@@ -23,6 +24,8 @@ class DomainDictGenerateAction : AnAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
+        val presentation = event.presentation
+        
         AutoDevCoroutineScope.scope(project).launch {
             val names = LangDictProvider.all(project)
 
@@ -33,10 +36,10 @@ class DomainDictGenerateAction : AnAction() {
             val prompt = templateRender.renderTemplate(template, context)
 
             try {
-                this@DomainDictGenerateAction.templatePresentation.icon = AutoDevIcons.InProgress
-                this@DomainDictGenerateAction.templatePresentation.isEnabled = false
-                val result = StringBuilder()
+                updatePresentation(presentation, AutoDevIcons.InProgress, false)
                 AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
+                
+                val result = StringBuilder()
                 LlmFactory.create(project).stream(prompt, "").collect {
                     result.append(it)
                 }
@@ -53,10 +56,15 @@ class DomainDictGenerateAction : AnAction() {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
                 e.printStackTrace()
             } finally {
-                this@DomainDictGenerateAction.templatePresentation.icon = AutoDevIcons.AI_COPILOT
-                this@DomainDictGenerateAction.templatePresentation.isEnabled = true
+                // Restore icon and enable the action
+                updatePresentation(presentation, AutoDevIcons.AI_COPILOT, true)
             }
         }
+    }
+    
+    private fun updatePresentation(presentation: Presentation, icon: javax.swing.Icon, enabled: Boolean) {
+        presentation.icon = icon
+        presentation.isEnabled = enabled
     }
 }
 
