@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
 import cc.unitmesh.devti.completion.AutoDevInputLookupManagerListener
@@ -21,7 +22,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.event.DocumentEvent
@@ -67,15 +67,17 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val documentListener: DocumentListener
     private val sendButtonPresentation: Presentation
     private val stopButtonPresentation: Presentation
+    private val enhanceButtonPresentation: Presentation
     private val sendButton: ActionButton
     private val stopButton: ActionButton
-    private val buttonPanel = JPanel(CardLayout())
+    private val enhanceButton: ActionButton
+    private var buttonPanel: JPanel = JPanel(CardLayout())
     private val inputPanel = BorderLayoutPanel()
     val focusableComponent: JComponent get() = input
 
     private val relatedFileListViewModel = RelatedFileListViewModel(project)
     private val elementsList = JBList(relatedFileListViewModel.getListModel())
-    
+
     private val workspaceFilePanel: WorkspaceFilePanel
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
@@ -114,12 +116,15 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         setupElementsList()
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
-        sendButtonPresentation.icon = AutoDevIcons.Send
+        sendButtonPresentation.icon = AutoDevIcons.SEND
         this.sendButtonPresentation = sendButtonPresentation
 
-        val stopButtonPresentation = Presentation("Stop")
-        stopButtonPresentation.icon = AutoDevIcons.STOP
-        this.stopButtonPresentation = stopButtonPresentation
+        this.stopButtonPresentation = Presentation("Stop").apply {
+            icon = AutoDevIcons.STOP
+        }
+        this.enhanceButtonPresentation = Presentation("Enhance").apply {
+            icon = AutoDevIcons.MAGIC
+        }
 
         sendButton = ActionButton(
             DumbAwareAction.create {
@@ -133,6 +138,13 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 editorListeners.multicaster.onStop(this@AutoDevInputSection)
             },
             this.stopButtonPresentation, "", Dimension(20, 20)
+        )
+
+        enhanceButton = ActionButton(
+            DumbAwareAction.create {
+                AutoDevNotifications.notify(project, "Enhancing input text...")
+            },
+            this.enhanceButtonPresentation, "", Dimension(20, 20)
         )
 
         documentListener = object : DocumentListener {
@@ -171,16 +183,14 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             layoutPanel.addToLeft(customAgent)
         }
 
-
-        buttonPanel.add(sendButton, "Send")
-        buttonPanel.add(stopButton, "Stop")
+        buttonPanel = createButtonPanel()
 
         layoutPanel.addToCenter(horizontalGlue)
         layoutPanel.addToRight(buttonPanel)
 
         inputPanel.add(input, BorderLayout.CENTER)
         inputPanel.addToBottom(layoutPanel)
-        
+
         inputPanel.addToTop(workspaceFilePanel)
 
         val scrollPane = JBScrollPane(elementsList)
@@ -215,6 +225,21 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         currentFile?.let {
             relatedFileListViewModel.addFileIfAbsent(currentFile, first = true)
         }
+    }
+
+    private fun createButtonPanel(): JPanel {
+        val panel = JPanel(CardLayout())
+
+        // Create a panel for the "Send" state that contains both enhance and send buttons
+        val sendPanel = JPanel(FlowLayout(FlowLayout.RIGHT, JBUI.scale(8), 0))
+        sendPanel.isOpaque = false
+        sendPanel.add(enhanceButton)
+        sendPanel.add(sendButton)
+
+        panel.add(sendPanel, "Send")
+        panel.add(stopButton, "Stop")
+
+        return panel
     }
 
     private fun setupEditorListener() {
@@ -262,7 +287,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         val wrapper = relatedFileListViewModel.getListModel().getElementAt(index)
         val cellBounds = list.getCellBounds(index, index)
-        
+
         val actionType = relatedFileListViewModel.determineFileAction(wrapper, e.point, cellBounds)
         val actionPerformed = relatedFileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
             if (relativePath != null) {
