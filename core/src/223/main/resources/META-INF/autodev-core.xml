@@ -227,9 +227,9 @@
 
         <!-- Indexer -->
         <extensionPoint qualifiedName="cc.unitmesh.langDictProvider"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.indexer.provider.LangDictProvider"/>
-        </extensionPoint>
+                        interface="cc.unitmesh.devti.indexer.provider.LangDictProvider"
+                        dynamic="true"
+        />
     </extensionPoints>
 
     <projectListeners>
