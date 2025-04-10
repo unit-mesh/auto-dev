@@ -19,6 +19,7 @@ import cc.unitmesh.devti.indexer.usage.PromptEnhancer
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -47,8 +48,8 @@ class DomainDictGenerateAction : AnAction() {
                 logger<DomainDictGenerateAction>().debug("Prompt: $prompt")
 
                 val result = StringBuilder()
-                val llm = LlmFactory.create(project)
-                llm.stream(prompt, "").cancellable().collect {
+                val stream: Flow<String> = LlmFactory.create(project).stream(prompt, "")
+                stream.cancellable().collect {
                     result.append(it)
                 }
 
