@@ -18,6 +18,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.indexer.usage.PromptEnhancer
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 
@@ -31,15 +32,8 @@ class DomainDictGenerateAction : AnAction() {
         val presentation = event.presentation
         
         AutoDevCoroutineScope.scope(project).launch {
-            val names = LangDictProvider.all(project)
-
             val baseDir = project.coderSetting.state.teamPromptsDir
-            val templateRender = TemplateRender(GENIUS_CODE)
-            val template = templateRender.getTemplate("indexer.vm")
-            val readmeMe = PromptEnhancer.readmeFile(project)
-
-            val context = DomainDictGenerateContext(names.joinToString(", "), readmeMe)
-            val prompt = templateRender.renderTemplate(template, context)
+            val prompt = buildPrompt(project)
 
             try {
                 updatePresentation(presentation, AutoDevIcons.InProgress, false)
@@ -74,7 +68,18 @@ class DomainDictGenerateAction : AnAction() {
             }
         }
     }
-    
+
+    private suspend fun buildPrompt(project: Project): String {
+        val names = LangDictProvider.all(project)
+        val templateRender = TemplateRender(GENIUS_CODE)
+        val template = templateRender.getTemplate("indexer.vm")
+        val readmeMe = PromptEnhancer.readmeFile(project)
+
+        val context = DomainDictGenerateContext(names.joinToString(", "), readmeMe)
+        val prompt = templateRender.renderTemplate(template, context)
+        return prompt
+    }
+
     private fun updatePresentation(presentation: Presentation, icon: javax.swing.Icon, enabled: Boolean) {
         presentation.icon = icon
         presentation.isEnabled = enabled
