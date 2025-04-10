@@ -74,6 +74,8 @@ class CustomMcpServerManager(val project: Project) {
         return toolsMap
     }
 
+    private val json = Json { prettyPrint = true }
+
     fun execute(project: Project, tool: Tool, map: String): String {
         toolClientMap[tool]?.let {
             val future = CompletableFuture<String>()
@@ -90,7 +92,7 @@ class CustomMcpServerManager(val project: Project) {
                     if (result?.content.isNullOrEmpty()) {
                         future.complete("No result from tool ${tool.name}")
                     } else {
-                        val result = Json { prettyPrint = true }.encodeToString(result.content)
+                        val result = json.encodeToString(result.content)
                         val text = "Execute ${tool.name} tool's result\n"
                         future.complete(text + result)
                     }
