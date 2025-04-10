@@ -5,6 +5,9 @@ nav_order: 2
 parent: MCP
 ---
 
+{: .warning }
+Since we need to support AutoDev DevIns use MCP tools, we current only support Stdio-based transport.
+
 ## How to use
 
 1. Configure the MCP client in `Settings`, `AutoDev`, `Custom Agent` MCP Servers
