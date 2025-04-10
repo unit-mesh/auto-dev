@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.completion.provider
 
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.completion.AutoDevFileLookupElement
 import cc.unitmesh.devti.sketch.rule.ProjectRule
 import com.intellij.codeInsight.completion.CompletionParameters
@@ -30,6 +31,7 @@ class RuleCompletionProvider : CompletionProvider<CompletionParameters>() {
         val filename = virtualFile.nameWithoutExtension
 
         val elementBuilder = LookupElementBuilder.create(filename)
+            .withIcon(AutoDevIcons.RULE)
             .withInsertHandler { context, _ ->
                 context.editor.caretModel.moveCaretRelatively(1, 1, false, false, false)
             }

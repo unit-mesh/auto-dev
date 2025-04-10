@@ -211,7 +211,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         }
 
         val sendText = AutoDevBundle.message("sketch.terminal.send.chat")
-        val sendAction = object : AnAction(sendText, sendText, AutoDevIcons.Send) {
+        val sendAction = object : AnAction(sendText, sendText, AutoDevIcons.SEND) {
             override fun actionPerformed(e: AnActionEvent) {
                 try {
                     val output = if (hasExecutionResults) {

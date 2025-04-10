@@ -49,5 +49,7 @@
                               implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptRelatedClassProvider"/>
         <relatedClassProvider language="TypeScript"
                              implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptRelatedClassProvider"/>
+
+        <langDictProvider implementation="cc.unitmesh.ide.javascript.indexer.provider.JavaScriptLangDictProvider"/>
     </extensions>
 </idea-plugin>

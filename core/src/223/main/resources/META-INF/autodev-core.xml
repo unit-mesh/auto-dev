@@ -224,6 +224,12 @@
         <extensionPoint qualifiedName="cc.unitmesh.agentObserver"
                         interface="cc.unitmesh.devti.provider.observer.AgentObserver"
                         dynamic="true"/>
+
+        <!-- Indexer -->
+        <extensionPoint qualifiedName="cc.unitmesh.langDictProvider"
+                        interface="cc.unitmesh.devti.indexer.provider.LangDictProvider"
+                        dynamic="true"
+        />
     </extensionPoints>
 
     <projectListeners>
@@ -409,6 +415,14 @@
                 class="cc.unitmesh.devti.actions.EditSettingsAction"
                 description="Edit autoDev settings"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+        </action>
+
+        <action id="cc.unitmesh.devti.DomainDictGenerate"
+                class="cc.unitmesh.devti.indexer.DomainDictGenerateAction"
+                description="Generate domains.csv"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+
+            <add-to-group group-id="ProjectViewToolbar" anchor="last"/>
         </action>
 
         <group id="autodev.statusBarPopup">

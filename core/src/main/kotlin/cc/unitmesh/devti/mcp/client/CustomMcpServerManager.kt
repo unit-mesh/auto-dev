@@ -22,10 +22,6 @@ import com.intellij.openapi.util.SystemInfo
 import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withTimeout
 import com.intellij.execution.configurations.GeneralCommandLine
 
 @Service(Service.Level.PROJECT)
@@ -49,6 +45,10 @@ class CustomMcpServerManager(val project: Project) {
 
             val cmd = GeneralCommandLine(resolvedCommand)
             cmd.addParameters(*entry.value.args.toTypedArray())
+
+            entry.value.env?.forEach { (key, value) ->
+                cmd.environment[key] = value
+            }
 
             val process = cmd.createProcess()
             val input = process.inputStream.asSource().buffered()
@@ -74,6 +74,8 @@ class CustomMcpServerManager(val project: Project) {
         return toolsMap
     }
 
+    private val json = Json { prettyPrint = true }
+
     fun execute(project: Project, tool: Tool, map: String): String {
         toolClientMap[tool]?.let {
             val future = CompletableFuture<String>()
@@ -90,7 +92,7 @@ class CustomMcpServerManager(val project: Project) {
                     if (result?.content.isNullOrEmpty()) {
                         future.complete("No result from tool ${tool.name}")
                     } else {
-                        val result = Json { prettyPrint = true }.encodeToString(result.content)
+                        val result = json.encodeToString(result.content)
                         val text = "Execute ${tool.name} tool's result\n"
                         future.complete(text + result)
                     }

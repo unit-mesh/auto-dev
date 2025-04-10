@@ -3,12 +3,7 @@ package cc.unitmesh.devti.bridge
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.sketch.SketchInputListener
 import cc.unitmesh.devti.sketch.SketchToolWindow
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 
 class BridgeToolWindow(val myProject: Project, val myEditor: Editor?, private val showInput: Boolean = false) :

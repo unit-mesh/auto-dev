@@ -410,7 +410,7 @@ project(":core") {
             testFramework(TestFrameworkType.Platform)
         }
 
-        implementation("io.modelcontextprotocol:kotlin-sdk:0.3.0") {
+        implementation("io.modelcontextprotocol:kotlin-sdk:0.4.0") {
             excludeKotlinDeps()
         }
 
@@ -440,6 +440,9 @@ project(":core") {
 
 //        implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
         implementation("com.jayway.jsonpath:json-path:2.9.0")
+        implementation("com.jsoizo:kotlin-csv-jvm:1.10.0") {
+            excludeKotlinDeps()
+        }
 
         // chocolate factorys
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
@@ -696,7 +699,8 @@ project(":exts:ext-endpoints") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("endpointsPlugin") + prop("swaggerPlugin"))
             intellijPlugins(
-                listOf("com.intellij.spring", "com.intellij.spring.mvc",
+                listOf(
+                    "com.intellij.spring", "com.intellij.spring.mvc",
 //                    "com.intellij.micronaut"
                 )
             )

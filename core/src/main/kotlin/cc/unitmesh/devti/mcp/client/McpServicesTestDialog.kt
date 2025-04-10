@@ -21,7 +21,6 @@ import java.awt.event.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.*
 import javax.swing.border.CompoundBorder
-import javax.swing.border.EmptyBorder
 import javax.swing.border.MatteBorder
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
@@ -228,7 +227,7 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
 
         // Add search field at the top
         val searchPanel = JPanel(BorderLayout())
-        searchPanel.border = EmptyBorder(0, 0, 8, 0)
+        searchPanel.border = JBUI.Borders.emptyBottom(8)
         searchPanel.add(searchField, BorderLayout.CENTER)
 
         // Add scroll pane for content

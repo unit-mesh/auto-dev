@@ -30,5 +30,7 @@
         <relatedClassProvider
                 language="Python"
                 implementationClass="cc.unitmesh.python.provider.PythonRelatedClassProvider"/>
+
+        <langDictProvider implementation="cc.unitmesh.python.indexer.provider.PythonLangDictProvider"/>
     </extensions>
 </idea-plugin>
