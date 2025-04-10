@@ -14,7 +14,7 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
-import io.modelcontextprotocol.kotlin.sdk.Tool
+import io.modelcontextprotocol.spec.McpSchema
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
@@ -50,7 +50,7 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
     }
 
     // Inner class for server panels
-    inner class ServerPanel(val server: String, val tools: List<Tool>) {
+    inner class ServerPanel(val server: String, val tools: List<McpSchema.Tool>) {
         val panel = JPanel(BorderLayout())
         val headerPanel = JPanel(BorderLayout())
         val contentPanel = JPanel(BorderLayout())
@@ -256,7 +256,7 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
         AutoDevCoroutineScope.workerScope(project).launch {
             try {
                 val serverManager = CustomMcpServerManager.instance(project)
-                val serverInfos: Map<String, List<Tool>> = serverManager.collectServerInfos()
+                val serverInfos: Map<String, List<McpSchema.Tool>> = serverManager.collectServerInfos()
 
                 updateServerPanels(serverInfos)
 
@@ -291,7 +291,7 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
         }
     }
 
-    private fun updateServerPanels(serverInfos: Map<String, List<Tool>>) {
+    private fun updateServerPanels(serverInfos: Map<String, List<McpSchema.Tool>>) {
         // Run on UI thread
         SwingUtilities.invokeLater {
             // Clear existing panels

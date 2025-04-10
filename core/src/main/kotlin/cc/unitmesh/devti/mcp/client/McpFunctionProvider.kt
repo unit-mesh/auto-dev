@@ -4,8 +4,7 @@ import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import io.modelcontextprotocol.kotlin.sdk.Tool
-import io.modelcontextprotocol.kotlin.sdk.Tool.Input
+import io.modelcontextprotocol.spec.McpSchema
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 
@@ -21,11 +20,11 @@ class McpFunctionProvider : ToolchainFunctionProvider {
     override suspend fun toolInfos(project: Project): List<AgentTool> {
         val manager = CustomMcpServerManager.instance(project)
         val toolsMap = manager.collectServerInfos()
-        
+
         val agentTools = mutableListOf<AgentTool>()
         for ((serverName, tools) in toolsMap) {
             for (tool in tools) {
-                val schemaJson = Json.encodeToString<Input>(tool.inputSchema)
+                val schemaJson = Json.encodeToString<McpSchema.JsonSchema>(tool.inputSchema)
                 val mockData = Json.encodeToString(MockDataGenerator.generateMockData(tool.inputSchema))
                 agentTools.add(
                     AgentTool(
@@ -39,7 +38,7 @@ class McpFunctionProvider : ToolchainFunctionProvider {
                 )
             }
         }
-        
+
         return agentTools
     }
 
@@ -58,7 +57,7 @@ class McpFunctionProvider : ToolchainFunctionProvider {
         val toolsMap = CustomMcpServerManager.instance(project).collectServerInfos()
         val tool = toolsMap.values.flatMap { it }
             .firstOrNull { it.name == commandName }
-            
+
         if (tool == null) {
             return "No MCP such tool: $prop"
         }
