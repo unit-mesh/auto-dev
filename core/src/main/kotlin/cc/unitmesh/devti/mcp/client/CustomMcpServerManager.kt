@@ -22,10 +22,6 @@ import com.intellij.openapi.util.SystemInfo
 import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withTimeout
 import com.intellij.execution.configurations.GeneralCommandLine
 
 @Service(Service.Level.PROJECT)
