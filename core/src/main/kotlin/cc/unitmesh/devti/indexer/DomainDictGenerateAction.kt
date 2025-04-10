@@ -23,6 +23,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.vfs.LocalFileSystem
 
 class DomainDictGenerateAction : AnAction() {
     init {
@@ -47,21 +53,35 @@ class DomainDictGenerateAction : AnAction() {
 
                 logger<DomainDictGenerateAction>().debug("Prompt: $prompt")
 
-                val result = StringBuilder()
-                val stream: Flow<String> = LlmFactory.create(project).stream(prompt, "")
-                stream.cancellable().collect {
-                    result.append(it)
-                }
-
-                val dict = result.toString()
-
                 val file = promptDir.resolve("domain.csv").toFile()
                 if (!file.exists()) {
                     file.createNewFile()
                 }
 
+                val fileEditorManager = FileEditorManager.getInstance(project)
+                var editors: Array<FileEditor> = emptyArray()
+                ApplicationManager.getApplication().invokeAndWait {
+                    val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+                    if (virtualFile != null) {
+                        editors = fileEditorManager.openFile(virtualFile, true)
+                        fileEditorManager.setSelectedEditor(virtualFile, "text-editor")
+                    }
+                }
+
+                val editor = fileEditorManager.selectedTextEditor
+                val stream: Flow<String> = LlmFactory.create(project).stream(prompt, "")
+                val result = StringBuilder()
+
+                stream.cancellable().collect { chunk ->
+                    result.append(chunk)
+                    WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
+                        editor?.document?.setText(result.toString())
+                        editor?.caretModel?.moveToOffset(editor?.document?.textLength ?: 0)
+                        editor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
+                    }
+                }
+
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Done)
-                file.writeText(dict)
             } catch (e: Exception) {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
                 e.printStackTrace()
