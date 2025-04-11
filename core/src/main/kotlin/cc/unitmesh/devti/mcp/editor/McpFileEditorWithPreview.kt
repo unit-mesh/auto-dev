@@ -25,7 +25,6 @@ class McpFileEditorWithPreview(
     val virtualFile: VirtualFile = ourEditor.file
 
     init {
-        // allow launching actions while in preview mode;
         preview.setMainEditor(ourEditor.editor)
         ourEditor.editor.scrollingModel.addVisibleAreaListener(MyVisibleAreaListener(), this)
     }
@@ -69,7 +68,7 @@ class McpFileEditorWithPreview(
                 override fun actionPerformed(e: AnActionEvent) {
                     DumbService.getInstance(project).runWhenSmart {
                         preview.component.isVisible = true
-                        preview.updateDisplayedContent()
+                        preview.refreshMcpTool()
                     }
                 }
             },
@@ -81,18 +80,10 @@ class McpFileEditorWithPreview(
 
                 override fun actionPerformed(e: AnActionEvent) {
                     DumbService.getInstance(project).runWhenSmart {
-                        preview.updateDisplayedContent()
+                        preview.refreshMcpTool()
                     }
                 }
-            },
-//            Separator(),
-//            object : AnAction("Help", "Help", AllIcons.Actions.Help) {
-//                override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-//                override fun actionPerformed(e: AnActionEvent) {
-//                    BrowserUtil.browse(AutoDevBundle.message("editor.preview.help.url"))
-//                }
-//            }
+            }
         )
     }
-
 }

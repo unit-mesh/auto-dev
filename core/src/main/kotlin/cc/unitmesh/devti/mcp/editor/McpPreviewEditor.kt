@@ -87,7 +87,6 @@ open class McpPreviewEditor(
                     val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
                     if (tools.isNotEmpty()) {
                         allTools[serverName] = tools
-                        // Update UI after each server's tools are loaded
                         SwingUtilities.invokeLater {
                             updateToolsContainer()
                         }
@@ -100,14 +99,16 @@ open class McpPreviewEditor(
         }
     }
 
+
+    fun refreshMcpTool() {
+        loadTools()
+    }
+
     private fun createUI() {
         val headerPanel = panel {
             row {
                 val label = JBLabel("MCP Preview - Tools Panel").apply {
-                    fontColor = UIUtil.FontColor.BRIGHTER
-                    background = JBColor(0xF5F5F5, 0x2B2D30)
                     font = JBUI.Fonts.label(18.0f).asBold()
-                    border = JBUI.Borders.empty(8)
                     isOpaque = true
                 }
 
@@ -337,10 +338,6 @@ open class McpPreviewEditor(
     fun setMainEditor(editor: Editor) {
         check(mainEditor.value == null)
         mainEditor.value = editor
-    }
-
-    fun updateDisplayedContent() {
-        // Implementation here
     }
 
     fun scrollToSrcOffset(offset: Int) {
