@@ -372,7 +372,10 @@ class DevInsCompiler(
         } catch (e: Exception) {
             logger<DevInsCompiler>().warn(e)
             val text = runReadAction { used.text }
-            val error = "Error executing toolchain function: $text + $prop"
+            val nextCode = lookupNextCode(used)?.codeText()
+            val error = "Error executing toolchain function: $text:$prop, $nextCode\n" +
+                    "Error: ${e.message}\n" +
+                    "Please check the command and try again."
             AutoDevNotifications.notify(myProject, error)
             error
         }
