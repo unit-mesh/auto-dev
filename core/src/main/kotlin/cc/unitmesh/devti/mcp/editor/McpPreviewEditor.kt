@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.mcp.editor
 
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
@@ -23,6 +24,10 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.util.ui.components.BorderLayoutPanel
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +37,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.beans.PropertyChangeListener
@@ -56,7 +62,7 @@ open class McpPreviewEditor(
     private lateinit var toolsContainer: JPanel
     private lateinit var chatbotSelector: JComboBox<String>
     private lateinit var chatInput: JBTextField
-    private lateinit var sendButton: JButton
+    private lateinit var sendButton: ActionButton
     private lateinit var configButton: JButton
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
@@ -124,7 +130,9 @@ open class McpPreviewEditor(
         }
 
         toolsWrapper.add(toolsScrollPane, BorderLayout.CENTER)
-        val bottomPanel = JPanel(BorderLayout()).apply {
+        
+        // Redesigned bottom panel using BorderLayoutPanel for better layout management
+        val bottomPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
             border = CompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor),
@@ -132,7 +140,8 @@ open class McpPreviewEditor(
             )
         }
 
-        val chatbotPanel = JPanel(BorderLayout()).apply {
+        // Chat selector section with better layout
+        val chatbotPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
             border = JBUI.Borders.emptyBottom(12)
         }
@@ -170,11 +179,12 @@ open class McpPreviewEditor(
             add(configButton)
         }
 
-        chatbotPanel.add(selectorPanel, BorderLayout.WEST)
-        chatbotPanel.add(configPanel, BorderLayout.EAST)
+        chatbotPanel.addToLeft(selectorPanel)
+        chatbotPanel.addToRight(configPanel)
 
-        val inputPanel = JPanel(BorderLayout(8, 0)).apply {
+        val inputPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
+            border = JBUI.Borders.empty()
         }
 
         chatInput = JBTextField().apply {
@@ -186,17 +196,32 @@ open class McpPreviewEditor(
             addActionListener { sendMessage() }
         }
 
-        sendButton = JButton("Send").apply {
-            font = JBUI.Fonts.label(14.0f)
-            isFocusPainted = false
-            addActionListener { sendMessage() }
+        val sendPresentation = Presentation("Send").apply {
+            icon = AutoDevIcons.SEND
+            description = "Send message"
         }
 
-        inputPanel.add(chatInput, BorderLayout.CENTER)
-        inputPanel.add(sendButton, BorderLayout.EAST)
+        sendButton = ActionButton(
+            DumbAwareAction.create { sendMessage() },
+            sendPresentation, 
+            "McpSendAction", 
+            Dimension(JBUI.scale(30), JBUI.scale(30))
+        )
 
-        bottomPanel.add(chatbotPanel, BorderLayout.NORTH)
-        bottomPanel.add(inputPanel, BorderLayout.SOUTH)
+        // Add horizontal glue for better spacing
+        val horizontalGlue = Box.createHorizontalGlue()
+        
+        val sendButtonPanel = JPanel(FlowLayout(FlowLayout.CENTER, 0, 0)).apply {
+            background = UIUtil.getPanelBackground()
+            isOpaque = false
+            add(sendButton)
+        }
+
+        inputPanel.addToCenter(chatInput)
+        inputPanel.addToRight(sendButtonPanel)
+
+        bottomPanel.addToTop(chatbotPanel)
+        bottomPanel.addToCenter(inputPanel)
 
         mainPanel.add(headerPanel, BorderLayout.NORTH)
         mainPanel.add(toolsWrapper, BorderLayout.CENTER)
