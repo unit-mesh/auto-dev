@@ -11,14 +11,20 @@ import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 import javax.swing.JSlider
 
+
+data class McpLlmConfig(
+    var temperature: Double = 0.0,
+    var enabledTools: MutableList<String> = mutableListOf(),
+    var systemPrompt: String = ""
+)
+
 class McpLlmConfigDialog(
     private val project: Project,
-    private val config: McpPreviewEditor.ChatbotConfig,
+    private val config: McpLlmConfig,
     private val chatbotName: String,
     private val allTools: Map<String, List<io.modelcontextprotocol.kotlin.sdk.Tool>>
 ) : DialogWrapper(project) {
     private lateinit var temperatureSlider: JSlider
-    private lateinit var tokensSlider: JSlider
     private val toolCheckboxes = mutableMapOf<String, JBCheckBox>()
     private lateinit var promptField: MarkdownLanguageField
 
@@ -61,26 +67,6 @@ class McpLlmConfigDialog(
                 row {
                     comment("Lower values produce more focused outputs. Higher values produce more creative outputs.")
                 }
-
-                row {
-                    label("Max Tokens: ${config.maxTokens}")
-                }.topGap(TopGap.MEDIUM)
-                row {
-                    cell(JSlider(100, 4000, config.maxTokens).apply {
-                        tokensSlider = this
-                        background = UIUtil.getPanelBackground()
-                        majorTickSpacing = 1000
-                        paintTicks = true
-                        addChangeListener {
-                            val value = tokensSlider.value
-                            config.maxTokens = value
-                        }
-                    })
-                }
-                row {
-                    comment("Maximum number of tokens to generate in the response.")
-                }
-
                 group("Enabled Tools") {
                     allTools.forEach { (serverName, tools) ->
                         tools.forEach { tool ->

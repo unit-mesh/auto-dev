@@ -53,19 +53,12 @@ open class McpPreviewEditor(
     private val allTools = mutableMapOf<String, List<Tool>>()
     private var loadingJob: Job? = null
 
-    data class ChatbotConfig(
-        var temperature: Double = 0.7,
-        var maxTokens: Int = 2000,
-        var enabledTools: MutableList<String> = mutableListOf(),
-        var promptText: String = ""
-    )
-
     private lateinit var toolsContainer: JPanel
     private lateinit var chatbotSelector: JComboBox<String>
     private lateinit var chatInput: JBTextField
     private lateinit var sendButton: JButton
     private lateinit var configButton: JButton
-    private val config = ChatbotConfig()
+    private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
     private val primaryBlue = JBColor(0x3B82F6, 0x589DF6) // Equivalent to Tailwind blue-500
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
@@ -244,7 +237,7 @@ open class McpPreviewEditor(
         )
         
         if (dialog.showAndGet()) {
-            config.promptText = dialog.getPromptText()
+            config.systemPrompt = dialog.getPromptText()
         }
     }
 
