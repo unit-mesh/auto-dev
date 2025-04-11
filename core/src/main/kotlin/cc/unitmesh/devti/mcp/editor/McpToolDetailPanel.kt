@@ -39,12 +39,8 @@ class McpToolDetailPanel(
 
     private fun buildCardUI() {
         background = UIUtil.getPanelBackground()
-        border = CompoundBorder(
-            BorderFactory.createLineBorder(borderColor),
-            JBUI.Borders.empty(12)
-        )
+        border = CompoundBorder(BorderFactory.createLineBorder(borderColor), JBUI.Borders.empty(4))
         preferredSize = Dimension(TOOL_CARD_WIDTH, MAX_TOOL_CARD_HEIGHT)
-        maximumSize = Dimension(Integer.MAX_VALUE, MAX_TOOL_CARD_HEIGHT)
 
         val headerPanel = JPanel(BorderLayout(8, 4)).apply {
             background = UIUtil.getPanelBackground()

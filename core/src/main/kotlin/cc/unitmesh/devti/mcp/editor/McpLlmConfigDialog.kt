@@ -24,16 +24,16 @@ data class McpLlmConfig(
     fun createSystemPrompt(): String {
         val systemPrompt = """
 In this environment you have access to a set of tools you can use to answer the user's question.
-You can invoke functions by writing a "<antml:function_calls>" block like the following as part of your reply to the user:
-<antml:function_calls>
-<antml:invoke name="${'$'}FUNCTION_NAME">
-<antml:parameter name="${'$'}PARAMETER_NAME">${'$'}PARAMETER_VALUE</antml:parameter>
+You can invoke functions by writing a "<devins:function_calls>" block like the following as part of your reply to the user:
+<devins:function_calls>
+<devins:invoke name="${'$'}FUNCTION_NAME">
+<devins:parameter name="${'$'}PARAMETER_NAME">${'$'}PARAMETER_VALUE</devins:parameter>
 ...
-</antml:invoke>
-<antml:invoke name="${'$'}FUNCTION_NAME2">
+</devins:invoke>
+<devins:invoke name="${'$'}FUNCTION_NAME2">
 ...
-</antml:invoke>
-</antml:function_calls>
+</devins:invoke>
+</devins:function_calls>
 
 String and scalar parameters should be specified as is, while lists and objects should use JSON format.
 
@@ -44,7 +44,7 @@ ${enabledTools.joinToString("\n") { tool -> "<function>" + Json.encodeToString(t
 
 Answer the user's request using the relevant tool(s), if they are available. Check that all the required parameters for each tool call are provided or can reasonably be inferred from context. IF there are no relevant tools or there are missing values for required parameters, ask the user to supply these values; otherwise proceed with the tool calls. If the user provides a specific value for a parameter (for example provided in quotes), make sure to use that value EXACTLY. DO NOT make up values for or ask about optional parameters. Carefully analyze descriptive terms in the request as they may indicate required parameter values that should be included even if not explicitly quoted.
 
-If you intend to call multiple tools and there are no dependencies between the calls, make all of the independent calls in the same <antml:function_calls></antml:function_calls> block.
+If you intend to call multiple tools and there are no dependencies between the calls, make all of the independent calls in the same <devins:function_calls></devins:function_calls> block.
 """.trimIndent()
         return systemPrompt
     }
