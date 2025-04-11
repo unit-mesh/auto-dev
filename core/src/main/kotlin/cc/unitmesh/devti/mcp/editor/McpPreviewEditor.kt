@@ -61,8 +61,7 @@ open class McpPreviewEditor(
     private lateinit var chatInput: JBTextField
     private lateinit var testButton: ActionButton
     private lateinit var configButton: JButton
-    private lateinit var resultTextArea: JTextArea
-    private lateinit var resultPanel: JPanel
+    private lateinit var resultPanel: McpResultPanel
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
@@ -152,25 +151,11 @@ open class McpPreviewEditor(
             background = UIUtil.getPanelBackground()
         }
 
-        resultPanel = JPanel(BorderLayout()).apply {
+        resultPanel = McpResultPanel().apply {
             background = UIUtil.getPanelBackground()
             isVisible = false
         }
         
-        resultTextArea = JTextArea().apply {
-            isEditable = false
-            wrapStyleWord = true
-            lineWrap = true
-            background = UIUtil.getPanelBackground()
-            border = JBUI.Borders.empty(4)
-        }
-        
-        val resultScrollPane = JBScrollPane(resultTextArea).apply {
-            border = BorderFactory.createEmptyBorder()
-            background = UIUtil.getPanelBackground()
-        }
-        
-        resultPanel.add(resultScrollPane, BorderLayout.CENTER)
         toolsWrapper.add(toolsScrollPane, BorderLayout.CENTER)
         
         val bottomPanel = BorderLayoutPanel().apply {
@@ -296,7 +281,7 @@ open class McpPreviewEditor(
         }
     }
 
-    private fun sendMessage() {
+    fun sendMessage() {
         val llmConfig = LlmConfig.load().firstOrNull { it.name == chatbotSelector.selectedItem }
             ?: LlmConfig.default()
         val llmProvider = CustomLLMProvider(project, llmConfig)
@@ -304,7 +289,7 @@ open class McpPreviewEditor(
         val result = StringBuilder()
         val stream: Flow<String> = llmProvider.stream(message, systemPrompt = config.createSystemPrompt())
         
-        resultTextArea.text = "Loading response..."
+        resultPanel.setText("Loading response...")
         resultPanel.isVisible = true
         mainPanel.revalidate()
         mainPanel.repaint()
@@ -313,7 +298,7 @@ open class McpPreviewEditor(
             stream.cancellable().collect { chunk ->
                 result.append(chunk)
                 SwingUtilities.invokeLater {
-                    resultTextArea.text = result.toString()
+                    resultPanel.setText(result.toString())
                     mainPanel.revalidate()
                     mainPanel.repaint()
                 }
@@ -343,3 +328,4 @@ open class McpPreviewEditor(
         loadingJob?.cancel()
     }
 }
+

@@ -24,7 +24,9 @@ data class McpLlmConfig(
     fun createSystemPrompt(): String {
         val systemPrompt = """
 In this environment you have access to a set of tools you can use to answer the user's question.
-You can invoke functions by writing a "<devins:function_calls>" block like the following as part of your reply to the user:
+You can invoke functions by writing a "<devins:function_calls>" inside markdown code-block like the following as part of your reply to the user:
+
+```xml
 <devins:function_calls>
 <devins:invoke name="${'$'}FUNCTION_NAME">
 <devins:parameter name="${'$'}PARAMETER_NAME">${'$'}PARAMETER_VALUE</devins:parameter>
@@ -34,6 +36,7 @@ You can invoke functions by writing a "<devins:function_calls>" block like the f
 ...
 </devins:invoke>
 </devins:function_calls>
+```
 
 String and scalar parameters should be specified as is, while lists and objects should use JSON format.
 
