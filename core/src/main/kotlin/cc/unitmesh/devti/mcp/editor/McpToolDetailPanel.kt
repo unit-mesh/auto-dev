@@ -101,7 +101,7 @@ class McpToolDetailDialog(
     private var mainPanel: JPanel? = null
 
     init {
-        title = "Tool Details"
+        title = "MCP Tool Detail - $serverName"
         init()
     }
 
@@ -109,12 +109,7 @@ class McpToolDetailDialog(
         val mockData = MockDataGenerator.generateMockData(tool.inputSchema)
         val prettyJson = json.encodeToString(mockData)
 
-        jsonLanguageField = JsonLanguageField(
-            project,
-            prettyJson,
-            "Enter parameters as JSON",
-            "parameters.json"
-        )
+        jsonLanguageField = JsonLanguageField(project, prettyJson, "Enter parameters as JSON", "parameters.json")
 
         resultPanel = JPanel(BorderLayout()).apply {
             isVisible = false
@@ -133,23 +128,25 @@ class McpToolDetailDialog(
                 }
             }
             row {
-                label(tool.description ?: "No description available").applyToComponent {
-                    font = JBUI.Fonts.label(14.0f)
+                val textArea = JTextArea().apply {
+                    text = tool.description ?: "No description available"
+                    isEditable = false
+                    wrapStyleWord = true
+                    lineWrap = true
+                    background = UIUtil.getPanelBackground()
+                    border = JBUI.Borders.empty(4)
                 }
+                cell(textArea)
             }
 
             group("Parameters") {
                 tool.inputSchema.properties.forEach { param: Map.Entry<String, JsonElement> ->
                     row {
                         label(param.key)
-                            .applyToComponent {
-                                font = JBUI.Fonts.label(14.0f)
-                            }
                     }
                     row {
                         label(param.value.toString())
                             .applyToComponent {
-                                font = JBUI.Fonts.label(12.0f)
                                 foreground = JBColor(0x6B7280, 0x9DA0A8)
                             }
                     }

@@ -82,12 +82,6 @@ class McpLlmConfigDialog(
 
         return panel {
             row {
-                label("Adjust settings for the selected chatbot").applyToComponent {
-                    font = JBUI.Fonts.label(14.0f)
-                    foreground = UIUtil.getContextHelpForeground()
-                }
-            }
-            row {
                 label("Temperature: ${String.format("%.1f", config.temperature)}")
             }
             row {
@@ -99,9 +93,6 @@ class McpLlmConfigDialog(
                         config.temperature = value
                     }
                 })
-            }
-            row {
-                comment("Lower values produce more focused outputs. Higher values produce more creative outputs.")
             }
             group("Enabled Tools") {
                 allTools.forEach { (serverName, tools) ->

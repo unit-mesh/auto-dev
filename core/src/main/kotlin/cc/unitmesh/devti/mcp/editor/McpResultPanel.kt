@@ -87,7 +87,6 @@ class McpResultPanel : JPanel(BorderLayout()) {
                 toolsPanel.add(toolPanel, gbc)
             }
 
-            // Add empty filler panel at the end
             val fillerPanel = JPanel()
             fillerPanel.isOpaque = false
 
