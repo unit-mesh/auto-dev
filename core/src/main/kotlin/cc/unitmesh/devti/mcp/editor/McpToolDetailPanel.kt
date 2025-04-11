@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.mcp.editor
 
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.mcp.client.MockDataGenerator
+import cc.unitmesh.devti.provider.local.JsonLanguageField
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.JBColor
@@ -10,6 +12,8 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -28,6 +32,8 @@ class McpToolDetailPanel(
     
     private val MAX_TOOL_CARD_HEIGHT = 180
     private val TOOL_CARD_WIDTH = 300
+    
+    private var jsonLanguageField: JsonLanguageField? = null
 
     init {
         buildCardUI()
@@ -80,6 +86,8 @@ class McpToolDetailPanel(
         add(footerPanel, BorderLayout.SOUTH)
     }
 
+    private val json = Json { prettyPrint = true }
+
     private fun showToolDetails() {
         val dialog = object : DialogWrapper(project) {
             init {
@@ -88,6 +96,16 @@ class McpToolDetailPanel(
             }
 
             override fun createCenterPanel(): JComponent {
+                val mockData = MockDataGenerator.generateMockData(tool.inputSchema)
+                val prettyJson = json.encodeToString(mockData)
+                
+                jsonLanguageField = JsonLanguageField(
+                    project, 
+                    prettyJson,
+                    "Enter parameters as JSON",
+                    "parameters.json"
+                )
+                
                 return panel {
                     row {
                         label(tool.name).applyToComponent {
@@ -123,7 +141,19 @@ class McpToolDetailPanel(
                             }
                         }
                     }
-                }.withPreferredSize(400, 200)
+                    row {
+                        label("Edit Parameters").applyToComponent {
+                            font = JBUI.Fonts.label(14.0f).asBold()
+                        }
+                    }
+                    row {
+                        cell(jsonLanguageField!!)
+                            .resizableColumn()
+                            .applyToComponent {
+                                preferredSize = Dimension(550, 200)
+                            }
+                    }
+                }.withPreferredSize(600, 600)
             }
 
             override fun createSouthPanel(): JComponent {
@@ -148,7 +178,9 @@ class McpToolDetailPanel(
     }
 
     fun onExecute(serverName: String, tool: Tool) {
-        val result = mcpServerManager.execute(project, tool, "{}")
+        // Use the content from the jsonLanguageField
+        val jsonContent = jsonLanguageField?.text ?: "{}"
+        val result = mcpServerManager.execute(project, tool, jsonContent)
         JOptionPane.showMessageDialog(
             this,
             result,
