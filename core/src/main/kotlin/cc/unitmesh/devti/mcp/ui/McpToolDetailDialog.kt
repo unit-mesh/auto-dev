@@ -6,7 +6,6 @@ import cc.unitmesh.devti.provider.local.JsonLanguageField
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
@@ -19,7 +18,6 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
-import javax.swing.border.CompoundBorder
 
 class McpToolDetailDialog(
     private val project: Project,
@@ -67,6 +65,7 @@ class McpToolDetailDialog(
                     isEditable = false
                     background = null
                     border = null
+                    preferredSize = Dimension(600, preferredSize.height)
                 }
                 cell(descLabel).resizableColumn()
             }
@@ -89,7 +88,7 @@ class McpToolDetailDialog(
                     cell(jsonLanguageField!!)
                         .resizableColumn()
                         .applyToComponent {
-                            preferredSize = Dimension(550, 200)
+                            preferredSize = Dimension(550, preferredSize.height)
                         }
                 }
             }
@@ -99,7 +98,7 @@ class McpToolDetailDialog(
                     cell(resultPanel!!)
                         .resizableColumn()
                         .applyToComponent {
-                            preferredSize = Dimension(550, 200)
+                            preferredSize = Dimension(550, preferredSize.height)
                         }
                 }
             }

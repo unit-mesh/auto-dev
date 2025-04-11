@@ -1,5 +1,8 @@
 package cc.unitmesh.devti.mcp.ui
 
+import cc.unitmesh.devti.AutoDevSnippetFile
+import cc.unitmesh.devti.sketch.ui.code.EditorUtil
+import cc.unitmesh.devti.sketch.ui.code.findDocument
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.LanguageTextField
@@ -14,6 +17,11 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import javax.swing.JComponent
 import javax.swing.JSlider
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.EditorKind
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.testFramework.LightVirtualFile
 
 class McpLlmConfigDialog(
     private val project: Project,
@@ -22,12 +30,26 @@ class McpLlmConfigDialog(
 ) : DialogWrapper(project) {
     private lateinit var temperatureSlider: JSlider
     private val toolCheckboxes = mutableMapOf<String, JBCheckBox>()
-    private lateinit var promptField: LanguageTextField
+    private var markdownEditor: EditorEx?
 
     init {
         title = "Chatbot Configuration"
         allTools.forEach { (serverName, tools) ->
             config.enabledTools.addAll(tools)
+        }
+
+        val language = CodeFence.findLanguage("Markdown")
+        val systemPrompt = config.createSystemPrompt()
+        val file = LightVirtualFile(AutoDevSnippetFile.naming("md"), language, systemPrompt)
+        markdownEditor = try {
+            val document: Document = file.findDocument() ?: throw IllegalStateException("Document not found")
+            EditorFactory.getInstance().createEditor(document, project, EditorKind.MAIN_EDITOR) as? EditorEx
+        } catch (e: Throwable) {
+            throw e
+        }
+
+        if (markdownEditor != null) {
+            EditorUtil.configEditor(markdownEditor!!, project, file, false)
         }
 
         init()
@@ -37,11 +59,7 @@ class McpLlmConfigDialog(
      * Based on https://github.com/jujumilk3/leaked-system-prompts/blob/main/anthropic-claude-api-tool-use_20250119.md
      */
     override fun createCenterPanel(): JComponent {
-        val systemPrompt = config.createSystemPrompt()
         val language = CodeFence.findLanguage("markdown")
-        promptField = LanguageTextField(language, project, systemPrompt).also {
-            it.preferredSize = JBUI.size(640, 320)
-        }
 
         return panel {
             row {
@@ -77,13 +95,15 @@ class McpLlmConfigDialog(
                     }
                 }
             }.topGap(TopGap.MEDIUM)
-            group("System Prompt") {
+            if (markdownEditor != null) {
                 row {
-                    cell(promptField)
-                        .align(FILL)
+                    cell(markdownEditor!!.component)
                         .resizableColumn()
+                        .applyToComponent {
+                            preferredSize = JBUI.size(500, 320)
+                        }
                 }
-            }.topGap(TopGap.MEDIUM)
+            }
         }.withPreferredSize(500, 600)
     }
 
