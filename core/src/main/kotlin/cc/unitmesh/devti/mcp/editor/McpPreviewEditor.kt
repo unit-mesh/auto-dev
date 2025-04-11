@@ -1,8 +1,11 @@
 package cc.unitmesh.devti.mcp.editor
 
 import cc.unitmesh.devti.llm2.model.LlmConfig
+import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.sketch.ui.patch.readText
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditor
@@ -24,7 +27,9 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.FlowLayout
@@ -56,7 +61,7 @@ open class McpPreviewEditor(
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
-    
+
     init {
         createUI()
         loadTools()
@@ -200,7 +205,7 @@ open class McpPreviewEditor(
 
     private fun updateToolsContainer() {
         toolsContainer.removeAll()
-        
+
         if (allTools.isEmpty()) {
             val noToolsLabel = JBLabel("No tools available. Please check MCP server configuration.").apply {
                 font = JBUI.Fonts.label(14.0f)
@@ -215,14 +220,14 @@ open class McpPreviewEditor(
                 }
             }
         }
-        
+
         toolsContainer.revalidate()
         toolsContainer.repaint()
     }
 
     private fun showConfigDialog() {
         val dialog = McpLlmConfigDialog(project, config, allTools)
-        
+
         if (dialog.showAndGet()) {
             config.temperature = dialog.getConfig().temperature
             config.enabledTools = dialog.getConfig().enabledTools
@@ -231,9 +236,19 @@ open class McpPreviewEditor(
     }
 
     private fun sendMessage() {
+        val llmConfig = LlmConfig.load().firstOrNull { it.name == chatbotSelector.selectedItem }
+            ?: LlmConfig.default()
+        val llmProvider = CustomLLMProvider(project, llmConfig)
         val message = chatInput.text.trim()
-        if (message.isNotEmpty()) {
-            chatInput.text = ""
+        val result = StringBuilder()
+        val stream: Flow<String> = llmProvider.stream(message, systemPrompt = config.systemPrompt)
+        /// create a result panel to save stream text
+
+        AutoDevCoroutineScope.scope(project).launch {
+            stream.cancellable().collect { chunk ->
+                result.append(chunk)
+                /// update result panel in here ?
+            }
         }
     }
 
