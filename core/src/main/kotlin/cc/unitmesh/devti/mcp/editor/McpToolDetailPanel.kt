@@ -25,7 +25,7 @@ class McpToolDetailPanel(
     private val project: Project,
     private val serverName: String,
     private val tool: Tool
-) : JPanel(BorderLayout(0, 8)) {
+) : JPanel(BorderLayout(0, 0)) {
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
@@ -42,11 +42,11 @@ class McpToolDetailPanel(
         border = CompoundBorder(BorderFactory.createLineBorder(borderColor), JBUI.Borders.empty(4))
         preferredSize = Dimension(TOOL_CARD_WIDTH, MAX_TOOL_CARD_HEIGHT)
 
-        val headerPanel = JPanel(BorderLayout(8, 4)).apply {
+        val headerPanel = JPanel(BorderLayout(4, 4)).apply {
             background = UIUtil.getPanelBackground()
         }
 
-        val titleLabel = JBLabel(serverName + ":" + tool.name).apply {
+        val titleLabel = JBLabel(tool.name).apply {
             font = JBUI.Fonts.label(14.0f).asBold()
         }
 
@@ -56,9 +56,13 @@ class McpToolDetailPanel(
         }
 
         val descriptionText = tool.description ?: "No description available"
-        val descLabel = JBLabel(descriptionText).apply {
+        val descLabel = JTextPane().apply {
+            text = descriptionText
             font = JBUI.Fonts.label(12.0f)
             foreground = textGray
+            isEditable = false
+            background = null
+            border = null
         }
 
         headerPanel.add(titleWrapper, BorderLayout.NORTH)
@@ -69,7 +73,6 @@ class McpToolDetailPanel(
         }
 
         val detailsButton = JButton("Details").apply {
-            font = JBUI.Fonts.label(14.0f)
             isFocusPainted = false
             addActionListener { showToolDetails() }
         }
@@ -79,8 +82,6 @@ class McpToolDetailPanel(
         add(headerPanel, BorderLayout.CENTER)
         add(footerPanel, BorderLayout.SOUTH)
     }
-
-    private val json = Json { prettyPrint = true }
 
     private fun showToolDetails() {
         val dialog = McpToolDetailDialog(project, serverName, tool, mcpServerManager)
