@@ -39,39 +39,42 @@ class CustomMcpServerManager(val project: Project) {
         val toolsMap = mutableMapOf<String, List<Tool>>()
         mcpConfig.mcpServers.forEach { entry ->
             if (entry.value.disabled == true) return@forEach
-            val resolvedCommand = resolveCommand(entry.value.command)
-            logger<CustomMcpServerManager>().info("Found MCP command: $resolvedCommand")
-            val client = Client(clientInfo = Implementation(name = entry.key, version = "1.0.0"))
-
-            val cmd = GeneralCommandLine(resolvedCommand)
-            cmd.addParameters(*entry.value.args.toTypedArray())
-
-            entry.value.env?.forEach { (key, value) ->
-                cmd.environment[key] = value
-            }
-
-            val process = cmd.createProcess()
-            val input = process.inputStream.asSource().buffered()
-            val output = process.outputStream.asSink().buffered()
-            val transport = StdioClientTransport(input, output)
-
-            val tools = try {
-                client.connect(transport)
-                val listTools = client.listTools()
-                listTools?.tools?.forEach { tool ->
-                    toolClientMap[tool] = client
-                }
-                listTools?.tools ?: emptyList()
-            } catch (e: Exception) {
-                logger<CustomMcpServerManager>().warn("Failed to list tools from ${entry.key}: $e")
-                emptyList<Tool>()
-            }
-            
+            val tools = collectServerInfo(entry.key, entry.value)
             toolsMap[entry.key] = tools
         }
 
         cached[mcpServerConfig] = toolsMap
         return toolsMap
+    }
+
+    suspend fun collectServerInfo(serverKey: String, serverConfig: McpServer): List<Tool> {
+        val resolvedCommand = resolveCommand(serverConfig.command)
+        logger<CustomMcpServerManager>().info("Found MCP command for $serverKey: $resolvedCommand")
+        val client = Client(clientInfo = Implementation(name = serverKey, version = "1.0.0"))
+
+        val cmd = GeneralCommandLine(resolvedCommand)
+        cmd.addParameters(*serverConfig.args.toTypedArray())
+
+        serverConfig.env?.forEach { (key, value) ->
+            cmd.environment[key] = value
+        }
+
+        val process = cmd.createProcess()
+        val input = process.inputStream.asSource().buffered()
+        val output = process.outputStream.asSink().buffered()
+        val transport = StdioClientTransport(input, output)
+
+        return try {
+            client.connect(transport)
+            val listTools = client.listTools()
+            listTools?.tools?.forEach { tool ->
+                toolClientMap[tool] = client
+            }
+            listTools?.tools ?: emptyList()
+        } catch (e: Exception) {
+            logger<CustomMcpServerManager>().warn("Failed to list tools from $serverKey: $e")
+            emptyList()
+        }
     }
 
     private val json = Json { prettyPrint = true }
