@@ -161,10 +161,7 @@ open class McpPreviewEditor(
             isVisible = false
         }
         
-        resultLabel = JLabel().apply {
-            font = JBUI.Fonts.label(14.0f)
-            border = JBUI.Borders.empty(10)
-        }
+        resultLabel = JLabel()
         
         val resultScrollPane = JBScrollPane(resultLabel).apply {
             border = BorderFactory.createEmptyBorder()
