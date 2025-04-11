@@ -35,6 +35,7 @@ import java.beans.PropertyChangeListener
 import javax.swing.*
 import javax.swing.border.CompoundBorder
 import cc.unitmesh.devti.sketch.ui.patch.readText
+import kotlinx.coroutines.Job
 
 /**
  * Display shire file render prompt and have a sample file as view
@@ -54,6 +55,7 @@ open class McpPreviewEditor(
 
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val allTools = mutableMapOf<String, List<Tool>>()
+    private var loadingJob: Job? = null
 
     data class ChatbotConfig(
         var temperature: Double = 0.7,
@@ -70,6 +72,10 @@ open class McpPreviewEditor(
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
     private val primaryBlue = JBColor(0x3B82F6, 0x589DF6) // Equivalent to Tailwind blue-500
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
+    
+    // Constants for UI sizing
+    private val MAX_TOOL_CARD_HEIGHT = 180
+    private val TOOL_CARD_WIDTH = 300
 
     init {
         createUI()
@@ -78,13 +84,27 @@ open class McpPreviewEditor(
 
     private fun loadTools() {
         val content = runReadAction { virtualFile.readText() }
-        CoroutineScope(Dispatchers.IO).launch {
-            allTools.putAll(mcpServerManager.collectServerInfos(content))
-            SwingUtilities.invokeLater {
-                addTools()
+        loadingJob?.cancel()
+        loadingJob = CoroutineScope(Dispatchers.IO).launch {
+            val serverConfigs = mcpServerManager.getServerConfigs(content)
+            serverConfigs?.forEach { (serverName, serverConfig) ->
+                try {
+                    val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
+                    if (tools.isNotEmpty()) {
+                        allTools[serverName] = tools
+                        // Update UI after each server's tools are loaded
+                        SwingUtilities.invokeLater {
+                            updateToolsContainer()
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Handle exception for this server but continue with others
+                    println("Error loading tools from server $serverName: ${e.message}")
+                }
             }
         }
     }
+
 
     private fun createUI() {
         val headerPanel = panel {
@@ -203,27 +223,24 @@ open class McpPreviewEditor(
         mainPanel.add(bottomPanel, BorderLayout.SOUTH)
     }
 
-    private fun addTools() {
+    private fun updateToolsContainer() {
         toolsContainer.removeAll()
-
+        
         if (allTools.isEmpty()) {
             val noToolsLabel = JBLabel("No tools available. Please check MCP server configuration.").apply {
                 font = JBUI.Fonts.label(14.0f)
                 foreground = textGray
             }
             toolsContainer.add(noToolsLabel)
-            toolsContainer.revalidate()
-            toolsContainer.repaint()
-            return
-        }
-
-        allTools.forEach { (serverName, tools) ->
-            tools.forEach { tool ->
-                val toolCard = createToolCard(serverName, tool)
-                toolsContainer.add(toolCard)
+        } else {
+            allTools.forEach { (serverName, tools) ->
+                tools.forEach { tool ->
+                    val toolCard = createToolCard(serverName, tool)
+                    toolsContainer.add(toolCard)
+                }
             }
         }
-
+        
         toolsContainer.revalidate()
         toolsContainer.repaint()
     }
@@ -235,6 +252,9 @@ open class McpPreviewEditor(
                 BorderFactory.createLineBorder(borderColor),
                 JBUI.Borders.empty(16)
             )
+            // Set preferred width and maximum height
+            preferredSize = Dimension(TOOL_CARD_WIDTH, MAX_TOOL_CARD_HEIGHT)
+            maximumSize = Dimension(Integer.MAX_VALUE, MAX_TOOL_CARD_HEIGHT)
         }
 
         // Card header with icon placeholder and title
@@ -269,14 +289,22 @@ open class McpPreviewEditor(
             add(titleWrapper, BorderLayout.CENTER)
         }
 
+        // Make description scrollable if it's too long
         val descriptionText = tool.description ?: "No description available"
-        val descLabel = JBLabel("$descriptionText (from $serverName)").apply {
+        val descLabel = JBLabel("<html><body style='width: ${TOOL_CARD_WIDTH - 50}px'>$descriptionText (from $serverName)</body></html>").apply {
             font = JBUI.Fonts.label(14.0f)
             foreground = textGray
         }
+        
+        val descScrollPane = JBScrollPane(descLabel).apply {
+            border = BorderFactory.createEmptyBorder()
+            verticalScrollBar.unitIncrement = 8
+            background = UIUtil.getPanelBackground()
+            preferredSize = Dimension(TOOL_CARD_WIDTH - 32, 70) // Control description height
+        }
 
         headerPanel.add(titleRow, BorderLayout.NORTH)
-        headerPanel.add(descLabel, BorderLayout.SOUTH)
+        headerPanel.add(descScrollPane, BorderLayout.CENTER)
 
         // Card footer with button
         val footerPanel = JPanel(BorderLayout()).apply {
@@ -494,5 +522,7 @@ open class McpPreviewEditor(
     override fun getPreferredFocusedComponent(): JComponent? = chatInput
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
     override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
-    override fun dispose() {}
+    override fun dispose() {
+        loadingJob?.cancel()
+    }
 }

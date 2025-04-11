@@ -47,6 +47,11 @@ class CustomMcpServerManager(val project: Project) {
         return toolsMap
     }
 
+    fun getServerConfigs(content: String): Map<String, McpServer>? {
+        val mcpConfig = McpServer.load(content)
+        return mcpConfig?.mcpServers
+    }
+
     suspend fun collectServerInfo(serverKey: String, serverConfig: McpServer): List<Tool> {
         val resolvedCommand = resolveCommand(serverConfig.command)
         logger<CustomMcpServerManager>().info("Found MCP command for $serverKey: $resolvedCommand")
