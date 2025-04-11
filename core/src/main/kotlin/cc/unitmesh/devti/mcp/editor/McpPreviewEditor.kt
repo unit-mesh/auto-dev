@@ -54,7 +54,8 @@ open class McpPreviewEditor(
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val allTools = mutableMapOf<String, List<Tool>>()
     private var loadingJob: Job? = null
-    private var isLoading = false
+    private val serverLoadingStatus = mutableMapOf<String, Boolean>()
+    private val serverPanels = mutableMapOf<String, JPanel>()
 
     private lateinit var toolsContainer: JPanel
     private lateinit var chatbotSelector: JComboBox<String>
@@ -65,6 +66,7 @@ open class McpPreviewEditor(
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
+    private val headerColor = JBColor(0xF3F4F6, 0x2B2D30)  // Light gray for section headers
 
     init {
         createUI()
@@ -74,52 +76,152 @@ open class McpPreviewEditor(
     private fun loadTools() {
         val content = runReadAction { virtualFile.readText() }
         loadingJob?.cancel()
-        isLoading = true
-        showLoadingState()
+        serverLoadingStatus.clear()
+        serverPanels.clear()
+        allTools.clear()
         
-        loadingJob = CoroutineScope(Dispatchers.IO).launch {
-            val serverConfigs = mcpServerManager.getServerConfigs(content)
-            serverConfigs?.forEach { (serverName, serverConfig) ->
-                try {
-                    val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
-                    if (tools.isNotEmpty()) {
-                        allTools[serverName] = tools
-                        SwingUtilities.invokeLater {
-                            updateToolsContainer()
-                        }
-                    }
-                } catch (e: Exception) {
-                    // Handle exception for this server but continue with others
-                    println("Error loading tools from server $serverName: ${e.message}")
-                }
-            }
-            
-            isLoading = false
-            SwingUtilities.invokeLater {
-                updateToolsContainer()
-            }
-        }
-    }
-
-    private fun showLoadingState() {
         SwingUtilities.invokeLater {
             toolsContainer.removeAll()
-            val loadingLabel = JBLabel("Loading tools... Please wait").apply {
-                font = JBUI.Fonts.label(14.0f)
-                foreground = textGray
-                horizontalAlignment = SwingConstants.CENTER
-                icon = AutoDevIcons.LOADING
-                iconTextGap = JBUI.scale(8)
-            }
-
-            toolsContainer.add(loadingLabel)
             toolsContainer.revalidate()
             toolsContainer.repaint()
         }
+        
+        loadingJob = CoroutineScope(Dispatchers.IO).launch {
+            val serverConfigs = mcpServerManager.getServerConfigs(content)
+            
+            if (serverConfigs.isNullOrEmpty()) {
+                SwingUtilities.invokeLater {
+                    showNoServersMessage()
+                }
+                return@launch
+            }
+            
+            SwingUtilities.invokeLater {
+                serverConfigs.keys.forEach { serverName ->
+                    serverLoadingStatus[serverName] = true
+                    createServerSection(serverName)
+                }
+            }
+            
+            serverConfigs.forEach { (serverName, serverConfig) ->
+                try {
+                    val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
+                    allTools[serverName] = tools
+                    
+                    SwingUtilities.invokeLater {
+                        updateServerSection(serverName, tools)
+                        serverLoadingStatus[serverName] = false
+                    }
+                } catch (e: Exception) {
+                    SwingUtilities.invokeLater {
+                        showServerError(serverName, e.message ?: "Unknown error")
+                        serverLoadingStatus[serverName] = false
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun createServerSection(serverName: String) {
+        val serverPanel = JPanel(BorderLayout()).apply {
+            background = UIUtil.getPanelBackground()
+            border = BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor),
+                JBUI.Borders.empty(4, 0)
+            )
+        }
+        
+        val headerPanel = JPanel(BorderLayout()).apply {
+            background = headerColor
+            border = JBUI.Borders.empty(4, 8)
+        }
+        
+        val serverLabel = JBLabel(serverName).apply {
+            font = JBUI.Fonts.label(14.0f).asBold()
+            foreground = UIUtil.getLabelForeground()
+        }
+        
+        headerPanel.add(serverLabel, BorderLayout.WEST)
+        serverPanel.add(headerPanel, BorderLayout.NORTH)
+        
+        val toolsPanel = JPanel(GridLayout(0, 3, 4, 4)).apply {
+            background = UIUtil.getPanelBackground()
+            border = JBUI.Borders.empty()
+        }
+        
+        val loadingLabel = JBLabel("Loading tools from $serverName...").apply {
+            font = JBUI.Fonts.label(12.0f)
+            foreground = textGray
+            horizontalAlignment = SwingConstants.LEFT
+            icon = AutoDevIcons.LOADING
+            iconTextGap = JBUI.scale(8)
+        }
+        
+        toolsPanel.add(loadingLabel)
+        serverPanel.add(toolsPanel, BorderLayout.CENTER)
+        
+        serverPanels[serverName] = toolsPanel
+        
+        toolsContainer.add(serverPanel)
+        toolsContainer.revalidate()
+        toolsContainer.repaint()
+    }
+    
+    private fun updateServerSection(serverName: String, tools: List<Tool>) {
+        val toolsPanel = serverPanels[serverName] ?: return
+        toolsPanel.removeAll()
+        
+        if (tools.isEmpty()) {
+            val noToolsLabel = JBLabel("No tools available for $serverName").apply {
+                foreground = textGray
+                horizontalAlignment = SwingConstants.LEFT
+            }
+            toolsPanel.add(noToolsLabel)
+        } else {
+            tools.forEach { tool ->
+                val panel = McpToolDetailPanel(project, serverName, tool)
+                toolsPanel.add(panel)
+            }
+        }
+        
+        toolsPanel.revalidate()
+        toolsPanel.repaint()
+    }
+    
+    private fun showServerError(serverName: String, errorMessage: String) {
+        val toolsPanel = serverPanels[serverName] ?: return
+        toolsPanel.removeAll()
+        
+        val errorLabel = JBLabel("Error loading tools: $errorMessage").apply {
+            foreground = JBColor.RED
+            horizontalAlignment = SwingConstants.LEFT
+        }
+        
+        toolsPanel.add(errorLabel)
+        toolsPanel.revalidate()
+        toolsPanel.repaint()
+    }
+    
+    private fun showNoServersMessage() {
+        toolsContainer.removeAll()
+        
+        val noServersPanel = JPanel(BorderLayout()).apply {
+            background = UIUtil.getPanelBackground()
+            border = JBUI.Borders.empty(16)
+        }
+        
+        val noServersLabel = JBLabel("No MCP servers configured. Please check your configuration.").apply {
+            foreground = textGray
+            horizontalAlignment = SwingConstants.CENTER
+        }
+        
+        noServersPanel.add(noServersLabel, BorderLayout.CENTER)
+        toolsContainer.add(noServersPanel)
+        toolsContainer.revalidate()
+        toolsContainer.repaint()
     }
 
     fun refreshMcpTool() {
-        allTools.clear()
         loadTools()
     }
 
@@ -142,7 +244,8 @@ open class McpPreviewEditor(
             border = JBUI.Borders.empty(4)
         }
 
-        toolsContainer = JPanel(GridLayout(0, 2, 16, 16)).apply {
+        toolsContainer = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
             background = UIUtil.getPanelBackground()
         }
 
@@ -242,33 +345,6 @@ open class McpPreviewEditor(
         mainPanel.add(headerPanel, BorderLayout.NORTH)
         mainPanel.add(toolsWrapper, BorderLayout.CENTER)
         mainPanel.add(bottomPanel, BorderLayout.SOUTH)
-    }
-
-    private fun updateToolsContainer() {
-        toolsContainer.removeAll()
-
-        if (isLoading) {
-            showLoadingState()
-            return
-        }
-
-        if (allTools.isEmpty()) {
-            val noToolsLabel = JBLabel("No tools available. Please check MCP server configuration.").apply {
-                foreground = textGray
-                horizontalAlignment = SwingConstants.CENTER
-            }
-            toolsContainer.add(noToolsLabel)
-        } else {
-            allTools.forEach { (serverName, tools) ->
-                tools.forEach { tool ->
-                    val panel = McpToolDetailPanel(project, serverName, tool)
-                    toolsContainer.add(panel)
-                }
-            }
-        }
-
-        toolsContainer.revalidate()
-        toolsContainer.repaint()
     }
 
     private fun showConfigDialog() {
