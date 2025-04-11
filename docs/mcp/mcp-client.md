@@ -33,22 +33,33 @@ Java examples:
 ```json
 {
   "mcpServers": {
-    "echo": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--with",
-        "mcp",
-        "mcp",
-        "run",
-        "/Users/phodal/source/ai/autodev-mcp-test/python-sqlite3/server.py"
-      ]
-    },
     "weather": {
       "command": "java",
       "args": [
         "-jar",
         "/Volumes/source/ai/autodev-mcp-test/kotlin-weather-stdio-server/build/libs/weather-stdio-server-0.1.0-all.jar"
+      ]
+    }
+  }
+}
+```
+
+Python + UV examples:
+
+```json
+{
+  "mcpServers": {
+    "echo": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "--directory",
+        "/Users/phodal/source/ai/autodev-mcp-test/python-sqlite3/",
+        "mcp",
+        "mcp",
+        "run",
+        "/Users/phodal/source/ai/autodev-mcp-test/python-sqlite3/server.py"
       ]
     }
   }
