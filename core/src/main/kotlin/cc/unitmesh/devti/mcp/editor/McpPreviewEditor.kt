@@ -59,7 +59,7 @@ open class McpPreviewEditor(
     private lateinit var toolsContainer: JPanel
     private lateinit var chatbotSelector: JComboBox<String>
     private lateinit var chatInput: JBTextField
-    private lateinit var sendButton: ActionButton
+    private lateinit var testButton: ActionButton
     private lateinit var configButton: JButton
     private lateinit var resultLabel: JLabel
     private lateinit var resultPanel: JPanel
@@ -178,22 +178,20 @@ open class McpPreviewEditor(
             background = UIUtil.getPanelBackground()
             border = CompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor),
-                JBUI.Borders.empty(16)
+                JBUI.Borders.empty(4)
             )
         }
 
         val chatbotPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
-            border = JBUI.Borders.emptyBottom(12)
+            border = JBUI.Borders.emptyBottom(0)
         }
 
-        val selectorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
+        val selectorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
             background = UIUtil.getPanelBackground()
         }
 
-        val chatbotLabel = JBLabel("Chatbot:").apply {
-            font = JBUI.Fonts.label(14.0f)
-        }
+        val chatbotLabel = JBLabel("Model")
 
         val llmConfigs = LlmConfig.load()
         val modelNames = if (llmConfigs.isEmpty()) {
@@ -202,12 +200,9 @@ open class McpPreviewEditor(
             llmConfigs.map { it.name }.toTypedArray()
         }
 
-        chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames).apply {
-            font = JBUI.Fonts.label(14.0f)
-        }
+        chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames)
 
         configButton = JButton("Configure").apply {
-            font = JBUI.Fonts.label(14.0f)
             isFocusPainted = false
             addActionListener { showConfigDialog() }
         }
@@ -229,20 +224,19 @@ open class McpPreviewEditor(
         }
 
         chatInput = JBTextField().apply {
-            font = JBUI.Fonts.label(14.0f)
             border = CompoundBorder(
                 BorderFactory.createLineBorder(borderColor),
-                JBUI.Borders.empty(8)
+                JBUI.Borders.empty(4)
             )
             addActionListener { sendMessage() }
         }
 
-        val sendPresentation = Presentation("Send").apply {
+        val sendPresentation = Presentation("Test").apply {
             icon = AutoDevIcons.SEND
-            description = "Send message"
+            description = "Test Called tools"
         }
 
-        sendButton = ActionButton(
+        testButton = ActionButton(
             DumbAwareAction.create { sendMessage() },
             sendPresentation, 
             "McpSendAction", 
@@ -251,7 +245,7 @@ open class McpPreviewEditor(
         val sendButtonPanel = JPanel(FlowLayout(FlowLayout.CENTER, 0, 0)).apply {
             background = UIUtil.getPanelBackground()
             isOpaque = false
-            add(sendButton)
+            add(testButton)
         }
 
         inputPanel.addToCenter(chatInput)
@@ -276,7 +270,6 @@ open class McpPreviewEditor(
 
         if (allTools.isEmpty()) {
             val noToolsLabel = JBLabel("No tools available. Please check MCP server configuration.").apply {
-                font = JBUI.Fonts.label(14.0f)
                 foreground = textGray
                 horizontalAlignment = SwingConstants.CENTER
             }

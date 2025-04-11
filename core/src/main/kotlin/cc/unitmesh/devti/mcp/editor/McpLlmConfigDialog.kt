@@ -42,8 +42,6 @@ class McpLlmConfigDialog(
 
     override fun createCenterPanel(): JComponent {
         val systemPrompt = """
-            # Configuration Instructions
-
             You can also add specific instructions for the chatbot here.
         """.trimIndent()
 
