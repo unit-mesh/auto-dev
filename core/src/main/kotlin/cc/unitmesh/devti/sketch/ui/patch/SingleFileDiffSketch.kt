@@ -318,7 +318,7 @@ class SingleFileDiffSketch(
             val isFailedPatch = isFailure(patch)
             isEnabled = isFailedPatch
             icon = if (isAutoRepair && isFailedPatch) {
-                AutoDevIcons.InProgress
+                AutoDevIcons.LOADING
             } else {
                 AutoDevIcons.REPAIR
             }
@@ -337,7 +337,7 @@ class SingleFileDiffSketch(
                 }
 
                 if (myProject.coderSetting.state.enableDiffViewer) {
-                    icon = AutoDevIcons.InProgress
+                    icon = AutoDevIcons.LOADING
                     DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, failurePatch) { fixedCode ->
                         icon = AutoDevIcons.REPAIR
                         newCode = fixedCode

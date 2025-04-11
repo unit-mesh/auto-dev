@@ -12,7 +12,6 @@ import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
 import cc.unitmesh.devti.indexer.DomainDictService
 import cc.unitmesh.devti.indexer.usage.PromptEnhancer
-import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
@@ -239,7 +238,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     private suspend fun enhancePrompt() {
         val originalIcon = enhanceButtonPresentation.icon
-        enhanceButtonPresentation.icon = AutoDevIcons.InProgress
+        enhanceButtonPresentation.icon = AutoDevIcons.LOADING
         enhanceButtonPresentation.isEnabled = false
 
         try {

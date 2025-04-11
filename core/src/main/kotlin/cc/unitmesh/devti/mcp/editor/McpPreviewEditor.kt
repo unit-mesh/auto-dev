@@ -2,7 +2,6 @@ package cc.unitmesh.devti.mcp.editor
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llm2.model.LlmConfig
-import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.sketch.ui.patch.readText
@@ -55,6 +54,7 @@ open class McpPreviewEditor(
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val allTools = mutableMapOf<String, List<Tool>>()
     private var loadingJob: Job? = null
+    private var isLoading = false
 
     private lateinit var toolsContainer: JPanel
     private lateinit var chatbotSelector: JComboBox<String>
@@ -75,6 +75,9 @@ open class McpPreviewEditor(
     private fun loadTools() {
         val content = runReadAction { virtualFile.readText() }
         loadingJob?.cancel()
+        isLoading = true
+        showLoadingState()
+        
         loadingJob = CoroutineScope(Dispatchers.IO).launch {
             val serverConfigs = mcpServerManager.getServerConfigs(content)
             serverConfigs?.forEach { (serverName, serverConfig) ->
@@ -91,11 +94,33 @@ open class McpPreviewEditor(
                     println("Error loading tools from server $serverName: ${e.message}")
                 }
             }
+            
+            isLoading = false
+            SwingUtilities.invokeLater {
+                updateToolsContainer()
+            }
         }
     }
 
+    private fun showLoadingState() {
+        SwingUtilities.invokeLater {
+            toolsContainer.removeAll()
+            val loadingLabel = JBLabel("Loading tools... Please wait").apply {
+                font = JBUI.Fonts.label(14.0f)
+                foreground = textGray
+                horizontalAlignment = SwingConstants.CENTER
+                icon = AutoDevIcons.LOADING
+                iconTextGap = JBUI.scale(8)
+            }
+
+            toolsContainer.add(loadingLabel)
+            toolsContainer.revalidate()
+            toolsContainer.repaint()
+        }
+    }
 
     fun refreshMcpTool() {
+        allTools.clear()
         loadTools()
     }
 
@@ -103,7 +128,7 @@ open class McpPreviewEditor(
         val headerPanel = panel {
             row {
                 val label = JBLabel("MCP Preview - Tools Panel").apply {
-                    font = JBUI.Fonts.label(18.0f).asBold()
+                    font = JBUI.Fonts.label(14.0f).asBold()
                     isOpaque = true
                 }
 
@@ -113,10 +138,9 @@ open class McpPreviewEditor(
             border = BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor)
         }
 
-        // Tools container panel
         val toolsWrapper = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
-            border = JBUI.Borders.empty(16)
+            border = JBUI.Borders.empty(4)
         }
 
         toolsContainer = JPanel(GridLayout(0, 2, 16, 16)).apply {
@@ -148,10 +172,8 @@ open class McpPreviewEditor(
         }
         
         resultPanel.add(resultScrollPane, BorderLayout.CENTER)
-
         toolsWrapper.add(toolsScrollPane, BorderLayout.CENTER)
         
-        // Redesigned bottom panel using BorderLayoutPanel for better layout management
         val bottomPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
             border = CompoundBorder(
@@ -160,7 +182,6 @@ open class McpPreviewEditor(
             )
         }
 
-        // Chat selector section with better layout
         val chatbotPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
             border = JBUI.Borders.emptyBottom(12)
@@ -227,10 +248,6 @@ open class McpPreviewEditor(
             "McpSendAction", 
             Dimension(JBUI.scale(30), JBUI.scale(30))
         )
-
-        // Add horizontal glue for better spacing
-        val horizontalGlue = Box.createHorizontalGlue()
-        
         val sendButtonPanel = JPanel(FlowLayout(FlowLayout.CENTER, 0, 0)).apply {
             background = UIUtil.getPanelBackground()
             isOpaque = false
@@ -240,22 +257,28 @@ open class McpPreviewEditor(
         inputPanel.addToCenter(chatInput)
         inputPanel.addToRight(sendButtonPanel)
 
-        bottomPanel.addToTop(chatbotPanel)
-        bottomPanel.addToCenter(inputPanel)
+        bottomPanel.addToTop(resultPanel)
+        bottomPanel.addToCenter(chatbotPanel)
+        bottomPanel.addToBottom(inputPanel)
 
         mainPanel.add(headerPanel, BorderLayout.NORTH)
         mainPanel.add(toolsWrapper, BorderLayout.CENTER)
-        mainPanel.add(resultPanel, BorderLayout.CENTER)
         mainPanel.add(bottomPanel, BorderLayout.SOUTH)
     }
 
     private fun updateToolsContainer() {
         toolsContainer.removeAll()
 
+        if (isLoading) {
+            showLoadingState()
+            return
+        }
+
         if (allTools.isEmpty()) {
             val noToolsLabel = JBLabel("No tools available. Please check MCP server configuration.").apply {
                 font = JBUI.Fonts.label(14.0f)
                 foreground = textGray
+                horizontalAlignment = SwingConstants.CENTER
             }
             toolsContainer.add(noToolsLabel)
         } else {
