@@ -61,7 +61,7 @@ open class McpPreviewEditor(
     private lateinit var chatInput: JBTextField
     private lateinit var testButton: ActionButton
     private lateinit var configButton: JButton
-    private lateinit var resultLabel: JLabel
+    private lateinit var resultTextArea: JTextArea
     private lateinit var resultPanel: JPanel
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
@@ -154,16 +154,18 @@ open class McpPreviewEditor(
 
         resultPanel = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
-            border = CompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 1, 0, borderColor),
-                JBUI.Borders.empty(16)
-            )
             isVisible = false
         }
         
-        resultLabel = JLabel()
+        resultTextArea = JTextArea().apply {
+            isEditable = false
+            wrapStyleWord = true
+            lineWrap = true
+            background = UIUtil.getPanelBackground()
+            border = JBUI.Borders.empty(4)
+        }
         
-        val resultScrollPane = JBScrollPane(resultLabel).apply {
+        val resultScrollPane = JBScrollPane(resultTextArea).apply {
             border = BorderFactory.createEmptyBorder()
             background = UIUtil.getPanelBackground()
         }
@@ -300,9 +302,9 @@ open class McpPreviewEditor(
         val llmProvider = CustomLLMProvider(project, llmConfig)
         val message = chatInput.text.trim()
         val result = StringBuilder()
-        val stream: Flow<String> = llmProvider.stream(message, systemPrompt = config.systemPrompt)
+        val stream: Flow<String> = llmProvider.stream(message, systemPrompt = config.createSystemPrompt())
         
-        resultLabel.text = "Loading response..."
+        resultTextArea.text = "Loading response..."
         resultPanel.isVisible = true
         mainPanel.revalidate()
         mainPanel.repaint()
@@ -311,7 +313,7 @@ open class McpPreviewEditor(
             stream.cancellable().collect { chunk ->
                 result.append(chunk)
                 SwingUtilities.invokeLater {
-                    resultLabel.text = result.toString()
+                    resultTextArea.text = result.toString()
                     mainPanel.revalidate()
                     mainPanel.repaint()
                 }
