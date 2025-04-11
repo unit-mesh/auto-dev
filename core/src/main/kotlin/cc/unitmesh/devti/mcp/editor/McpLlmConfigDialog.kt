@@ -30,6 +30,17 @@ class McpLlmConfigDialog(
 
     init {
         title = "Chatbot Configuration"
+        
+        // Add all tools to the enabled tools list by default
+        allTools.forEach { (serverName, tools) ->
+            tools.forEach { tool ->
+                val toolId = "${serverName}:${tool.name}"
+                if (!config.enabledTools.contains(toolId)) {
+                    config.enabledTools.add(toolId)
+                }
+            }
+        }
+        
         init()
     }
 
@@ -102,7 +113,9 @@ class McpLlmConfigDialog(
         }.withPreferredSize(500, 600)
     }
 
-    fun getPromptText(): String {
-        return promptField.text
+    fun getConfig(): McpLlmConfig {
+        config.systemPrompt = promptField.text
+        return config
     }
 }
+

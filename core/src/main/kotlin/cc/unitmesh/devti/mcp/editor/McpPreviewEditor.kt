@@ -60,7 +60,6 @@ open class McpPreviewEditor(
     private lateinit var configButton: JButton
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
-    private val primaryBlue = JBColor(0x3B82F6, 0x589DF6) // Equivalent to Tailwind blue-500
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
     
     init {
@@ -121,7 +120,6 @@ open class McpPreviewEditor(
 
         val toolsScrollPane = JBScrollPane(toolsContainer).apply {
             border = BorderFactory.createEmptyBorder()
-            verticalScrollBar.unitIncrement = 16
             background = UIUtil.getPanelBackground()
         }
 
@@ -200,7 +198,6 @@ open class McpPreviewEditor(
         bottomPanel.add(chatbotPanel, BorderLayout.NORTH)
         bottomPanel.add(inputPanel, BorderLayout.SOUTH)
 
-        // Add all panels to main panel
         mainPanel.add(headerPanel, BorderLayout.NORTH)
         mainPanel.add(toolsWrapper, BorderLayout.CENTER)
         mainPanel.add(bottomPanel, BorderLayout.SOUTH)
@@ -237,7 +234,10 @@ open class McpPreviewEditor(
         )
         
         if (dialog.showAndGet()) {
-            config.systemPrompt = dialog.getPromptText()
+            // Replace the entire config object with the one from the dialog
+            config.temperature = dialog.getConfig().temperature
+            config.enabledTools = dialog.getConfig().enabledTools
+            config.systemPrompt = dialog.getConfig().systemPrompt
         }
     }
 
