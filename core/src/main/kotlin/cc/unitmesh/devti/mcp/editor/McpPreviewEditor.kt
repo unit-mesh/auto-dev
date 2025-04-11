@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.mcp.editor
 
+import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -19,7 +20,12 @@ import com.intellij.ui.dsl.builder.TopGap
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonElement
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -44,14 +50,13 @@ open class McpPreviewEditor(
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     )
 
-    private var editorPanel: JPanel? = null
-
-    data class Tool(val id: String, val name: String, val description: String)
+    private val mcpServerManager = CustomMcpServerManager.instance(project)
+    private val allTools = mutableMapOf<String, List<Tool>>()
 
     data class ChatbotConfig(
         var temperature: Double = 0.7,
         var maxTokens: Int = 2000,
-        var enabledTools: MutableList<String> = mutableListOf("database", "file", "web")
+        var enabledTools: MutableList<String> = mutableListOf()
     )
 
     private lateinit var toolsContainer: JPanel
@@ -66,6 +71,16 @@ open class McpPreviewEditor(
 
     init {
         createUI()
+        loadTools()
+    }
+
+    private fun loadTools() {
+        CoroutineScope(Dispatchers.IO).launch {
+            allTools.putAll(mcpServerManager.collectServerInfos())
+            SwingUtilities.invokeLater {
+                addTools()
+            }
+        }
     }
 
     private fun createUI() {
@@ -75,18 +90,11 @@ open class McpPreviewEditor(
                     fontColor = UIUtil.FontColor.BRIGHTER
                     background = JBColor(0xF5F5F5, 0x2B2D30)
                     font = JBUI.Fonts.label(18.0f).asBold()
-                    border = JBUI.Borders.empty(16)
+                    border = JBUI.Borders.empty(8)
                     isOpaque = true
                 }
 
                 cell(label).align(Align.FILL).resizableColumn()
-
-                val subtitle = JBLabel("Available tools and suggested actions").apply {
-                    fontColor = UIUtil.FontColor.BRIGHTER
-                    font = JBUI.Fonts.label(12.0f)
-                    foreground = textGray
-                }
-                cell(subtitle).align(Align.FILL).resizableColumn()
             }
         }.apply {
             border = BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor)
@@ -109,11 +117,6 @@ open class McpPreviewEditor(
         }
 
         toolsWrapper.add(toolsScrollPane, BorderLayout.CENTER)
-
-        // Add sample tools
-        addTools()
-
-        // Bottom panel for chatbot and input
         val bottomPanel = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
             border = CompoundBorder(
@@ -198,20 +201,31 @@ open class McpPreviewEditor(
     }
 
     private fun addTools() {
-        val tools = listOf(
-            Tool("database", "Database Tools", "Query and manage databases"),
-            Tool("file", "File Operations", "Read, write, and manage files"),
-            Tool("web", "Web Tools", "Fetch data from web sources"),
-            Tool("ai", "AI Tools", "Image generation and text analysis")
-        )
+        toolsContainer.removeAll()
 
-        for (tool in tools) {
-            val toolCard = createToolCard(tool)
-            toolsContainer.add(toolCard)
+        if (allTools.isEmpty()) {
+            val noToolsLabel = JBLabel("No tools available. Please check MCP server configuration.").apply {
+                font = JBUI.Fonts.label(14.0f)
+                foreground = textGray
+            }
+            toolsContainer.add(noToolsLabel)
+            toolsContainer.revalidate()
+            toolsContainer.repaint()
+            return
         }
+
+        allTools.forEach { (serverName, tools) ->
+            tools.forEach { tool ->
+                val toolCard = createToolCard(serverName, tool)
+                toolsContainer.add(toolCard)
+            }
+        }
+
+        toolsContainer.revalidate()
+        toolsContainer.repaint()
     }
 
-    private fun createToolCard(tool: Tool): JPanel {
+    private fun createToolCard(serverName: String, tool: Tool): JPanel {
         val card = JPanel(BorderLayout(0, 8)).apply {
             background = UIUtil.getPanelBackground()
             border = CompoundBorder(
@@ -252,7 +266,8 @@ open class McpPreviewEditor(
             add(titleWrapper, BorderLayout.CENTER)
         }
 
-        val descLabel = JBLabel(tool.description).apply {
+        val descriptionText = tool.description ?: "No description available"
+        val descLabel = JBLabel("$descriptionText (from $serverName)").apply {
             font = JBUI.Fonts.label(14.0f)
             foreground = textGray
         }
@@ -268,7 +283,7 @@ open class McpPreviewEditor(
         val detailsButton = JButton("Details").apply {
             font = JBUI.Fonts.label(14.0f)
             isFocusPainted = false
-            addActionListener { showToolDetails(tool) }
+            addActionListener { showToolDetails(serverName, tool) }
         }
 
         footerPanel.add(detailsButton, BorderLayout.CENTER)
@@ -279,7 +294,7 @@ open class McpPreviewEditor(
         return card
     }
 
-    private fun showToolDetails(tool: Tool) {
+    private fun showToolDetails(serverName: String, tool: Tool) {
         val dialog = object : DialogWrapper(project) {
             init {
                 title = "Tool Details"
@@ -294,16 +309,34 @@ open class McpPreviewEditor(
                         }
                     }
                     row {
-                        label(tool.description).applyToComponent {
-                            font = JBUI.Fonts.label(14.0f)
-                        }
-                    }
-                    row {
-                        label("This tool doesn't require any parameters.").applyToComponent {
+                        label("From server: $serverName").applyToComponent {
                             font = JBUI.Fonts.label(14.0f)
                             foreground = textGray
                         }
-                    }.topGap(TopGap.SMALL)
+                    }
+                    row {
+                        label(tool.description ?: "No description available").applyToComponent {
+                            font = JBUI.Fonts.label(14.0f)
+                        }
+                    }
+
+                    group("Parameters") {
+                        tool.inputSchema.properties?.forEach { param: Map.Entry<String, JsonElement> ->
+                            row {
+                                label("${param.key}")
+                                    .applyToComponent {
+                                        font = JBUI.Fonts.label(14.0f)
+                                    }
+                            }
+                            row {
+                                label(param.value.toString())
+                                    .applyToComponent {
+                                        font = JBUI.Fonts.label(12.0f)
+                                        foreground = textGray
+                                    }
+                            }
+                        }
+                    }
                 }.withPreferredSize(400, 200)
             }
 
@@ -315,7 +348,7 @@ open class McpPreviewEditor(
                 val executeButton = JButton("Execute").apply {
                     font = JBUI.Fonts.label(14.0f)
                     addActionListener {
-                        println("Executing tool: ${tool.id}")
+                        executeTool(serverName, tool)
                         close(OK_EXIT_CODE)
                     }
                 }
@@ -326,6 +359,16 @@ open class McpPreviewEditor(
         }
 
         dialog.show()
+    }
+
+    private fun executeTool(serverName: String, tool: Tool) {
+        val result = mcpServerManager.execute(project, tool, "{}")
+        JOptionPane.showMessageDialog(
+            component,
+            result,
+            "Tool Execution Result",
+            JOptionPane.INFORMATION_MESSAGE
+        )
     }
 
     private fun showConfigDialog() {
@@ -388,23 +431,22 @@ open class McpPreviewEditor(
                         }
 
                         group("Enabled Tools") {
-                            val toolNames = arrayOf("Database Tools", "File Operations", "Web Tools", "AI Tools")
-                            val toolIds = arrayOf("database", "file", "web", "ai")
-
-                            for (i in toolNames.indices) {
-                                val toolId = toolIds[i]
-                                row {
-                                    label(toolNames[i])
-                                    checkBox("").apply {
-                                        component.isSelected = config.enabledTools.contains(toolId)
-                                        toolCheckboxes[toolId] = component
-                                        component.addActionListener {
-                                            if (component.isSelected) {
-                                                if (!config.enabledTools.contains(toolId)) {
-                                                    config.enabledTools.add(toolId)
+                            allTools.forEach { (serverName, tools) ->
+                                tools.forEach { tool ->
+                                    val toolId = "${serverName}:${tool.name}"
+                                    row {
+                                        label("${tool.name} (${serverName})")
+                                        checkBox("").apply {
+                                            component.isSelected = config.enabledTools.contains(toolId)
+                                            toolCheckboxes[toolId] = component
+                                            component.addActionListener {
+                                                if (component.isSelected) {
+                                                    if (!config.enabledTools.contains(toolId)) {
+                                                        config.enabledTools.add(toolId)
+                                                    }
+                                                } else {
+                                                    config.enabledTools.remove(toolId)
                                                 }
-                                            } else {
-                                                config.enabledTools.remove(toolId)
                                             }
                                         }
                                     }
