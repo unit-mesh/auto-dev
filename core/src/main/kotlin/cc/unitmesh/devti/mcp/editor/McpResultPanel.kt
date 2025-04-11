@@ -80,7 +80,7 @@ class McpResultPanel : JPanel(BorderLayout()) {
                     gridy = gridY++
                     weightx = 1.0
                     fill = GridBagConstraints.HORIZONTAL
-                    insets = JBUI.insets(0, 0, 10, 0)
+                    insets = JBUI.insetsBottom(10)
                 }
                 
                 toolsPanel.add(toolPanel, gbc)
