@@ -61,6 +61,8 @@
         <notificationGroup id="AutoDev.notify" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
 
+        <fileEditorProvider implementation="cc.unitmesh.devti.mcp.editor.McpEditorProvider"/>
+
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>
             <categoryKey>intention.category.llm</categoryKey>
