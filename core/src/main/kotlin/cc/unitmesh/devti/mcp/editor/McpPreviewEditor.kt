@@ -44,9 +44,6 @@ import java.beans.PropertyChangeListener
 import javax.swing.*
 import javax.swing.border.CompoundBorder
 
-/**
- * Display shire file render prompt and have a sample file as view
- */
 open class McpPreviewEditor(
     val project: Project,
     val virtualFile: VirtualFile,
@@ -64,6 +61,8 @@ open class McpPreviewEditor(
     private lateinit var chatInput: JBTextField
     private lateinit var sendButton: ActionButton
     private lateinit var configButton: JButton
+    private lateinit var resultLabel: JLabel
+    private lateinit var resultPanel: JPanel
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
@@ -128,6 +127,27 @@ open class McpPreviewEditor(
             border = BorderFactory.createEmptyBorder()
             background = UIUtil.getPanelBackground()
         }
+
+        resultPanel = JPanel(BorderLayout()).apply {
+            background = UIUtil.getPanelBackground()
+            border = CompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 1, 0, borderColor),
+                JBUI.Borders.empty(16)
+            )
+            isVisible = false
+        }
+        
+        resultLabel = JLabel().apply {
+            font = JBUI.Fonts.label(14.0f)
+            border = JBUI.Borders.empty(10)
+        }
+        
+        val resultScrollPane = JBScrollPane(resultLabel).apply {
+            border = BorderFactory.createEmptyBorder()
+            background = UIUtil.getPanelBackground()
+        }
+        
+        resultPanel.add(resultScrollPane, BorderLayout.CENTER)
 
         toolsWrapper.add(toolsScrollPane, BorderLayout.CENTER)
         
@@ -225,6 +245,7 @@ open class McpPreviewEditor(
 
         mainPanel.add(headerPanel, BorderLayout.NORTH)
         mainPanel.add(toolsWrapper, BorderLayout.CENTER)
+        mainPanel.add(resultPanel, BorderLayout.CENTER)
         mainPanel.add(bottomPanel, BorderLayout.SOUTH)
     }
 
@@ -267,12 +288,20 @@ open class McpPreviewEditor(
         val message = chatInput.text.trim()
         val result = StringBuilder()
         val stream: Flow<String> = llmProvider.stream(message, systemPrompt = config.systemPrompt)
-        /// create a result panel to save stream text
+        
+        resultLabel.text = "Loading response..."
+        resultPanel.isVisible = true
+        mainPanel.revalidate()
+        mainPanel.repaint()
 
         AutoDevCoroutineScope.scope(project).launch {
             stream.cancellable().collect { chunk ->
                 result.append(chunk)
-                /// update result panel in here ?
+                SwingUtilities.invokeLater {
+                    resultLabel.text = result.toString()
+                    mainPanel.revalidate()
+                    mainPanel.repaint()
+                }
             }
         }
     }
