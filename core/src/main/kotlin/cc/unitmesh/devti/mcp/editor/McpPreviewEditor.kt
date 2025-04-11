@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.mcp.editor
 
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -33,6 +34,7 @@ import java.awt.GridLayout
 import java.beans.PropertyChangeListener
 import javax.swing.*
 import javax.swing.border.CompoundBorder
+import cc.unitmesh.devti.sketch.ui.patch.readText
 
 /**
  * Display shire file render prompt and have a sample file as view
@@ -75,8 +77,9 @@ open class McpPreviewEditor(
     }
 
     private fun loadTools() {
+        val content = runReadAction { virtualFile.readText() }
         CoroutineScope(Dispatchers.IO).launch {
-            allTools.putAll(mcpServerManager.collectServerInfos())
+            allTools.putAll(mcpServerManager.collectServerInfos(content))
             SwingUtilities.invokeLater {
                 addTools()
             }
