@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.mcp.editor
 
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.llm2.model.LlmConfig
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditor
@@ -152,18 +153,18 @@ open class McpPreviewEditor(
             background = UIUtil.getPanelBackground()
         }
 
-        // Icon placeholder
-        val iconPlaceholder = JPanel().apply {
-            preferredSize = Dimension(20, 20)
-            background = UIUtil.getPanelBackground()
-            border = BorderFactory.createLineBorder(primaryBlue, 1)
-        }
-
         val chatbotLabel = JBLabel("Chatbot:").apply {
             font = JBUI.Fonts.label(14.0f)
         }
 
-        chatbotSelector = JComboBox(arrayOf("GPT-4", "Claude", "Llama 3")).apply {
+        val llmConfigs = LlmConfig.load()
+        val modelNames = if (llmConfigs.isEmpty()) {
+            arrayOf("No LLMs configured")
+        } else {
+            llmConfigs.map { it.name }.toTypedArray()
+        }
+
+        chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames).apply {
             font = JBUI.Fonts.label(14.0f)
         }
 
@@ -173,7 +174,6 @@ open class McpPreviewEditor(
             addActionListener { showConfigDialog() }
         }
 
-        selectorPanel.add(iconPlaceholder)
         selectorPanel.add(chatbotLabel)
         selectorPanel.add(chatbotSelector)
 
