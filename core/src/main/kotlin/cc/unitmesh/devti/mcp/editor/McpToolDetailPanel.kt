@@ -17,9 +17,6 @@ import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.border.CompoundBorder
 
-/**
- * Component representing a Tool Card with details view functionality
- */
 class McpToolDetailPanel(
     private val project: Project,
     private val serverName: String,
@@ -27,10 +24,8 @@ class McpToolDetailPanel(
 ) : JPanel(BorderLayout(0, 8)) {
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
-    private val primaryBlue = JBColor(0x3B82F6, 0x589DF6)
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
     
-    // Constants for UI sizing
     private val MAX_TOOL_CARD_HEIGHT = 180
     private val TOOL_CARD_WIDTH = 300
 
@@ -42,31 +37,17 @@ class McpToolDetailPanel(
         background = UIUtil.getPanelBackground()
         border = CompoundBorder(
             BorderFactory.createLineBorder(borderColor),
-            JBUI.Borders.empty(16)
+            JBUI.Borders.empty(12)
         )
-        // Set preferred width and maximum height
         preferredSize = Dimension(TOOL_CARD_WIDTH, MAX_TOOL_CARD_HEIGHT)
         maximumSize = Dimension(Integer.MAX_VALUE, MAX_TOOL_CARD_HEIGHT)
 
-        // Card header with icon placeholder and title
         val headerPanel = JPanel(BorderLayout(8, 4)).apply {
             background = UIUtil.getPanelBackground()
         }
 
-        // Icon placeholder
-        val iconPlaceholder = JPanel().apply {
-            preferredSize = Dimension(20, 20)
-            background = UIUtil.getPanelBackground()
-            border = BorderFactory.createLineBorder(primaryBlue, 1)
-        }
-
-        val iconWrapper = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
-            background = UIUtil.getPanelBackground()
-            add(iconPlaceholder)
-        }
-
-        val titleLabel = JBLabel(tool.name).apply {
-            font = JBUI.Fonts.label(16.0f).asBold()
+        val titleLabel = JBLabel(serverName + ":" + tool.name).apply {
+            font = JBUI.Fonts.label(14.0f).asBold()
         }
 
         val titleWrapper = JPanel(BorderLayout()).apply {
@@ -74,30 +55,15 @@ class McpToolDetailPanel(
             add(titleLabel, BorderLayout.CENTER)
         }
 
-        val titleRow = JPanel(BorderLayout(8, 0)).apply {
-            background = UIUtil.getPanelBackground()
-            add(iconWrapper, BorderLayout.WEST)
-            add(titleWrapper, BorderLayout.CENTER)
-        }
-
-        // Make description scrollable if it's too long
         val descriptionText = tool.description ?: "No description available"
-        val descLabel = JBLabel("<html><body style='width: ${TOOL_CARD_WIDTH - 50}px'>$descriptionText (from $serverName)</body></html>").apply {
-            font = JBUI.Fonts.label(14.0f)
+        val descLabel = JBLabel(descriptionText).apply {
+            font = JBUI.Fonts.label(12.0f)
             foreground = textGray
         }
-        
-        val descScrollPane = JBScrollPane(descLabel).apply {
-            border = BorderFactory.createEmptyBorder()
-            verticalScrollBar.unitIncrement = 8
-            background = UIUtil.getPanelBackground()
-            preferredSize = Dimension(TOOL_CARD_WIDTH - 32, 70) // Control description height
-        }
 
-        headerPanel.add(titleRow, BorderLayout.NORTH)
-        headerPanel.add(descScrollPane, BorderLayout.CENTER)
+        headerPanel.add(titleWrapper, BorderLayout.NORTH)
+        headerPanel.add(descLabel, BorderLayout.CENTER)
 
-        // Card footer with button
         val footerPanel = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
         }
@@ -141,9 +107,9 @@ class McpToolDetailPanel(
                     }
 
                     group("Parameters") {
-                        tool.inputSchema.properties?.forEach { param: Map.Entry<String, JsonElement> ->
+                        tool.inputSchema.properties.forEach { param: Map.Entry<String, JsonElement> ->
                             row {
-                                label("${param.key}")
+                                label(param.key)
                                     .applyToComponent {
                                         font = JBUI.Fonts.label(14.0f)
                                     }

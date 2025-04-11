@@ -142,10 +142,9 @@ open class McpPreviewEditor(
             )
         }
 
-        // Chatbot selector panel
         val chatbotPanel = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
-            border = JBUI.Borders.empty(0, 0, 12, 0)
+            border = JBUI.Borders.emptyBottom(12)
         }
 
         val selectorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
