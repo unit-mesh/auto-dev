@@ -30,8 +30,8 @@ class McpToolDetailPanel(
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
 
-    private val MAX_TOOL_CARD_HEIGHT = 180
-    private val TOOL_CARD_WIDTH = 300
+    private val MAX_TOOL_CARD_HEIGHT = 120
+    private val TOOL_CARD_WIDTH = 160
 
     init {
         buildCardUI()

@@ -1,41 +1,37 @@
 package cc.unitmesh.devti.mcp.editor
 
-import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.llm2.model.LlmConfig
+import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.sketch.ui.patch.readText
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.TopGap
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.beans.PropertyChangeListener
 import javax.swing.*
 import javax.swing.border.CompoundBorder
-import cc.unitmesh.devti.sketch.ui.patch.readText
-import kotlinx.coroutines.Job
 
 /**
  * Display shire file render prompt and have a sample file as view
@@ -60,7 +56,8 @@ open class McpPreviewEditor(
     data class ChatbotConfig(
         var temperature: Double = 0.7,
         var maxTokens: Int = 2000,
-        var enabledTools: MutableList<String> = mutableListOf()
+        var enabledTools: MutableList<String> = mutableListOf(),
+        var promptText: String = ""
     )
 
     private lateinit var toolsContainer: JPanel
@@ -185,7 +182,6 @@ open class McpPreviewEditor(
         chatbotPanel.add(selectorPanel, BorderLayout.WEST)
         chatbotPanel.add(configPanel, BorderLayout.EAST)
 
-        // Chat input panel
         val inputPanel = JPanel(BorderLayout(8, 0)).apply {
             background = UIUtil.getPanelBackground()
         }
@@ -240,97 +236,21 @@ open class McpPreviewEditor(
     }
 
     private fun showConfigDialog() {
-        val dialog = object : DialogWrapper(project) {
-            private lateinit var temperatureSlider: JSlider
-            private lateinit var tokensSlider: JSlider
-            private val toolCheckboxes = mutableMapOf<String, JBCheckBox>()
-
-            init {
-                title = "Chatbot Configuration"
-                init()
-            }
-
-            override fun createCenterPanel(): JComponent {
-                return panel {
-                    group("Configure ${chatbotSelector.selectedItem}") {
-                        row {
-                            label("Adjust settings for the selected chatbot").applyToComponent {
-                                font = JBUI.Fonts.label(14.0f)
-                                foreground = textGray
-                            }
-                        }
-
-                        row {
-                            label("Temperature: ${String.format("%.1f", config.temperature)}")
-                        }
-                        row {
-                            cell(JSlider(0, 10, (config.temperature * 10).toInt()).apply {
-                                temperatureSlider = this
-                                background = UIUtil.getPanelBackground()
-                                addChangeListener {
-                                    val value = temperatureSlider.value / 10.0
-                                    config.temperature = value
-                                }
-                            })
-                        }
-                        row {
-                            comment("Lower values produce more focused outputs. Higher values produce more creative outputs.")
-                        }
-
-                        row {
-                            label("Max Tokens: ${config.maxTokens}")
-                        }.topGap(TopGap.MEDIUM)
-                        row {
-                            cell(JSlider(100, 4000, config.maxTokens).apply {
-                                tokensSlider = this
-                                background = UIUtil.getPanelBackground()
-                                majorTickSpacing = 1000
-                                paintTicks = true
-                                addChangeListener {
-                                    val value = tokensSlider.value
-                                    config.maxTokens = value
-                                }
-                            })
-                        }
-                        row {
-                            comment("Maximum number of tokens to generate in the response.")
-                        }
-
-                        group("Enabled Tools") {
-                            allTools.forEach { (serverName, tools) ->
-                                tools.forEach { tool ->
-                                    val toolId = "${serverName}:${tool.name}"
-                                    row {
-                                        label("${tool.name} (${serverName})")
-                                        checkBox("").apply {
-                                            component.isSelected = config.enabledTools.contains(toolId)
-                                            toolCheckboxes[toolId] = component
-                                            component.addActionListener {
-                                                if (component.isSelected) {
-                                                    if (!config.enabledTools.contains(toolId)) {
-                                                        config.enabledTools.add(toolId)
-                                                    }
-                                                } else {
-                                                    config.enabledTools.remove(toolId)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }.topGap(TopGap.MEDIUM)
-                    }
-                }.withPreferredSize(400, 500)
-            }
+        val dialog = McpLlmConfigDialog(
+            project,
+            config,
+            chatbotSelector.selectedItem.toString(),
+            allTools
+        )
+        
+        if (dialog.showAndGet()) {
+            config.promptText = dialog.getPromptText()
         }
-
-        dialog.show()
     }
 
     private fun sendMessage() {
         val message = chatInput.text.trim()
         if (message.isNotEmpty()) {
-            println("Message sent: $message")
             chatInput.text = ""
         }
     }
