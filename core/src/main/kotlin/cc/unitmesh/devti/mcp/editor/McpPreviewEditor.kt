@@ -43,11 +43,6 @@ open class McpPreviewEditor(
     val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
     private var mainEditor = MutableStateFlow<Editor?>(null)
     private val mainPanel = JPanel(BorderLayout())
-    private val visualPanel: JBScrollPane = JBScrollPane(
-        mainPanel,
-        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-    )
 
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val allTools = mutableMapOf<String, List<Tool>>()
@@ -226,15 +221,9 @@ open class McpPreviewEditor(
     }
 
     private fun showConfigDialog() {
-        val dialog = McpLlmConfigDialog(
-            project,
-            config,
-            chatbotSelector.selectedItem.toString(),
-            allTools
-        )
+        val dialog = McpLlmConfigDialog(project, config, allTools)
         
         if (dialog.showAndGet()) {
-            // Replace the entire config object with the one from the dialog
             config.temperature = dialog.getConfig().temperature
             config.enabledTools = dialog.getConfig().enabledTools
             config.systemPrompt = dialog.getConfig().systemPrompt
@@ -257,7 +246,7 @@ open class McpPreviewEditor(
         // Implementation here
     }
 
-    override fun getComponent(): JComponent = visualPanel
+    override fun getComponent(): JComponent = mainPanel
     override fun getName(): String = "MCP Preview"
     override fun setState(state: FileEditorState) {}
     override fun isModified(): Boolean = false
