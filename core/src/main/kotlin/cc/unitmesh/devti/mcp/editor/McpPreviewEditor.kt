@@ -3,6 +3,10 @@ package cc.unitmesh.devti.mcp.editor
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
+import cc.unitmesh.devti.mcp.ui.McpToolListPanel
+import cc.unitmesh.devti.mcp.ui.McpResultPanel
+import cc.unitmesh.devti.mcp.ui.McpLlmConfig
+import cc.unitmesh.devti.mcp.ui.McpLlmConfigDialog
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.actionSystem.Presentation

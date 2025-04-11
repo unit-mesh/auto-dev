@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp.editor
+package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.client.MockDataGenerator
