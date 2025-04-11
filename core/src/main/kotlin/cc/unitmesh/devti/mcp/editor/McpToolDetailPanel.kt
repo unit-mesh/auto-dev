@@ -29,11 +29,9 @@ class McpToolDetailPanel(
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
-    
+
     private val MAX_TOOL_CARD_HEIGHT = 180
     private val TOOL_CARD_WIDTH = 300
-    
-    private var jsonLanguageField: JsonLanguageField? = null
 
     init {
         buildCardUI()
@@ -89,103 +87,138 @@ class McpToolDetailPanel(
     private val json = Json { prettyPrint = true }
 
     private fun showToolDetails() {
-        val dialog = object : DialogWrapper(project) {
-            init {
-                title = "Tool Details"
-                init()
-            }
+        val dialog = McpToolDetailDialog(project, serverName, tool, mcpServerManager)
+        dialog.show()
+    }
+}
 
-            override fun createCenterPanel(): JComponent {
-                val mockData = MockDataGenerator.generateMockData(tool.inputSchema)
-                val prettyJson = json.encodeToString(mockData)
-                
-                jsonLanguageField = JsonLanguageField(
-                    project, 
-                    prettyJson,
-                    "Enter parameters as JSON",
-                    "parameters.json"
-                )
-                
-                return panel {
-                    row {
-                        label(tool.name).applyToComponent {
-                            font = JBUI.Fonts.label(18.0f).asBold()
-                        }
-                    }
-                    row {
-                        label("From server: $serverName").applyToComponent {
-                            font = JBUI.Fonts.label(14.0f)
-                            foreground = textGray
-                        }
-                    }
-                    row {
-                        label(tool.description ?: "No description available").applyToComponent {
-                            font = JBUI.Fonts.label(14.0f)
-                        }
-                    }
+class McpToolDetailDialog(
+    private val project: Project,
+    private val serverName: String,
+    private val tool: Tool,
+    private val mcpServerManager: CustomMcpServerManager
+) : DialogWrapper(project) {
+    private var jsonLanguageField: JsonLanguageField? = null
+    private val json = Json { prettyPrint = true }
+    private var resultPanel: JPanel? = null
+    private var mainPanel: JPanel? = null
 
-                    group("Parameters") {
-                        tool.inputSchema.properties.forEach { param: Map.Entry<String, JsonElement> ->
-                            row {
-                                label(param.key)
-                                    .applyToComponent {
-                                        font = JBUI.Fonts.label(14.0f)
-                                    }
-                            }
-                            row {
-                                label(param.value.toString())
-                                    .applyToComponent {
-                                        font = JBUI.Fonts.label(12.0f)
-                                        foreground = textGray
-                                    }
-                            }
-                        }
-                    }
-                    row {
-                        label("Edit Parameters").applyToComponent {
-                            font = JBUI.Fonts.label(14.0f).asBold()
-                        }
-                    }
-                    row {
-                        cell(jsonLanguageField!!)
-                            .resizableColumn()
-                            .applyToComponent {
-                                preferredSize = Dimension(550, 200)
-                            }
-                    }
-                }.withPreferredSize(600, 600)
-            }
+    init {
+        title = "Tool Details"
+        init()
+    }
 
-            override fun createSouthPanel(): JComponent {
-                val panel = JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
-                    background = UIUtil.getPanelBackground()
+    override fun createCenterPanel(): JComponent {
+        val mockData = MockDataGenerator.generateMockData(tool.inputSchema)
+        val prettyJson = json.encodeToString(mockData)
+
+        jsonLanguageField = JsonLanguageField(
+            project,
+            prettyJson,
+            "Enter parameters as JSON",
+            "parameters.json"
+        )
+
+        resultPanel = JPanel(BorderLayout()).apply {
+            isVisible = false
+        }
+
+        mainPanel = panel {
+            row {
+                label(tool.name).applyToComponent {
+                    font = JBUI.Fonts.label(18.0f).asBold()
                 }
-
-                val executeButton = JButton("Execute").apply {
+            }
+            row {
+                label("From server: $serverName").applyToComponent {
                     font = JBUI.Fonts.label(14.0f)
-                    addActionListener {
-                        onExecute(serverName, tool)
-                        close(OK_EXIT_CODE)
+                    foreground = JBColor(0x6B7280, 0x9DA0A8)
+                }
+            }
+            row {
+                label(tool.description ?: "No description available").applyToComponent {
+                    font = JBUI.Fonts.label(14.0f)
+                }
+            }
+
+            group("Parameters") {
+                tool.inputSchema.properties.forEach { param: Map.Entry<String, JsonElement> ->
+                    row {
+                        label(param.key)
+                            .applyToComponent {
+                                font = JBUI.Fonts.label(14.0f)
+                            }
+                    }
+                    row {
+                        label(param.value.toString())
+                            .applyToComponent {
+                                font = JBUI.Fonts.label(12.0f)
+                                foreground = JBColor(0x6B7280, 0x9DA0A8)
+                            }
                     }
                 }
+            }
+            group("Verify") {
+                row {
+                    cell(jsonLanguageField!!)
+                        .resizableColumn()
+                        .applyToComponent {
+                            preferredSize = Dimension(550, 200)
+                        }
+                }
+            }
 
-                panel.add(executeButton)
-                return panel
+            group("Result") {
+                row {
+                    cell(resultPanel!!)
+                        .resizableColumn()
+                        .applyToComponent {
+                            preferredSize = Dimension(550, 200)
+                        }
+                }
+            }
+        }.withPreferredSize(600, 600)
+
+        return mainPanel!!
+    }
+
+    override fun createSouthPanel(): JComponent {
+        val panel = JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
+            background = UIUtil.getPanelBackground()
+        }
+
+        val executeButton = JButton("Execute").apply {
+            font = JBUI.Fonts.label(14.0f)
+            addActionListener {
+                onExecute()
             }
         }
 
-        dialog.show()
+        panel.add(executeButton)
+        return panel
     }
 
-    fun onExecute(serverName: String, tool: Tool) {
-        // Use the content from the jsonLanguageField
+    private fun onExecute() {
         val jsonContent = jsonLanguageField?.text ?: "{}"
         val result = mcpServerManager.execute(project, tool, jsonContent)
-        JOptionPane.showMessageDialog(
-            this,
-            result,
-            "Tool Execution Result",
-            JOptionPane.INFORMATION_MESSAGE
-        )
+
+        resultPanel?.let { panel ->
+            panel.removeAll()
+
+            val textArea = JTextArea(result).apply {
+                lineWrap = true
+                wrapStyleWord = true
+                isEditable = false
+                font = JBUI.Fonts.create("Monospaced", 12)
+            }
+
+            panel.add(JBScrollPane(textArea), BorderLayout.CENTER)
+            panel.isVisible = true
+            panel.revalidate()
+            panel.repaint()
+        }
+
+        mainPanel?.revalidate()
+        mainPanel?.repaint()
     }
 }
