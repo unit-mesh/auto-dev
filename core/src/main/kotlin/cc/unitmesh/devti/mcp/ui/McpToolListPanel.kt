@@ -23,6 +23,7 @@ import javax.swing.SwingUtilities
 class McpToolListPanel(private val project: Project) : JPanel() {
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val allTools = mutableMapOf<String, List<Tool>>()
+    private var currentFilteredTools = mutableMapOf<String, List<Tool>>()
     private var loadingJob: Job? = null
     private val serverLoadingStatus = mutableMapOf<String, Boolean>()
     private val serverPanels = mutableMapOf<String, JPanel>()
@@ -41,6 +42,7 @@ class McpToolListPanel(private val project: Project) : JPanel() {
         serverLoadingStatus.clear()
         serverPanels.clear()
         allTools.clear()
+        currentFilteredTools.clear()
 
         SwingUtilities.invokeLater {
             removeAll()
@@ -69,6 +71,7 @@ class McpToolListPanel(private val project: Project) : JPanel() {
                 try {
                     val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
                     allTools[serverName] = tools
+                    currentFilteredTools[serverName] = tools
                     onToolsLoaded(allTools)
 
                     SwingUtilities.invokeLater {
@@ -82,6 +85,30 @@ class McpToolListPanel(private val project: Project) : JPanel() {
                     }
                 }
             }
+        }
+    }
+
+    fun filterTools(searchText: String) {
+        if (searchText.isEmpty()) {
+            // If search text is empty, restore all tools
+            currentFilteredTools = allTools.toMutableMap()
+        } else {
+            // Filter tools based on search text
+            currentFilteredTools = allTools.mapValues { (_, tools) ->
+                tools.filter { tool ->
+                    tool.name.contains(searchText, ignoreCase = true) ||
+                    tool.description?.contains(searchText, ignoreCase = true) == true
+                }
+            }.toMutableMap()
+        }
+
+        // Update UI with filtered tools
+        SwingUtilities.invokeLater {
+            currentFilteredTools.forEach { (serverName, tools) ->
+                updateServerSection(serverName, tools)
+            }
+            revalidate()
+            repaint()
         }
     }
 

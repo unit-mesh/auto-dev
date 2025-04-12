@@ -22,6 +22,7 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
+import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
@@ -41,6 +42,8 @@ import java.awt.FlowLayout
 import java.beans.PropertyChangeListener
 import javax.swing.*
 import javax.swing.border.CompoundBorder
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 open class McpPreviewEditor(
     val project: Project,
@@ -59,6 +62,7 @@ open class McpPreviewEditor(
     private lateinit var resultPanel: McpResultPanel
     private val config = McpLlmConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
+    private lateinit var searchField: SearchTextField
 
     init {
         createUI()
@@ -79,12 +83,24 @@ open class McpPreviewEditor(
     private fun createUI() {
         val headerPanel = panel {
             row {
-                val label = JBLabel("MCP Preview - Tools Panel").apply {
+                val label = JBLabel("MCP Tools").apply {
                     font = JBUI.Fonts.label(14.0f).asBold()
+                    border = JBUI.Borders.emptyLeft(8)
                     isOpaque = true
                 }
 
                 cell(label).align(Align.FILL).resizableColumn()
+                
+                searchField = SearchTextField().apply {
+                    textEditor.emptyText.text = "Search tools..."
+                    textEditor.document.addDocumentListener(object : DocumentListener {
+                        override fun insertUpdate(e: DocumentEvent) = filterTools()
+                        override fun removeUpdate(e: DocumentEvent) = filterTools()
+                        override fun changedUpdate(e: DocumentEvent) = filterTools()
+                    })
+                }
+                
+                cell(searchField).align(Align.FILL).resizableColumn()
             }
         }.apply {
             border = BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor)
@@ -195,6 +211,11 @@ open class McpPreviewEditor(
         mainPanel.add(headerPanel, BorderLayout.NORTH)
         mainPanel.add(toolsWrapper, BorderLayout.CENTER)
         mainPanel.add(bottomPanel, BorderLayout.SOUTH)
+    }
+
+    private fun filterTools() {
+        val searchText = searchField.text.trim()
+        toolListPanel.filterTools(searchText)
     }
 
     private fun showConfigDialog() {
