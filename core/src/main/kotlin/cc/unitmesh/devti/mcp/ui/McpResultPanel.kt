@@ -233,7 +233,7 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
             val matchingTool = findMatchingTool(toolCall.name)
 
             val result = if (matchingTool != null) {
-                mcpServerManager!!.execute(project, matchingTool, params)
+                mcpServerManager.execute(project, matchingTool, params)
             } else {
                 "Error: Could not find matching tool '${toolCall.name}'"
             }
@@ -243,7 +243,6 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
                 lineWrap = true
                 wrapStyleWord = true
                 isEditable = false
-                font = JBUI.Fonts.create("Monospaced", 12)
                 border = JBUI.Borders.empty(4)
             }
 

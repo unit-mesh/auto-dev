@@ -48,8 +48,6 @@ You can use tools by writing a "<devins:function_calls>" inside markdown code-bl
 ```
 
 String and scalar parameters should be specified as is, while lists and objects should use JSON format.
-
-Now, reply user's question with tools in xml.
 """.trimIndent()
         return systemPrompt
     }
