@@ -4,9 +4,9 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.mcp.ui.McpToolListPanel
-import cc.unitmesh.devti.mcp.ui.McpResultPanel
-import cc.unitmesh.devti.mcp.ui.model.McpLlmConfig
-import cc.unitmesh.devti.mcp.ui.McpLlmConfigDialog
+import cc.unitmesh.devti.mcp.ui.McpChatResultPanel
+import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
+import cc.unitmesh.devti.mcp.ui.McpChatConfigDialog
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.actionSystem.Presentation
@@ -59,8 +59,8 @@ open class McpPreviewEditor(
     private lateinit var chatInput: JBTextField
     private lateinit var testButton: ActionButton
     private lateinit var configButton: JButton
-    private lateinit var resultPanel: McpResultPanel
-    private val config = McpLlmConfig()
+    private lateinit var resultPanel: McpChatResultPanel
+    private val config = McpChatConfig()
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private lateinit var searchField: SearchTextField
 
@@ -118,7 +118,7 @@ open class McpPreviewEditor(
             background = UIUtil.getPanelBackground()
         }
 
-        resultPanel = McpResultPanel(project, config).apply {
+        resultPanel = McpChatResultPanel(project, config).apply {
             background = UIUtil.getPanelBackground()
             isVisible = false
         }
@@ -219,7 +219,7 @@ open class McpPreviewEditor(
     }
 
     private fun showConfigDialog() {
-        val dialog = McpLlmConfigDialog(project, config, allTools)
+        val dialog = McpChatConfigDialog(project, config, allTools)
 
         if (dialog.showAndGet()) {
             config.temperature = dialog.getConfig().temperature

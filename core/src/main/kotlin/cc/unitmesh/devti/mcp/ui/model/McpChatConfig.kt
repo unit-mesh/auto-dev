@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 /**
  * Based on https://github.com/jujumilk3/leaked-system-prompts/blob/main/anthropic-claude-api-tool-use_20250119.md
  */
-data class McpLlmConfig(
+data class McpChatConfig(
     var temperature: Double = 0.0,
     var enabledTools: MutableList<Tool> = mutableListOf(),
     var systemPrompt: String = ""

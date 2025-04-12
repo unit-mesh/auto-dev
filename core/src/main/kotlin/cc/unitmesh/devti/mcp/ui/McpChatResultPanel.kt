@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
-import cc.unitmesh.devti.mcp.ui.model.McpLlmConfig
+import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
@@ -20,7 +20,7 @@ import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.MatteBorder
 
-class McpResultPanel(private val project: Project, val config: McpLlmConfig) : JPanel(BorderLayout()) {
+class McpChatResultPanel(private val project: Project, val config: McpChatConfig) : JPanel(BorderLayout()) {
     private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val json = Json { prettyPrint = true }
 

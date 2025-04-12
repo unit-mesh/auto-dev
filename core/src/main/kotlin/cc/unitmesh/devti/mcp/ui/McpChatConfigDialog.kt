@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.AutoDevSnippetFile
-import cc.unitmesh.devti.mcp.ui.model.McpLlmConfig
+import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
 import cc.unitmesh.devti.sketch.ui.code.EditorUtil
 import cc.unitmesh.devti.sketch.ui.code.findDocument
 import cc.unitmesh.devti.util.parser.CodeFence
@@ -22,9 +22,9 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import javax.swing.JComponent
 import javax.swing.JSlider
 
-class McpLlmConfigDialog(
+class McpChatConfigDialog(
     private val project: Project,
-    private val config: McpLlmConfig,
+    private val config: McpChatConfig,
     private val allTools: Map<String, List<Tool>>
 ) : DialogWrapper(project) {
     private lateinit var temperatureSlider: JSlider
@@ -103,7 +103,7 @@ class McpLlmConfigDialog(
         }.withPreferredSize(500, 600)
     }
 
-    fun getConfig(): McpLlmConfig {
+    fun getConfig(): McpChatConfig {
         config.systemPrompt = config.createSystemPrompt()
         return config
     }
