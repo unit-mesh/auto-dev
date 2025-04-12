@@ -206,30 +206,23 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
     }
 
     private fun executeToolCall(toolCall: ToolCall, parentPanel: JPanel) {
-        val panel = parentPanel.components
-            .filterIsInstance<JPanel>()
-            .find { it.border != null && it.border.toString().contains("empty") }
-
-        if (panel == null) {
-            AutoDevNotifications.error(project, "Cannot find result panel")
-            return
+        val resultPanel = JPanel(BorderLayout()).apply {
+            isOpaque = false
+            border = JBUI.Borders.emptyTop(8)
+            isVisible = false
         }
 
-        panel.removeAll()
-        panel.layout = BorderLayout()
+        parentPanel.add(resultPanel, BorderLayout.SOUTH)
 
-        // Create loading indicator
         val loadingLabel = JBLabel("Executing tool ${toolCall.name}...").apply {
             horizontalAlignment = SwingConstants.CENTER
         }
-        panel.add(loadingLabel, BorderLayout.CENTER)
-        panel.isVisible = true
-        panel.revalidate()
-        panel.repaint()
+        resultPanel.add(loadingLabel, BorderLayout.CENTER)
+        resultPanel.isVisible = true
+        resultPanel.revalidate()
+        resultPanel.repaint()
 
-        // Run execution in background
         SwingUtilities.invokeLater {
-            // Convert parameters to JSON
             val params = try {
                 val jsonParams = json.encodeToString(toolCall.parameters)
                 jsonParams
@@ -237,7 +230,6 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
                 "{}"
             }
 
-            // Find matching tool
             val matchingTool = findMatchingTool(toolCall.name)
 
             val result = if (matchingTool != null) {
@@ -246,8 +238,7 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
                 "Error: Could not find matching tool '${toolCall.name}'"
             }
 
-            // Display result
-            panel.removeAll()
+            resultPanel.removeAll()
             val textArea = JTextArea(result).apply {
                 lineWrap = true
                 wrapStyleWord = true
@@ -256,10 +247,10 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
                 border = JBUI.Borders.empty(4)
             }
 
-            panel.add(JBScrollPane(textArea), BorderLayout.CENTER)
-            panel.isVisible = true
-            panel.revalidate()
-            panel.repaint()
+            resultPanel.add(JBScrollPane(textArea), BorderLayout.CENTER)
+            resultPanel.isVisible = true
+            resultPanel.revalidate()
+            resultPanel.repaint()
         }
     }
 
