@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.mcp.ui
 
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.ui.model.McpLlmConfig
 import cc.unitmesh.devti.util.parser.CodeFence
@@ -14,10 +13,7 @@ import com.intellij.util.ui.UIUtil
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.awt.BorderLayout
-import java.awt.FlowLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
+import java.awt.*
 import java.io.StringReader
 import javax.swing.*
 import javax.swing.border.CompoundBorder
@@ -41,21 +37,34 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
         border = JBUI.Borders.empty(8)
     }
 
-    private val tabbedPane = JBTabbedPane().apply {
-        addTab("Response", JBScrollPane(rawResultTextArea).apply {
-            border = BorderFactory.createEmptyBorder()
-        })
+    private val responseScrollPane = JBScrollPane(rawResultTextArea).apply {
+        border = BorderFactory.createEmptyBorder()
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+    }
+    
+    private val toolsScrollPane = JBScrollPane(toolsPanel).apply {
+        border = BorderFactory.createEmptyBorder()
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+    }
 
-        addTab("Tools", JBScrollPane(toolsPanel).apply {
-            border = BorderFactory.createEmptyBorder()
-        })
+    private val tabbedPane = JBTabbedPane().apply {
+        addTab("Response", responseScrollPane)
+        addTab("Tools", toolsScrollPane)
     }
 
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
 
+    private var currentHeight = 300
+
     init {
         background = UIUtil.getPanelBackground()
-        add(tabbedPane, BorderLayout.CENTER)
+        
+        val contentPanel = JPanel(BorderLayout())
+        contentPanel.add(tabbedPane, BorderLayout.CENTER)
+        
+        add(contentPanel, BorderLayout.CENTER)
+        
+        tabbedPane.preferredSize = Dimension(width, currentHeight)
     }
 
     fun setText(text: String) {
@@ -246,7 +255,14 @@ class McpResultPanel(private val project: Project, val config: McpLlmConfig) : J
                 border = JBUI.Borders.empty(4)
             }
 
-            resultPanel.add(JBScrollPane(textArea), BorderLayout.CENTER)
+            // Use scroll pane for tool execution results to handle overflow
+            val resultScrollPane = JBScrollPane(textArea).apply {
+                border = BorderFactory.createEmptyBorder()
+                verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+                preferredSize = Dimension(0, 150) // Reasonable default height for results
+            }
+
+            resultPanel.add(resultScrollPane, BorderLayout.CENTER)
             resultPanel.isVisible = true
             resultPanel.revalidate()
             resultPanel.repaint()

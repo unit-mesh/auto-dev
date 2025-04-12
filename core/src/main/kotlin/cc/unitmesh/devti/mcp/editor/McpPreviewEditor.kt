@@ -229,7 +229,10 @@ open class McpPreviewEditor(
     }
 
     fun sendMessage() {
-        config.enabledTools = allTools.map { it.value }.flatten().toMutableList()
+        if (config.enabledTools.isEmpty()) {
+            config.enabledTools = allTools.map { it.value }.flatten().toMutableList()
+        }
+
         val llmConfig = LlmConfig.load().firstOrNull { it.name == chatbotSelector.selectedItem }
             ?: LlmConfig.default()
         val llmProvider = CustomLLMProvider(project, llmConfig)
