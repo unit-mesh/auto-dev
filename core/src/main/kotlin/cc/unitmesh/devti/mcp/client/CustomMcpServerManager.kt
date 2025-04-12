@@ -23,6 +23,7 @@ import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.openapi.project.guessProjectDir
 
 @Service(Service.Level.PROJECT)
 class CustomMcpServerManager(val project: Project) {
@@ -59,6 +60,8 @@ class CustomMcpServerManager(val project: Project) {
 
         val cmd = GeneralCommandLine(resolvedCommand)
         cmd.addParameters(*serverConfig.args.toTypedArray())
+
+        cmd.workDirectory = File(project.guessProjectDir()!!.path)
 
         serverConfig.env?.forEach { (key, value) ->
             cmd.environment[key] = value
