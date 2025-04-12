@@ -15,13 +15,9 @@ import com.intellij.openapi.vfs.VirtualFile
 
 class McpFileEditorWithPreview(
     private val ourEditor: TextEditor,
-    @JvmField var preview: McpPreviewEditor,
+    private var preview: McpPreviewEditor,
     private val project: Project,
-) : TextEditorWithPreview(
-    ourEditor, preview,
-    "Shire Split Editor",
-    Layout.SHOW_EDITOR_AND_PREVIEW,
-) {
+) : TextEditorWithPreview(ourEditor, preview, "MCP Split Editor", Layout.SHOW_EDITOR_AND_PREVIEW) {
     val virtualFile: VirtualFile = ourEditor.file
 
     init {
@@ -59,7 +55,7 @@ class McpFileEditorWithPreview(
 
     private fun createActionGroup(project: Project): ActionGroup {
         return DefaultActionGroup(
-            object : AnAction("Preview", "Preview Tip", AllIcons.Actions.Preview) {
+            object : AnAction("Preview", "Preview", AllIcons.Actions.Preview) {
                 override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = !DumbService.isDumb(project)
@@ -72,7 +68,7 @@ class McpFileEditorWithPreview(
                     }
                 }
             },
-            object : AnAction("Refresh", "Refresh", AllIcons.Actions.Refresh) {
+            object : AnAction("Refresh", "Refresh preview panel", AllIcons.Actions.Refresh) {
                 override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = !DumbService.isDumb(project)

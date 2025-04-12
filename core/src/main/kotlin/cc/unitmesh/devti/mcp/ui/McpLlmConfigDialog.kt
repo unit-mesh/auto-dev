@@ -1,13 +1,18 @@
 package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.AutoDevSnippetFile
+import cc.unitmesh.devti.mcp.ui.model.McpLlmConfig
 import cc.unitmesh.devti.sketch.ui.code.EditorUtil
 import cc.unitmesh.devti.sketch.ui.code.findDocument
+import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.EditorKind
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.LanguageTextField
+import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.dsl.builder.Align.Companion.FILL
 import com.intellij.ui.dsl.builder.TopGap
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
@@ -16,12 +21,6 @@ import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import javax.swing.JComponent
 import javax.swing.JSlider
-import cc.unitmesh.devti.util.parser.CodeFence
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.EditorKind
-import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.testFramework.LightVirtualFile
 
 class McpLlmConfigDialog(
     private val project: Project,
@@ -33,7 +32,7 @@ class McpLlmConfigDialog(
     private var markdownEditor: EditorEx?
 
     init {
-        title = "Chatbot Configuration"
+        title = "Model Configuration"
         allTools.forEach { (serverName, tools) ->
             config.enabledTools.addAll(tools)
         }
@@ -55,9 +54,6 @@ class McpLlmConfigDialog(
         init()
     }
 
-    /**
-     * Based on https://github.com/jujumilk3/leaked-system-prompts/blob/main/anthropic-claude-api-tool-use_20250119.md
-     */
     override fun createCenterPanel(): JComponent {
         val language = CodeFence.findLanguage("markdown")
 

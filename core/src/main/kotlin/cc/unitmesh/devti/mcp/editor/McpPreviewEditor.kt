@@ -5,7 +5,7 @@ import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.mcp.ui.McpToolListPanel
 import cc.unitmesh.devti.mcp.ui.McpResultPanel
-import cc.unitmesh.devti.mcp.ui.McpLlmConfig
+import cc.unitmesh.devti.mcp.ui.model.McpLlmConfig
 import cc.unitmesh.devti.mcp.ui.McpLlmConfigDialog
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
@@ -61,7 +61,7 @@ open class McpPreviewEditor(
     private lateinit var configButton: JButton
     private lateinit var resultPanel: McpResultPanel
     private val config = McpLlmConfig()
-    private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
+    private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private lateinit var searchField: SearchTextField
 
     init {
@@ -83,7 +83,7 @@ open class McpPreviewEditor(
     private fun createUI() {
         val headerPanel = panel {
             row {
-                val label = JBLabel("MCP Tools").apply {
+                val label = JBLabel("MCP tools").apply {
                     font = JBUI.Fonts.label(14.0f).asBold()
                     border = JBUI.Borders.emptyLeft(8)
                     isOpaque = true
