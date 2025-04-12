@@ -3,7 +3,7 @@ package cc.unitmesh.devti.settings.customize
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
-import cc.unitmesh.devti.mcp.schema.MCP_SERVERS_FILE_NAME
+import cc.unitmesh.devti.custom.schema.MCP_SERVERS_FILE_NAME
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.mcp.client.McpServicesTestDialog

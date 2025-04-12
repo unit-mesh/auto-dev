@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp.schema
+package cc.unitmesh.devti.custom.schema
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project

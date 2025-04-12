@@ -83,12 +83,12 @@ class McpToolDetailDialog(
                     }
                 }
             }
-            group("Verify") {
+            group("Verify (Auto Generate)") {
                 row {
                     cell(jsonLanguageField!!)
                         .resizableColumn()
                         .applyToComponent {
-                            preferredSize = Dimension(550, preferredSize.height)
+                            preferredSize = Dimension(550, 200)
                         }
                 }
             }
@@ -98,7 +98,7 @@ class McpToolDetailDialog(
                     cell(resultPanel!!)
                         .resizableColumn()
                         .applyToComponent {
-                            preferredSize = Dimension(550, preferredSize.height)
+                            preferredSize = Dimension(550, 200)
                         }
                 }
             }
