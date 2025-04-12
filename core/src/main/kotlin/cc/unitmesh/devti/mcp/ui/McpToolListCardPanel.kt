@@ -1,19 +1,22 @@
 package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.mcp.client.MockDataGenerator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
-import javax.swing.BorderFactory
-import javax.swing.JPanel
-import javax.swing.JTextPane
+import javax.swing.*
 import javax.swing.border.CompoundBorder
 
 class McpToolListCardPanel(
@@ -91,8 +94,14 @@ class McpToolListCardPanel(
             addHyperlinkListener { showToolDetails() }
         }
 
-        val linkWrapperPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 0, 0)).apply {
+        val testLink = HyperlinkLabel("Test").apply {
+            font = JBUI.Fonts.label(12.0f)
+            addHyperlinkListener { testTool() }
+        }
+
+        val linkWrapperPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0)).apply {
             background = UIUtil.getPanelBackground()
+            add(testLink)
             add(detailsLink)
         }
 
@@ -107,5 +116,60 @@ class McpToolListCardPanel(
     private fun showToolDetails() {
         val dialog = McpToolDetailDialog(project, serverName, tool, mcpServerManager)
         dialog.show()
+    }
+
+    private fun testTool() {
+        val mockData = MockDataGenerator.generateMockData(tool.inputSchema)
+        val json = Json { prettyPrint = true }
+        val jsonContent = json.encodeToString(mockData)
+        
+        val result = mcpServerManager.execute(project, tool, jsonContent)
+        val dialog = ToolTestResultDialog(project, tool, jsonContent, result)
+        dialog.show()
+    }
+
+    private class ToolTestResultDialog(
+        project: Project,
+        private val tool: Tool,
+        private val inputJson: String,
+        private val result: String
+    ) : DialogWrapper(project) {
+        
+        init {
+            title = "Test Result: ${tool.name}"
+            init()
+        }
+        
+        override fun createCenterPanel(): JComponent {
+            val panel = JPanel(BorderLayout(0, 10))
+            panel.preferredSize = Dimension(600, 400)
+            
+            val topPanel = JPanel(BorderLayout())
+            topPanel.add(JLabel("Input:"), BorderLayout.NORTH)
+            
+            val inputTextArea = JTextArea(inputJson).apply {
+                lineWrap = true
+                wrapStyleWord = true
+                isEditable = false
+                font = JBUI.Fonts.create("Monospaced", 12)
+            }
+            topPanel.add(JBScrollPane(inputTextArea), BorderLayout.CENTER)
+            
+            val bottomPanel = JPanel(BorderLayout())
+            bottomPanel.add(JLabel("Result:"), BorderLayout.NORTH)
+            
+            val resultTextArea = JTextArea(result).apply {
+                lineWrap = true
+                wrapStyleWord = true
+                isEditable = false
+                font = JBUI.Fonts.create("Monospaced", 12)
+            }
+            bottomPanel.add(JBScrollPane(resultTextArea), BorderLayout.CENTER)
+            
+            panel.add(topPanel, BorderLayout.NORTH)
+            panel.add(bottomPanel, BorderLayout.CENTER)
+            
+            return panel
+        }
     }
 }
