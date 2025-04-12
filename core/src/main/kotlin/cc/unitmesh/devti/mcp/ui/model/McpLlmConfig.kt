@@ -14,6 +14,7 @@ data class McpLlmConfig(
 ) {
     fun createSystemPrompt(): String {
         val systemPrompt = """
+You an tool-use expert, answer the user's request using the relevant tool.
 In this environment you have access to a set of tools you can use to answer the user's question.
 You can invoke functions by writing a "<devins:function_calls>" inside markdown code-block like the following as part of your reply to the user:
 

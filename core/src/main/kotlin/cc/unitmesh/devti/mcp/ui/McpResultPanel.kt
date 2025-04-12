@@ -1,13 +1,21 @@
 package cc.unitmesh.devti.mcp.ui
 
+import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.mcp.ui.model.McpLlmConfig
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.awt.BorderLayout
+import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.io.StringReader
@@ -16,7 +24,10 @@ import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.MatteBorder
 
-class McpResultPanel : JPanel(BorderLayout()) {
+class McpResultPanel(private val project: Project, val config: McpLlmConfig) : JPanel(BorderLayout()) {
+    private val mcpServerManager = CustomMcpServerManager.instance(project)
+    private val json = Json { prettyPrint = true }
+
     private val rawResultTextArea = JTextArea().apply {
         isEditable = false
         wrapStyleWord = true
@@ -162,10 +173,104 @@ class McpResultPanel : JPanel(BorderLayout()) {
             paramsPanel.add(valueLabel, valueGbc)
         }
 
+        // Add execute button and result panel
+        val executeButton = JButton("Execute").apply {
+            font = JBUI.Fonts.label(12f)
+            addActionListener {
+                executeToolCall(toolCall, panel)
+            }
+        }
+
+        val buttonsPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
+            isOpaque = false
+            add(executeButton)
+        }
+
+        val resultPanel = JPanel(BorderLayout()).apply {
+            isOpaque = false
+            border = JBUI.Borders.emptyTop(8)
+            isVisible = false
+        }
+
+        val contentPanel = JPanel(BorderLayout()).apply {
+            isOpaque = false
+            add(paramsPanel, BorderLayout.CENTER)
+            add(buttonsPanel, BorderLayout.SOUTH)
+        }
+
         panel.add(titleLabel, BorderLayout.NORTH)
-        panel.add(paramsPanel, BorderLayout.CENTER)
+        panel.add(contentPanel, BorderLayout.CENTER)
+        panel.add(resultPanel, BorderLayout.SOUTH)
 
         return panel
+    }
+
+    private fun executeToolCall(toolCall: ToolCall, parentPanel: JPanel) {
+        val panel = parentPanel.components
+            .filterIsInstance<JPanel>()
+            .find { it.border != null && it.border.toString().contains("empty") }
+
+        if (panel == null) {
+            AutoDevNotifications.error(project, "Cannot find result panel")
+            return
+        }
+
+        panel.removeAll()
+        panel.layout = BorderLayout()
+
+        // Create loading indicator
+        val loadingLabel = JBLabel("Executing tool ${toolCall.name}...").apply {
+            horizontalAlignment = SwingConstants.CENTER
+        }
+        panel.add(loadingLabel, BorderLayout.CENTER)
+        panel.isVisible = true
+        panel.revalidate()
+        panel.repaint()
+
+        // Run execution in background
+        SwingUtilities.invokeLater {
+            // Convert parameters to JSON
+            val params = try {
+                val jsonParams = json.encodeToString(toolCall.parameters)
+                jsonParams
+            } catch (e: Exception) {
+                "{}"
+            }
+
+            // Find matching tool
+            val matchingTool = findMatchingTool(toolCall.name)
+
+            val result = if (matchingTool != null) {
+                mcpServerManager!!.execute(project, matchingTool, params)
+            } else {
+                "Error: Could not find matching tool '${toolCall.name}'"
+            }
+
+            // Display result
+            panel.removeAll()
+            val textArea = JTextArea(result).apply {
+                lineWrap = true
+                wrapStyleWord = true
+                isEditable = false
+                font = JBUI.Fonts.create("Monospaced", 12)
+                border = JBUI.Borders.empty(4)
+            }
+
+            panel.add(JBScrollPane(textArea), BorderLayout.CENTER)
+            panel.isVisible = true
+            panel.revalidate()
+            panel.repaint()
+        }
+    }
+
+    private fun findMatchingTool(toolName: String): Tool? {
+        for (tool in config.enabledTools) {
+            if (tool.name == toolName) {
+                return tool
+            }
+        }
+
+        return null
     }
 
     data class ToolCall(

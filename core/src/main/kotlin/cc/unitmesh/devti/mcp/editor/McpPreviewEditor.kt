@@ -118,7 +118,7 @@ open class McpPreviewEditor(
             background = UIUtil.getPanelBackground()
         }
 
-        resultPanel = McpResultPanel().apply {
+        resultPanel = McpResultPanel(project, config).apply {
             background = UIUtil.getPanelBackground()
             isVisible = false
         }
