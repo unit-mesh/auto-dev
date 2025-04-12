@@ -142,7 +142,7 @@ class McpToolListPanel(private val project: Project) : JPanel() {
             toolsPanel.add(noToolsLabel)
         } else {
             tools.forEach { tool ->
-                val panel = McpToolDetailPanel(project, serverName, tool)
+                val panel = McpToolListCardPanel(project, serverName, tool)
                 toolsPanel.add(panel)
             }
         }

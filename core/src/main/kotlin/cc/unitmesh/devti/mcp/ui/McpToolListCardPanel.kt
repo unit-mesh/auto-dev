@@ -15,7 +15,7 @@ import javax.swing.JPanel
 import javax.swing.JTextPane
 import javax.swing.border.CompoundBorder
 
-class McpToolDetailPanel(
+class McpToolListCardPanel(
     private val project: Project,
     private val serverName: String,
     private val tool: Tool
