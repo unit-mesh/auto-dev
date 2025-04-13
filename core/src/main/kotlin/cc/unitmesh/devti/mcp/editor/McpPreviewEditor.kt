@@ -143,7 +143,7 @@ open class McpPreviewEditor(
 
         val llmConfigs = LlmConfig.load()
         val modelNames = if (llmConfigs.isEmpty()) {
-            arrayOf("No LLMs configured")
+            arrayOf("Default")
         } else {
             llmConfigs.map { it.name }.toTypedArray()
         }
