@@ -3,14 +3,12 @@ package cc.unitmesh.devti.mcp.ui
 import cc.unitmesh.devti.mcp.ui.model.McpMessage
 import cc.unitmesh.devti.mcp.ui.model.MessageType
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.Point
 import java.time.format.DateTimeFormatter
 import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
@@ -29,79 +27,36 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
         autoCreateRowSorter = true
     }
 
-    private val toolNameLabel = JBLabel("Tool Name:").apply {
-        font = font.deriveFont(java.awt.Font.BOLD)
-        border = JBUI.Borders.empty(10, 10, 5, 10)
-    }
-    
-    private val toolNameTextArea = JTextArea().apply {
+    private val detailTextArea = JTextArea().apply {
         isEditable = false
         wrapStyleWord = true
         lineWrap = true
-        border = JBUI.Borders.empty(5, 10, 10, 10)
+        border = JBUI.Borders.empty(10)
     }
-    
-    private val parametersLabel = JBLabel("Parameters:").apply {
-        font = font.deriveFont(java.awt.Font.BOLD)
-        border = JBUI.Borders.empty(10, 10, 5, 10)
-    }
-    
-    private val parametersTextArea = JTextArea().apply {
-        isEditable = false
-        wrapStyleWord = true
-        lineWrap = true
-        border = JBUI.Borders.empty(5, 10, 10, 10)
-    }
-    
-    private val detailPanel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        add(toolNameLabel)
-        add(toolNameTextArea)
-        add(parametersLabel)
-        add(parametersTextArea)
-        border = JBUI.Borders.empty(5)
-    }
-    
-    private val detailScrollPane = JBScrollPane(detailPanel)
 
     init {
         table.getColumnModel().getColumn(0).cellRenderer = TypeColumnRenderer()
-        
+
+        // Create split pane
         val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT).apply {
             leftComponent = JBScrollPane(table)
-            rightComponent = detailScrollPane
+            rightComponent = JBScrollPane(detailTextArea)
             dividerLocation = 600
             resizeWeight = 0.5
         }
-        
+
         add(splitPane, BorderLayout.CENTER)
         table.selectionModel.addListSelectionListener { e ->
             if (!e.valueIsAdjusting && table.selectedRow >= 0) {
                 val selectedIndex = table.convertRowIndexToModel(table.selectedRow)
                 if (selectedIndex >= 0 && selectedIndex < messages.size) {
-                    val message = messages[selectedIndex]
-                    
-                    // Parse content if toolName and parameters are not explicitly set
-                    val (toolName, params) = if (message.toolName != null && message.parameters != null) {
-                        Pair(message.toolName, message.parameters)
-                    } else {
-                        McpMessage.parseContent(message.content)
-                    }
-                    
-                    toolNameTextArea.text = toolName ?: "N/A"
-                    toolNameTextArea.caretPosition = 0
-                    
-                    parametersTextArea.text = params ?: "N/A"
-                    parametersTextArea.caretPosition = 0
-                    
-                    detailPanel.revalidate()
-                    detailPanel.repaint()
-                    detailScrollPane.viewport.viewPosition = Point(0, 0)
+                    detailTextArea.text = messages[selectedIndex].content
+                    detailTextArea.caretPosition = 0
                 }
             }
         }
     }
-    
+
     fun addMessage(message: McpMessage) {
         messages.add(message)
         tableModel.fireTableDataChanged()
@@ -109,14 +64,13 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
             table.setRowSelectionInterval(messages.size - 1, messages.size - 1)
         }
     }
-    
+
     fun clear() {
         messages.clear()
         tableModel.fireTableDataChanged()
-        toolNameTextArea.text = ""
-        parametersTextArea.text = ""
+        detailTextArea.text = ""
     }
-    
+
     private inner class MessageTableModel : DefaultTableModel() {
         private val columnNames = arrayOf(
             "Type",
@@ -124,13 +78,13 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
             "Timestamp",
             "Duration"
         )
-        
+
         override fun getColumnCount(): Int = columnNames.size
-        
+
         override fun getRowCount(): Int = messages.size
-        
+
         override fun getColumnName(column: Int): String = columnNames[column]
-        
+
         override fun getValueAt(row: Int, column: Int): Any {
             val message = messages[row]
             return when (column) {
@@ -141,10 +95,10 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
                 else -> ""
             }
         }
-        
+
         override fun isCellEditable(row: Int, column: Int): Boolean = false
     }
-    
+
     private class TypeColumnRenderer : DefaultTableCellRenderer() {
         override fun getTableCellRendererComponent(
             table: JTable?,
@@ -155,8 +109,8 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
             column: Int
         ): Component {
             val label = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column) as JLabel
-            label.horizontalAlignment = SwingConstants.CENTER
-            
+            label.horizontalAlignment = CENTER
+
             if (!isSelected) {
                 when (value) {
                     MessageType.REQUEST -> {
@@ -169,15 +123,15 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
                     }
                 }
             }
-            
+
             label.text = when (value) {
                 MessageType.REQUEST -> "REQUEST"
                 MessageType.RESPONSE -> "RESPONSE"
                 else -> ""
             }
-            
+
             label.border = JBUI.Borders.empty(3, 5)
-            
+
             return label
         }
     }

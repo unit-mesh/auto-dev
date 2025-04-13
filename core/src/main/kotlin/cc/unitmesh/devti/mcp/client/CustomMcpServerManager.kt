@@ -104,8 +104,7 @@ class CustomMcpServerManager(val project: Project) {
                         future.complete("No result from tool ${tool.name}")
                     } else {
                         val result = json.encodeToString(result.content)
-                        val text = "Execute ${tool.name} tool's result\n"
-                        future.complete(text + result)
+                        future.complete(result)
                     }
                 } catch (e: Error) {
                     logger<CustomMcpServerManager>().warn("Failed to execute tool ${tool.name}: $e")
