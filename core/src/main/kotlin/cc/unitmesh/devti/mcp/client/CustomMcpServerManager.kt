@@ -119,29 +119,12 @@ class CustomMcpServerManager(val project: Project) {
         return "No such tool: ${tool.name} or failed to execute"
     }
 
-    suspend fun collectServerInfos(config: String): Map<String, List<Tool>> {
-        if (cached.containsKey(config)) return cached[config]!!
-        val mcpConfig = McpServer.load(config)
-        if (mcpConfig == null) return emptyMap()
-
-        val toolsMap = mutableMapOf<String, List<Tool>>()
-        mcpConfig.mcpServers.forEach { entry ->
-            if (entry.value.disabled == true) return@forEach
-            val tools = collectServerInfo(entry.key, entry.value)
-            toolsMap[entry.key] = tools
-        }
-
-        cached[config] = toolsMap
-        return toolsMap
-    }
-
     companion object {
         fun instance(project: Project): CustomMcpServerManager {
             return project.getService(CustomMcpServerManager::class.java)
         }
     }
 }
-
 
 fun resolveCommand(command: String): String {
     if (SystemInfo.isWindows) {
