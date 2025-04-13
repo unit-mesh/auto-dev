@@ -53,7 +53,6 @@ open class McpPreviewEditor(
     private var mainEditor = MutableStateFlow<Editor?>(null)
     private val mainPanel = JPanel(BorderLayout())
 
-    private var allTools = mutableMapOf<String, List<Tool>>()
     private lateinit var toolListPanel: McpToolListPanel
     private lateinit var chatbotSelector: JComboBox<String>
     private lateinit var chatInput: JBTextField
@@ -71,9 +70,7 @@ open class McpPreviewEditor(
 
     private fun loadTools() {
         val content = runReadAction { virtualFile.readText() }
-        toolListPanel.loadTools(content) { tools ->
-            this.allTools = tools
-        }
+        toolListPanel.loadTools(content)
     }
 
     fun refreshMcpTool() {
@@ -216,7 +213,7 @@ open class McpPreviewEditor(
     }
 
     private fun showConfigDialog() {
-        val dialog = McpChatConfigDialog(project, config, allTools)
+        val dialog = McpChatConfigDialog(project, config, toolListPanel.getTools())
 
         if (dialog.showAndGet()) {
             config.temperature = dialog.getConfig().temperature
@@ -227,6 +224,7 @@ open class McpPreviewEditor(
 
     fun sendMessage() {
         if (config.enabledTools.isEmpty()) {
+            val allTools = toolListPanel.getTools()
             config.enabledTools = allTools.map { it.value }.flatten().toMutableList()
         }
 
