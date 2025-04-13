@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp.ui
+package cc.unitmesh.devti.mcp.ui.eval
 
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel

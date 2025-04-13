@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp.ui
+package cc.unitmesh.devti.mcp.ui.eval
 
 import cc.unitmesh.devti.mcp.ui.model.McpMessage
 import cc.unitmesh.devti.provider.local.JsonLanguageField

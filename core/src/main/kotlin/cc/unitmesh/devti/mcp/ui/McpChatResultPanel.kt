@@ -2,6 +2,7 @@ package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.mcp.ui.eval.McpMessageLogPanel
 import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
 import cc.unitmesh.devti.mcp.ui.model.McpMessage
 import cc.unitmesh.devti.mcp.ui.model.MessageType
@@ -18,7 +19,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.awt.*
 import java.time.LocalDateTime
-import java.util.UUID
 import javax.swing.*
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
@@ -260,7 +260,6 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
             paramsPanel.add(valueLabel, valueGbc)
         }
 
-        // Add execute button and result panel
         val executeButton = JButton(AutoDevBundle.message("mcp.chat.result.execute")).apply {
             font = JBUI.Fonts.label(12f)
             addActionListener {
@@ -319,7 +318,6 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                 "{}"
             }
 
-            // Log request message
             val requestContent = "Tool: ${toolCall.name}\nParameters: $params"
             val requestMessage = McpMessage(
                 type = MessageType.REQUEST,
@@ -366,7 +364,6 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                 border = JBUI.Borders.empty(4)
             }
 
-            // Use scroll pane for tool execution results to handle overflow
             val resultScrollPane = JBScrollPane(textArea).apply {
                 border = BorderFactory.createEmptyBorder()
                 verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
