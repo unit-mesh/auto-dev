@@ -35,11 +35,11 @@ class JsonLanguageField(
                 return createDocument(value, language, project, this)
             }
 
-            override fun customizePsiFile(file: PsiFile?) {
-                if (fileName != null) {
-                    file?.name = fileName
-                }
-            }
+//            override fun customizePsiFile(file: PsiFile?) {
+//                if (fileName != null) {
+//                    file?.name = fileName
+//                }
+//            }
         }
     ) {
 
