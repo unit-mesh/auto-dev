@@ -53,7 +53,7 @@ class JsonLanguageField(
             val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
             this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
 
-//            this.settings.isUseSoftWraps = true
+            this.settings.isUseSoftWraps = true
 //            this.settings.isAdditionalPageAtBottom = false
 //            this.settings.isCaretRowShown = false
 
