@@ -12,5 +12,26 @@ data class McpMessage(
     val method: String,
     val timestamp: LocalDateTime,
     val duration: Long? = null,
-    val content: String
-)
+    val content: String,
+    val toolName: String? = null,
+    val parameters: String? = null
+) {
+    companion object {
+        fun parseContent(content: String): Pair<String?, String?> {
+            val toolNamePrefix = "Tool: "
+            val paramsPrefix = "Parameters: "
+            
+            val toolName = content.lineSequence()
+                .find { it.startsWith(toolNamePrefix) }
+                ?.substringAfter(toolNamePrefix)
+                ?.trim()
+            
+            val params = content.lineSequence()
+                .find { it.startsWith(paramsPrefix) }
+                ?.substringAfter(paramsPrefix)
+                ?.trim()
+            
+            return Pair(toolName, params)
+        }
+    }
+}

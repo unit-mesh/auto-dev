@@ -175,11 +175,14 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                         "{}"
                     }
 
+                    val requestContent = "Tool: ${toolCall.name}\nParameters: $params"
                     val requestMessage = McpMessage(
                         type = MessageType.REQUEST,
                         method = toolCall.name,
                         timestamp = LocalDateTime.now(),
-                        content = "Tool: ${toolCall.name}\nParameters: $params"
+                        content = requestContent,
+                        toolName = toolCall.name,
+                        parameters = params
                     )
                     messageLogPanel.addMessage(requestMessage)
 
@@ -317,11 +320,14 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
             }
 
             // Log request message
+            val requestContent = "Tool: ${toolCall.name}\nParameters: $params"
             val requestMessage = McpMessage(
                 type = MessageType.REQUEST,
                 method = toolCall.name,
                 timestamp = LocalDateTime.now(),
-                content = "Tool: ${toolCall.name}\nParameters: $params"
+                content = requestContent,
+                toolName = toolCall.name,
+                parameters = params
             )
             messageLogPanel.addMessage(requestMessage)
 

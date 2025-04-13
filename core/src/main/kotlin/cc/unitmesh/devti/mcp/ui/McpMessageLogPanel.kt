@@ -3,6 +3,7 @@ package cc.unitmesh.devti.mcp.ui
 import cc.unitmesh.devti.mcp.ui.model.McpMessage
 import cc.unitmesh.devti.mcp.ui.model.MessageType
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
@@ -27,20 +28,48 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
         autoCreateRowSorter = true
     }
 
-    private val detailTextArea = JTextArea().apply {
+    private val toolNameLabel = JBLabel("Tool Name:").apply {
+        font = font.deriveFont(java.awt.Font.BOLD)
+        border = JBUI.Borders.empty(10, 10, 5, 10)
+    }
+    
+    private val toolNameTextArea = JTextArea().apply {
         isEditable = false
         wrapStyleWord = true
         lineWrap = true
-        border = JBUI.Borders.empty(10)
+        border = JBUI.Borders.empty(5, 10, 10, 10)
     }
+    
+    private val parametersLabel = JBLabel("Parameters:").apply {
+        font = font.deriveFont(java.awt.Font.BOLD)
+        border = JBUI.Borders.empty(10, 10, 5, 10)
+    }
+    
+    private val parametersTextArea = JTextArea().apply {
+        isEditable = false
+        wrapStyleWord = true
+        lineWrap = true
+        border = JBUI.Borders.empty(5, 10, 10, 10)
+    }
+    
+    private val detailPanel = JPanel(BorderLayout()).apply {
+        add(toolNameLabel, BorderLayout.NORTH)
+        val centerPanel = JPanel(BorderLayout()).apply {
+            add(toolNameTextArea, BorderLayout.NORTH)
+            add(parametersLabel, BorderLayout.CENTER)
+            add(parametersTextArea, BorderLayout.SOUTH)
+        }
+        add(centerPanel, BorderLayout.CENTER)
+    }
+    
+    private val detailScrollPane = JBScrollPane(detailPanel)
 
     init {
         table.getColumnModel().getColumn(0).cellRenderer = TypeColumnRenderer()
         
-        // Create split pane
         val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT).apply {
             leftComponent = JBScrollPane(table)
-            rightComponent = JBScrollPane(detailTextArea)
+            rightComponent = detailScrollPane
             dividerLocation = 600
             resizeWeight = 0.5
         }
@@ -50,8 +79,20 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
             if (!e.valueIsAdjusting && table.selectedRow >= 0) {
                 val selectedIndex = table.convertRowIndexToModel(table.selectedRow)
                 if (selectedIndex >= 0 && selectedIndex < messages.size) {
-                    detailTextArea.text = messages[selectedIndex].content
-                    detailTextArea.caretPosition = 0
+                    val message = messages[selectedIndex]
+                    
+                    // Parse content if toolName and parameters are not explicitly set
+                    val (toolName, params) = if (message.toolName != null && message.parameters != null) {
+                        Pair(message.toolName, message.parameters)
+                    } else {
+                        McpMessage.parseContent(message.content)
+                    }
+                    
+                    toolNameTextArea.text = toolName ?: "N/A"
+                    toolNameTextArea.caretPosition = 0
+                    
+                    parametersTextArea.text = params ?: "N/A"
+                    parametersTextArea.caretPosition = 0
                 }
             }
         }
@@ -68,7 +109,8 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
     fun clear() {
         messages.clear()
         tableModel.fireTableDataChanged()
-        detailTextArea.text = ""
+        toolNameTextArea.text = ""
+        parametersTextArea.text = ""
     }
     
     private inner class MessageTableModel : DefaultTableModel() {

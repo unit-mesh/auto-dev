@@ -14,8 +14,11 @@ data class ToolCall(
         fun fromString(response: String): List<ToolCall> {
             val toolCalls = mutableListOf<ToolCall>()
 
-            val codeblock = CodeFence.Companion.parse(response)
-            if (codeblock.originLanguage != "xml") {
+            val codeFences = CodeFence.Companion.parseAll(response)
+            val codeblock = codeFences.firstOrNull {
+                it.originLanguage == "xml"
+            } ?: codeFences.firstOrNull()
+            if (codeblock?.originLanguage != "xml") {
                 return emptyList()
             }
 
