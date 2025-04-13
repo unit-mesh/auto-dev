@@ -3,6 +3,8 @@ package cc.unitmesh.devti.mcp.ui
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
+import cc.unitmesh.devti.mcp.ui.model.McpMessage
+import cc.unitmesh.devti.mcp.ui.model.MessageType
 import cc.unitmesh.devti.mcp.ui.model.ToolCall
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
@@ -15,6 +17,8 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.awt.*
+import java.time.LocalDateTime
+import java.util.UUID
 import javax.swing.*
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
@@ -37,6 +41,8 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         border = JBUI.Borders.empty(8)
     }
 
+    private val messageLogPanel = McpMessageLogPanel()
+
     private val responseScrollPane = JBScrollPane(rawResultTextArea).apply {
         border = BorderFactory.createEmptyBorder()
         verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
@@ -50,11 +56,13 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
     private val tabbedPane = JBTabbedPane().apply {
         addTab(AutoDevBundle.message("mcp.chat.result.tab.response"), responseScrollPane)
         addTab(AutoDevBundle.message("mcp.chat.result.tab.tools"), toolsScrollPane)
+        addTab(AutoDevBundle.message("mcp.chat.result.tab.messages"), messageLogPanel)
     }
 
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
 
     private var currentHeight = 300
+    private var toolCalls: List<ToolCall> = emptyList()
 
     init {
         background = UIUtil.getPanelBackground()
@@ -74,7 +82,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
     private fun parseAndShowTools(text: String) {
         toolsPanel.removeAll()
 
-        val toolCalls = ToolCall.fromString(text)
+        toolCalls = ToolCall.fromString(text)
         if (toolCalls.isEmpty()) {
             val noToolsLabel = JBLabel(AutoDevBundle.message("mcp.chat.result.no.tools")).apply {
                 foreground = JBColor(0x6B7280, 0x9DA0A8)  // Gray text
@@ -91,6 +99,29 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
             toolsPanel.add(noToolsLabel, gbc)
         } else {
             var gridY = 0
+
+            // Add "Execute All Tools" button
+            val executeAllButton = JButton(AutoDevBundle.message("mcp.chat.result.execute.all")).apply {
+                font = JBUI.Fonts.label(12f).asBold()
+                addActionListener {
+                    executeAllTools()
+                }
+            }
+
+            val buttonPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
+                isOpaque = false
+                add(executeAllButton)
+            }
+
+            val buttonGbc = GridBagConstraints().apply {
+                gridx = 0
+                gridy = gridY++
+                weightx = 1.0
+                fill = GridBagConstraints.HORIZONTAL
+                insets = JBUI.insetsBottom(10)
+            }
+
+            toolsPanel.add(buttonPanel, buttonGbc)
 
             toolCalls.forEach { toolCall ->
                 val toolPanel = createToolCallPanel(toolCall)
@@ -125,6 +156,51 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
         if (toolCalls.isNotEmpty()) {
             tabbedPane.selectedIndex = 1
+        }
+    }
+
+    private fun executeAllTools() {
+        if (toolCalls.isEmpty()) return
+
+        SwingUtilities.invokeLater {
+            for (toolCall in toolCalls) {
+                val matchingTool = findMatchingTool(toolCall.name)
+                if (matchingTool != null) {
+                    val startTime = System.currentTimeMillis()
+
+                    // Log request message
+                    val params = try {
+                        json.encodeToString(toolCall.parameters)
+                    } catch (e: Exception) {
+                        "{}"
+                    }
+
+                    val requestMessage = McpMessage(
+                        type = MessageType.REQUEST,
+                        method = toolCall.name,
+                        timestamp = LocalDateTime.now(),
+                        content = "Tool: ${toolCall.name}\nParameters: $params"
+                    )
+                    messageLogPanel.addMessage(requestMessage)
+
+                    // Execute the tool
+                    val result = mcpServerManager.execute(project, matchingTool, params)
+                    val duration = System.currentTimeMillis() - startTime
+
+                    // Log response message
+                    val responseMessage = McpMessage(
+                        type = MessageType.RESPONSE,
+                        method = toolCall.name,
+                        timestamp = LocalDateTime.now(),
+                        duration = duration,
+                        content = result
+                    )
+                    messageLogPanel.addMessage(responseMessage)
+                }
+            }
+
+            // Switch to messages tab
+            tabbedPane.selectedIndex = 2
         }
     }
 
@@ -240,6 +316,15 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                 "{}"
             }
 
+            // Log request message
+            val requestMessage = McpMessage(
+                type = MessageType.REQUEST,
+                method = toolCall.name,
+                timestamp = LocalDateTime.now(),
+                content = "Tool: ${toolCall.name}\nParameters: $params"
+            )
+            messageLogPanel.addMessage(requestMessage)
+
             val matchingTool = findMatchingTool(toolCall.name)
             val result = if (matchingTool != null) {
                 mcpServerManager.execute(project, matchingTool, params)
@@ -247,7 +332,17 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                 AutoDevBundle.message("mcp.chat.result.error.tool.not.found", toolCall.name)
             }
 
+            // Log response message
             val executionTime = System.currentTimeMillis() - startTime
+            val responseMessage = McpMessage(
+                type = MessageType.RESPONSE,
+                method = toolCall.name,
+                timestamp = LocalDateTime.now(),
+                duration = executionTime,
+                content = result
+            )
+            messageLogPanel.addMessage(responseMessage)
+
             resultPanel.removeAll()
 
             val timeInfoPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
@@ -290,4 +385,3 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         return null
     }
 }
-
