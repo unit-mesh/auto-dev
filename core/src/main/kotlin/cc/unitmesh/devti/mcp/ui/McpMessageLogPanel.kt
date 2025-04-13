@@ -10,6 +10,7 @@ import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.Point
 import java.time.format.DateTimeFormatter
 import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
@@ -52,14 +53,13 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
         border = JBUI.Borders.empty(5, 10, 10, 10)
     }
     
-    private val detailPanel = JPanel(BorderLayout()).apply {
-        add(toolNameLabel, BorderLayout.NORTH)
-        val centerPanel = JPanel(BorderLayout()).apply {
-            add(toolNameTextArea, BorderLayout.NORTH)
-            add(parametersLabel, BorderLayout.CENTER)
-            add(parametersTextArea, BorderLayout.SOUTH)
-        }
-        add(centerPanel, BorderLayout.CENTER)
+    private val detailPanel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        add(toolNameLabel)
+        add(toolNameTextArea)
+        add(parametersLabel)
+        add(parametersTextArea)
+        border = JBUI.Borders.empty(5)
     }
     
     private val detailScrollPane = JBScrollPane(detailPanel)
@@ -93,6 +93,10 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
                     
                     parametersTextArea.text = params ?: "N/A"
                     parametersTextArea.caretPosition = 0
+                    
+                    detailPanel.revalidate()
+                    detailPanel.repaint()
+                    detailScrollPane.viewport.viewPosition = Point(0, 0)
                 }
             }
         }

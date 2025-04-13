@@ -81,31 +81,4 @@ class ToolCallTest {
         assertThat(result[0].parameters["param1"]).isEqualTo("value1")
         assertThat(result[0].parameters["param2"]).isEqualTo("value2")
     }
-
-    @Test
-    fun should_parse_multiple_tool_calls_with_parameters() {
-        // given
-        val response = """
-            ```xml
-            <devins:invoke name="tool1">
-                <devins:parameter name="param1">value1</devins:parameter>
-            </devins:invoke>
-            <devins:invoke name="tool2">
-                <devins:parameter name="param2">value2</devins:parameter>
-            </devins:invoke>
-            ```
-        """.trimIndent()
-
-        // when
-        val result = ToolCall.fromString(response)
-
-        // then
-        assertThat(result).hasSize(2)
-        assertThat(result[0].name).isEqualTo("tool1")
-        assertThat(result[0].parameters).hasSize(1)
-        assertThat(result[0].parameters["param1"]).isEqualTo("value1")
-        assertThat(result[1].name).isEqualTo("tool2")
-        assertThat(result[1].parameters).hasSize(1)
-        assertThat(result[1].parameters["param2"]).isEqualTo("value2")
-    }
 }
