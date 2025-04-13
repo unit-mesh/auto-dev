@@ -237,6 +237,8 @@ open class McpPreviewEditor(
         val result = StringBuilder()
         val stream: Flow<String> = llmProvider.stream(message, systemPrompt = config.createSystemPrompt())
         
+        // Reset the resultPanel before setting new content
+        resultPanel.reset()
         resultPanel.setText("Loading response...")
         resultPanel.isVisible = true
         mainPanel.revalidate()

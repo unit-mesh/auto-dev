@@ -74,6 +74,20 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         tabbedPane.preferredSize = Dimension(width, currentHeight)
     }
 
+    fun reset() {
+        rawResultTextArea.text = ""
+        
+        toolsPanel.removeAll()
+        toolsPanel.revalidate()
+        toolsPanel.repaint()
+        
+        messageLogPanel.clear()
+        
+        toolCalls = emptyList()
+        
+        tabbedPane.selectedIndex = 0
+    }
+
     fun setText(text: String) {
         rawResultTextArea.text = text
         parseAndShowTools(text)
