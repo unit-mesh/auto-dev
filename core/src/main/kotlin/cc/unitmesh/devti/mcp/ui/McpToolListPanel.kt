@@ -51,7 +51,7 @@ class McpToolListPanel(private val project: Project) : JPanel() {
         }
 
         loadingJob = CoroutineScope(Dispatchers.IO).launch {
-            val serverConfigs = mcpServerManager.getServerConfigs(content)
+            val serverConfigs = mcpServerManager.getEnabledServers(content)
 
             if (serverConfigs.isNullOrEmpty()) {
                 SwingUtilities.invokeLater {

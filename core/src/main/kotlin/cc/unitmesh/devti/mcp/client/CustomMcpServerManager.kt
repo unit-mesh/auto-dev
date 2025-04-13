@@ -48,9 +48,13 @@ class CustomMcpServerManager(val project: Project) {
         return toolsMap
     }
 
-    fun getServerConfigs(content: String): Map<String, McpServer>? {
+    fun getEnabledServers(content: String): Map<String, McpServer>? {
         val mcpConfig = McpServer.load(content)
-        return mcpConfig?.mcpServers
+        return mcpConfig?.mcpServers?.filter { entry ->
+            entry.value.disabled != true
+        }?.mapValues { entry ->
+            entry.value
+        }
     }
 
     suspend fun collectServerInfo(serverKey: String, serverConfig: McpServer): List<Tool> {
