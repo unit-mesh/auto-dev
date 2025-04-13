@@ -3,7 +3,7 @@ package cc.unitmesh.devti.mcp.ui
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
-import cc.unitmesh.devti.util.parser.CodeFence
+import cc.unitmesh.devti.mcp.ui.model.ToolCall
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -15,7 +15,6 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.awt.*
-import java.io.StringReader
 import javax.swing.*
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
@@ -42,7 +41,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         border = BorderFactory.createEmptyBorder()
         verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
     }
-    
+
     private val toolsScrollPane = JBScrollPane(toolsPanel).apply {
         border = BorderFactory.createEmptyBorder()
         verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
@@ -59,12 +58,11 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
     init {
         background = UIUtil.getPanelBackground()
-        
+
         val contentPanel = JPanel(BorderLayout())
         contentPanel.add(tabbedPane, BorderLayout.CENTER)
-        
+
         add(contentPanel, BorderLayout.CENTER)
-        
         tabbedPane.preferredSize = Dimension(width, currentHeight)
     }
 
@@ -76,7 +74,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
     private fun parseAndShowTools(text: String) {
         toolsPanel.removeAll()
 
-        val toolCalls = extractToolCalls(text)
+        val toolCalls = ToolCall.fromString(text)
         if (toolCalls.isEmpty()) {
             val noToolsLabel = JBLabel(AutoDevBundle.message("mcp.chat.result.no.tools")).apply {
                 foreground = JBColor(0x6B7280, 0x9DA0A8)  // Gray text
@@ -242,17 +240,16 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                 "{}"
             }
 
-            val matchingTool = findMatchingTool(toolCall.name)
-
+            val matchingTool = findMatchingTool(toolCall)
             val result = if (matchingTool != null) {
                 mcpServerManager.execute(project, matchingTool, params)
             } else {
                 AutoDevBundle.message("mcp.chat.result.error.tool.not.found", toolCall.name)
             }
-            
+
             val executionTime = System.currentTimeMillis() - startTime
             resultPanel.removeAll()
-            
+
             val timeInfoPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
                 isOpaque = false
                 add(JBLabel("${AutoDevBundle.message("mcp.chat.result.execution.time")}: ${executionTime}ms").apply {
@@ -260,7 +257,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                     foreground = JBColor(0x6B7280, 0x9DA0A8)
                 })
             }
-            
+
             val textArea = JTextArea(result).apply {
                 lineWrap = true
                 wrapStyleWord = true
@@ -292,46 +289,5 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
         return null
     }
-
-    data class ToolCall(
-        val name: String,
-        val parameters: Map<String, String>
-    )
-
-    fun extractToolCalls(text: String): List<ToolCall> {
-        val toolCalls = mutableListOf<ToolCall>()
-
-        val codeblock = CodeFence.parse(text)
-        if (codeblock.originLanguage != "xml") {
-            return emptyList()
-        }
-
-        try {
-            val xmlFactory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
-            val builder = xmlFactory.newDocumentBuilder()
-            val inputSource = org.xml.sax.InputSource(StringReader(codeblock.text))
-            val document = builder.parse(inputSource)
-
-            val invokeNodes = document.getElementsByTagName("devins:invoke")
-            for (i in 0 until invokeNodes.length) {
-                val invokeNode = invokeNodes.item(i) as org.w3c.dom.Element
-                val toolName = invokeNode.getAttribute("name")
-
-                val parameters = mutableMapOf<String, String>()
-                val paramNodes = invokeNode.getElementsByTagName("devins:parameter")
-                for (j in 0 until paramNodes.length) {
-                    val paramNode = paramNodes.item(j) as org.w3c.dom.Element
-                    val paramName = paramNode.getAttribute("name")
-                    val paramValue = paramNode.textContent
-                    parameters[paramName] = paramValue
-                }
-
-                toolCalls.add(ToolCall(toolName, parameters))
-            }
-        } catch (e: Exception) {
-            return emptyList()
-        }
-
-        return toolCalls
-    }
 }
+
