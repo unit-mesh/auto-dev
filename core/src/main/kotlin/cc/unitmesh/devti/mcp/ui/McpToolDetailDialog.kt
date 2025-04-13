@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.mcp.ui
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.client.MockDataGenerator
 import cc.unitmesh.devti.provider.local.JsonLanguageField
@@ -31,7 +32,7 @@ class McpToolDetailDialog(
     private var mainPanel: JPanel? = null
 
     init {
-        title = "MCP Tool Detail - $serverName"
+        title = AutoDevBundle.message("mcp.tool.detail.dialog.title", serverName)
         init()
     }
 
@@ -52,13 +53,13 @@ class McpToolDetailDialog(
                 }
             }
             row {
-                label("From server: $serverName").applyToComponent {
+                label(AutoDevBundle.message("mcp.tool.detail.dialog.from.server", serverName)).applyToComponent {
                     font = JBUI.Fonts.label(14.0f)
                     foreground = JBColor(0x6B7280, 0x9DA0A8)
                 }
             }
             row {
-                val descriptionText = tool.description ?: "No description available"
+                val descriptionText = tool.description ?: AutoDevBundle.message("mcp.tool.detail.dialog.no.description")
                 val descLabel = JTextPane().apply {
                     text = descriptionText
                     font = JBUI.Fonts.label(12.0f)
@@ -70,7 +71,7 @@ class McpToolDetailDialog(
                 cell(descLabel).resizableColumn()
             }
 
-            group("Parameters") {
+            group(AutoDevBundle.message("mcp.tool.detail.dialog.parameters")) {
                 tool.inputSchema.properties.forEach { param: Map.Entry<String, JsonElement> ->
                     row {
                         label(param.key)
@@ -83,7 +84,7 @@ class McpToolDetailDialog(
                     }
                 }
             }
-            group("Verify (Auto Generate)") {
+            group(AutoDevBundle.message("mcp.tool.detail.dialog.verify")) {
                 row {
                     cell(jsonLanguageField!!)
                         .resizableColumn()
@@ -93,7 +94,7 @@ class McpToolDetailDialog(
                 }
             }
 
-            group("Result") {
+            group(AutoDevBundle.message("mcp.tool.detail.dialog.result")) {
                 row {
                     cell(resultPanel!!)
                         .resizableColumn()
@@ -112,7 +113,7 @@ class McpToolDetailDialog(
             background = UIUtil.getPanelBackground()
         }
 
-        val executeButton = JButton("Execute").apply {
+        val executeButton = JButton(AutoDevBundle.message("mcp.tool.detail.dialog.execute")).apply {
             font = JBUI.Fonts.label(14.0f)
             addActionListener {
                 onExecute()
@@ -134,7 +135,6 @@ class McpToolDetailDialog(
                 lineWrap = true
                 wrapStyleWord = true
                 isEditable = false
-                font = JBUI.Fonts.create("Monospaced", 12)
             }
 
             panel.add(JBScrollPane(textArea), BorderLayout.CENTER)
