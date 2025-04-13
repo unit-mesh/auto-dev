@@ -240,7 +240,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                 "{}"
             }
 
-            val matchingTool = findMatchingTool(toolCall)
+            val matchingTool = findMatchingTool(toolCall.name)
             val result = if (matchingTool != null) {
                 mcpServerManager.execute(project, matchingTool, params)
             } else {
