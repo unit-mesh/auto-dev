@@ -34,6 +34,8 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
     private val requestDetailPanel = RequestDetailPanel()
     private val responseDetailPanel = ResponseDetailPanel()
     
+    private val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
+    
     companion object {
         private const val REQUEST_PANEL = "REQUEST_PANEL"
         private const val RESPONSE_PANEL = "RESPONSE_PANEL"
@@ -46,15 +48,19 @@ class McpMessageLogPanel : JPanel(BorderLayout()) {
         detailPanel.add(JPanel(), EMPTY_PANEL)
         detailPanel.add(requestDetailPanel, REQUEST_PANEL)
         detailPanel.add(responseDetailPanel, RESPONSE_PANEL)
+        detailCardLayout.show(detailPanel, EMPTY_PANEL)
 
-        val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT).apply {
+        splitPane.apply {
             leftComponent = JBScrollPane(table)
-            rightComponent = detailPanel  // No need for JBScrollPane as components handle scrolling
-            dividerLocation = 600
-            resizeWeight = 0.5
+            rightComponent = JBScrollPane(detailPanel)
+            isContinuousLayout = true
+            resizeWeight = 0.7
+            isOneTouchExpandable = true
+            setDividerLocation(0.7)
         }
 
         add(splitPane, BorderLayout.CENTER)
+        
         table.selectionModel.addListSelectionListener { e ->
             if (!e.valueIsAdjusting && table.selectedRow >= 0) {
                 val selectedIndex = table.convertRowIndexToModel(table.selectedRow)

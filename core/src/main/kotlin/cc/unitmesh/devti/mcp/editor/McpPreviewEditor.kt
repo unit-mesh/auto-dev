@@ -151,10 +151,7 @@ open class McpPreviewEditor(
             llmConfigs.map { it.name }.toTypedArray()
         }
 
-        chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames).apply {
-            border = JBUI.Borders.emptyLeft(8)
-        }
-
+        chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames)
         configButton = JButton("Configure").apply {
             isFocusPainted = false
             addActionListener { showConfigDialog() }

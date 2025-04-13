@@ -13,7 +13,7 @@ import javax.swing.JPanel
 
 class ResponseDetailPanel : JPanel(BorderLayout()) {
     private val headerPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
-        border = JBUI.Borders.empty(10)
+        border = JBUI.Borders.empty(4)
         background = JBColor(0xF8F9FA, 0x2B2D30)
     }
     
@@ -27,7 +27,7 @@ class ResponseDetailPanel : JPanel(BorderLayout()) {
         "Response content",
         "response.json"
     ).apply {
-        border = JBUI.Borders.empty(10)
+        border = JBUI.Borders.empty()
     }
     
     init {
