@@ -232,6 +232,8 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         resultPanel.revalidate()
         resultPanel.repaint()
 
+        val startTime = System.currentTimeMillis()
+
         SwingUtilities.invokeLater {
             val params = try {
                 val jsonParams = json.encodeToString(toolCall.parameters)
@@ -247,8 +249,18 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
             } else {
                 AutoDevBundle.message("mcp.chat.result.error.tool.not.found", toolCall.name)
             }
-
+            
+            val executionTime = System.currentTimeMillis() - startTime
             resultPanel.removeAll()
+            
+            val timeInfoPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
+                isOpaque = false
+                add(JBLabel("${AutoDevBundle.message("mcp.chat.result.execution.time")}: ${executionTime}ms").apply {
+                    font = JBUI.Fonts.label(12f)
+                    foreground = JBColor(0x6B7280, 0x9DA0A8)
+                })
+            }
+            
             val textArea = JTextArea(result).apply {
                 lineWrap = true
                 wrapStyleWord = true
@@ -263,6 +275,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
                 preferredSize = Dimension(0, 150) // Reasonable default height for results
             }
 
+            resultPanel.add(timeInfoPanel, BorderLayout.NORTH)
             resultPanel.add(resultScrollPane, BorderLayout.CENTER)
             resultPanel.isVisible = true
             resultPanel.revalidate()
