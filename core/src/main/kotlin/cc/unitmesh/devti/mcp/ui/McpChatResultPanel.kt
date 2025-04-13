@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.mcp.ui
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
 import cc.unitmesh.devti.util.parser.CodeFence
@@ -48,8 +49,8 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
     }
 
     private val tabbedPane = JBTabbedPane().apply {
-        addTab("Response", responseScrollPane)
-        addTab("Tools", toolsScrollPane)
+        addTab(AutoDevBundle.message("mcp.chat.result.tab.response"), responseScrollPane)
+        addTab(AutoDevBundle.message("mcp.chat.result.tab.tools"), toolsScrollPane)
     }
 
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
@@ -77,7 +78,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
         val toolCalls = extractToolCalls(text)
         if (toolCalls.isEmpty()) {
-            val noToolsLabel = JBLabel("No tool calls found in the response").apply {
+            val noToolsLabel = JBLabel(AutoDevBundle.message("mcp.chat.result.no.tools")).apply {
                 foreground = JBColor(0x6B7280, 0x9DA0A8)  // Gray text
                 horizontalAlignment = SwingConstants.CENTER
             }
@@ -183,7 +184,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         }
 
         // Add execute button and result panel
-        val executeButton = JButton("Execute").apply {
+        val executeButton = JButton(AutoDevBundle.message("mcp.chat.result.execute")).apply {
             font = JBUI.Fonts.label(12f)
             addActionListener {
                 executeToolCall(toolCall, panel)
@@ -223,7 +224,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
         parentPanel.add(resultPanel, BorderLayout.SOUTH)
 
-        val loadingLabel = JBLabel("Executing tool ${toolCall.name}...").apply {
+        val loadingLabel = JBLabel(AutoDevBundle.message("mcp.chat.result.executing", toolCall.name)).apply {
             horizontalAlignment = SwingConstants.CENTER
         }
         resultPanel.add(loadingLabel, BorderLayout.CENTER)
@@ -244,7 +245,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
             val result = if (matchingTool != null) {
                 mcpServerManager.execute(project, matchingTool, params)
             } else {
-                "Error: Could not find matching tool '${toolCall.name}'"
+                AutoDevBundle.message("mcp.chat.result.error.tool.not.found", toolCall.name)
             }
 
             resultPanel.removeAll()
