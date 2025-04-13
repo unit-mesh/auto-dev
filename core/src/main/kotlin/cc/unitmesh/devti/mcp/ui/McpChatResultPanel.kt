@@ -90,10 +90,9 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
     fun setText(text: String) {
         rawResultTextArea.text = text
-        parseAndShowTools(text)
     }
 
-    private fun parseAndShowTools(text: String) {
+    fun parseAndShowTools(text: String) {
         toolsPanel.removeAll()
 
         toolCalls = ToolCall.fromString(text)

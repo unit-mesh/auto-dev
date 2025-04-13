@@ -248,10 +248,13 @@ open class McpPreviewEditor(
                 result.append(chunk)
                 SwingUtilities.invokeLater {
                     resultPanel.setText(result.toString())
-                    mainPanel.revalidate()
-                    mainPanel.repaint()
                 }
             }
+
+            resultPanel.parseAndShowTools(result.toString())
+
+            mainPanel.revalidate()
+            mainPanel.repaint()
         }
     }
 

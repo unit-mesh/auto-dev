@@ -3,7 +3,10 @@ layout: default
 title: Develop MCP Server
 nav_order: 3
 parent: MCP
+permalink: /mcp/development
 ---
+
+## Build Server
 
 Resources
 
@@ -14,7 +17,8 @@ Since MVP Specification has different version, we recommend you keep same with A
 - Kotlin SDK: io.modelcontextprotocol:kotlin-sdk:0.4.0
 - Java SDK: io.modelcontextprotocol.sdk:mcp:0.8.1
 
-## Test
+
+## Test Your Server with RPC Command
 
 Start the server, and paste follow message:
 
