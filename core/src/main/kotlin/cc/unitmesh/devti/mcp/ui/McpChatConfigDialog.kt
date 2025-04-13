@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.mcp.ui
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevSnippetFile
 import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
 import cc.unitmesh.devti.sketch.ui.code.EditorUtil
@@ -32,7 +33,7 @@ class McpChatConfigDialog(
     private var markdownEditor: EditorEx?
 
     init {
-        title = "Model Configuration"
+        title = AutoDevBundle.message("mcp.chat.config.dialog.title")
         allTools.forEach { (serverName, tools) ->
             config.enabledTools.addAll(tools)
         }
@@ -59,7 +60,7 @@ class McpChatConfigDialog(
 
         return panel {
             row {
-                label("Temperature: ${String.format("%.1f", config.temperature)}")
+                label(AutoDevBundle.message("mcp.chat.config.dialog.temperature", String.format("%.1f", config.temperature)))
             }
             row {
                 cell(JSlider(0, 10, (config.temperature * 10).toInt()).apply {
@@ -71,7 +72,7 @@ class McpChatConfigDialog(
                     }
                 })
             }
-            group("Enabled Tools") {
+            group(AutoDevBundle.message("mcp.chat.config.dialog.enabled.tools")) {
                 allTools.forEach { (serverName, tools) ->
                     tools.forEach { tool ->
                         row {
