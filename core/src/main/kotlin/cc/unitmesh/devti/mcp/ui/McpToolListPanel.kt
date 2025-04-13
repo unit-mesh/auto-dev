@@ -67,24 +67,31 @@ class McpToolListPanel(private val project: Project) : JPanel() {
                 }
             }
 
-            serverConfigs.forEach { (serverName, serverConfig) ->
-                try {
-                    val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
-                    allTools[serverName] = tools
-                    currentFilteredTools[serverName] = tools
-                    onToolsLoaded(allTools)
-
-                    SwingUtilities.invokeLater {
-                        updateServerSection(serverName, tools)
-                        serverLoadingStatus[serverName] = false
-                    }
-                } catch (e: Exception) {
-                    SwingUtilities.invokeLater {
-                        showServerError(serverName, e.message ?: "Unknown error")
-                        serverLoadingStatus[serverName] = false
+            val jobs = serverConfigs.map { (serverName, serverConfig) ->
+                launch {
+                    try {
+                        val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
+                        
+                        synchronized(allTools) {
+                            allTools[serverName] = tools
+                            currentFilteredTools[serverName] = tools
+                        }
+                        
+                        SwingUtilities.invokeLater {
+                            updateServerSection(serverName, tools)
+                            serverLoadingStatus[serverName] = false
+                        }
+                    } catch (e: Exception) {
+                        SwingUtilities.invokeLater {
+                            showServerError(serverName, e.message ?: "Unknown error")
+                            serverLoadingStatus[serverName] = false
+                        }
                     }
                 }
             }
+            
+            jobs.forEach { it.join() }
+            onToolsLoaded(allTools)
         }
     }
 

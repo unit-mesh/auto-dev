@@ -235,7 +235,8 @@ open class McpPreviewEditor(
         val llmProvider = CustomLLMProvider(project, llmConfig)
         val message = chatInput.text.trim()
         val result = StringBuilder()
-        val stream: Flow<String> = llmProvider.stream(message, systemPrompt = config.createSystemPrompt())
+        val systemPrompt = config.createSystemPrompt()
+        val stream: Flow<String> = llmProvider.stream(message, systemPrompt = systemPrompt)
         
         // Reset the resultPanel before setting new content
         resultPanel.reset()
