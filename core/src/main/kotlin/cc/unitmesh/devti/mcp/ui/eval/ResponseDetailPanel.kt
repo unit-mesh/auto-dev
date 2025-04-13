@@ -31,7 +31,7 @@ class ResponseDetailPanel : JPanel(BorderLayout()) {
     }
     
     init {
-        headerPanel.add(JBLabel("Response Duration:"))
+        headerPanel.add(JBLabel("Duration:"))
         headerPanel.add(durationLabel)
         
         add(headerPanel, BorderLayout.NORTH)
