@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.mcp.editor
 
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.mcp.ui.McpToolListPanel
@@ -31,7 +32,6 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.cancellable
@@ -228,15 +228,22 @@ open class McpPreviewEditor(
             config.enabledTools = allTools.map { it.value }.flatten().toMutableList()
         }
 
+        if (chatInput.text.isEmpty()) {
+            AutoDevNotifications.warn(project, "Please enter a message to send.")
+            return
+        }
+
         val llmConfig = LlmConfig.load().firstOrNull { it.name == chatbotSelector.selectedItem }
             ?: LlmConfig.default()
         val llmProvider = CustomLLMProvider(project, llmConfig)
         val message = chatInput.text.trim()
+
+        chatInput.text = ""
+
         val result = StringBuilder()
         val systemPrompt = config.createSystemPrompt()
         val stream: Flow<String> = llmProvider.stream(message, systemPrompt = systemPrompt)
         
-        // Reset the resultPanel before setting new content
         resultPanel.reset()
         resultPanel.setText("Loading response...")
         resultPanel.isVisible = true

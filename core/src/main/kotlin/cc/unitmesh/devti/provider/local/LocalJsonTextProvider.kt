@@ -46,16 +46,16 @@ class JsonLanguageField(
     override fun createEditor(): EditorEx {
         return super.createEditor().apply {
             setShowPlaceholderWhenFocused(true)
-            setHorizontalScrollbarVisible(false)
-            setVerticalScrollbarVisible(true)
+//            setHorizontalScrollbarVisible(false)
+//            setVerticalScrollbarVisible(true)
             setPlaceholder(placeholder)
 
             val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
             this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
 
-            this.settings.isUseSoftWraps = true
-            this.settings.isAdditionalPageAtBottom = false
-            this.settings.isCaretRowShown = false
+//            this.settings.isUseSoftWraps = true
+//            this.settings.isAdditionalPageAtBottom = false
+//            this.settings.isCaretRowShown = false
 
             isOneLineMode = oneLineMode
         }
