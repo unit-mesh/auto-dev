@@ -138,7 +138,7 @@ open class McpPreviewEditor(
             )
         }
 
-        val selectorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
+        val selectorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply {
             background = UIUtil.getPanelBackground()
         }
 
@@ -154,13 +154,12 @@ open class McpPreviewEditor(
         chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames)
         configButton = JButton("Configure").apply {
             isFocusPainted = false
-            addActionListener { showConfigDialog() }
         }
 
         selectorPanel.add(chatbotLabel)
         selectorPanel.add(chatbotSelector)
 
-        val configPanel = JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
+        val configPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0)).apply {
             background = UIUtil.getPanelBackground()
             add(configButton)
         }
