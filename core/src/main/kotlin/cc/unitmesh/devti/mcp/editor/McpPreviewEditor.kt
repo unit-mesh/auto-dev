@@ -105,7 +105,7 @@ open class McpPreviewEditor(
 
         val toolsWrapper = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
-            border = JBUI.Borders.empty(4)
+            border = JBUI.Borders.empty()
         }
 
         toolListPanel = McpToolListPanel(project)
@@ -202,9 +202,17 @@ open class McpPreviewEditor(
         bottomPanel.addToCenter(chatbotPanel)
         bottomPanel.addToBottom(inputPanel)
 
+        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
+            topComponent = toolsWrapper
+            bottomComponent = bottomPanel
+            resizeWeight = 0.7
+            isContinuousLayout = true
+            border = BorderFactory.createEmptyBorder()
+            dividerSize = JBUI.scale(5)
+        }
+
         mainPanel.add(headerPanel, BorderLayout.NORTH)
-        mainPanel.add(toolsWrapper, BorderLayout.CENTER)
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH)
+        mainPanel.add(splitPane, BorderLayout.CENTER)
     }
 
     private fun filterTools() {

@@ -122,11 +122,7 @@ class McpToolListPanel(private val project: Project) : JPanel() {
     private fun createServerSection(serverName: String) {
         val serverPanel = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
-            border = BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor),
-                JBUI.Borders.empty()
-            )
-        }
+            border = JBUI.Borders.empty()        }
 
         val headerPanel = JPanel(BorderLayout()).apply {
             background = headerColor
