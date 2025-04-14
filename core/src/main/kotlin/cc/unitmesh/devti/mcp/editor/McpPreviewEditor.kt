@@ -132,7 +132,10 @@ open class McpPreviewEditor(
 
         val chatbotPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
-            border = JBUI.Borders.emptyBottom(0)
+            border = CompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor),
+                JBUI.Borders.empty()
+            )
         }
 
         val selectorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
@@ -198,14 +201,19 @@ open class McpPreviewEditor(
         inputPanel.addToCenter(chatInput)
         inputPanel.addToRight(sendButtonPanel)
 
-        bottomPanel.addToTop(resultPanel)
-        bottomPanel.addToCenter(chatbotPanel)
-        bottomPanel.addToBottom(inputPanel)
+        val chatControlsPanel = JPanel(BorderLayout()).apply {
+            background = UIUtil.getPanelBackground()
+            add(chatbotPanel, BorderLayout.NORTH)
+            add(inputPanel, BorderLayout.SOUTH)
+        }
+
+        bottomPanel.add(resultPanel, BorderLayout.CENTER)
+        bottomPanel.add(chatControlsPanel, BorderLayout.SOUTH)
 
         val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
             topComponent = toolsWrapper
             bottomComponent = bottomPanel
-            resizeWeight = 0.7
+            resizeWeight = 0.8
             isContinuousLayout = true
             border = BorderFactory.createEmptyBorder()
             dividerSize = JBUI.scale(5)

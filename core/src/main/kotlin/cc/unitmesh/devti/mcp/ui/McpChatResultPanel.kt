@@ -61,7 +61,6 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
 
-    private var currentHeight = 300
     private var toolCalls: List<ToolCall> = emptyList()
 
     init {
@@ -69,9 +68,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
         val contentPanel = JPanel(BorderLayout())
         contentPanel.add(tabbedPane, BorderLayout.CENTER)
-
         add(contentPanel, BorderLayout.CENTER)
-        tabbedPane.preferredSize = Dimension(width, currentHeight)
     }
 
     fun reset() {
