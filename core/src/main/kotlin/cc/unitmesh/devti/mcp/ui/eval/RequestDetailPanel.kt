@@ -16,9 +16,6 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEach
 
-/**
- * Panel for displaying request details from MCP messages
- */
 class RequestDetailPanel : JPanel(BorderLayout()) {
     private val headerPanel = JPanel(BorderLayout()).apply {
         border = JBUI.Borders.empty(10, 10, 5, 10)
@@ -52,10 +49,7 @@ class RequestDetailPanel : JPanel(BorderLayout()) {
                 val parsedJson = json.parseToJsonElement(paramJson).jsonObject
                 parameterDisplay.displayParameters(parsedJson)
             } catch (e: Exception) {
-                // If parsing fails, fall back to displaying raw JSON
-                val errorPanel = JPanel(BorderLayout())
                 parameterDisplay.displayParameters(null)
-                
                 add(JTextArea(paramJson).apply {
                     lineWrap = true
                     wrapStyleWord = true
@@ -68,9 +62,6 @@ class RequestDetailPanel : JPanel(BorderLayout()) {
     }
 }
 
-/**
- * A reusable component for displaying key-value parameters from JSON
- */
 class ParameterDisplay : JPanel(BorderLayout()) {
     private val contentPanel = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
