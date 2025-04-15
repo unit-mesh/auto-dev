@@ -23,6 +23,11 @@ For example, create a file named `prompts/sql/sql-gen-clarify.vm`, will override
 ├── code
 │   ├── api-test-gen.vm
 │   ├── code-gen.vm
+│   ├── bridge.vm
+│   ├── sketch.vm
+│   ├── plan.vm
+│   ├── plan-reviewer.vm
+│   ├── repair-diff.vm
 │   └── test-gen.vm
 ├── error
 │   └── fix-error.vm
