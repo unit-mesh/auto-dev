@@ -289,10 +289,6 @@ open class McpPreviewEditor(
         mainEditor.value = editor
     }
 
-    fun scrollToSrcOffset(offset: Int) {
-        // Implementation here
-    }
-
     override fun getComponent(): JComponent = mainPanel
     override fun getName(): String = "MCP Preview"
     override fun setState(state: FileEditorState) {}
