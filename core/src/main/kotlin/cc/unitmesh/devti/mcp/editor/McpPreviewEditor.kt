@@ -154,6 +154,9 @@ open class McpPreviewEditor(
         chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames)
         configButton = JButton("Configure").apply {
             isFocusPainted = false
+            addActionListener {
+                showConfigDialog()
+            }
         }
 
         selectorPanel.add(chatbotLabel)
