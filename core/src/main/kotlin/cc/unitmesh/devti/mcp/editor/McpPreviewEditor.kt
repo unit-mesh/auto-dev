@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.mcp.editor
 
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
@@ -80,7 +81,7 @@ open class McpPreviewEditor(
     private fun createUI() {
         val headerPanel = panel {
             row {
-                val label = JBLabel("MCP tools").apply {
+                val label = JBLabel(AutoDevBundle.message("mcp.preview.editor.title")).apply {
                     font = JBUI.Fonts.label(14.0f).asBold()
                     border = JBUI.Borders.emptyLeft(8)
                     isOpaque = true
@@ -89,7 +90,7 @@ open class McpPreviewEditor(
                 cell(label).align(Align.FILL).resizableColumn()
                 
                 searchField = SearchTextField().apply {
-                    textEditor.emptyText.text = "Search tools..."
+                    textEditor.emptyText.text = AutoDevBundle.message("mcp.preview.editor.search.placeholder")
                     textEditor.document.addDocumentListener(object : DocumentListener {
                         override fun insertUpdate(e: DocumentEvent) = filterTools()
                         override fun removeUpdate(e: DocumentEvent) = filterTools()
@@ -142,7 +143,7 @@ open class McpPreviewEditor(
             background = UIUtil.getPanelBackground()
         }
 
-        val chatbotLabel = JBLabel("Model")
+        val chatbotLabel = JBLabel(AutoDevBundle.message("mcp.preview.editor.model.label"))
 
         val llmConfigs = LlmConfig.load()
         val modelNames = if (llmConfigs.isEmpty()) {
@@ -152,7 +153,7 @@ open class McpPreviewEditor(
         }
 
         chatbotSelector = com.intellij.openapi.ui.ComboBox(modelNames)
-        configButton = JButton("Configure").apply {
+        configButton = JButton(AutoDevBundle.message("mcp.preview.editor.configure.button")).apply {
             isFocusPainted = false
             addActionListener {
                 showConfigDialog()
@@ -191,7 +192,7 @@ open class McpPreviewEditor(
         testButton = ActionButton(
             DumbAwareAction.create { sendMessage() },
             sendPresentation, 
-            "McpSendAction", 
+            "McpSendAction",
             Dimension(JBUI.scale(30), JBUI.scale(30))
         )
         val sendButtonPanel = JPanel(FlowLayout(FlowLayout.CENTER, 0, 0)).apply {
@@ -247,7 +248,7 @@ open class McpPreviewEditor(
         }
 
         if (chatInput.text.isEmpty()) {
-            AutoDevNotifications.warn(project, "Please enter a message to send.")
+            AutoDevNotifications.warn(project, AutoDevBundle.message("mcp.preview.editor.empty.message.warning"))
             return
         }
 
@@ -263,7 +264,7 @@ open class McpPreviewEditor(
         val stream: Flow<String> = llmProvider.stream(message, systemPrompt = systemPrompt)
         
         resultPanel.reset()
-        resultPanel.setText("Loading response...")
+        resultPanel.setText(AutoDevBundle.message("mcp.preview.editor.loading.response"))
         resultPanel.isVisible = true
         mainPanel.revalidate()
         mainPanel.repaint()
