@@ -114,7 +114,6 @@ open class QuickAssistantAction : AnAction() {
             escHandler?.dispose()
         }
         currentInlayPanel = InlayPanel.add(editor as EditorEx, offset, QuickPromptField())?.also {
-            currentInlayPanel = null
             doExecute(it, project, editor, element)
         }
     }
