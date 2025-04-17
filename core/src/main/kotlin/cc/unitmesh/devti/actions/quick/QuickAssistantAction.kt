@@ -25,6 +25,7 @@ import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import cc.unitmesh.devti.inlay.InlayPanel
+import cc.unitmesh.devti.inline.EscHandler
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 
@@ -33,6 +34,10 @@ import javax.swing.AbstractAction
  * user can input custom text to call with LLM.
  */
 open class QuickAssistantAction : AnAction() {
+
+    private var currentInlayPanel: InlayPanel<QuickPromptField>? = null
+    private var escHandler: EscHandler? = null
+
     init{
         presentationText("settings.autodev.others.quickAssistant", templatePresentation)
     }
@@ -101,7 +106,15 @@ open class QuickAssistantAction : AnAction() {
     }
 
     private fun useInlayMode(editor: Editor, offset: Int, project: Project, element: PsiElement?) {
-        InlayPanel.add(editor as EditorEx, offset, QuickPromptField())?.let {
+        currentInlayPanel?.let {
+            Disposer.dispose(it.inlay!!)
+        }
+        escHandler = EscHandler(editor) {
+            Disposer.dispose(currentInlayPanel?.inlay!!)
+            escHandler?.dispose()
+        }
+        currentInlayPanel = InlayPanel.add(editor as EditorEx, offset, QuickPromptField())?.also {
+            currentInlayPanel = null
             doExecute(it, project, editor, element)
         }
     }
