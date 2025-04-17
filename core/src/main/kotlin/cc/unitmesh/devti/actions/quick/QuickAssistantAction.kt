@@ -110,7 +110,7 @@ open class QuickAssistantAction : AnAction() {
             Disposer.dispose(it.inlay!!)
         }
         escHandler = EscHandler(editor) {
-            Disposer.dispose(currentInlayPanel?.inlay!!)
+            currentInlayPanel?.inlay?.let { Disposer.dispose(it) }
             escHandler?.dispose()
         }
         currentInlayPanel = InlayPanel.add(editor as EditorEx, offset, QuickPromptField())?.also {
