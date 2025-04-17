@@ -59,62 +59,62 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
             reader = BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
             var line: String? = null
             var sse: SSE? = null
+
+            //用于兼容非标准格式的SSE：一条数据拆成了多行，每行都以data:开头
+            val dataBuilder = StringBuilder() // 用于合并多行 data 内容
             while (!emitter.isCancelled && reader.readLine().also { line = it } != null) {
-                sse = when {
-                    line!!.startsWith("data:") -> {
-                        val data = line!!.substring(5).trim { it <= ' ' }
-                        SSE(data)
-                    }
-
-                    line == "" && sse != null -> {
-                        if (sse.isDone) {
-                            if (emitDone) {
-                                emitter.onNext(sse)
-                            }
-                            break
+                if (line!!.startsWith("data:")) {
+                    val dataPart = line!!.substring(5).trim { it <= ' ' }
+                    dataBuilder.append(dataPart) // 追加 data 内容
+                } else if (line == "" && dataBuilder.isNotEmpty()) {
+                    // 遇到空行且有累积的 data 内容，创建 SSE 对象
+                    val data = dataBuilder.toString()
+                    sse = SSE(data)
+                    if (sse.isDone) {
+                        if (emitDone) {
+                            emitter.onNext(sse)
                         }
-                        emitter.onNext(sse)
-                        null
+                        break
                     }
-                    // starts with event:
-                    line!!.startsWith("event:") -> {
-                        // https://github.com/sysid/sse-starlette/issues/16
-                        val eventName = line!!.substring(6).trim { it <= ' ' }
-                        if (eventName == "ping") {
-                            // skip ping event and data
-                            emitter.onNext(sse ?: SSE(""))
-                            emitter.onNext(sse ?: SSE(""))
+                    emitter.onNext(sse)
+                    dataBuilder.clear() // 清空 data 内容
+                    sse = null
+                } else {
+                    // 其他情况，按照原逻辑处理
+                    sse = when {
+                        // starts with event:
+                        line!!.startsWith("event:") -> {
+                            // https://github.com/sysid/sse-starlette/issues/16
+                            val eventName = line!!.substring(6).trim { it <= ' ' }
+                            if (eventName == "ping") {
+                                // skip ping event and data
+                                emitter.onNext(sse ?: SSE(""))
+                                emitter.onNext(sse ?: SSE(""))
+                            }
+                            null
                         }
 
-                        null
-                    }
+                        // skip `: ping` comments for: https://github.com/sysid/sse-starlette/issues/16
+                        line!!.startsWith(": ping") -> {
+                            null
+                        }
 
-                    // skip `: ping` comments for: https://github.com/sysid/sse-starlette/issues/16
-                    line!!.startsWith(": ping") -> {
-                        null
-                    }
+                        // sometimes the server maybe returns empty line
+                        line == "" -> {
+                            null
+                        }
 
-                    else -> {
-                        when {
-                            // sometimes the server maybe returns empty line
-                            line == "" -> {
-                                null
-                            }
-
-                            // : is comment
-                            // https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream
-                            line!!.startsWith(":") -> {
-                                null
-                            }
-
-                            else -> {
-                                throw AutoDevHttpException("Invalid sse format! '$line'", response.code)
-                            }
+                        // : is comment
+                        // https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream
+                        line!!.startsWith(":") -> {
+                            null
+                        }
+                        else -> {
+                            throw AutoDevHttpException("Invalid sse format! '$line'", response.code)
                         }
                     }
                 }
             }
-
             emitter.onComplete()
         } catch (t: Throwable) {
             logger<ResponseBodyCallback>().error("Error while reading SSE", t)
