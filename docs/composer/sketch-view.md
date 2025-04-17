@@ -37,6 +37,9 @@ you can run interact with terminal, and popup terminal.
 Mermaid Sketch provides real-time preview and editing capabilities for flowcharts, supporting bidirectional binding to
 make diagram creation simple and intuitive.
 
+- required plugin URL: https://plugins.jetbrains.com/plugin/20146-mermaid
+- required plugin ID: com.intellij.mermaid
+
 ![](https://shire.run/images/shire-sketch-mermaid.png)
 
 ### **PlantUML Sketch**
@@ -44,13 +47,21 @@ make diagram creation simple and intuitive.
 PlantUML Sketch offers powerful support for UML diagrams, enabling seamless creation and modification of various UML
 diagrams with a bidirectionally bound code editor.
 
+- required plugin URL: https://plugins.jetbrains.com/plugin/7017-plantuml-integration
+- required plugin ID: PlantUML integration
+
 ![](https://shire.run/images/shire-sketch-plantuml.png)
 
 ### **Dependency Sketch`*`**
 
-Security-builtin vulnerable dependency checker                                                       
+Security-builtin vulnerable dependency checker        
+
+- required plugin URL: https://plugins.jetbrains.com/plugin/18337-package-checker
+- required plugin ID: org.jetbrains.security.package-checker
 
 ![](https://unitmesh.cc/auto-dev/sketch-security-dependency.png)
+
+### **OpenAPI Sketch`*`**
 
 OpenAPI Sketch provides a bidirectional code-OpenAPI synchronization editor, allowing you to edit OpenAPI
 
