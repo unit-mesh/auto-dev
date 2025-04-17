@@ -223,7 +223,7 @@ project(":") {
     dependencies {
         intellijPlatform {
             pluginVerifier()
-            intellijIde(prop("ideaVersion"))
+            intellijIde(prop("ideaRunVersion", prop("ideaVersion")))
             if (hasProp("jbrVersion")) {
                 jetbrainsRuntime(prop("jbrVersion"))
             } else {
@@ -905,8 +905,9 @@ fun IntelliJPlatformDependenciesExtension.intellijPlugins(notations: List<String
 
 fun hasProp(name: String): Boolean = extra.has(name)
 
-fun prop(name: String): String =
-    extra.properties[name] as? String ?: error("Property `$name` is not defined in gradle.properties")
+fun prop(name: String, fallbackResult: String? = null): String =
+    extra.properties[name] as? String ?: (fallbackResult
+        ?: error("Property `$name` is not defined in gradle.properties"))
 
 fun withProp(name: String, action: (String) -> Unit) {
     if (hasProp(name)) {
