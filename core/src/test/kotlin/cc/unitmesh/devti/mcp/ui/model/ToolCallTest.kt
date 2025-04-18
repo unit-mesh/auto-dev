@@ -15,9 +15,9 @@ class ToolCallTest {
 
         // when
         val result = try {
-            ToolCall.fromString(response)
+            ParsedToolCall.fromString(response)
         } catch (e: Exception) {
-            emptyList<ToolCall>()
+            emptyList<ParsedToolCall>()
         }
 
         // then
@@ -34,7 +34,7 @@ class ToolCallTest {
         """.trimIndent()
 
         // when
-        val result = ToolCall.fromString(response)
+        val result = ParsedToolCall.fromString(response)
 
         // then
         assertThat(result).isEmpty()
@@ -51,7 +51,7 @@ class ToolCallTest {
         """.trimIndent()
 
         // when
-        val result = ToolCall.fromString(response)
+        val result = ParsedToolCall.fromString(response)
 
         // then
         assertThat(result).hasSize(1)
@@ -72,7 +72,7 @@ class ToolCallTest {
         """.trimIndent()
 
         // when
-        val result = ToolCall.fromString(response)
+        val result = ParsedToolCall.fromString(response)
 
         // then
         assertThat(result).hasSize(1)

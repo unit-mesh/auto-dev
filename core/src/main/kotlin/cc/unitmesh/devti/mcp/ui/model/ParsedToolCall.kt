@@ -6,13 +6,13 @@ import org.xml.sax.InputSource
 import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
 
-data class ToolCall(
+data class ParsedToolCall(
     val name: String,
     val parameters: Map<String, String>
 ) {
     companion object {
-        fun fromString(response: String): List<ToolCall> {
-            val toolCalls = mutableListOf<ToolCall>()
+        fun fromString(response: String): List<ParsedToolCall> {
+            val toolCalls = mutableListOf<ParsedToolCall>()
 
             val codeFences = CodeFence.Companion.parseAll(response)
             val codeblock = codeFences.firstOrNull {
@@ -42,7 +42,7 @@ data class ToolCall(
                         parameters[paramName] = paramValue
                     }
 
-                    toolCalls.add(ToolCall(toolName, parameters))
+                    toolCalls.add(ParsedToolCall(toolName, parameters))
                 }
             } catch (e: Exception) {
                 return emptyList()
