@@ -374,7 +374,7 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
             <action id="AutoDev.ToolWindow.Snippet.RunDevIns"
-                    icon="cc.unitmesh.devti.AutoDevIcons.Run"
+                    icon="cc.unitmesh.devti.AutoDevIcons.RUN"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevRunAction"/>
             <action id="AutoDev.ToolWindow.Snippet.SaveFile"
                     icon="cc.unitmesh.devti.AutoDevIcons.SAVE_FILE"
