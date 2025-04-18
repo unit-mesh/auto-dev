@@ -232,10 +232,10 @@
         />
     </extensionPoints>
 
-    <projectListeners>
-        <listener class="cc.unitmesh.devti.practise.RenameLookupManagerListener"
-                  topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>
-    </projectListeners>
+<!--    <projectListeners>-->
+<!--        <listener class="cc.unitmesh.devti.practise.RenameLookupManagerListener"-->
+<!--                  topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>-->
+<!--    </projectListeners>-->
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
