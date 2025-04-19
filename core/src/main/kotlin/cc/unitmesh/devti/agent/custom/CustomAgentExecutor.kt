@@ -40,11 +40,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
             Json.encodeToString<CustomRequest>(customRequest)
         }
 
-        // fix for custom fields in message replace \"content\": \"$content\" with \"$content\": promptText
-        val errorContent = "\"content\":\"\$content\""
-        if (request.contains(errorContent)) {
-            request = request.replace(errorContent, "\"content\": \"$promptText\"")
-        }
+        request = replacePlaceholders(request, promptText)
 
         val body = request.toRequestBody("application/json".toMediaTypeOrNull())
         val builder = Request.Builder()
@@ -71,6 +67,32 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
             else -> {
                 streamJson(call, promptText, messages)
             }
+        }
+    }
+
+    companion object {
+        private const val SIMPLE_CONTENT_PLACEHOLDER = "\"content\":\"\$content\""
+        private const val JSON_VALUE_PLACEHOLDER_PATTERN = ":\\s*\"\\\$content\""
+
+        /**
+         * Replace placeholders in a request string with the actual prompt text
+         */
+        fun replacePlaceholders(request: String, promptText: String): String {
+            var result = request
+            
+            // Replace simple content placeholder
+            if (result.contains(SIMPLE_CONTENT_PLACEHOLDER)) {
+                result = result.replace(SIMPLE_CONTENT_PLACEHOLDER, "\"content\": \"$promptText\"")
+                return result
+            }
+
+            // Replace JSON value placeholders
+            val regex = Regex(JSON_VALUE_PLACEHOLDER_PATTERN)
+            if (result.contains(regex)) {
+                result = regex.replace(result, ": \"$promptText\"")
+            }
+            
+            return result
         }
     }
 }
