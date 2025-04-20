@@ -24,11 +24,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
 import okhttp3.Call
-import okhttp3.Request
-import org.jetbrains.annotations.VisibleForTesting
 
 /**
  * The `CustomSSEProcessor` class is responsible for processing server-sent events (SSE) in a custom manner.
@@ -200,106 +196,3 @@ open class CustomSSEProcessor(private val project: Project) {
 @Serializable
 data class Message(val role: String, var content: String)
 
-@Serializable
-data class CustomRequest(val messages: List<Message>)
-
-@VisibleForTesting
-fun Request.Builder.appendCustomHeaders(customRequestHeader: String): Request.Builder = apply {
-    runCatching {
-        Json.parseToJsonElement(customRequestHeader)
-            .jsonObject["customHeaders"].let { customFields ->
-            customFields?.jsonObject?.forEach { (key, value) ->
-                header(key, value.jsonPrimitive.content)
-            }
-        }
-    }.onFailure {
-        logger<CustomLLMProvider>().warn("Failed to parse custom request header", it)
-    }
-}
-
-@VisibleForTesting
-fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
-    return runCatching {
-        buildJsonObject {
-            // copy origin object
-            val customRequestJson = Json.parseToJsonElement(customRequest).jsonObject
-            customRequestJson["fields"]?.jsonObject?.let { fieldsObj ->
-                val messages: JsonArray = this@updateCustomBody["messages"]?.jsonArray ?: buildJsonArray {}
-                val contentOfFirstMessage = if (messages.isNotEmpty()) {
-                    messages.last().jsonObject["content"]?.jsonPrimitive?.content ?: ""
-                } else ""
-                fieldsObj.forEach { (fieldKey, fieldValue) ->
-                    if (fieldValue is JsonObject) {
-                        put(fieldKey, buildJsonObject {
-                            fieldValue.forEach { (subKey, subValue) ->
-                                if (subValue is JsonPrimitive && subValue.content == "\$content") {
-                                    put(subKey, JsonPrimitive(contentOfFirstMessage))
-                                } else {
-                                    put(subKey, subValue)
-                                }
-                            }
-                        })
-                    } else if (fieldValue is JsonPrimitive && fieldValue.content == "\$content") {
-                        put(fieldKey, JsonPrimitive(contentOfFirstMessage))
-                    } else {
-                        put(fieldKey, fieldValue)
-                    }
-                }
-
-                return@buildJsonObject
-            }
-
-            this@updateCustomBody.forEach { u, v -> put(u, v) }
-            customRequestJson["customFields"]?.let { customFields ->
-                customFields.jsonObject.forEach { (key, value) ->
-                    put(key, value)
-                }
-             }
-
-            // TODO clean code with magic literals
-            var roleKey = "role"
-            var contentKey = "content"
-            customRequestJson.jsonObject["messageKeys"]?.let {
-                roleKey = it.jsonObject["role"]?.jsonPrimitive?.content ?: "role"
-                contentKey = it.jsonObject["content"]?.jsonPrimitive?.content ?: "content"
-            }
-
-            val messages: JsonArray = this@updateCustomBody["messages"]?.jsonArray ?: buildJsonArray { }
-            this.put("messages", buildJsonArray {
-                messages.forEach { message ->
-                    val role: String = message.jsonObject["role"]?.jsonPrimitive?.content ?: "user"
-                    val content: String = message.jsonObject["content"]?.jsonPrimitive?.content ?: ""
-                    add(buildJsonObject {
-                        put(roleKey, role)
-                        put(contentKey, content)
-                    })
-                }
-            })
-        }
-    }.getOrElse {
-        logger<CustomLLMProvider>().error("Failed to parse custom request body", it)
-        this
-    }
-}
-
-fun CustomRequest.updateCustomFormat(format: String): String {
-    val requestContentOri = Json.encodeToString<CustomRequest>(this)
-    val updateCustomBody = kotlin.runCatching {
-        Json.parseToJsonElement(requestContentOri)
-            .jsonObject.updateCustomBody(format)
-    }.getOrElse {
-        logger<CustomLLMProvider>().error("Failed to update custom request body: ${format}", it)
-        requestContentOri
-    }
-
-    return updateCustomBody.toString()
-}
-
-fun JsonObject.removeFields(vararg fields: String): JsonObject {
-    return JsonObject(
-        toMutableMap()
-            .apply {
-                fields.forEach { remove(it) }
-            }
-    )
-}
