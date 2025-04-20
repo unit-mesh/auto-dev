@@ -117,7 +117,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
             if (completion.isEmpty()) return@execute
 
             val completeCode = CodeFence.parse(completion).text
-            currentCompletion = PostCodeProcessor(request.prefixText, request.suffixText, completeCode).execute()
+            currentCompletion = PostCodeProcessor(request.prefix, request.suffix, completeCode).execute()
 
             WriteCommandAction.runWriteCommandAction(editor.project) {
                 val renderer = LLMInlayRenderer(editor, currentCompletion.lines())

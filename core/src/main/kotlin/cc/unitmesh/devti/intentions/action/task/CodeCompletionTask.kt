@@ -64,16 +64,16 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     private fun promptText(): String {
         val documentLength = request.editor.document.textLength
         val prefix = if (request.offset > documentLength) {
-            request.prefixText
+            request.prefix
         } else {
             val text = request.editor.document.text
             text.substring(0, request.offset)
         }
 
         val prompt = if (chunksString == null) {
-            "Complete code: \n$prefix"
+            prefix
         } else {
-            "Complete code: \n$commentPrefix\n$chunksString\n$prefix"
+            "$commentPrefix\n$chunksString\n$prefix"
         }
 
         return prompt

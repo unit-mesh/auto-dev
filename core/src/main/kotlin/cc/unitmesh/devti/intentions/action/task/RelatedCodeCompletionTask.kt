@@ -32,7 +32,7 @@ class RelatedCodeCompletionTask(private val request: CodeCompletionRequest) : Ba
         prompter
             .initContext(
                 ChatActionType.CODE_COMPLETE,
-                request.prefixText,
+                request.prefix,
                 runReadAction { request.element.containingFile },
                 project,
                 request.offset,
