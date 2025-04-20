@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay.presentation
+package cc.unitmesh.devti.gui
 
 import com.intellij.codeInsight.codeVision.CodeVisionEntry
 import com.intellij.codeInsight.codeVision.ui.model.RangeCodeVisionModel

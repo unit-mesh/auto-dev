@@ -10,7 +10,11 @@ import org.intellij.markdown.parser.MarkdownParser
 private val embeddedHtmlType = IElementType("ROOT")
 
 fun convertMarkdownToHtml(markdownText: String): String {
-    val flavour = GFMFlavourDescriptor()
-    val parsedTree = MarkdownParser(flavour).parse(embeddedHtmlType, markdownText)
-    return HtmlGenerator(markdownText, parsedTree, flavour, false).generateHtml()
+    try {
+        val flavour = GFMFlavourDescriptor()
+        val parsedTree = MarkdownParser(flavour).parse(embeddedHtmlType, markdownText)
+        return HtmlGenerator(markdownText, parsedTree, flavour, false).generateHtml()
+    } catch (e: Exception) {
+        return markdownText
+    }
 }

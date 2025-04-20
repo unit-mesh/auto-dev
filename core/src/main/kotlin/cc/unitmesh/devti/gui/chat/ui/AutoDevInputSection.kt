@@ -45,7 +45,7 @@ import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.temporary.gui.block.AutoDevCoolBorder
+import cc.unitmesh.devti.gui.AutoDevCoolBorder
 import com.intellij.ui.HintHint
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
