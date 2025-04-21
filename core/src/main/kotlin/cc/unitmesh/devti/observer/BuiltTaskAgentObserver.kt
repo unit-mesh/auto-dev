@@ -43,12 +43,6 @@ class BuiltTaskAgentObserver : AgentObserver, Disposable {
                 handler: ProcessHandler,
                 exitCode: Int
             ) {
-//                env.contentToReuse?.executionConsole?.also {
-//                    val consoleView = RunTestUtil.getConsoleView(it) ?: return@also
-//                    val collectConsoleRelatedContent = RunTestUtil.collectConsoleRelatedContent(project, consoleView)
-//                    println("collectConsoleRelatedContent: $collectConsoleRelatedContent")
-//
-//                }
                 val globalBuffer = globalBuffer.toString().trim()
                 if (globalBuffer.isEmpty()) {
                     return
