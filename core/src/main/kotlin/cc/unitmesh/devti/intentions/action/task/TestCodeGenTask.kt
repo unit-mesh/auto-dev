@@ -236,6 +236,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         val rags = CustomAgentConfig.loadFromProject(project)
         if (rags.isEmpty()) return null
 
-        return rags.firstOrNull { it.name == CustomExtContext.TextContext.agentName }
+        return rags.firstOrNull { it.name == CustomExtContext.TestContext.agentName }
     }
 }
