@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.inlay.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
-import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.util.InsertUtil
@@ -103,6 +102,6 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     }
 
     companion object {
-        private val logger = logger<CodeCompletionBaseIntention>()
+        private val logger = logger<CodeCompletionTask>()
     }
 }
