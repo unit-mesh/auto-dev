@@ -4,6 +4,7 @@ import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaUltimate
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaCommunity
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformTestingExtension
@@ -207,11 +208,11 @@ project(":") {
         pluginVerification {
             freeArgs = listOf("-mute", "TemplateWordInPluginId,ForbiddenPluginIdPrefix")
             ides {
-                ide(IntellijIdeaUltimate, "2024.2")
+                ide(IntellijIdeaCommunity, "2025.1")
                 select {
-                    types = listOf(IntellijIdeaUltimate)
-                    sinceBuild = "242"
-                    untilBuild = "242"
+                    types = listOf(IntellijIdeaCommunity)
+                    sinceBuild = "251"
+                    untilBuild = "251"
                 }
             }
         }
