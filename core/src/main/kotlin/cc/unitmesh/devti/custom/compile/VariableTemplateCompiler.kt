@@ -15,6 +15,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import cc.unitmesh.devti.intentions.action.getElementToAction
+import com.intellij.openapi.application.ReadAction
+import com.intellij.psi.PsiManager
 import kotlinx.coroutines.runBlocking
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
@@ -39,6 +41,12 @@ class VariableTemplateCompiler(
 
     fun set(key: String, value: String) {
         velocityContext.put(key, value)
+    }
+
+    fun putAll(map: Map<String, Any>) {
+        map.forEach { (key, value) ->
+            velocityContext.put(key, value)
+        }
     }
 
     fun compile(template: String): String {
@@ -119,5 +127,24 @@ class VariableTemplateCompiler(
                 selectedText = selectedText,
             )
         }
+
+        fun defaultEditor(myProject: Project): Editor? {
+            return FileEditorManager.getInstance(myProject).selectedTextEditor
+        }
+
+        fun defaultElement(myProject: Project, currentEditor: Editor?): PsiElement? =
+            ReadAction.compute<PsiElement?, Throwable> {
+                currentEditor?.caretModel?.currentCaret?.offset?.let {
+                    val psiFile = currentEditor.let { editor ->
+                        val psiFile = editor.virtualFile?.let { file ->
+                            PsiManager.getInstance(myProject).findFile(file)
+                        }
+
+                        psiFile
+                    } ?: return@let null
+
+                    psiFile.findElementAt(it) ?: return@let psiFile
+                }
+            }
     }
 }

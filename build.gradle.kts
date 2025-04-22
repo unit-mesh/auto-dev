@@ -783,6 +783,11 @@ project(":exts:devins-lang") {
             testFramework(TestFrameworkType.Plugin.Java)
         }
 
+        implementation("com.jayway.jsonpath:json-path:2.9.0")
+        implementation("org.reflections:reflections:0.10.2") {
+            exclude(group = "org.slf4j", module = "slf4j-api")
+        }
+
         implementation(project(":core"))
         implementation(project(":exts:ext-git"))
     }

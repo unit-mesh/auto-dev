@@ -4,13 +4,13 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.language.DevInLanguage
+import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInVisitor
 import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.process.ProcessEvent
-import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -91,8 +91,7 @@ class DevInsProcessProcessor(val project: Project) {
      * @param newScript The new script to be run.
      */
     suspend fun executeTask(newScript: DevInFile) {
-        val devInsCompiler = createCompiler(project, newScript)
-        val result = devInsCompiler.compile()
+        val result = compileResult(newScript)
         if(result.output != "") {
             AutoDevNotifications.notify(project, result.output)
         }
@@ -111,6 +110,12 @@ class DevInsProcessProcessor(val project: Project) {
                 }
             }
         }
+    }
+
+    suspend fun compileResult(newScript: DevInFile): DevInsCompiledResult {
+        val devInsCompiler = createCompiler(project, newScript)
+        val result = devInsCompiler.compile()
+        return result
     }
 
     /**

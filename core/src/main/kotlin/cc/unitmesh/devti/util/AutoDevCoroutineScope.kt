@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.AppExecutorUtil
 import kotlinx.coroutines.*
 
-private val workerThread = AppExecutorUtil.getAppExecutorService().asCoroutineDispatcher()
+public val workerThread = AppExecutorUtil.getAppExecutorService().asCoroutineDispatcher()
 
 @Service(Service.Level.APP)
 class AutoDevAppScope: Disposable {

@@ -21,7 +21,7 @@ import kotlin.sequences.map
 import kotlin.to
 
 /**
- * Concurrent [com.phodal.shirecore.search.indices.EmbeddingSearchIndex] that stores all embeddings in the memory and allows
+ * Concurrent [cc.unitmesh.devti.language.search.indices.EmbeddingSearchIndex] that stores all embeddings in the memory and allows
  * simultaneous read operations from multiple consumers.
  * Can be persisted to disk.
  */
