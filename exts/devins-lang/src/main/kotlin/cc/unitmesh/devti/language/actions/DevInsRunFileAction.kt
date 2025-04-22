@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.actions
 
-import cc.unitmesh.devti.startup.DynamicDevInActionConfig
+import cc.unitmesh.devti.language.startup.DynamicDevInActionConfig
 import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.DevInsConfiguration

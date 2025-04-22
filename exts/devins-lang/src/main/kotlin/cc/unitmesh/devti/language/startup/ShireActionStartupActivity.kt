@@ -1,11 +1,10 @@
-package cc.unitmesh.devti.startup
+package cc.unitmesh.devti.language.startup
 
 import cc.unitmesh.devti.custom.team.InteractionType
 import cc.unitmesh.devti.language.DevInFileType
 import cc.unitmesh.devti.language.ast.HobbitHole
-import cc.unitmesh.devti.language.ast.config.DevInActionLocation
 import cc.unitmesh.devti.language.psi.DevInFile
-import cc.unitmesh.devti.startup.third.ShireSonarLintToolWindowListener
+import cc.unitmesh.devti.language.startup.third.ShireSonarLintToolWindowListener
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.Constraints
 import com.intellij.openapi.actionSystem.DefaultActionGroup

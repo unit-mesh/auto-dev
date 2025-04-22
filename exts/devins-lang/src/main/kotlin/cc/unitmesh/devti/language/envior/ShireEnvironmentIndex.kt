@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.envior
+package cc.unitmesh.devti.language.envior
 
 import com.intellij.json.psi.*
 import com.intellij.openapi.util.text.StringUtil

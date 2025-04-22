@@ -4,7 +4,7 @@ import cc.unitmesh.devti.language.actions.DevInsRunFileAction
 import cc.unitmesh.devti.language.ast.FunctionStatementProcessor
 import cc.unitmesh.devti.language.ast.action.PatternActionFuncDef
 import cc.unitmesh.devti.language.ast.action.PatternProcessor
-import cc.unitmesh.devti.startup.ShireActionStartupActivity
+import cc.unitmesh.devti.language.startup.ShireActionStartupActivity
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.startup
+package cc.unitmesh.devti.language.startup
 
 import cc.unitmesh.devti.language.ast.config.DevInActionLocation
 import cc.unitmesh.devti.language.psi.DevInFile

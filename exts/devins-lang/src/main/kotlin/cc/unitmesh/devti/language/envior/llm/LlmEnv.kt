@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.envior.llm
+package cc.unitmesh.devti.language.envior.llm
 
 import com.intellij.json.psi.JsonArray
 import com.intellij.json.psi.JsonFile
@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.indexing.FileBasedIndex
-import cc.unitmesh.devti.envior.ShireEnvironmentIndex
-import cc.unitmesh.devti.envior.valueAsString
+import cc.unitmesh.devti.language.envior.ShireEnvironmentIndex
+import cc.unitmesh.devti.language.envior.valueAsString
 
 class LlmEnv {
     companion object {

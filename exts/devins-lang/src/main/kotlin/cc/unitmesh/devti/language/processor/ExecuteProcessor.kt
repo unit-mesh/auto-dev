@@ -7,7 +7,7 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.exec.RunInsCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.provider.RunService
-import cc.unitmesh.devti.startup.ShireActionStartupActivity
+import cc.unitmesh.devti.language.startup.ShireActionStartupActivity
 import cc.unitmesh.devti.util.workerThread
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
