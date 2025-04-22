@@ -26,4 +26,3 @@ fun CodeInsightTestFixture.loadNewFile(path: String, contents: String): PsiFile 
     configureFromExistingVirtualFile(virtualFile)
     return file
 }
-
