@@ -1,11 +1,8 @@
-package com.phodal.shirelang.compiler.ast.action
+package cc.unitmesh.devti.language.ast.action
 
 import cc.unitmesh.devti.language.ast.FrontMatterType
-import cc.unitmesh.devti.language.ast.action.DirectAction
-import cc.unitmesh.devti.language.ast.action.RuleBasedPatternAction
 import com.intellij.openapi.diagnostic.logger
 import cc.unitmesh.devti.language.ast.ShirePsiQueryStatement
-import cc.unitmesh.devti.language.ast.action.PatternActionFunc
 
 /**
  * PatternFun is a sealed class in Kotlin representing different pattern processing functions.
@@ -14,7 +11,7 @@ import cc.unitmesh.devti.language.ast.action.PatternActionFunc
  *
  * @property funcName The name of the pattern processing function.
  */
-data class PatternAction(
+class PatternAction(
     val pattern: String,
     val patternFuncs: List<PatternActionFunc>,
     val isQueryStatement: Boolean = false

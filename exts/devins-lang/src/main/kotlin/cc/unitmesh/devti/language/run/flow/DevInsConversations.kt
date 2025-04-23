@@ -51,6 +51,19 @@ class DevInsConversationService(val project: Project) {
     }
 
     /**
+     * Updates the LLM response for a given script path in the cached conversations.
+     * If the script path exists in the cached conversations, the LLM response is updated with the provided value.
+     *
+     * @param scriptPath The script path for which the LLM response needs to be updated.
+     * @param llmResponse The new LLM response to be updated for the given script path.
+     */
+    fun refreshLlmResponseCache(scriptPath: String, llmResponse: String) {
+        cachedConversations[scriptPath]?.let {
+            cachedConversations[scriptPath] = it.copy(llmResponse = llmResponse)
+        }
+    }
+
+    /**
      * Function to try re-running a conversation script.
      *
      * @param scriptPath The path of the script to re-run

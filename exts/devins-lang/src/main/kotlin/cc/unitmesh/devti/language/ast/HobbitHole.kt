@@ -19,7 +19,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.phodal.shirelang.compiler.ast.action.PatternAction
+import cc.unitmesh.devti.language.ast.action.PatternAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

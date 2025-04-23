@@ -27,20 +27,17 @@ class ShireActionStartupActivity : ProjectActivity {
         GlobalShireFileChangesProvider.getInstance().startup(::attachCopyPasteAction)
         val changesProvider = ShireFileChangesProvider.getInstance(project)
         smartReadAction(project) {
-            changesProvider.startup { shireConfig, shireFile ->
-                attachCopyPasteAction(shireConfig, shireFile)
-            }
-
             obtainShireFiles(project).forEach {
                 changesProvider.onUpdated(it)
             }
 
-            attachTerminalAction()
-            attachDatabaseAction()
-            attachVcsLogAction()
-
-            // attache extension actions, like SonarLint
-            attachExtensionActions(project)
+//            changesProvider.startup { shireConfig, shireFile ->
+//                attachCopyPasteAction(shireConfig, shireFile)
+//            }
+//            attachTerminalAction()
+//            attachDatabaseAction()
+//            attachVcsLogAction()
+//            attachExtensionActions(project)
         }
     }
 
