@@ -10,7 +10,7 @@ interface HttpHandler {
 
     companion object {
         private val EP_NAME: ExtensionPointName<HttpHandler> =
-            ExtensionPointName("com.phodal.shireHttpHandler")
+            ExtensionPointName("cc.unitmesh.shireHttpHandler")
 
         fun provide(type: HttpHandlerType): HttpHandler? {
             return EP_NAME.extensionList.find { it.isApplicable(type) }

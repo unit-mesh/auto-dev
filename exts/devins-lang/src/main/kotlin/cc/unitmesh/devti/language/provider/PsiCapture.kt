@@ -8,7 +8,7 @@ interface PsiCapture {
 
     companion object {
         private val languageExtension: LanguageExtension<PsiCapture> =
-            LanguageExtension("com.phodal.shirePsiCapture")
+            LanguageExtension("cc.unitmesh.shirePsiCapture")
 
         fun provide(language: Language): PsiCapture? {
             return languageExtension.forLanguage(language)

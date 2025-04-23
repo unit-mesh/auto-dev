@@ -12,7 +12,7 @@ interface ComplexityProvider {
     fun visitor(sink: ComplexitySink): ComplexityVisitor
 
     companion object {
-        private val languageExtension = LanguageExtension<ComplexityProvider>("com.phodal.shireComplexityProvider")
+        private val languageExtension = LanguageExtension<ComplexityProvider>("cc.unitmesh.shireComplexityProvider")
 
         fun provide(language: Language): ComplexityProvider? {
             return languageExtension.forLanguage(language)

@@ -21,7 +21,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findFile
 import com.intellij.openapi.vfs.readText
-import com.phodal.shirelang.compiler.execute.processor.CaptureProcessor
+import cc.unitmesh.shirelang.compiler.execute.processor.CaptureProcessor
 import cc.unitmesh.devti.language.processor.ForeignFunctionProcessor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

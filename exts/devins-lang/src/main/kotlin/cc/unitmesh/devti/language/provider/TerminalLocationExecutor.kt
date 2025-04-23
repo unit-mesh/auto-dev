@@ -12,7 +12,7 @@ interface TerminalLocationExecutor {
 
     companion object {
         private val EP_NAME: ExtensionPointName<TerminalLocationExecutor> =
-            ExtensionPointName.create("com.phodal.shireTerminalExecutor")
+            ExtensionPointName.create("cc.unitmesh.shireTerminalExecutor")
 
         fun provide(project: Project): TerminalLocationExecutor? {
             return EP_NAME.extensionList.firstOrNull()

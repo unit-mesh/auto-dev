@@ -11,7 +11,7 @@ interface ToolchainVariableProvider : VariableProvider<ToolchainVariable> {
 
     companion object {
         private val EP_NAME: ExtensionPointName<ToolchainVariableProvider> =
-            ExtensionPointName("com.phodal.shireToolchainVariableProvider")
+            ExtensionPointName("cc.unitmesh.shireToolchainVariableProvider")
 
         fun all(): List<ToolchainVariableProvider> {
             return EP_NAME.extensionList

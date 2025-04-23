@@ -17,7 +17,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShRunner
-import com.phodal.shirelang.compiler.execute.processor.shell.ShireShellCommandRunner
+import cc.unitmesh.shirelang.compiler.execute.processor.shell.ShireShellCommandRunner
 import java.util.concurrent.CompletableFuture
 
 

@@ -24,7 +24,7 @@ data class LocationInteractionContext(
     val project: Project,
 
     /**
-     * the [com.phodal.shirecore.llm.ChatMessage]
+     * the [cc.unitmesh.shirecore.llm.ChatMessage]
      */
     val prompt: String,
 

@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 /**
- * For [com.phodal.shirelang.compiler.hobbit.execute.PsiQueryStatementProcessor]
+ * For [cc.unitmesh.shirelang.compiler.hobbit.execute.PsiQueryStatementProcessor]
  */
 interface ShireQLInterpreter {
     fun supportsMethod(language: Language, methodName: String): List<String>
@@ -23,7 +23,7 @@ interface ShireQLInterpreter {
 
     companion object {
         private val languageExtension: LanguageExtension<ShireQLInterpreter> =
-            LanguageExtension("com.phodal.shirePsiQLInterpreter")
+            LanguageExtension("cc.unitmesh.shirePsiQLInterpreter")
 
         fun provide(language: Language): ShireQLInterpreter? {
             return languageExtension.forLanguage(language)

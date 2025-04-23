@@ -11,8 +11,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.jayway.jsonpath.JsonPath
-import com.phodal.shirelang.compiler.ast.*
-import com.phodal.shirelang.compiler.execute.shireql.ShireDateSchema
+import cc.unitmesh.shirelang.compiler.execute.shireql.ShireDateSchema
 import kotlinx.coroutines.runBlocking
 
 /**

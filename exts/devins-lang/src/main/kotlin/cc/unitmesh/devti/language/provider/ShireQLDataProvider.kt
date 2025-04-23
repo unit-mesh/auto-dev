@@ -29,7 +29,7 @@ interface ShireQLDataProvider {
 
     companion object {
         private val EP_NAME: ExtensionPointName<ShireQLDataProvider> =
-            ExtensionPointName("com.phodal.shireQLDataProvider")
+            ExtensionPointName("cc.unitmesh.shireQLDataProvider")
 
         fun all(): List<ShireQLDataProvider> {
             return EP_NAME.extensionList

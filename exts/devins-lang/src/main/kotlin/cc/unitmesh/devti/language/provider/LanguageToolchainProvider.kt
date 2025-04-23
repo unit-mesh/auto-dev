@@ -26,7 +26,7 @@ interface LanguageToolchainProvider {
 
     companion object {
         private val EP_NAME: LanguageExtension<LanguageToolchainProvider> =
-            LanguageExtension("com.phodal.shireLanguageToolchainProvider")
+            LanguageExtension("cc.unitmesh.shireLanguageToolchainProvider")
 
         suspend fun collectToolchainContext(
             project: Project,

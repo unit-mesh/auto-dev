@@ -59,7 +59,7 @@ interface PostProcessor {
 
     companion object {
         private val EP_NAME: ExtensionPointName<PostProcessor> =
-            ExtensionPointName.create("com.phodal.shirePostProcessor")
+            ExtensionPointName.create("cc.unitmesh.shirePostProcessor")
 
         fun handler(handleName: String): PostProcessor? {
             return EP_NAME.extensionList.find {

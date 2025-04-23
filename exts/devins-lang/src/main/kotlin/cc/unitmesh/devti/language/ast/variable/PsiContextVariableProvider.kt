@@ -58,7 +58,7 @@ interface PsiContextVariableProvider : VariableProvider<PsiContextVariable> {
 
     companion object {
         private val languageExtension: LanguageExtension<PsiContextVariableProvider> =
-            LanguageExtension("com.phodal.shirePsiVariableProvider")
+            LanguageExtension("cc.unitmesh.shirePsiVariableProvider")
 
         fun provide(language: Language): PsiContextVariableProvider {
             return languageExtension.forLanguage(language) ?: DefaultPsiContextVariableProvider()

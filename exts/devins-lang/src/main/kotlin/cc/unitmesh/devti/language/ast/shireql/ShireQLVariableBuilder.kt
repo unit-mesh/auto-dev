@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import cc.unitmesh.devti.language.ast.shireql.variable.vcs.ShireGitCommit
 import cc.unitmesh.devti.language.provider.ShireQLDataProvider
 import cc.unitmesh.devti.language.provider.ShireSymbolProvider
-import com.phodal.shirelang.compiler.execute.shireql.ShireDateSchema
+import cc.unitmesh.shirelang.compiler.execute.shireql.ShireDateSchema
 
 class ShireQLVariableBuilder(val myProject: Project, hole: HobbitHole) {
     fun buildVariables(fromStmt: PatternActionFunc.From): Map<String, List<Any>> {

@@ -1,4 +1,4 @@
-package com.phodal.shirecore.variable.frontend
+package cc.unitmesh.shirecore.variable.frontend
 
 import cc.unitmesh.devti.language.ast.shireql.variable.frontend.Component
 

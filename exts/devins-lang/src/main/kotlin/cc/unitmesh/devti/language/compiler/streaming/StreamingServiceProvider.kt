@@ -47,7 +47,7 @@ interface StreamingServiceProvider : Disposable {
 
     companion object {
         val EP_NAME =
-            ExtensionPointName.create<StreamingServiceProvider>("com.phodal.shireStreamingService")
+            ExtensionPointName.create<StreamingServiceProvider>("cc.unitmesh.shireStreamingService")
 
         fun getStreamingService(name: String): StreamingServiceProvider? {
             return EP_NAME.extensions.firstOrNull { it.name == name }

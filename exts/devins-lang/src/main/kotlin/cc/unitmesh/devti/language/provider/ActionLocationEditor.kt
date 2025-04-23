@@ -15,7 +15,7 @@ interface ActionLocationEditor {
 
     companion object {
         private val EP_NAME: ExtensionPointName<ActionLocationEditor> =
-            ExtensionPointName.create("com.phodal.shireActionLocationEditor")
+            ExtensionPointName.create("cc.unitmesh.shireActionLocationEditor")
 
         fun provide(project: Project, location: DevInActionLocation? = null): Editor? {
             if (location == null) {

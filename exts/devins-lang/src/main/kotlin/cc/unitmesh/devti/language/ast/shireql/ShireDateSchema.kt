@@ -1,4 +1,4 @@
-package com.phodal.shirelang.compiler.execute.shireql
+package cc.unitmesh.shirelang.compiler.execute.shireql
 
 import cc.unitmesh.devti.language.ast.shireql.ShireQLSchema
 import kotlinx.datetime.*

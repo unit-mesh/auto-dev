@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.context.builder
 
 import com.intellij.lang.Language
+import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 
 /**
  * The `CodeModifier` interface provides methods for modifying code in a given project.
@@ -43,4 +45,20 @@ interface CodeModifier {
      * @return True if the class was successfully inserted, false otherwise.
      */
     fun insertClass(sourceFile: VirtualFile, project: Project, code: String): Boolean
+
+    /**
+     * According to the source file, project, and code, it will insert the code in a smart way.
+     */
+    fun smartInsert(sourceFile: VirtualFile, project: Project, code: String): PsiElement? {
+        return null
+    }
+
+    companion object {
+        private val languageExtension: LanguageExtension<CodeModifier> =
+            LanguageExtension("cc.unitmesh.shireCodeModifier")
+
+        fun forLanguage(language: Language): CodeModifier? {
+            return languageExtension.forLanguage(language)
+        }
+    }
 }
