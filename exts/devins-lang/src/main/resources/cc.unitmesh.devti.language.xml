@@ -14,7 +14,9 @@
         <!--        refs: https://github.com/JetBrains/intellij-sdk-code-samples/blob/main/simple_language_plugin/src/main/resources/META-INF/plugin.xml-->
         <fileType name="DevInFile" implementationClass="cc.unitmesh.devti.language.DevInFileType" fieldName="INSTANCE"
                   language="DevIn" extensions="devin"/>
+
         <fileBasedIndex implementation="cc.unitmesh.devti.language.index.ShireIdentifierIndex"/>
+        <fileBasedIndex implementation="cc.unitmesh.devti.language.envior.ShireEnvironmentIndex"/>
 
         <lang.parserDefinition language="DevIn"
                                implementationClass="cc.unitmesh.devti.language.parser.DevInParserDefinition"/>

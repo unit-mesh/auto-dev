@@ -10,7 +10,7 @@ import com.intellij.util.io.KeyDescriptor
 
 class ShireEnvironmentIndex : FileBasedIndexExtension<String, Set<String>>() {
     companion object {
-        val SHIRE_ENV_ID: ID<String, Set<String>> = ID.create("shire.environment")
+        val SHIRE_ENV_ID: ID<String, Set<String>> = ID.create("devin.environment")
         const val MODEL_TITLE = "title"
         const val MODEL_LIST = "models"
 

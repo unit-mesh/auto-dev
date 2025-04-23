@@ -1,4 +1,4 @@
-package cc.unitmesh.shirelang.compiler.execute.processor.shell
+package cc.unitmesh.devti.language.processor.shell
 
 import cc.unitmesh.devti.language.envior.ShireEnvReader
 import cc.unitmesh.devti.language.envior.ShireEnvVariableFiller
@@ -77,11 +77,6 @@ object ShireShellCommandRunner {
      * for example,the file also needs to be deleted when [create-process][OSProcessHandler.startProcess] fails.
      */
     private fun deleteFileOnTermination(commandLine: GeneralCommandLine, tempFile: File) {
-//        OSProcessHandler.deleteFileOnTermination(commandLine, tempFile)  // is Internal API
-        try {
-            FileUtil.delete(tempFile)
-        } catch (e: Exception) {
-            // ignore
-        }
+        OSProcessHandler.deleteFileOnTermination(commandLine, tempFile)  // is Internal API
     }
 }

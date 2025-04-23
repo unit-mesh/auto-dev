@@ -19,7 +19,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import cc.unitmesh.shirelang.compiler.execute.processor.CaptureProcessor
+import cc.unitmesh.devti.language.processor.CaptureProcessor
 import cc.unitmesh.devti.language.processor.ForeignFunctionProcessor
 import cc.unitmesh.devti.util.findFile
 import cc.unitmesh.devti.util.readText

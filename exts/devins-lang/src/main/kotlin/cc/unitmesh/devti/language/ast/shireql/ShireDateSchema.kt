@@ -1,6 +1,5 @@
-package cc.unitmesh.shirelang.compiler.execute.shireql
+package cc.unitmesh.devti.language.ast.shireql
 
-import cc.unitmesh.devti.language.ast.shireql.ShireQLSchema
 import kotlinx.datetime.*
 import kotlinx.datetime.TimeZone
 import java.util.*

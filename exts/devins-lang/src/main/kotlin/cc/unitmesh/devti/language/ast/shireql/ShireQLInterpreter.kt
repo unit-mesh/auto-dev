@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 /**
- * For [cc.unitmesh.shirelang.compiler.hobbit.execute.PsiQueryStatementProcessor]
+ * For [PsiQueryStatementProcessor]
  */
 interface ShireQLInterpreter {
     fun supportsMethod(language: Language, methodName: String): List<String>

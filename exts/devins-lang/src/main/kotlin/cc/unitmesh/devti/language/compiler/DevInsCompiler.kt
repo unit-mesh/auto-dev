@@ -188,23 +188,8 @@ class DevInsCompiler(
             }
 
             DevInTypes.VARIABLE_START -> {
-                val variableId = id?.text
-                val variable = ToolHubVariable.lookup(myProject, variableId)
-                if (variable.isNotEmpty()) {
-                    output.append(variable.joinToString("\n") { it })
-                    return
-                }
-
-                if (editor == null || element == null) {
-                    output.append("$DEVINS_ERROR No context editor found for variable: $usedText")
-                    result.hasError = true
-                    return
-                }
-
-                val file = element.containingFile
-                VariableTemplateCompiler(file.language, file, element, editor).compile(usedText).let {
-                    output.append(it)
-                }
+                processVariable(firstChild)
+                if (!result.hasError) output.append(usedText)
             }
 
             else -> {
@@ -287,6 +272,11 @@ class DevInsCompiler(
             return
         }
         val variableId = variableStart.nextSibling?.text
+//        val variables = ToolHubVariable.lookup(myProject, variableId)
+//        val file = element.containingFile
+//        VariableTemplateCompiler(file.language, file, element, editor).compile(usedText).let {
+//            output.append(it)
+//        }
 
         val currentEditor = editor ?: VariableTemplateCompiler.defaultEditor(myProject)
         val currentElement = element ?: VariableTemplateCompiler.defaultElement(myProject, currentEditor)
