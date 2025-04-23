@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.ast.snapshot
+package cc.unitmesh.devti.language.debugger.snapshot
 
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolver
 import com.intellij.openapi.util.UserDataHolderBase

@@ -3,7 +3,7 @@ package cc.unitmesh.devti.language.ast.variable.resolver
 import cc.unitmesh.devti.language.ast.action.PatternActionProcessor
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolver
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolverContext
-import cc.unitmesh.devti.language.ast.snapshot.VariableSnapshotRecorder
+import cc.unitmesh.devti.language.debugger.snapshot.VariableSnapshotRecorder
 
 class UserCustomVariableResolver(
     private val context: VariableResolverContext,

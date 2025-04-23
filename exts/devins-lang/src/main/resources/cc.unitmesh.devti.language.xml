@@ -54,6 +54,12 @@
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInsRunLineMarkersProvider"/>
 
+        <!--   Debugger  -->
+        <programRunner implementation="cc.unitmesh.devti.language.debugger.ShireDebugRunner"/>
+        <xdebugger.breakpointType implementation="cc.unitmesh.devti.language.debugger.ShireLineBreakpointType"/>
+        <xdebugger.settings implementation="cc.unitmesh.devti.language.debugger.ShireDebugSettings"/>
+        <fileEditorProvider implementation="cc.unitmesh.devti.language.debugger.editor.ShireSplitEditorProvider"/>
+
         <lang.commenter language="DevIn" implementationClass="cc.unitmesh.devti.language.commenter.DevInsCommenter"/>
 
         <lang.documentationProvider language="DevIn"

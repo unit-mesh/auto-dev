@@ -61,7 +61,7 @@ object EditorUtil {
         return createCodeViewerEditor(project, file, document, disposable, isShowLineNo)
     }
 
-    private fun createCodeViewerEditor(
+     fun createCodeViewerEditor(
         project: Project,
         file: VirtualFile,
         document: Document,

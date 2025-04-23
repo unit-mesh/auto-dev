@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.ast.snapshot
+package cc.unitmesh.devti.language.debugger.snapshot
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project

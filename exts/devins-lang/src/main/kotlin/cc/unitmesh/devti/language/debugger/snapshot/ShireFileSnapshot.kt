@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.ast.snapshot
+package cc.unitmesh.devti.language.debugger.snapshot
 
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.datetime.Clock

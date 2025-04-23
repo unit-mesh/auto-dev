@@ -3,8 +3,8 @@ package cc.unitmesh.devti.language.ast.action
 import cc.unitmesh.devti.language.ast.HobbitHole
 import cc.unitmesh.devti.language.ast.VariableTransform
 import cc.unitmesh.devti.language.ast.shireql.ShireQLProcessor
-import cc.unitmesh.devti.language.ast.snapshot.VariableSnapshotRecorder
 import cc.unitmesh.devti.language.compiler.searcher.PatternSearcher
+import cc.unitmesh.devti.language.debugger.snapshot.VariableSnapshotRecorder
 import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
 import com.intellij.openapi.project.Project
 
