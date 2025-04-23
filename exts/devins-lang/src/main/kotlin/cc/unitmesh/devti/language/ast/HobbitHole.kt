@@ -373,7 +373,7 @@ open class HobbitHole(
             val interaction = frontMatterMap[INTERACTION]?.value as? String ?: ""
             val actionLocation = frontMatterMap[ACTION_LOCATION]?.value as? String ?: DevInsActionLocation.default()
             val enabled = frontMatterMap[ENABLED]?.value as? Boolean ?: true
-            val agentic = frontMatterMap[AGENTIC]?.value as? Boolean ?: true
+            val agentic = frontMatterMap[AGENTIC]?.value as? Boolean ?: false
             val model = frontMatterMap[MODEL]?.value as? String
 
             val shortcut = (frontMatterMap[SHORTCUT]?.value as? String)?.let {

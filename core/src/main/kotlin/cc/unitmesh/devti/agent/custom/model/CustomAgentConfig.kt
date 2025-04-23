@@ -56,6 +56,7 @@ data class CustomAgentConfig(
     val auth: CustomAgentAuth? = null,
     val defaultTimeout: Long = 10,
     val enabled: Boolean = true,
+    var isFromDevIns: Boolean = false,
 ) {
     var state: CustomAgentState = CustomAgentState.START
 

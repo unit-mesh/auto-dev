@@ -103,4 +103,10 @@ object AutoDevIcons {
 
     @JvmField
     val MAGIC: Icon = IconLoader.getIcon("/icons/magic.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val CLOUD_AGENT: Icon = IconLoader.getIcon("/icons/cloud-agent.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val LOCAL_AGENT: Icon = IconLoader.getIcon("/icons/local-agent.svg", AutoDevIcons::class.java)
 }

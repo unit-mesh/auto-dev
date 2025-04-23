@@ -162,10 +162,6 @@
                         interface="cc.unitmesh.devti.language.provider.ShireQLDataProvider"
                         dynamic="true"/>
 
-        <extensionPoint qualifiedName="cc.unitmesh.shireAgentTool"
-                        interface="cc.unitmesh.devti.language.provider.AgentTool"
-                        dynamic="true"/>
-
         <extensionPoint qualifiedName="cc.unitmesh.shireRevisionProvider"
                         interface="cc.unitmesh.devti.language.provider.RevisionProvider"
                         dynamic="true"/>
@@ -288,6 +284,8 @@
         <runService implementation="cc.unitmesh.devti.language.compiler.service.DevInRunService"/>
 
         <sketchToolchainProvider implementation="cc.unitmesh.devti.language.compiler.DevInsSketchToolchainProvider"/>
+
+        <devInsAgentTool implementation="cc.unitmesh.devti.language.startup.DevInsAgentToolchainProviderCollector"/>
 
         <!--        Shire -->
 <!--        <shireTerminalExecutor implementation="cc.unitmesh.devti.language.provider.ShireTerminalExecutor"/>-->
