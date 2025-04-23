@@ -12,6 +12,7 @@ import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.language.run.runner.ShireConsoleView
 import cc.unitmesh.devti.language.run.runner.ShireExecutionConsole
 import cc.unitmesh.devti.language.run.runner.ShireRunner
+import cc.unitmesh.devti.language.service.ConsoleService
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
@@ -63,6 +64,8 @@ open class DevInsRunConfigurationProfileState(
         processHandler.addProcessListener(processAdapter)
 
         console.attachToProcess(processHandler)
+        
+        ConsoleService.getInstance(myProject).setActiveConsole(executionConsole)
 
         val shireFile: DevInFile? = DevInFile.lookup(myProject, configuration.getScriptPath())
         if (shireFile == null) {
@@ -296,4 +299,3 @@ open class DevInsRunConfigurationProfileState(
         }
     }
 }
-

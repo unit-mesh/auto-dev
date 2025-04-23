@@ -8,9 +8,11 @@ import cc.unitmesh.devti.language.processor.shell.ShireShellCommandRunner
 import cc.unitmesh.devti.language.provider.http.HttpHandler
 import cc.unitmesh.devti.language.provider.http.HttpHandlerType
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.service.ConsoleService
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.util.readText
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
@@ -27,6 +29,9 @@ object ThreadProcessor : PatternProcessor {
         myProject: Project, fileName: String, variablesName: Array<String>, variableTable: MutableMap<String, Any?>,
     ): String {
         val file = myProject.lookupFile(fileName) ?: return "File not found: $fileName"
+        
+        val consoleService = ConsoleService.getInstance(myProject)
+        consoleService.print("Executing thread for file: $fileName\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
         val filename = file.name.lowercase()
         val content = file.readText()
@@ -37,6 +42,7 @@ object ThreadProcessor : PatternProcessor {
                 ?.execute(myProject, content, variablesName, variableTable)
 
             if (execute != null) {
+                consoleService.print("cURL execution completed\n", ConsoleViewContentType.NORMAL_OUTPUT)
                 return execute
             }
         }
@@ -45,7 +51,8 @@ object ThreadProcessor : PatternProcessor {
             PsiManager.getInstance(myProject).findFile(file)
         } ?: return "Failed to find PSI file for $fileName"
 
-//                console.print("Prepare for running ${configuration.name}...\n", ConsoleViewContentType.NORMAL_OUTPUT)
+        consoleService.print("Running $fileName...\n", ConsoleViewContentType.NORMAL_OUTPUT)
+        
         when (psiFile) {
             is DevInFile -> {
                 return when (val output = variableTable["output"]) {
@@ -55,6 +62,7 @@ object ThreadProcessor : PatternProcessor {
                                 variableTable["output"] = it
                                 executeTask(myProject, variablesName, variableTable, psiFile)
                             } catch (e: Exception) {
+                                consoleService.print("Error: ${e.message}\n", ConsoleViewContentType.ERROR_OUTPUT)
                                 null
                             }
                         }
