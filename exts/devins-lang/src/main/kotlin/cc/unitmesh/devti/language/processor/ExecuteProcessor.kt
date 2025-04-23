@@ -28,7 +28,7 @@ object ExecuteProcessor : PatternProcessor {
     ): Any {
         val file = filename.toString()
         if (file.endsWith(".devin")) {
-            return executeShireFile(myProject, filename, variableNames, variableTable)
+            return executeDevinFile(myProject, filename, variableNames, variableTable)
         }
 
         if (file.startsWith(":")) {
@@ -44,7 +44,7 @@ object ExecuteProcessor : PatternProcessor {
             ?: "$DEVINS_ERROR: [ExecuteProcessor] No run service found for file: $filename"
     }
 
-    private fun executeShireFile(
+    private fun executeDevinFile(
         myProject: Project,
         filename: Any,
         variableNames: Array<String>,
