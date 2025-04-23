@@ -27,7 +27,7 @@ object ExecuteProcessor : PatternProcessor {
         variableTable: MutableMap<String, Any?>,
     ): Any {
         val file = filename.toString()
-        if (file.endsWith(".shire")) {
+        if (file.endsWith(".devin")) {
             return executeShireFile(myProject, filename, variableNames, variableTable)
         }
 

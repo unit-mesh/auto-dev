@@ -100,11 +100,11 @@ class DevInsCompiler(
                     if (nextElement == null) {
                         return@forEach
                     }
-                    result.config = HobbitHoleParser.parse(nextElement)
+                    result.config = runReadAction { HobbitHoleParser.parse(nextElement) }
                 }
 
                 DevInTypes.FRONT_MATTER_HEADER -> {
-                    result.config = HobbitHoleParser.parse(psiElement as DevInFrontMatterHeader)
+                    result.config = runReadAction { HobbitHoleParser.parse(psiElement as DevInFrontMatterHeader) }
                 }
 
                 WHITE_SPACE, DUMMY_BLOCK -> output.append(psiElement.text)
