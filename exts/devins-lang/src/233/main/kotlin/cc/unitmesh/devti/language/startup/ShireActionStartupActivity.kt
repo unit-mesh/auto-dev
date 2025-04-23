@@ -28,17 +28,18 @@ class ShireActionStartupActivity : ProjectActivity {
         GlobalShireFileChangesProvider.getInstance().startup(::attachCopyPasteAction)
         val changesProvider = ShireFileChangesProvider.getInstance(project)
         smartReadAction(project) {
+            changesProvider.startup { shireConfig, shireFile ->
+                attachCopyPasteAction(shireConfig, shireFile)
+            }
+
             obtainShireFiles(project).forEach {
                 changesProvider.onUpdated(it)
             }
 
-//            changesProvider.startup { shireConfig, shireFile ->
-//                attachCopyPasteAction(shireConfig, shireFile)
-//            }
 //            attachTerminalAction()
 //            attachDatabaseAction()
 //            attachVcsLogAction()
-//            attachExtensionActions(project)
+            attachExtensionActions(project)
         }
     }
 
@@ -99,7 +100,7 @@ class ShireActionStartupActivity : ProjectActivity {
 
         private fun obtainProjectShires(project: Project): List<VirtualFile> {
             val scope = ProjectScope.getContentScope(project)
-            val projectShire = FileTypeIndex.getFiles(DevInFileType.Companion.INSTANCE, scope).mapNotNull {
+            val projectShire = FileTypeIndex.getFiles(DevInFileType.INSTANCE, scope).mapNotNull {
                 it
             }
 
@@ -107,7 +108,8 @@ class ShireActionStartupActivity : ProjectActivity {
         }
 
         fun findShireFile(project: Project, filename: String): DevInFile? {
-            return DynamicShireActionService.getInstance(project).getAllActions().map {
+            val allActions = DynamicShireActionService.getInstance(project).getAllActions()
+            return allActions.map {
                 it.devinFile
             }.firstOrNull {
                 it.name == filename

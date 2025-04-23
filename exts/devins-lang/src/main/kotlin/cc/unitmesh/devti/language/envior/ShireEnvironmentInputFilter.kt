@@ -11,6 +11,6 @@ class ShireEnvironmentInputFilter : DefaultFileTypeSpecificInputFilter(*arrayOf<
     }
 
     private fun isShireEnvFile(file: VirtualFile?): Boolean {
-        return file?.name?.endsWith(".shireEnv.json") ?: false
+        return file?.name?.endsWith(".autodevEnv.json") ?: false
     }
 }

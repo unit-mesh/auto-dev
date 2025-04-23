@@ -33,6 +33,10 @@ class ShireActionStartupActivity : StartupActivity  {
         GlobalShireFileChangesProvider.getInstance().startup(::attachCopyPasteAction)
         val changesProvider = ShireFileChangesProvider.getInstance(project)
         smartReadAction(project) {
+            changesProvider.startup { shireConfig, shireFile ->
+                attachCopyPasteAction(shireConfig, shireFile)
+            }
+
             obtainShireFiles(project).forEach {
                 changesProvider.onUpdated(it)
             }

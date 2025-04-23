@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
  * Hobbit Hole 用于定义 IDE 交互逻辑与用户数据的流处理。
  *
  * 示例
- * ```shire
+ * ```devin
  * ---
  * name: "Summary"
  * description: "Generate Summary"
@@ -43,7 +43,7 @@ open class HobbitHole(
      *
      * For example: [DevInActionLocation.CONTEXT_MENU], will show in the context menu.
      *
-     * ```shire
+     * ```devin
      * ---
      * name: "AutoTest"
      * ---
@@ -53,7 +53,7 @@ open class HobbitHole(
     /**
      * Tooltips for the action, will show in Hover tips on the UI.
      *
-     * ```shire
+     * ```devin
      * ---
      * description: "Generate Test"
      * ---
@@ -63,7 +63,7 @@ open class HobbitHole(
     /**
      * The output of the action can be in editor with streaming text when use use [InteractionType.AppendCursorStream
      *
-     * ```shire
+     * ```devin
      * ---
      * interaction: AppendCursor
      * ---
@@ -73,7 +73,7 @@ open class HobbitHole(
     /**
      * The location of the action, should be one of [DevInActionLocation], the default is [DevInActionLocation.RUN_PANEL].
      *
-     * ```shire
+     * ```devin
      * ---
      * actionLocation: ContextMenu
      * ---
@@ -85,7 +85,7 @@ open class HobbitHole(
      * If not selected text, will according the element position to select the element block.
      * For example, if cursor in a function, select the function block.
      *
-     * ```shire
+     * ```devin
      * ---
      * selectionStrategy: "Block"
      * ---
@@ -95,16 +95,16 @@ open class HobbitHole(
     /**
      * The list of variables with PatternAction for build the variable.
      *
-     * ```shire
+     * ```devin
      * ---
      * variables:
      *   "name": "/[a-zA-Z]+/"
      *   "var2": /.*.java/ { grep("error.log") | sort | print }
      *   "testTemplate": /\(.*\).java/ {
      *     case "$1" {
-     *       "Controller" { cat(".shire/templates/ControllerTest.java") }
-     *       "Service" { cat(".shire/templates/ServiceTest.java") }
-     *       default  { cat(".shire/templates/DefaultTest.java") }
+     *       "Controller" { cat(".devin/templates/ControllerTest.java") }
+     *       "Service" { cat(".devin/templates/ServiceTest.java") }
+     *       default  { cat(".devin/templates/DefaultTest.java") }
      *     }
      *   }
      *
@@ -118,7 +118,7 @@ open class HobbitHole(
      *
      * Which is used for: [com.intellij.codeInsight.intention.IntentionAction.isAvailable], [com.intellij.openapi.project.DumbAwareAction.DumbAwareAction.update] to check is show menu.
      *
-     * ```shire
+     * ```devin
      * ---
      * when: { $filePath.contains("src/main/java") && $fileName.contains(".java") }
      * ---
@@ -131,7 +131,7 @@ open class HobbitHole(
      * It allows for the definition of various operations such as logging, metrics collection, code verification,
      * execution of code, or parsing code, among others.
      *
-     * ```shire
+     * ```devin
      * ---
      * onStreamingEnd: { parseCode | saveFile("docs/shire/shire-context-variable.md")  }
      * ---
@@ -142,7 +142,7 @@ open class HobbitHole(
     /**
      * This property represents a list of middleware actions to be executed
      *
-     * ```shire
+     * ```devin
      * ---
      * onStreaming: { logging() | redacting() }
      * ---
@@ -150,7 +150,7 @@ open class HobbitHole(
     val onStreaming: List<LifecycleProcessorSignature> = emptyList(),
 
     /**
-     * ```shire
+     * ```devin
      * ---
      * beforeStreaming: { parseCode}
      * ---
@@ -161,7 +161,7 @@ open class HobbitHole(
     /**
      * The list of actions that this action depends on.
      *
-     * ```shire
+     * ```devin
      * ---
      * afterStreaming: {
      *     condition {
@@ -182,7 +182,7 @@ open class HobbitHole(
     /**
      * The IDE shortcut for the action, which use the IntelliJ IDEA's shortcut format.
      *
-     * ```shire
+     * ```devin
      * ---
      * shortcut: "meta pressed V"
      * ---
@@ -193,7 +193,7 @@ open class HobbitHole(
     /**
      * the status of the action, default is true.
      *
-     * ```shire
+     * ```devin
      * ---
      * enabled: false
      * ---
@@ -203,7 +203,7 @@ open class HobbitHole(
     /**
      * the LLM model for action, default is null which will use the default model.
      *
-     * ```shire
+     * ```devin
      * ---
      * model: "default"
      * ---

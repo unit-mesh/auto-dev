@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit
  * @author lk
  */
 class ShireFileModifier(val context: ShireFileModificationContext) {
-
     private val dynamicActionService: DynamicActionService
 
     private val scope: CoroutineScope
@@ -55,7 +54,7 @@ class ShireFileModifier(val context: ShireFileModificationContext) {
                     waitingUpdateQueue.forEach { file ->
                         if (!file.isValid) {
                             dynamicActionService.removeAction(file)
-                            logger.debug("Shire file[${file.name}] is deleted")
+                            logger.debug("DevIns file[${file.name}] is deleted")
                             file.virtualFile.takeIf { it.isValid }?.run { context.convertor.invoke(this)?.let { println("reload.")
                                 loadShireAction(it, afterUpdater) } }
                             return@forEach
@@ -74,7 +73,7 @@ class ShireFileModifier(val context: ShireFileModificationContext) {
             HobbitHoleParser.parse(file).let {
                 dynamicActionService.putAction(file, DynamicDevInActionConfig(it?.name ?: file.name, it, file))
                 if (it != null) afterUpdater?.invoke(it, file)
-                logger.debug("Shire file[${file.virtualFile.path}] is loaded")
+                logger.debug("DevIns file[${file.virtualFile.path}] is loaded")
             }
         } catch (e: Exception) {
             logger.error("An error occurred while parsing shire file: ${file.virtualFile.path}", e)
@@ -108,13 +107,11 @@ class ShireFileModifier(val context: ShireFileModificationContext) {
 
 
 fun interface ShireUpdater {
-
     fun onUpdated(file: VirtualFile)
 
     companion object {
-
         @Topic.ProjectLevel
-        val TOPIC: Topic<ShireUpdater> = Topic.create("shire file updated", ShireUpdater::class.java)
+        val TOPIC: Topic<ShireUpdater> = Topic.create("DevIns file updated", ShireUpdater::class.java)
 
         val publisher: ShireUpdater
             get() = ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)

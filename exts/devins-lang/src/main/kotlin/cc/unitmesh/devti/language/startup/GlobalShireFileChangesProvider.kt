@@ -34,10 +34,10 @@ import kotlin.io.path.pathString
  */
 @Service(Service.Level.APP)
 class GlobalShireFileChangesProvider {
-
     // The root path can be configured in the future
-    private val homeShirePath: String? =
-        runCatching { Paths.get(System.getProperty("user.home"), ".shire").pathString }.getOrNull()
+    private val homeShirePath: String? = runCatching {
+        Paths.get(System.getProperty("user.home"), ".devin").pathString
+    }.getOrNull()
 
     private val watchRoots = ConcurrentCollectionFactory.createConcurrentMap<String, WatchRequest?>()
 
@@ -109,6 +109,7 @@ class GlobalShireFileChangesProvider {
             logger.warn("Unable to access the root directory of the global shire file configuration")
             return
         }
+
         var initial = false
         (shireFileModifier ?: synchronized(this) {
             shireFileModifier ?: ShireFileModifier(ShireFileModificationContext(
@@ -136,7 +137,6 @@ class GlobalShireFileChangesProvider {
     }
 
     companion object {
-
         private val logger = logger<GlobalShireFileChangesProvider>()
 
         fun getInstance(): GlobalShireFileChangesProvider =

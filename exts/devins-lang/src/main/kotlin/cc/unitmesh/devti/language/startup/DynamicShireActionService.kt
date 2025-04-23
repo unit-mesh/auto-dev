@@ -63,7 +63,6 @@ class DynamicShireActionService: DynamicActionService {
 
 @Service(Service.Level.APP)
 class GlobalShireActionService: DynamicActionService {
-
     private val globalActionCache = WeakHashMap<VirtualFile, DynamicDevInActionConfig>()
 
     override fun putAction(key: DevInFile, action: DynamicDevInActionConfig) {
