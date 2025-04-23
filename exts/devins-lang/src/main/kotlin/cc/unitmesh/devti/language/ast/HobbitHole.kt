@@ -201,6 +201,11 @@ open class HobbitHole(
     val enabled: Boolean = true,
 
     /**
+     * Can be
+     */
+    val agentic: Boolean = false,
+
+    /**
      * the LLM model for action, default is null which will use the default model.
      *
      * ```devin
@@ -319,6 +324,7 @@ open class HobbitHole(
         const val ON_STREAMING = "onStreaming"
 
         const val ENABLED = "enabled"
+        const val AGENTIC = "agentic"
         const val MODEL = "model"
 
         private const val DESCRIPTION = "description"
@@ -367,6 +373,7 @@ open class HobbitHole(
             val interaction = frontMatterMap[INTERACTION]?.value as? String ?: ""
             val actionLocation = frontMatterMap[ACTION_LOCATION]?.value as? String ?: DevInsActionLocation.default()
             val enabled = frontMatterMap[ENABLED]?.value as? Boolean ?: true
+            val agentic = frontMatterMap[AGENTIC]?.value as? Boolean ?: true
             val model = frontMatterMap[MODEL]?.value as? String
 
             val shortcut = (frontMatterMap[SHORTCUT]?.value as? String)?.let {
@@ -434,6 +441,7 @@ open class HobbitHole(
                 afterStreaming = afterStreaming,
                 shortcut = shortcut,
                 enabled = enabled,
+                agentic = agentic,
                 model = model
             )
         }
