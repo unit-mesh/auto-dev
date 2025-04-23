@@ -20,7 +20,6 @@ import java.awt.BorderLayout
 import javax.swing.JComponent
 
 class ShireConsoleView(private val executionConsole: ShireExecutionConsole) : DevInConsoleViewBase(executionConsole) {
-
     override fun getComponent(): JComponent = myPanel
 
     private var myPanel: NonOpaquePanel = NonOpaquePanel(BorderLayout())

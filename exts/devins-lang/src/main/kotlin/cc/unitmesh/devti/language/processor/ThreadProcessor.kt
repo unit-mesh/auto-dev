@@ -4,6 +4,7 @@ import cc.unitmesh.devti.language.actions.DevInsRunFileAction
 import cc.unitmesh.devti.language.ast.action.PatternActionFuncDef
 import cc.unitmesh.devti.language.ast.action.PatternProcessor
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
+import cc.unitmesh.devti.language.processor.shell.ShireShellCommandRunner
 import cc.unitmesh.devti.language.provider.http.HttpHandler
 import cc.unitmesh.devti.language.provider.http.HttpHandlerType
 import cc.unitmesh.devti.language.psi.DevInFile
@@ -17,14 +18,12 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShRunner
-import cc.unitmesh.devti.language.processor.shell.ShireShellCommandRunner
-import java.util.concurrent.CompletableFuture
 
 
 object ThreadProcessor : PatternProcessor {
     override val type: PatternActionFuncDef = PatternActionFuncDef.THREAD
 
-    fun execute(
+    suspend fun execute(
         myProject: Project, fileName: String, variablesName: Array<String>, variableTable: MutableMap<String, Any?>,
     ): String {
         val file = myProject.lookupFile(fileName) ?: return "File not found: $fileName"
@@ -46,6 +45,7 @@ object ThreadProcessor : PatternProcessor {
             PsiManager.getInstance(myProject).findFile(file)
         } ?: return "Failed to find PSI file for $fileName"
 
+//                console.print("Prepare for running ${configuration.name}...\n", ConsoleViewContentType.NORMAL_OUTPUT)
         when (psiFile) {
             is DevInFile -> {
                 return when (val output = variableTable["output"]) {
@@ -93,24 +93,11 @@ object ThreadProcessor : PatternProcessor {
         }
     }
 
-    private fun executeShFile(psiFile: ShFile, myProject: Project, processVariables: Map<String, String>): String {
+    suspend fun executeShFile(psiFile: ShFile, myProject: Project, processVariables: Map<String, String>): String {
         val virtualFile = psiFile.virtualFile
-        val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
-            ?: return "$DEVINS_ERROR: Shell runner not found"
+        ApplicationManager.getApplication().getService(ShRunner::class.java) ?: return "$DEVINS_ERROR: Shell runner not found"
 
-        val future = CompletableFuture<String>()
-        ApplicationManager.getApplication().invokeLater {
-            if (shRunner.isAvailable(myProject)) {
-                try {
-                    val output = ShireShellCommandRunner.runShellCommand(virtualFile, myProject, processVariables)
-                    future.complete(output)
-                } catch (t: Throwable) {
-                    future.completeExceptionally(t)
-                }
-            }
-        }
-
-        return future.get()
+        return ShireShellCommandRunner.runShellCommand(virtualFile, myProject, processVariables)
     }
 
     private fun executeTask(

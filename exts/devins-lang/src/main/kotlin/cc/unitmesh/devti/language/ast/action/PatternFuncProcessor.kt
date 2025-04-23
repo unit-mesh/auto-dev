@@ -23,6 +23,7 @@ import cc.unitmesh.devti.language.processor.CaptureProcessor
 import cc.unitmesh.devti.language.processor.ForeignFunctionProcessor
 import cc.unitmesh.devti.util.findFile
 import cc.unitmesh.devti.util.readText
+import com.intellij.execution.ui.ConsoleViewContentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File

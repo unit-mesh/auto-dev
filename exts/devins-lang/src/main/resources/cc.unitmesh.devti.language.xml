@@ -198,7 +198,7 @@
 
         <!-- Shire Context Action Group -->
         <group id="ShireContextActionGroup"
-               popup="true" text="Shire Action" description="Shire context action group"
+               popup="true" text="AutoDev DevIns Action" description="AutoDev DevIns context action group"
                class="cc.unitmesh.devti.language.actions.context.ShireContextMenuActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
 
