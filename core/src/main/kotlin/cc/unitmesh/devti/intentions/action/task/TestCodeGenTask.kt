@@ -220,7 +220,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         val agent = loadTestRagConfig() ?: return ""
 
         val query = testPromptContext.sourceCode
-        val stringFlow: Flow<String> = CustomAgentExecutor(project).execute(query, agent) ?: return ""
+        val stringFlow: Flow<String> = CustomAgentExecutor(project)
+            .execute(query, agent, StringBuilder()) ?: return ""
 
         val responseBuilder = StringBuilder()
         runBlocking {

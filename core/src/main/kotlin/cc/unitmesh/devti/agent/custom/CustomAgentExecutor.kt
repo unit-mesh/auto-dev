@@ -10,7 +10,6 @@ import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.llms.custom.updateCustomFormat
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
-import cc.unitmesh.devti.util.readText
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -32,13 +31,11 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
     override var requestFormat: String = ""
     override var responseFormat: String = ""
 
-    fun execute(promptText: String, agent: CustomAgentConfig): Flow<String>? {
-        var prompt = promptText
-
+    fun execute(promptText: String, agent: CustomAgentConfig, displayMessage: StringBuilder): Flow<String>? {
         if (agent.isFromDevIns) {
             val devin = LanguageProcessor.devin()!!
             val file = project.baseDir.findFileByRelativePath(agent.devinScriptPath)!!
-            prompt = runBlocking {
+            val prompt = runBlocking {
                 val context = CustomAgentContext(
                     agent, "", filePath = file,
                     initVariables = mapOf("input" to promptText)
@@ -46,23 +43,25 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
                 devin.execute(project, context)
             }
 
+            displayMessage.append(prompt)
             messages.add(Message("user", prompt))
             return LlmFactory.create(project).stream(prompt, "")
         }
 
+        displayMessage.append(promptText)
         messages.add(Message("user", promptText))
 
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 
-        val customRequest = CustomRequest(listOf(Message("user", prompt)))
+        val customRequest = CustomRequest(listOf(Message("user", promptText)))
         var request = if (requestFormat.isNotEmpty()) {
             customRequest.updateCustomFormat(requestFormat)
         } else {
             Json.encodeToString<CustomRequest>(customRequest)
         }
 
-        request = replacePlaceholders(request, prompt)
+        request = replacePlaceholders(request, promptText)
 
         val body = request.toRequestBody("application/json".toMediaTypeOrNull())
         val builder = Request.Builder()

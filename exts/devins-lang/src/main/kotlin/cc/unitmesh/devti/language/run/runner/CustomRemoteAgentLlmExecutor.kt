@@ -17,7 +17,8 @@ class CustomRemoteAgentLlmExecutor(
 ) : ShireLlmExecutor(context) {
     override fun execute(postFunction: PostFunction) {
         ApplicationManager.getApplication().invokeLater {
-            val stringFlow: Flow<String>? = CustomAgentExecutor(project = context.myProject).execute(context.prompt, agent)
+            val stringFlow: Flow<String>? = CustomAgentExecutor(project = context.myProject)
+                .execute(context.prompt, agent, StringBuilder())
 
             val console = context.console
             if (stringFlow == null) {

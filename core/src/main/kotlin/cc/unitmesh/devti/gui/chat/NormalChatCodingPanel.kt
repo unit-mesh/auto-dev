@@ -190,6 +190,10 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         return messageView
     }
 
+    fun showLoading() {
+
+    }
+
     fun getHistoryMessages(): List<LlmMsg.ChatMessage> {
         val messages = mutableListOf<LlmMsg.ChatMessage>()
         for (i in 0 until myList.componentCount) {

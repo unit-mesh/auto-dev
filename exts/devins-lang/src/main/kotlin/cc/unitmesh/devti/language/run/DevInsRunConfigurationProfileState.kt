@@ -40,7 +40,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import javax.swing.JComponent
 
@@ -221,7 +220,8 @@ open class DevInsRunConfigurationProfileState(
         agent: CustomAgentConfig
     ) {
         ApplicationManager.getApplication().invokeLater {
-            val stringFlow: Flow<String>? = CustomAgentExecutor(project = myProject).execute(output, agent)
+            val stringFlow: Flow<String>? = CustomAgentExecutor(project = myProject)
+                .execute(output, agent, StringBuilder())
             if (stringFlow != null) {
                 AutoDevCoroutineScope.scope(myProject).launch {
                     val llmResult = StringBuilder()
