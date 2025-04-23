@@ -32,6 +32,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.ui.JBColor
 import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
@@ -44,6 +45,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
@@ -80,6 +82,15 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
     private val delaySeconds: String get() = AutoDevSettingsState.getInstance().delaySeconds
+    
+    // Add a field to hold the loading panel
+    private var loadingPanel: JPanel? = null
+    
+    // Add a field to track if loading animation timer is running
+    private var loadingTimer: Timer? = null
+    
+    // Add a field to track loading animation step
+    private var loadingStep = 0
 
     init {
         focusMouseListener = object : MouseAdapter() {
@@ -176,6 +187,8 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
      * Add a message to the chat panel and update ui
      */
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = ""): MessageView {
+        clearLoadingView()
+        
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
 
@@ -190,8 +203,101 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         return messageView
     }
 
-    fun showLoading() {
-
+    fun showInitLoading() {
+        clearLoadingView()
+        loadingPanel = JPanel(BorderLayout())
+        loadingPanel!!.background = UIUtil.getListBackground()
+        loadingPanel!!.border = JBUI.Borders.empty(10)
+        
+        val spinnerPanel = JPanel()
+        spinnerPanel.isOpaque = false
+        
+        val spinner = object: JPanel() {
+            override fun paintComponent(g: Graphics) {
+                super.paintComponent(g)
+                
+                val g2d = g as Graphics2D
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                
+                val width = width.toFloat()
+                val height = height.toFloat()
+                val centerX = width / 2
+                val centerY = height / 2
+                val radius = minOf(width, height) / 2 - 5
+                
+                val oldStroke = g2d.stroke
+                g2d.stroke = BasicStroke(3f)
+                
+                val step = if (loadingStep >= 12) 0 else loadingStep
+                for (i in 0 until 12) {
+                    g2d.color = JBColor(
+                        Color(47, 99, 162, 255 - ((i + 12 - step) % 12) * 20),
+                        Color(88, 157, 246, 255 - ((i + 12 - step) % 12) * 20)
+                    )
+                    
+                    val startAngle = i * 30
+                    g2d.drawArc(
+                        (centerX - radius).toInt(), 
+                        (centerY - radius).toInt(),
+                        (radius * 2).toInt(), 
+                        (radius * 2).toInt(),
+                        startAngle, 
+                        15
+                    )
+                }
+                
+                g2d.stroke = oldStroke
+            }
+            
+            override fun getPreferredSize(): Dimension {
+                return Dimension(40, 40)
+            }
+        }
+        
+        spinnerPanel.add(spinner)
+        
+        val loadingLabel = JLabel("Loading", SwingConstants.CENTER)
+        loadingPanel!!.add(spinnerPanel, BorderLayout.CENTER)
+        loadingPanel!!.add(loadingLabel, BorderLayout.SOUTH)
+        
+        runInEdt {
+            myList.add(loadingPanel!!)
+            updateUI()
+            scrollToBottom()
+        }
+        
+        loadingStep = 0
+        
+        loadingTimer = Timer(100, null) // 100ms interval for smooth animation
+        loadingTimer!!.addActionListener {
+            loadingStep = (loadingStep + 1) % 12
+            spinner.repaint()
+        }
+        
+        loadingTimer!!.start()
+    }
+    
+    private fun clearLoadingView() {
+        // Stop the timer first
+        loadingTimer?.stop()
+        loadingTimer = null
+        
+        // Safely remove the loading panel if it exists
+        if (loadingPanel != null) {
+            val panelToRemove = loadingPanel
+            runInEdt {
+                // Check if the panel is still in the component hierarchy
+                if (panelToRemove != null && panelToRemove.parent === myList) {
+                    try {
+                        myList.remove(panelToRemove)
+                        updateUI()
+                    } catch (e: Exception) {
+                        // Log or handle any exceptions that might occur during removal
+                    }
+                }
+            }
+            loadingPanel = null
+        }
     }
 
     fun getHistoryMessages(): List<LlmMsg.ChatMessage> {
@@ -297,6 +403,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     override fun resetChatSession() {
         chatCodingService.stop()
         chatCodingService.clearSession()
+        clearLoadingView() // Clear loading view when resetting chat
         myList.removeAll()
         this.hiddenProgressBar()
         this.resetAgent()

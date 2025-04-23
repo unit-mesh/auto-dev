@@ -36,7 +36,7 @@ class CustomAgentChatProcessor(val project: Project) {
 
         selectedAgent.state = CustomAgentState.HANDLING
 
-        ui.showLoading()
+        ui.showInitLoading()
 
         val response: Flow<String>? = customAgentExecutor.execute(request, selectedAgent, displayMessage)
         if (response == null) {
