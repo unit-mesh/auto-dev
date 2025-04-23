@@ -3,7 +3,7 @@ package cc.unitmesh.devti.language.run
 import cc.unitmesh.devti.agent.custom.CustomAgentExecutor
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.team.InteractionType
-import cc.unitmesh.devti.language.ast.config.DevInActionLocation
+import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.streaming.OnStreamingService
@@ -12,7 +12,6 @@ import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.language.run.runner.ShireConsoleView
 import cc.unitmesh.devti.language.run.runner.ShireExecutionConsole
 import cc.unitmesh.devti.language.run.runner.ShireRunner
-import cc.unitmesh.devti.language.status.DevInsRunListener
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
@@ -36,7 +35,6 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
@@ -89,7 +87,7 @@ open class DevInsRunConfigurationProfileState(
             val parsedResult = ShireRunner.preAnalysisAndLocalExecute(shireFile, myProject)
 
             val location = parsedResult.config?.actionLocation
-            if (location == DevInActionLocation.TERMINAL_MENU || location == DevInActionLocation.COMMIT_MENU) {
+            if (location == DevInsActionLocation.TERMINAL_MENU || location == DevInsActionLocation.COMMIT_MENU) {
                 isShowRunContent = false
             }
 

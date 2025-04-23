@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.run.runner
 
 import cc.unitmesh.devti.custom.team.InteractionType
-import cc.unitmesh.devti.language.ast.config.DevInActionLocation
+import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import kotlinx.coroutines.flow.Flow
 
 data class LocationInteractionContext(
-    val location: DevInActionLocation,
+    val location: DevInsActionLocation,
     /**
      * the interaction type
      */

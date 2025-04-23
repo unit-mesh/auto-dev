@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.startup
+package cc.unitmesh.devti.language.actions.copyPaste
 
 import cc.unitmesh.devti.language.ast.HobbitHole
 import cc.unitmesh.devti.language.ast.variable.ShireVariableTemplateCompiler

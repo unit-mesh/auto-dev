@@ -1,40 +1,28 @@
 package cc.unitmesh.devti.language.config
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.custom.team.InteractionType
 import cc.unitmesh.devti.diff.DiffStreamHandler
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
-import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.Companion.createNormalChatWindow
 import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.message.ChatContext
-import cc.unitmesh.devti.gui.chat.view.MessageView
-import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
-import cc.unitmesh.devti.language.console.addCancelCallback
 import cc.unitmesh.devti.language.provider.LocationInteractionProvider
 import cc.unitmesh.devti.language.run.runner.LocationInteractionContext
 import cc.unitmesh.devti.language.run.runner.PostFunction
 import cc.unitmesh.devti.language.run.runner.cancelWithConsole
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.llms.cancelHandler
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.virtualFile
-import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.ui.content.impl.ContentManagerImpl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
-import kotlin.invoke
 
 class EditorInteractionProvider : LocationInteractionProvider {
     override fun isApplicable(context: LocationInteractionContext): Boolean {
@@ -161,7 +149,7 @@ class EditorInteractionProvider : LocationInteractionProvider {
 
             InteractionType.OnPaste -> {
                 /**
-                 *  already handle in [com.phodal.shirelang.actions.copyPaste.ShireCopyPastePreProcessor]
+                 *  already handle in [cc.unitmesh.devti.language.actions.copyPaste.ShireCopyPastePreProcessor]
                  */
             }
 

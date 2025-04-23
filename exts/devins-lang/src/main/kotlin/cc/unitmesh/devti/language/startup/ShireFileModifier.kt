@@ -71,7 +71,7 @@ class ShireFileModifier(val context: ShireFileModificationContext) {
     private fun loadShireAction(file: DevInFile, afterUpdater: ((HobbitHole, DevInFile) -> Unit)?) {
         try {
             HobbitHoleParser.parse(file).let {
-                dynamicActionService.putAction(file, DynamicDevInActionConfig(it?.name ?: file.name, it, file))
+                dynamicActionService.putAction(file, DynamicDevInsActionConfig(it?.name ?: file.name, it, file))
                 if (it != null) afterUpdater?.invoke(it, file)
                 logger.debug("DevIns file[${file.virtualFile.path}] is loaded")
             }

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.ast.config
 
-enum class DevInActionLocation(val location: String, val description: String) {
+enum class DevInsActionLocation(val location: String, val description: String) {
     CONTEXT_MENU("ContextMenu", "Show in Context Menu by Right Click"),
     INTENTION_MENU("IntentionMenu", "Show in Intention Menu by Alt+Enter"),
     TERMINAL_MENU("TerminalMenu", "Show in Terminal panel menu bar"),
@@ -17,15 +17,15 @@ enum class DevInActionLocation(val location: String, val description: String) {
     ;
 
     companion object {
-        fun from(locationName: String): DevInActionLocation {
+        fun from(locationName: String): DevInsActionLocation {
             return fromLocationName(locationName) ?: RUN_PANEL
         }
 
-        private fun fromLocationName(locationName: String): DevInActionLocation? {
+        private fun fromLocationName(locationName: String): DevInsActionLocation? {
             return entries.firstOrNull { it.location == locationName }
         }
 
-        fun all(): Array<DevInActionLocation> = entries.toTypedArray()
+        fun all(): Array<DevInsActionLocation> = entries.toTypedArray()
 
         fun default(): String = RUN_PANEL.location
     }

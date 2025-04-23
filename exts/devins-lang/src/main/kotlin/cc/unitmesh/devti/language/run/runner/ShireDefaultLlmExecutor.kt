@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.run.runner
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.team.InteractionType
-import cc.unitmesh.devti.language.ast.config.DevInActionLocation
+import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
 import cc.unitmesh.devti.language.provider.LocationInteractionProvider
 import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.llms.LlmFactory
@@ -28,7 +28,7 @@ class ShireDefaultLlmExecutor(
 
             val interaction = context.hole?.interaction
             val interactionContext = LocationInteractionContext(
-                location = context.hole?.actionLocation ?: DevInActionLocation.RUN_PANEL,
+                location = context.hole?.actionLocation ?: DevInsActionLocation.RUN_PANEL,
                 interactionType = interaction ?: InteractionType.AppendCursorStream,
                 editor = context.editor,
                 project = context.myProject,

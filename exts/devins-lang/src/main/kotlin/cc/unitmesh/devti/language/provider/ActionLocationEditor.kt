@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.provider
 
-import cc.unitmesh.devti.language.ast.config.DevInActionLocation
+import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
 import cc.unitmesh.devti.language.provider.action.VariableActionEventDataHolder
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -10,15 +10,15 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 
 interface ActionLocationEditor {
-    fun isApplicable(hole: DevInActionLocation): Boolean
+    fun isApplicable(hole: DevInsActionLocation): Boolean
 
-    fun resolve(project: Project, hole: DevInActionLocation): Editor?
+    fun resolve(project: Project, hole: DevInsActionLocation): Editor?
 
     companion object {
         private val EP_NAME: ExtensionPointName<ActionLocationEditor> =
             ExtensionPointName.create("cc.unitmesh.shireActionLocationEditor")
 
-        fun provide(project: Project, location: DevInActionLocation? = null): Editor? {
+        fun provide(project: Project, location: DevInsActionLocation? = null): Editor? {
             if (location == null) {
                 return defaultEditor(project)
             }

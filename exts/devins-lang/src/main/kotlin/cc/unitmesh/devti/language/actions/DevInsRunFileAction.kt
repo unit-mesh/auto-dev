@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.actions
 
-import cc.unitmesh.devti.language.startup.DynamicDevInActionConfig
+import cc.unitmesh.devti.language.startup.DynamicDevInsActionConfig
 import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.DevInsConfiguration
@@ -10,6 +10,7 @@ import cc.unitmesh.devti.language.run.runner.ShireConsoleView
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.RunManager
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.execution.executors.DefaultRunExecutor
@@ -61,6 +62,65 @@ class DevInsRunFileAction : DumbAwareAction() {
     companion object {
         val ID: @NonNls String = "runDevInsFileAction"
 
+        fun createRunConfig(e: AnActionEvent): RunnerAndConfigurationSettings? {
+            val context = ConfigurationContext.getFromContext(e.dataContext, e.place)
+            return RunConfigurationProducer.getInstance(DevInsRunConfigurationProducer::class.java)
+                .findExistingConfiguration(context)
+        }
+
+        /**
+         * Executes a Shire file within the specified project context.
+         *
+         * ```kotlin
+         * val project = ... // IntelliJ IDEA project
+         * val config = ... // DynamicShireActionConfig object
+         * val runSettings = ... // Optional RunnerAndConfigurationSettings
+         * val variables = mapOf("key1" to "value1", "key2" to "value2")
+         *
+         * executeFile(project, config, runSettings, variables)
+         * ```
+         *
+         * @param project The IntelliJ IDEA project in which the Shire file is to be executed.
+         * @param config The configuration object containing details about the Shire file to be executed.
+         * @param runSettings Optional runner and configuration settings to use for execution. If null, a new configuration will be created.
+         * @param variables A map of variables to be passed to the Shire file during execution. Defaults to an empty map.
+         *
+         * @throws Exception If there is an error creating the run configuration or execution environment.
+         */
+        fun executeFile(
+            project: Project,
+            config: DynamicDevInsActionConfig,
+            runSettings: RunnerAndConfigurationSettings?,
+            variables: Map<String, String> = mapOf(),
+        ) {
+            val settings = try {
+                runSettings ?: RunManager.getInstance(project)
+                    .createConfiguration(config.name, DevInsConfigurationType::class.java)
+            } catch (e: Exception) {
+                logger<DevInsRunFileAction>().error("Failed to create configuration", e)
+                return
+            }
+
+            val runConfiguration = settings.configuration as DevInsConfiguration
+            runConfiguration.setScriptPath(config.devinFile.virtualFile.path)
+            if (variables.isNotEmpty()) {
+                runConfiguration.setVariables(variables)
+                PostProcessorContext.updateRunConfigVariables(variables)
+            }
+
+            val executorInstance = DefaultRunExecutor.getRunExecutorInstance()
+            val executionEnvironment = ExecutionEnvironmentBuilder
+                .createOrNull(executorInstance, runConfiguration)
+                ?.build()
+
+            if (executionEnvironment == null) {
+                logger<DevInsRunFileAction>().error("Failed to create execution environment")
+                return
+            }
+
+            ExecutionManager.getInstance(project).restartRunProfile(executionEnvironment)
+        }
+
         fun suspendExecuteFile(
             project: Project,
             file: DevInFile,
@@ -74,7 +134,7 @@ class DevInsRunFileAction : DumbAwareAction() {
                 variables[varName] = varValue
             }
 
-            val config = DynamicDevInActionConfig.from(file)
+            val config = DynamicDevInsActionConfig.from(file)
 
             val settings = try {
                 RunManager.getInstance(project)

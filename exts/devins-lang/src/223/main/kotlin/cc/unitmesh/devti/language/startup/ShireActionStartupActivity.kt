@@ -41,13 +41,10 @@ class ShireActionStartupActivity : StartupActivity  {
                 changesProvider.onUpdated(it)
             }
 
-//            changesProvider.startup { shireConfig, shireFile ->
-//                attachCopyPasteAction(shireConfig, shireFile)
-//            }
-//            attachTerminalAction()
-//            attachDatabaseAction()
-//            attachVcsLogAction()
-//            attachExtensionActions(project)
+            attachTerminalAction()
+            attachDatabaseAction()
+            attachVcsLogAction()
+            attachExtensionActions(project)
         }
     }
 

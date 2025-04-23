@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.startup
 
-import cc.unitmesh.devti.language.ast.config.DevInActionLocation
+import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -16,9 +16,9 @@ import java.util.*
 class DynamicShireActionService: DynamicActionService {
     private val dynamicActionService = GlobalShireActionService.getInstance()
 
-    private val actionCache = WeakHashMap<DevInFile, DynamicDevInActionConfig>()
+    private val actionCache = WeakHashMap<DevInFile, DynamicDevInsActionConfig>()
 
-    override fun putAction(key: DevInFile, action: DynamicDevInActionConfig) {
+    override fun putAction(key: DevInFile, action: DynamicDevInsActionConfig) {
         actionCache[key] = action
     }
 
@@ -26,12 +26,12 @@ class DynamicShireActionService: DynamicActionService {
         it == key
     }
 
-    override fun getAllActions(): List<DynamicDevInActionConfig> {
+    override fun getAllActions(): List<DynamicDevInsActionConfig> {
         return (actionCache.values.toList() + dynamicActionService.getAllActions())
             .distinctBy { it.devinFile.virtualFile }
     }
 
-    fun getActions(location: DevInActionLocation): List<DynamicDevInActionConfig> {
+    fun getActions(location: DevInsActionLocation): List<DynamicDevInsActionConfig> {
         return getAllActions().filter {
             it.hole?.actionLocation == location && it.hole.enabled
         }
@@ -63,15 +63,15 @@ class DynamicShireActionService: DynamicActionService {
 
 @Service(Service.Level.APP)
 class GlobalShireActionService: DynamicActionService {
-    private val globalActionCache = WeakHashMap<VirtualFile, DynamicDevInActionConfig>()
+    private val globalActionCache = WeakHashMap<VirtualFile, DynamicDevInsActionConfig>()
 
-    override fun putAction(key: DevInFile, action: DynamicDevInActionConfig) {
+    override fun putAction(key: DevInFile, action: DynamicDevInsActionConfig) {
         globalActionCache[key.virtualFile] = action
     }
 
     override fun removeAction(key: DevInFile) = globalActionCache.keys.removeIf{ key.virtualFile == it }
 
-    override fun getAllActions(): List<DynamicDevInActionConfig> = globalActionCache.values.toList()
+    override fun getAllActions(): List<DynamicDevInsActionConfig> = globalActionCache.values.toList()
 
     companion object {
         fun getInstance(): GlobalShireActionService =
@@ -82,10 +82,10 @@ class GlobalShireActionService: DynamicActionService {
 
 interface DynamicActionService {
 
-    fun putAction(key: DevInFile, action: DynamicDevInActionConfig)
+    fun putAction(key: DevInFile, action: DynamicDevInsActionConfig)
 
     fun removeAction(key: DevInFile): Boolean
 
-    fun getAllActions(): List<DynamicDevInActionConfig>
+    fun getAllActions(): List<DynamicDevInsActionConfig>
 
 }
