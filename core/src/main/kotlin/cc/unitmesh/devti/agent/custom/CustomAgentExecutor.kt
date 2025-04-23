@@ -33,20 +33,24 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
     override var responseFormat: String = ""
 
     fun execute(promptText: String, agent: CustomAgentConfig): Flow<String>? {
-        messages.add(Message("user", promptText))
-
         var prompt = promptText
 
         if (agent.isFromDevIns) {
             val devin = LanguageProcessor.devin()!!
             val file = project.baseDir.findFileByRelativePath(agent.devinScriptPath)!!
-            val content = file.readText().replace("${'$'}input", promptText)
             prompt = runBlocking {
-                devin.execute(project, CustomAgentContext(agent, content))
+                val context = CustomAgentContext(
+                    agent, "", filePath = file,
+                    initVariables = mapOf("input" to promptText)
+                )
+                devin.execute(project, context)
             }
 
+            messages.add(Message("user", prompt))
             return LlmFactory.create(project).stream(prompt, "")
         }
+
+        messages.add(Message("user", promptText))
 
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
@@ -69,12 +73,14 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
                 builder.addHeader("Authorization", "Bearer ${auth.token}")
                 builder.addHeader("Content-Type", "application/json")
             }
+
             null -> {
                 logger.info("No auth type found for agent ${agent.name}")
             }
         }
 
-        client = client.newBuilder().connectTimeout(agent.defaultTimeout, TimeUnit.SECONDS).readTimeout(agent.defaultTimeout, TimeUnit.SECONDS).build()
+        client = client.newBuilder().connectTimeout(agent.defaultTimeout, TimeUnit.SECONDS)
+            .readTimeout(agent.defaultTimeout, TimeUnit.SECONDS).build()
         val call = client.newCall(builder.url(agent.url).post(body).build())
 
         return when (agent.responseAction) {
@@ -97,7 +103,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
          */
         fun replacePlaceholders(request: String, promptText: String): String {
             var result = request
-            
+
             // Replace simple content placeholder
             if (result.contains(SIMPLE_CONTENT_PLACEHOLDER)) {
                 result = result.replace(SIMPLE_CONTENT_PLACEHOLDER, "\"content\": \"$promptText\"")
@@ -109,7 +115,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
             if (result.contains(regex)) {
                 result = regex.replace(result, ": \"$promptText\"")
             }
-            
+
             return result
         }
     }
