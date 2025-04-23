@@ -43,6 +43,7 @@ import kotlinx.coroutines.withContext
 import java.util.LinkedList
 
 val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
+const val FLOW_FALG = "[flow]:"
 
 class DevInsCompiler(
     private val myProject: Project,

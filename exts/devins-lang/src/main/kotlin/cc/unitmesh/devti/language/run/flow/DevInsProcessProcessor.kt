@@ -6,11 +6,17 @@ import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
+import cc.unitmesh.devti.language.compiler.FLOW_FALG
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInVisitor
+import cc.unitmesh.devti.language.run.runner.ShireConsoleView
+import cc.unitmesh.devti.language.run.runner.cancelWithConsole
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -20,6 +26,7 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 
@@ -34,8 +41,8 @@ class DevInsProcessProcessor(val project: Project) {
      * @param devInFile the DevInFile to search for comments
      * @return a list of PsiElements that are comments
      */
-    private fun lookupFlagComment(devInFile: DevInFile): List<PsiElement> {
-        val comments = mutableListOf<PsiElement>()
+    private fun collectComments(devInFile: DevInFile): List<PsiComment> {
+        val comments = mutableListOf<PsiComment>()
         devInFile.accept(object : DevInVisitor() {
             override fun visitComment(comment: PsiComment) {
                 comments.add(comment)
@@ -58,30 +65,30 @@ class DevInsProcessProcessor(val project: Project) {
      * @param event The process event containing the exit code
      * @param scriptPath The path of the script file
      */
-    suspend fun process(output: String, event: ProcessEvent, scriptPath: String) {
-        conversationService.updateIdeOutput(scriptPath, output)
+    suspend fun process(output: String, event: ProcessEvent, scriptPath: String, consoleView: ShireConsoleView?) {
+        conversationService.refreshIdeOutput(scriptPath, output)
 
         val code = CodeFence.parse(conversationService.getLlmResponse(scriptPath))
-        val isDevInCode = code.language == DevInLanguage.INSTANCE
-        if (isDevInCode) {
-            executeTask(DevInFile.fromString(project, code.text))
+        if (code.language == DevInLanguage.INSTANCE) {
+            executeTask(DevInFile.fromString(project, code.text), consoleView)
         }
 
         when {
             event.exitCode == 0 -> {
-                val devInFile: DevInFile? = runReadAction { DevInFile.lookup(project, scriptPath) }
-                val comment = lookupFlagComment(devInFile!!).firstOrNull() ?: return
-                if (comment.startOffset == 0) {
-                    val text = comment.text
-                    if (text.startsWith("[flow]:")) {
-                        val nextScript = text.substring(7)
+                val shireFile: DevInFile = runReadAction { DevInFile.lookup(project, scriptPath) } ?: return
+                val firstComment = collectComments(shireFile).firstOrNull() ?: return
+                if (firstComment.textRange.startOffset == 0) {
+                    val text = firstComment.text
+                    if (text.startsWith(FLOW_FALG)) {
+                        val nextScript = text.substring(FLOW_FALG.length)
                         val newScript = DevInFile.lookup(project, nextScript) ?: return
-                        this.executeTask(newScript)
+                        this.executeTask(newScript, consoleView)
                     }
                 }
             }
+
             event.exitCode != 0 -> {
-                conversationService.tryFixWithLlm(scriptPath)
+                conversationService.retryScriptExecution(scriptPath, consoleView)
             }
         }
     }
@@ -90,24 +97,33 @@ class DevInsProcessProcessor(val project: Project) {
      * This function is responsible for running a task with a new script.
      * @param newScript The new script to be run.
      */
-    suspend fun executeTask(newScript: DevInFile) {
-        val result = compileResult(newScript)
-        if(result.output != "") {
-            AutoDevNotifications.notify(project, result.output)
+    suspend fun executeTask(newScript: DevInFile, consoleView: ShireConsoleView?) {
+        val shireCompiler = createCompiler(project, newScript)
+        val result = shireCompiler.compile()
+        if (result.output != "") {
+            AutoDevNotifications.warn(project, result.output)
         }
 
         if (result.hasError) {
-            sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
-                service.handlePromptAndResponse(panel, TextContextPrompter(result.output), null, true)
-            }
-        }
-        else {
-            if (result.nextJob != null) {
-                val nextJob = result.nextJob!!
-                val nextResult = createCompiler(project, nextJob).compile()
-                if(nextResult.output != "") {
-                    AutoDevNotifications.notify(project, nextResult.output)
+            if (consoleView == null) return
+
+            runBlocking {
+                try {
+                    LlmFactory.create(project)?.stream(result.output, "Shirelang", true)?.cancelWithConsole(consoleView)
+                        ?.collect {
+                            consoleView.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
+                        }
+                } catch (e: Exception) {
+                    consoleView.print(e.message ?: "Error", ConsoleViewContentType.ERROR_OUTPUT)
                 }
+            }
+        } else {
+            if (result.nextJob == null) return
+
+            val nextJob = result.nextJob!!
+            val nextResult = createCompiler(project, nextJob).compile()
+            if (nextResult.output != "") {
+                AutoDevNotifications.warn(project, nextResult.output)
             }
         }
     }
