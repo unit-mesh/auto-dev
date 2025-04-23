@@ -153,7 +153,7 @@
 
         <!-- Toolchain Function Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.shireToolchainFunctionProvider"
-                        interface="cc.unitmesh.devti.language.provider.function.ToolchainFunctionProvider"
+                        interface="cc.unitmesh.devti.language.provider.ToolchainFunctionProvider"
                         dynamic="true">
         </extensionPoint>
 
@@ -163,7 +163,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shireActionLocationEditor"
-                        interface="cc.unitmesh.devti.language.provider.context.ActionLocationEditor"
+                        interface="cc.unitmesh.devti.language.provider.ActionLocationEditor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shirePsiCapture"
@@ -172,23 +172,23 @@
         </extensionPoint>
         
         <extensionPoint qualifiedName="cc.unitmesh.shireSymbolProvider"
-                        interface="cc.unitmesh.devti.language.provider.shire.ShireSymbolProvider"
+                        interface="cc.unitmesh.devti.language.provider.ShireSymbolProvider"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shireQLDataProvider"
-                        interface="cc.unitmesh.devti.language.provider.shire.ShireQLDataProvider"
+                        interface="cc.unitmesh.devti.language.provider.ShireQLDataProvider"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shireAgentTool"
-                        interface="cc.unitmesh.devti.language.provider.agent.AgentTool"
+                        interface="cc.unitmesh.devti.language.provider.AgentTool"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shireRevisionProvider"
-                        interface="cc.unitmesh.devti.language.provider.shire.RevisionProvider"
+                        interface="cc.unitmesh.devti.language.provider.RevisionProvider"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shireTerminalExecutor"
-                        interface="cc.unitmesh.devti.language.provider.action.TerminalLocationExecutor"
+                        interface="cc.unitmesh.devti.language.provider.TerminalLocationExecutor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shireHttpHandler"
@@ -199,11 +199,11 @@
         <extensionPoint qualifiedName="cc.unitmesh.shireComplexityProvider"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.language.provider.complexity.ComplexityProvider"/>
+                  implements="cc.unitmesh.devti.language.provider.ComplexityProvider"/>
         </extensionPoint>
 
         <!--   EditorInteractionProvider-->
-        <shireLocationInteraction implementation="cc.unitmesh.devti.language.config.interaction.EditorInteractionProvider"/>
+        <shireLocationInteraction implementation="cc.unitmesh.devti.language.config.EditorInteractionProvider"/>
 
         <!-- Toolchain Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.shireLanguageToolchainProvider"
@@ -230,6 +230,7 @@
 
 
         <!--        Shire -->
+        <shireTerminalExecutor implementation="cc.unitmesh.devti.language.provider.ShireTerminalExecutor"/>
         <!-- code processors -->
         <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.TimeMetricProcessor"/>
 

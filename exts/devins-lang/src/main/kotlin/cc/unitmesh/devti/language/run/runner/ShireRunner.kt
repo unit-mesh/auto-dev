@@ -14,7 +14,7 @@ import cc.unitmesh.devti.language.provider.ActionLocationEditor
 import cc.unitmesh.devti.language.provider.TerminalLocationExecutor
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.DevInsConfiguration
-import cc.unitmesh.devti.language.run.DevInsProcessHandler
+import cc.unitmesh.devti.language.run.ShireProcessHandler
 import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.cancelHandler
@@ -37,10 +37,9 @@ class ShireRunner(
     private val console: ShireConsoleView?,
     private val configuration: DevInsConfiguration,
     private val variableMap: Map<String, String>,
-    private val processHandler: DevInsProcessHandler,
+    private val processHandler: ShireProcessHandler,
 ) {
-    private var `compiledVariables`: Map<String, Any> = mapOf()
-    private val terminalLocationExecutor = TerminalLocationExecutor.provide(project)
+    private var compiledVariables: Map<String, Any> = mapOf()
 
     private var isCanceled: Boolean = false
 
@@ -86,7 +85,7 @@ class ShireRunner(
 
     private fun executeTerminalUiTask(context: ShireRunnerContext, postFunction: PostFunction) {
         CoroutineScope(workerThread).launch {
-            val handler = terminalLocationExecutor?.bundler(project, variableMap["input"] ?: "")
+            val handler = TerminalLocationExecutor.provide(project)?.bundler(project, variableMap["input"] ?: "")
             if (handler == null) {
                 console?.print("Terminal not found", ConsoleViewContentType.ERROR_OUTPUT)
                 processHandler.exitWithError()

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.run.runner
 
 import cc.unitmesh.devti.language.console.DevInConsoleViewBase
 import cc.unitmesh.devti.language.run.DevInsConfiguration
-import cc.unitmesh.devti.language.run.DevInsProcessHandler
+import cc.unitmesh.devti.language.run.ShireProcessHandler
 import com.intellij.build.BuildView
 import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.events.BuildEvent
@@ -92,15 +92,15 @@ class ShireExecutionConsole(
     val configuration: DevInsConfiguration,
 ) : ConsoleViewImpl(project, viewer) {
     private val outputBuilder = StringBuilder()
-    private var processHandler: DevInsProcessHandler? = null
+    private var processHandler: ShireProcessHandler? = null
 
-    fun getProcessHandler(): DevInsProcessHandler? {
+    fun getProcessHandler(): ShireProcessHandler? {
         return processHandler
     }
 
     override fun attachToProcess(processHandler: ProcessHandler) {
         super.attachToProcess(processHandler)
-        this.processHandler = processHandler as DevInsProcessHandler
+        this.processHandler = processHandler as ShireProcessHandler
     }
 
     override fun print(text: String, contentType: ConsoleViewContentType) {

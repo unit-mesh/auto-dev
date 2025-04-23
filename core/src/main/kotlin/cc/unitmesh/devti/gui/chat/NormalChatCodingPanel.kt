@@ -18,7 +18,6 @@ import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.sketch.createActionButton
 import cc.unitmesh.devti.sketch.ui.code.HtmlHighlightSketch
 import cc.unitmesh.devti.util.whenDisposed

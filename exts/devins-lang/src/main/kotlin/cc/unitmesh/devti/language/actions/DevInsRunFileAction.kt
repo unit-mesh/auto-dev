@@ -6,6 +6,7 @@ import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.DevInsConfiguration
 import cc.unitmesh.devti.language.run.DevInsConfigurationType
 import cc.unitmesh.devti.language.run.DevInsRunConfigurationProducer
+import cc.unitmesh.devti.language.run.runner.ShireConsoleView
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.RunManager
@@ -105,23 +106,16 @@ class DevInsRunFileAction : DumbAwareAction() {
             val hintDisposable = Disposer.newDisposable()
             val connection = ApplicationManager.getApplication().messageBus.connect(hintDisposable)
             connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
-//                override fun runFinish(
-//                    allOutput: String,
-//                    llmOutput: String,
-//                    event: ProcessEvent,
-//                    scriptPath: String,
-//                    consoleView: DevInConsoleView?,
-//                ) {
-//                    future.complete(llmOutput)
-//                    connection.disconnect()
-//                    Disposer.dispose(hintDisposable)
-//                }
                 override fun runFinish(
-                    string: String,
+                    allOutput: String,
+                    llmOutput: String,
                     event: ProcessEvent,
-                    scriptPath: String
+                    scriptPath: String,
+                    consoleView: ShireConsoleView?,
                 ) {
-
+                    future.complete(llmOutput)
+                    connection.disconnect()
+                    Disposer.dispose(hintDisposable)
                 }
             })
 
