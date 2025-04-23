@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.PsiManager
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolver
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolverContext
+import cc.unitmesh.devti.util.virtualFile
 
 /**
  * Include ToolchainVariableProvider and PsiContextVariableProvider
@@ -17,7 +18,7 @@ class PsiContextVariableResolver(private val context: VariableResolverContext) :
 
     init {
         val psiFile = runReadAction {
-            PsiManager.getInstance(context.myProject).findFile(context.editor.virtualFile ?: return@runReadAction null)
+            PsiManager.getInstance(context.myProject).findFile(virtualFile(context.editor) ?: return@runReadAction null)
         }
 
         variableProvider = if (psiFile?.language != null) {

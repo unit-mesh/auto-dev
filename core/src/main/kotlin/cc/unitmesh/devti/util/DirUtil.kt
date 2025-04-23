@@ -18,5 +18,3 @@ object DirUtil {
     }
 
 }
-
-val VirtualFile.isFile: Boolean get() = isValid && !isDirectory

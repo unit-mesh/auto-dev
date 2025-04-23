@@ -66,31 +66,32 @@ object HobbitHoleParser {
 
         frontMatterEntries.forEach { entry ->
             entry.children.forEach { child ->
+                val text = runReadAction { child.text }
                 when (child.elementType) {
                     DevInTypes.LIFECYCLE_ID,
                     DevInTypes.FRONT_MATTER_KEY,
                         -> {
-                        lastKey = child.text
+                        lastKey = text
                     }
 
                     DevInTypes.FRONT_MATTER_VALUE -> {
                         frontMatter[lastKey] = parseFrontMatterValue(child)
-                            ?: FrontMatterType.STRING("FrontMatter value parsing failed: ${child.text}")
+                            ?: FrontMatterType.STRING("FrontMatter value parsing failed: $text")
                     }
 
                     DevInTypes.PATTERN_ACTION -> {
                         frontMatter[lastKey] = parsePatternAction(child)
-                            ?: FrontMatterType.STRING("Pattern action parsing failed: ${child.text}")
+                            ?: FrontMatterType.STRING("Pattern action parsing failed: $text")
                     }
 
                     DevInTypes.LOGICAL_AND_EXPR -> {
                         frontMatter[lastKey] = parseLogicAndExprToType(child as DevInLogicalAndExpr)
-                            ?: FrontMatterType.STRING("Logical expression parsing failed: ${child.text}")
+                            ?: FrontMatterType.STRING("Logical expression parsing failed: ${text}")
                     }
 
                     DevInTypes.LOGICAL_OR_EXPR -> {
                         frontMatter[lastKey] = parseLogicOrExprToType(child as DevInLogicalOrExpr)
-                            ?: FrontMatterType.STRING("Logical expression parsing failed: ${child.text}")
+                            ?: FrontMatterType.STRING("Logical expression parsing failed: ${text}")
                     }
 
                     DevInTypes.CALL_EXPR -> {

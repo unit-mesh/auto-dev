@@ -2,6 +2,7 @@ package cc.unitmesh.shirelang.compiler.execute.processor.shell
 
 import cc.unitmesh.devti.language.envior.ShireEnvReader
 import cc.unitmesh.devti.language.envior.ShireEnvVariableFiller
+import cc.unitmesh.devti.util.readText
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.OSProcessHandler
@@ -11,7 +12,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.readText
 import com.intellij.psi.search.ProjectScope
 import java.io.File
 import java.nio.charset.StandardCharsets

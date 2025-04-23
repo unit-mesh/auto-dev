@@ -21,6 +21,7 @@ import cc.unitmesh.devti.language.run.runner.cancelWithConsole
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.cancelHandler
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import cc.unitmesh.devti.util.virtualFile
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.application.invokeLater
@@ -41,7 +42,7 @@ class EditorInteractionProvider : LocationInteractionProvider {
     }
 
     override fun execute(context: LocationInteractionContext, postExecute: PostFunction) {
-        val targetFile = context.editor?.virtualFile
+        val targetFile = virtualFile(context.editor)
 
         when (context.interactionType) {
             InteractionType.AppendCursor,

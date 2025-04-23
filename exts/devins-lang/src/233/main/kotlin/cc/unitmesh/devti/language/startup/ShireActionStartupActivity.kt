@@ -17,6 +17,7 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerListener
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
+import kotlin.collections.forEach
 
 class ShireActionStartupActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
@@ -98,7 +99,7 @@ class ShireActionStartupActivity : ProjectActivity {
 
         private fun obtainProjectShires(project: Project): List<VirtualFile> {
             val scope = ProjectScope.getContentScope(project)
-            val projectShire = FileTypeIndex.getFiles(DevInFileType.INSTANCE, scope).mapNotNull {
+            val projectShire = FileTypeIndex.getFiles(DevInFileType.Companion.INSTANCE, scope).mapNotNull {
                 it
             }
 

@@ -34,6 +34,6 @@ class ProfilingStreamingService : StreamingServiceProvider {
     }
 
     private fun toMb(value: Long): Long {
-        return value / IOUtil.MiB
+        return value / 1048576
     }
 }

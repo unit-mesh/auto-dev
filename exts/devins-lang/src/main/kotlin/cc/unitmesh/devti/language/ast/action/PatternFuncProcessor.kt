@@ -19,10 +19,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findFile
-import com.intellij.openapi.vfs.readText
 import cc.unitmesh.shirelang.compiler.execute.processor.CaptureProcessor
 import cc.unitmesh.devti.language.processor.ForeignFunctionProcessor
+import cc.unitmesh.devti.util.findFile
+import cc.unitmesh.devti.util.readText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File

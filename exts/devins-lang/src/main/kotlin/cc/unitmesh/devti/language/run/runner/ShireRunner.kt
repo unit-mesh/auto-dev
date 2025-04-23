@@ -18,6 +18,7 @@ import cc.unitmesh.devti.language.run.ShireProcessHandler
 import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.cancelHandler
+import cc.unitmesh.devti.util.virtualFile
 import cc.unitmesh.devti.util.workerThread
 import com.intellij.execution.console.ConsoleViewWrapperBase
 import com.intellij.execution.ui.ConsoleView
@@ -152,7 +153,7 @@ class ShireRunner(
         textRange: TextRange?,
     ) {
         if (console?.isCanceled() == true) return
-        val currentFile = runnerContext.editor?.virtualFile?.let {
+        val currentFile = virtualFile(runnerContext.editor)?.let {
             runReadAction { PsiManager.getInstance(project).findFile(it) }
         }
         val context = PostProcessorContext(
@@ -246,7 +247,10 @@ class ShireRunner(
             hobbitHole?.pickupElement(project, editor)
 
             val file = runReadAction {
-                editor?.let { PsiManager.getInstance(project).findFile(it.virtualFile) }
+                editor?.let {
+                    val virtualFile = virtualFile(editor) ?: return@runReadAction null
+                    PsiManager.getInstance(project).findFile(virtualFile)
+                }
             }
 
             val context = PostProcessorContext.getData() ?: PostProcessorContext(

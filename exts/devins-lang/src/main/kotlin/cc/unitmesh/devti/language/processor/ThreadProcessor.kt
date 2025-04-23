@@ -9,10 +9,10 @@ import cc.unitmesh.devti.language.provider.http.HttpHandlerType
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.provider.RunService
+import cc.unitmesh.devti.util.readText
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.readText
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.sh.psi.ShFile

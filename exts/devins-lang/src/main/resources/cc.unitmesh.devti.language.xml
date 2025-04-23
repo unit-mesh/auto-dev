@@ -186,7 +186,7 @@
         <sketchToolchainProvider implementation="cc.unitmesh.devti.language.compiler.DevInsSketchToolchainProvider"/>
 
         <!--        Shire -->
-        <shireTerminalExecutor implementation="cc.unitmesh.devti.language.provider.ShireTerminalExecutor"/>
+<!--        <shireTerminalExecutor implementation="cc.unitmesh.devti.language.provider.ShireTerminalExecutor"/>-->
         <!-- code processors -->
         <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.TimeMetricProcessor"/>
 
