@@ -7,6 +7,7 @@ import cc.unitmesh.devti.language.ast.variable.resolver.CompositeVariableResolve
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolverContext
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 
@@ -42,7 +43,7 @@ class ShireVariableTemplateCompiler(
         compiledVariables = additionalMap.mapValues { it.value.toString() }
 
         val file = runReadAction {
-            PsiManager.getInstance(myProject).findFile(editor.virtualFile ?: return@runReadAction null)
+            PsiManager.getInstance(myProject).findFile(FileDocumentManager.getInstance().getFile(editor.document) ?: return@runReadAction null)
         }!!
 
         val templateCompiler = runReadAction { VariableTemplateCompiler(file.language, file, null, editor) }

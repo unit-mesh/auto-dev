@@ -17,6 +17,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import cc.unitmesh.devti.intentions.action.getElementToAction
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.runBlocking
 import org.apache.velocity.VelocityContext
@@ -137,7 +138,7 @@ class VariableTemplateCompiler(
             ReadAction.compute<PsiElement?, Throwable> {
                 currentEditor?.caretModel?.currentCaret?.offset?.let {
                     val psiFile = currentEditor.let { editor ->
-                        val psiFile = editor.virtualFile?.let { file ->
+                        val psiFile = FileDocumentManager.getInstance().getFile(editor.document)?.let { file ->
                             PsiManager.getInstance(myProject).findFile(file)
                         }
 
