@@ -13,6 +13,7 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.MessageView
+import cc.unitmesh.devti.gui.component.LoadingSpinner
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.provider.TextContextPrompter
@@ -32,7 +33,6 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.ui.JBColor
 import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
@@ -49,30 +49,6 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
-
-interface AutoDevChatPanel {
-    val progressBar: JProgressBar get() = JProgressBar()
-    fun resetChatSession()
-
-    /**
-     * Custom Agent Event
-     */
-    fun resetAgent()
-    fun hasSelectedCustomAgent(): Boolean
-    fun getSelectedCustomAgent(): CustomAgentConfig
-    fun selectAgent(config: CustomAgentConfig)
-
-    /**
-     * Progress Bar
-     */
-    fun hiddenProgressBar()
-    fun showProgressBar()
-
-    /**
-     * append custom view
-     */
-    fun appendWebView(content: String, project: Project)
-}
 
 class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true), NullableComponent, AutoDevChatPanel {
@@ -203,7 +179,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         return messageView
     }
 
-    fun showInitLoading() {
+    fun showInitLoading(string: String) {
         clearLoadingView()
         loadingPanel = JPanel(BorderLayout())
         loadingPanel!!.background = UIUtil.getListBackground()
@@ -212,51 +188,10 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         val spinnerPanel = JPanel()
         spinnerPanel.isOpaque = false
         
-        val spinner = object: JPanel() {
-            override fun paintComponent(g: Graphics) {
-                super.paintComponent(g)
-                
-                val g2d = g as Graphics2D
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-                
-                val width = width.toFloat()
-                val height = height.toFloat()
-                val centerX = width / 2
-                val centerY = height / 2
-                val radius = minOf(width, height) / 2 - 5
-                
-                val oldStroke = g2d.stroke
-                g2d.stroke = BasicStroke(3f)
-                
-                val step = if (loadingStep >= 12) 0 else loadingStep
-                for (i in 0 until 12) {
-                    g2d.color = JBColor(
-                        Color(47, 99, 162, 255 - ((i + 12 - step) % 12) * 20),
-                        Color(88, 157, 246, 255 - ((i + 12 - step) % 12) * 20)
-                    )
-                    
-                    val startAngle = i * 30
-                    g2d.drawArc(
-                        (centerX - radius).toInt(), 
-                        (centerY - radius).toInt(),
-                        (radius * 2).toInt(), 
-                        (radius * 2).toInt(),
-                        startAngle, 
-                        15
-                    )
-                }
-                
-                g2d.stroke = oldStroke
-            }
-            
-            override fun getPreferredSize(): Dimension {
-                return Dimension(40, 40)
-            }
-        }
-        
+        val spinner = LoadingSpinner()
         spinnerPanel.add(spinner)
         
-        val loadingLabel = JLabel("Loading", SwingConstants.CENTER)
+        val loadingLabel = JLabel(string, SwingConstants.CENTER)
         loadingPanel!!.add(spinnerPanel, BorderLayout.CENTER)
         loadingPanel!!.add(loadingLabel, BorderLayout.SOUTH)
         
@@ -278,15 +213,12 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     }
     
     private fun clearLoadingView() {
-        // Stop the timer first
         loadingTimer?.stop()
         loadingTimer = null
         
-        // Safely remove the loading panel if it exists
         if (loadingPanel != null) {
             val panelToRemove = loadingPanel
             runInEdt {
-                // Check if the panel is still in the component hierarchy
                 if (panelToRemove != null && panelToRemove.parent === myList) {
                     try {
                         myList.remove(panelToRemove)
@@ -453,4 +385,3 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         inputSection.moveCursorToStart()
     }
 }
-
