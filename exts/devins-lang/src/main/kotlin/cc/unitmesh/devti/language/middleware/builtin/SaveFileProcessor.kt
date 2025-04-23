@@ -57,7 +57,7 @@ class SaveFileProcessor : PostProcessor, Disposable {
                 val outputDir = ShireConstants.outputDir(project)
 
                 val outputFile = outputDir?.createChildData(this, fileName)
-                    ?: throw IllegalStateException("Failed to save file")
+                    ?: throw IllegalStateException("Failed to save file, fileName: $fileName, outputDir: $outputDir")
 
                 val content = getContent(context)
                 outputFile.setBinaryContent(content?.toByteArray() ?: ByteArray(0))

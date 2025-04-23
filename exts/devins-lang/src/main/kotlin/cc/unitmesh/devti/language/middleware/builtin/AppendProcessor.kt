@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import cc.unitmesh.devti.language.middleware.post.PostProcessorType
 import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
 import cc.unitmesh.devti.language.middleware.post.PostProcessor
-import kotlin.text.get
 
 class AppendProcessor : PostProcessor {
     override val processorName: String = PostProcessorType.Append.handleName

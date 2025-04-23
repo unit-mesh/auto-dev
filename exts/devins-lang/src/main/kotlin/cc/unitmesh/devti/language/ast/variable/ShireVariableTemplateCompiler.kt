@@ -45,7 +45,7 @@ class ShireVariableTemplateCompiler(
             PsiManager.getInstance(myProject).findFile(editor.virtualFile ?: return@runReadAction null)
         }!!
 
-        val templateCompiler = VariableTemplateCompiler(file.language, file, null, editor)
+        val templateCompiler = runReadAction { VariableTemplateCompiler(file.language, file, null, editor) }
 
         templateCompiler.putAll(additionalMap)
         templateCompiler.putAll(customVariables)

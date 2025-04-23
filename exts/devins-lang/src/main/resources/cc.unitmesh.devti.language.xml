@@ -8,7 +8,8 @@
         <backgroundPostStartupActivity implementation="cc.unitmesh.devti.language.startup.ShireActionStartupActivity"/>
         <vfs.asyncListener implementation="cc.unitmesh.devti.language.startup.AsyncShireFileListener"/>
         <fileDocumentManagerListener implementation="cc.unitmesh.devti.language.startup.ShireFileModificationListener"/>
-        <editorFactoryDocumentListener implementation="cc.unitmesh.devti.language.startup.ShireFileModificationListener"/>
+        <editorFactoryDocumentListener
+                implementation="cc.unitmesh.devti.language.startup.ShireFileModificationListener"/>
         <copyPastePreProcessor implementation="cc.unitmesh.devti.language.startup.ShireCopyPastePreProcessor"/>
 
         <!--        refs: https://github.com/JetBrains/intellij-sdk-code-samples/blob/main/simple_language_plugin/src/main/resources/META-INF/plugin.xml-->
@@ -43,7 +44,8 @@
 
         <configurationType implementation="cc.unitmesh.devti.language.run.DevInsConfigurationType"/>
         <programRunner implementation="cc.unitmesh.devti.language.run.DevInsProgramRunner"/>
-        <runConfigurationBeforeRunProviderDelegate implementation="cc.unitmesh.devti.language.run.DevInsBeforeRunProviderDelegate"/>
+        <runConfigurationBeforeRunProviderDelegate
+                implementation="cc.unitmesh.devti.language.run.DevInsBeforeRunProviderDelegate"/>
         <runConfigurationProducer implementation="cc.unitmesh.devti.language.run.DevInsRunConfigurationProducer"/>
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInsRunLineMarkersProvider"/>
@@ -59,24 +61,8 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="cc.unitmesh.devti.language.lints.DevInsDuplicateAgentInspection"/>
-
-
-        <extensionPoint qualifiedName="cc.unitmesh.shireSymbolProvider"
-                        interface="cc.unitmesh.devti.language.provider.shire.ShireSymbolProvider"
-                        dynamic="true"/>
-
-        <extensionPoint qualifiedName="cc.unitmesh.shireQLDataProvider"
-                        interface="cc.unitmesh.devti.language.provider.shire.ShireQLDataProvider"
-                        dynamic="true"/>
-
-        <extensionPoint qualifiedName="cc.unitmesh.shireAgentTool"
-                        interface="cc.unitmesh.devti.language.provider.agent.AgentTool"
-                        dynamic="true"/>
-
-        <extensionPoint qualifiedName="cc.unitmesh.shireRevisionProvider"
-                        interface="cc.unitmesh.devti.language.provider.shire.RevisionProvider"
-                        dynamic="true"/>
-
+    </extensions>
+    <extensionPoints>
         <extensionPoint qualifiedName="cc.unitmesh.shireBuildSystemProvider"
                         interface="cc.unitmesh.devti.language.provider.context.BuildSystemProvider"
                         dynamic="true"/>
@@ -87,17 +73,8 @@
 
         <extensionPoint qualifiedName="cc.unitmesh.shireRefactoringTool"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.shire.RefactoringTool"/>
-        </extensionPoint>
-
-        <extensionPoint qualifiedName="cc.unitmesh.shirePsiCapture"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.psi.PsiCapture"/>
-        </extensionPoint>
-
-        <extensionPoint qualifiedName="cc.unitmesh.shireRelatedClass"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.psi.RelatedClassesProvider"/>
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.language.provider.shire.RefactoringTool"/>
         </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.shireAutoTesting"
@@ -108,46 +85,32 @@
         <extensionPoint qualifiedName="cc.unitmesh.shireFileCreateService"
                         beanClass="com.intellij.lang.LanguageExtensionPoint"
                         dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.shire.FileCreateService"/>
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.FileCreateService"/>
         </extensionPoint>
 
         <!-- Toolchain Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.shireLanguageToolchainProvider"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.language.provider.context.LanguageToolchainProvider"/>
+                  implements="cc.unitmesh.devti.language.provider.LanguageToolchainProvider"/>
         </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.shirePsiVariableProvider"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.language.provider.variable.PsiContextVariableProvider"/>
+                  implements="cc.unitmesh.devti.language.provider.ast.variable.PsiContextVariableProvider"/>
         </extensionPoint>
 
         <!-- PSI Query Expression -->
         <extensionPoint qualifiedName="cc.unitmesh.shirePsiQLInterpreter"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.language.provider.variable.ShireQLInterpreter"/>
-        </extensionPoint>
-        
-        <!-- Code Editor -->
-        <extensionPoint qualifiedName="cc.unitmesh.shireCodeModifier"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.language.provider.codeedit.CodeModifier"/>
-        </extensionPoint>
-
-        <!-- PSI DATA Builder -->
-        <extensionPoint qualifiedName="cc.unitmesh.shirePsiElementDataBuilder"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.language.provider.psi.PsiElementDataBuilder"/>
+                  implements="cc.unitmesh.devti.language.ast.shireql.ShireQLInterpreter"/>
         </extensionPoint>
 
         <!-- Toolchain Variable Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.shireToolchainVariableProvider"
-                        interface="cc.unitmesh.devti.language.provider.variable.ToolchainVariableProvider"
+                        interface="cc.unitmesh.devti.language.provider.ToolchainVariableProvider"
                         dynamic="true">
         </extensionPoint>
 
@@ -162,15 +125,20 @@
                         interface="cc.unitmesh.devti.language.middleware.post.PostProcessor"
                         dynamic="true"/>
 
+        <!-- Location Interaction  -->
+        <extensionPoint qualifiedName="cc.unitmesh.shireLocationInteraction"
+                        interface="cc.unitmesh.devti.language.provider.LocationInteractionProvider"
+                        dynamic="true"/>
+
         <extensionPoint qualifiedName="cc.unitmesh.shireActionLocationEditor"
                         interface="cc.unitmesh.devti.language.provider.ActionLocationEditor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.shirePsiCapture"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.psi.PsiCapture"/>
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.PsiCapture"/>
         </extensionPoint>
-        
+
         <extensionPoint qualifiedName="cc.unitmesh.shireSymbolProvider"
                         interface="cc.unitmesh.devti.language.provider.ShireSymbolProvider"
                         dynamic="true"/>
@@ -201,18 +169,7 @@
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.language.provider.ComplexityProvider"/>
         </extensionPoint>
-
-        <!--   EditorInteractionProvider-->
-        <shireLocationInteraction implementation="cc.unitmesh.devti.language.config.EditorInteractionProvider"/>
-
-        <!-- Toolchain Provider -->
-        <extensionPoint qualifiedName="cc.unitmesh.shireLanguageToolchainProvider"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.language.provider.context.LanguageToolchainProvider"/>
-        </extensionPoint>
-    </extensions>
-
+    </extensionPoints>
 
     <actions>
         <action id="runDevInsFileAction"
@@ -227,7 +184,6 @@
         <runService implementation="cc.unitmesh.devti.language.compiler.service.DevInRunService"/>
 
         <sketchToolchainProvider implementation="cc.unitmesh.devti.language.compiler.DevInsSketchToolchainProvider"/>
-
 
         <!--        Shire -->
         <shireTerminalExecutor implementation="cc.unitmesh.devti.language.provider.ShireTerminalExecutor"/>
@@ -254,6 +210,6 @@
         <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.ShowWebviewProcessor"/>
 
         <!--   EditorInteractionProvider-->
-        <shireLocationInteraction implementation="cc.unitmesh.devti.language.config.interaction.EditorInteractionProvider"/>
+        <shireLocationInteraction implementation="cc.unitmesh.devti.language.config.EditorInteractionProvider"/>
     </extensions>
 </idea-plugin>
