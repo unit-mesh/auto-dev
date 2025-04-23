@@ -11,7 +11,7 @@ data class AgentTool(
     val completion: String = "",
     val mcpGroup: String = "",
     val isDevIns: Boolean = false,
-    val devInsPath: String = "",
+    val devinScriptPath: String = "",
 ) : Tool {
     override fun toString(): String {
         val string = if (description.isEmpty()) "" else """desc: $description"""

@@ -4,6 +4,7 @@ import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.provider.DevInsAgentToolCollector
+import cc.unitmesh.devti.util.relativePath
 import com.intellij.openapi.project.Project
 
 class DevInsAgentToolchainProviderCollector : DevInsAgentToolCollector {
@@ -17,6 +18,7 @@ class DevInsAgentToolchainProviderCollector : DevInsAgentToolCollector {
                 it.hole?.name ?: "<Placeholder>",
                 it.hole?.description ?: "<No Description>",
                 "",
+                devinScriptPath = it.devinFile.virtualFile.relativePath(project),
                 isDevIns = true
             )
         }

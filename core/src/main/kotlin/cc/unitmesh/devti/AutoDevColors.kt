@@ -10,7 +10,7 @@ object AutoDevColors {
     val IN_PROGRESS_STATUS = JBColor(0x3592C4, 0x3592C4) // Blue
     val TODO_STATUS = JBColor(0x808080, 0x808080) // Gray
 
-    val USER_ROLE_BG = JBColor(Gray._240, Gray._240)
+    val USER_ROLE_BG = JBColor(Gray._240, Gray._10)
 
     // Text colors
     val COMPLETED_TEXT = JBColor(0x808080, 0x999999)

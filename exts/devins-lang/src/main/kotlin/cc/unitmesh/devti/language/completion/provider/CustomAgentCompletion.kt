@@ -18,7 +18,11 @@ class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        val configs: List<CustomAgentConfig> = CustomAgentConfig.loadFromProject(parameters.originalFile.project)
+        val configs: List<CustomAgentConfig> =
+            CustomAgentConfig.loadFromProject(parameters.originalFile.project).filter {
+                !it.isFromDevIns
+            }
+
         configs.forEach { config ->
             result.addElement(
                 LookupElementBuilder.create(config.name)
@@ -38,12 +42,11 @@ class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
                     .withTypeText(config.description, true))
         }
 
-        val project = parameters.originalFile.project
-        val devInsAgent = DevInsAgentToolCollector.all(project).map {
-            CustomAgentConfig(name = it.name, description = it.description, isFromDevIns = true)
-        }
-
-        devInsAgent.forEach { config ->
+        val devinsAgent: List<CustomAgentConfig> =
+            CustomAgentConfig.loadFromProject(parameters.originalFile.project).filter {
+                it.isFromDevIns
+            }
+        devinsAgent.forEach { config ->
             result.addElement(
                 LookupElementBuilder.create(config.name)
                     .withIcon(AutoDevIcons.LOCAL_AGENT)
