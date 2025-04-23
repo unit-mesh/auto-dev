@@ -205,7 +205,9 @@ class DevInsCompiler(
                 handleNextSiblingForChild(next) {
                     when (it) {
                         is DevInIfClause, is DevInElseifClause, is DevInElseClause -> {
-                            handleNextSiblingForChild(it, ::processIfClause)
+                            handleNextSiblingForChild(it) {
+                                runBlocking { processIfClause(it) }
+                            }
                         }
 
                         else -> output.append(it.text)
@@ -225,7 +227,7 @@ class DevInsCompiler(
         }
     }
 
-    private fun processIfClause(clauseContent: PsiElement) {
+    suspend fun processIfClause(clauseContent: PsiElement) {
         when (clauseContent) {
             is DevInExpr -> {
                 addVariable(clauseContent)
@@ -234,7 +236,7 @@ class DevInsCompiler(
 
             is DevInVelocityBlock -> {
                 DevInFile.fromString(myProject, clauseContent.text).let { file ->
-                    val compile = runBlocking { DevInsCompiler(myProject, file).compile() }
+                    val compile = DevInsCompiler(myProject, file).compile()
                     compile.let {
                         output.append(it.output)
                         variableTable.addVariable(it.variableTable)

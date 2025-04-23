@@ -64,7 +64,7 @@ open class DevInsRunConfigurationProfileState(
 
         console.attachToProcess(processHandler)
 
-        val shireFile: DevInFile? =DevInFile.lookup(myProject, configuration.getScriptPath())
+        val shireFile: DevInFile? = DevInFile.lookup(myProject, configuration.getScriptPath())
         if (shireFile == null) {
             console.print("File not found: ${configuration.getScriptPath()}", ConsoleViewContentType.ERROR_OUTPUT)
             processHandler.exitWithError()
@@ -222,11 +222,10 @@ open class DevInsRunConfigurationProfileState(
             if (stringFlow != null) {
                 AutoDevCoroutineScope.scope(myProject).launch {
                     val llmResult = StringBuilder()
-                    runBlocking {
-                        stringFlow.collect {
-                            llmResult.append(it)
-                            console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
-                        }
+
+                    stringFlow.collect {
+                        llmResult.append(it)
+                        console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                     }
 
                     console.print("\nDone!", ConsoleViewContentType.SYSTEM_OUTPUT)
@@ -258,11 +257,9 @@ open class DevInsRunConfigurationProfileState(
 
             AutoDevCoroutineScope.scope(myProject).launch {
                 val llmResult = StringBuilder()
-                runBlocking {
-                    llm.stream(output, "", true).collect {
-                        llmResult.append(it)
-                        console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
-                    }
+                llm.stream(output, "", true).collect {
+                    llmResult.append(it)
+                    console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                 }
 
                 console.print("\nDone!", ConsoleViewContentType.SYSTEM_OUTPUT)
