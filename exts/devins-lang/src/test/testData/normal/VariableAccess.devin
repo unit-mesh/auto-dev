@@ -1,0 +1,17 @@
+---
+when: $selection.length == 1 && $selection.first() == 'file'
+---
+
+Write unit test for following ${context.lang} code.
+
+${context.frameworkContext}
+
+#if($context.relatedClasses.length() > 0 )
+Here is the relate code maybe you can use
+${context.relatedClasses}
+#end
+
+```$context.lang
+${context.imports}
+${context.sourceCode}
+```

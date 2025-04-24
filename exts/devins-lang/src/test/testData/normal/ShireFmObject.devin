@@ -1,0 +1,14 @@
+---
+name: "Java to Kotlin"
+description: "Convert Java to Kotlin file"
+interaction: AppendCursor
+actionLocation: ContextMenu
+enabled: false
+model: "codegeex-4"
+onStreamingEnd:  { verifyCode | runCode }
+---
+
+Convert follow $language code to Kotlin
+
+$all
+

@@ -1,0 +1,12 @@
+## Hello
+
+```shire
+---
+name: "自动  patch"
+variables:
+  "codepath": /BlogController\.java/ { print }
+  "controllerCode": /BlogController\.java/ { cat }
+  "domainLanguage": /domain-language\.csv/ { cat }
+onStreamingEnd: { parseCode | patch($codepath, $output) }
+---
+```
