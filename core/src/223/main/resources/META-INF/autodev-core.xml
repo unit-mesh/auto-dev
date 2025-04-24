@@ -277,7 +277,7 @@
 
         <!-- Post Code Middleware -->
         <extensionPoint qualifiedName="cc.unitmesh.shirePostProcessor"
-                        interface="cc.unitmesh.devti.devins.provider.post.PostProcessor"
+                        interface="cc.unitmesh.devti.devins.post.PostProcessor"
                         dynamic="true"/>
 
         <!-- Location Interaction  -->
