@@ -40,5 +40,8 @@
 
         <mcpTool implementation="cc.unitmesh.git.mcp.FindCommitByTextTool"/>
         <mcpTool implementation="cc.unitmesh.git.mcp.GetVcsStatusTool"/>
+
+        <shireActionLocationEditor implementation="cc.unitmesh.git.provider.GitActionLocationEditor"/>
+        <shireToolchainVariableProvider implementation="cc.unitmesh.git.provider.GitToolchainVariableProvider"/>
     </extensions>
 </idea-plugin>

@@ -601,6 +601,7 @@ project(":exts:ext-git") {
         }
 
         implementation(project(":core"))
+        implementation(project(":exts:devins-lang"))
         implementation("cc.unitmesh:git-commit-message:0.4.6") {
             excludeKotlinDeps()
         }
