@@ -570,7 +570,9 @@ project(":exts:ext-database") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "com.intellij.database")
         }
+
         implementation(project(":core"))
+        implementation(project(":exts:devins-lang"))
     }
 
     sourceSets {
