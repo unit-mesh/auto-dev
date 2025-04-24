@@ -95,9 +95,9 @@ class DevInsCompiler(
                 }
 
                 DevInTypes.FRONTMATTER_START -> {
-                    val nextElement = PsiTreeUtil.findChildOfType(
-                        psiElement.parent, DevInFrontMatterHeader::class.java
-                    )
+                    val nextElement = runReadAction {
+                        PsiTreeUtil.findChildOfType(psiElement.parent, DevInFrontMatterHeader::class.java)
+                    }
                     if (nextElement == null) {
                         return@forEach
                     }
@@ -108,14 +108,14 @@ class DevInsCompiler(
                     result.config = runReadAction { HobbitHoleParser.parse(psiElement as DevInFrontMatterHeader) }
                 }
 
-                WHITE_SPACE, DUMMY_BLOCK -> output.append(psiElement.text)
+                WHITE_SPACE, DUMMY_BLOCK -> output.append(text)
                 DevInTypes.VELOCITY_EXPR -> {
                     processVelocityExpr(psiElement as DevInVelocityExpr)
-                    logger.info("Velocity expression found: ${psiElement.text}")
+                    logger.info("Velocity expression found: ${text}")
                 }
 
                 DevInTypes.MARKDOWN_HEADER -> {
-                    output.append("#[[${psiElement.text}]]#")
+                    output.append("#[[${text}]]#")
                 }
 
                 else -> {
