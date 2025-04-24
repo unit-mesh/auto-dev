@@ -13,7 +13,7 @@ import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
 import javax.swing.Icon
 import cc.unitmesh.devti.language.actions.intention.ui.CustomPopupStep
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 
 class AutoDevIntentionHelper : IntentionAction, Iconable {

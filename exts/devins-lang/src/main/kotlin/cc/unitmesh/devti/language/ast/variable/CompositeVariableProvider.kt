@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.ast.variable
 
-import cc.unitmesh.devti.language.ast.variable.toolchain.VcsToolchainVariable
 import cc.unitmesh.devti.language.ast.variable.toolchain.DatabaseToolchainVariable
+import cc.unitmesh.devti.language.ast.variable.toolchain.VcsToolchainVariable
 
 data class VariableDisplay(
     val name: String,

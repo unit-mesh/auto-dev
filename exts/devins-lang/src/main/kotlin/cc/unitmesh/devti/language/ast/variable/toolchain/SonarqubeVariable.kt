@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.ast.variable.toolchain
 
 import cc.unitmesh.devti.language.ast.variable.ToolchainVariable
+
 /**
  * Enum representing variables used in the generation of code structures.
  */

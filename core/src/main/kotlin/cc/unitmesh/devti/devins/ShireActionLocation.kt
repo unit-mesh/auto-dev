@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.ast.config
+package cc.unitmesh.devti.devins
 
 enum class ShireActionLocation(val location: String, val description: String) {
     CONTEXT_MENU("ContextMenu", "Show in Context Menu by Right Click"),

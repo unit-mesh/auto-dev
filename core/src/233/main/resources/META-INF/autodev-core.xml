@@ -239,6 +239,10 @@
                         interface="cc.unitmesh.devti.indexer.provider.LangDictProvider"
                         dynamic="true"
         />
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireActionLocationEditor"
+                        interface="cc.unitmesh.devti.devins.ActionLocationEditor"
+                        dynamic="true"/>
     </extensionPoints>
 
     <projectListeners>

@@ -147,10 +147,6 @@
                         interface="cc.unitmesh.devti.language.provider.LocationInteractionProvider"
                         dynamic="true"/>
 
-        <extensionPoint qualifiedName="cc.unitmesh.shireActionLocationEditor"
-                        interface="cc.unitmesh.devti.language.provider.ActionLocationEditor"
-                        dynamic="true"/>
-
         <extensionPoint qualifiedName="cc.unitmesh.shirePsiCapture"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass" implements="cc.unitmesh.devti.language.provider.PsiCapture"/>

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.actions.terminal
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.provider.TerminalLocationExecutor
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import com.intellij.openapi.actionSystem.ActionUpdateThread

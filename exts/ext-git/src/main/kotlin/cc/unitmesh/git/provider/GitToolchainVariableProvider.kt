@@ -1,9 +1,9 @@
 package cc.unitmesh.git.provider
 
 import cc.unitmesh.devti.language.ast.variable.ToolchainVariable
-import cc.unitmesh.devti.language.ast.variable.toolchain.VcsToolchainVariable
 import cc.unitmesh.devti.language.provider.ToolchainVariableProvider
-import cc.unitmesh.devti.language.provider.action.VariableActionEventDataHolder
+import cc.unitmesh.devti.devins.VariableActionEventDataHolder
+import cc.unitmesh.devti.language.ast.variable.toolchain.VcsToolchainVariable
 import cc.unitmesh.devti.vcs.VcsPrompting
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataContext

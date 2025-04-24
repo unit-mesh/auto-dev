@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.devins.JvmShireQLFuncType
+import cc.unitmesh.devti.devins.shireql.JvmShireQLFuncType
 import cc.unitmesh.devti.language.ast.shireql.ShireQLInterpreter
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger

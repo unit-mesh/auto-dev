@@ -14,7 +14,7 @@ import cc.unitmesh.devti.language.actions.input.inlay.CustomInputBox
 import cc.unitmesh.devti.language.actions.input.inlay.CustomInputBox.Companion.CUSTOM_INPUT_CANCEL_ACTION
 import cc.unitmesh.devti.language.actions.input.inlay.CustomInputBox.Companion.CUSTOM_INPUT_SUBMIT_ACTION
 import cc.unitmesh.devti.language.actions.input.inlay.InlayPanel
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicDevInsActionConfig
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import java.awt.event.ActionEvent

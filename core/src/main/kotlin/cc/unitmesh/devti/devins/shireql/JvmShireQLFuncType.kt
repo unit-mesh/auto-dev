@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.devins
+package cc.unitmesh.devti.devins.shireql
 
 enum class JvmShireQLFuncType(val methodName: String, val description: String) {
     GET_NAME("getName", "Get class name"),

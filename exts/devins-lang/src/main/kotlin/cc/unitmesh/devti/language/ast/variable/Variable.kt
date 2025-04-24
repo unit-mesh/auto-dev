@@ -5,6 +5,7 @@ import cc.unitmesh.devti.language.ast.variable.toolchain.DatabaseToolchainVariab
 import cc.unitmesh.devti.language.ast.variable.toolchain.SonarqubeVariable
 import cc.unitmesh.devti.language.ast.variable.toolchain.TerminalToolchainVariable
 import cc.unitmesh.devti.language.ast.variable.toolchain.VcsToolchainVariable
+import kotlin.collections.addAll
 
 interface Variable {
     val variableName: String
@@ -19,23 +20,23 @@ data class DebugValue(
 ) : Variable {
     companion object {
         fun description(key: String): String {
-            return PsiContextVariable.from(key)?.description
-                ?: ContextVariable.from(key)?.description
-                ?: SystemInfoVariable.from(key)?.description
+            return PsiContextVariable.Companion.from(key)?.description
+                ?: ContextVariable.Companion.from(key)?.description
+                ?: SystemInfoVariable.Companion.from(key)?.description
 //                ?: ConditionPsiVariable.from(key)?.description
                 /// ...
-                ?: DatabaseToolchainVariable.from(key)?.description
-                ?: TerminalToolchainVariable.from(key)?.description
-                ?: VcsToolchainVariable.from(key)?.description
-                ?: BuildToolchainVariable.from(key)?.description
-                ?: SonarqubeVariable.from(key)?.description
+                ?: DatabaseToolchainVariable.Companion.from(key)?.description
+                ?: TerminalToolchainVariable.Companion.from(key)?.description
+                ?: VcsToolchainVariable.Companion.from(key)?.description
+                ?: BuildToolchainVariable.Companion.from(key)?.description
+                ?: SonarqubeVariable.Companion.from(key)?.description
                 ?: "Unknown"
         }
 
         fun all(): List<Variable> {
             val allVariables = mutableListOf<Variable>()
             allVariables.addAll(ContextVariable.values())
-            allVariables.addAll(PsiContextVariable.all())
+            allVariables.addAll(PsiContextVariable.Companion.all())
             allVariables.addAll(SystemInfoVariable.values())
 //            allVariables.addAll(ConditionPsiVariable.values())
             /// ...

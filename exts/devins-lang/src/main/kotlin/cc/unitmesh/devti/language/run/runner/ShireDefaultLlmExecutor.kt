@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.run.runner
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.team.InteractionType
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.provider.LocationInteractionProvider
 import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.llms.LlmFactory

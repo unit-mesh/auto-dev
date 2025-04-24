@@ -1,7 +1,5 @@
-package cc.unitmesh.devti.language.provider
+package cc.unitmesh.devti.devins
 
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
-import cc.unitmesh.devti.language.provider.action.VariableActionEventDataHolder
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Editor
@@ -16,7 +14,7 @@ interface ActionLocationEditor {
 
     companion object {
         private val EP_NAME: ExtensionPointName<ActionLocationEditor> =
-            ExtensionPointName.create("cc.unitmesh.shireActionLocationEditor")
+            ExtensionPointName.Companion.create("cc.unitmesh.shireActionLocationEditor")
 
         fun provide(project: Project, location: ShireActionLocation? = null): Editor? {
             if (location == null) {

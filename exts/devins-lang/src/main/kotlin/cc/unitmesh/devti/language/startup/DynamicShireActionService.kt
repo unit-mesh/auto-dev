@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.startup
 
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction

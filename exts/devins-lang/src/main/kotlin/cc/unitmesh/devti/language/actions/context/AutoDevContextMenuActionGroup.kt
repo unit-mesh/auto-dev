@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.actions.context
 
 import com.intellij.openapi.actionSystem.*
 import cc.unitmesh.devti.language.actions.base.validator.WhenConditionValidator
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 
 class AutoDevContextMenuActionGroup : ActionGroup() {

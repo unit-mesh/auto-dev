@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.language.actions.console
 
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
-import cc.unitmesh.devti.language.provider.action.VariableActionEventDataHolder
+import cc.unitmesh.devti.devins.ShireActionLocation
+import cc.unitmesh.devti.devins.VariableActionEventDataHolder
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction

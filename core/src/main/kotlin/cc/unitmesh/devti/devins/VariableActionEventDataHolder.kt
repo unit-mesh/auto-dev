@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.provider.action
+package cc.unitmesh.devti.devins
 
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.util.Key

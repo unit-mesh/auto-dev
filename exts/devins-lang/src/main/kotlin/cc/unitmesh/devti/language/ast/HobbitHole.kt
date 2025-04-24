@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.ast
 
 import cc.unitmesh.devti.custom.team.InteractionType
 import cc.unitmesh.devti.language.ast.action.DirectAction
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.compiler.HobbitHoleParser
 import cc.unitmesh.devti.language.console.isCanceled
 import cc.unitmesh.devti.language.middleware.post.LifecycleProcessorSignature

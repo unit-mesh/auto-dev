@@ -5,10 +5,6 @@ import com.intellij.psi.PsiElement
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolver
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolverContext
 import cc.unitmesh.devti.language.middleware.select.SelectElementStrategy
-import cc.unitmesh.devti.language.ast.variable.resolver.PsiContextVariableResolver
-import cc.unitmesh.devti.language.ast.variable.resolver.SystemInfoVariableResolver
-import cc.unitmesh.devti.language.ast.variable.resolver.ToolchainVariableResolver
-import cc.unitmesh.devti.language.ast.variable.resolver.UserCustomVariableResolver
 
 class CompositeVariableResolver(private val context: VariableResolverContext) : VariableResolver {
     init {

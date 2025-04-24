@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.run.runner
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.language.ast.HobbitHole
-import cc.unitmesh.devti.language.ast.config.ShireActionLocation
+import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.ast.variable.ShireVariableTemplateCompiler
 import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
@@ -10,7 +10,7 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.streaming.OnStreamingService
 import cc.unitmesh.devti.language.console.addCancelCallback
 import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
-import cc.unitmesh.devti.language.provider.ActionLocationEditor
+import cc.unitmesh.devti.devins.ActionLocationEditor
 import cc.unitmesh.devti.language.provider.TerminalLocationExecutor
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.DevInsConfiguration

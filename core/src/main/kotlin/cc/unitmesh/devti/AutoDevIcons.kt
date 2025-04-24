@@ -109,4 +109,7 @@ object AutoDevIcons {
 
     @JvmField
     val LOCAL_AGENT: Icon = IconLoader.getIcon("/icons/local-agent.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val VARIABLE: Icon = IconLoader.getIcon("/icons/variable.svg", AutoDevIcons::class.java)
 }

@@ -126,6 +126,7 @@ class DevInsCompiler(
         }
 
         result.output = output.toString()
+        result.variableTable = variableTable
 
         CACHED_COMPILE_RESULT[file.name] = result
         return@withContext result
