@@ -223,6 +223,11 @@
                         interface="cc.unitmesh.devti.mcp.host.McpTool"
                         dynamic="true"/>
 
+        <!-- DevIns Tool -->
+        <extensionPoint qualifiedName="cc.unitmesh.devInsAgentTool"
+                        interface="cc.unitmesh.devti.provider.DevInsAgentToolCollector"
+                        dynamic="true"/>
+
         <extensionPoint qualifiedName="cc.unitmesh.agentObserver"
                         interface="cc.unitmesh.devti.provider.observer.AgentObserver"
                         dynamic="true"/>
