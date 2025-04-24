@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.debugger.editor
 
-import cc.unitmesh.devti.language.ast.variable.DebugValue
+import cc.unitmesh.devti.language.ast.variable.DebugValueVariable
 import cc.unitmesh.devti.language.ast.variable.Variable
 import cc.unitmesh.devti.language.debugger.snapshot.VariableSnapshotRecorder
 import com.intellij.openapi.project.Project
@@ -69,13 +69,13 @@ class ShireVariableViewPanel(val project: Project) : JPanel(BorderLayout()) {
     fun updateVariables(variables: Map<String, Any>) {
         tableModel.rowCount = 0
 
-        val allVariables: MutableMap<String, Variable> = DebugValue.all().associateBy { it.variableName }.toMutableMap()
+        val allVariables: MutableMap<String, Variable> = DebugValueVariable.all().associateBy { it.variableName }.toMutableMap()
 
         snapshotViewPanel.updateSnapshots(snapshotRecorder.all())
 
         variables.toSortedMap().forEach { (key, value) ->
             val valueStr = value.toString()
-            val description = DebugValue.description(key)
+            val description = DebugValueVariable.description(key)
 
             /// remove existing variables
             if (allVariables.containsKey(key)) {
