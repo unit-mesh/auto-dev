@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.ast.variable
+package cc.unitmesh.devti.devins.variable
 
 interface Variable {
     val variableName: String

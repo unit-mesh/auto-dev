@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.ast.variable.resolver
 
 import cc.unitmesh.devti.language.ast.variable.DefaultPsiContextVariableProvider
-import cc.unitmesh.devti.language.ast.variable.PsiContextVariable
+import cc.unitmesh.devti.devins.variable.PsiContextVariable
 import cc.unitmesh.devti.language.ast.variable.PsiContextVariableProvider
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger

@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.language.ast.variable.toolchain
+package cc.unitmesh.devti.devins.variable.toolchain
 
-import cc.unitmesh.devti.language.ast.variable.ToolchainVariable
+import cc.unitmesh.devti.devins.variable.ToolchainVariable
 
 enum class DatabaseToolchainVariable(
     override val variableName: String,

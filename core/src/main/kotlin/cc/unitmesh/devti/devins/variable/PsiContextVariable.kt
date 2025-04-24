@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.ast.variable
+package cc.unitmesh.devti.devins.variable
 
 /**
  * Represents the context variables that can be used in the code structure generation process.

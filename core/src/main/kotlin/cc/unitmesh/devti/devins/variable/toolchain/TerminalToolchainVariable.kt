@@ -1,17 +1,18 @@
-package cc.unitmesh.devti.language.ast.variable.toolchain
+package cc.unitmesh.devti.devins.variable.toolchain
 
-import cc.unitmesh.devti.language.ast.variable.ToolchainVariable
+import cc.unitmesh.devti.devins.variable.ToolchainVariable
 
 /**
  * Enum representing variables used in the generation of code structures.
  */
-enum class SonarqubeVariable(
+enum class TerminalToolchainVariable(
     override val variableName: String,
     override var value: Any? = null,
     override val description: String = "",
 ) : ToolchainVariable {
-    Issue("sonarIssue", null, "the issue of current file"),
-    Results("sonarResults", null, "the results of current file")
+    SHELL_PATH("shellPath", "/bin/bash", "The path to the shell executable"),
+
+    PWD("pwd", null, "The current working directory"),
     ;
 
     companion object {
@@ -21,7 +22,7 @@ enum class SonarqubeVariable(
          * @param variableName the variable name to search for
          * @return the PsiVariable with the given variable name
          */
-        fun from(variableName: String): SonarqubeVariable? {
+        fun from(variableName: String): TerminalToolchainVariable? {
             return values().firstOrNull { it.variableName == variableName }
         }
     }

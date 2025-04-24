@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.language.ast.variable
 
+import cc.unitmesh.devti.devins.variable.PsiContextVariable
+import cc.unitmesh.devti.devins.variable.VariableProvider
 import cc.unitmesh.devti.language.provider.ComplexityProvider
 import cc.unitmesh.devti.language.provider.LanguageToolchainProvider
 import cc.unitmesh.devti.language.provider.ToolchainPrepareContext

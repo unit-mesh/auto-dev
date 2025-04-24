@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.ast.variable.resolver
 
-import cc.unitmesh.devti.language.ast.variable.SystemInfoVariable
+import cc.unitmesh.devti.devins.variable.SystemInfoVariable
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolver
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolverContext
 

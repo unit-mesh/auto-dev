@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.provider
 
-import cc.unitmesh.devti.language.ast.variable.ToolchainVariable
-import cc.unitmesh.devti.language.ast.variable.VariableProvider
+import cc.unitmesh.devti.devins.variable.ToolchainVariable
+import cc.unitmesh.devti.devins.variable.VariableProvider
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement

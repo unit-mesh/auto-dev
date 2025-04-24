@@ -428,6 +428,10 @@ project(":core") {
             excludeKotlinDeps()
         }
 
+        implementation("org.reflections:reflections:0.10.2") {
+            exclude(group = "org.slf4j", module = "slf4j-api")
+        }
+
         implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
         implementation("com.squareup.retrofit2:converter-gson:2.11.0")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1")
@@ -797,10 +801,6 @@ project(":exts:devins-lang") {
         }
 
         implementation("com.jayway.jsonpath:json-path:2.9.0")
-        implementation("org.reflections:reflections:0.10.2") {
-            exclude(group = "org.slf4j", module = "slf4j-api")
-        }
-
         implementation(project(":core"))
     }
 

@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.language.ast.variable
+package cc.unitmesh.devti.devins.variable
 
 import org.reflections.Reflections
+import kotlin.jvm.kotlin
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.declaredFunctions
@@ -9,7 +10,7 @@ import kotlin.reflect.full.functions
 interface ToolchainVariable : Variable {
     companion object {
         private val subclasses: Set<KClass<out ToolchainVariable>> by lazy {
-            val reflections = Reflections("cc.unitmesh.devti.language.ast.variable")
+            val reflections = Reflections("cc.unitmesh.devti.devins.variable")
             reflections.getSubTypesOf(ToolchainVariable::class.java)
                 .map { it.kotlin }
                 .toSet()

@@ -6,8 +6,8 @@ import com.intellij.openapi.editor.CaretModel
 import com.intellij.psi.PsiNameIdentifierOwner
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolver
 import cc.unitmesh.devti.language.ast.variable.resolver.base.VariableResolverContext
-import cc.unitmesh.devti.language.ast.variable.ContextVariable
-import cc.unitmesh.devti.language.ast.variable.ContextVariable.*
+import cc.unitmesh.devti.devins.variable.ContextVariable
+import cc.unitmesh.devti.devins.variable.ContextVariable.*
 
 class ContextVariableResolver(
     private val context: VariableResolverContext,

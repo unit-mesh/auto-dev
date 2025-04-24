@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.debugger.editor
 
-import cc.unitmesh.devti.language.ast.variable.DebugValueVariable
-import cc.unitmesh.devti.language.ast.variable.Variable
+import cc.unitmesh.devti.language.debugger.DebugValueVariable
+import cc.unitmesh.devti.devins.variable.Variable
 import cc.unitmesh.devti.language.debugger.snapshot.VariableSnapshotRecorder
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor

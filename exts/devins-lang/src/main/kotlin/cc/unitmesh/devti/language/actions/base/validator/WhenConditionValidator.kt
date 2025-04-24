@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.actions.base.validator
 
 import cc.unitmesh.devti.language.ast.FrontMatterType
 import cc.unitmesh.devti.language.ast.Statement
-import cc.unitmesh.devti.language.ast.variable.ConditionPsiVariable
+import cc.unitmesh.devti.devins.variable.ConditionPsiVariable
 import com.intellij.psi.PsiFile
 
 

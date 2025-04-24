@@ -1,10 +1,14 @@
-package cc.unitmesh.devti.language.ast.variable
+package cc.unitmesh.devti.language.debugger
 
-import cc.unitmesh.devti.language.ast.variable.toolchain.BuildToolchainVariable
-import cc.unitmesh.devti.language.ast.variable.toolchain.DatabaseToolchainVariable
-import cc.unitmesh.devti.language.ast.variable.toolchain.SonarqubeVariable
-import cc.unitmesh.devti.language.ast.variable.toolchain.TerminalToolchainVariable
-import cc.unitmesh.devti.language.ast.variable.toolchain.VcsToolchainVariable
+import cc.unitmesh.devti.devins.variable.ContextVariable
+import cc.unitmesh.devti.devins.variable.PsiContextVariable
+import cc.unitmesh.devti.devins.variable.SystemInfoVariable
+import cc.unitmesh.devti.devins.variable.Variable
+import cc.unitmesh.devti.devins.variable.toolchain.BuildToolchainVariable
+import cc.unitmesh.devti.devins.variable.toolchain.DatabaseToolchainVariable
+import cc.unitmesh.devti.devins.variable.toolchain.SonarqubeVariable
+import cc.unitmesh.devti.devins.variable.toolchain.TerminalToolchainVariable
+import cc.unitmesh.devti.devins.variable.toolchain.VcsToolchainVariable
 import kotlin.collections.addAll
 
 data class DebugValueVariable(

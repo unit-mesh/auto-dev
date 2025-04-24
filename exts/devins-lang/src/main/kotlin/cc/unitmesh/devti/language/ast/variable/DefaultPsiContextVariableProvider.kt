@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.ast.variable
 
+import cc.unitmesh.devti.devins.variable.PsiContextVariable
 import cc.unitmesh.devti.language.ast.variable.psi.CodeSmellCollector
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
