@@ -19,7 +19,6 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 import com.intellij.ui.UIBundle
 import com.intellij.util.PathUtil
-import com.oracle.truffle.js.runtime.objects.DefaultESModuleLoader
 import java.io.IOException
 import java.net.URL
 
@@ -48,7 +47,7 @@ fun RestClientRequest.buildFullUrl(): URL {
             append(":").append(it)
         }
         url.path?.let {
-            append(DefaultESModuleLoader.SLASH).append(it)
+            append("/").append(it)
         }
     }
 
