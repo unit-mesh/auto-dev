@@ -498,6 +498,7 @@ project(":java") {
         }
 
         implementation(project(":core"))
+        implementation(project(":exts:devins-lang"))
     }
 }
 

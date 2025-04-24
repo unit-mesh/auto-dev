@@ -480,7 +480,7 @@ open class FunctionStatementProcessor(override val myProject: Project, override 
             is FrontMatterType.DATE,
             is FrontMatterType.IDENTIFIER,
             is FrontMatterType.STRING,
-            -> {
+                -> {
                 type.value
             }
 

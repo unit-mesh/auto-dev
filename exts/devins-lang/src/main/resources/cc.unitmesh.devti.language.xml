@@ -30,6 +30,8 @@
 
         <typedHandler implementation="cc.unitmesh.devti.language.DevInTypedHandler"/>
 
+        <gotoDeclarationHandler implementation="cc.unitmesh.devti.language.navigation.ShireGotoDeclarationHandler"/>
+
         <completion.contributor language="DevIn"
                                 id="devInCompletionContributor"
                                 order="last"
