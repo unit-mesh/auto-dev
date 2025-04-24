@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.task
 
 import cc.unitmesh.devti.language.console.addCancelCallback
-import cc.unitmesh.devti.language.run.runner.PostFunction
+import cc.unitmesh.devti.devins.PostFunction
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.project.Project

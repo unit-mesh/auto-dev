@@ -12,9 +12,9 @@ import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.*
-import cc.unitmesh.devti.language.middleware.post.PostProcessor
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
-import cc.unitmesh.devti.language.middleware.post.PostProcessorType
+import cc.unitmesh.devti.devins.post.PostProcessor
+import cc.unitmesh.devti.devins.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessorType
 import cc.unitmesh.devti.language.middleware.builtin.ui.WebViewWindow
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.cancelHandler

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.ast.shireql
 
+import cc.unitmesh.devti.devins.shireql.ShireQLInterpreter
 import cc.unitmesh.devti.language.ast.FunctionStatementProcessor
 import cc.unitmesh.devti.language.ast.HobbitHole
 import cc.unitmesh.devti.language.ast.MethodCall

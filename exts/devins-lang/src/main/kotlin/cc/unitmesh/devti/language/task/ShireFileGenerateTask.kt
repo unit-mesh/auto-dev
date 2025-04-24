@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.task
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.language.run.runner.PostFunction
+import cc.unitmesh.devti.devins.PostFunction
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.runInEdt

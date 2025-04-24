@@ -3,7 +3,7 @@ package cc.unitmesh.devti.language.regression
 import cc.unitmesh.devti.language.ast.action.PatternActionProcessor
 import cc.unitmesh.devti.language.ast.variable.ShireVariableTemplateCompiler
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessorContext
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import kotlinx.coroutines.runBlocking

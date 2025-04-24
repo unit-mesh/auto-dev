@@ -16,9 +16,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
-import cc.unitmesh.devti.language.middleware.post.PostProcessor
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
-import cc.unitmesh.devti.language.middleware.post.PostProcessorType
+import cc.unitmesh.devti.devins.post.PostProcessor
+import cc.unitmesh.devti.devins.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessorType
 
 class OpenWebpageProcessor : PostProcessor {
     override val processorName: String get() = PostProcessorType.OpenWebpage.handleName

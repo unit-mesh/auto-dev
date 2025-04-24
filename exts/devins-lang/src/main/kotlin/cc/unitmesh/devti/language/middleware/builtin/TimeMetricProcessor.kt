@@ -2,9 +2,9 @@ package cc.unitmesh.devti.language.middleware.builtin
 
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
-import cc.unitmesh.devti.language.middleware.post.PostProcessorType
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
-import cc.unitmesh.devti.language.middleware.post.PostProcessor
+import cc.unitmesh.devti.devins.post.PostProcessorType
+import cc.unitmesh.devti.devins.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessor
 
 class TimeMetricProcessor : PostProcessor {
     private var startTime: Long? = null

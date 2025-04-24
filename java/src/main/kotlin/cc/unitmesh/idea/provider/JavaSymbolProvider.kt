@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.language.provider.ShireSymbolProvider
+import cc.unitmesh.devti.devins.provider.ShireSymbolProvider
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionUtil

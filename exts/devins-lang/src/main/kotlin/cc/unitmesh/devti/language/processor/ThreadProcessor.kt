@@ -5,8 +5,8 @@ import cc.unitmesh.devti.language.ast.action.PatternActionFuncDef
 import cc.unitmesh.devti.language.ast.action.PatternProcessor
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.processor.shell.ShireShellCommandRunner
-import cc.unitmesh.devti.language.provider.http.HttpHandler
-import cc.unitmesh.devti.language.provider.http.HttpHandlerType
+import cc.unitmesh.devti.devins.provider.http.HttpHandler
+import cc.unitmesh.devti.devins.provider.http.HttpHandlerType
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.service.ConsoleService
 import cc.unitmesh.devti.language.utils.lookupFile

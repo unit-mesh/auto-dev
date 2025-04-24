@@ -7,9 +7,9 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.language.provider.LocationInteractionProvider
-import cc.unitmesh.devti.language.run.runner.LocationInteractionContext
-import cc.unitmesh.devti.language.run.runner.PostFunction
+import cc.unitmesh.devti.devins.PostFunction
+import cc.unitmesh.devti.devins.provider.LocationInteractionProvider
+import cc.unitmesh.devti.devins.provider.location.LocationInteractionContext
 import cc.unitmesh.devti.language.run.runner.cancelWithConsole
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
@@ -159,10 +159,10 @@ class EditorInteractionProvider : LocationInteractionProvider {
                     return
                 }
 
-                val code = context.editor.document.text
+                val code = context.editor!!.document.text
                 val diffStreamHandler = DiffStreamHandler(
                     context.project,
-                    editor = context.editor,
+                    editor = context.editor!!,
                     0,
                     code.lines().size,
                     onClose = {
@@ -189,7 +189,7 @@ class EditorInteractionProvider : LocationInteractionProvider {
             return null
         }
 
-        val editor = context.editor
+        val editor = context.editor!!
 
         val offset = if (isInsertBefore) {
             editor.selectionModel.selectionStart

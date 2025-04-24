@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.compiler.streaming
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.language.console.DevInConsoleViewBase
-import cc.unitmesh.devti.language.middleware.post.LifecycleProcessorSignature
+import cc.unitmesh.devti.devins.post.LifecycleProcessorSignature
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 

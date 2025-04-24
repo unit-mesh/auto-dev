@@ -2,8 +2,8 @@ package cc.unitmesh.httpclient
 
 import cc.unitmesh.devti.language.envior.ShireEnvReader
 import cc.unitmesh.devti.language.envior.ShireEnvVariableFiller
-import cc.unitmesh.devti.language.provider.http.HttpHandler
-import cc.unitmesh.devti.language.provider.http.HttpHandlerType
+import cc.unitmesh.devti.devins.provider.http.HttpHandler
+import cc.unitmesh.devti.devins.provider.http.HttpHandlerType
 import cc.unitmesh.httpclient.converter.CUrlConverter
 import com.intellij.execution.console.ConsoleViewWrapperBase
 import com.intellij.execution.ui.ConsoleViewContentType

@@ -2,9 +2,9 @@ package cc.unitmesh.devti.language.regression
 
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
-import cc.unitmesh.devti.language.middleware.post.LifecycleProcessorSignature
-import cc.unitmesh.devti.language.middleware.post.PostProcessor.Companion.handler
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.LifecycleProcessorSignature
+import cc.unitmesh.devti.devins.post.PostProcessor.Companion.handler
+import cc.unitmesh.devti.devins.post.PostProcessorContext
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project

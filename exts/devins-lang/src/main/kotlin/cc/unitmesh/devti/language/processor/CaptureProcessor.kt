@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.language.processor
 
+import cc.unitmesh.devti.devins.provider.PsiCapture
 import cc.unitmesh.devti.language.ast.action.PatternActionFuncDef
 import cc.unitmesh.devti.language.ast.action.PatternProcessor
-import cc.unitmesh.devti.language.provider.PsiCapture
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project

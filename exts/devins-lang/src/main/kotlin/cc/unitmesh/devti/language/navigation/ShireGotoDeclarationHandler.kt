@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.navigation
 
 import cc.unitmesh.devti.language.ast.action.PatternActionFuncDef
-import cc.unitmesh.devti.language.middleware.post.PostProcessorType
+import cc.unitmesh.devti.devins.post.PostProcessorType
 import cc.unitmesh.devti.language.psi.DevInFrontMatterEntry
 import cc.unitmesh.devti.language.psi.DevInFrontMatterHeader
 import cc.unitmesh.devti.language.psi.DevInFuncCall

@@ -6,9 +6,9 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
-import cc.unitmesh.devti.language.middleware.post.PostProcessor
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
-import cc.unitmesh.devti.language.middleware.post.PostProcessorType
+import cc.unitmesh.devti.devins.post.PostProcessor
+import cc.unitmesh.devti.devins.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessorType
 
 class VerifyCodeProcessor : PostProcessor {
     override val processorName: String = PostProcessorType.VerifyCode.handleName

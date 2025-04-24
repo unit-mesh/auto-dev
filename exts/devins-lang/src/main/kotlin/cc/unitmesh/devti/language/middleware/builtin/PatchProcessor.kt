@@ -11,9 +11,9 @@ import com.intellij.openapi.vcs.changes.patch.ApplyPatchDefaultExecutor
 import com.intellij.openapi.vcs.changes.patch.MatchPatchPaths
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.containers.MultiMap
-import cc.unitmesh.devti.language.middleware.post.PostProcessor
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
-import cc.unitmesh.devti.language.middleware.post.PostProcessorType
+import cc.unitmesh.devti.devins.post.PostProcessor
+import cc.unitmesh.devti.devins.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessorType
 
 class PatchProcessor : PostProcessor {
     override val processorName: String = PostProcessorType.Patch.handleName

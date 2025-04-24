@@ -1,7 +1,7 @@
 package cc.unitmesh.git.provider
 
 import cc.unitmesh.devti.devins.ShireActionLocation
-import cc.unitmesh.devti.devins.ActionLocationEditor
+import cc.unitmesh.devti.devins.provider.ActionLocationEditor
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor

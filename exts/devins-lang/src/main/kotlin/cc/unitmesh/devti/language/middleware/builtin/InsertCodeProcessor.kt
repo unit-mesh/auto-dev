@@ -5,9 +5,9 @@ import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
-import cc.unitmesh.devti.language.middleware.post.PostProcessorType
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
-import cc.unitmesh.devti.language.middleware.post.PostProcessor
+import cc.unitmesh.devti.devins.post.PostProcessorType
+import cc.unitmesh.devti.devins.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessor
 
 class InsertCodeProcessor : PostProcessor {
     override val processorName: String = PostProcessorType.InsertCode.handleName

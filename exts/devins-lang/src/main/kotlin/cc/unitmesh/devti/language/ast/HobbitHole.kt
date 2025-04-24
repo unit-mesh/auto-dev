@@ -5,9 +5,9 @@ import cc.unitmesh.devti.language.ast.action.DirectAction
 import cc.unitmesh.devti.devins.ShireActionLocation
 import cc.unitmesh.devti.language.compiler.HobbitHoleParser
 import cc.unitmesh.devti.language.console.isCanceled
-import cc.unitmesh.devti.language.middleware.post.LifecycleProcessorSignature
-import cc.unitmesh.devti.language.middleware.post.PostProcessor
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.LifecycleProcessorSignature
+import cc.unitmesh.devti.devins.post.PostProcessor
+import cc.unitmesh.devti.devins.post.PostProcessorContext
 import cc.unitmesh.devti.language.middleware.select.SelectElementStrategy
 import cc.unitmesh.devti.language.middleware.select.SelectedEntry
 import cc.unitmesh.devti.language.psi.DevInFile

@@ -1,7 +1,7 @@
 package cc.unitmesh.git.provider
 
 import cc.unitmesh.devti.devins.variable.ToolchainVariable
-import cc.unitmesh.devti.language.provider.ToolchainVariableProvider
+import cc.unitmesh.devti.devins.provider.ToolchainVariableProvider
 import cc.unitmesh.devti.devins.VariableActionEventDataHolder
 import cc.unitmesh.devti.devins.variable.toolchain.VcsToolchainVariable
 import cc.unitmesh.devti.vcs.VcsPrompting

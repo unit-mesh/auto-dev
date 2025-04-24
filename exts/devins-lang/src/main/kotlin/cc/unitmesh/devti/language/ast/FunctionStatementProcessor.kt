@@ -5,7 +5,7 @@ import cc.unitmesh.devti.language.ast.action.PatternFuncProcessor
 import cc.unitmesh.devti.language.ast.shireql.ShireQLSchema
 import cc.unitmesh.devti.language.ast.shireql.ShireQLVariableBuilder
 import cc.unitmesh.devti.language.ast.shireql.VariableContainerManager
-import cc.unitmesh.devti.language.ast.shireql.variable.vcs.ShireGitCommit
+import cc.unitmesh.devti.devins.provider.vcs.ShireGitCommit
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project

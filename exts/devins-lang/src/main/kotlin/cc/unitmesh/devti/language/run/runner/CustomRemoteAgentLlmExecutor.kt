@@ -3,6 +3,7 @@ package cc.unitmesh.devti.language.run.runner
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.agent.custom.CustomAgentExecutor
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
+import cc.unitmesh.devti.devins.PostFunction
 import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.execution.ui.ConsoleViewContentType

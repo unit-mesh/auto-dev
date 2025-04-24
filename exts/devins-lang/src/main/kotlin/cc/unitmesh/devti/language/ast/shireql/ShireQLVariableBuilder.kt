@@ -5,9 +5,9 @@ import cc.unitmesh.devti.language.ast.VariableElement
 import cc.unitmesh.devti.language.ast.action.PatternActionFunc
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import cc.unitmesh.devti.language.ast.shireql.variable.vcs.ShireGitCommit
-import cc.unitmesh.devti.language.provider.ShireQLDataProvider
-import cc.unitmesh.devti.language.provider.ShireSymbolProvider
+import cc.unitmesh.devti.devins.provider.vcs.ShireGitCommit
+import cc.unitmesh.devti.devins.provider.ShireQLDataProvider
+import cc.unitmesh.devti.devins.provider.ShireSymbolProvider
 
 class ShireQLVariableBuilder(val myProject: Project, hole: HobbitHole) {
     fun buildVariables(fromStmt: PatternActionFunc.From): Map<String, List<Any>> {

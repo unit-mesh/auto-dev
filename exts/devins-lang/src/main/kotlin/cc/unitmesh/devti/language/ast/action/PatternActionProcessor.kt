@@ -5,7 +5,7 @@ import cc.unitmesh.devti.language.ast.VariableTransform
 import cc.unitmesh.devti.language.ast.shireql.ShireQLProcessor
 import cc.unitmesh.devti.language.compiler.searcher.PatternSearcher
 import cc.unitmesh.devti.language.debugger.snapshot.VariableSnapshotRecorder
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessorContext
 import com.intellij.openapi.project.Project
 
 public class PatternActionProcessor(

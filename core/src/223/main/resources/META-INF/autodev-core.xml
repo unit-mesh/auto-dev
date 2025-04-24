@@ -231,9 +231,91 @@
                         dynamic="true"
         />
 
+
         <extensionPoint qualifiedName="cc.unitmesh.shireActionLocationEditor"
-                        interface="cc.unitmesh.devti.devins.ActionLocationEditor"
+                        interface="cc.unitmesh.devti.devins.provider.ActionLocationEditor"
                         dynamic="true"/>
+
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireFileCreateService"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint"
+                        dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.devins.provider.FileCreateService"/>
+        </extensionPoint>
+
+        <!-- Toolchain Provider -->
+        <extensionPoint qualifiedName="cc.unitmesh.shireLanguageToolchainProvider"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.devins.provider.LanguageToolchainProvider"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shirePsiVariableProvider"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.devins.provider.PsiContextVariableProvider"/>
+        </extensionPoint>
+
+        <!-- PSI Query Expression -->
+        <extensionPoint qualifiedName="cc.unitmesh.shirePsiQLInterpreter"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.devins.provider.shireql.ShireQLInterpreter"/>
+        </extensionPoint>
+
+        <!-- Toolchain Variable Provider -->
+        <extensionPoint qualifiedName="cc.unitmesh.shireToolchainVariableProvider"
+                        interface="cc.unitmesh.devti.devins.provider.ToolchainVariableProvider"
+                        dynamic="true">
+        </extensionPoint>
+
+        <!-- Toolchain Function Provider -->
+        <extensionPoint qualifiedName="cc.unitmesh.shireToolchainFunctionProvider"
+                        interface="cc.unitmesh.devti.devins.provider.ToolchainFunctionProvider"
+                        dynamic="true">
+        </extensionPoint>
+
+        <!-- Post Code Middleware -->
+        <extensionPoint qualifiedName="cc.unitmesh.shirePostProcessor"
+                        interface="cc.unitmesh.devti.devins.provider.post.PostProcessor"
+                        dynamic="true"/>
+
+        <!-- Location Interaction  -->
+        <extensionPoint qualifiedName="cc.unitmesh.shireLocationInteraction"
+                        interface="cc.unitmesh.devti.devins.provider.LocationInteractionProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shirePsiCapture"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.devins.provider.PsiCapture"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireSymbolProvider"
+                        interface="cc.unitmesh.devti.devins.provider.ShireSymbolProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireQLDataProvider"
+                        interface="cc.unitmesh.devti.devins.provider.ShireQLDataProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireRevisionProvider"
+                        interface="cc.unitmesh.devti.devins.provider.RevisionProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireTerminalExecutor"
+                        interface="cc.unitmesh.devti.language.provider.TerminalLocationExecutor"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.shireHttpHandler"
+                        interface="cc.unitmesh.devti.devins.provider.http.HttpHandler"
+                        dynamic="true"/>
+
+        <!-- Code Complexity -->
+        <extensionPoint qualifiedName="cc.unitmesh.shireComplexityProvider"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.devins.provider.ComplexityProvider"/>
+        </extensionPoint>
     </extensionPoints>
 
 <!--    <projectListeners>-->

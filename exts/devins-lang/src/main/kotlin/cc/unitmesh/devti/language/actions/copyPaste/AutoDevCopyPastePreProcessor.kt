@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.actions.copyPaste
 
 import cc.unitmesh.devti.language.ast.HobbitHole
 import cc.unitmesh.devti.language.ast.variable.ShireVariableTemplateCompiler
-import cc.unitmesh.devti.language.middleware.post.PostProcessorContext
+import cc.unitmesh.devti.devins.post.PostProcessorContext
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.flow.DevInsProcessProcessor
 import cc.unitmesh.devti.llms.LlmFactory
