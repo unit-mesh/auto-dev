@@ -275,7 +275,7 @@ class DevInsCompiler(
             logger.warn("Illegal type: ${variableStart.elementType}")
             return
         }
-        val variableId = variableStart.nextSibling?.text
+        val variableId = runReadAction { variableStart.nextSibling?.text }
 //        val variables = ToolHubVariable.lookup(myProject, variableId)
 //        val file = element.containingFile
 //        VariableTemplateCompiler(file.language, file, element, editor).compile(usedText).let {
