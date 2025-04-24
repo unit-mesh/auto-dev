@@ -48,7 +48,7 @@ class ShireCompileTest : BasePlatformTestCase() {
         )
         myFixture.addFileToProject("src/main/java/com/phodal/shirelang/entity/HelloEntity.java", javaHelloEntity)
 
-        @Language("Shire")
+        @Language("DevIn")
         val code = """
             ---
             name: "类图分析"
@@ -157,7 +157,7 @@ public class HelloController {
 
 //    fun testShouldCompileMarkdownHeader() {
 //
-//        @Language("Shire")
+//        @Language("DevIn")
 //        val code = """
 //            ## Header
 //

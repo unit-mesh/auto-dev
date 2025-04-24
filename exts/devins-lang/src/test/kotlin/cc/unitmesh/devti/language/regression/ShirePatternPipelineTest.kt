@@ -61,7 +61,7 @@ class ShirePatternPipelineTest : BasePlatformTestCase() {
     }
 
     fun testShouldSupportAfterStreamingPattern() {
-        @Language("Shire")
+        @Language("DevIn")
         val code = """
             ---
             name: Summary
@@ -109,7 +109,7 @@ class ShirePatternPipelineTest : BasePlatformTestCase() {
     }
 
     fun testShouldUseSedReplaceContentInVariables() {
-        @Language("Shire")
+        @Language("DevIn")
         val code = """
             ---
             name: Summary
