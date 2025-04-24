@@ -8,5 +8,6 @@
         <httpClientExecutor implementation="cc.unitmesh.httpclient.IntellijHttpClientExecutor"/>
 
         <runService implementation="cc.unitmesh.httpclient.HttpClientFileRunService"/>
+        <shireHttpHandler implementation="cc.unitmesh.httpclient.CUrlHttpHandler"/>
     </extensions>
 </idea-plugin>
