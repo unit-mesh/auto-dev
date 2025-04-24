@@ -15,7 +15,12 @@ class ContextVariableResolver(
     fun all(): List<ContextVariable> = entries
 
     override suspend fun resolve(initVariables: Map<String, Any>): Map<String, String> = ReadAction.compute<Map<String, String>, Throwable> {
-        val file = context.element?.containingFile
+        val file = try {
+            context.element?.containingFile
+        } catch (e: Exception) {
+            null
+        }
+
         val caretModel = context.editor.caretModel
 
         all().associate { variable ->
