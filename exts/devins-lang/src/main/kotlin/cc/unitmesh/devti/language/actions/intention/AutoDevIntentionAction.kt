@@ -13,7 +13,7 @@ import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import kotlin.collections.firstOrNull
 
-class ShireIntentionAction(private val hobbitHole: HobbitHole?, val file: PsiFile, private val event: AnActionEvent?) :
+class AutoDevIntentionAction(private val hobbitHole: HobbitHole?, val file: PsiFile, private val event: AnActionEvent?) :
     IntentionAction {
     override fun startInWriteAction(): Boolean = true
     override fun getFamilyName(): String = AutoDevBundle.message("devins.intention")

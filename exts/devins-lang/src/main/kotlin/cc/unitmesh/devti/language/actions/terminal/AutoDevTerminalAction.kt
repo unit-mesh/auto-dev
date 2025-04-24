@@ -29,7 +29,7 @@ import javax.swing.Box
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 
-class ShireTerminalAction : DumbAwareAction() {
+class AutoDevTerminalAction : DumbAwareAction() {
     override fun getActionUpdateThread() = ActionUpdateThread.EDT
     private val OUTLINE_PROPERTY = "JComponent.outline"
     private val ERROR_VALUE = "error"

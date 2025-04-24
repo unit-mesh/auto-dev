@@ -75,7 +75,7 @@
                          implementationClass="cc.unitmesh.devti.language.lints.DevInsDuplicateAgentInspection"/>
 
         <intentionAction>
-            <className>cc.unitmesh.devti.language.actions.intention.ShireIntentionHelper</className>
+            <className>cc.unitmesh.devti.language.actions.intention.AutoDevIntentionHelper</className>
             <categoryKey>autodev.intention.category</categoryKey>
         </intentionAction>
     </extensions>
@@ -189,57 +189,52 @@
                 class="cc.unitmesh.devti.language.actions.DevInsRunFileAction"
                 use-shortcut-of="RunClass"/>
 
-        <action id="autodev.NewShireFile" class="cc.unitmesh.devti.language.actions.template.NewShireFileAction"
-                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
-            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
-        </action>
-
         <!-- Shire Context Action Group -->
-        <group id="ShireContextActionGroup"
+        <group id="AutoDevContextActionGroup"
                popup="true" text="AutoDev DevIns Action" description="AutoDev DevIns context action group"
-               class="cc.unitmesh.devti.language.actions.context.ShireContextMenuActionGroup"
+               class="cc.unitmesh.devti.language.actions.context.AutoDevContextMenuActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
         <!-- When multiple commit menu -->
-        <group id="ShireVcsActionGroup"
-               class="cc.unitmesh.devti.language.actions.vcs.ShireVcsActionGroup"
+        <group id="AutoDevVcsActionGroup"
+               class="cc.unitmesh.devti.language.actions.vcs.AutoDevVcsActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-               description="Shire VCS Action">
+               description="AutoDev VCS Action">
 
             <add-to-group group-id="Vcs.MessageActionGroup"/>
         </group>
 
         <!-- When one commit menu -->
-        <action id="ShireCommitMessage"
-                class="cc.unitmesh.devti.language.actions.vcs.ShireVcsSingleAction"
+        <action id="AutoDevCommitMessage"
+                class="cc.unitmesh.devti.language.actions.vcs.AutoDevVcsSingleAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 text="Commit Message Action"
-                description="Shire VCS Action">
+                description="AutoDev VCS Action">
 
             <add-to-group group-id="Vcs.MessageActionGroup"/>
         </action>
 
-        <action id="ShireCustomInputBox"
-                class="cc.unitmesh.devti.language.actions.input.ShireInputBoxAction"
+        <action id="AutoDevCustomInputBox"
+                class="cc.unitmesh.devti.language.actions.input.AutoDevInputBoxAction"
                 description="You can custom any assistant as you want!"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
         >
             <keyboard-shortcut keymap="$default" first-keystroke="control BACK_SLASH"/>
         </action>
 
-        <action id="ShireTerminalAction"
-                class="cc.unitmesh.devti.language.actions.terminal.ShireTerminalAction"
+        <action id="AutoDevTerminalAction"
+                class="cc.unitmesh.devti.language.actions.terminal.AutoDevTerminalAction"
                 description="You can custom any assistant as you want!"
                 text="Terminal Action"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
         >
         </action>
 
-        <action id="cc.unitmesh.devti.language.actions.console.ShireConsoleAction"
-                class="cc.unitmesh.devti.language.actions.console.ShireConsoleAction"
+        <action id="AutoDevConsoleAction"
+                class="cc.unitmesh.devti.language.actions.console.AutoDevConsoleAction"
                 description="Ask AI fix this code"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
         >
@@ -247,31 +242,31 @@
         </action>
 
         <!-- Shire Intentions Action Group -->
-        <group id="ShireIntentionsActionGroup" class="cc.unitmesh.devti.language.actions.intention.ShireIntentionsActionGroup"
+        <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.language.actions.intention.AutoDevIntentionsActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
 
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
             <add-to-group group-id="Floating.CodeToolbar" anchor="first"/>
         </group>
 
-        <action id="ShireDatabaseAction"
-                class="cc.unitmesh.devti.language.actions.database.ShireDatabaseAction"
+        <action id="AutoDevDatabaseAction"
+                class="cc.unitmesh.devti.language.actions.database.AutoDevDatabaseAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 text="Shire Database Action"
                 description="Shire database action">
 
         </action>
 
-        <action id="ShireSonarLintAction"
-                class="cc.unitmesh.devti.language.actions.external.ShireSonarLintAction"
+        <action id="AutoDevSonarLintAction"
+                class="cc.unitmesh.devti.language.actions.external.AutoDevSonarLintAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 text="Shire SonarLint Action"
                 description="Shire SonarLint action">
 
         </action>
 
-        <action id="ShireVcsLogAction"
-                class="cc.unitmesh.devti.language.actions.vcs.ShireVcsLogAction"
+        <action id="AutoDevVcsLogAction"
+                class="cc.unitmesh.devti.language.actions.vcs.AutoDevVcsLogAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 text="Shire Vcs Action"
                 description="Shire vcs action">

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.actions.console
+package cc.unitmesh.devti.language.actions.external
 
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
 import cc.unitmesh.devti.language.ast.config.ShireActionLocation
@@ -9,11 +9,11 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 
-class ShireConsoleAction : AnAction() {
+class AutoDevSonarLintAction : AnAction() {
     override fun getActionUpdateThread() = ActionUpdateThread.EDT
 
     private fun shireActionConfigs(project: Project) =
-        DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.CONSOLE_MENU)
+        DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.EXT_SONARQUBE_MENU)
 
     override fun update(e: AnActionEvent) {
         val project = e.project ?: return

@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 
 
-class ShireVcsLogAction : AnAction() {
+class AutoDevVcsLogAction : AnAction() {
     override fun getActionUpdateThread() = ActionUpdateThread.EDT
 
     private fun shireActionConfigs(project: Project) =

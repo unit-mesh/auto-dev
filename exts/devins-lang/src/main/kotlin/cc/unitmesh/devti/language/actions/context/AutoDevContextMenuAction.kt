@@ -10,7 +10,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import cc.unitmesh.devti.language.actions.base.validator.WhenConditionValidator
 import cc.unitmesh.devti.language.startup.DynamicDevInsActionConfig
 
-class ShireContextMenuAction(private val config: DynamicDevInsActionConfig) :
+class AutoDevContextMenuAction(private val config: DynamicDevInsActionConfig) :
     DumbAwareAction(config.name, config.hole?.description, AutoDevIcons.AI_COPILOT) {
 
     init {
@@ -34,7 +34,7 @@ class ShireContextMenuAction(private val config: DynamicDevInsActionConfig) :
                 e.presentation.text = config.hole.name
             }
         } catch (e: Exception) {
-            logger<ShireContextMenuAction>().error("Error in ShireContextMenuAction", e)
+            logger<AutoDevContextMenuAction>().error("Error in ShireContextMenuAction", e)
         }
     }
 

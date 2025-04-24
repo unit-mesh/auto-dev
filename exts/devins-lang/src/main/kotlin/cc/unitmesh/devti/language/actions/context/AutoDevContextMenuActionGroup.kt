@@ -5,7 +5,7 @@ import cc.unitmesh.devti.language.actions.base.validator.WhenConditionValidator
 import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 
-class ShireContextMenuActionGroup : ActionGroup() {
+class AutoDevContextMenuActionGroup : ActionGroup() {
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.BGT
     }
@@ -28,7 +28,7 @@ class ShireContextMenuActionGroup : ActionGroup() {
                 if (!WhenConditionValidator.isAvailable(it, psiFile)) return@mapNotNull null
             }
 
-            val menuAction = ShireContextMenuAction(actionConfig)
+            val menuAction = AutoDevContextMenuAction(actionConfig)
             if (actionConfig.hole.shortcut != null) {
                 actionService.bindShortcutToAction(menuAction, actionConfig.hole.shortcut)
             }

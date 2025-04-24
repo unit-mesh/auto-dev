@@ -11,13 +11,13 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class ShireIntentionsActionGroup : ActionGroup("AutoDevIntention", true), DumbAware {
+class AutoDevIntentionsActionGroup : ActionGroup("AutoDevIntention", true), DumbAware {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val project: Project = e?.project ?: return emptyArray()
         val editor: Editor = e.getData(CommonDataKeys.EDITOR) ?: return emptyArray()
         val file: PsiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return emptyArray()
 
-        val intentions: List<IntentionAction> = ShireIntentionHelper.getAiAssistantIntentions(file, e)
+        val intentions: List<IntentionAction> = AutoDevIntentionHelper.getAiAssistantIntentions(file, e)
 
         return intentions.map { action ->
             DumbAwareAction.create(action.text) {

@@ -20,7 +20,7 @@ import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 
-class ShireInputBoxAction : DumbAwareAction() {
+class AutoDevInputBoxAction : DumbAwareAction() {
     override fun getActionUpdateThread() = ActionUpdateThread.EDT
 
     private fun shireActionConfigs(project: Project) =

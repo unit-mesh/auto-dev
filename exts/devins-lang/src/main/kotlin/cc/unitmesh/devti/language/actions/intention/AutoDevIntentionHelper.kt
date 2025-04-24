@@ -16,7 +16,7 @@ import cc.unitmesh.devti.language.actions.intention.ui.CustomPopupStep
 import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 
-class ShireIntentionHelper : IntentionAction, Iconable {
+class AutoDevIntentionHelper : IntentionAction, Iconable {
     override fun startInWriteAction(): Boolean = true
     override fun getText(): String = AutoDevBundle.message("devins.intention")
     override fun getFamilyName(): String = AutoDevBundle.message("devins.intention")
@@ -41,7 +41,7 @@ class ShireIntentionHelper : IntentionAction, Iconable {
             val popup = JBPopupFactory.getInstance().createListPopup(popupStep)
             popup.showInBestPositionFor(editor)
         } catch (e: Exception) {
-            logger<ShireIntentionHelper>().warn("Failed to show popup", e)
+            logger<AutoDevIntentionHelper>().warn("Failed to show popup", e)
         }
     }
 
@@ -51,7 +51,7 @@ class ShireIntentionHelper : IntentionAction, Iconable {
             val shireActionConfigs = DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.INTENTION_MENU)
 
             return shireActionConfigs.map { actionConfig ->
-                ShireIntentionAction(actionConfig.hole, file, event)
+                AutoDevIntentionAction(actionConfig.hole, file, event)
             }
         }
     }

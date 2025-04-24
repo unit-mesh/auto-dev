@@ -11,7 +11,7 @@ class ShireSonarLintToolWindowListener : ToolWindowManagerListener {
     override fun toolWindowShown(toolWindow: ToolWindow) {
         if (toolWindow.id != "SonarLint") return
 
-        val action = ActionManager.getInstance().getAction("ShireSonarLintAction")
+        val action = ActionManager.getInstance().getAction("AutoDevSonarLintAction")
 
         val contentManager = toolWindow.contentManager
         val content = contentManager.getContent(0) ?: return

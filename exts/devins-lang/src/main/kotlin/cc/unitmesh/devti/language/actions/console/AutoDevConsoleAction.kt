@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.actions.database
+package cc.unitmesh.devti.language.actions.console
 
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
 import cc.unitmesh.devti.language.ast.config.ShireActionLocation
@@ -9,12 +9,11 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 
-
-class ShireDatabaseAction : AnAction() {
+class AutoDevConsoleAction : AnAction() {
     override fun getActionUpdateThread() = ActionUpdateThread.EDT
 
     private fun shireActionConfigs(project: Project) =
-        DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.DATABASE_MENU)
+        DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.CONSOLE_MENU)
 
     override fun update(e: AnActionEvent) {
         val project = e.project ?: return

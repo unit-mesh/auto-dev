@@ -64,7 +64,7 @@ class ShireActionStartupActivity : StartupActivity  {
         val actionManager = ActionManager.getInstance()
         val toolsMenu = actionManager.getAction("TerminalToolwindowActionGroup") as? DefaultActionGroup ?: return
 
-        val action = actionManager.getAction("ShireTerminalAction")
+        val action = actionManager.getAction("AutoDevTerminalAction")
         if (!toolsMenu.containsAction(action)) {
             toolsMenu.add(action)
         }
@@ -74,7 +74,7 @@ class ShireActionStartupActivity : StartupActivity  {
         val actionManager = ActionManager.getInstance()
         val toolsMenu = actionManager.getAction("DatabaseViewPopupMenu") as? DefaultActionGroup ?: return
 
-        val action = actionManager.getAction("ShireDatabaseAction")
+        val action = actionManager.getAction("AutoDevDatabaseAction")
         if (!toolsMenu.containsAction(action)) {
             toolsMenu.add(action, Constraints.LAST)
         }
@@ -84,7 +84,7 @@ class ShireActionStartupActivity : StartupActivity  {
         val actionManager = ActionManager.getInstance()
         val toolsMenu = actionManager.getAction("Vcs.Log.ContextMenu") as? DefaultActionGroup ?: return
 
-        val action = actionManager.getAction("ShireVcsLogAction")
+        val action = actionManager.getAction("AutoDevVcsLogAction")
         if (!toolsMenu.containsAction(action)) {
             toolsMenu.add(action, Constraints.FIRST)
         }
