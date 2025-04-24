@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.ast
 
 import cc.unitmesh.devti.custom.team.InteractionType
 import cc.unitmesh.devti.language.ast.action.DirectAction
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.compiler.HobbitHoleParser
 import cc.unitmesh.devti.language.console.isCanceled
 import cc.unitmesh.devti.language.middleware.post.LifecycleProcessorSignature
@@ -41,7 +41,7 @@ open class HobbitHole(
     /**
      * Display name of the DevIn command, will show in the IDE's UI base on [HobbitHole.interaction].
      *
-     * For example: [DevInsActionLocation.CONTEXT_MENU], will show in the context menu.
+     * For example: [ShireActionLocation.CONTEXT_MENU], will show in the context menu.
      *
      * ```devin
      * ---
@@ -71,7 +71,7 @@ open class HobbitHole(
      */
     val interaction: InteractionType = InteractionType.RunPanel,
     /**
-     * The location of the action, should be one of [DevInsActionLocation], the default is [DevInsActionLocation.RUN_PANEL].
+     * The location of the action, should be one of [ShireActionLocation], the default is [ShireActionLocation.RUN_PANEL].
      *
      * ```devin
      * ---
@@ -79,7 +79,7 @@ open class HobbitHole(
      * ---
      * ```
      */
-    val actionLocation: DevInsActionLocation = DevInsActionLocation.RUN_PANEL,
+    val actionLocation: ShireActionLocation = ShireActionLocation.RUN_PANEL,
     /**
      * The strategy to select the element to apply the action.
      * If not selected text, will according the element position to select the element block.
@@ -338,7 +338,7 @@ open class HobbitHole(
             return HobbitHoleParser.parse(file)
         }
 
-        fun create(name: String, description: String, interactionType: InteractionType, chatBox: DevInsActionLocation): HobbitHole {
+        fun create(name: String, description: String, interactionType: InteractionType, chatBox: ShireActionLocation): HobbitHole {
             return HobbitHole(name, description, interactionType, actionLocation = chatBox)
         }
 
@@ -371,7 +371,7 @@ open class HobbitHole(
             val name = frontMatterMap[NAME]?.value as? String ?: ""
             val description = frontMatterMap[DESCRIPTION]?.value as? String ?: ""
             val interaction = frontMatterMap[INTERACTION]?.value as? String ?: ""
-            val actionLocation = frontMatterMap[ACTION_LOCATION]?.value as? String ?: DevInsActionLocation.default()
+            val actionLocation = frontMatterMap[ACTION_LOCATION]?.value as? String ?: ShireActionLocation.default()
             val enabled = frontMatterMap[ENABLED]?.value as? Boolean ?: true
             val agentic = frontMatterMap[AGENTIC]?.value as? Boolean ?: false
             val model = frontMatterMap[MODEL]?.value as? String
@@ -429,7 +429,7 @@ open class HobbitHole(
                 name = name,
                 description = description,
                 interaction = InteractionType.from(interaction),
-                actionLocation = DevInsActionLocation.from(actionLocation),
+                actionLocation = ShireActionLocation.from(actionLocation),
                 selectionStrategy = selectionStrategy,
                 variables = variables,
                 foreignFunctions = foreignFunctions,

@@ -13,7 +13,7 @@ import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
 import javax.swing.Icon
 import cc.unitmesh.devti.language.actions.intention.ui.CustomPopupStep
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 
 class ShireIntentionHelper : IntentionAction, Iconable {
@@ -48,7 +48,7 @@ class ShireIntentionHelper : IntentionAction, Iconable {
     companion object {
         fun getAiAssistantIntentions(file: PsiFile, event: AnActionEvent?): List<IntentionAction> {
             val project = event?.project ?: return emptyList()
-            val shireActionConfigs = DynamicShireActionService.getInstance(project).getActions(DevInsActionLocation.INTENTION_MENU)
+            val shireActionConfigs = DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.INTENTION_MENU)
 
             return shireActionConfigs.map { actionConfig ->
                 ShireIntentionAction(actionConfig.hole, file, event)

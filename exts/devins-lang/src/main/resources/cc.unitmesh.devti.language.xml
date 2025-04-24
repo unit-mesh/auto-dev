@@ -312,6 +312,6 @@
         <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.ShowWebviewProcessor"/>
 
         <!--   EditorInteractionProvider-->
-        <shireLocationInteraction implementation="cc.unitmesh.devti.language.config.EditorInteractionProvider"/>
+        <shireLocationInteraction implementation="cc.unitmesh.devti.language.task.EditorInteractionProvider"/>
     </extensions>
 </idea-plugin>

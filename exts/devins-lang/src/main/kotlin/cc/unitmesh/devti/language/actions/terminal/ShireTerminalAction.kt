@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.actions.terminal
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.provider.TerminalLocationExecutor
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -35,7 +35,7 @@ class ShireTerminalAction : DumbAwareAction() {
     private val ERROR_VALUE = "error"
 
     private fun shireActionConfigs(project: Project) =
-        DynamicShireActionService.getInstance(project).getActions(DevInsActionLocation.TERMINAL_MENU)
+        DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.TERMINAL_MENU)
 
     override fun update(e: AnActionEvent) {
         val shireActionConfigs = e.project?.let { shireActionConfigs(it) }

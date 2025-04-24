@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.actions.vcs
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.provider.action.VariableActionEventDataHolder
 import cc.unitmesh.devti.language.startup.DynamicDevInsActionConfig
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
@@ -30,7 +30,7 @@ class ShireVcsActionGroup : ActionGroup() {
     }
 
     private fun shireActionConfigs(project: Project) =
-        DynamicShireActionService.getInstance(project).getActions(DevInsActionLocation.COMMIT_MENU)
+        DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.COMMIT_MENU)
 }
 
 class ShireVcsAction(val config: DynamicDevInsActionConfig) :

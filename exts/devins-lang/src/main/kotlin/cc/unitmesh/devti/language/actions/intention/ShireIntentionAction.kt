@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import cc.unitmesh.devti.language.actions.base.validator.WhenConditionValidator
 import cc.unitmesh.devti.language.ast.HobbitHole
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import kotlin.collections.firstOrNull
 
@@ -26,7 +26,7 @@ class ShireIntentionAction(private val hobbitHole: HobbitHole?, val file: PsiFil
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val config = DynamicShireActionService.getInstance(project)
-            .getActions(DevInsActionLocation.INTENTION_MENU)
+            .getActions(ShireActionLocation.INTENTION_MENU)
             .firstOrNull { it.hole == hobbitHole } ?: return
 
         DevInsRunFileAction.executeFile(project, config, null)

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.run.runner
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.language.ast.HobbitHole
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.ast.variable.ShireVariableTemplateCompiler
 import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
@@ -67,7 +67,7 @@ class ShireRunner(
         project.getService(DevInsConversationService::class.java)
             .createConversation(configuration.getScriptPath(), runnerContext.compileResult)
 
-        if (runnerContext.hole?.actionLocation == DevInsActionLocation.TERMINAL_MENU) {
+        if (runnerContext.hole?.actionLocation == ShireActionLocation.TERMINAL_MENU) {
             executeTerminalUiTask(runnerContext) { response, textRange ->
                 runResult.complete(response)
                 executePostFunction(runnerContext, runnerContext.hole, response, textRange)

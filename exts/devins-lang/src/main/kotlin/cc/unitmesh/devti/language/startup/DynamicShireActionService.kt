@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.startup
 
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -31,7 +31,7 @@ class DynamicShireActionService: DynamicActionService {
             .distinctBy { it.devinFile.virtualFile }
     }
 
-    fun getActions(location: DevInsActionLocation): List<DynamicDevInsActionConfig> {
+    fun getActions(location: ShireActionLocation): List<DynamicDevInsActionConfig> {
         return getAllActions().filter {
             it.hole?.actionLocation == location && it.hole.enabled
         }

@@ -3,7 +3,7 @@ package cc.unitmesh.devti.language.run
 import cc.unitmesh.devti.agent.custom.CustomAgentExecutor
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.team.InteractionType
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.streaming.OnStreamingService
@@ -89,7 +89,7 @@ open class DevInsRunConfigurationProfileState(
             val parsedResult = ShireRunner.preAnalysisAndLocalExecute(shireFile, myProject)
 
             val location = parsedResult.config?.actionLocation
-            if (location == DevInsActionLocation.TERMINAL_MENU || location == DevInsActionLocation.COMMIT_MENU) {
+            if (location == ShireActionLocation.TERMINAL_MENU || location == ShireActionLocation.COMMIT_MENU) {
                 isShowRunContent = false
             }
 

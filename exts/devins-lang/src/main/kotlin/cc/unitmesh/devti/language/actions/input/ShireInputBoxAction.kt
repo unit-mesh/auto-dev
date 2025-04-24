@@ -14,7 +14,7 @@ import cc.unitmesh.devti.language.actions.input.inlay.CustomInputBox
 import cc.unitmesh.devti.language.actions.input.inlay.CustomInputBox.Companion.CUSTOM_INPUT_CANCEL_ACTION
 import cc.unitmesh.devti.language.actions.input.inlay.CustomInputBox.Companion.CUSTOM_INPUT_SUBMIT_ACTION
 import cc.unitmesh.devti.language.actions.input.inlay.InlayPanel
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicDevInsActionConfig
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 import java.awt.event.ActionEvent
@@ -24,7 +24,7 @@ class ShireInputBoxAction : DumbAwareAction() {
     override fun getActionUpdateThread() = ActionUpdateThread.EDT
 
     private fun shireActionConfigs(project: Project) =
-        DynamicShireActionService.getInstance(project).getActions(DevInsActionLocation.INPUT_BOX)
+        DynamicShireActionService.getInstance(project).getActions(ShireActionLocation.INPUT_BOX)
 
     override fun update(e: AnActionEvent) {
         val project = e.project ?: return

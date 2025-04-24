@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.config
+package cc.unitmesh.devti.language.task
 
 import cc.unitmesh.devti.language.run.runner.PostFunction
 import com.intellij.openapi.Disposable

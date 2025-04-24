@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.actions.context
 
 import com.intellij.openapi.actionSystem.*
 import cc.unitmesh.devti.language.actions.base.validator.WhenConditionValidator
-import cc.unitmesh.devti.language.ast.config.DevInsActionLocation
+import cc.unitmesh.devti.language.ast.config.ShireActionLocation
 import cc.unitmesh.devti.language.startup.DynamicShireActionService
 
 class ShireContextMenuActionGroup : ActionGroup() {
@@ -19,7 +19,7 @@ class ShireContextMenuActionGroup : ActionGroup() {
         val project = e?.project ?: return emptyArray()
         val actionService = DynamicShireActionService.getInstance(project)
 
-        return actionService.getActions(DevInsActionLocation.CONTEXT_MENU).mapNotNull { actionConfig ->
+        return actionService.getActions(ShireActionLocation.CONTEXT_MENU).mapNotNull { actionConfig ->
             if (actionConfig.hole == null) return@mapNotNull null
             if (!actionConfig.hole.enabled) return@mapNotNull null
 
