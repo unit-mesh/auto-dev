@@ -74,7 +74,7 @@ open class PatternFuncProcessor(open val myProject: Project, open val hole: Hobb
                             inputArray.map { line ->
                                 regex.findAll(line)
                                     .map {
-                                        if (it.groupValues.size >= 1) {
+                                        if (it.groupValues.size > 1) {
                                             it.groupValues[1]
                                         } else {
                                             it.groupValues[0]
@@ -90,7 +90,7 @@ open class PatternFuncProcessor(open val myProject: Project, open val hole: Hobb
                         val result = regexs.map { regex ->
                             regex.findAll(lastResult)
                                 .map {
-                                    if (it.groupValues.size >= 1) {
+                                    if (it.groupValues.size > 1) {
                                         it.groupValues[1]
                                     } else {
                                         it.groupValues[0]
