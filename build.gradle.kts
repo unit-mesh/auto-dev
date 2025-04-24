@@ -800,7 +800,6 @@ project(":exts:devins-lang") {
         }
 
         implementation(project(":core"))
-        implementation(project(":exts:ext-git"))
     }
 
     tasks {

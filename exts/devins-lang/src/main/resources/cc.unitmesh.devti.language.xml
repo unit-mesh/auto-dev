@@ -242,12 +242,12 @@
         </action>
 
         <!-- Shire Intentions Action Group -->
-        <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.language.actions.intention.AutoDevIntentionsActionGroup"
-               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
+<!--        <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.language.actions.intention.AutoDevIntentionsActionGroup"-->
+<!--               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">-->
 
-            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
-            <add-to-group group-id="Floating.CodeToolbar" anchor="first"/>
-        </group>
+<!--            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>-->
+<!--            <add-to-group group-id="Floating.CodeToolbar" anchor="first"/>-->
+<!--        </group>-->
 
         <action id="AutoDevDatabaseAction"
                 class="cc.unitmesh.devti.language.actions.database.AutoDevDatabaseAction"
