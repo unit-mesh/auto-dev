@@ -1,7 +1,7 @@
 package cc.unitmesh.httpclient.converter
 
-import cc.unitmesh.devti.language.envior.ShireEnvReader
-import cc.unitmesh.devti.language.envior.ShireEnvVariableFiller
+import cc.unitmesh.devti.envior.ShireEnvReader
+import cc.unitmesh.devti.envior.ShireEnvVariableFiller
 import com.intellij.httpClient.converters.curl.parser.CurlParser
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 

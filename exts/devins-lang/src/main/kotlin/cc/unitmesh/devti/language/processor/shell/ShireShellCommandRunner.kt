@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.processor.shell
 
-import cc.unitmesh.devti.language.envior.ShireEnvReader
-import cc.unitmesh.devti.language.envior.ShireEnvVariableFiller
+import cc.unitmesh.devti.envior.ShireEnvReader
+import cc.unitmesh.devti.envior.ShireEnvVariableFiller
 import cc.unitmesh.devti.util.readText
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
@@ -10,7 +10,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.ProjectScope
 import java.io.File

@@ -8,6 +8,8 @@
     <depends optional="true" config-file="docker.xml">Docker</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileBasedIndex implementation="cc.unitmesh.devti.envior.ShireEnvironmentIndex"/>
+
         <notificationGroup id="AutoDev.notification.group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
 

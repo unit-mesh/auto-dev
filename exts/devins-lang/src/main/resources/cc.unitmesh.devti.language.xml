@@ -18,7 +18,6 @@
                   language="DevIn" extensions="devin"/>
 
         <fileBasedIndex implementation="cc.unitmesh.devti.language.index.ShireIdentifierIndex"/>
-        <fileBasedIndex implementation="cc.unitmesh.devti.language.envior.ShireEnvironmentIndex"/>
 
         <lang.parserDefinition language="DevIn"
                                implementationClass="cc.unitmesh.devti.language.parser.DevInParserDefinition"/>
