@@ -16,7 +16,7 @@ class ShireGrepFuncCall(node: ASTNode) : DevInFuncCallImpl(node), PsiLanguageInj
     }
 
     override fun createLiteralTextEscaper(): LiteralTextEscaper<out PsiLanguageInjectionHost> {
-        return LiteralTextEscaper.createSimple(this, false)
+        return createSimple(this, false)
     }
 }
 
@@ -29,6 +29,6 @@ class ShireSedFuncCall(node: ASTNode) : DevInFuncCallImpl(node), PsiLanguageInje
     }
 
     override fun createLiteralTextEscaper(): LiteralTextEscaper<out PsiLanguageInjectionHost> {
-        return LiteralTextEscaper.createSimple(this, false)
+        return createSimple(this, false)
     }
 }
