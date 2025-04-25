@@ -364,6 +364,10 @@ open class HobbitHole(
                 ON_STREAMING_END to "After Streaming end middleware actions, like Logging, Metrics, CodeVerify, RunCode, ParseCode etc.",
                 BEFORE_STREAMING to "The task/patternAction before streaming",
                 AFTER_STREAMING to "Decision to run the task after streaming, routing to different tasks",
+
+                ENABLED to "The status of the action, default is true",
+                AGENTIC to "The status of the action, default is false",
+                MODEL to "The LLM model for action, default is null which will use the default model",
             )
         }
 
