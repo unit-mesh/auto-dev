@@ -14,7 +14,6 @@ class BuiltinCommandCompletion : CompletionProvider<CompletionParameters>() {
     ) {
         BuiltinCommand.all().forEach {
             val lookupElement = createCommandCompletionCandidate(it)
-
             result.addElement(lookupElement)
         }
     }

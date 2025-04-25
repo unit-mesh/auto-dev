@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.completion
+package cc.unitmesh.devti.language.completion.lang
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.ast.variable.CompositeVariableProvider
