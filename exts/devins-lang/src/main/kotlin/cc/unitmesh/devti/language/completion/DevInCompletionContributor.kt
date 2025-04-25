@@ -12,6 +12,8 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
+import com.phodal.shirelang.completion.provider.WhenConditionCompletionProvider
+import com.phodal.shirelang.completion.provider.WhenConditionFunctionCompletionProvider
 
 class DevInCompletionContributor : CompletionContributor() {
     init {
@@ -26,13 +28,11 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.VARIABLE_START), AgentToolOverviewCompletion())
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.COMMAND_START), BuiltinCommandCompletion())
 
-//        extend(CompletionType.BASIC, hobbitHoleKey(), HobbitHoleKeyCompletion())
-//        extend(CompletionType.BASIC, hobbitHolePattern(), HobbitHoleValueCompletion())
-//
-//        extend(CompletionType.BASIC, identifierAfter(DevInTypes.PIPE), PostProcessorCompletion())
-//
-//        extend(CompletionType.BASIC, whenConditionPattern(), WhenConditionCompletionProvider())
-//        extend(CompletionType.BASIC, whenConditionFuncPattern(), WhenConditionFunctionCompletionProvider())
+        extend(CompletionType.BASIC, hobbitHoleKey(), HobbitHoleKeyCompletion())
+        extend(CompletionType.BASIC, hobbitHolePattern(), HobbitHoleValueCompletion())
+        extend(CompletionType.BASIC, identifierAfter(DevInTypes.PIPE), PostProcessorCompletion())
+        extend(CompletionType.BASIC, whenConditionPattern(), WhenConditionCompletionProvider())
+        extend(CompletionType.BASIC, whenConditionFuncPattern(), WhenConditionFunctionCompletionProvider())
 
         // command completion
         extend(
