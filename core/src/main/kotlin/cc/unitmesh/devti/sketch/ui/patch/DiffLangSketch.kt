@@ -79,7 +79,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                     }
 
                     addActionListener {
-                        this@apply.icon = AutoDevIcons.InProgress
+                        this@apply.icon = AutoDevIcons.LOADING
                         DiffRepair.applyDiffRepairSuggestion(myProject, editor, editor.document.text, patchContent)
                     }
                 }

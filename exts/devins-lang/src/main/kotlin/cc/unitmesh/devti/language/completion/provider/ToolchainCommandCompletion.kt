@@ -33,14 +33,14 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
             .withTailText(getText(tool))
             .withInsertHandler { context, _ ->
                 context.editor.caretModel.moveToOffset(context.tailOffset)
-                context.editor.document.insertString(context.tailOffset, "\n````json\n${tool.completion}\n```")
+                context.editor.document.insertString(context.tailOffset, "\n```json\n${tool.completion}\n```")
             }
 
         return PrioritizedLookupElement.withPriority(element, 97.0)
     }
 
     private fun getText(tool: AgentTool): String {
-        return return if (tool.mcpGroup.isNotEmpty()) {
+        return if (tool.mcpGroup.isNotEmpty()) {
             " ${tool.mcpGroup}: ${tool.description}"
         } else {
             tool.description

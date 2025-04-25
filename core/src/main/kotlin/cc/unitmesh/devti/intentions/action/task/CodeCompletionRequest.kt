@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.intentions.action.task
 
+import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ex.DocumentEx
@@ -14,14 +15,14 @@ class CodeCompletionRequest(
     val useTabIndents: Boolean,
     val tabWidth: Int,
     val fileUri: VirtualFile,
-    val prefixText: String,
+    val prefix: String,
     val offset: Int,
     val documentVersion: Long,
     val element: PsiElement?,
     val editor: Editor,
-    val suffixText: String,
+    val suffix: String,
     val isReplacement: Boolean = false,
-) : Disposable {
+) : TemplateContext, Disposable {
     companion object {
         fun create(
             editor: Editor,

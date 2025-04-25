@@ -1,13 +1,23 @@
 <idea-plugin package="cc.unitmesh.devti.language">
+    <resource-bundle>messages.DevInBundle</resource-bundle>
+
     <dependencies>
         <plugin id="org.intellij.plugins.markdown"/>
         <plugin id="com.jetbrains.sh"/>
     </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
+        <backgroundPostStartupActivity implementation="cc.unitmesh.devti.language.startup.ShireActionStartupActivity"/>
+        <vfs.asyncListener implementation="cc.unitmesh.devti.language.startup.AsyncShireFileListener"/>
+        <fileDocumentManagerListener implementation="cc.unitmesh.devti.language.startup.ShireFileModificationListener"/>
+        <editorFactoryDocumentListener implementation="cc.unitmesh.devti.language.startup.ShireFileModificationListener"/>
+        <copyPastePreProcessor implementation="cc.unitmesh.devti.language.actions.copyPaste.ShireCopyPastePreProcessor"/>
+
         <!--        refs: https://github.com/JetBrains/intellij-sdk-code-samples/blob/main/simple_language_plugin/src/main/resources/META-INF/plugin.xml-->
         <fileType name="DevInFile" implementationClass="cc.unitmesh.devti.language.DevInFileType" fieldName="INSTANCE"
                   language="DevIn" extensions="devin"/>
+
+        <fileBasedIndex implementation="cc.unitmesh.devti.language.index.ShireIdentifierIndex"/>
 
         <lang.parserDefinition language="DevIn"
                                implementationClass="cc.unitmesh.devti.language.parser.DevInParserDefinition"/>
@@ -18,6 +28,8 @@
                           implementationClass="cc.unitmesh.devti.language.DevInAstFactory"/>
 
         <typedHandler implementation="cc.unitmesh.devti.language.DevInTypedHandler"/>
+
+        <gotoDeclarationHandler implementation="cc.unitmesh.devti.language.navigation.ShireGotoDeclarationHandler"/>
 
         <completion.contributor language="DevIn"
                                 id="devInCompletionContributor"
@@ -37,10 +49,17 @@
 
         <configurationType implementation="cc.unitmesh.devti.language.run.DevInsConfigurationType"/>
         <programRunner implementation="cc.unitmesh.devti.language.run.DevInsProgramRunner"/>
-        <runConfigurationBeforeRunProviderDelegate implementation="cc.unitmesh.devti.language.run.DevInsBeforeRunProviderDelegate"/>
+        <runConfigurationBeforeRunProviderDelegate
+                implementation="cc.unitmesh.devti.language.run.DevInsBeforeRunProviderDelegate"/>
         <runConfigurationProducer implementation="cc.unitmesh.devti.language.run.DevInsRunConfigurationProducer"/>
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInsRunLineMarkersProvider"/>
+
+        <!--   Debugger  -->
+        <programRunner implementation="cc.unitmesh.devti.language.debugger.ShireDebugRunner"/>
+        <xdebugger.breakpointType implementation="cc.unitmesh.devti.language.debugger.ShireLineBreakpointType"/>
+        <xdebugger.settings implementation="cc.unitmesh.devti.language.debugger.ShireDebugSettings"/>
+        <fileEditorProvider implementation="cc.unitmesh.devti.language.debugger.editor.ShireSplitEditorProvider"/>
 
         <lang.commenter language="DevIn" implementationClass="cc.unitmesh.devti.language.commenter.DevInsCommenter"/>
 
@@ -53,13 +72,101 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="cc.unitmesh.devti.language.lints.DevInsDuplicateAgentInspection"/>
-    </extensions>
 
+        <intentionAction>
+            <className>cc.unitmesh.devti.language.actions.intention.AutoDevIntentionHelper</className>
+            <categoryKey>autodev.intention.category</categoryKey>
+        </intentionAction>
+    </extensions>
 
     <actions>
         <action id="runDevInsFileAction"
                 class="cc.unitmesh.devti.language.actions.DevInsRunFileAction"
                 use-shortcut-of="RunClass"/>
+
+        <!-- Shire Context Action Group -->
+        <group id="AutoDevContextActionGroup"
+               popup="true" text="AutoDev DevIns Action" description="AutoDev DevIns context action group"
+               class="cc.unitmesh.devti.language.actions.context.AutoDevContextMenuActionGroup"
+               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
+
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </group>
+
+        <!-- When multiple commit menu -->
+        <group id="AutoDevVcsActionGroup"
+               class="cc.unitmesh.devti.language.actions.vcs.AutoDevVcsActionGroup"
+               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+               description="AutoDev VCS Action">
+
+            <add-to-group group-id="Vcs.MessageActionGroup"/>
+        </group>
+
+        <!-- When one commit menu -->
+        <action id="AutoDevCommitMessage"
+                class="cc.unitmesh.devti.language.actions.vcs.AutoDevVcsSingleAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                text="Commit Message Action"
+                description="AutoDev VCS Action">
+
+            <add-to-group group-id="Vcs.MessageActionGroup"/>
+        </action>
+
+        <action id="AutoDevCustomInputBox"
+                class="cc.unitmesh.devti.language.actions.input.AutoDevInputBoxAction"
+                description="You can custom any assistant as you want!"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+        >
+            <keyboard-shortcut keymap="$default" first-keystroke="control BACK_SLASH"/>
+        </action>
+
+        <action id="AutoDevTerminalAction"
+                class="cc.unitmesh.devti.language.actions.terminal.AutoDevTerminalAction"
+                description="You can custom any assistant as you want!"
+                text="Terminal Action"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+        >
+        </action>
+
+        <action id="AutoDevConsoleAction"
+                class="cc.unitmesh.devti.language.actions.console.AutoDevConsoleAction"
+                description="Ask AI fix this code"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+        >
+            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
+        </action>
+
+        <!-- Shire Intentions Action Group -->
+<!--        <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.language.actions.intention.AutoDevIntentionsActionGroup"-->
+<!--               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">-->
+
+<!--            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>-->
+<!--            <add-to-group group-id="Floating.CodeToolbar" anchor="first"/>-->
+<!--        </group>-->
+
+        <action id="AutoDevDatabaseAction"
+                class="cc.unitmesh.devti.language.actions.database.AutoDevDatabaseAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                text="Shire Database Action"
+                description="Shire database action">
+
+        </action>
+
+        <action id="AutoDevSonarLintAction"
+                class="cc.unitmesh.devti.language.actions.external.AutoDevSonarLintAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                text="Shire SonarLint Action"
+                description="Shire SonarLint action">
+
+        </action>
+
+        <action id="AutoDevVcsLogAction"
+                class="cc.unitmesh.devti.language.actions.vcs.AutoDevVcsLogAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                text="Shire Vcs Action"
+                description="Shire vcs action">
+
+        </action>
     </actions>
 
     <extensions defaultExtensionNs="cc.unitmesh">
@@ -69,5 +176,34 @@
         <runService implementation="cc.unitmesh.devti.language.compiler.service.DevInRunService"/>
 
         <sketchToolchainProvider implementation="cc.unitmesh.devti.language.compiler.DevInsSketchToolchainProvider"/>
+
+        <devInsAgentTool implementation="cc.unitmesh.devti.language.startup.DevInsAgentToolchainProviderCollector"/>
+
+        <!--        Shire -->
+<!--        <shireTerminalExecutor implementation="cc.unitmesh.devti.language.provider.ShireTerminalExecutor"/>-->
+        <!-- code processors -->
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.TimeMetricProcessor"/>
+
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.VerifyCodeProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.ParseCodeProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.RunCodeProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.InsertCodeProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.FormatCodeProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.PatchProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.DiffProcessor"/>
+
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.AppendProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.InsertNewlineProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.UpdateEditorTextProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.ParseCommentProcessor"/>
+
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.SaveFileProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.OpenFileProcessor"/>
+
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.OpenWebpageProcessor"/>
+        <shirePostProcessor implementation="cc.unitmesh.devti.language.middleware.builtin.ShowWebviewProcessor"/>
+
+        <!--   EditorInteractionProvider-->
+        <shireLocationInteraction implementation="cc.unitmesh.devti.language.task.EditorInteractionProvider"/>
     </extensions>
 </idea-plugin>

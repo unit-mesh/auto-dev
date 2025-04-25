@@ -9,6 +9,7 @@ import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JBColor
@@ -91,8 +92,9 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             }
 
             LLMParam.ParamType.JsonPath -> {
+                val language = Language.findLanguageByID("JSONPath") ?: PlainTextLanguage.INSTANCE
                 formBuilder.addLabeledComponent(jBLabel(this.label), LanguageTextField(
-                    Language.findLanguageByID("JSONPath"), project, value
+                    language, project, value
                 ).apply {
                     addDocumentListener(object: DocumentListener {
                         override fun documentChanged(event: DocumentEvent) {

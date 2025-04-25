@@ -98,7 +98,7 @@ class TaskSectionPanel(
         val statusIcon = when (planItem.status) {
             TaskStatus.COMPLETED -> JLabel(AutoDevIcons.CHECKED)
             TaskStatus.FAILED -> JLabel(AutoDevIcons.ERROR)
-            TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.InProgress)
+            TaskStatus.IN_PROGRESS -> JLabel(AutoDevIcons.LOADING)
             TaskStatus.TODO -> JLabel(AutoDevIcons.BUILD)
         }
         leftPanel.add(statusIcon)

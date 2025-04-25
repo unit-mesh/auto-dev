@@ -10,23 +10,40 @@ import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand.Companion.toolchainProviderName
 import cc.unitmesh.devti.command.dataprovider.CustomCommand
 import cc.unitmesh.devti.command.dataprovider.ToolHubVariable
+import cc.unitmesh.devti.language.ast.variable.VariableTable
 import cc.unitmesh.devti.language.parser.CodeBlockElement
+import cc.unitmesh.devti.language.psi.DevInElseClause
+import cc.unitmesh.devti.language.psi.DevInElseifClause
+import cc.unitmesh.devti.language.psi.DevInExpr
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.psi.DevInFrontMatterHeader
+import cc.unitmesh.devti.language.psi.DevInIfClause
+import cc.unitmesh.devti.language.psi.DevInIfExpr
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
+import cc.unitmesh.devti.language.psi.DevInVelocityBlock
+import cc.unitmesh.devti.language.psi.DevInVelocityExpr
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.lang.parser.GeneratedParserUtilBase.DUMMY_BLOCK
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
+import com.intellij.psi.TokenType.WHITE_SPACE
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.util.LinkedList
 
 val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
+const val FLOW_FALG = "[flow]:"
 
 class DevInsCompiler(
     private val myProject: Project,
@@ -39,15 +56,17 @@ class DevInsCompiler(
     private val result = DevInsCompiledResult()
     private val output: StringBuilder = StringBuilder()
 
+    private val variableTable = VariableTable()
+
     /**
      * Todo: build AST tree, then compile
      */
     suspend fun compile(): DevInsCompiledResult = withContext(Dispatchers.IO) {
         result.input = runReadAction { file.text }
         val children = runReadAction { file.children }
-        children.forEach {
-            val text = runReadAction { it.text }
-            when (it.elementType) {
+        children.forEach { psiElement ->
+            val text = runReadAction { psiElement.text }
+            when (psiElement.elementType) {
                 DevInTypes.TEXT_SEGMENT -> output.append(text)
                 DevInTypes.NEWLINE -> output.append("\n")
                 DevInTypes.CODE -> {
@@ -59,7 +78,7 @@ class DevInsCompiler(
                     output.append(text)
                 }
 
-                DevInTypes.USED -> processUsed(it as DevInUsed)
+                DevInTypes.USED -> processUsed(psiElement as DevInUsed)
                 DevInTypes.COMMENTS -> {
                     if (text.startsWith("[flow]:")) {
                         val fileName = text.substringAfter("[flow]:").trim()
@@ -75,14 +94,39 @@ class DevInsCompiler(
                     }
                 }
 
+                DevInTypes.FRONTMATTER_START -> {
+                    val nextElement = runReadAction {
+                        PsiTreeUtil.findChildOfType(psiElement.parent, DevInFrontMatterHeader::class.java)
+                    }
+                    if (nextElement == null) {
+                        return@forEach
+                    }
+                    result.config = runReadAction { HobbitHoleParser.parse(nextElement) }
+                }
+
+                DevInTypes.FRONT_MATTER_HEADER -> {
+                    result.config = runReadAction { HobbitHoleParser.parse(psiElement as DevInFrontMatterHeader) }
+                }
+
+                WHITE_SPACE, DUMMY_BLOCK -> output.append(text)
+                DevInTypes.VELOCITY_EXPR -> {
+                    processVelocityExpr(psiElement as DevInVelocityExpr)
+                    logger.info("Velocity expression found: ${text}")
+                }
+
+                DevInTypes.MARKDOWN_HEADER -> {
+                    output.append("#[[${text}]]#")
+                }
+
                 else -> {
                     output.append(text)
-                    logger.warn("Unknown element type: ${it.elementType}")
+                    logger.warn("Unknown element type: ${psiElement.elementType}")
                 }
             }
         }
 
         result.output = output.toString()
+        result.variableTable = variableTable
 
         CACHED_COMPILE_RESULT[file.name] = result
         return@withContext result
@@ -146,23 +190,8 @@ class DevInsCompiler(
             }
 
             DevInTypes.VARIABLE_START -> {
-                val variableId = id?.text
-                val variable = ToolHubVariable.lookup(myProject, variableId)
-                if (variable.isNotEmpty()) {
-                    output.append(variable.joinToString("\n") { it })
-                    return
-                }
-
-                if (editor == null || element == null) {
-                    output.append("$DEVINS_ERROR No context editor found for variable: $usedText")
-                    result.hasError = true
-                    return
-                }
-
-                val file = element.containingFile
-                VariableTemplateCompiler(file.language, file, element, editor).compile(usedText).let {
-                    output.append(it)
-                }
+                processVariable(firstChild)
+                if (!result.hasError) output.append(usedText)
             }
 
             else -> {
@@ -170,6 +199,109 @@ class DevInsCompiler(
                 output.append(usedText)
             }
         }
+    }
+
+    private fun processVelocityExpr(velocityExpr: DevInVelocityExpr) {
+        handleNextSiblingForChild(velocityExpr) { next ->
+            if (next is DevInIfExpr) {
+                handleNextSiblingForChild(next) {
+                    when (it) {
+                        is DevInIfClause, is DevInElseifClause, is DevInElseClause -> {
+                            handleNextSiblingForChild(it) {
+                                runBlocking { processIfClause(it) }
+                            }
+                        }
+
+                        else -> output.append(it.text)
+                    }
+                }
+            } else {
+                output.append(next.text)
+            }
+        }
+    }
+
+    private fun handleNextSiblingForChild(element: PsiElement?, handle: (PsiElement) -> Unit) {
+        var child: PsiElement? = element?.firstChild
+        while (child != null && !result.hasError) {
+            handle(child)
+            child = child.nextSibling
+        }
+    }
+
+    suspend fun processIfClause(clauseContent: PsiElement) {
+        when (clauseContent) {
+            is DevInExpr -> {
+                addVariable(clauseContent)
+                if (!result.hasError) output.append(clauseContent.text)
+            }
+
+            is DevInVelocityBlock -> {
+                DevInFile.fromString(myProject, clauseContent.text).let { file ->
+                    val compile = DevInsCompiler(myProject, file).compile()
+                    compile.let {
+                        output.append(it.output)
+                        variableTable.addVariable(it.variableTable)
+                        result.hasError = it.hasError
+                    }
+                }
+
+            }
+
+            else -> {
+                output.append(clauseContent.text)
+            }
+        }
+    }
+
+    private fun addVariable(psiElement: PsiElement?) {
+        if (psiElement == null) return
+        val queue = LinkedList<PsiElement>()
+        queue.push(psiElement)
+        while (!queue.isEmpty() && !result.hasError) {
+            val e = queue.pop()
+            if (e.firstChild.elementType == DevInTypes.VARIABLE_START) {
+                processVariable(e.firstChild)
+            } else {
+                e.children.forEach {
+                    queue.push(it)
+                }
+            }
+        }
+    }
+
+    private fun processVariable(variableStart: PsiElement) {
+        if (variableStart.elementType != DevInTypes.VARIABLE_START) {
+            logger.warn("Illegal type: ${variableStart.elementType}")
+            return
+        }
+        val variableId = runReadAction { variableStart.nextSibling?.text }
+//        val variables = ToolHubVariable.lookup(myProject, variableId)
+//        val file = element.containingFile
+//        VariableTemplateCompiler(file.language, file, element, editor).compile(usedText).let {
+//            output.append(it)
+//        }
+
+        val currentEditor = editor ?: VariableTemplateCompiler.defaultEditor(myProject)
+        val currentElement = element ?: VariableTemplateCompiler.defaultElement(myProject, currentEditor)
+
+        if (currentElement == null) {
+            output.append("${DEVINS_ERROR} No element found for variable: ${variableStart.text}")
+            result.hasError = true
+            return
+        }
+
+        val lineNo = try {
+            runReadAction {
+                val containingFile = currentElement.containingFile
+                val document: Document? =     PsiDocumentManager.getInstance(variableStart.project).getDocument(containingFile)
+                document?.getLineNumber(variableStart.textRange.startOffset) ?: 0
+            }
+        } catch (e: Exception) {
+            0
+        }
+
+        variableTable.addVariable(variableId ?: "", VariableTable.VariableType.String, lineNo)
     }
 
     private suspend fun processingCommand(
@@ -372,7 +504,10 @@ class DevInsCompiler(
         } catch (e: Exception) {
             logger<DevInsCompiler>().warn(e)
             val text = runReadAction { used.text }
-            val error = "Error executing toolchain function: $text + $prop"
+            val nextCode = lookupNextCode(used)?.codeText()
+            val error = "Error executing toolchain function: $text:$prop, $nextCode\n" +
+                    "Error: ${e.message}\n" +
+                    "Please check the command and try again."
             AutoDevNotifications.notify(myProject, error)
             error
         }

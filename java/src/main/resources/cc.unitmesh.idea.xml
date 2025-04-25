@@ -63,5 +63,9 @@
         <frameworkConfigProvider implementation="cc.unitmesh.idea.provider.SpringFrameworkConfigProvider"/>
 
         <langDictProvider implementation="cc.unitmesh.idea.indexer.provider.JavaLangDictProvider"/>
+
+        <shirePsiQLInterpreter language="JAVA"
+                               implementationClass="cc.unitmesh.idea.provider.JavaShireQLInterpreter"/>
+        <shireSymbolProvider implementation="cc.unitmesh.idea.provider.JavaSymbolProvider"/>
     </extensions>
 </idea-plugin>

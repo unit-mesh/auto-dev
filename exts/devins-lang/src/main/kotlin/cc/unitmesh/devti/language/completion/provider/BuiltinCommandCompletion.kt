@@ -14,7 +14,6 @@ class BuiltinCommandCompletion : CompletionProvider<CompletionParameters>() {
     ) {
         BuiltinCommand.all().forEach {
             val lookupElement = createCommandCompletionCandidate(it)
-
             result.addElement(lookupElement)
         }
     }
@@ -33,7 +32,6 @@ class BuiltinCommandCompletion : CompletionProvider<CompletionParameters>() {
                     val editor = context.editor
                     AutoPopupController.getInstance(editor.project!!).scheduleAutoPopup(editor)
                 },
-            // before custom
             99.0
         )
 }

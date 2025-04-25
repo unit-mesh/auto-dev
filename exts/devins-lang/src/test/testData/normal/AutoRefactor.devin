@@ -1,0 +1,4 @@
+/refactor:rename com.phodal.shirelang.run.ShireProgramRunner to com.phodal.shirelang.run.ShireProgramRunnerImpl
+/refactor:safeDelete com.phodal.shirelang.run.ShireProgramRunnerImpl
+/refactor:delete com.phodal.shirelang.run.ShireProgramRunnerImpl
+/refactor:move com.phodal.shirelang.ShireProgramRunner to com.phodal.shirelang.run.ShireProgramRunner

@@ -43,6 +43,8 @@ interface PsiElementDataBuilder {
 
     fun lookupElement(project: Project, canonicalName: String): ClassContext? = null
 
+    fun parseComment(project: Project, code: String): String? = null
+
     companion object {
         private val languageExtension: LanguageExtension<PsiElementDataBuilder> =
             LanguageExtension("cc.unitmesh.testDataBuilder")

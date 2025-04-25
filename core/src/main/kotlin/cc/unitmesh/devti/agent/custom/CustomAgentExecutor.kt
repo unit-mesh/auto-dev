@@ -3,15 +3,19 @@ package cc.unitmesh.devti.agent.custom
 import cc.unitmesh.devti.agent.custom.model.AuthType
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentResponseAction
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.custom.CustomRequest
 import cc.unitmesh.devti.llms.custom.CustomSSEProcessor
 import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.llms.custom.updateCustomFormat
+import cc.unitmesh.devti.provider.devins.CustomAgentContext
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
@@ -27,7 +31,24 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
     override var requestFormat: String = ""
     override var responseFormat: String = ""
 
-    fun execute(promptText: String, agent: CustomAgentConfig): Flow<String>? {
+    fun execute(promptText: String, agent: CustomAgentConfig, displayMessage: StringBuilder): Flow<String>? {
+        if (agent.isFromDevIns) {
+            val devin = LanguageProcessor.devin()!!
+            val file = project.baseDir.findFileByRelativePath(agent.devinScriptPath)!!
+            val prompt = runBlocking {
+                val context = CustomAgentContext(
+                    agent, "", filePath = file,
+                    initVariables = mapOf("input" to promptText)
+                )
+                devin.execute(project, context)
+            }
+
+            displayMessage.append(prompt)
+            messages.add(Message("user", prompt))
+            return LlmFactory.create(project).stream(prompt, "")
+        }
+
+        displayMessage.append(promptText)
         messages.add(Message("user", promptText))
 
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
@@ -40,11 +61,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
             Json.encodeToString<CustomRequest>(customRequest)
         }
 
-        // fix for custom fields in message replace \"content\": \"$content\" with \"$content\": promptText
-        val errorContent = "\"content\":\"\$content\""
-        if (request.contains(errorContent)) {
-            request = request.replace(errorContent, "\"content\": \"$promptText\"")
-        }
+        request = replacePlaceholders(request, promptText)
 
         val body = request.toRequestBody("application/json".toMediaTypeOrNull())
         val builder = Request.Builder()
@@ -55,12 +72,14 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
                 builder.addHeader("Authorization", "Bearer ${auth.token}")
                 builder.addHeader("Content-Type", "application/json")
             }
+
             null -> {
                 logger.info("No auth type found for agent ${agent.name}")
             }
         }
 
-        client = client.newBuilder().connectTimeout(agent.defaultTimeout, TimeUnit.SECONDS).readTimeout(agent.defaultTimeout, TimeUnit.SECONDS).build()
+        client = client.newBuilder().connectTimeout(agent.defaultTimeout, TimeUnit.SECONDS)
+            .readTimeout(agent.defaultTimeout, TimeUnit.SECONDS).build()
         val call = client.newCall(builder.url(agent.url).post(body).build())
 
         return when (agent.responseAction) {
@@ -71,6 +90,32 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
             else -> {
                 streamJson(call, promptText, messages)
             }
+        }
+    }
+
+    companion object {
+        private const val SIMPLE_CONTENT_PLACEHOLDER = "\"content\":\"\$content\""
+        private const val JSON_VALUE_PLACEHOLDER_PATTERN = ":\\s*\"\\\$content\""
+
+        /**
+         * Replace placeholders in a request string with the actual prompt text
+         */
+        fun replacePlaceholders(request: String, promptText: String): String {
+            var result = request
+
+            // Replace simple content placeholder
+            if (result.contains(SIMPLE_CONTENT_PLACEHOLDER)) {
+                result = result.replace(SIMPLE_CONTENT_PLACEHOLDER, "\"content\": \"$promptText\"")
+                return result
+            }
+
+            // Replace JSON value placeholders
+            val regex = Regex(JSON_VALUE_PLACEHOLDER_PATTERN)
+            if (result.contains(regex)) {
+                result = regex.replace(result, ": \"$promptText\"")
+            }
+
+            return result
         }
     }
 }

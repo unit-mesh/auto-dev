@@ -44,7 +44,7 @@ class DomainDictGenerateAction : AnAction() {
             val prompt = buildPrompt(project)
 
             try {
-                updatePresentation(presentation, AutoDevIcons.InProgress, false)
+                updatePresentation(presentation, AutoDevIcons.LOADING, false)
                 AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
                 val promptDir = project.guessProjectDir()!!.toNioPath().resolve(baseDir)
                 if (!promptDir.exists()) {

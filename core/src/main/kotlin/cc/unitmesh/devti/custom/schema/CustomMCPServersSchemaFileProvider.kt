@@ -7,7 +7,7 @@ import com.jetbrains.jsonSchema.extension.JsonSchemaFileProvider
 import com.jetbrains.jsonSchema.extension.JsonSchemaProviderFactory
 import com.jetbrains.jsonSchema.extension.SchemaType
 
-const val MCP_SERVERS_FILE_NAME = "AutoDevMCPServersFile.json"
+const val MCP_SERVERS_FILE_NAME = "AutoDevMCPServersFile.mcp.json"
 
 class CustomMCPServersSchemaFileProvider(project: Project) : JsonSchemaFileProvider {
     override fun isAvailable(file: VirtualFile): Boolean {
@@ -19,7 +19,7 @@ class CustomMCPServersSchemaFileProvider(project: Project) : JsonSchemaFileProvi
             return false
         }
 
-        return file.name == MCP_SERVERS_FILE_NAME
+        return file.name == MCP_SERVERS_FILE_NAME || file.name.endsWith(".mcp.json")
     }
 
     override fun getName(): String = "AutoDevMCPServersFile"

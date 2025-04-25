@@ -23,6 +23,7 @@ import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.openapi.project.guessProjectDir
 
 @Service(Service.Level.PROJECT)
 class CustomMcpServerManager(val project: Project) {
@@ -39,39 +40,53 @@ class CustomMcpServerManager(val project: Project) {
         val toolsMap = mutableMapOf<String, List<Tool>>()
         mcpConfig.mcpServers.forEach { entry ->
             if (entry.value.disabled == true) return@forEach
-            val resolvedCommand = resolveCommand(entry.value.command)
-            logger<CustomMcpServerManager>().info("Found MCP command: $resolvedCommand")
-            val client = Client(clientInfo = Implementation(name = entry.key, version = "1.0.0"))
-
-            val cmd = GeneralCommandLine(resolvedCommand)
-            cmd.addParameters(*entry.value.args.toTypedArray())
-
-            entry.value.env?.forEach { (key, value) ->
-                cmd.environment[key] = value
-            }
-
-            val process = cmd.createProcess()
-            val input = process.inputStream.asSource().buffered()
-            val output = process.outputStream.asSink().buffered()
-            val transport = StdioClientTransport(input, output)
-
-            val tools = try {
-                client.connect(transport)
-                val listTools = client.listTools()
-                listTools?.tools?.forEach { tool ->
-                    toolClientMap[tool] = client
-                }
-                listTools?.tools ?: emptyList()
-            } catch (e: Exception) {
-                logger<CustomMcpServerManager>().warn("Failed to list tools from ${entry.key}: $e")
-                emptyList<Tool>()
-            }
-            
+            val tools = collectServerInfo(entry.key, entry.value)
             toolsMap[entry.key] = tools
         }
 
         cached[mcpServerConfig] = toolsMap
         return toolsMap
+    }
+
+    fun getEnabledServers(content: String): Map<String, McpServer>? {
+        val mcpConfig = McpServer.load(content)
+        return mcpConfig?.mcpServers?.filter { entry ->
+            entry.value.disabled != true
+        }?.mapValues { entry ->
+            entry.value
+        }
+    }
+
+    suspend fun collectServerInfo(serverKey: String, serverConfig: McpServer): List<Tool> {
+        val resolvedCommand = resolveCommand(serverConfig.command)
+        logger<CustomMcpServerManager>().info("Found MCP command for $serverKey: $resolvedCommand")
+        val client = Client(clientInfo = Implementation(name = serverKey, version = "1.0.0"))
+
+        val cmd = GeneralCommandLine(resolvedCommand)
+        cmd.addParameters(*serverConfig.args.toTypedArray())
+
+        cmd.workDirectory = File(project.guessProjectDir()!!.path)
+
+        serverConfig.env?.forEach { (key, value) ->
+            cmd.environment[key] = value
+        }
+
+        val process = cmd.createProcess()
+        val input = process.inputStream.asSource().buffered()
+        val output = process.outputStream.asSink().buffered()
+        val transport = StdioClientTransport(input, output)
+
+        return try {
+            client.connect(transport)
+            val listTools = client.listTools()
+            listTools?.tools?.forEach { tool ->
+                toolClientMap[tool] = client
+            }
+            listTools?.tools ?: emptyList()
+        } catch (e: Exception) {
+            logger<CustomMcpServerManager>().warn("Failed to list tools from $serverKey: $e")
+            emptyList()
+        }
     }
 
     private val json = Json { prettyPrint = true }
@@ -93,8 +108,7 @@ class CustomMcpServerManager(val project: Project) {
                         future.complete("No result from tool ${tool.name}")
                     } else {
                         val result = json.encodeToString(result.content)
-                        val text = "Execute ${tool.name} tool's result\n"
-                        future.complete(text + result)
+                        future.complete(result)
                     }
                 } catch (e: Error) {
                     logger<CustomMcpServerManager>().warn("Failed to execute tool ${tool.name}: $e")
@@ -114,7 +128,6 @@ class CustomMcpServerManager(val project: Project) {
         }
     }
 }
-
 
 fun resolveCommand(command: String): String {
     if (SystemInfo.isWindows) {

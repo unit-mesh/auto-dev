@@ -29,7 +29,7 @@ class AutoDevCustomizeSettings(
     }
 
     class CustomizeProjectSettings : AdProjectSettingsBase<CustomizeProjectSettings>() {
-        var enableCustomAgent by property(false)
+        var enableCustomAgent by property(true)
         var agentJsonConfig by property("") { it.isEmpty() }
         var customPrompts by property("") { it.isEmpty() }
         var mcpServerConfig by property("") { it.isEmpty() }

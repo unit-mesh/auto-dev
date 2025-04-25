@@ -91,6 +91,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                                 emitter.onNext(sse ?: SSE(""))
                                 emitter.onNext(sse ?: SSE(""))
                             }
+
                             null
                         }
 
@@ -99,16 +100,23 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                             null
                         }
 
-                        // sometimes the server maybe returns empty line
-                        line == "" -> {
-                            null
-                        }
+                            // sometimes the server maybe returns empty line
+                            line == "" -> {
+                                null
+                            }
 
                         // : is comment
                         // https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream
                         line!!.startsWith(":") -> {
                             null
                         }
+
+                        line.startsWith("{") && line.endsWith("}") -> {
+                            emitter.onNext(SSE(line))
+                            emitter.onComplete()
+                            return
+                        }
+
                         else -> {
                             throw AutoDevHttpException("Invalid sse format! '$line'", response.code)
                         }

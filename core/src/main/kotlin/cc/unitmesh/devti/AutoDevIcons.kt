@@ -18,7 +18,7 @@ object AutoDevIcons {
     val COMMAND: Icon = IconLoader.getIcon("/icons/devins-command.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val InProgress = AnimatedIcon.Default()
+    val LOADING = AnimatedIcon.Default()
 
     @JvmField
     val SEND: Icon = IconLoader.getIcon("/icons/send.svg", AutoDevIcons::class.java)
@@ -103,4 +103,13 @@ object AutoDevIcons {
 
     @JvmField
     val MAGIC: Icon = IconLoader.getIcon("/icons/magic.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val CLOUD_AGENT: Icon = IconLoader.getIcon("/icons/cloud-agent.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val LOCAL_AGENT: Icon = IconLoader.getIcon("/icons/local-agent.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val VARIABLE: Icon = IconLoader.getIcon("/icons/variable.svg", AutoDevIcons::class.java)
 }

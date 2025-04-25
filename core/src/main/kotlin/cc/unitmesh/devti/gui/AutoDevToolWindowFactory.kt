@@ -71,7 +71,6 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     companion object {
-
         fun labelNormalChat(
             toolWindowManager: ToolWindow,
             chatCodingService: ChatCodingService

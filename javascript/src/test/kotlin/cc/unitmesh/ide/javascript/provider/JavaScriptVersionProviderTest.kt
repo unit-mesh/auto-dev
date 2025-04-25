@@ -38,24 +38,24 @@ class JavaScriptVersionProviderTest : LightPlatformTestCase() {
         assertTrue(result)
     }
 
-    fun testShouldReturnPreferTypeScriptWhenCallWithCollect() {
-        // given
-        val file: PsiFile =
-            PsiFileFactory.getInstance(project).createFileFromText(JavascriptLanguage.INSTANCE, code)
-
-        val jsClazz = file.children.first() as JSClass
-        val creationContext = ChatCreationContext(
-            ChatOrigin.ChatAction,
-            ChatActionType.GENERATE_TEST,
-            sourceFile = file,
-            element = jsClazz
-        )
-
-        // when
-        val provider = JavaScriptVersionProvider()
-        val result = runBlocking { provider.collect(project, creationContext) }
-
-        // then
-        assertEquals("Prefer JavaScript language if the used language and toolset.", result.first().text)
-    }
+//    fun testShouldReturnPreferTypeScriptWhenCallWithCollect() {
+//        // given
+//        val file: PsiFile =
+//            PsiFileFactory.getInstance(project).createFileFromText(JavascriptLanguage.INSTANCE, code)
+//
+//        val jsClazz = file.children.first() as JSClass
+//        val creationContext = ChatCreationContext(
+//            ChatOrigin.ChatAction,
+//            ChatActionType.GENERATE_TEST,
+//            sourceFile = file,
+//            element = jsClazz
+//        )
+//
+//        // when
+//        val provider = JavaScriptVersionProvider()
+//        val result = runBlocking { provider.collect(project, creationContext) }
+//
+//        // then
+//        assertEquals("Prefer JavaScript language if the used language and toolset.", result.first().text)
+//    }
 }

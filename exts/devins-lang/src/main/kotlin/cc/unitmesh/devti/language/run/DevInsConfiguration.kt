@@ -19,6 +19,8 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
     private val SCRIPT_PATH_TAG: String = "SCRIPT_PATH"
     private val SHOW_CONSOLE_TAG: String = "SHOW_CONSOLE"
 
+    private var varMap: Map<String, String> = mutableMapOf()
+
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return DevInsRunConfigurationProfileState(project, this)
     }
@@ -49,7 +51,24 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
         myScriptPath = scriptPath.trim { it <= ' ' }
     }
 
+    fun getVariables(): Map<String, String> = varMap
+
+    fun setVariables(variables: Map<String, String>) {
+        varMap = variables
+    }
+
     var showConsole: Boolean = true
+
+    companion object {
+        fun mapStringToMap(varMapString: String) = varMapString
+            .removePrefix("{")
+            .removeSuffix("}")
+            .split(", ")
+            .map { it.split("=") }
+            .filter { it.size >= 2 }
+            .associate { it[0] to it[1] }
+            .toMutableMap()
+    }
 }
 
 fun Element.writeString(name: String, value: String) {

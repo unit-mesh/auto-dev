@@ -78,7 +78,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_completed_status() {
         // given
-        val task = AgentPlanStep("Complete the project", true, TaskStatus.COMPLETED)
+        val task = AgentPlanStep("Complete the project", true, TaskStatus.COMPLETED, mutableListOf(), emptyList())
 
         // when
         val text = task.toText()
@@ -90,7 +90,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_failed_status() {
         // given
-        val task = AgentPlanStep("Fix the bug", false, TaskStatus.FAILED)
+        val task = AgentPlanStep("Fix the bug", false, TaskStatus.FAILED, mutableListOf(), emptyList())
 
         // when
         val text = task.toText()
@@ -102,7 +102,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_in_progress_status() {
         // given
-        val task = AgentPlanStep("Implement feature", false, TaskStatus.IN_PROGRESS)
+        val task = AgentPlanStep("Implement feature", false, TaskStatus.IN_PROGRESS, mutableListOf(), emptyList())
 
         // when
         val text = task.toText()
@@ -114,7 +114,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_todo_status() {
         // given
-        val task = AgentPlanStep("Write tests", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Write tests", false, TaskStatus.TODO, mutableListOf(), emptyList())
 
         // when
         val text = task.toText()
@@ -126,7 +126,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_completed() {
         // given
-        val task = AgentPlanStep("Complete the project", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Complete the project", false, TaskStatus.TODO, mutableListOf(), emptyList())
 
         // when
         task.updateStatus(TaskStatus.COMPLETED)
@@ -139,7 +139,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_failed() {
         // given
-        val task = AgentPlanStep("Fix the bug", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Fix the bug", false, TaskStatus.TODO, mutableListOf(), emptyList())
 
         // when
         task.updateStatus(TaskStatus.FAILED)
@@ -152,7 +152,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_in_progress() {
         // given
-        val task = AgentPlanStep("Implement feature", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Implement feature", false, TaskStatus.TODO, mutableListOf(), emptyList())
 
         // when
         task.updateStatus(TaskStatus.IN_PROGRESS)
@@ -165,7 +165,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_todo() {
         // given
-        val task = AgentPlanStep("Write tests", false, TaskStatus.COMPLETED)
+        val task = AgentPlanStep("Write tests", false, TaskStatus.COMPLETED, mutableListOf(), emptyList())
 
         // when
         task.updateStatus(TaskStatus.TODO)

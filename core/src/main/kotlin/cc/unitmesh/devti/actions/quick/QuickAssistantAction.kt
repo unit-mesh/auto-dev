@@ -1,11 +1,12 @@
 package cc.unitmesh.devti.actions.quick
 
+import cc.unitmesh.devti.actions.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CANCEL_ACTION
+import cc.unitmesh.devti.actions.quick.QuickPromptField.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
 import cc.unitmesh.devti.custom.TeamPromptBaseIntention
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
-import cc.unitmesh.devti.actions.quick.QuickPromptField
-import cc.unitmesh.devti.actions.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CANCEL_ACTION
-import cc.unitmesh.devti.actions.quick.QuickPromptField.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
+import cc.unitmesh.devti.inlay.InlayPanel
+import cc.unitmesh.devti.inline.EscHandler
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
@@ -24,7 +25,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import cc.unitmesh.devti.inlay.InlayPanel
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 
@@ -33,7 +33,11 @@ import javax.swing.AbstractAction
  * user can input custom text to call with LLM.
  */
 open class QuickAssistantAction : AnAction() {
-    init{
+
+    private var currentInlayPanel: InlayPanel<QuickPromptField>? = null
+    private var escHandler: EscHandler? = null
+
+    init {
         presentationText("settings.autodev.others.quickAssistant", templatePresentation)
     }
 
@@ -65,7 +69,7 @@ open class QuickAssistantAction : AnAction() {
         editor: Editor,
         quickPrompts: List<TeamPromptAction>,
         project: Project,
-        sourceFile: PsiFile?
+        sourceFile: PsiFile?,
     ) {
         val cursorPosition = editor.visualPositionToXY(editor.caretModel.visualPosition)
 
@@ -101,9 +105,21 @@ open class QuickAssistantAction : AnAction() {
     }
 
     private fun useInlayMode(editor: Editor, offset: Int, project: Project, element: PsiElement?) {
-        InlayPanel.add(editor as EditorEx, offset, QuickPromptField())?.let {
+        tryDisposeCurrentInlayPanel()
+        escHandler = EscHandler(editor) {
+            tryDisposeCurrentInlayPanel()
+            escHandler?.dispose()
+        }
+        currentInlayPanel = InlayPanel.add(editor as EditorEx, offset, QuickPromptField())?.also {
             doExecute(it, project, editor, element)
         }
+    }
+
+    private fun tryDisposeCurrentInlayPanel() {
+        currentInlayPanel?.inlay?.let {
+            Disposer.dispose(it)
+        }
+        currentInlayPanel = null
     }
 
     private fun doExecute(
@@ -139,13 +155,13 @@ open class QuickAssistantAction : AnAction() {
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
 
-                Disposer.dispose(inlay.inlay!!)
+                tryDisposeCurrentInlayPanel()
             }
         })
 
         actionMap.put(QUICK_ASSISTANT_CANCEL_ACTION, object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent?) {
-                Disposer.dispose(inlay.inlay!!)
+                tryDisposeCurrentInlayPanel()
             }
         })
 
