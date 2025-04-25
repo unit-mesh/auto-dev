@@ -32,7 +32,6 @@ class BuiltinCommandCompletion : CompletionProvider<CompletionParameters>() {
                     val editor = context.editor
                     AutoPopupController.getInstance(editor.project!!).scheduleAutoPopup(editor)
                 },
-            // before custom
             99.0
         )
 }

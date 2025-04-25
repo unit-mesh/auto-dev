@@ -76,7 +76,7 @@ class ShireFileModifier(val context: ShireFileModificationContext) {
                 logger.debug("DevIns file[${file.virtualFile.path}] is loaded")
             }
         } catch (e: Exception) {
-            logger.error("An error occurred while parsing shire file: ${file.virtualFile.path}", e)
+            logger.error("An error occurred while parsing DevIn file: ${file.virtualFile.path}", e)
         }
     }
 

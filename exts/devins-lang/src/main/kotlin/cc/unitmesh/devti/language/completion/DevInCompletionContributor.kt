@@ -38,7 +38,6 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, whenConditionPattern(), WhenConditionCompletionProvider())
         extend(CompletionType.BASIC, whenConditionFuncPattern(), WhenConditionFunctionCompletionProvider())
 
-        // command completion
         extend(
             CompletionType.BASIC,
             (valuePatterns(

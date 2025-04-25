@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
-import cc.unitmesh.devti.provider.DevInsAgentToolCollector
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
