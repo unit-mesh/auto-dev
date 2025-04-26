@@ -24,6 +24,8 @@
         <lang.syntaxHighlighterFactory language="DevIn"
                                        implementationClass="cc.unitmesh.devti.language.highlight.DevInSyntaxHighlighterFactory"/>
 
+        <annotator language="Shire" implementationClass="cc.unitmesh.devti.language.highlight.DevInHighlightingAnnotator"/>
+
         <lang.ast.factory language="DevIn"
                           implementationClass="cc.unitmesh.devti.language.DevInAstFactory"/>
 
