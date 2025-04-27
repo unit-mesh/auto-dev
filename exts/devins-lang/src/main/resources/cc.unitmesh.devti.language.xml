@@ -65,6 +65,8 @@
 
         <lang.commenter language="DevIn" implementationClass="cc.unitmesh.devti.language.commenter.DevInsCommenter"/>
 
+        <lang.foldingBuilder language="Shire"
+                             implementationClass="cc.unitmesh.devti.language.folding.ShireFoldingBuilder"/>
         <lang.documentationProvider language="DevIn"
                                     id="devinsDocumentationProvider"
                                     implementationClass="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>
