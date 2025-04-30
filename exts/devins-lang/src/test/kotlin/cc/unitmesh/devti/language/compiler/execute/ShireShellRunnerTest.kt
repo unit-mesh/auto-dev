@@ -26,7 +26,7 @@ class ShireShellRunnerTest: BasePlatformTestCase() {
 
         val fill = ShireShellCommandRunner.fill(
             project, file.virtualFile, mapOf(
-                "myName" to "Shire"
+                "myName" to "DevIn"
             )
         )
 

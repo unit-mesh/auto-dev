@@ -24,7 +24,7 @@
         <lang.syntaxHighlighterFactory language="DevIn"
                                        implementationClass="cc.unitmesh.devti.language.highlight.DevInSyntaxHighlighterFactory"/>
 
-        <annotator language="Shire" implementationClass="cc.unitmesh.devti.language.highlight.DevInHighlightingAnnotator"/>
+        <annotator language="DevIn" implementationClass="cc.unitmesh.devti.language.highlight.DevInHighlightingAnnotator"/>
 
         <lang.ast.factory language="DevIn"
                           implementationClass="cc.unitmesh.devti.language.DevInAstFactory"/>
@@ -65,7 +65,7 @@
 
         <lang.commenter language="DevIn" implementationClass="cc.unitmesh.devti.language.commenter.DevInsCommenter"/>
 
-        <lang.foldingBuilder language="Shire"
+        <lang.foldingBuilder language="DevIn"
                              implementationClass="cc.unitmesh.devti.language.folding.ShireFoldingBuilder"/>
         <lang.documentationProvider language="DevIn"
                                     id="devinsDocumentationProvider"

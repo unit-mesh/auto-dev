@@ -1,13 +1,34 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v2.1.0...v) (2025-04-24)
+# [](https://github.com/unit-mesh/auto-dev/compare/v2.1.1...v) (2025-04-30)
 
-## Unreleased
 
-## [2.1.0](https://github.com/unit-mesh/auto-dev/compare/v2.0.9...v2.1.0) (2025-04-24)
+
+## [2.1.1](https://github.com/unit-mesh/auto-dev/compare/v2.1.0...v2.1.1) (2025-04-27)
 
 
 ### Bug Fixes
 
+* **ToolchainCommandCompletion:** correct return statement formatting in getText function ([033f53d](https://github.com/unit-mesh/auto-dev/commit/033f53d0c8b1a219b14535694fef2e4539766fc4))
+
+
+### Features
+
+* **completion:** add HobbitHole key and value completion providers [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([ff8b0ea](https://github.com/unit-mesh/auto-dev/commit/ff8b0ea349d436fcf85d934f931c90d87a304855))
+* **folding:** implement Shire folding builder for code structure ([603b082](https://github.com/unit-mesh/auto-dev/commit/603b082a570efd8dfdba0f56df94f50311453021))
+* **highlight:** add syntax highlighting for Shire language ([9344bb4](https://github.com/unit-mesh/auto-dev/commit/9344bb4d1b95901e6acf8af53b3a92955810d94d))
+* **HobbitHole:** add new action status and model properties with default values ([449282e](https://github.com/unit-mesh/auto-dev/commit/449282e1c64e83d699d500a63d09f39cee002511))
+
+
+
+# [2.1.0](https://github.com/unit-mesh/auto-dev/compare/v2.0.9...v2.1.0) (2025-04-24)
+
+
+### Bug Fixes
+
+* **ContextVariableResolver:** handle potential exception when accessing containing file [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([0f37301](https://github.com/unit-mesh/auto-dev/commit/0f373018f0afae8369cc7395cca155daa3f8061b))
+* **CrawlProcessorTest:** update test URL to remove trailing slash for accurate parsing ([4d06fe5](https://github.com/unit-mesh/auto-dev/commit/4d06fe589f5d989d7538f3d084be17413d61ee9e))
+* **DevInsCompiler:** ensure safe access to nextSibling text using runReadAction [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([53e115d](https://github.com/unit-mesh/auto-dev/commit/53e115da41025d48a2429a4d2f0b2026562a5d67))
 * **localization:** update toolchain not found message to include placeholder [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([d8fab1d](https://github.com/unit-mesh/auto-dev/commit/d8fab1d94b2f3ac72984b76a9406c2c1022df489))
+* **RestClientUtil:** correct path formatting by replacing DefaultESModuleLoader.SLASH with a literal slash ([0148bfd](https://github.com/unit-mesh/auto-dev/commit/0148bfd86bccceed939681ee71fe8cb2918d8c1a))
 
 
 ### Features
@@ -20,12 +41,19 @@
 * **agent:** enhance DevIns agent integration and UI [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([3c71382](https://github.com/unit-mesh/auto-dev/commit/3c71382368185aeeccd50c761302e9d1f6cff415))
 * **agent:** enhance variable template handling and introduce new file creation services [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([1d59130](https://github.com/unit-mesh/auto-dev/commit/1d591308283d45ce912321674c59990ed5138c47))
 * **agent:** refactor agent system with DevIns integration [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([94606e2](https://github.com/unit-mesh/auto-dev/commit/94606e21b2c2439abe5c57ad5c75934c96936320))
+* **autodev-core:** add DevIns Tool extension point for agent tool collection ([1e4d6d1](https://github.com/unit-mesh/auto-dev/commit/1e4d6d1f9c664ee218b354fe4c1a042cb437043b))
 * **chat:** enhance loading animation and cleanup UI ([d4a2243](https://github.com/unit-mesh/auto-dev/commit/d4a2243235b9d28b889fa710ba38b52619ec369e)), closes [#379](https://github.com/unit-mesh/auto-dev/issues/379)
 * **chat:** extract LoadingSpinner component and enhance loading UI [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([b04be6e](https://github.com/unit-mesh/auto-dev/commit/b04be6ecec49b2b77e1ab40523d94082f3d328df))
 * **conversations:** add refreshIdeOutput and retryScriptExecution methods for improved conversation handling [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([b15489c](https://github.com/unit-mesh/auto-dev/commit/b15489c2ea6a679d25f90bad8a4e843ce8200c80))
 * **coroutines:** refactor processIfClause to be suspend function and update related calls [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([eafc193](https://github.com/unit-mesh/auto-dev/commit/eafc193538ee13a032954d8692138b08b3b3f16f))
+* **database:** add DatabaseVariableProvider and SqlContextBuilder for database variable resolution [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([717008b](https://github.com/unit-mesh/auto-dev/commit/717008ba5a07ddd92cfddf2c23694226b986c6ba))
 * **debugger:** implement Shire debugging features including breakpoints and variable snapshots [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([d66cbd9](https://github.com/unit-mesh/auto-dev/commit/d66cbd99e0a09b479ad406da7ed40f25a3b340d0))
+* **devins:** introduce ActionLocationEditor and ShireActionLocation enums for enhanced action location handling [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([9c09819](https://github.com/unit-mesh/auto-dev/commit/9c098195b35cbb6d8002b7e384b9617f47ec0c86))
+* **escaper:** refactor createLiteralTextEscaper to use custom implementation ([7f91dd7](https://github.com/unit-mesh/auto-dev/commit/7f91dd7bbb35afffd865de51aea17f4b337c8b64))
+* **GitActionLocationEditor:** add shireActionLocationEditor implementation to plugin extensions ([b55fea9](https://github.com/unit-mesh/auto-dev/commit/b55fea9f55f69fcdb46568fe0a72ab083352f5bb))
+* **git:** add GitActionLocationEditor and GitToolchainVariableProvider implementations [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([3aff9bc](https://github.com/unit-mesh/auto-dev/commit/3aff9bcc8dcd78e3f551a1745d1d685bce2941f8))
 * **hobbit:** add agentic property to enhance interaction capabilities [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([f47e696](https://github.com/unit-mesh/auto-dev/commit/f47e69679ae2b426141f6f4c0ebed4e82527bf40))
+* **httpclient:** implement CUrlConverter and CUrlHttpHandler for handling cURL requests [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([06449ce](https://github.com/unit-mesh/auto-dev/commit/06449ce6e7c37abe8db91763116b0f71e1ef5323))
 * **language:** add JavaShireQLInterpreter and JavaSymbolProvider for enhanced Java support [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([cfe4699](https://github.com/unit-mesh/auto-dev/commit/cfe4699944d689b07ff2ffdf5bd543491466fb42))
 * **language:** rename Shire to DevIn in test annotations ([ba52e55](https://github.com/unit-mesh/auto-dev/commit/ba52e55a8a9074987e0300ad254cb2cbaf992759))
 * **processors:** refactor ThreadProcessor to use suspend functions and improve shell command execution [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([46b4c10](https://github.com/unit-mesh/auto-dev/commit/46b4c102b28a1aa3b0d084e5c2eeb3da5a4fa1a9))
@@ -39,6 +67,7 @@
 * **shire:** merge local agent language shire into AutoDev [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([5e6a4a2](https://github.com/unit-mesh/auto-dev/commit/5e6a4a289bb9da19b0d4278c0f7e67070d45f616))
 * **tests:** add parsing tests for DevIn language ([ad9001d](https://github.com/unit-mesh/auto-dev/commit/ad9001d27c0920d773bb6c115b2ec2a1fae81a45))
 * **tests:** add unit tests for CrawlProcessor and JsonPathProcessor [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([7628fc6](https://github.com/unit-mesh/auto-dev/commit/7628fc6e6a2c1793c5db9490991d70be482c6984))
+* **variable:** add DebugValueVariable for enhanced variable handling and refactor related components [#379](https://github.com/unit-mesh/auto-dev/issues/379) ([036727f](https://github.com/unit-mesh/auto-dev/commit/036727ff3e82d7b1bebb5ff79e0739ed16c0c2a9))
 * **version:** bump plugin version to 2.1.0 ([6d4630d](https://github.com/unit-mesh/auto-dev/commit/6d4630d5c54d2bd4a848cbba3dc6a3879d4b4e71))
 
 
