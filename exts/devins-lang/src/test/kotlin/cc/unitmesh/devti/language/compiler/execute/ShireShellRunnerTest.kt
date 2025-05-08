@@ -26,10 +26,10 @@ class ShireShellRunnerTest: BasePlatformTestCase() {
 
         val fill = ShireShellCommandRunner.fill(
             project, file.virtualFile, mapOf(
-                "myName" to "DevIn"
+                "myName" to "Phodal"
             )
         )
 
-        assertEquals("echo \"Hello Phodal, my name is Shire!\"", fill)
+        assertEquals("echo \"Hello Phodal, my name is Phodal!\"", fill)
     }
 }
