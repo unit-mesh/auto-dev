@@ -16,7 +16,7 @@ internal val SHIRE_CONFIG_IDENTIFIER_INDEX_ID = ID.create<String, Int>("devin.in
 
 internal val isIndexing = ThreadLocal<Boolean>()
 
-class ShireIdentifierIndex: FileBasedIndexExtension<String, Int>() {
+class DevInIdentifierIndex: FileBasedIndexExtension<String, Int>() {
     override fun getValueExternalizer() = object : DataExternalizer<Int> {
         override fun save(out: DataOutput, value: Int) = out.writeInt(value)
         override fun read(`in`: DataInput) = `in`.readInt()

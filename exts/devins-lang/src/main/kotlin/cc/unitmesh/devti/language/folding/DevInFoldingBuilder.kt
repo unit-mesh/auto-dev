@@ -19,7 +19,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.elementType
 
-class ShireFoldingBuilder : FoldingBuilderEx() {
+class DevInFoldingBuilder : FoldingBuilderEx() {
     override fun isCollapsedByDefault(node: ASTNode): Boolean = true
     override fun getPlaceholderText(node: ASTNode): String = node.text
 
@@ -57,7 +57,7 @@ class ShireFoldingBuilder : FoldingBuilderEx() {
     private val foldedElementsPresentations = hashMapOf(
         DevInTypes.FRONT_MATTER_HEADER to "Hobbit Hole",
         DevInTypes.CODE to "Code Block",
-        DevInTypes.QUERY_STATEMENT to "DevIn AstQL",
+        DevInTypes.QUERY_STATEMENT to "AstQL",
         DevInTypes.BLOCK_COMMENT to "/* ... */",
     )
 
