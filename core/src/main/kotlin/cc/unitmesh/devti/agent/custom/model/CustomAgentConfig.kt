@@ -2,9 +2,11 @@ package cc.unitmesh.devti.agent.custom.model
 
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.custom.team.InteractionType
+import cc.unitmesh.devti.provider.DevInsAgentToolCollector
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+
 // DON'T CHANGE THIS IMPORT
 
 @Serializable
@@ -56,6 +58,8 @@ data class CustomAgentConfig(
     val auth: CustomAgentAuth? = null,
     val defaultTimeout: Long = 10,
     val enabled: Boolean = true,
+    var devinScriptPath: String = "",
+    var isFromDevIns: Boolean = false,
 ) {
     var state: CustomAgentState = CustomAgentState.START
 
@@ -71,7 +75,13 @@ data class CustomAgentConfig(
             /**
              * Only return enabled agents
              */
-            return configs.filter { it.enabled }
+            return configs.filter { it.enabled } + DevInsAgentToolCollector.all(project).map {
+                CustomAgentConfig(
+                    name = it.name, description = it.description,
+                    devinScriptPath = it.devinScriptPath,
+                    isFromDevIns = true
+                )
+            }
         }
     }
 }

@@ -410,7 +410,7 @@ project(":core") {
             testFramework(TestFrameworkType.Platform)
         }
 
-        implementation("io.modelcontextprotocol:kotlin-sdk:0.4.0") {
+        implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0") {
             excludeKotlinDeps()
         }
 
@@ -428,10 +428,14 @@ project(":core") {
             excludeKotlinDeps()
         }
 
+        implementation("org.reflections:reflections:0.10.2") {
+            exclude(group = "org.slf4j", module = "slf4j-api")
+        }
+
         implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
         implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
-        implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.18.1")
 
         implementation("org.commonmark:commonmark:0.21.0")
         implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
@@ -498,6 +502,7 @@ project(":java") {
         }
 
         implementation(project(":core"))
+        implementation(project(":exts:devins-lang"))
     }
 }
 
@@ -569,7 +574,9 @@ project(":exts:ext-database") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "com.intellij.database")
         }
+
         implementation(project(":core"))
+        implementation(project(":exts:devins-lang"))
     }
 
     sourceSets {
@@ -600,6 +607,7 @@ project(":exts:ext-git") {
         }
 
         implementation(project(":core"))
+        implementation(project(":exts:devins-lang"))
         implementation("cc.unitmesh:git-commit-message:0.4.6") {
             excludeKotlinDeps()
         }
@@ -613,7 +621,16 @@ project(":exts:ext-http-client") {
             intellijPlugins(ideaPlugins + "com.jetbrains.restClient")
         }
 
+        implementation("com.jayway.jsonpath:json-path:2.9.0")
+        implementation("com.squareup.okhttp3:okhttp:4.12.0")
+        implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+        // open ai deps
+        implementation("io.reactivex.rxjava3:rxjava:3.1.10")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.18.1")
+
         implementation(project(":core"))
+        implementation(project(":exts:devins-lang"))
     }
 }
 
@@ -783,8 +800,8 @@ project(":exts:devins-lang") {
             testFramework(TestFrameworkType.Plugin.Java)
         }
 
+        implementation("com.jayway.jsonpath:json-path:2.9.0")
         implementation(project(":core"))
-        implementation(project(":exts:ext-git"))
     }
 
     tasks {

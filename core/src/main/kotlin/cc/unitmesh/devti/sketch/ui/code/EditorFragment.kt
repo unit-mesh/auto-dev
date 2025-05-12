@@ -36,7 +36,7 @@ class EditorPadding(private val editor: Editor, pad: Int) :
 class EditorFragment(
     var editor: EditorEx,
     private val editorLineThreshold: Int = EDITOR_LINE_THRESHOLD,
-    private val previewEditor: FileEditor?
+    private val previewEditor: FileEditor? = null,
 ) {
     private val expandCollapseTextLabel: JBLabel = JBLabel("", 0).apply {
         isOpaque = true

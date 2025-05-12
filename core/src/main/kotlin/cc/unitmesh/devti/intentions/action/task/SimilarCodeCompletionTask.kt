@@ -47,7 +47,7 @@ class SimilarCodeCompletionTask(private val request: CodeCompletionRequest) : Ba
 
     private fun generatePrefix(documentLength: Int): String {
         val prefix = if (request.offset > documentLength) {
-            request.prefixText
+            request.prefix
         } else {
             request.editor.document.text.substring(0, request.offset)
         }

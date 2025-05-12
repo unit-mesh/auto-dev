@@ -5,43 +5,58 @@ import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.run.runner.ShireRunner
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
-
 
 class DevInsPromptProcessor : LanguageProcessor {
     override val name: String = DevInLanguage.displayName
 
     override suspend fun execute(project: Project, context: CustomAgentContext): String {
         var text = context.response
-        // re-check the language of the code
+
         CodeFence.parse(text).let {
             if (it.language == DevInLanguage.INSTANCE) {
                 text = it.text
             }
         }
 
-        val devInsCompiler = createCompiler(project, text)
-        val result = devInsCompiler.compile()
-        AutoDevNotifications.notify(project, result.output)
-
-        if (result.nextJob != null) {
-            val nextJob = result.nextJob!!
-            val nextResult = createCompiler(project, nextJob).compile()
-            AutoDevNotifications.notify(project, nextResult.output)
-            return nextResult.output
+        var compileResult: String? = null
+        if (context.filePath != null) {
+            val psiFile = runReadAction { PsiManager.getInstance(project).findFile(context.filePath!!) as? DevInFile }
+            if (psiFile != null) {
+                compileResult = ShireRunner.compileOnly(project, psiFile, context.initVariables).finalPrompt
+            }
         }
 
-        return result.output
+        if (compileResult == null) {
+            val devInsCompiler = createCompiler(project, text)
+            val result = devInsCompiler.compile()
+            compileResult = result.output
+
+            if (result.nextJob != null) {
+                AutoDevNotifications.notify(project, compileResult)
+
+                val nextJob = result.nextJob!!
+                val nextResult = createCompiler(project, nextJob).compile()
+                AutoDevNotifications.notify(project, nextResult.output)
+                return nextResult.output
+            }
+        }
+
+        AutoDevNotifications.notify(project, compileResult)
+        return compileResult
     }
 
     override suspend fun compile(project: Project, text: String): String {

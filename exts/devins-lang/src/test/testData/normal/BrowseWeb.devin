@@ -1,0 +1,5 @@
+/browse:https://ide.unitmesh.cc
+/browse:https://www.example.com/page?param1=value1&param2=value2
+/browse:https://www.example.com/page#section1
+/browse:http://localhost:3000/page
+/browse:https://username:password@www.example.com/page

@@ -29,6 +29,7 @@
         <chatContextProvider implementation="cc.unitmesh.database.provider.DatabaseSchemaContextProvider"/>
 
         <toolchainFunctionProvider implementation="cc.unitmesh.database.provider.DatabaseFunctionProvider"/>
+        <shireToolchainVariableProvider implementation="cc.unitmesh.database.provider.DatabaseVariableProvider"/>
 
         <runService implementation="cc.unitmesh.database.provider.SqlRunService"/>
 

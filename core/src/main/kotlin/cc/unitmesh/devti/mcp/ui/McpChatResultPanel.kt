@@ -6,7 +6,7 @@ import cc.unitmesh.devti.mcp.ui.eval.McpMessageLogPanel
 import cc.unitmesh.devti.mcp.ui.model.McpChatConfig
 import cc.unitmesh.devti.mcp.ui.model.McpMessage
 import cc.unitmesh.devti.mcp.ui.model.MessageType
-import cc.unitmesh.devti.mcp.ui.model.ToolCall
+import cc.unitmesh.devti.mcp.ui.model.ParsedToolCall
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -61,7 +61,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
 
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
 
-    private var toolCalls: List<ToolCall> = emptyList()
+    private var toolCalls: List<ParsedToolCall> = emptyList()
 
     init {
         background = UIUtil.getPanelBackground()
@@ -92,7 +92,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
     fun parseAndShowTools(text: String) {
         toolsPanel.removeAll()
 
-        toolCalls = ToolCall.fromString(text)
+        toolCalls = ParsedToolCall.fromString(text)
         if (toolCalls.isEmpty()) {
             val noToolsLabel = JBLabel(AutoDevBundle.message("mcp.chat.result.no.tools")).apply {
                 foreground = JBColor(0x6B7280, 0x9DA0A8)  // Gray text
@@ -217,7 +217,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         }
     }
 
-    private fun createToolCallPanel(toolCall: ToolCall): JPanel {
+    private fun createToolCallPanel(toolCall: ParsedToolCall): JPanel {
         val panel = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground().brighter()
             border = CompoundBorder(
@@ -301,7 +301,7 @@ class McpChatResultPanel(private val project: Project, val config: McpChatConfig
         return panel
     }
 
-    private fun executeToolCall(toolCall: ToolCall, parentPanel: JPanel) {
+    private fun executeToolCall(toolCall: ParsedToolCall, parentPanel: JPanel) {
         val resultPanel = JPanel(BorderLayout()).apply {
             isOpaque = false
             border = JBUI.Borders.emptyTop(8)

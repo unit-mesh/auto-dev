@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 19 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Dollar</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
+        <g id="dollar-minimalistic-svgrepo-com" transform="translate(1.666667, 1.666667)" stroke="#011C32" stroke-width="1">
+            <polyline id="Path" points="8 11.9927928 8 12.381982 8 12.7711712"></polyline>
+            <polyline id="Path" points="8 3.25765766 8 3.64684685 8 4.03603604"></polyline>
+            <path d="M10.4347826,6.02522523 C10.4347826,4.92662786 9.34473043,4.03603604 8,4.03603604 C6.65526957,4.03603604 5.56521739,4.92662786 5.56521739,6.02522523 C5.56521739,7.12381463 6.65526957,8.01441441 8,8.01441441 C9.34473043,8.01441441 10.4347826,8.9050142 10.4347826,10.0036036 C10.4347826,11.102193 9.34473043,11.9927928 8,11.9927928 C6.65526957,11.9927928 5.56521739,11.102193 5.56521739,10.0036036" id="Path"></path>
+            <path d="M4,1.12212849 C5.176696,0.445127841 6.54288,0.0576576577 8,0.0576576577 C12.41824,0.0576576577 16,3.62001701 16,8.01441441 C16,12.408772 12.41824,15.9711712 8,15.9711712 C3.58172,15.9711712 0,12.408772 0,8.01441441 C0,6.56517074 0.389576,5.20637152 1.070256,4.03603604" id="Path"></path>
+        </g>
+    </g>
+</svg>

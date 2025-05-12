@@ -1,0 +1,13 @@
+---
+name: "Commit message"
+enabled: false
+description: "生成提交信息"
+interaction: AppendCursor
+actionLocation: CommitMenu
+variables:
+  "story": /any/ { thread(".shire/fetch-jira.sh") | jsonpath("$.data[*].Story") }
+---
+
+请遵循常规提交规范，例如：
+
+- fix(authentication): 修复密码正则表达式模式问题 #$story

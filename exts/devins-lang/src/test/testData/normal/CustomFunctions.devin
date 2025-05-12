@@ -1,0 +1,6 @@
+---
+functions:
+  aFunc: "defaultMain.py"(string)
+  aFunc: "multipleOutput.py"(string, number) -> content
+  cFunc: "accessFunctionIfSupport.py"::resize(string, number, number) -> image
+---

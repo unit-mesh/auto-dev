@@ -59,7 +59,7 @@ enum class BuiltinCommand(
     ),
     RUN(
         "run",
-        "Run the IDE's built-in command, like build tool, test.",
+        "Run the Intellij IDEA's built-in command, like build tool command, run test.",
         AllIcons.Actions.Execute,
         true,
         true,
@@ -77,14 +77,14 @@ enum class BuiltinCommand(
     BROWSE("browse", "Fetch the content of a given URL.", AllIcons.Toolwindows.WebToolWindow, false, true),
     REFACTOR(
         "refactor",
-        "Refactor the content of a file, only support for rename, safeDelete and move.",
+        "Refactor the content of a file, support for rename, safeDelete and move with Intellij IDEA API.",
         AutoDevIcons.IDEA,
         true,
         true
     ),
     STRUCTURE(
         "structure",
-        "Get the structure of a file with AST/PSI",
+        "Get the structure of a file with AST/PSI, for example, class name, method name, and field name.",
         AllIcons.Toolwindows.ToolWindowStructure,
         true,
         true,
@@ -93,7 +93,7 @@ enum class BuiltinCommand(
     DIR("dir", "List files and directories in a tree-like structure", AllIcons.Actions.ProjectDirectory, true, true),
     DATABASE(
         "database",
-        "Read the content of a database, /database:query\n```sql\nSELECT * FROM table\n```",
+        "interaction with database, such as database schema, table names, or execute sql like query, insert, update",
         AllIcons.Toolwindows.ToolWindowHierarchy,
         true,
         true
@@ -107,7 +107,7 @@ enum class BuiltinCommand(
     ),
     RELATED(
         "related",
-        "Get related code by AST (abstract syntax tree) for the current file",
+        "Get related code by AST (abstract syntax tree) for the current file, which can make the code more readable.",
         AllIcons.Actions.Find,
         false,
         true
@@ -116,14 +116,14 @@ enum class BuiltinCommand(
     RIPGREP_SEARCH("ripgrepSearch", "Search text in the project with ripgrep", AllIcons.Actions.Regex, false, true),
     RULE(
         "rule",
-        "Get the rule from one file, such as code style, code quality, and code smell",
+        "Get the rule (code spec) from file, such as code style, code quality, and code smell or others.",
         AutoDevIcons.RULE,
         true,
         true
     ),
     USAGE(
         "usage",
-        "Get the usage of a class, method, or field in the project",
+        "Get the usage of a class, method, or field in the project, which will help you to find the caller code, and make it easier to understand the code",
         AllIcons.Actions.DynamicUsages,
         true,
         true

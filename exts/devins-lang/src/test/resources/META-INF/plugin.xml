@@ -6,4 +6,8 @@
     <content>
         <module name="cc.unitmesh.devti.language"/>
     </content>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <shireSymbolProvider implementation="cc.unitmesh.devti.language.regression.DefaultShireSymbolProvider" />
+    </extensions>
 </idea-plugin>

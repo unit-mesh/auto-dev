@@ -13,7 +13,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiDocumentManager
 
 class UsageInsCommand(val myProject: Project, private val symbol: String) : InsCommand {
-    override val commandName: BuiltinCommand = BuiltinCommand.RELATED
+    override val commandName: BuiltinCommand = BuiltinCommand.USAGE
 
     override suspend fun execute(): String? {
         val elements = DevInsSymbolProvider.all().map {

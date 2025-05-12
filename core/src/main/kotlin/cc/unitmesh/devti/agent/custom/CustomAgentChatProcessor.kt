@@ -29,18 +29,23 @@ class CustomAgentChatProcessor(val project: Project) {
 
     fun handleChat(prompter: ContextPrompter, ui: NormalChatCodingPanel, llmProvider: LLMProvider): String? {
         val originPrompt = prompter.requestPrompt()
-        ui.addMessage(originPrompt, true, originPrompt)
+        val displayMessage = StringBuilder()
 
         val request = originPrompt.trim()
         val selectedAgent: CustomAgentConfig = ui.getSelectedCustomAgent()
 
         selectedAgent.state = CustomAgentState.HANDLING
 
-        val response: Flow<String>? = customAgentExecutor.execute(request, selectedAgent)
+        ui.showInitLoading("Custom Agent (${selectedAgent.name}) Working")
+
+        val response: Flow<String>? = customAgentExecutor.execute(request, selectedAgent, displayMessage)
         if (response == null) {
             logger.error("error for custom agent: $selectedAgent with request: $request")
             return null
         }
+
+        val message = displayMessage.toString()
+        ui.addMessage(message, true, message)
 
         var llmResponse = ""
         selectedAgent.state = CustomAgentState.FINISHED

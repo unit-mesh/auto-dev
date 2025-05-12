@@ -4,12 +4,15 @@ import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 
 data class CustomAgentContext(
     val config: CustomAgentConfig,
-    val response: String
+    val response: String,
+    val filePath: VirtualFile? = null,
+    var initVariables: Map<String, String> = mapOf()
 )
 
 /**

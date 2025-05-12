@@ -194,7 +194,7 @@ feat: add delete blog functionality
 <you.answer.step2>
 现在我已经知道 SketchRunContext 的代码结构了，我还需要知道对应的调用代码和相关的测试代码，以便更好地理解代码的上下文。请允许我调用工具来获取相关的调用代码和测试代码。
 <devin>
-/call:cc.unitmesh.sketch.SketchRunContext
+/usage:cc.unitmesh.sketch.SketchRunContext
 </devin>
 </you.answer.step2>
 <your.answer.step3>

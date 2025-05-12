@@ -107,6 +107,12 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                                 null
                             }
 
+                            line.startsWith("{") && line.endsWith("}") -> {
+                                emitter.onNext(SSE(line))
+                                emitter.onComplete()
+                                return
+                            }
+
                             else -> {
                                 throw AutoDevHttpException("Invalid sse format! '$line'", response.code)
                             }

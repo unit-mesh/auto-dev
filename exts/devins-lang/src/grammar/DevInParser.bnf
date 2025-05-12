@@ -1,5 +1,3 @@
-// should similar to markdown syntax
-// Copyright 2000-2022 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 {
   parserClass="cc.unitmesh.devti.language.parser.DevInParser"
 
@@ -14,37 +12,228 @@
   elementTypeClass="cc.unitmesh.devti.language.psi.DevInElementType"
   tokenTypeClass="cc.unitmesh.devti.language.lexer.DevInTokenType"
 
+  extends(".*Expr") = expr
+
   tokens=[
-    AGENT_START        = "AGENT_START"
-    COMMAND_START      = "COMMAND_START"
-    VARIABLE_START     = "VARIABLE_START"
-    SYSTEM_START       = "SYSTEM_START"
-    CODE_BLOCK_START   = "CODE_BLOCK_START"
-    CODE_BLOCK_END     = "CODE_BLOCK_END"
-    CODE_BLOCK         = "CODE_BLOCK"
-    CODE_CONTENT       = "CODE_CONTENT"
-    IDENTIFIER         = "IDENTIFIER"
-    LANGUAGE_ID        = "LANGUAGE_ID"
-    VARIABLE_ID        = "VARIABLE_ID"
-    COMMAND_ID         = "COMMAND_ID"
-    AGENT_ID           = "AGENT_ID"
-    SYSTEM_ID          = "SYSTEM_ID"
-    COLON              = "COLON"
-    COMMAND_PROP       = "COMMAND_PROP"
-    SHARP              = "SHARP"
-    LINE_INFO          = "LINE_INFO"
+    COMMENTS             = 'regexp://[^\r\n]*'
+    BLOCK_COMMENT        = 'regexp:/[*][^*]*[*]+([^/*][^*]*[*]+)*/'
+    CONTENT_COMMENTS     = 'regexp:X?\[([^\]]+)?\][^\t\r\n]*'
+    CODE_BLOCK_START     = "regexp:X?```[a-zA-Z]*"
+    CODE_BLOCK_END       = "regexp:X?```"
+    SINGLE_QUOTED_STRING = "regexp:X?'(''|[^'])*'"
+    DOUBLE_QUOTED_STRING = "regexp:X?\"(\"\"|[^\"])*\""
+    QUOTE_STRING         = "regexp:X?'(''|[^'])*' | X?\"(\"\"|[^\"])*\""
+    CODE_BLOCK           = "CODE_BLOCK"
+    CODE_CONTENT         = "CODE_CONTENT"
+    IDENTIFIER           = 'regexp:[_a-zA-Z0-9]\w*'
+    COLON                = "regexp:X?:"
+    COMMAND_PROP         = "regexp:X?[^\\ \\t\\r\\n]*"
+    SHARP                = "#"
+    LINE_INFO            = "regexp:X?L[0-9]+(C[0-9]+)?(-L[0-9]+(C[0-9]+)?)?"
+    FRONTMATTER_START    = "FRONTMATTER_START"
+    FRONTMATTER_END      = "FRONTMATTER_END"
+    IDENTIFIER           = 'regexp:[_a-zA-Z]\w*'
+    LBRACKET             = "["
+    RBRACKET             = "]"
+    INDENT               = "INDENT"
+    ARROW                = "regexp:X?=>"
+    OPEN_BRACE           = "{"
+    CLOSE_BRACE          = "}"
+    LPAREN               = "("
+    RPAREN               = ")"
+    NEWLINE              = "regexp:\n"
+    CASE                 = "case"
+    DEFAULT              = "default"
+    IF                   = 'if'
+    ELSE                 = 'else'
+    ELSEIF               = 'elseif'
+    END                  = 'end'
+    ENDIF                = 'endif'
+    FROM                 = 'from'
+    WHERE                = 'where'
+    SELECT               = 'select'
+    CONDITION            = 'condition'
+
+    WHEN                 = "when"
+    ON_STREAMING         = "onStreaming"
+    BEFORE_STREAMING     = "beforeStreaming"
+    ON_STREAMING_END     = "onStreamingEnd"
+    AFTER_STREAMING      = "afterStreaming"
+    FUNCTIONS            = "functions"
+
+    // operators
+    DASH                 = "-"
+    EQEQ                 = '=='
+    NEQ                  = '!='
+    LT                   = '<'
+    GT                   = '>'
+    LTE                  = '<='
+    GTE                  = '>='
+    ANDAND               = '&&'
+    AND                  = 'and'
+    OROR                 = '||'
+    DOT                  = '.'
+    NOT                  = '!'
+    COMMA                = ','
+    PIPE                 = '|'
+
+    ACCESS               = '::'
+    PROCESS              = "regexp:X?->"
   ]
 }
 
-DevInsFile ::= (used | code | TEXT_SEGMENT | NEWLINE | COMMENTS)*
+DevInsFile ::= frontMatterHeader? (used | code | velocityExpr | markdownHeader | TEXT_SEGMENT | NEWLINE | CONTENT_COMMENTS)*
+
+frontMatterHeader ::= FRONTMATTER_START NEWLINE frontMatterEntries FRONTMATTER_END
+
+frontMatterEntries ::= frontMatterEntry*
+frontMatterEntry ::=
+    // life_cycle
+    lifecycleId COLON (functionStatement | conditionExpr) COMMENTS? NEWLINE?
+    // normal declaration
+    | frontMatterKey COLON (foreignFunction | frontMatterValue | patternAction | functionStatement) COMMENTS? NEWLINE?
+    // handle for comments in code
+    | COMMENTS NEWLINE
+
+lifecycleId       ::= "when" | "onStreaming" | "beforeStreaming" | "onStreamingEnd" | "afterStreaming"
+
+frontMatterKey    ::= frontMatterId | QUOTE_STRING | pattern | FUNCTIONS
+frontMatterValue  ::= (NEWLINE objectKeyValue) | frontMatterArray | IDENTIFIER | QUOTE_STRING | NUMBER | DATE | BOOLEAN
+frontMatterArray  ::= "[" (frontMatterValue (COMMA frontMatterValue)*) "]"
+
+frontMatterId     ::= IDENTIFIER
+
+objectKeyValue    ::= (INDENT keyValue)*
+keyValue          ::= frontMatterEntry
+
+/// changed pipelineArgs to types
+foreignFunction   ::= foreignPath (ACCESS foreignFuncName)? "(" (foreignType (COMMA foreignType)*)? ")" (PROCESS foreignOutput)?
+foreignOutput     ::= outputVar (COMMA outputVar)*
+outputVar         ::= IDENTIFIER
+
+foreignPath       ::= QUOTE_STRING
+foreignType       ::= IDENTIFIER
+foreignFuncName   ::= IDENTIFIER
+
+patternAction     ::= pattern actionBlock
+actionBlock       ::=  blockStart (actionBody) blockEnd
+
+actionBody        ::= (actionExpr PIPE)* actionExpr
+actionExpr        ::= funcCall | caseBody
+
+funcCall          ::= funcName ("(" pipelineArgs? ")")?
+funcName          ::= IDENTIFIER
+pipelineArgs      ::= (pipelineArg (COMMA pipelineArg)*)?
+pipelineArg       ::= NUMBER | IDENTIFIER | QUOTE_STRING | variableStart variableId
+
+caseBody          ::= conditionFlag? CASE NEWLINE* ('condition' | QUOTE_STRING) blockStart casePatternAction* blockEnd
+casePatternAction ::= caseCondition blockStart actionBody blockEnd
+caseCondition ::= DEFAULT | pattern | QUOTE_STRING
+
+conditionFlag ::= 'condition' blockStart conditionStatement* blockEnd
+conditionStatement ::= caseCondition blockStart conditionExpr blockEnd NEWLINE?
+
+pattern ::= PATTERN_EXPR
+
+conditionExpr ::= expr
+expr ::=
+    logicalOrExpr
+    | logicalAndExpr
+    | eqComparisonExpr
+    | ineqComparisonExpr
+    | callExpr
+    | qualRefExpr
+    | simpleRefExpr
+    | literalExpr
+    | parenExpr
+    | variableExpr
+
+// See also:
+// b/37137454: Modify databinding expression grammar to allow calls to unqualified methods
+// https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities
+// https://github.com/JetBrains/Grammar-Kit/blob/master/testData/generator/ExprParser.bnf
+fake refExpr ::= expr? '.' IDENTIFIER
+simpleRefExpr ::= IDENTIFIER {extends=refExpr elementType=refExpr}
+qualRefExpr ::= expr '.' IDENTIFIER {extends=refExpr elementType=refExpr}
+
+logicalOrExpr ::= expr '||' expr
+logicalAndExpr ::= expr ('&&' | 'and') expr
+eqComparisonExpr ::= expr eqComparisonOp expr
+ineqComparisonExpr ::= expr ineqComparisonOp expr
+callExpr ::= refExpr '(' expressionList? ')'
+expressionList ::= expr (',' expr)*
+/// variable block
+variableExpr ::= "{" expr "}"
+
+literalExpr ::= literal
+parenExpr ::= '(' expr ')'
+// when
+private eqComparisonOp ::= '==' | 'and' | 'AND'
+ineqComparisonOp ::= '<=' | '>=' | '<' | '>' | '!='
+
+private literal ::= NUMBER
+  | TRUE | FALSE
+  | QUOTE_STRING
+  | IDENTIFIER
+  | "$" IDENTIFIER
 
 used ::= (
-    AGENT_START AGENT_ID
-    | COMMAND_START COMMAND_ID (COLON COMMAND_PROP (SHARP LINE_INFO)?)?
-    | VARIABLE_START VARIABLE_ID
-//    | SYSTEM_START SYSTEM_ID COLON NUMBER
+    agentStart agentId
+    | commandStart commandId (COLON COMMAND_PROP (SHARP LINE_INFO)?)?
+    | variableStart (variableId | varAccess)
+    | '#' variableStart expr
 )
 
-code ::=  CODE_BLOCK_START LANGUAGE_ID? NEWLINE? code_contents? CODE_BLOCK_END?
+agentStart ::= '@'
+commandStart ::= '/'
+variableStart ::= '$'
+
+agentId ::= IDENTIFIER | QUOTE_STRING
+commandId ::= IDENTIFIER
+variableId ::= IDENTIFIER
+
+// just make template pass success not fail
+varAccess ::= OPEN_BRACE variableId (DOT variableId)* CLOSE_BRACE
+
+code ::= CODE_BLOCK_START (LANGUAGE_ID | variableStart expr)? NEWLINE? code_contents? CODE_BLOCK_END?
 
 code_contents ::= (NEWLINE | CODE_CONTENT)*
+
+velocityExpr ::=
+    ifExpr NEWLINE*
+
+velocityBlock ::= (used | code | velocityExpr | markdownHeader | TEXT_SEGMENT | NEWLINE | CONTENT_COMMENTS)*
+
+ifExpr ::= ifClause elseifClause* elseClause? '#' 'end'
+
+ifClause ::= '#' 'if' '(' expr ')' velocityBlock
+
+elseifClause ::= '#' 'elseif' '(' expr ')' velocityBlock
+
+elseClause ::= '#' 'else' velocityBlock
+
+// for example, the commit id will be #$storyId
+
+markdownHeader ::= SHARP SHARP* TEXT_SEGMENT
+
+functionStatement ::= blockStart functionBody? blockEnd
+
+functionBody ::=
+    queryStatement
+    | actionBody
+    | conditionExpr
+
+queryStatement ::= from_clause where_clause select_clause
+
+from_clause ::= FROM blockStart psi_element_decl blockEnd
+psi_element_decl ::= psi_var_decl ("," psi_var_decl)* (NEWLINE)*
+
+where_clause ::= WHERE blockStart expr blockEnd
+
+select_clause ::= SELECT blockStart expr (',' expr)* blockEnd
+
+private blockStart ::= NEWLINE* "{" NEWLINE*
+private blockEnd ::= NEWLINE* "}" NEWLINE*
+
+psi_var_decl ::= psi_type IDENTIFIER
+psi_type ::= IDENTIFIER

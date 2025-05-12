@@ -45,7 +45,7 @@ import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.temporary.gui.block.AutoDevCoolBorder
+import cc.unitmesh.devti.gui.AutoDevCoolBorder
 import com.intellij.ui.HintHint
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
@@ -180,13 +180,20 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         layoutPanel.setOpaque(false)
 
         if (project.customizeSetting.enableCustomAgent && showAgent) {
-            customAgent = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
+            customAgent = ComboBox(MutableCollectionComboBoxModel(loadAgents()))
             customAgent.renderer = SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
                 if (value != null) {
                     label.text = value.name
                 }
             }
             customAgent.selectedItem = defaultRag
+            
+            // Add action listener to refresh agent list when dropdown is clicked
+            customAgent.addActionListener { 
+                if (customAgent.isPopupVisible) {
+                    refreshAgentList()
+                }
+            }
 
             input.minimumSize = Dimension(input.minimumSize.width, 64)
             layoutPanel.addToLeft(customAgent)
@@ -366,12 +373,26 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         buttonPanel.isEnabled = true
     }
 
-    private fun loadRagApps(): List<CustomAgentConfig> {
+    private fun loadAgents(): List<CustomAgentConfig> {
         val rags = CustomAgentConfig.loadFromProject(project)
 
         if (rags.isEmpty()) return listOf(defaultRag)
 
         return listOf(defaultRag) + rags
+    }
+    
+    private fun refreshAgentList() {
+        val currentSelection = customAgent.selectedItem
+        val agents = loadAgents()
+        val model = customAgent.model as MutableCollectionComboBoxModel<CustomAgentConfig>
+        model.update(agents)
+        
+        // Try to restore the previous selection
+        if (currentSelection != null && agents.contains(currentSelection)) {
+            customAgent.selectedItem = currentSelection
+        } else {
+            customAgent.selectedItem = defaultRag
+        }
     }
 
     fun initEditor() {

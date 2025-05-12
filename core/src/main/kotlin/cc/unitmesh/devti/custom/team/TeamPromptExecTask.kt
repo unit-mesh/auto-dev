@@ -1,12 +1,17 @@
 package cc.unitmesh.devti.custom.team
 
 import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.cf.core.llms.LlmProvider
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
+import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -16,6 +21,9 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.launch
 
 /**
  * The `TeamPromptExecTask` class is a background task that executes a team prompt action in the context of a project.
@@ -98,6 +106,12 @@ class TeamPromptExecTask(
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
+
+            InteractionType.InsertBeforeSelection -> TODO()
+            InteractionType.RunPanel -> TODO()
+            InteractionType.OnPaste -> TODO()
+            InteractionType.RightPanel -> TODO()
+            InteractionType.StreamDiff -> TODO()
         }
     }
 }

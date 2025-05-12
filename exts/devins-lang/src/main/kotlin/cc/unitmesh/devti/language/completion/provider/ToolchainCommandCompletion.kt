@@ -40,7 +40,7 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
     }
 
     private fun getText(tool: AgentTool): String {
-        return return if (tool.mcpGroup.isNotEmpty()) {
+        return if (tool.mcpGroup.isNotEmpty()) {
             " ${tool.mcpGroup}: ${tool.description}"
         } else {
             tool.description

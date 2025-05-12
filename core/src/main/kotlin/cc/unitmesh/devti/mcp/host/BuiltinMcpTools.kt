@@ -736,7 +736,7 @@ fun VirtualFile.readText(): String {
     return VfsUtilCore.loadText(this)
 }
 
-public fun Path.createParentDirectories(vararg attributes: FileAttribute<*>): Path = also {
+fun Path.createParentDirectories(vararg attributes: FileAttribute<*>): Path = also {
     val parent = it.parent
     if (parent != null && !parent.isDirectory()) {
         try {

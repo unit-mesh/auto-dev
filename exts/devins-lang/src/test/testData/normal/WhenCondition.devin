@@ -1,0 +1,3 @@
+---
+when: { $selection.length == 1 && $selection.first() == 'file' }
+---
