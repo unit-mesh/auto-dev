@@ -61,7 +61,7 @@ class JSAutoTestService : AutoTestService() {
             return null
         }
 
-        val elementName = JSPsiUtil.elementName(elementToTest)
+        val elementName = runReadAction { JSPsiUtil.elementName(elementToTest) }
         if (elementName == null) {
             log.warn("Failed to find element name for: $psiElement")
             return null
@@ -93,7 +93,7 @@ class JSAutoTestService : AutoTestService() {
         }
 
         val imports: List<String> = (sourceFile as? JSFile)?.let {
-            PsiTreeUtil.findChildrenOfType(it, JSImportStatement::class.java)
+            runReadAction { PsiTreeUtil.findChildrenOfType(it, JSImportStatement::class.java) }
         }?.map {
             it.text
         } ?: emptyList()
@@ -159,7 +159,7 @@ class JSAutoTestService : AutoTestService() {
 
             val containingFile: PsiFile = runReadAction { element.containingFile } ?: return null
             val extension = containingFile.virtualFile?.extension ?: return null
-            val elementName = JSPsiUtil.elementName(element) ?: return null
+            val elementName = runReadAction { JSPsiUtil.elementName(element) } ?: return null
             val testFile: Path = generateUniqueTestFile(elementName, containingFile, testDirectory, extension).toPath()
             return testFile
         }
