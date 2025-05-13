@@ -6,6 +6,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.custom.model.CustomAgentState
 import cc.unitmesh.devti.completion.AutoDevInputLookupManagerListener
+import cc.unitmesh.devti.gui.AutoDevCoolBorder
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
 import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListViewModel
 import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
@@ -45,7 +46,6 @@ import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import cc.unitmesh.devti.gui.AutoDevCoolBorder
 import com.intellij.ui.HintHint
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
@@ -187,9 +187,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 }
             }
             customAgent.selectedItem = defaultRag
-            
+
             // Add action listener to refresh agent list when dropdown is clicked
-            customAgent.addActionListener { 
+            customAgent.addActionListener {
                 if (customAgent.isPopupVisible) {
                     refreshAgentList()
                 }
@@ -373,20 +373,20 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         buttonPanel.isEnabled = true
     }
 
-    private fun loadAgents(): List<CustomAgentConfig> {
+    private fun loadAgents(): MutableList<CustomAgentConfig> {
         val rags = CustomAgentConfig.loadFromProject(project)
 
-        if (rags.isEmpty()) return listOf(defaultRag)
+        if (rags.isEmpty()) return mutableListOf(defaultRag)
 
-        return listOf(defaultRag) + rags
+        return (listOf(defaultRag) + rags).toMutableList()
     }
-    
+
     private fun refreshAgentList() {
         val currentSelection = customAgent.selectedItem
         val agents = loadAgents()
         val model = customAgent.model as MutableCollectionComboBoxModel<CustomAgentConfig>
         model.update(agents)
-        
+
         // Try to restore the previous selection
         if (currentSelection != null && agents.contains(currentSelection)) {
             customAgent.selectedItem = currentSelection
