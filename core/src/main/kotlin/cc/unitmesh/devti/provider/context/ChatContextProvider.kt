@@ -20,7 +20,7 @@ interface ChatContextProvider {
             chatCreationContext: ChatCreationContext,
         ): List<ChatContextItem> {
             val elements = mutableListOf<ChatContextItem>()
-r
+
             val chatContextProviders = EP_NAME.extensionList
             for (provider in chatContextProviders) {
                 try {
