@@ -304,11 +304,11 @@ class FindFilesByNameSubstring : AbstractMcpTool<Query>() {
         val projectDir = project.guessProjectDir()?.toNioPathOrNull()
             ?: return Response(error = "project dir not found")
 
-        val searchSubstring = args.nameSubstring.toLowerCase()
+        val searchSubstring = args.nameSubstring.lowercase()
         return runReadAction {
             Response(
                 FilenameIndex.getAllFilenames(project)
-                    .filter { it.toLowerCase().contains(searchSubstring) }
+                    .filter { it.lowercase().contains(searchSubstring) }
                     .flatMap {
                         FilenameIndex.getVirtualFilesByName(it, GlobalSearchScope.projectScope(project))
                     }
@@ -319,12 +319,10 @@ class FindFilesByNameSubstring : AbstractMcpTool<Query>() {
                         } catch (e: IllegalArgumentException) {
                             false
                         }
-                    }
-                    .map { file ->
+                    }.joinToString(",\n", prefix = "[", postfix = "]") { file ->
                         val relativePath = projectDir.relativize(Path(file.path)).toString()
                         """{"path": "$relativePath", "name": "${file.name}"}"""
                     }
-                    .joinToString(",\n", prefix = "[", postfix = "]")
             )
         }
     }
