@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
+import kotlin.text.get
 
 class MCPService : RestService() {
     private val serviceName = "mcp"
@@ -102,16 +103,55 @@ class MCPService : RestService() {
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : Any> parseArgs(request: FullHttpRequest, klass: KClass<T>): T {
-        val body = request.content().toString(StandardCharsets.UTF_8)
-        if (body.isEmpty()) {
-            return NoArgs as T
-        }
-        return when (klass) {
-            NoArgs::class -> NoArgs as T
-            else -> {
-                json.decodeFromString(serializer(klass.starProjectedType), body) as T
+        if (request.method() == HttpMethod.POST) {
+            val body = request.content().toString(StandardCharsets.UTF_8)
+            if (body.isEmpty()) {
+                return NoArgs as T
+            }
+            return when (klass) {
+                NoArgs::class -> NoArgs as T
+                else -> {
+                    json.decodeFromString(serializer(klass.starProjectedType), body) as T
+                }
+            }
+        } else if (request.method() == HttpMethod.GET) {
+            val queryDecoder = QueryStringDecoder(request.uri())
+            val params = queryDecoder.parameters()
+
+            if (params.isEmpty()) {
+                return NoArgs as T
+            }
+
+            return when (klass) {
+                NoArgs::class -> NoArgs as T
+                else -> {
+                    val constructor = klass.primaryConstructor
+                        ?: error("Class ${klass.simpleName} must have a primary constructor")
+
+                    val args = constructor.parameters.associateWith { param ->
+                        val paramName = param.name ?: error("Parameter must have a name")
+                        val paramValues = params[paramName]
+
+                        when {
+                            paramValues == null || paramValues.isEmpty() -> {
+                                if (param.type.isMarkedNullable) null
+                                else error("Required parameter $paramName is missing")
+                            }
+                            param.type.classifier == List::class -> paramValues
+                            param.type.classifier == Boolean::class -> paramValues[0].toBoolean()
+                            param.type.classifier == Int::class -> paramValues[0].toInt()
+                            param.type.classifier == Long::class -> paramValues[0].toLong()
+                            param.type.classifier == Double::class -> paramValues[0].toDouble()
+                            else -> paramValues[0]
+                        }
+                    }
+
+                    constructor.callBy(args)
+                }
             }
         }
+
+        return NoArgs as T
     }
 
     private fun <Args : Any> toolHandle(tool: McpTool<Args>, project: Project, args: Any): Response {
