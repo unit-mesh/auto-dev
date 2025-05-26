@@ -70,7 +70,16 @@ open class SketchToolWindow(
     private var thinkingHighlight: CodeHighlightSketch =
         CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE, withLeftRightBorder = false)
 
-    private var thinkingPanel = thinkingHighlight
+    private var thinkingScrollPane = JBScrollPane(thinkingHighlight).apply {
+        verticalScrollBar.unitIncrement = 16
+        preferredSize = JBUI.size(Int.MAX_VALUE, JBUI.scale(250)) // Limit height to 100
+        maximumSize = JBUI.size(Int.MAX_VALUE, JBUI.scale(250))  // Enforce maximum height
+    }
+    
+    private var thinkingPanel = JPanel(BorderLayout()).apply {
+        add(thinkingScrollPane, BorderLayout.CENTER)
+        isVisible = false
+    }
 
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
@@ -481,6 +490,9 @@ open class SketchToolWindow(
         runInEdt {
             thinkingPanel.isVisible = true
             thinkingHighlight.updateViewText(string, false)
+            SwingUtilities.invokeLater {
+                thinkingScrollPane.verticalScrollBar.value = thinkingScrollPane.verticalScrollBar.maximum
+            }
         }
     }
 
