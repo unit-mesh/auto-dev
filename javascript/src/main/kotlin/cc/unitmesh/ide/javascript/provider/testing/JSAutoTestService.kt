@@ -57,13 +57,13 @@ class JSAutoTestService : AutoTestService() {
 
         val elementToTest = runReadAction { Util.getElementToTest(psiElement) }
         if (elementToTest == null) {
-            log.warn("Failed to find element to test for: ${psiElement}, check your function is exported.")
+            log.error("Failed to find element to test for: ${psiElement}, check your function is exported.")
             return null
         }
 
         val elementName = runReadAction { JSPsiUtil.elementName(elementToTest) }
         if (elementName == null) {
-            log.warn("Failed to find element name for: $psiElement")
+            log.error("Failed to find element name for: $psiElement")
             return null
         }
 
