@@ -8,6 +8,7 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
+import cc.unitmesh.devti.gui.toolbar.SummaryMessagesAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
@@ -158,6 +159,7 @@ open class SketchToolWindow(
                     buttonBox.add(Box.createHorizontalGlue())
                     buttonBox.add(createActionButton(NewSketchAction()))
                     buttonBox.add(createActionButton(CopyAllMessagesAction()))
+                    buttonBox.add(createActionButton(SummaryMessagesAction()))
                     cell(buttonBox).alignRight()
                 }
             }

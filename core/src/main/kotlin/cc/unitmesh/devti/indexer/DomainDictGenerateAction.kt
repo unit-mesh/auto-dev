@@ -26,6 +26,7 @@ import kotlin.io.path.exists
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.vfs.LocalFileSystem
 
