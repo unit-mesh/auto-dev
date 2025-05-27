@@ -37,7 +37,6 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
         } ?: return null
 
         val structure = StructureCommandUtil.getFileStructure(myProject, virtualFile, psiFile)
-        val baseDir = myProject.guessProjectDir().toString()
         val filepath = virtualFile.relativePath(myProject)
         return "// $filepath\n```\n$structure\n```"
     }
