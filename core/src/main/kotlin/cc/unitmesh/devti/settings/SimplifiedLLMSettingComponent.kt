@@ -72,8 +72,31 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
     init {
         setupEventListeners()
+
+        // Try to initialize GitHub Copilot early
+        initializeGitHubCopilot()
+
         applySettings(settings)
         LanguageChangedCallback.language = AutoDevSettingsState.getInstance().language
+    }
+
+    private fun initializeGitHubCopilot() {
+        val manager = service<GithubCopilotManager>()
+        if (!manager.isInitialized()) {
+            AutoDevAppScope.workerScope().launch {
+                try {
+                    manager.initialize()
+                    // After initialization, update the UI on the EDT
+                    SwingUtilities.invokeLater {
+                        updateAllDropdowns()
+                        updateLLMTable()
+                    }
+                } catch (e: Exception) {
+                    // Silently handle initialization failures
+                    // GitHub Copilot might not be available
+                }
+            }
+        }
     }
 
     private fun setupEventListeners() {
@@ -282,9 +305,19 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                 }
             }
         } else {
-            // Initialize GitHub Copilot in background
+            // Initialize GitHub Copilot in background and update UI when ready
             AutoDevAppScope.workerScope().launch {
-                GithubCopilotManager.getInstance().initialize()
+                try {
+                    GithubCopilotManager.getInstance().initialize()
+                    // After initialization, update the UI on the EDT
+                    SwingUtilities.invokeLater {
+                        updateAllDropdowns()
+                        updateLLMTable()
+                    }
+                } catch (e: Exception) {
+                    // Silently handle initialization failures
+                    // GitHub Copilot might not be available
+                }
             }
         }
 
@@ -469,6 +502,34 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         }
     }
 
+    private fun refreshGitHubCopilotModels() {
+        val manager = service<GithubCopilotManager>()
+
+        AutoDevAppScope.workerScope().launch {
+            try {
+                // Force refresh GitHub Copilot models
+                manager.getSupportedModels(forceRefresh = true)
+
+                // Update UI on EDT
+                SwingUtilities.invokeLater {
+                    updateAllDropdowns()
+                    updateLLMTable()
+                    Messages.showInfoMessage(
+                        "GitHub Copilot models refreshed successfully!",
+                        "Refresh Complete"
+                    )
+                }
+            } catch (e: Exception) {
+                SwingUtilities.invokeLater {
+                    Messages.showErrorDialog(
+                        "Failed to refresh GitHub Copilot models: ${e.message}",
+                        "Refresh Failed"
+                    )
+                }
+            }
+        }
+    }
+
     // Build the main settings panel
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
         panel.removeAll()
@@ -480,6 +541,15 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         // Create add LLM button
         val addLLMButton = JButton("Add New LLM")
         addLLMButton.addActionListener { createNewLLM() }
+
+        // Create refresh button for GitHub Copilot models
+        val refreshButton = JButton("Refresh GitHub Copilot Models")
+        refreshButton.addActionListener { refreshGitHubCopilotModels() }
+
+        // Create button panel
+        val buttonPanel = JPanel()
+        buttonPanel.add(addLLMButton)
+        buttonPanel.add(refreshButton)
 
         // Create category panel separately for dynamic visibility
         categoryPanel = createCategoryPanel()
@@ -504,7 +574,7 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         formBuilder
             // Model Management Section
             .addLabeledComponent(JBLabel("Model Management"), JPanel(), 1, false)
-            .addComponent(addLLMButton)
+            .addComponent(buttonPanel)
             .addComponentFillVertically(JScrollPane(llmTable), 0)
             .addComponentFillVertically(JPanel(), 0)
 
