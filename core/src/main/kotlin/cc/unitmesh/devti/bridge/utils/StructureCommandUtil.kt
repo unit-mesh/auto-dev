@@ -66,7 +66,7 @@ object StructureCommandUtil {
     ): TextEditor? {
         val future = CompletableFuture<FileEditor>()
         runInEdt(ModalityState.any()) {
-            var createEditor = TextEditorProvider.getInstance().createEditor(project, file)
+            val createEditor = TextEditorProvider.getInstance().createEditor(project, file)
             future.complete(createEditor)
         }
 
@@ -83,7 +83,11 @@ object StructureCommandUtil {
         val indent = formatBeforeCode(element, depth)
         val str = when(element) {
             is HtmlTagTreeElement -> {
-                element.presentableText
+                if (element.locationString?.length == 0 || element.locationString == null) {
+                    element.presentableText
+                } else {
+                    element.presentableText + " " + element.locationString
+                }
             }
             is PsiTreeElementBase<*> -> {
                 element.presentableText
