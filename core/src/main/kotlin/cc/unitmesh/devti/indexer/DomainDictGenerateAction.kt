@@ -26,7 +26,6 @@ import kotlin.io.path.exists
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.vfs.LocalFileSystem
 
@@ -59,11 +58,9 @@ class DomainDictGenerateAction : AnAction() {
                 }
 
                 val fileEditorManager = FileEditorManager.getInstance(project)
-                var editors: Array<FileEditor> = emptyArray()
                 ApplicationManager.getApplication().invokeAndWait {
                     val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
                     if (virtualFile != null) {
-                        editors = fileEditorManager.openFile(virtualFile, true)
                         fileEditorManager.setSelectedEditor(virtualFile, "text-editor")
                     }
                 }
@@ -86,7 +83,6 @@ class DomainDictGenerateAction : AnAction() {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
                 e.printStackTrace()
             } finally {
-                // Restore icon and enable the action
                 updatePresentation(presentation, AutoDevIcons.AI_COPILOT, true)
             }
         }
