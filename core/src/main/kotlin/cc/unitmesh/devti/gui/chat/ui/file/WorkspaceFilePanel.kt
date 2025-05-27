@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.gui.chat.ui.file
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
@@ -54,18 +52,6 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
         popup.show(component)
     }
 
-    private fun addFile() {
-        val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
-            .withTitle(AutoDevBundle.message("chat.panel.select.files.title"))
-            .withDescription(AutoDevBundle.message("chat.panel.select.files.description"))
-
-        FileChooser.chooseFiles(descriptor, project, null) { files ->
-            for (file in files) {
-                addFileToWorkspace(file)
-            }
-        }
-    }
-
     fun addFileToWorkspace(file: VirtualFile) {
         val filePresentation = FilePresentation.from(project, file)
         if (workspaceFiles.none { it.virtualFile == file }) {
@@ -99,13 +85,9 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
         updateFilesPanel()
     }
 
-    fun getAllFiles(): List<FilePresentation> {
-        return workspaceFiles.toList()
-    }
-
     fun getAllFilesFormat(): String {
         return workspaceFiles.joinToString(separator = "\n") {
-            "\n/file:${it.presentablePath}"
+            "/file:${it.presentablePath}"
         }
     }
 }

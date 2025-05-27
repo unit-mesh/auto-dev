@@ -39,6 +39,7 @@ object WorkspaceFileToolbar {
 
                 component = component.parent
             }
+
             null
         }
 
