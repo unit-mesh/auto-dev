@@ -1,10 +1,6 @@
 package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.indexer.DomainDictGenerateAction
-import cc.unitmesh.devti.indexer.DomainDictGenerateContext
-import cc.unitmesh.devti.indexer.provider.LangDictProvider
-import cc.unitmesh.devti.indexer.usage.PromptEnhancer
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.settings.coder.coderSetting
@@ -35,6 +31,11 @@ import javax.swing.JComponent
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 
+/**
+ * Related prompts:
+ * https://gist.github.com/transitive-bullshit/487c9cb52c75a9701d312334ed53b20c
+ * https://www.reddit.com/r/ClaudeAI/comments/1jr52qj/here_is_claude_codes_compact_prompt/
+ */
 class SummaryMessagesAction : AnAction("Summary Messages", "Summary all current messages to memorize.md", AllIcons.Nodes.Target),
     CustomComponentAction {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -88,7 +89,7 @@ class SummaryMessagesAction : AnAction("Summary Messages", "Summary all current 
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
                 e.printStackTrace()
             } finally {
-                updatePresentation(presentation, AutoDevIcons.AI_COPILOT, true)
+                updatePresentation(presentation, AllIcons.Nodes.Target, true)
             }
         }
     }
@@ -123,13 +124,10 @@ class SummaryMessagesAction : AnAction("Summary Messages", "Summary all current 
     }
 
     private suspend fun buildPrompt(project: Project): String {
-        val names = LangDictProvider.all(project)
         val templateRender = TemplateRender(GENIUS_CODE)
         val template = templateRender.getTemplate("memory.vm")
-        val readmeMe = PromptEnhancer.readmeFile(project)
 
-        val context = DomainDictGenerateContext(names.joinToString(", "), readmeMe)
-        val prompt = templateRender.renderTemplate(template, context)
+        val prompt = templateRender.renderTemplate(template)
         return prompt
     }
 }

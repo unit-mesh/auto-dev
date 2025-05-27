@@ -1,66 +1,66 @@
-Your task is to create a detailed summary of the conversation so far, paying close attention to the user's explicit requests and your previous actions.
-This summary should be thorough in capturing technical details, code patterns, and architectural decisions that would be essential for continuing development work without losing context.
+你的任务是创建一个对话内容的详细摘要，特别关注用户的明确请求和你之前的操作。
+这个摘要应该全面捕捉技术细节、代码模式和架构决策，这些对于在不丢失上下文的情况下继续开发工作是必不可少的。
 
-Before providing your final summary, wrap your analysis in <analysis> tags to organize your thoughts and ensure you've covered all necessary points. In your analysis process:
+在提供最终摘要之前，请用<analysis>标签包裹你的分析，以组织你的思路并确保你已经涵盖了所有必要的要点。在你的分析过程中：
 
-1. Chronologically analyze each message and section of the conversation. For each section thoroughly identify:
-    - The user's explicit requests and intents
-    - Your approach to addressing the user's requests
-    - Key decisions, technical concepts and code patterns
-    - Specific details like file names, full code snippets, function signatures, file edits, etc
-2. Double-check for technical accuracy and completeness, addressing each required element thoroughly.
+1. 按时间顺序分析对话中的每条消息和每个部分。对每个部分进行彻底识别：
+    - 用户的明确请求和意图
+    - 你解决用户请求的方法
+    - 关键决策、技术概念和代码模式
+    - 具体细节，如文件名、完整代码片段、函数签名、文件编辑等
+2. 仔细检查技术准确性和完整性，彻底解决每个所需的要素。
 
-Your summary should include the following sections:
+你的摘要应包括以下部分：
 
-1. Primary Request and Intent: Capture all of the user's explicit requests and intents in detail
-2. Key Technical Concepts: List all important technical concepts, technologies, and frameworks discussed.
-3. Files and Code Sections: Enumerate specific files and code sections examined, modified, or created. Pay special attention to the most recent messages and include full code snippets where applicable and include a summary of why this file read or edit is important.
-4. Problem Solving: Document problems solved and any ongoing troubleshooting efforts.
-5. Pending Tasks: Outline any pending tasks that you have explicitly been asked to work on.
-6. Current Work: Describe in detail precisely what was being worked on immediately before this summary request, paying special attention to the most recent messages from both user and assistant. Include file names and code snippets where applicable.
-7. Optional Next Step: List the next step that you will take that is related to the most recent work you were doing. IMPORTANT: ensure that this step is DIRECTLY in line with the user's explicit requests, and the task you were working on immediately before this summary request. If your last task was concluded, then only list next steps if they are explicitly in line with the users request. Do not start on tangential requests without confirming with the user first.
-8. If there is a next step, include direct quotes from the most recent conversation showing exactly what task you were working on and where you left off. This should be verbatim to ensure there's no drift in task interpretation.
+1. 主要请求和意图：详细捕捉用户的所有明确请求和意图
+2. 关键技术概念：列出所有重要的技术概念、技术和框架。
+3. 文件和代码部分：列举已检查、修改或创建的特定文件和代码部分。特别注意最近的消息，并在适用的情况下包含完整的代码片段，并包含为什么这个文件读取或编辑很重要的摘要。
+4. 问题解决：记录已解决的问题和任何正在进行的故障排除工作。
+5. 待处理任务：概述明确要求你处理的任何待处理任务。
+6. 当前工作：详细描述在此摘要请求之前正在进行的工作，特别注意用户和助手最近的消息。在适用的情况下包含文件名和代码片段。
+7. 可选下一步：列出与你最近所做工作相关的下一步。重要提示：确保这一步直接符合用户的明确请求，以及你在此摘要请求之前正在处理的任务。如果你的上一个任务已经结束，那么只有在明确符合用户请求的情况下才列出下一步。未经用户确认，不要开始处理切线请求。
+8. 如果有下一步，请包含最近对话中的直接引用，准确显示你正在处理的任务以及你停止的位置。这应该是逐字的，以确保任务解释没有偏差。
 
-Here's an example of how your output should be structured:
+以下是你的输出结构应该是什么样的例子：
 
 <example>
 <analysis>
-[Your thought process, ensuring all points are covered thoroughly and accurately]
+[你的思考过程，确保所有要点都得到彻底和准确的覆盖]
 </analysis>
 
 <summary>
-1. Primary Request and Intent:
-   [Detailed description]
+1. 主要请求和意图：
+   [详细描述]
 
-2. Key Technical Concepts:
-    - [Concept 1]
-    - [Concept 2]
+2. 关键技术概念：
+    - [概念1]
+    - [概念2]
     - [...]
 
-3. Files and Code Sections:
-    - [File Name 1]
-        - [Summary of why this file is important]
-        - [Summary of the changes made to this file, if any]
-        - [Important Code Snippet]
-    - [File Name 2]
-        - [Important Code Snippet]
+3. 文件和代码部分：
+    - [文件名1]
+        - [为什么这个文件很重要的摘要]
+        - [对此文件所做更改的摘要，如果有的话]
+        - [重要代码片段]
+    - [文件名2]
+        - [重要代码片段]
     - [...]
 
-4. Problem Solving:
-   [Description of solved problems and ongoing troubleshooting]
+4. 问题解决：
+   [已解决问题和正在进行的故障排除的描述]
 
-5. Pending Tasks:
-    - [Task 1]
-    - [Task 2]
+5. 待处理任务：
+    - [任务1]
+    - [任务2]
     - [...]
 
-6. Current Work:
-   [Precise description of current work]
+6. 当前工作：
+   [当前工作的精确描述]
 
-7. Optional Next Step:
-   [Optional Next step to take]
+7. 可选下一步：
+   [可选的下一步操作]
 
 </summary>
 </example>
 
-Please provide your summary based on the conversation so far, following this structure and ensuring precision and thoroughness in your response.
+请根据到目前为止的对话提供你的摘要，遵循这个结构并确保你的回应准确和全面。
