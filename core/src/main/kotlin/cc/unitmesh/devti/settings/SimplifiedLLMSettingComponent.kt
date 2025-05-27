@@ -60,10 +60,10 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
     // Category section panel for dynamic visibility
     private var categoryPanel: JPanel? = null
 
-    // Model management - simplified table with only Name and ID
-    private val llmTableModel = object : DefaultTableModel(arrayOf("Name", "ID", "Delete"), 0) {
+    // Model management - table with Name, Model, Streaming, Temperature, Delete
+    private val llmTableModel = object : DefaultTableModel(arrayOf("Name", "Model", "Streaming", "Temperature", "Delete"), 0) {
         override fun isCellEditable(row: Int, column: Int): Boolean {
-            return column == 2 // Only delete column is "editable" (clickable)
+            return column == 4 // Only delete column is "editable" (clickable)
         }
     }
     private val llmTable = JTable(llmTableModel)
@@ -140,8 +140,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     val row = llmTable.rowAtPoint(e.point)
                     val column = llmTable.columnAtPoint(e.point)
 
-                    // Only allow double-click on Name or ID columns (not Delete column)
-                    if (row >= 0 && column < 2) {
+                    // Only allow double-click on Name, Model, Streaming, Temperature columns (not Delete column)
+                    if (row >= 0 && column < 4) {
                         editLLMAtRow(row)
                     }
                 }
@@ -149,10 +149,12 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         })
 
         // Set column widths
-        llmTable.columnModel.getColumn(0).preferredWidth = 200 // Name
-        llmTable.columnModel.getColumn(1).preferredWidth = 300 // ID
-        llmTable.columnModel.getColumn(2).preferredWidth = 80  // Delete
-        llmTable.columnModel.getColumn(2).maxWidth = 80
+        llmTable.columnModel.getColumn(0).preferredWidth = 150 // Name
+        llmTable.columnModel.getColumn(1).preferredWidth = 200 // Model
+        llmTable.columnModel.getColumn(2).preferredWidth = 80  // Streaming
+        llmTable.columnModel.getColumn(3).preferredWidth = 100 // Temperature
+        llmTable.columnModel.getColumn(4).preferredWidth = 80  // Delete
+        llmTable.columnModel.getColumn(4).maxWidth = 80
     }
 
     private fun markAsModified() {
@@ -192,7 +194,11 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
             private val tokenField = JBTextField()
             private val maxTokensField = JBTextField()
             private val modelTypeComboBox = JComboBox(ModelType.values())
+
+            // Explicit model parameters
+            private val modelField = JBTextField()
             private val streamCheckbox = JBCheckBox("Use streaming response", true)
+            private val temperatureField = JBTextField()
 
             // Custom headers and body fields
             private val headersArea = JTextArea(3, 40)
@@ -212,7 +218,24 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     modelTypeComboBox.selectedItem = existingLlm.modelType
                     streamCheckbox.isSelected = existingLlm.customRequest.stream
 
-                    // Initialize custom headers and body
+                    // Extract model and temperature from body
+                    val modelValue = existingLlm.customRequest.body["model"]?.let {
+                        when (it) {
+                            is JsonPrimitive -> it.content
+                            else -> it.toString().removeSurrounding("\"")
+                        }
+                    } ?: ""
+                    modelField.text = modelValue
+
+                    val temperatureValue = existingLlm.customRequest.body["temperature"]?.let {
+                        when (it) {
+                            is JsonPrimitive -> it.content
+                            else -> it.toString()
+                        }
+                    } ?: "0.0"
+                    temperatureField.text = temperatureValue
+
+                    // Initialize custom headers and body (excluding model and temperature)
                     headersArea.text = if (existingLlm.customRequest.headers.isNotEmpty()) {
                         buildJsonObject {
                             existingLlm.customRequest.headers.forEach { (key, value) ->
@@ -223,21 +246,26 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                         "{}"
                     }
 
-                    bodyArea.text = if (existingLlm.customRequest.body.isNotEmpty()) {
-                        // Convert body map to JSON string
+                    // Body without model and temperature (they are now explicit fields)
+                    val bodyWithoutModelTemp = existingLlm.customRequest.body.filterKeys {
+                        it != "model" && it != "temperature" && it != "stream"
+                    }
+                    bodyArea.text = if (bodyWithoutModelTemp.isNotEmpty()) {
                         buildJsonObject {
-                            existingLlm.customRequest.body.forEach { (key, value) ->
+                            bodyWithoutModelTemp.forEach { (key, value) ->
                                 put(key, value)
                             }
                         }.toString()
                     } else {
-                        """{"model": "gpt-3.5-turbo", "temperature": 0.0}"""
+                        "{}"
                     }
                 } else {
                     // Default values for new LLM
                     maxTokensField.text = "4096"
+                    modelField.text = "gpt-3.5-turbo"
+                    temperatureField.text = "0.0"
                     headersArea.text = "{}"
-                    bodyArea.text = """{"model": "gpt-3.5-turbo", "temperature": 0.0}"""
+                    bodyArea.text = "{}"
                 }
 
                 init()
@@ -245,7 +273,7 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
             override fun createCenterPanel(): JPanel {
                 val panel = JPanel(BorderLayout())
-                panel.preferredSize = Dimension(600, 600)
+                panel.preferredSize = Dimension(600, 700)
 
                 val formBuilder = FormBuilder.createFormBuilder()
                     .addLabeledComponent(JBLabel("Name:"), nameField)
@@ -254,14 +282,20 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     .addLabeledComponent(JBLabel("Token (optional):"), tokenField)
                     .addLabeledComponent(JBLabel("Max Tokens:"), maxTokensField)
                     .addLabeledComponent(JBLabel("Model Type:"), modelTypeComboBox)
-                    .addComponent(streamCheckbox)
                     .addSeparator()
+
+                // Model parameters section
+                formBuilder.addLabeledComponent(JBLabel("Model Parameters"), JPanel(), 1, false)
+                formBuilder.addLabeledComponent(JBLabel("Model:"), modelField)
+                formBuilder.addComponent(streamCheckbox)
+                formBuilder.addLabeledComponent(JBLabel("Temperature:"), temperatureField)
+                formBuilder.addSeparator()
 
                 // Custom headers section
                 formBuilder.addLabeledComponent(JBLabel("Custom Headers (JSON):"), JScrollPane(headersArea))
 
-                // Custom body section
-                formBuilder.addLabeledComponent(JBLabel("Request Body (JSON):"), JScrollPane(bodyArea))
+                // Custom body section (additional fields)
+                formBuilder.addLabeledComponent(JBLabel("Additional Request Body (JSON):"), JScrollPane(bodyArea))
 
                 formBuilder.addSeparator()
 
@@ -276,8 +310,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
             }
 
             private fun testConnection() {
-                if (nameField.text.isBlank() || urlField.text.isBlank()) {
-                    testResultLabel.text = "Name and URL are required"
+                if (nameField.text.isBlank() || urlField.text.isBlank() || modelField.text.isBlank()) {
+                    testResultLabel.text = "Name, URL, and Model are required"
                     testResultLabel.foreground = JBColor.RED
                     return
                 }
@@ -291,13 +325,22 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     return
                 }
 
+                // Validate temperature
+                val temperature = try {
+                    temperatureField.text.toDouble()
+                } catch (e: NumberFormatException) {
+                    testResultLabel.text = "Temperature must be a valid number"
+                    testResultLabel.foreground = JBColor.RED
+                    return
+                }
+
                 testResultLabel.text = "Testing connection..."
                 testResultLabel.foreground = JBColor.BLUE
 
                 val scope = CoroutineScope(CoroutineName("testConnection"))
                 scope.launch {
                     try {
-                        // Parse custom headers and body
+                        // Parse custom headers
                         val headers = try {
                             if (headersArea.text.trim().isNotEmpty() && headersArea.text.trim() != "{}") {
                                 Json.decodeFromString<Map<String, String>>(headersArea.text)
@@ -312,23 +355,32 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                             return@launch
                         }
 
-                        val body = try {
-                            if (bodyArea.text.trim().isNotEmpty()) {
+                        // Parse additional body fields and combine with explicit parameters
+                        val additionalBody = try {
+                            if (bodyArea.text.trim().isNotEmpty() && bodyArea.text.trim() != "{}") {
                                 val jsonElement = Json.parseToJsonElement(bodyArea.text)
                                 if (jsonElement is JsonObject) {
                                     jsonElement.toMap()
                                 } else {
-                                    mapOf("model" to JsonPrimitive(nameField.text), "temperature" to JsonPrimitive(0.0))
+                                    emptyMap()
                                 }
                             } else {
-                                mapOf("model" to JsonPrimitive(nameField.text), "temperature" to JsonPrimitive(0.0))
+                                emptyMap()
                             }
                         } catch (e: Exception) {
                             SwingUtilities.invokeLater {
-                                testResultLabel.text = "Invalid body JSON: ${e.message}"
+                                testResultLabel.text = "Invalid additional body JSON: ${e.message}"
                                 testResultLabel.foreground = JBColor.RED
                             }
                             return@launch
+                        }
+
+                        // Combine explicit parameters with additional body
+                        val body = mutableMapOf<String, JsonElement>().apply {
+                            put("model", JsonPrimitive(modelField.text))
+                            put("temperature", JsonPrimitive(temperature))
+                            put("stream", JsonPrimitive(streamCheckbox.isSelected))
+                            putAll(additionalBody)
                         }
 
                         // Create a temporary LLM config for testing
@@ -378,8 +430,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
             }
 
             override fun doOKAction() {
-                if (nameField.text.isBlank() || urlField.text.isBlank()) {
-                    Messages.showErrorDialog("Name and URL are required", "Validation Error")
+                if (nameField.text.isBlank() || urlField.text.isBlank() || modelField.text.isBlank()) {
+                    Messages.showErrorDialog("Name, URL, and Model are required", "Validation Error")
                     return
                 }
 
@@ -391,8 +443,16 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     return
                 }
 
+                // Validate temperature
+                val temperature = try {
+                    temperatureField.text.toDouble()
+                } catch (e: NumberFormatException) {
+                    Messages.showErrorDialog("Temperature must be a valid number", "Validation Error")
+                    return
+                }
+
                 try {
-                    // Parse custom headers and body
+                    // Parse custom headers
                     val headers = try {
                         if (headersArea.text.trim().isNotEmpty() && headersArea.text.trim() != "{}") {
                             Json.decodeFromString<Map<String, String>>(headersArea.text)
@@ -404,20 +464,29 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                         return
                     }
 
-                    val body = try {
-                        if (bodyArea.text.trim().isNotEmpty()) {
+                    // Parse additional body fields and combine with explicit parameters
+                    val additionalBody = try {
+                        if (bodyArea.text.trim().isNotEmpty() && bodyArea.text.trim() != "{}") {
                             val jsonElement = Json.parseToJsonElement(bodyArea.text)
                             if (jsonElement is JsonObject) {
                                 jsonElement.toMap()
                             } else {
-                                mapOf("model" to JsonPrimitive(nameField.text), "temperature" to JsonPrimitive(0.0))
+                                emptyMap()
                             }
                         } else {
-                            mapOf("model" to JsonPrimitive(nameField.text), "temperature" to JsonPrimitive(0.0))
+                            emptyMap()
                         }
                     } catch (e: Exception) {
-                        Messages.showErrorDialog("Invalid body JSON: ${e.message}", "Validation Error")
+                        Messages.showErrorDialog("Invalid additional body JSON: ${e.message}", "Validation Error")
                         return
+                    }
+
+                    // Combine explicit parameters with additional body
+                    val body = mutableMapOf<String, JsonElement>().apply {
+                        put("model", JsonPrimitive(modelField.text))
+                        put("temperature", JsonPrimitive(temperature))
+                        put("stream", JsonPrimitive(streamCheckbox.isSelected))
+                        putAll(additionalBody)
                     }
 
                     // Get existing LLMs
@@ -575,23 +644,41 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         val githubModels = manager.getSupportedModels(forceRefresh = false)
         val userModels = LlmConfig.load()
 
-        // Add GitHub Copilot models (read-only) - simplified display
+        // Add GitHub Copilot models (read-only)
         githubModels?.forEach { model ->
             llmTableModel.addRow(
                 arrayOf(
-                    "Github: ${model.id}", // Name - show as "Github: model.id"
-                    model.id,             // ID
+                    "Github: ${model.id}", // Name
+                    model.id,             // Model
+                    "true",               // Streaming (GitHub models use streaming by default)
+                    "0.1",                // Temperature (GitHub models default temperature)
                     ""                    // Delete (empty for read-only models)
                 )
             )
         }
 
-        // Add custom LLMs (editable) - simplified display
+        // Add custom LLMs (editable)
         userModels.forEach { llm ->
+            val modelValue = llm.customRequest.body["model"]?.let {
+                when (it) {
+                    is JsonPrimitive -> it.content
+                    else -> it.toString().removeSurrounding("\"")
+                }
+            } ?: ""
+
+            val temperatureValue = llm.customRequest.body["temperature"]?.let {
+                when (it) {
+                    is JsonPrimitive -> it.content
+                    else -> it.toString()
+                }
+            } ?: "0.0"
+
             llmTableModel.addRow(
                 arrayOf(
                     llm.name,             // Name
-                    llm.name,             // ID (use name as ID for custom models)
+                    modelValue,           // Model
+                    llm.customRequest.stream.toString(), // Streaming
+                    temperatureValue,     // Temperature
                     "Delete"              // Delete button placeholder
                 )
             )
@@ -768,11 +855,17 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         // Add category panel (visibility controlled dynamically)
         formBuilder.addComponent(categoryPanel!!)
 
+        // Create a properly sized scroll pane for the table
+        val tableScrollPane = JScrollPane(llmTable).apply {
+            preferredSize = Dimension(600, 200)
+            minimumSize = Dimension(400, 150)
+        }
+
         formBuilder
             // Model Management Section
             .addLabeledComponent(JBLabel("Model Management"), JPanel(), 1, false)
             .addComponent(buttonPanel)
-            .addComponentFillVertically(JScrollPane(llmTable), 0)
+            .addComponentFillVertically(tableScrollPane, 0)
             .addComponentFillVertically(JPanel(), 0)
 
         // Set initial visibility
