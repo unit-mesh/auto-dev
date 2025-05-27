@@ -31,13 +31,16 @@ data class FilePresentation(
             )
         }
         
-        private fun getPresentablePath(project: Project, file: VirtualFile): String =
-            project.basePath?.let { basePath ->
+        private fun getPresentablePath(project: Project, file: VirtualFile): String {
+            val path = project.basePath?.let { basePath ->
                 when (file.parent?.path) {
                     basePath -> file.name
                     else -> file.path.removePrefix(basePath)
                 }
             } ?: file.path
+
+            return path.removePrefix("/")
+        }
     }
     
     fun relativePath(project: Project): String {
