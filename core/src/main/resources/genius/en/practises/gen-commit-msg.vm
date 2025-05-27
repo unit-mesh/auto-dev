@@ -12,6 +12,14 @@ Follow the Conventional Commits specification, examples:
 - test(java): fix test case for user controller
 - docs(architecture): add architecture diagram to home page
 
+
+#if( $context.historyExamples.length() > 0 )
+Here are user's history commit messages:
+<history>
+$context.historyExamples
+</history>
+#end
+
 #if($context.originText.length() > 0)
 User origin intention was: $context.originText
 #end
