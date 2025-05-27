@@ -8,6 +8,9 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -15,11 +18,20 @@ class ToolchainCommandCompletion : CompletionProvider<CompletionParameters>() {
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        runBlocking {
-            BuiltinCommand.allToolchains(parameters.originalFile.project).forEach {
-                val lookupElement = createCommandCompletionCandidate(it)
-                result.addElement(lookupElement)
-            }
+        try {
+            CompletableFuture.supplyAsync {
+                runBlocking {
+                    BuiltinCommand.allToolchains(parameters.originalFile.project).forEach {
+                        val lookupElement = createCommandCompletionCandidate(it)
+                        result.addElement(lookupElement)
+                    }
+                }
+                null
+            }.get(10, TimeUnit.SECONDS)
+        } catch (e: TimeoutException) {
+            // Handle timeout exception
+        } catch (e: Exception) {
+            // Handle other exceptions
         }
     }
 
