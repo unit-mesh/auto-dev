@@ -219,21 +219,27 @@ abstract class LLMProvider2 protected constructor(
         )
 
         fun GithubCopilot(
-            modelName: String = "gpt-4",
+            modelName: String? = null,
             stream: Boolean = true,
             project: Project? = null,
-        ): LLMProvider2 = GithubCopilotProvider(
-            responseResolver = if (stream) "\$.choices[0].delta.content" else "\$.choices[0].message.content",
-            requestCustomize = """{"customFields": {
-                    "model": "$modelName",
-                    "intent": false,
-                    "n": 1,
-                    "temperature": 0.1,
-                    "stream": ${ if (stream) "true" else "false" }
-                }}
-            """.trimIndent(),
-            project = project,
-        )
+        ): LLMProvider2 {
+            // Use the provided model name or get the selected model ID from the settings state
+            val settings = AutoDevSettingsState.getInstance()
+            val actualModelName = modelName ?: settings.selectedCompletionModelId.takeIf { it.isNotEmpty() } ?: "gpt-4"
+
+            return GithubCopilotProvider(
+                responseResolver = if (stream) "\$.choices[0].delta.content" else "\$.choices[0].message.content",
+                requestCustomize = """{"customFields": {
+                        "model": "$actualModelName",
+                        "intent": false,
+                        "n": 1,
+                        "temperature": 0.1,
+                        "stream": ${ if (stream) "true" else "false" }
+                    }}
+                """.trimIndent(),
+                project = project,
+            )
+        }
     }
 }
 
