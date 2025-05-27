@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.llm2.model.Auth
+import cc.unitmesh.devti.llm2.model.CustomRequest
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llm2.model.ModelType
 import com.intellij.openapi.project.Project
@@ -10,6 +11,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -18,38 +20,38 @@ import javax.swing.*
  * A wizard to help users quickly configure their first LLM
  */
 class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(project, true) {
-    
+
     private val providerComboBox = JComboBox(arrayOf(
         "OpenAI",
-        "Azure OpenAI", 
+        "Azure OpenAI",
         "Anthropic Claude",
         "Google Gemini",
         "Ollama (Local)",
         "Custom"
     ))
-    
+
     private val nameField = JBTextField()
     private val urlField = JBTextField()
     private val tokenField = JBTextField()
     private val modelField = JBTextField()
-    
+
     init {
         title = "LLM Configuration Wizard"
         init()
-        
+
         // Set up provider change listener
         providerComboBox.addActionListener {
             updateFieldsForProvider()
         }
-        
+
         // Initialize with first provider
         updateFieldsForProvider()
     }
-    
+
     override fun createCenterPanel(): JPanel {
         val panel = JPanel(BorderLayout())
         panel.preferredSize = Dimension(500, 400)
-        
+
         val formBuilder = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Provider:"), providerComboBox)
             .addSeparator()
@@ -58,7 +60,7 @@ class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(proj
             .addLabeledComponent(JBLabel("API Token:"), tokenField)
             .addLabeledComponent(JBLabel("Model Name:"), modelField)
             .addSeparator()
-        
+
         // Add help text
         val helpLabel = JBLabel("<html><body style='width: 400px'>" +
                 "<b>Quick Setup Guide:</b><br>" +
@@ -68,11 +70,11 @@ class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(proj
                 "4. You can add more models later in settings" +
                 "</body></html>")
         formBuilder.addComponent(helpLabel)
-        
+
         panel.add(formBuilder.panel, BorderLayout.CENTER)
         return panel
     }
-    
+
     private fun updateFieldsForProvider() {
         when (providerComboBox.selectedItem as String) {
             "OpenAI" -> {
@@ -103,7 +105,7 @@ class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(proj
                 nameField.text = "Ollama Local"
                 urlField.text = "http://localhost:11434/v1/chat/completions"
                 modelField.text = "llama2"
-                tokenField.text = "not-required"
+                tokenField.text = "" // Not required for local
             }
             "Custom" -> {
                 nameField.text = "Custom LLM"
@@ -113,20 +115,32 @@ class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(proj
             }
         }
     }
-    
+
     override fun doOKAction() {
         // Validate inputs
         if (nameField.text.isBlank() || urlField.text.isBlank() || modelField.text.isBlank()) {
             Messages.showErrorDialog("Please fill in all required fields", "Validation Error")
             return
         }
-        
-        if (tokenField.text.isBlank() && providerComboBox.selectedItem != "Ollama (Local)") {
+
+        // Token is optional for some providers
+        if (tokenField.text.isBlank() && providerComboBox.selectedItem !in listOf("Ollama (Local)", "Custom")) {
             Messages.showErrorDialog("API Token is required for this provider", "Validation Error")
             return
         }
-        
+
         try {
+            // Create custom request with model and basic settings
+            val customRequest = CustomRequest(
+                headers = emptyMap(),
+                body = mapOf(
+                    "model" to JsonPrimitive(modelField.text),
+                    "temperature" to JsonPrimitive(0.0),
+                    "stream" to JsonPrimitive(true)
+                ),
+                stream = true
+            )
+
             // Create the LLM configuration
             val llmConfig = LlmConfig(
                 name = nameField.text,
@@ -136,20 +150,20 @@ class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(proj
                     type = "Bearer",
                     token = tokenField.text
                 ),
-                requestFormat = """{ "customFields": {"model": "${modelField.text}", "temperature": 0.0, "stream": true} }""",
-                responseFormat = "\$.choices[0].delta.content",
+                maxTokens = 4096, // Default max tokens
+                customRequest = customRequest,
                 modelType = ModelType.Default
             )
-            
+
             // Get existing LLMs and add the new one
             val existingLlms = try {
                 LlmConfig.load().toMutableList()
             } catch (e: Exception) {
                 mutableListOf()
             }
-            
+
             existingLlms.add(llmConfig)
-            
+
             // Save to settings
             val settings = AutoDevSettingsState.getInstance()
             val json = Json { prettyPrint = true }
@@ -157,47 +171,47 @@ class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(proj
                 kotlinx.serialization.builtins.ListSerializer(LlmConfig.serializer()),
                 existingLlms
             )
-            
+
             // Set as default model
             settings.defaultModelId = nameField.text
             settings.useDefaultForAllCategories = true
-            
+
             Messages.showInfoMessage(
                 "LLM configuration '${nameField.text}' has been created and set as your default model.",
                 "Configuration Complete"
             )
-            
+
             super.doOKAction()
         } catch (e: Exception) {
             Messages.showErrorDialog("Error creating LLM configuration: ${e.message}", "Error")
         }
     }
-    
+
     companion object {
         /**
          * Show the wizard if no LLMs are configured
          */
         fun showIfNeeded(project: Project?): Boolean {
             val settings = AutoDevSettingsState.getInstance()
-            
+
             // Check if user has any LLMs configured
             val hasCustomLlms = settings.customLlms.isNotEmpty() && settings.customLlms != "[]"
             @Suppress("DEPRECATION")
             val hasLegacyConfig = settings.customEngineServer.isNotEmpty()
-            
+
             if (!hasCustomLlms && !hasLegacyConfig) {
                 val result = Messages.showYesNoDialog(
                     "No LLM is configured. Would you like to run the configuration wizard to set up your first LLM?",
                     "LLM Configuration",
                     Messages.getQuestionIcon()
                 )
-                
+
                 if (result == Messages.YES) {
                     val wizard = LLMConfigurationWizard(project)
                     return wizard.showAndGet()
                 }
             }
-            
+
             return false
         }
     }

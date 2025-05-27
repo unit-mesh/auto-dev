@@ -240,6 +240,29 @@ abstract class LLMProvider2 protected constructor(
                 project = project,
             )
         }
+
+        /**
+         * Create a provider based on LlmConfig
+         * Automatically detects if it's a GitHub model and creates the appropriate provider
+         */
+        fun fromConfig(llmConfig: cc.unitmesh.devti.llm2.model.LlmConfig, project: Project? = null): LLMProvider2 {
+            // Check if this is a GitHub Copilot model
+            if (llmConfig.url == "https://api.githubcopilot.com/chat/completions") {
+                return GithubCopilotProvider(
+                    requestCustomize = llmConfig.toLegacyRequestFormat(),
+                    responseResolver = llmConfig.getResponseFormatByStream(),
+                    project = project
+                )
+            }
+
+            // For custom models, use the default provider
+            return LLMProvider2(
+                requestUrl = llmConfig.url,
+                authorizationKey = llmConfig.auth.token,
+                responseResolver = llmConfig.getResponseFormatByStream(),
+                requestCustomize = llmConfig.toLegacyRequestFormat()
+            )
+        }
     }
 }
 
