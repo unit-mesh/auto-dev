@@ -14,13 +14,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import cc.unitmesh.devti.intentions.action.getElementToAction
 import kotlinx.coroutines.runBlocking
+import com.intellij.openapi.application.runReadAction
 
 abstract class SimpleDevinPrompter {
     abstract val templateRender: TemplateRender
     abstract val template: String
 
     suspend fun prompting(project: Project, userInput: String, editor: Editor?): String {
-        val variableCompile = VariableTemplateCompiler.create(project, editor)
+        val variableCompile = runReadAction {
+            VariableTemplateCompiler.create(project, editor)
+        }
         if (variableCompile == null) {
             val frameworkContext = collectFrameworkContext(editor, project)
             templateRender.addVariable("input", userInput)

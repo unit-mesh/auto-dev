@@ -100,10 +100,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun renderText(): String {
-        val files = workspaceFilePanel.getAllFilesFormat()
         relatedFileListViewModel.clearAllFiles()
+        val files = workspaceFilePanel.getAllFilesFormat()
         workspaceFilePanel.clear()
-        return input.text + "\n" + files
+        return input.text + files
     }
 
     fun clearText() {

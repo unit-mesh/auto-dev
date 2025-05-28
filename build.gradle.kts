@@ -410,9 +410,7 @@ project(":core") {
             testFramework(TestFrameworkType.Platform)
         }
 
-        implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0") {
-            excludeKotlinDeps()
-        }
+        implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
 
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 

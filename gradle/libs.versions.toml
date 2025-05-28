@@ -1,6 +1,6 @@
 [versions]
 dokka = "1.9.10"
-kotlin = "2.1.0"
+kotlin = "2.1.20"
 changelog = "2.2.1"
 gradleIntelliJPlugin = "2.1.0"
 qodana = "0.1.13"

@@ -155,7 +155,6 @@ object JSPsiUtil {
     fun elementName(psiElement: PsiElement): String? {
         if (psiElement !is JSVarStatement) {
             if (psiElement !is JSNamedElement) return null
-
             return psiElement.name
         }
 

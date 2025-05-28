@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.actions.chat.base
 
-import cc.unitmesh.devti.provider.PsiElementDataBuilder
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -42,39 +41,4 @@ fun collectProblems(project: Project, editor: Editor, element: PsiElement): Stri
 
     val commentSymbol = commentPrefix(element)
     return errors.distinct().joinToString("\n") { "$commentSymbol - $it" }
-}
-
-/**
- * Collects the problems related to the given PsiElement and returns them as a formatted string.
- *
- * @param element the PsiElement for which problems need to be collected
- * @param project the Project in which the element exists
- * @param editor the Editor used for displaying the problems
- * @return a formatted string containing the problems related to the element, along with any relevant code snippets
- */
-fun collectElementProblemAsSting(
-    element: PsiElement,
-    project: Project,
-    editor: Editor
-): String {
-    val commentSymbol = commentPrefix(element)
-
-    return collectProblems(project, editor, element).let { problem ->
-        var relatedCode = ""
-        getCanonicalName(problem).map {
-            val classContext = PsiElementDataBuilder.forLanguage(element.language)?.lookupElement(project, it)
-            classContext.let { context ->
-                relatedCode += context?.format() ?: ""
-            }
-        }
-
-        buildString {
-            if (relatedCode.isNotEmpty()) {
-                append("\n\n$commentSymbol relative static analysis result:\n$problem")
-                relatedCode.split("\n").forEach {
-                    append("\n$commentSymbol $it")
-                }
-            }
-        }
-    } ?: ""
 }

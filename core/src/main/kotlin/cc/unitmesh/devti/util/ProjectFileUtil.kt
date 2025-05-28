@@ -52,8 +52,14 @@ fun VirtualFile.canBeAdded(project: Project): Boolean {
 }
 
 fun VirtualFile.relativePath(project: Project): String {
+    if (!this.isValid) return this.path
     val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
-    val relativePath = FileUtil.getRelativePath(projectDir, this.toNioPath().toFile())
+    val relativePath = try {
+        FileUtil.getRelativePath(projectDir, this.toNioPath().toFile())
+    } catch (e: Exception) {
+        null
+    }
+
     return relativePath ?: this.path
 }
 
