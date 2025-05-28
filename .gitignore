@@ -147,3 +147,4 @@ src/main/gen
 .intellijPlatform
 **/bin/**
 .kotlin
+/core/src/test/kotlin/cc/unitmesh/devti/llm2/copilot.http

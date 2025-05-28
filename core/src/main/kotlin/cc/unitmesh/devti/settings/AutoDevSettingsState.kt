@@ -15,23 +15,34 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var delaySeconds = ""
 
+    // Legacy fields - kept for backward compatibility but deprecated
+    @Deprecated("Use defaultModelId instead")
     var customOpenAiHost = ""
+    @Deprecated("Use LlmConfig system instead")
     var customEngineServer = ""
+    @Deprecated("Use LlmConfig system instead")
     var customEngineToken = ""
+    @Deprecated("Use defaultModelId instead")
     var customModel = ""
+
+    // Main LLM configuration storage
     var customLlms = ""
 
+    // Default model configuration
+    var defaultModelId = "" // The default model to use when no specific model is set for a category
+    var useDefaultForAllCategories = true // Whether to use default model for all categories
+
+    // Selected model IDs for different categories (only used when useDefaultForAllCategories = false)
+    var selectedPlanModelId = ""
+    var selectedActModelId = ""
+    var selectedCompletionModelId = ""
+    var selectedEmbeddingModelId = ""
+    var selectedFastApplyModelId = ""
+
+    // Legacy fields - kept for backward compatibility but deprecated
+    @Deprecated("Use LlmConfig system instead")
     var customEngineResponseFormat = "\$.choices[0].delta.content"
-    /**
-     * should be a json
-     * {
-     *     'customHeaders': { 'headerName': 'headerValue', 'headerName2': 'headerValue2' ... },
-     *     'customFields' : { 'bodyFieldName': 'bodyFieldValue', 'bodyFieldName2': 'bodyFieldValue2' ... }
-     *     'messageKey': {'role': 'roleKeyName', 'content': 'contentKeyName'}
-     * }
-     *
-     * @see docs/custom-llm-server.md
-     */
+    @Deprecated("Use LlmConfig system instead")
     var customEngineRequestFormat = """{ "customFields": {"model": "deepseek-chat", "temperature": 0.0, "stream": true} }"""
 
     var language = DEFAULT_HUMAN_LANGUAGE

@@ -80,6 +80,7 @@
         <httpRequestHandler implementation="cc.unitmesh.devti.mcp.host.MCPService"/>
         <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>
         <postStartupActivity implementation="cc.unitmesh.devti.mcp.MCPServerStartupValidator"/>
+        <postStartupActivity implementation="cc.unitmesh.devti.llm2.GithubCopilotModelInitActivity"/>
         <jbProtocolCommand implementation="cc.unitmesh.devti.mcp.AutoDevJbProtocolService"/>
         <notificationGroup id="UnitMesh.MCPServer" displayType="BALLOON"/>
     </extensions>

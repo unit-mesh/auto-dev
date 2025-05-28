@@ -163,4 +163,17 @@ class LLMProvider2Test {
         }
     }
 
+    @Ignore
+    @Test
+    fun githubCopilotStream() = runTest {
+        val result = LLMProvider2.GithubCopilot(
+            modelName = "o3-mini",
+        ).request(
+            Message("user", "你是谁"), stream = true
+        )
+        result.collect {
+            println(it.chatMessage.content)
+        }
+    }
+
 }
