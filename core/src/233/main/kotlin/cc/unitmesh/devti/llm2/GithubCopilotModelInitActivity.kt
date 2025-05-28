@@ -7,6 +7,7 @@ import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 
 /**
  * 启动时初始化 GitHub Copilot 模型的 Activity
+ * 仅适用于 IDEA 233+ 版本
  */
 class GithubCopilotModelInitActivity : ProjectActivity {
     @RequiresBackgroundThread
