@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.mcp.ui
 
+import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import cc.unitmesh.devti.mcp.client.MockDataGenerator
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -11,6 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.intellij.util.messages.Topic
 import com.intellij.openapi.application.ApplicationManager
+import io.modelcontextprotocol.kotlin.sdk.Tool.Input
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 interface SketchConfigListener {
     fun onSelectedToolsChanged(tools: Map<String, Set<Tool>>)
@@ -23,10 +28,10 @@ interface SketchConfigListener {
 @Service(Service.Level.PROJECT)
 @State(
     name = "cc.unitmesh.devti.mcp.ui.McpConfigService",
-    storages = [Storage("AutoDevmcpConfig.xml")]
+    storages = [Storage("AutoDevMcpConfig.xml")]
 )
 class McpConfigService(private val project: Project) : PersistentStateComponent<McpConfigService.State> {
-    private val selectedTools = mutableMapOf<String, MutableSet<String>>()
+    private val selectedTools = mutableMapOf<String, MutableMap<String, Tool>>()
     private val cachedTools = mutableMapOf<Pair<String, String>, Tool>() // Cache of (serverName, toolName) -> Tool
 
     data class State(
@@ -40,25 +45,28 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
     }
 
     override fun getState(): State {
-        return State(selectedTools.mapValues { it.value.toSet() })
+        return State(selectedTools.mapValues { entry -> entry.value.keys.toSet() })
     }
 
     override fun loadState(state: State) {
         selectedTools.clear()
         state.toolSelections.forEach { (server, tools) ->
-            selectedTools[server] = tools.toMutableSet()
+            selectedTools[server] = tools.associateWith { toolName ->
+                // Create placeholder Tool until we can load the actual Tool
+                cachedTools[Pair(server, toolName)]
+                    ?: Tool(toolName, "Placeholder until loaded", emptyList())
+            }.toMutableMap()
         }
     }
 
     fun addSelectedTool(serverName: String, toolName: String) {
-        selectedTools.getOrPut(serverName) { mutableSetOf() }.add(toolName)
+        // Here we add a placeholder - the real Tool should be added with the other addSelectedTool method
+        val tool = Tool(toolName, "Placeholder until loaded", emptyList())
+        selectedTools.getOrPut(serverName) { mutableMapOf() }[toolName] = tool
     }
 
-    /**
-     * Add a selected tool and cache the Tool object
-     */
     fun addSelectedTool(serverName: String, tool: Tool) {
-        addSelectedTool(serverName, tool.name)
+        selectedTools.getOrPut(serverName) { mutableMapOf() }[tool.name] = tool
         cachedTools[Pair(serverName, tool.name)] = tool
     }
 
@@ -71,35 +79,35 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
     }
 
     fun isToolSelected(serverName: String, toolName: String): Boolean {
-        return selectedTools[serverName]?.contains(toolName) ?: false
+        return selectedTools[serverName]?.containsKey(toolName) ?: false
     }
 
-    fun getSelectedTools(): Map<String, Set<String>> {
-        return selectedTools.mapValues { it.value.toSet() }
+    fun getSelectedTools(): Map<String, Set<Tool>> {
+        return selectedTools
     }
 
-    /**
-     * Gets the selected tools as actual Tool objects
-     * If tools haven't been cached, it will attempt to retrieve them
-     */
-    suspend fun getSelectedToolObjects(): Map<String, Set<Tool>> {
-        val result = mutableMapOf<String, MutableSet<Tool>>()
-        // First try to get from cache
-        selectedTools.forEach { (serverName, toolNames) ->
-            val toolsForServer = mutableSetOf<Tool>()
-            toolNames.forEach { toolName ->
-                cachedTools[Pair(serverName, toolName)]?.let {
-                    toolsForServer.add(it)
-                }
-            }
-            if (toolsForServer.isNotEmpty()) {
-                result[serverName] = toolsForServer
+    fun convertToAgentTool(): List<AgentTool> {
+        return selectedTools.flatMap { (serverName, toolMap) ->
+            toolMap.values.map { tool ->
+                toAgentTool(tool, serverName)
             }
         }
-        return result.mapValues { it.value.toSet() }
+    }
+    /**
+     * Gets the selected tools as actual Tool objects
+     */
+    suspend fun getSelectedToolObjects(): Map<String, Set<Tool>> {
+        return selectedTools.mapValues { entry -> entry.value.values.toSet() }
     }
 
     fun clearSelectedTools() {
+        selectedTools.clear()
+    }
+
+    /**
+     * Clears both selected tools and cache
+     */
+    fun clearAll() {
         selectedTools.clear()
         cachedTools.clear()
     }
@@ -110,7 +118,8 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
     fun setSelectedTools(tools: Map<String, Set<Tool>>, clearCache: Boolean = false) {
         selectedTools.clear()
         tools.forEach { (serverName, toolSet) ->
-            selectedTools[serverName] = toolSet.map { it.name }.toMutableSet()
+            val toolMap = toolSet.associateBy { it.name }.toMutableMap()
+            selectedTools[serverName] = toolMap
             toolSet.forEach { tool -> cachedTools[Pair(serverName, tool.name)] = tool }
         }
 

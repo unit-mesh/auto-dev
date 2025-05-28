@@ -17,7 +17,6 @@ object BridgeToolProvider {
             }.toMutableList()
 
         val functions = ToolchainFunctionProvider.all()
-
         commonTools += functions.flatMap {
             val toolInfos = it.toolInfos(project)
             if (toolInfos.isNotEmpty()) {

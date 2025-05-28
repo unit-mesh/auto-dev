@@ -118,16 +118,14 @@ data class SketchRunContext(
          */
         fun getToolList(project: Project): String {
             val mcpConfigService = project.getService(McpConfigService::class.java)
-            val selectedTools = mcpConfigService.getSelectedTools()
-            val collect = SketchToolchainProvider.collect(project)
+            val selectedTools = mcpConfigService.convertToAgentTool()
+            val defaultTools = SketchToolchainProvider.collect(project)
 
-//            return if (selectedTools.isNotEmpty()) {
-//                selectedTools.joinToString("\n") { it.toString() }
-//            } else {
-//                collect.joinToString("\n")
-//            }
-
-            return collect.joinToString("\n")
+            return if (selectedTools.isNotEmpty()) {
+                (defaultTools + selectedTools).joinToString("\n") { it.toString() }
+            } else {
+                defaultTools.joinToString("\n")
+            }
         }
 
         fun moduleContext(project: Project): String {
