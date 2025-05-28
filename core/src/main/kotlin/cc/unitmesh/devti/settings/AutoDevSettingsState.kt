@@ -65,7 +65,13 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
         val language: String get() = getInstance().fetchLocalLanguage()
 
         fun getInstance(): AutoDevSettingsState {
-            return ApplicationManager.getApplication().getService(AutoDevSettingsState::class.java).state
+            val application = ApplicationManager.getApplication()
+            return if (application != null) {
+                application.getService(AutoDevSettingsState::class.java).state
+            } else {
+                // Return a default instance for testing environments where ApplicationManager is not available
+                AutoDevSettingsState()
+            }
         }
     }
 }
