@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
+import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ class McpConfigPopup {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
     }
     private val toolCheckboxMap = mutableMapOf<Pair<String, String>, JCheckBox>() // Stores serverName/toolName to JCheckBox
+    private val toolObjectMap = mutableMapOf<Pair<String, String>, Tool>() // Maps serverName/toolName to Tool object
 
     private fun createAndShow(component: JComponent?, project: Project, configService: McpConfigService) {
         val mainPanel = JPanel(BorderLayout()).apply {
@@ -121,6 +123,7 @@ class McpConfigPopup {
     ) {
         toolsPanel.removeAll()
         toolCheckboxMap.clear()
+        toolObjectMap.clear()
 
         loadToolsIntoPanel(project, configService, loadingPanel)
     }
@@ -132,6 +135,7 @@ class McpConfigPopup {
     ) {
         toolsPanel.removeAll() // Clear previous content
         toolCheckboxMap.clear()
+        toolObjectMap.clear()
 
         val loadingLabel = JLabel("Loading tools...")
         loadingLabel.alignmentX = Component.LEFT_ALIGNMENT
@@ -177,6 +181,7 @@ class McpConfigPopup {
                                         border = JBUI.Borders.emptyLeft(10)
                                     }
                                     toolCheckboxMap[Pair(serverName, tool.name)] = checkBox
+                                    toolObjectMap[Pair(serverName, tool.name)] = tool
                                     toolsPanel.add(checkBox)
                                 }
                             }
@@ -224,7 +229,14 @@ class McpConfigPopup {
             }
         }
         
-        configService.setSelectedTools(selectedTools)
+        toolObjectMap.forEach { (key, tool) ->
+            val (serverName, toolName) = key
+            if (selectedTools[serverName]?.contains(toolName) == true) {
+                configService.addSelectedTool(serverName, tool)
+            }
+        }
+
+        configService.setSelectedTools(selectedTools, false) // Don't clear cache as we just populated it
     }
     
     private fun filterToolsList(searchText: String) {
