@@ -274,11 +274,16 @@ open class SketchToolWindow(
         }
     }
 
-//    fun clearSystemPromptPanel() {
-//        systemPromptPanel.removeAll()
-//        systemPromptPanel.revalidate()
-//        systemPromptPanel.repaint()
-//    }
+    fun updateSystemPrompt(text: String) {
+        runInEdt {
+            systemPromptPanel.removeAll()
+            systemPromptPanel.add(createSingleTextView(text, language = "VTL"))
+            systemPromptPanel.revalidate()
+            systemPromptPanel.repaint()
+            this.revalidate()
+            this.repaint()
+        }
+    }
 
     fun updateHistoryPanel() {
         runInEdt {
