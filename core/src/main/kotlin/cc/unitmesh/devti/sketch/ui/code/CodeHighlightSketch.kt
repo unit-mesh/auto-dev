@@ -45,7 +45,6 @@ open class CodeHighlightSketch(
     val withLeftRightBorder: Boolean = true,
     val showToolbar: Boolean = true
 ) : JBPanel<CodeHighlightSketch>(VerticalLayout(2)), DataProvider, LangSketch, Disposable {
-    private val devinLineThreshold = 10
     private val minDevinLineThreshold = 1
     private var isDevIns = false
 
@@ -83,7 +82,10 @@ open class CodeHighlightSketch(
 
         if (ideaLanguage?.displayName == "DevIn") {
             isDevIns = true
-            editorFragment = EditorFragment(editor, devinLineThreshold, previewEditor)
+            editorFragment = EditorFragment(editor, minDevinLineThreshold, previewEditor)
+            if (text.lines().size > minDevinLineThreshold) {
+                editorFragment!!.setCollapsed(true)
+            }
         } else {
             editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
         }
@@ -144,7 +146,11 @@ open class CodeHighlightSketch(
 
             if (complete) {
                 if (isDevIns) {
-                    editorFragment?.resizeForNewThreshold(minDevinLineThreshold)
+                    val currentLineCount = document?.lineCount ?: 0
+                    if (currentLineCount > minDevinLineThreshold) {
+                        editorFragment?.setCollapsed(true)
+                        editorFragment?.updateExpandCollapseLabel()
+                    }
                 }
             }
         }
