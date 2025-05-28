@@ -226,6 +226,7 @@ abstract class LLMProvider2 protected constructor(
             // Use the provided model name or get the selected model ID from the settings state
             val settings = AutoDevSettingsState.getInstance()
             val actualModelName = modelName ?: settings.selectedCompletionModelId.takeIf { it.isNotEmpty() } ?: "gpt-4"
+            println("Using model: $actualModelName")
 
             return GithubCopilotProvider(
                 responseResolver = if (stream) "\$.choices[0].delta.content" else "\$.choices[0].message.content",

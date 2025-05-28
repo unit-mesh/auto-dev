@@ -114,7 +114,21 @@ object GithubCopilotDetector {
                     // Parse the JSON response
                     val json = Json { ignoreUnknownKeys = true }
                     println(responseBody)
-                    val models = json.decodeFromString<CopilotModelsResponse>(responseBody)
+                    val parsedResponse = json.decodeFromString<CopilotModelsResponse>(responseBody)
+
+                    // Filter models to only include those with enabled policy state
+                    // Keep models where policy is null (backward compatibility) or policy.state is "enabled"
+                    val filteredModels = parsedResponse.data.filter { model ->
+                        model.policy?.state == "enabled" || model.policy == null
+                    }
+
+                    val originalCount = parsedResponse.data.size
+                    val filteredCount = filteredModels.size
+                    if (originalCount != filteredCount) {
+                        logger.info("Filtered GitHub Copilot models: $originalCount -> $filteredCount (removed ${originalCount - filteredCount} disabled models)")
+                    }
+
+                    val models = CopilotModelsResponse(data = filteredModels)
 
                     // Update cache
                     cachedModels = models

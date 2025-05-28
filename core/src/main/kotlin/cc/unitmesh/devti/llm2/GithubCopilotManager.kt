@@ -84,11 +84,12 @@ class GithubCopilotManager() : Disposable {
                 }
 
                 logger.info("Initializing GitHub Copilot models...")
-                val models = withContext(Dispatchers.IO) {
-                    GithubCopilotDetector.getSupportedModels(forceRefresh = true)?.data
+                val modelsResponse = withContext(Dispatchers.IO) {
+                    GithubCopilotDetector.getSupportedModels(forceRefresh = true)
                 }
 
-                if (models != null) {
+                if (modelsResponse != null) {
+                    val models = modelsResponse.data
                     modelsCache = models
                     lastUpdateTime = System.currentTimeMillis()
                     isInitialized = true
@@ -118,16 +119,17 @@ class GithubCopilotManager() : Disposable {
     fun getSupportedModels(forceRefresh: Boolean = false): List<CopilotModel>? {
         if (forceRefresh) {
             // 如果强制刷新，则直接请求新数据
-            val freshModels = GithubCopilotDetector.getSupportedModels(forceRefresh = true)
-            if (freshModels != null) {
-                modelsCache = freshModels.data
+            val freshModelsResponse = GithubCopilotDetector.getSupportedModels(forceRefresh = true)
+            if (freshModelsResponse != null) {
+                val freshModels = freshModelsResponse.data
+                modelsCache = freshModels
                 lastUpdateTime = System.currentTimeMillis()
                 isInitialized = true
 
                 // 通知所有监听器
                 notifyListeners(modelsCache)
             }
-            return freshModels?.data ?: emptyList()
+            return freshModelsResponse?.data ?: emptyList()
         }
 
         // 如果已初始化并且缓存存在，直接返回缓存

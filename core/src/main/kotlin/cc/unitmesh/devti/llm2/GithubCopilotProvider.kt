@@ -81,9 +81,23 @@ private object GithubOAuthProvider {
                 val responseBody = response.body?.string() ?: throw IllegalStateException("响应体为空")
                 // 使用kotlinx.serialization解析JSON响应
                 val json = Json { ignoreUnknownKeys = true }
-                json.decodeFromString<CopilotModelsResponse>(responseBody).also {
-                    supportedModels = it
+                val parsedResponse = json.decodeFromString<CopilotModelsResponse>(responseBody)
+
+                // Filter models to only include those with enabled policy state
+                // Keep models where policy is null (backward compatibility) or policy.state is "enabled"
+                val filteredModels = parsedResponse.data.filter { model ->
+                    model.policy?.state == "enabled" || model.policy == null
                 }
+
+                val originalCount = parsedResponse.data.size
+                val filteredCount = filteredModels.size
+                if (originalCount != filteredCount) {
+                    logger.info("Filtered GitHub Copilot models: $originalCount -> $filteredCount (removed ${originalCount - filteredCount} disabled models)")
+                }
+
+                val filteredResponse = CopilotModelsResponse(data = filteredModels)
+                supportedModels = filteredResponse
+                filteredResponse
             } else {
                 logger.warn("获取支持的模型列表失败: ${response.code}")
                 null
