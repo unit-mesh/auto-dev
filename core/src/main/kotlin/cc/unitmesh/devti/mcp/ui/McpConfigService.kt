@@ -64,6 +64,17 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
     fun setSelectedTools(tools: Map<String, MutableSet<String>>) {
         selectedTools.clear()
         selectedTools.putAll(tools)
+        // Update Sketch systemPromptPanel when tools change
+//        project.messageBus.syncPublisher(SketchRecorder.UPDATED_TOPIC).onUpdated()
+//
+//        // Find SketchToolWindow instance and update systemPromptPanel if necessary
+//        ToolWindowManager.getInstance(project).getToolWindow("Sketch")?.let { toolWindow ->
+//            toolWindow.contentManager.contents.forEach { content ->
+//                (content.component as? SketchToolWindow)?.let { sketchToolWindow ->
+//                    sketchToolWindow.refreshSystemPrompt()
+//                }
+//            }
+//        }
     }
     
     /**

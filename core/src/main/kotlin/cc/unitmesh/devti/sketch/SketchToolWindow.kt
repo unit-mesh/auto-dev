@@ -9,12 +9,10 @@ import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.gui.toolbar.SummaryMessagesAction
-import cc.unitmesh.devti.gui.toolbar.McpConfigAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.agent.AgentStateService
-import cc.unitmesh.devti.observer.plan.reviewPlan
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
@@ -43,9 +41,7 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import java.awt.event.KeyAdapter
@@ -277,6 +273,12 @@ open class SketchToolWindow(
             this.repaint()
         }
     }
+
+//    fun clearSystemPromptPanel() {
+//        systemPromptPanel.removeAll()
+//        systemPromptPanel.revalidate()
+//        systemPromptPanel.repaint()
+//    }
 
     fun updateHistoryPanel() {
         runInEdt {
