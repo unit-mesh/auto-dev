@@ -39,7 +39,7 @@ data class CopilotModel(
                 "temperature": 0.0,
                 "stream": true,
                 "headers": {
-                  "Editor-Version": "Zed/Unknow",
+                  "Editor-Version": "Zed/Unknown",
                   "Copilot-Integration-Id": "vscode-chat"
                 }
               }
