@@ -66,12 +66,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
 
         fun getInstance(): AutoDevSettingsState {
             val application = ApplicationManager.getApplication()
-            return if (application != null) {
-                application.getService(AutoDevSettingsState::class.java).state
-            } else {
-                // Return a default instance for testing environments where ApplicationManager is not available
-                AutoDevSettingsState()
-            }
+            return application.getService(AutoDevSettingsState::class.java).state
         }
     }
 }
