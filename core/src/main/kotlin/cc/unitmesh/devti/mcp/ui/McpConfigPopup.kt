@@ -1,10 +1,12 @@
 package cc.unitmesh.devti.mcp.ui
 
+import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.CheckboxTree
 import com.intellij.ui.CheckedTreeNode
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
@@ -18,6 +20,7 @@ import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
+import com.intellij.openapi.application.invokeLater
 
 class McpConfigPopup {
     companion object {
@@ -71,13 +74,21 @@ class McpConfigPopup {
             showsRootHandles = true
         }
         
-        val scrollPane = JBScrollPane(tree).apply {
-            preferredSize = Dimension(380, 350)
-        }
+        val loadingPanel = JBLoadingPanel(BorderLayout(), project)
+        loadingPanel.add(JBScrollPane(tree), BorderLayout.CENTER)
+        loadingPanel.preferredSize = Dimension(380, 350)
         
         // Button panel
         val buttonPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
+            
+            val refreshButton = JButton("Refresh").apply {
+                addActionListener {
+                    loadingPanel.startLoading()
+                    refreshToolsList(project, configService, rootNode, treeModel, tree, loadingPanel)
+                }
+            }
+            add(refreshButton)
             add(Box.createHorizontalGlue())
             
             val applyButton = JButton("Apply").apply {
@@ -95,11 +106,12 @@ class McpConfigPopup {
         }
         
         mainPanel.add(searchField, BorderLayout.NORTH)
-        mainPanel.add(scrollPane, BorderLayout.CENTER)
+        mainPanel.add(loadingPanel, BorderLayout.CENTER)
         mainPanel.add(buttonPanel, BorderLayout.SOUTH)
         
         // Load tools asynchronously
-        loadToolsIntoTree(project, configService, rootNode, treeModel, tree)
+        loadingPanel.startLoading()
+        loadToolsIntoTree(project, configService, rootNode, treeModel, tree, loadingPanel)
         
         // Search functionality
         searchField.addKeyListener(object : KeyAdapter() {
@@ -123,35 +135,68 @@ class McpConfigPopup {
         }
     }
     
+    private fun refreshToolsList(
+        project: Project,
+        configService: McpConfigService,
+        rootNode: CheckedTreeNode,
+        treeModel: DefaultTreeModel,
+        tree: CheckboxTree,
+        loadingPanel: JBLoadingPanel
+    ) {
+        rootNode.removeAllChildren()
+        treeModel.reload()
+        
+        loadToolsIntoTree(project, configService, rootNode, treeModel, tree, loadingPanel)
+    }
+    
     private fun loadToolsIntoTree(
         project: Project,
         configService: McpConfigService,
         rootNode: CheckedTreeNode,
         treeModel: DefaultTreeModel,
-        tree: CheckboxTree
+        tree: CheckboxTree,
+        loadingPanel: JBLoadingPanel
     ) {
+        rootNode.removeAllChildren()
+        val loadingNode = CheckedTreeNode("Loading tools...")
+        rootNode.add(loadingNode)
+        treeModel.reload()
+        expandAllNodes(tree)
+        
         CoroutineScope(Dispatchers.IO).launch {
-            // Use empty content for now, or you can pass actual content based on context
-            val allTools = configService.getAllAvailableTools("")
-            val selectedTools = configService.getSelectedTools()
-            
-            CoroutineScope(Dispatchers.IO).launch {
-                rootNode.removeAllChildren()
+            try {
+                val mcpServerConfig = project.customizeSetting.mcpServerConfig
+                val allTools = configService.getAllAvailableTools(mcpServerConfig)
+                val selectedTools = configService.getSelectedTools()
                 
-                allTools.forEach { (serverName, tools) ->
-                    val serverNode = ServerTreeNode(serverName)
-                    rootNode.add(serverNode)
+                invokeLater {
+                    rootNode.removeAllChildren()
+                    loadingPanel.stopLoading()
                     
-                    tools.forEach { tool ->
-                        val toolNode = ToolTreeNode(serverName, tool)
-                        val isSelected = selectedTools[serverName]?.contains(tool.name) == true
-                        toolNode.isChecked = isSelected
-                        serverNode.add(toolNode)
+                    allTools.forEach { (serverName, tools) ->
+                        val serverNode = ServerTreeNode(serverName)
+                        rootNode.add(serverNode)
+                        
+                        tools.forEach { tool ->
+                            val toolNode = ToolTreeNode(serverName, tool)
+                            val isSelected = selectedTools[serverName]?.contains(tool.name) == true
+                            toolNode.isChecked = isSelected
+                            serverNode.add(toolNode)
+                        }
                     }
+                    
+                    treeModel.reload()
+                    expandAllNodes(tree)
                 }
-                
-                treeModel.reload()
-                expandAllNodes(tree)
+            } catch (e: Exception) {
+                invokeLater {
+                    rootNode.removeAllChildren()
+                    val errorNode = CheckedTreeNode("Error loading tools: ${e.message}")
+                    rootNode.add(errorNode)
+                    treeModel.reload()
+                    
+                    loadingPanel.stopLoading()
+                }
             }
         }
     }
