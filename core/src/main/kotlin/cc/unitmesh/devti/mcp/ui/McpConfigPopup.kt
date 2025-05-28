@@ -149,6 +149,7 @@ class McpConfigPopup {
             .setResizable(true)
             .setMovable(true)
             .setRequestFocus(true)
+            .setCancelOnClickOutside(false)
             .createPopup()
         
         if (component != null) {
@@ -183,7 +184,7 @@ class McpConfigPopup {
         rootNode.removeAllChildren()
         val loadingNode = CheckedTreeNode("Loading tools...")
         rootNode.add(loadingNode)
-        treeModel.reload()
+        treeModel.reload(rootNode) // Reload to show the loading node
         expandAllNodes(tree)
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -193,35 +194,59 @@ class McpConfigPopup {
                 val selectedTools = configService.getSelectedTools()
 
                 invokeLater {
-                    rootNode.removeAllChildren()
+                    rootNode.removeAllChildren() // Remove "Loading tools..." node
 
-                    allTools.forEach { (serverName, tools) ->
-                        val serverNode = ServerTreeNode(serverName)
-                        rootNode.add(serverNode)
+                    if (allTools.isEmpty()) {
+                        val noToolsNode = CheckedTreeNode("No tools available.")
+                        rootNode.add(noToolsNode)
+                    } else {
+                        allTools.forEach { (serverName, tools) ->
+                            val serverNode = ServerTreeNode(serverName)
+                            rootNode.add(serverNode)
 
-                        tools.forEach { tool ->
-                            val toolNode = ToolTreeNode(serverName, tool)
-                            val isSelected = selectedTools[serverName]?.contains(tool.name) == true
-                            toolNode.isChecked = isSelected
-                            serverNode.add(toolNode)
+                            if (tools.isEmpty()) {
+                                val noToolsForServerNode = CheckedTreeNode("No tools from this server.")
+                                serverNode.add(noToolsForServerNode)
+                            } else {
+                                tools.forEach { tool ->
+                                    val toolNode = ToolTreeNode(serverName, tool)
+                                    val isSelected = selectedTools[serverName]?.contains(tool.name) == true
+                                    toolNode.isChecked = isSelected
+                                    serverNode.add(toolNode)
+                                }
+                            }
                         }
                     }
 
-                    treeModel.reload()
+                    treeModel.nodeStructureChanged(rootNode) // Notify that rootNode's children changed
                     expandAllNodes(tree)
-                    tree.repaint() // 添加显式重绘
+                    
                     loadingPanel.stopLoading()
-                    loadingPanel.revalidate() // 确保布局更新
+
+                    tree.revalidate() // Ensure tree layout is updated
+                    tree.repaint() 
+                    loadingPanel.revalidate() 
+                    loadingPanel.repaint()
+                    // Also revalidate and repaint parent in case its layout depends on loadingPanel
+                    (loadingPanel.parent as? JComponent)?.revalidate()
+                    (loadingPanel.parent as? JComponent)?.repaint()
                 }
             } catch (e: Exception) {
                 invokeLater {
                     rootNode.removeAllChildren()
                     val errorNode = CheckedTreeNode("Error loading tools: ${e.message}")
                     rootNode.add(errorNode)
-                    treeModel.reload()
-                    tree.repaint() // 添加显式重绘
+                    treeModel.nodeStructureChanged(rootNode) // Notify change
+                    expandAllNodes(tree)
+
                     loadingPanel.stopLoading()
-                    loadingPanel.revalidate() // 确保布局更新
+
+                    tree.revalidate()
+                    tree.repaint()
+                    loadingPanel.revalidate()
+                    loadingPanel.repaint()
+                    (loadingPanel.parent as? JComponent)?.revalidate()
+                    (loadingPanel.parent as? JComponent)?.repaint()
                 }
             }
         }
@@ -248,7 +273,6 @@ class McpConfigPopup {
     }
     
     private fun filterTree(tree: CheckboxTree, rootNode: CheckedTreeNode, searchText: String) {
-        // Simple implementation - in a real scenario, you might want more sophisticated filtering
         tree.expandPath(TreePath(rootNode.path))
     }
     
@@ -256,7 +280,5 @@ class McpConfigPopup {
         for (i in 0 until tree.rowCount) {
             tree.expandRow(i)
         }
-
-        tree.updateUI()
     }
 }
