@@ -2,20 +2,17 @@ package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
-import cc.unitmesh.devti.mcp.client.MockDataGenerator
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
+import com.intellij.util.messages.Topic
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.intellij.util.messages.Topic
-import com.intellij.openapi.application.ApplicationManager
-import io.modelcontextprotocol.kotlin.sdk.Tool.Input
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import cc.unitmesh.devti.mcp.client.toAgentTool
 
 interface SketchConfigListener {
     fun onSelectedToolsChanged(tools: Map<String, Set<Tool>>)

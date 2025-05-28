@@ -17,6 +17,7 @@ import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.*
 import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.ui.popup.JBPopup
 import java.awt.Component
 import java.awt.Font
 
@@ -54,7 +55,7 @@ class McpConfigPopup {
         loadingPanel.add(JBScrollPane(toolsPanel), BorderLayout.CENTER) // toolsPanel instead of tree
         loadingPanel.preferredSize = Dimension(380, 350)
         
-        var currentPopup: com.intellij.openapi.ui.popup.JBPopup? = null
+        var currentPopup: JBPopup? = null
         
         // Button panel
         val buttonPanel = JPanel().apply {
@@ -176,7 +177,7 @@ class McpConfigPopup {
                                         if (desc.isNotEmpty()) "${tool.name} - $desc" else tool.name
                                     } ?: tool.name
                                     val checkBox = JCheckBox(checkBoxText).apply {
-                                        isSelected = selectedTools[serverName]?.contains(tool.name) == true
+                                        isSelected = selectedTools[serverName]?.contains(tool) == true
                                         alignmentX = Component.LEFT_ALIGNMENT
                                         border = JBUI.Borders.emptyLeft(10)
                                     }
