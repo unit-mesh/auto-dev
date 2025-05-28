@@ -3,9 +3,6 @@ package cc.unitmesh.devti.mcp.ui
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.ui.CheckboxTree
-import com.intellij.ui.CheckedTreeNode
-import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
@@ -18,26 +15,10 @@ import java.awt.Dimension
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.*
-import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreePath
 import com.intellij.openapi.application.invokeLater
 import io.modelcontextprotocol.kotlin.sdk.Tool
-
-class ServerTreeNode(val serverName: String) : CheckedTreeNode(serverName) {
-    init {
-        allowsChildren = true
-    }
-}
-
-class ToolTreeNode(val serverName: String, val tool: Tool) : CheckedTreeNode(tool.name) {
-    init {
-        allowsChildren = false
-        userObject = tool.name
-    }
-
-    override fun toString(): String = tool.name
-}
-
+import java.awt.Component
+import java.awt.Font
 
 class McpConfigPopup {
     companion object {
@@ -48,6 +29,11 @@ class McpConfigPopup {
         }
     }
     
+    private val toolsPanel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+    }
+    private val toolCheckboxMap = mutableMapOf<Pair<String, String>, JCheckBox>() // Stores serverName/toolName to JCheckBox
+
     private fun createAndShow(component: JComponent?, project: Project, configService: McpConfigService) {
         val mainPanel = JPanel(BorderLayout()).apply {
             preferredSize = Dimension(400, 500)
@@ -60,39 +46,11 @@ class McpConfigPopup {
             border = JBUI.Borders.empty(4)
         }
         
-        // Tree for tool selection
-        val rootNode = CheckedTreeNode("MCP Tools")
-        val treeModel = DefaultTreeModel(rootNode)
-        val tree = CheckboxTree(object : CheckboxTree.CheckboxTreeCellRenderer() {
-            override fun customizeRenderer(
-                tree: JTree?,
-                value: Any?,
-                selected: Boolean,
-                expanded: Boolean,
-                leaf: Boolean,
-                row: Int,
-                hasFocus: Boolean
-            ) {
-                if (value is ToolTreeNode) {
-                    textRenderer.append(value.tool.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                    value.tool.description?.let { desc ->
-                        if (desc.isNotEmpty()) {
-                            textRenderer.append(" - $desc", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-                        }
-                    }
-                } else if (value is ServerTreeNode) {
-                    textRenderer.append(value.serverName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-                } else {
-                    textRenderer.append(value.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                }
-            }
-        }, rootNode).apply {
-            isRootVisible = false
-            showsRootHandles = true
-        }
-        
+        // Panel for tool selection (replacing CheckboxTree)
+        // toolsPanel is now a class member, initialized above
+
         val loadingPanel = JBLoadingPanel(BorderLayout(), project)
-        loadingPanel.add(JBScrollPane(tree), BorderLayout.CENTER)
+        loadingPanel.add(JBScrollPane(toolsPanel), BorderLayout.CENTER) // toolsPanel instead of tree
         loadingPanel.preferredSize = Dimension(380, 350)
         
         var currentPopup: com.intellij.openapi.ui.popup.JBPopup? = null
@@ -104,7 +62,7 @@ class McpConfigPopup {
             val refreshButton = JButton("Refresh").apply {
                 addActionListener {
                     loadingPanel.startLoading()
-                    refreshToolsList(project, configService, rootNode, treeModel, tree, loadingPanel)
+                    refreshToolsList(project, configService, loadingPanel)
                 }
             }
             add(refreshButton)
@@ -112,7 +70,7 @@ class McpConfigPopup {
             
             val applyButton = JButton("Apply").apply {
                 addActionListener {
-                    saveSelectedTools(tree, configService)
+                    saveSelectedTools(configService)
                     currentPopup?.cancel()
                 }
             }
@@ -134,12 +92,12 @@ class McpConfigPopup {
         
         // Load tools asynchronously
         loadingPanel.startLoading()
-        loadToolsIntoTree(project, configService, rootNode, treeModel, tree, loadingPanel)
+        loadToolsIntoPanel(project, configService, loadingPanel)
         
         // Search functionality
         searchField.addKeyListener(object : KeyAdapter() {
             override fun keyReleased(e: KeyEvent) {
-                filterTree(tree, rootNode, searchField.text)
+                filterToolsList(searchField.text)
             }
         })
         
@@ -162,30 +120,27 @@ class McpConfigPopup {
     private fun refreshToolsList(
         project: Project,
         configService: McpConfigService,
-        rootNode: CheckedTreeNode,
-        treeModel: DefaultTreeModel,
-        tree: CheckboxTree,
         loadingPanel: JBLoadingPanel
     ) {
-        rootNode.removeAllChildren()
-        treeModel.reload()
-        
-        loadToolsIntoTree(project, configService, rootNode, treeModel, tree, loadingPanel)
+        toolsPanel.removeAll()
+        toolCheckboxMap.clear()
+
+        loadToolsIntoPanel(project, configService, loadingPanel)
     }
 
-    private fun loadToolsIntoTree(
+    private fun loadToolsIntoPanel(
         project: Project,
         configService: McpConfigService,
-        rootNode: CheckedTreeNode,
-        treeModel: DefaultTreeModel,
-        tree: CheckboxTree,
         loadingPanel: JBLoadingPanel
     ) {
-        rootNode.removeAllChildren()
-        val loadingNode = CheckedTreeNode("Loading tools...")
-        rootNode.add(loadingNode)
-        treeModel.reload(rootNode) // Reload to show the loading node
-        expandAllNodes(tree)
+        toolsPanel.removeAll() // Clear previous content
+        toolCheckboxMap.clear()
+
+        val loadingLabel = JLabel("Loading tools...")
+        loadingLabel.alignmentX = Component.LEFT_ALIGNMENT
+        toolsPanel.add(loadingLabel)
+        toolsPanel.revalidate()
+        toolsPanel.repaint()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -194,55 +149,64 @@ class McpConfigPopup {
                 val selectedTools = configService.getSelectedTools()
 
                 invokeLater {
-                    rootNode.removeAllChildren() // Remove "Loading tools..." node
+                    toolsPanel.removeAll() // Remove "Loading tools..." label
 
                     if (allTools.isEmpty()) {
-                        val noToolsNode = CheckedTreeNode("No tools available.")
-                        rootNode.add(noToolsNode)
+                        val noToolsLabel = JLabel("No tools available.")
+                        noToolsLabel.alignmentX = Component.LEFT_ALIGNMENT
+                        toolsPanel.add(noToolsLabel)
                     } else {
                         allTools.forEach { (serverName, tools) ->
-                            val serverNode = ServerTreeNode(serverName)
-                            rootNode.add(serverNode)
+                            val serverLabel = JLabel(serverName).apply {
+                                font = font.deriveFont(Font.BOLD)
+                                border = JBUI.Borders.emptyTop(8)
+                                alignmentX = Component.LEFT_ALIGNMENT
+                            }
+                            toolsPanel.add(serverLabel)
 
                             if (tools.isEmpty()) {
-                                val noToolsForServerNode = CheckedTreeNode("No tools from this server.")
-                                serverNode.add(noToolsForServerNode)
+                                val noToolsForServerLabel = JLabel("  No tools from this server.").apply {
+                                    alignmentX = Component.LEFT_ALIGNMENT
+                                }
+                                toolsPanel.add(noToolsForServerLabel)
                             } else {
                                 tools.forEach { tool ->
-                                    val toolNode = ToolTreeNode(serverName, tool)
-                                    val isSelected = selectedTools[serverName]?.contains(tool.name) == true
-                                    toolNode.isChecked = isSelected
-                                    serverNode.add(toolNode)
+                                    val checkBoxText = tool.description?.let { desc ->
+                                        if (desc.isNotEmpty()) "${tool.name} - $desc" else tool.name
+                                    } ?: tool.name
+                                    val checkBox = JCheckBox(checkBoxText).apply {
+                                        isSelected = selectedTools[serverName]?.contains(tool.name) == true
+                                        alignmentX = Component.LEFT_ALIGNMENT
+                                        border = JBUI.Borders.emptyLeft(10)
+                                    }
+                                    toolCheckboxMap[Pair(serverName, tool.name)] = checkBox
+                                    toolsPanel.add(checkBox)
                                 }
                             }
                         }
                     }
-
-                    treeModel.nodeStructureChanged(rootNode) // Notify that rootNode's children changed
-                    expandAllNodes(tree)
                     
                     loadingPanel.stopLoading()
 
-                    tree.revalidate() // Ensure tree layout is updated
-                    tree.repaint() 
+                    toolsPanel.revalidate()
+                    toolsPanel.repaint()
                     loadingPanel.revalidate() 
                     loadingPanel.repaint()
-                    // Also revalidate and repaint parent in case its layout depends on loadingPanel
                     (loadingPanel.parent as? JComponent)?.revalidate()
                     (loadingPanel.parent as? JComponent)?.repaint()
                 }
             } catch (e: Exception) {
                 invokeLater {
-                    rootNode.removeAllChildren()
-                    val errorNode = CheckedTreeNode("Error loading tools: ${e.message}")
-                    rootNode.add(errorNode)
-                    treeModel.nodeStructureChanged(rootNode) // Notify change
-                    expandAllNodes(tree)
-
+                    toolsPanel.removeAll()
+                    val errorLabel = JLabel("Error loading tools: ${e.message}").apply {
+                        alignmentX = Component.LEFT_ALIGNMENT
+                    }
+                    toolsPanel.add(errorLabel)
+                    
                     loadingPanel.stopLoading()
 
-                    tree.revalidate()
-                    tree.repaint()
+                    toolsPanel.revalidate()
+                    toolsPanel.repaint()
                     loadingPanel.revalidate()
                     loadingPanel.repaint()
                     (loadingPanel.parent as? JComponent)?.revalidate()
@@ -252,33 +216,55 @@ class McpConfigPopup {
         }
     }
     
-    private fun saveSelectedTools(tree: CheckboxTree, configService: McpConfigService) {
+    private fun saveSelectedTools(configService: McpConfigService) {
         val selectedTools = mutableMapOf<String, MutableSet<String>>()
         
-        val root = tree.model.root as CheckedTreeNode
-        for (i in 0 until root.childCount) {
-            val serverNode = root.getChildAt(i) as ServerTreeNode
-            val serverName = serverNode.serverName
-            
-            for (j in 0 until serverNode.childCount) {
-                val toolNode = serverNode.getChildAt(j) as ToolTreeNode
-                if (toolNode.isChecked) {
-                    selectedTools.computeIfAbsent(serverName) { mutableSetOf() }
-                        .add(toolNode.tool.name)
-                }
+        toolCheckboxMap.forEach { (key, checkBox) ->
+            val (serverName, toolName) = key
+            if (checkBox.isSelected) {
+                selectedTools.computeIfAbsent(serverName) { mutableSetOf() }
+                    .add(toolName)
             }
         }
         
         configService.setSelectedTools(selectedTools)
     }
     
-    private fun filterTree(tree: CheckboxTree, rootNode: CheckedTreeNode, searchText: String) {
-        tree.expandPath(TreePath(rootNode.path))
-    }
-    
-    private fun expandAllNodes(tree: CheckboxTree) {
-        for (i in 0 until tree.rowCount) {
-            tree.expandRow(i)
+    private fun filterToolsList(searchText: String) {
+        val lowerSearchText = searchText.lowercase().trim()
+        var firstVisible: Component? = null
+
+        toolsPanel.components.forEach { component ->
+            when (component) {
+                is JCheckBox -> {
+                    val toolName = toolCheckboxMap.entries.find { it.value == component }?.key?.second ?: ""
+                    val toolDescription = component.text.substringAfter("$toolName - ", "").substringBeforeLast(" - $toolName", "")
+
+                    val isVisible = toolName.lowercase().contains(lowerSearchText) ||
+                                    toolDescription.lowercase().contains(lowerSearchText) ||
+                                    lowerSearchText.isEmpty()
+                    component.isVisible = isVisible
+                    if (isVisible && firstVisible == null) {
+                        firstVisible = component
+                    }
+                }
+                is JLabel -> {
+                    // Server labels or status labels. For now, keep them visible or hide if all children are hidden.
+                    // This part can be enhanced to hide server labels if all its tools are hidden.
+                    // For simplicity, we'll keep them visible. If search is empty, all are visible.
+                    component.isVisible = true
+                }
+            }
         }
+        // If there's a search term and some items are visible, try to scroll to the first visible item.
+        if (lowerSearchText.isNotEmpty() && firstVisible != null) {
+            val finalFirstVisible = firstVisible
+            SwingUtilities.invokeLater {
+                toolsPanel.scrollRectToVisible(finalFirstVisible.bounds)
+            }
+        }
+
+        toolsPanel.revalidate()
+        toolsPanel.repaint()
     }
 }
