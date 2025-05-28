@@ -123,26 +123,6 @@ class CustomMcpServerManager(val project: Project) {
         return "No such tool: ${tool.name} or failed to execute"
     }
 
-    /**
-     * Find a Tool by server name and tool name
-     * @param serverName The name of the MCP server
-     * @param toolName The name of the tool
-     * @return The Tool object if found, null otherwise
-     */
-    suspend fun findToolByName(serverName: String, toolName: String): Tool? {
-        // First try to get from cached tools
-        val tools = cached[project.customizeSetting.mcpServerConfig]?.get(serverName) ?: emptyList()
-        val tool = tools.find { it.name == toolName }
-        if (tool != null) {
-            return tool
-        }
-        
-        // If not found in cache, try to get from config service
-        val configService = McpConfigService.getInstance(project)
-        val selectedTools = configService.getSelectedToolObjects()
-        return selectedTools[serverName]?.find { it.name == toolName }
-    }
-
     companion object {
         fun instance(project: Project): CustomMcpServerManager {
             return project.getService(CustomMcpServerManager::class.java)

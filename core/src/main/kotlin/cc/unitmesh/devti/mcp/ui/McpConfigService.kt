@@ -13,6 +13,7 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import cc.unitmesh.devti.mcp.client.toAgentTool
+import io.modelcontextprotocol.kotlin.sdk.Tool.Input
 
 interface SketchConfigListener {
     fun onSelectedToolsChanged(tools: Map<String, Set<Tool>>)
@@ -51,36 +52,15 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
             selectedTools[server] = tools.associateWith { toolName ->
                 // Create placeholder Tool until we can load the actual Tool
                 cachedTools[Pair(server, toolName)]
-                    ?: Tool(toolName, "Placeholder until loaded", emptyList())
+                    ?: Tool(toolName, "Placeholder until loaded", Input())
             }.toMutableMap()
         }
     }
 
-    fun addSelectedTool(serverName: String, toolName: String) {
-        // Here we add a placeholder - the real Tool should be added with the other addSelectedTool method
-        val tool = Tool(toolName, "Placeholder until loaded", emptyList())
-        selectedTools.getOrPut(serverName) { mutableMapOf() }[toolName] = tool
-    }
-
-    fun addSelectedTool(serverName: String, tool: Tool) {
-        selectedTools.getOrPut(serverName) { mutableMapOf() }[tool.name] = tool
-        cachedTools[Pair(serverName, tool.name)] = tool
-    }
-
-    fun removeSelectedTool(serverName: String, toolName: String) {
-        selectedTools[serverName]?.remove(toolName)
-        if (selectedTools[serverName]?.isEmpty() == true) {
-            selectedTools.remove(serverName)
-        }
-        cachedTools.remove(Pair(serverName, toolName))
-    }
-
-    fun isToolSelected(serverName: String, toolName: String): Boolean {
-        return selectedTools[serverName]?.containsKey(toolName) ?: false
-    }
-
     fun getSelectedTools(): Map<String, Set<Tool>> {
-        return selectedTools
+        return selectedTools.mapValues { (_, toolMap) ->
+            toolMap.values.toSet()
+        }
     }
 
     fun convertToAgentTool(): List<AgentTool> {
@@ -89,24 +69,6 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
                 toAgentTool(tool, serverName)
             }
         }
-    }
-    /**
-     * Gets the selected tools as actual Tool objects
-     */
-    suspend fun getSelectedToolObjects(): Map<String, Set<Tool>> {
-        return selectedTools.mapValues { entry -> entry.value.values.toSet() }
-    }
-
-    fun clearSelectedTools() {
-        selectedTools.clear()
-    }
-
-    /**
-     * Clears both selected tools and cache
-     */
-    fun clearAll() {
-        selectedTools.clear()
-        cachedTools.clear()
     }
 
     /**
