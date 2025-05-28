@@ -219,24 +219,19 @@ class McpConfigPopup {
     }
     
     private fun saveSelectedTools(configService: McpConfigService) {
-        val selectedTools = mutableMapOf<String, MutableSet<String>>()
+        val selectedToolObjects = mutableMapOf<String, MutableSet<Tool>>()
         
         toolCheckboxMap.forEach { (key, checkBox) ->
             val (serverName, toolName) = key
             if (checkBox.isSelected) {
-                selectedTools.computeIfAbsent(serverName) { mutableSetOf() }
-                    .add(toolName)
-            }
-        }
-        
-        toolObjectMap.forEach { (key, tool) ->
-            val (serverName, toolName) = key
-            if (selectedTools[serverName]?.contains(toolName) == true) {
-                configService.addSelectedTool(serverName, tool)
+                toolObjectMap[Pair(serverName, toolName)]?.let { tool ->
+                    selectedToolObjects.computeIfAbsent(serverName) { mutableSetOf() }
+                        .add(tool)
+                }
             }
         }
 
-        configService.setSelectedTools(selectedTools, false) // Don't clear cache as we just populated it
+        configService.setSelectedTools(selectedToolObjects.mapValues { it.value.toSet() })
     }
     
     private fun filterToolsList(searchText: String) {

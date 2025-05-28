@@ -9,6 +9,16 @@ import com.intellij.openapi.project.Project
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.intellij.util.messages.Topic
+import com.intellij.openapi.application.ApplicationManager
+
+interface SketchConfigListener {
+    fun onSelectedToolsChanged(tools: Map<String, Set<Tool>>)
+
+    companion object {
+        val TOPIC = Topic.create("SketchConfigChanged", SketchConfigListener::class.java)
+    }
+}
 
 @Service(Service.Level.PROJECT)
 @State(
@@ -18,6 +28,7 @@ import kotlinx.coroutines.withContext
 class McpConfigService(private val project: Project) : PersistentStateComponent<McpConfigService.State> {
     private val selectedTools = mutableMapOf<String, MutableSet<String>>()
     private val cachedTools = mutableMapOf<Pair<String, String>, Tool>() // Cache of (serverName, toolName) -> Tool
+
     data class State(
         var toolSelections: Map<String, Set<String>> = emptyMap()
     )
@@ -42,7 +53,7 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
     fun addSelectedTool(serverName: String, toolName: String) {
         selectedTools.getOrPut(serverName) { mutableSetOf() }.add(toolName)
     }
-    
+
     /**
      * Add a selected tool and cache the Tool object
      */
@@ -92,26 +103,26 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
         selectedTools.clear()
         cachedTools.clear()
     }
-    
-    fun setSelectedTools(tools: Map<String, MutableSet<String>>, clearCache: Boolean = true) {
+
+    /**
+     * Set selected tools from a map of server name to Tool object sets.
+     */
+    fun setSelectedTools(tools: Map<String, Set<Tool>>, clearCache: Boolean = false) {
         selectedTools.clear()
-        selectedTools.putAll(tools)
-        // Update Sketch systemPromptPanel when tools change
-//        project.messageBus.syncPublisher(SketchRecorder.UPDATED_TOPIC).onUpdated()
-//
-//        // Find SketchToolWindow instance and update systemPromptPanel if necessary
-//        ToolWindowManager.getInstance(project).getToolWindow("Sketch")?.let { toolWindow ->
-//            toolWindow.contentManager.contents.forEach { content ->
-//                (content.component as? SketchToolWindow)?.let { sketchToolWindow ->
-//                    sketchToolWindow.refreshSystemPrompt()
-//                }
-//            }
-//        }
+        tools.forEach { (serverName, toolSet) ->
+            selectedTools[serverName] = toolSet.map { it.name }.toMutableSet()
+            toolSet.forEach { tool -> cachedTools[Pair(serverName, tool.name)] = tool }
+        }
+
+        ApplicationManager.getApplication().messageBus
+            .syncPublisher(SketchConfigListener.TOPIC)
+            .onSelectedToolsChanged(tools)
+
         if (clearCache) {
             cachedTools.clear()
         }
     }
-    
+
     /**
      * Get all available tools from MCP servers
      * @param content The content context for server configuration
@@ -120,13 +131,13 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
     suspend fun getAllAvailableTools(content: String = ""): Map<String, List<Tool>> = withContext(Dispatchers.IO) {
         val mcpServerManager = CustomMcpServerManager.instance(project)
         val allTools = mutableMapOf<String, List<Tool>>()
-        
+
         val serverConfigs = mcpServerManager.getEnabledServers(content)
-        
+
         if (serverConfigs.isNullOrEmpty()) {
             return@withContext emptyMap()
         }
-        
+
         serverConfigs.forEach { (serverName, serverConfig) ->
             try {
                 val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
@@ -140,10 +151,10 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
                 allTools[serverName] = emptyList()
             }
         }
-        
+
         allTools
     }
-    
+
     /**
      * Get the total count of selected tools across all servers
      */
