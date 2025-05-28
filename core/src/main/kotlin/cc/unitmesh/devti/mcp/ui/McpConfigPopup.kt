@@ -78,6 +78,8 @@ class McpConfigPopup {
         loadingPanel.add(JBScrollPane(tree), BorderLayout.CENTER)
         loadingPanel.preferredSize = Dimension(380, 350)
         
+        var currentPopup: com.intellij.openapi.ui.popup.JBPopup? = null
+        
         // Button panel
         val buttonPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
@@ -94,11 +96,15 @@ class McpConfigPopup {
             val applyButton = JButton("Apply").apply {
                 addActionListener {
                     saveSelectedTools(tree, configService)
-                    // Close popup - this will be handled by the popup framework
+                    currentPopup?.cancel()
                 }
             }
             
-            val cancelButton = JButton("Cancel")
+            val cancelButton = JButton("Cancel").apply {
+                addActionListener {
+                    currentPopup?.cancel()
+                }
+            }
             
             add(cancelButton)
             add(Box.createHorizontalStrut(8))
@@ -120,7 +126,7 @@ class McpConfigPopup {
             }
         })
         
-        val popup = JBPopupFactory.getInstance()
+        currentPopup = JBPopupFactory.getInstance()
             .createComponentPopupBuilder(mainPanel, searchField)
             .setTitle("Configure MCP Tools")
             .setResizable(true)
@@ -129,9 +135,9 @@ class McpConfigPopup {
             .createPopup()
         
         if (component != null) {
-            popup.showUnderneathOf(component)
+            currentPopup.showUnderneathOf(component)
         } else {
-            popup.showCenteredInCurrentWindow(project)
+            currentPopup.showCenteredInCurrentWindow(project)
         }
     }
     
@@ -148,7 +154,7 @@ class McpConfigPopup {
         
         loadToolsIntoTree(project, configService, rootNode, treeModel, tree, loadingPanel)
     }
-    
+
     private fun loadToolsIntoTree(
         project: Project,
         configService: McpConfigService,
@@ -162,21 +168,20 @@ class McpConfigPopup {
         rootNode.add(loadingNode)
         treeModel.reload()
         expandAllNodes(tree)
-        
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val mcpServerConfig = project.customizeSetting.mcpServerConfig
                 val allTools = configService.getAllAvailableTools(mcpServerConfig)
                 val selectedTools = configService.getSelectedTools()
-                
+
                 invokeLater {
                     rootNode.removeAllChildren()
-                    loadingPanel.stopLoading()
-                    
+
                     allTools.forEach { (serverName, tools) ->
                         val serverNode = ServerTreeNode(serverName)
                         rootNode.add(serverNode)
-                        
+
                         tools.forEach { tool ->
                             val toolNode = ToolTreeNode(serverName, tool)
                             val isSelected = selectedTools[serverName]?.contains(tool.name) == true
@@ -184,9 +189,12 @@ class McpConfigPopup {
                             serverNode.add(toolNode)
                         }
                     }
-                    
+
                     treeModel.reload()
                     expandAllNodes(tree)
+                    tree.repaint() // 添加显式重绘
+                    loadingPanel.stopLoading()
+                    loadingPanel.revalidate() // 确保布局更新
                 }
             } catch (e: Exception) {
                 invokeLater {
@@ -194,8 +202,9 @@ class McpConfigPopup {
                     val errorNode = CheckedTreeNode("Error loading tools: ${e.message}")
                     rootNode.add(errorNode)
                     treeModel.reload()
-                    
+                    tree.repaint() // 添加显式重绘
                     loadingPanel.stopLoading()
+                    loadingPanel.revalidate() // 确保布局更新
                 }
             }
         }
@@ -230,5 +239,7 @@ class McpConfigPopup {
         for (i in 0 until tree.rowCount) {
             tree.expandRow(i)
         }
+
+        tree.updateUI()
     }
 }
