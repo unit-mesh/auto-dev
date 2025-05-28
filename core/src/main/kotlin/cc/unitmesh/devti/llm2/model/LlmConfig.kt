@@ -1,8 +1,9 @@
 package cc.unitmesh.devti.llm2.model
 
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 import kotlinx.serialization.json.*
 import kotlin.text.ifEmpty
 
@@ -128,12 +129,66 @@ data class LlmConfig(
             }
 
             val configs: List<LlmConfig> = try {
-                Json.decodeFromString(llms)
+                // Use a JSON configuration that's more lenient with unknown properties
+                val json = Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                }
+                json.decodeFromString(llms)
             } catch (e: Exception) {
-                throw Exception("Failed to load custom llms: $e")
+                // Log the error but don't throw - try to recover
+                println("Warning: Failed to load custom llms, attempting recovery: $e")
+
+                // Try to recover by attempting to parse individual configs
+                try {
+                    recoverFromCorruptedConfig(llms)
+                } catch (recoveryException: Exception) {
+                    println("Error: Could not recover from corrupted config: $recoveryException")
+                    throw Exception("Failed to load custom llms: $e")
+                }
             }
 
             return configs
+        }
+
+        /**
+         * Attempt to recover from corrupted configuration by parsing individual configs
+         */
+        private fun recoverFromCorruptedConfig(llms: String): List<LlmConfig> {
+            val json = Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            }
+
+            // Try to parse as JSON array and fix individual items
+            val jsonElement = json.parseToJsonElement(llms)
+            if (jsonElement !is JsonArray) {
+                return emptyList()
+            }
+
+            val recoveredConfigs = mutableListOf<LlmConfig>()
+
+            for (element in jsonElement) {
+                try {
+                    if (element is JsonObject) {
+                        // Check if this config has the legacy "Others" modelType and fix it
+                        val mutableElement = element.toMutableMap()
+                        val modelType = mutableElement["modelType"]
+                        if (modelType is JsonPrimitive && modelType.content == "Others") {
+                            mutableElement["modelType"] = JsonPrimitive("Default")
+                        }
+
+                        val fixedElement = JsonObject(mutableElement)
+                        val config = json.decodeFromJsonElement<LlmConfig>(fixedElement)
+                        recoveredConfigs.add(config)
+                    }
+                } catch (e: Exception) {
+                    println("Warning: Skipping corrupted config item: $e")
+                    // Continue with next config
+                }
+            }
+
+            return recoveredConfigs
         }
 
         /**
@@ -287,7 +342,33 @@ data class LlmConfig(
     }
 }
 
-@Serializable
+/**
+ * Custom serializer for ModelType to handle backward compatibility with legacy "Others" type
+ */
+@Serializer(forClass = ModelType::class)
+object ModelTypeSerializer : KSerializer<ModelType> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ModelType", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ModelType) {
+        encoder.encodeString(value.name)
+    }
+
+    override fun deserialize(decoder: Decoder): ModelType {
+        val value = decoder.decodeString()
+        return when (value) {
+            "Others" -> ModelType.Default // Map legacy "Others" to "Default"
+            "Default" -> ModelType.Default
+            "Plan" -> ModelType.Plan
+            "Act" -> ModelType.Act
+            "Completion" -> ModelType.Completion
+            "Embedding" -> ModelType.Embedding
+            "FastApply" -> ModelType.FastApply
+            else -> ModelType.Default // Fallback to Default for any unknown types
+        }
+    }
+}
+
+@Serializable(with = ModelTypeSerializer::class)
 enum class ModelType {
     Default, Plan, Act, Completion, Embedding, FastApply
 }
