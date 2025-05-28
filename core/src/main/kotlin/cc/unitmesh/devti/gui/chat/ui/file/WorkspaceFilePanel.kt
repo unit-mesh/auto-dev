@@ -1,16 +1,21 @@
 package cc.unitmesh.devti.gui.chat.ui.file
 
+import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.toolbar.McpConfigAction
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
-import cc.unitmesh.devti.AutoDevBundle
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.JBColor
 
 class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) {
     private val workspaceFiles = mutableListOf<FilePresentation>()
@@ -21,14 +26,28 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
 
         filesPanel.isOpaque = false
         filesPanel.add(createAddButton())
+        filesPanel.add(createConfigButton())
 
         add(filesPanel, BorderLayout.NORTH)
         isOpaque = false
     }
 
+    private fun createConfigButton(): JComponent {
+        return createActionButton(McpConfigAction())
+    }
+
+    private fun createActionButton(action: AnAction, actionPlace: String = ActionPlaces.UNKNOWN): ActionButton {
+        val component = ActionButton(
+            action,
+            action.templatePresentation.clone(),
+            actionPlace,
+            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
+        return component
+    }
+
     private fun createAddButton(): JBLabel {
-        val button = JBLabel(AllIcons.General.Add)
-        button.cursor = Cursor(Cursor.HAND_CURSOR)
+        val button = JBLabel(AllIcons.General.Add).apply { cursor = Cursor(Cursor.HAND_CURSOR) }
         button.toolTipText = AutoDevBundle.message("chat.panel.add.files.tooltip")
         button.border = JBUI.Borders.empty(2)
         button.background = JBColor(0xEDF4FE, 0x313741)
@@ -63,6 +82,7 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
     private fun updateFilesPanel() {
         filesPanel.removeAll()
         filesPanel.add(createAddButton())
+        filesPanel.add(createConfigButton())
 
         for (filePresentation in workspaceFiles) {
             val fileLabel = FileItemPanel(project, filePresentation) {

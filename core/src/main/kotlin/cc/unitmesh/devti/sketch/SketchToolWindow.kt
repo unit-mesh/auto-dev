@@ -161,7 +161,6 @@ open class SketchToolWindow(
                     buttonBox.add(createActionButton(NewSketchAction()))
                     buttonBox.add(createActionButton(CopyAllMessagesAction()))
                     buttonBox.add(createActionButton(SummaryMessagesAction()))
-                    buttonBox.add(createActionButton(McpConfigAction()))
                     cell(buttonBox).alignRight()
                 }
             }

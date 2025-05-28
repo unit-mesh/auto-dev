@@ -27,7 +27,6 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
         }
     }
 
-    // Implement PersistentStateComponent methods
     override fun getState(): State {
         return State(selectedTools.mapValues { it.value.toSet() })
     }

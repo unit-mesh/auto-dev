@@ -16,7 +16,6 @@ import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.*
 import com.intellij.openapi.application.invokeLater
-import io.modelcontextprotocol.kotlin.sdk.Tool
 import java.awt.Component
 import java.awt.Font
 
@@ -90,11 +89,9 @@ class McpConfigPopup {
         mainPanel.add(loadingPanel, BorderLayout.CENTER)
         mainPanel.add(buttonPanel, BorderLayout.SOUTH)
         
-        // Load tools asynchronously
         loadingPanel.startLoading()
         loadToolsIntoPanel(project, configService, loadingPanel)
         
-        // Search functionality
         searchField.addKeyListener(object : KeyAdapter() {
             override fun keyReleased(e: KeyEvent) {
                 filterToolsList(searchField.text)
