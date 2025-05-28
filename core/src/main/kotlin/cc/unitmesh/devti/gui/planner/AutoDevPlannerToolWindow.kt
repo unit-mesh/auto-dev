@@ -73,14 +73,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             override fun onUpdateChange(changes: MutableList<Change>) {
                 runInEdt {
                     plannerResultSummary.updateChanges(changes)
-                    if (currentView is PlanSketchView) {
-                        if (contentPanel.components.none { it == plannerResultSummary }) {
-                            contentPanel.add(plannerResultSummary, BorderLayout.SOUTH)
-                        }
-
-                        contentPanel.revalidate()
-                        contentPanel.repaint()
-                    }
+                    contentPanel.revalidate()
                 }
             }
         })
@@ -122,14 +115,18 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     inner class PlanSketchView : PlannerView {
         override val viewType = PlannerViewType.PLAN
         override fun initialize(window: AutoDevPlannerToolWindow) {
-            val planPanel = panel {
-                row {
-                    cell(planLangSketch)
-                        .fullWidth()
-                        .resizableColumn()
-                }
+            // 创建一个分割面板，将 PlanLangSketch 放在北部并占据大部分空间，将 plannerResultSummary 放在南部
+            val splitPanel = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
+                topComponent = planLangSketch
+                bottomComponent = plannerResultSummary
+                resizeWeight = 0.8  // 分配 80% 的空间给 planLangSketch
+                isContinuousLayout = true
+                border = JBUI.Borders.empty()
             }
 
+            // 使用 BorderLayout 并将分割面板添加到中心
+            val planPanel = JPanel(BorderLayout())
+            planPanel.add(splitPanel, BorderLayout.CENTER)
             contentPanel.add(planPanel, BorderLayout.CENTER)
             contentPanel.add(plannerResultSummary, BorderLayout.SOUTH)
         }
@@ -183,16 +180,22 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
     inner class PlanLoadingView : PlannerView {
         override val viewType = PlannerViewType.LOADING
         override fun initialize(window: AutoDevPlannerToolWindow) {
-            val planPanel = panel {
-                row {
-                    cell(planLangSketch)
-                        .fullWidth()
-                        .resizableColumn()
-                }
+            // 创建一个主面板使用BorderLayout
+            val mainPanel = JPanel(BorderLayout())
+
+            // 添加加载面板到顶部
+            mainPanel.add(PlanLoadingPanel(project), BorderLayout.NORTH)
+
+            // 使用 JSplitPane 来确保内容区域可滚动
+            val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
+                topComponent = planLangSketch
+                bottomComponent = JPanel() // 空面板占位
+                resizeWeight = 1.0  // 全部空间给计划视图
+                dividerSize = 0  // 隐藏分隔条
             }
 
-            contentPanel.add(planPanel, BorderLayout.CENTER)
-            contentPanel.add(PlanLoadingPanel(project), BorderLayout.NORTH)
+            mainPanel.add(splitPane, BorderLayout.CENTER)
+            contentPanel.add(mainPanel, BorderLayout.CENTER)
         }
     }
 

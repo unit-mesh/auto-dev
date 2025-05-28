@@ -39,7 +39,7 @@ class PlanLangSketch(
         renderPlan()
 
         scrollPane = JBScrollPane(contentPanel).apply {
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
             horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
             border = JBUI.Borders.empty()
 
@@ -50,7 +50,8 @@ class PlanLangSketch(
         val wrapperPanel = JPanel(BorderLayout())
         wrapperPanel.add(scrollPane, BorderLayout.CENTER)
         wrapperPanel.background = JBUI.CurrentTheme.ToolWindow.background()
-
+        
+        // 将包装面板添加到当前面板
         add(wrapperPanel, BorderLayout.CENTER)
 
         minimumSize = Dimension(200, 0)
