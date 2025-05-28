@@ -137,7 +137,7 @@ abstract class LLMProvider2 protected constructor(
                 return SessionMessageItem(Message("system", "response body is null"))
             } else {
                 val content = body.string()
-                println("response: $content")
+                logger.info("response: $content")
                 val result: String = runCatching<String> {
                     val result: String? = JsonPath.parse(content)?.read(responseResolver)
                     result ?: throw java.lang.IllegalStateException("cannot parse with responseResolver: ${responseResolver}, ori data: $content")
