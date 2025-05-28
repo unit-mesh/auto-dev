@@ -9,6 +9,7 @@ import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.gui.toolbar.SummaryMessagesAction
+import cc.unitmesh.devti.gui.toolbar.McpConfigAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
@@ -160,6 +161,7 @@ open class SketchToolWindow(
                     buttonBox.add(createActionButton(NewSketchAction()))
                     buttonBox.add(createActionButton(CopyAllMessagesAction()))
                     buttonBox.add(createActionButton(SummaryMessagesAction()))
+                    buttonBox.add(createActionButton(McpConfigAction()))
                     cell(buttonBox).alignRight()
                 }
             }
