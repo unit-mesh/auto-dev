@@ -1,19 +1,41 @@
 package cc.unitmesh.devti.mcp.ui
 
 import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
+import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
-class McpConfigService(private val project: Project) {
+@State(
+    name = "cc.unitmesh.devti.mcp.ui.McpConfigService",
+    storages = [Storage("AutoDevmcpConfig.xml")]
+)
+class McpConfigService(private val project: Project) : PersistentStateComponent<McpConfigService.State> {
     private val selectedTools = mutableMapOf<String, MutableSet<String>>()
+    data class State(
+        var toolSelections: Map<String, Set<String>> = emptyMap()
+    )
 
     companion object {
         fun getInstance(project: Project): McpConfigService {
             return project.getService(McpConfigService::class.java)
+        }
+    }
+
+    // Implement PersistentStateComponent methods
+    override fun getState(): State {
+        return State(selectedTools.mapValues { it.value.toSet() })
+    }
+
+    override fun loadState(state: State) {
+        selectedTools.clear()
+        state.toolSelections.forEach { (server, tools) ->
+            selectedTools[server] = tools.toMutableSet()
         }
     }
 
