@@ -9,17 +9,21 @@ import cc.unitmesh.devti.llm2.model.CustomRequest
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llm2.model.ModelType
 import cc.unitmesh.devti.llms.custom.Message
+import cc.unitmesh.devti.provider.local.JsonLanguageField
 import cc.unitmesh.devti.provider.local.JsonTextProvider
 import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
 import cc.unitmesh.devti.util.AutoDevAppScope
+import com.intellij.lang.Language
+import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBColor
+import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -193,16 +197,22 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
             private val urlField = JBTextField()
             private val tokenField = JBTextField()
             private val maxTokensField = JBTextField()
-            private val modelTypeComboBox = JComboBox(ModelType.values())
 
             // Explicit model parameters
             private val modelField = JBTextField()
             private val streamCheckbox = JBCheckBox("Use streaming response", true)
             private val temperatureField = JBTextField()
 
-            // Custom headers and body fields
-            private val headersArea = JTextArea(3, 40)
-            private val bodyArea = JTextArea(5, 40)
+            // Response resolver field with JSONPath highlighting
+            private val responseResolverField = LanguageTextField(
+                Language.findLanguageByID("JSONPath") ?: PlainTextLanguage.INSTANCE,
+                project,
+                ""
+            )
+
+            // Custom headers and body fields with JSON highlighting
+            private val headersField = JsonLanguageField(project, "{}", "Custom headers JSON", null, false)
+            private val bodyField = JsonLanguageField(project, "{}", "Additional request body JSON", null, false)
             private val testResultLabel = JBLabel("")
 
             init {
@@ -215,7 +225,6 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     urlField.text = existingLlm.url
                     tokenField.text = existingLlm.auth.token
                     maxTokensField.text = existingLlm.maxTokens.toString()
-                    modelTypeComboBox.selectedItem = existingLlm.modelType
                     streamCheckbox.isSelected = existingLlm.customRequest.stream
 
                     // Extract model and temperature from body
@@ -235,8 +244,21 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     } ?: "0.0"
                     temperatureField.text = temperatureValue
 
+                    // Initialize response resolver - use legacy responseFormat if available, otherwise determine by stream
+                    val responseResolver = if (existingLlm.responseFormat.isNotEmpty()) {
+                        existingLlm.responseFormat
+                    } else {
+                        // Default based on streaming mode
+                        if (existingLlm.customRequest.stream) {
+                            "\$.choices[0].delta.content"
+                        } else {
+                            "\$.choices[0].message.content"
+                        }
+                    }
+                    responseResolverField.text = responseResolver
+
                     // Initialize custom headers and body (excluding model and temperature)
-                    headersArea.text = if (existingLlm.customRequest.headers.isNotEmpty()) {
+                    val headersJson = if (existingLlm.customRequest.headers.isNotEmpty()) {
                         buildJsonObject {
                             existingLlm.customRequest.headers.forEach { (key, value) ->
                                 put(key, value)
@@ -245,12 +267,13 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     } else {
                         "{}"
                     }
+                    headersField.text = headersJson
 
                     // Body without model and temperature (they are now explicit fields)
                     val bodyWithoutModelTemp = existingLlm.customRequest.body.filterKeys {
                         it != "model" && it != "temperature" && it != "stream"
                     }
-                    bodyArea.text = if (bodyWithoutModelTemp.isNotEmpty()) {
+                    val bodyJson = if (bodyWithoutModelTemp.isNotEmpty()) {
                         buildJsonObject {
                             bodyWithoutModelTemp.forEach { (key, value) ->
                                 put(key, value)
@@ -259,13 +282,31 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     } else {
                         "{}"
                     }
+                    bodyField.text = bodyJson
                 } else {
                     // Default values for new LLM
                     maxTokensField.text = "4096"
                     modelField.text = "gpt-3.5-turbo"
                     temperatureField.text = "0.0"
-                    headersArea.text = "{}"
-                    bodyArea.text = "{}"
+                    // Default response resolver based on streaming (will be set by listener)
+                    responseResolverField.text = "\$.choices[0].delta.content"
+                    headersField.text = "{}"
+                    bodyField.text = "{}"
+                }
+
+                // Add listener to update response resolver default when streaming changes
+                streamCheckbox.addActionListener {
+                    // Only update if field is empty or contains default values
+                    val currentText = responseResolverField.text.trim()
+                    if (currentText.isEmpty() ||
+                        currentText == "\$.choices[0].delta.content" ||
+                        currentText == "\$.choices[0].message.content") {
+                        responseResolverField.text = if (streamCheckbox.isSelected) {
+                            "\$.choices[0].delta.content"
+                        } else {
+                            "\$.choices[0].message.content"
+                        }
+                    }
                 }
 
                 init()
@@ -273,7 +314,7 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
             override fun createCenterPanel(): JPanel {
                 val panel = JPanel(BorderLayout())
-                panel.preferredSize = Dimension(600, 700)
+                panel.preferredSize = Dimension(600, 750)
 
                 val formBuilder = FormBuilder.createFormBuilder()
                     .addLabeledComponent(JBLabel("Name:"), nameField)
@@ -281,7 +322,6 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     .addLabeledComponent(JBLabel("URL:"), urlField)
                     .addLabeledComponent(JBLabel("Token (optional):"), tokenField)
                     .addLabeledComponent(JBLabel("Max Tokens:"), maxTokensField)
-                    .addLabeledComponent(JBLabel("Model Type:"), modelTypeComboBox)
                     .addSeparator()
 
                 // Model parameters section
@@ -291,11 +331,15 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                 formBuilder.addLabeledComponent(JBLabel("Temperature:"), temperatureField)
                 formBuilder.addSeparator()
 
-                // Custom headers section
-                formBuilder.addLabeledComponent(JBLabel("Custom Headers (JSON):"), JScrollPane(headersArea))
+                // Response resolver section
+                formBuilder.addLabeledComponent(JBLabel("Response Resolver (JSONPath):"), responseResolverField)
+                formBuilder.addSeparator()
 
-                // Custom body section (additional fields)
-                formBuilder.addLabeledComponent(JBLabel("Additional Request Body (JSON):"), JScrollPane(bodyArea))
+                // Custom headers section with JSON highlighting
+                formBuilder.addLabeledComponent(JBLabel("Custom Headers (JSON):"), headersField)
+
+                // Custom body section (additional fields) with JSON highlighting
+                formBuilder.addLabeledComponent(JBLabel("Additional Request Body (JSON):"), bodyField)
 
                 formBuilder.addSeparator()
 
@@ -342,8 +386,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                     try {
                         // Parse custom headers
                         val headers = try {
-                            if (headersArea.text.trim().isNotEmpty() && headersArea.text.trim() != "{}") {
-                                Json.decodeFromString<Map<String, String>>(headersArea.text)
+                            if (headersField.text.trim().isNotEmpty() && headersField.text.trim() != "{}") {
+                                Json.decodeFromString<Map<String, String>>(headersField.text)
                             } else {
                                 emptyMap()
                             }
@@ -357,8 +401,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
                         // Parse additional body fields and combine with explicit parameters
                         val additionalBody = try {
-                            if (bodyArea.text.trim().isNotEmpty() && bodyArea.text.trim() != "{}") {
-                                val jsonElement = Json.parseToJsonElement(bodyArea.text)
+                            if (bodyField.text.trim().isNotEmpty() && bodyField.text.trim() != "{}") {
+                                val jsonElement = Json.parseToJsonElement(bodyField.text)
                                 if (jsonElement is JsonObject) {
                                     jsonElement.toMap()
                                 } else {
@@ -390,6 +434,15 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                             stream = streamCheckbox.isSelected
                         )
 
+                        // Get response resolver, use default if empty
+                        val responseResolver = responseResolverField.text.trim().ifEmpty {
+                            if (streamCheckbox.isSelected) {
+                                "\$.choices[0].delta.content"
+                            } else {
+                                "\$.choices[0].message.content"
+                            }
+                        }
+
                         val testConfig = LlmConfig(
                             name = nameField.text,
                             description = descriptionField.text,
@@ -397,19 +450,21 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                             auth = Auth(type = "Bearer", token = tokenField.text),
                             maxTokens = maxTokens,
                             customRequest = customRequest,
-                            modelType = modelTypeComboBox.selectedItem as ModelType
+                            modelType = ModelType.Default, // Always use Default for new LLMs
+                            responseFormat = responseResolver // Store response resolver in legacy field for compatibility
                         )
 
                         // Create a provider with the test config
                         val provider = LLMProvider2.invoke(
                             requestUrl = testConfig.url,
                             authorizationKey = testConfig.auth.token,
-                            responseResolver = testConfig.getResponseFormatByStream(),
+                            responseResolver = responseResolver,
                             requestCustomize = testConfig.toLegacyRequestFormat()
                         )
 
                         // Send a test message
-                        val response = provider.request(Message("user", "Hello, this is a test message."))
+                        val response = provider.request(Message("user", "Hello, this is a test message."),
+                            stream = testConfig.customRequest.stream)
                         var responseText = ""
                         response.collectLatest {
                             responseText += it.chatMessage.content
@@ -454,8 +509,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                 try {
                     // Parse custom headers
                     val headers = try {
-                        if (headersArea.text.trim().isNotEmpty() && headersArea.text.trim() != "{}") {
-                            Json.decodeFromString<Map<String, String>>(headersArea.text)
+                        if (headersField.text.trim().isNotEmpty() && headersField.text.trim() != "{}") {
+                            Json.decodeFromString<Map<String, String>>(headersField.text)
                         } else {
                             emptyMap()
                         }
@@ -466,8 +521,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
                     // Parse additional body fields and combine with explicit parameters
                     val additionalBody = try {
-                        if (bodyArea.text.trim().isNotEmpty() && bodyArea.text.trim() != "{}") {
-                            val jsonElement = Json.parseToJsonElement(bodyArea.text)
+                        if (bodyField.text.trim().isNotEmpty() && bodyField.text.trim() != "{}") {
+                            val jsonElement = Json.parseToJsonElement(bodyField.text)
                             if (jsonElement is JsonObject) {
                                 jsonElement.toMap()
                             } else {
@@ -508,6 +563,15 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                         stream = streamCheckbox.isSelected
                     )
 
+                    // Get response resolver, use default if empty
+                    val responseResolver = responseResolverField.text.trim().ifEmpty {
+                        if (streamCheckbox.isSelected) {
+                            "\$.choices[0].delta.content"
+                        } else {
+                            "\$.choices[0].message.content"
+                        }
+                    }
+
                     // Create new LLM config
                     val newLlm = LlmConfig(
                         name = nameField.text,
@@ -516,7 +580,8 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                         auth = Auth(type = "Bearer", token = tokenField.text),
                         maxTokens = maxTokens,
                         customRequest = customRequest,
-                        modelType = modelTypeComboBox.selectedItem as ModelType
+                        modelType = ModelType.Default, // Always use Default for new LLMs
+                        responseFormat = responseResolver // Store response resolver in legacy field for compatibility
                     )
 
                     // Add to list and update settings
