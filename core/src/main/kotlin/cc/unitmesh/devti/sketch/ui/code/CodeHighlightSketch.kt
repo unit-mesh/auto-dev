@@ -62,6 +62,7 @@ open class CodeHighlightSketch(
     private var devInsCollapsedPanel: JPanel? = null
     private var devInsExpandedPanel: JPanel? = null
     private var isCollapsed = false
+    private var isComplete = isUser
 
     private var textLanguage: String? = if (ideaLanguage != null) ideaLanguage?.displayName else null
 
@@ -226,6 +227,8 @@ open class CodeHighlightSketch(
     }
 
     override fun updateViewText(text: String, complete: Boolean) {
+        isComplete = complete
+
         if (!hasSetupAction && text.trim().isNotEmpty()) {
             initEditor(text)
         }
