@@ -376,7 +376,11 @@ open class CodeHighlightSketch(
 
     override fun dispose() {
         editorFragment?.editor?.let {
-            EditorFactory.getInstance().releaseEditor(it)
+            try {
+                EditorFactory.getInstance().releaseEditor(it)
+            } catch (e: Exception) {
+                /// ignore
+            }
         }
         Disposer.dispose(this)
     }
