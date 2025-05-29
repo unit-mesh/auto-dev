@@ -1,46 +1,25 @@
 package cc.unitmesh.devti.settings
 
-import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.custom.schema.AUTODEV_CUSTOM_LLM_FILE
 import cc.unitmesh.devti.llm2.GithubCopilotManager
-import cc.unitmesh.devti.llm2.LLMProvider2
-import cc.unitmesh.devti.llm2.model.Auth
-import cc.unitmesh.devti.llm2.model.CustomRequest
-import cc.unitmesh.devti.llm2.model.LlmConfig
-import cc.unitmesh.devti.llm2.model.ModelType
-import cc.unitmesh.devti.llms.custom.Message
-import cc.unitmesh.devti.provider.local.JsonLanguageField
-import cc.unitmesh.devti.provider.local.JsonTextProvider
 import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
-import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
-import cc.unitmesh.devti.util.AutoDevAppScope
-import com.intellij.lang.Language
-import com.intellij.openapi.fileTypes.PlainTextLanguage
+import cc.unitmesh.devti.settings.model.LLMModelManager
+import cc.unitmesh.devti.settings.ui.DeleteButtonEditor
+import cc.unitmesh.devti.settings.ui.DeleteButtonRenderer
+import cc.unitmesh.devti.settings.ui.ModelItem
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.openapi.ui.Messages
-import com.intellij.ui.JBColor
-import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
-import com.intellij.icons.AllIcons
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.*
-import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.Dimension
 import javax.swing.*
-import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
+/**
+ * Simplified LLM Setting Component that uses extracted components
+ */
 class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     // Basic settings
@@ -78,10 +57,12 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
     private val project = ProjectManager.getInstance().openProjects.firstOrNull()
 
-    // Custom model item class to store both display name and model ID
-    private data class ModelItem(val displayName: String, val modelId: String, val isCustom: Boolean = false) {
-        override fun toString(): String = displayName
-    }
+    // Model manager for handling LLM models
+    private val modelManager = LLMModelManager(
+        project = project,
+        settings = settings,
+        onModified = { markAsModified() }
+    )
 
     private val formBuilder: FormBuilder = FormBuilder.createFormBuilder()
     val panel: JPanel get() = formBuilder.panel
@@ -100,19 +81,16 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
     private fun initializeGitHubCopilot() {
         val manager = service<GithubCopilotManager>()
         if (!manager.isInitialized()) {
-            AutoDevAppScope.workerScope().launch {
-                try {
-                    manager.initialize()
-                    // After initialization, update the UI on the EDT
-                    SwingUtilities.invokeLater {
-                        updateAllDropdowns()
-                        updateLLMTable()
-                    }
-                } catch (e: Exception) {
-                    // Silently handle initialization failures
-                    // GitHub Copilot might not be available
-                }
-            }
+            // Initialize in background and update UI when ready
+            modelManager.refreshGitHubCopilotModels(
+                defaultModelDropdown,
+                planLLMDropdown,
+                actLLMDropdown,
+                completionLLMDropdown,
+                embeddingLLMDropdown,
+                fastApplyLLMDropdown,
+                llmTableModel
+            )
         }
     }
 
@@ -134,8 +112,11 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
     private fun setupTableEventListeners() {
         // Set up delete button renderer and editor
-        llmTable.getColumn("Delete").cellRenderer = DeleteButtonRenderer()
-        llmTable.getColumn("Delete").cellEditor = DeleteButtonEditor()
+        llmTable.getColumn("Delete").cellRenderer = DeleteButtonRenderer(modelManager::isCustomLLM)
+        llmTable.getColumn("Delete").cellEditor = DeleteButtonEditor(
+            isCustomLLM = modelManager::isCustomLLM,
+            onDelete = { row -> modelManager.deleteLLMAtRow(llmTable, row) }
+        )
 
         // Set up double-click listener for editing
         llmTable.addMouseListener(object : java.awt.event.MouseAdapter() {
@@ -146,7 +127,7 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
                     // Only allow double-click on Name, Model, Streaming, Temperature columns (not Delete column)
                     if (row >= 0 && column < 4) {
-                        editLLMAtRow(row)
+                        modelManager.editLLMAtRow(llmTable, row)
                     }
                 }
             }
@@ -189,711 +170,48 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         return categoryFormBuilder.panel
     }
 
-    // Create a new LLM configuration dialog with simplified interface
-    private fun createNewLLM(existingLlm: LlmConfig? = null) {
-        val dialog = object : DialogWrapper(project, true) {
-            private val nameField = JBTextField()
-            private val descriptionField = JBTextField()
-            private val urlField = JBTextField()
-            private val tokenField = JBTextField()
-            private val maxTokensField = JBTextField()
-
-            // Explicit model parameters
-            private val modelField = JBTextField()
-            private val streamCheckbox = JBCheckBox("Use streaming response", true)
-            private val temperatureField = JBTextField()
-
-            // Response resolver field with JSONPath highlighting
-            private val responseResolverField = LanguageTextField(
-                Language.findLanguageByID("JSONPath") ?: PlainTextLanguage.INSTANCE,
-                project,
-                ""
-            )
-
-            // Custom headers and body fields with JSON highlighting
-            private val headersField = JsonLanguageField(project, "{}", "Custom headers JSON", null, false)
-            private val bodyField = JsonLanguageField(project, "{}", "Additional request body JSON", null, false)
-            private val testResultLabel = JBLabel("")
-
-            init {
-                title = if (existingLlm == null) "Add New LLM" else "Edit LLM"
-
-                // Initialize fields with existing values if editing
-                if (existingLlm != null) {
-                    nameField.text = existingLlm.name
-                    descriptionField.text = existingLlm.description
-                    urlField.text = existingLlm.url
-                    tokenField.text = existingLlm.auth.token
-                    maxTokensField.text = existingLlm.maxTokens.toString()
-                    streamCheckbox.isSelected = existingLlm.customRequest.stream
-
-                    // Extract model and temperature from body
-                    val modelValue = existingLlm.customRequest.body["model"]?.let {
-                        when (it) {
-                            is JsonPrimitive -> it.content
-                            else -> it.toString().removeSurrounding("\"")
-                        }
-                    } ?: ""
-                    modelField.text = modelValue
-
-                    val temperatureValue = existingLlm.customRequest.body["temperature"]?.let {
-                        when (it) {
-                            is JsonPrimitive -> it.content
-                            else -> it.toString()
-                        }
-                    } ?: "0.0"
-                    temperatureField.text = temperatureValue
-
-                    // Initialize response resolver - use legacy responseFormat if available, otherwise determine by stream
-                    val responseResolver = if (existingLlm.responseFormat.isNotEmpty()) {
-                        existingLlm.responseFormat
-                    } else {
-                        // Default based on streaming mode
-                        if (existingLlm.customRequest.stream) {
-                            "\$.choices[0].delta.content"
-                        } else {
-                            "\$.choices[0].message.content"
-                        }
-                    }
-                    responseResolverField.text = responseResolver
-
-                    // Initialize custom headers and body (excluding model and temperature)
-                    val headersJson = if (existingLlm.customRequest.headers.isNotEmpty()) {
-                        buildJsonObject {
-                            existingLlm.customRequest.headers.forEach { (key, value) ->
-                                put(key, value)
-                            }
-                        }.toString()
-                    } else {
-                        "{}"
-                    }
-                    headersField.text = headersJson
-
-                    // Body without model and temperature (they are now explicit fields)
-                    val bodyWithoutModelTemp = existingLlm.customRequest.body.filterKeys {
-                        it != "model" && it != "temperature" && it != "stream"
-                    }
-                    val bodyJson = if (bodyWithoutModelTemp.isNotEmpty()) {
-                        buildJsonObject {
-                            bodyWithoutModelTemp.forEach { (key, value) ->
-                                put(key, value)
-                            }
-                        }.toString()
-                    } else {
-                        "{}"
-                    }
-                    bodyField.text = bodyJson
-                } else {
-                    // Default values for new LLM
-                    maxTokensField.text = "4096"
-                    modelField.text = "gpt-3.5-turbo"
-                    temperatureField.text = "0.0"
-                    // Default response resolver based on streaming (will be set by listener)
-                    responseResolverField.text = "\$.choices[0].delta.content"
-                    headersField.text = "{}"
-                    bodyField.text = "{}"
-                }
-
-                // Add listener to update response resolver default when streaming changes
-                streamCheckbox.addActionListener {
-                    // Only update if field is empty or contains default values
-                    val currentText = responseResolverField.text.trim()
-                    if (currentText.isEmpty() ||
-                        currentText == "\$.choices[0].delta.content" ||
-                        currentText == "\$.choices[0].message.content") {
-                        responseResolverField.text = if (streamCheckbox.isSelected) {
-                            "\$.choices[0].delta.content"
-                        } else {
-                            "\$.choices[0].message.content"
-                        }
-                    }
-                }
-
-                init()
-            }
-
-            override fun createCenterPanel(): JPanel {
-                val panel = JPanel(BorderLayout())
-                panel.preferredSize = Dimension(600, 750)
-
-                val formBuilder = FormBuilder.createFormBuilder()
-                    .addLabeledComponent(JBLabel("Name:"), nameField)
-                    .addLabeledComponent(JBLabel("Description:"), descriptionField)
-                    .addLabeledComponent(JBLabel("URL:"), urlField)
-                    .addLabeledComponent(JBLabel("Token (optional):"), tokenField)
-                    .addLabeledComponent(JBLabel("Max Tokens:"), maxTokensField)
-                    .addSeparator()
-
-                // Model parameters section
-                formBuilder.addLabeledComponent(JBLabel("Model Parameters"), JPanel(), 1, false)
-                formBuilder.addLabeledComponent(JBLabel("Model:"), modelField)
-                formBuilder.addComponent(streamCheckbox)
-                formBuilder.addLabeledComponent(JBLabel("Temperature:"), temperatureField)
-                formBuilder.addSeparator()
-
-                // Response resolver section
-                formBuilder.addLabeledComponent(JBLabel("Response Resolver (JSONPath):"), responseResolverField)
-                formBuilder.addSeparator()
-
-                // Custom headers section with JSON highlighting
-                formBuilder.addLabeledComponent(JBLabel("Custom Headers (JSON):"), headersField)
-
-                // Custom body section (additional fields) with JSON highlighting
-                formBuilder.addLabeledComponent(JBLabel("Additional Request Body (JSON):"), bodyField)
-
-                formBuilder.addSeparator()
-
-                // Add test button
-                val testButton = JButton("Test Connection")
-                testButton.addActionListener { testConnection() }
-                formBuilder.addComponent(testButton)
-                formBuilder.addComponent(testResultLabel)
-
-                panel.add(formBuilder.panel, BorderLayout.CENTER)
-                return panel
-            }
-
-            private fun testConnection() {
-                if (nameField.text.isBlank() || urlField.text.isBlank() || modelField.text.isBlank()) {
-                    testResultLabel.text = "Name, URL, and Model are required"
-                    testResultLabel.foreground = JBColor.RED
-                    return
-                }
-
-                // Validate max tokens
-                val maxTokens = try {
-                    maxTokensField.text.toInt()
-                } catch (e: NumberFormatException) {
-                    testResultLabel.text = "Max Tokens must be a valid number"
-                    testResultLabel.foreground = JBColor.RED
-                    return
-                }
-
-                // Validate temperature
-                val temperature = try {
-                    temperatureField.text.toDouble()
-                } catch (e: NumberFormatException) {
-                    testResultLabel.text = "Temperature must be a valid number"
-                    testResultLabel.foreground = JBColor.RED
-                    return
-                }
-
-                testResultLabel.text = "Testing connection..."
-                testResultLabel.foreground = JBColor.BLUE
-
-                val scope = CoroutineScope(CoroutineName("testConnection"))
-                scope.launch {
-                    try {
-                        // Parse custom headers
-                        val headers = try {
-                            if (headersField.text.trim().isNotEmpty() && headersField.text.trim() != "{}") {
-                                Json.decodeFromString<Map<String, String>>(headersField.text)
-                            } else {
-                                emptyMap()
-                            }
-                        } catch (e: Exception) {
-                            SwingUtilities.invokeLater {
-                                testResultLabel.text = "Invalid headers JSON: ${e.message}"
-                                testResultLabel.foreground = JBColor.RED
-                            }
-                            return@launch
-                        }
-
-                        // Parse additional body fields and combine with explicit parameters
-                        val additionalBody = try {
-                            if (bodyField.text.trim().isNotEmpty() && bodyField.text.trim() != "{}") {
-                                val jsonElement = Json.parseToJsonElement(bodyField.text)
-                                if (jsonElement is JsonObject) {
-                                    jsonElement.toMap()
-                                } else {
-                                    emptyMap()
-                                }
-                            } else {
-                                emptyMap()
-                            }
-                        } catch (e: Exception) {
-                            SwingUtilities.invokeLater {
-                                testResultLabel.text = "Invalid additional body JSON: ${e.message}"
-                                testResultLabel.foreground = JBColor.RED
-                            }
-                            return@launch
-                        }
-
-                        // Combine explicit parameters with additional body
-                        val body = mutableMapOf<String, JsonElement>().apply {
-                            put("model", JsonPrimitive(modelField.text))
-                            put("temperature", JsonPrimitive(temperature))
-                            put("stream", JsonPrimitive(streamCheckbox.isSelected))
-                            putAll(additionalBody)
-                        }
-
-                        // Create a temporary LLM config for testing
-                        val customRequest = CustomRequest(
-                            headers = headers,
-                            body = body,
-                            stream = streamCheckbox.isSelected
-                        )
-
-                        // Get response resolver, use default if empty
-                        val responseResolver = responseResolverField.text.trim().ifEmpty {
-                            if (streamCheckbox.isSelected) {
-                                "\$.choices[0].delta.content"
-                            } else {
-                                "\$.choices[0].message.content"
-                            }
-                        }
-
-                        val testConfig = LlmConfig(
-                            name = nameField.text,
-                            description = descriptionField.text,
-                            url = urlField.text,
-                            auth = Auth(type = "Bearer", token = tokenField.text),
-                            maxTokens = maxTokens,
-                            customRequest = customRequest,
-                            modelType = ModelType.Default, // Always use Default for new LLMs
-                            responseFormat = responseResolver // Store response resolver in legacy field for compatibility
-                        )
-
-                        // Create a provider with the test config
-                        val provider = LLMProvider2.invoke(
-                            requestUrl = testConfig.url,
-                            authorizationKey = testConfig.auth.token,
-                            responseResolver = responseResolver,
-                            requestCustomize = testConfig.toLegacyRequestFormat()
-                        )
-
-                        // Send a test message
-                        val response = provider.request(Message("user", "Hello, this is a test message."),
-                            stream = testConfig.customRequest.stream)
-                        var responseText = ""
-                        response.collectLatest {
-                            responseText += it.chatMessage.content
-                        }
-
-                        SwingUtilities.invokeLater {
-                            testResultLabel.text = "Connection successful!"
-                            testResultLabel.foreground = JBColor.GREEN
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        SwingUtilities.invokeLater {
-                            testResultLabel.text = "Connection failed: ${e.message}"
-                            testResultLabel.foreground = JBColor.RED
-                        }
-                    }
-                }
-            }
-
-            override fun doOKAction() {
-                if (nameField.text.isBlank() || urlField.text.isBlank() || modelField.text.isBlank()) {
-                    Messages.showErrorDialog("Name, URL, and Model are required", "Validation Error")
-                    return
-                }
-
-                // Validate max tokens
-                val maxTokens = try {
-                    maxTokensField.text.toInt()
-                } catch (e: NumberFormatException) {
-                    Messages.showErrorDialog("Max Tokens must be a valid number", "Validation Error")
-                    return
-                }
-
-                // Validate temperature
-                val temperature = try {
-                    temperatureField.text.toDouble()
-                } catch (e: NumberFormatException) {
-                    Messages.showErrorDialog("Temperature must be a valid number", "Validation Error")
-                    return
-                }
-
-                try {
-                    // Parse custom headers
-                    val headers = try {
-                        if (headersField.text.trim().isNotEmpty() && headersField.text.trim() != "{}") {
-                            Json.decodeFromString<Map<String, String>>(headersField.text)
-                        } else {
-                            emptyMap()
-                        }
-                    } catch (e: Exception) {
-                        Messages.showErrorDialog("Invalid headers JSON: ${e.message}", "Validation Error")
-                        return
-                    }
-
-                    // Parse additional body fields and combine with explicit parameters
-                    val additionalBody = try {
-                        if (bodyField.text.trim().isNotEmpty() && bodyField.text.trim() != "{}") {
-                            val jsonElement = Json.parseToJsonElement(bodyField.text)
-                            if (jsonElement is JsonObject) {
-                                jsonElement.toMap()
-                            } else {
-                                emptyMap()
-                            }
-                        } else {
-                            emptyMap()
-                        }
-                    } catch (e: Exception) {
-                        Messages.showErrorDialog("Invalid additional body JSON: ${e.message}", "Validation Error")
-                        return
-                    }
-
-                    // Combine explicit parameters with additional body
-                    val body = mutableMapOf<String, JsonElement>().apply {
-                        put("model", JsonPrimitive(modelField.text))
-                        put("temperature", JsonPrimitive(temperature))
-                        put("stream", JsonPrimitive(streamCheckbox.isSelected))
-                        putAll(additionalBody)
-                    }
-
-                    // Get existing LLMs
-                    val existingLlms = try {
-                        LlmConfig.load().toMutableList()
-                    } catch (e: Exception) {
-                        mutableListOf()
-                    }
-
-                    // Remove existing LLM if editing
-                    if (existingLlm != null) {
-                        existingLlms.removeIf { it.name == existingLlm.name }
-                    }
-
-                    // Create custom request
-                    val customRequest = CustomRequest(
-                        headers = headers,
-                        body = body,
-                        stream = streamCheckbox.isSelected
-                    )
-
-                    // Get response resolver, use default if empty
-                    val responseResolver = responseResolverField.text.trim().ifEmpty {
-                        if (streamCheckbox.isSelected) {
-                            "\$.choices[0].delta.content"
-                        } else {
-                            "\$.choices[0].message.content"
-                        }
-                    }
-
-                    // Create new LLM config
-                    val newLlm = LlmConfig(
-                        name = nameField.text,
-                        description = descriptionField.text,
-                        url = urlField.text,
-                        auth = Auth(type = "Bearer", token = tokenField.text),
-                        maxTokens = maxTokens,
-                        customRequest = customRequest,
-                        modelType = ModelType.Default, // Always use Default for new LLMs
-                        responseFormat = responseResolver // Store response resolver in legacy field for compatibility
-                    )
-
-                    // Add to list and update settings
-                    existingLlms.add(newLlm)
-                    val json = Json { prettyPrint = true }
-                    settings.customLlms = json.encodeToString(
-                        kotlinx.serialization.builtins.ListSerializer(LlmConfig.serializer()),
-                        existingLlms
-                    )
-
-                    // Mark as modified and update UI
-                    markAsModified()
-                    updateAllDropdowns()
-                    updateLLMTable()
-
-                    super.doOKAction()
-                } catch (e: Exception) {
-                    Messages.showErrorDialog("Error saving LLM: ${e.message}", "Error")
-                }
-            }
-        }
-
-        dialog.show()
-    }
-
-    // Update all model dropdowns with available models
-    private fun updateAllDropdowns() {
-        // Clear all dropdowns
-        defaultModelDropdown.removeAllItems()
-        planLLMDropdown.removeAllItems()
-        actLLMDropdown.removeAllItems()
-        completionLLMDropdown.removeAllItems()
-        embeddingLLMDropdown.removeAllItems()
-        fastApplyLLMDropdown.removeAllItems()
-
-        val manager = service<GithubCopilotManager>()
-        val githubModels = manager.getSupportedModels(forceRefresh = false)
-        val userModels = LlmConfig.load()
-
-        // Add GitHub Copilot models
-        if (manager.isInitialized()) {
-            githubModels?.forEach { model ->
-                val modelItem = ModelItem("Github: ${model.id}", model.id, false)
-                if (model.isEmbedding) {
-                    embeddingLLMDropdown.addItem(modelItem)
-                } else {
-                    defaultModelDropdown.addItem(modelItem)
-                    planLLMDropdown.addItem(modelItem)
-                    actLLMDropdown.addItem(modelItem)
-                    completionLLMDropdown.addItem(modelItem)
-                    fastApplyLLMDropdown.addItem(modelItem)
-                }
-            }
-        } else {
-            // Initialize GitHub Copilot in background and update UI when ready
-            AutoDevAppScope.workerScope().launch {
-                try {
-                    GithubCopilotManager.getInstance().initialize()
-                    // After initialization, update the UI on the EDT
-                    SwingUtilities.invokeLater {
-                        updateAllDropdowns()
-                        updateLLMTable()
-                    }
-                } catch (e: Exception) {
-                    // Silently handle initialization failures
-                    // GitHub Copilot might not be available
-                }
-            }
-        }
-
-        // Add custom models
-        userModels.forEach { llm ->
-            val modelItem = ModelItem(llm.name, llm.name, true)
-            when (llm.modelType) {
-                ModelType.Embedding -> embeddingLLMDropdown.addItem(modelItem)
-                else -> {
-                    defaultModelDropdown.addItem(modelItem)
-                    planLLMDropdown.addItem(modelItem)
-                    actLLMDropdown.addItem(modelItem)
-                    completionLLMDropdown.addItem(modelItem)
-                    fastApplyLLMDropdown.addItem(modelItem)
-                }
-            }
-        }
-
-        // Set selected items based on settings
-        val wasInitializing = isInitializing
-        isInitializing = true
-        setSelectedModels()
-        isInitializing = wasInitializing
-    }
-
-    // Set selected items in dropdowns based on settings
-    private fun setSelectedModels() {
-        // Helper function to find and select a model by ID
-        fun JComboBox<ModelItem>.selectModelById(modelId: String) {
-            if (modelId.isEmpty()) return
-
-            for (i in 0 until this.itemCount) {
-                val item = this.getItemAt(i)
-                if (item.modelId == modelId) {
-                    this.selectedItem = item
-                    break
-                }
-            }
-        }
-
-        // Set default model
-        defaultModelDropdown.selectModelById(settings.defaultModelId)
-
-        // Set category-specific models
-        planLLMDropdown.selectModelById(settings.selectedPlanModelId)
-        actLLMDropdown.selectModelById(settings.selectedActModelId)
-        completionLLMDropdown.selectModelById(settings.selectedCompletionModelId)
-        embeddingLLMDropdown.selectModelById(settings.selectedEmbeddingModelId)
-        fastApplyLLMDropdown.selectModelById(settings.selectedFastApplyModelId)
-    }
-
-    // Update the table with all LLMs
-    private fun updateLLMTable() {
-        // Clear the table
-        llmTableModel.setRowCount(0)
-
-        val manager = service<GithubCopilotManager>()
-        val githubModels = manager.getSupportedModels(forceRefresh = false)
-        val userModels = LlmConfig.load()
-
-        // Add GitHub Copilot models (read-only)
-        githubModels?.forEach { model ->
-            llmTableModel.addRow(
-                arrayOf(
-                    "Github: ${model.id}", // Name
-                    model.id,             // Model
-                    "true",               // Streaming (GitHub models use streaming by default)
-                    "0.1",                // Temperature (GitHub models default temperature)
-                    ""                    // Delete (empty for read-only models)
-                )
-            )
-        }
-
-        // Add custom LLMs (editable)
-        userModels.forEach { llm ->
-            val modelValue = llm.customRequest.body["model"]?.let {
-                when (it) {
-                    is JsonPrimitive -> it.content
-                    else -> it.toString().removeSurrounding("\"")
-                }
-            } ?: ""
-
-            val temperatureValue = llm.customRequest.body["temperature"]?.let {
-                when (it) {
-                    is JsonPrimitive -> it.content
-                    else -> it.toString()
-                }
-            } ?: "0.0"
-
-            llmTableModel.addRow(
-                arrayOf(
-                    llm.name,             // Name
-                    modelValue,           // Model
-                    llm.customRequest.stream.toString(), // Streaming
-                    temperatureValue,     // Temperature
-                    "Delete"              // Delete button placeholder
-                )
-            )
-        }
-    }
-
-    private fun createReadOnlyActionsPanel(): JPanel {
-        val panel = JPanel()
-        val testButton = JButton("Test")
-        testButton.addActionListener {
-            testGitHubCopilotConnection()
-        }
-        panel.add(testButton)
-        return panel
-    }
-
-    private fun createEditableActionsPanel(llm: LlmConfig): JPanel {
-        val panel = JPanel()
-
-        val testButton = JButton("Test")
-        testButton.addActionListener { testCustomLLM(llm) }
-
-        val editButton = JButton("Edit")
-        editButton.addActionListener { createNewLLM(llm) }
-
-        val deleteButton = JButton("Delete")
-        deleteButton.addActionListener { deleteLLM(llm) }
-
-        panel.add(testButton)
-        panel.add(editButton)
-        panel.add(deleteButton)
-        return panel
-    }
-
-    private fun testGitHubCopilotConnection() {
-        val scope = CoroutineScope(CoroutineName("testGitHubCopilot"))
-        scope.launch {
-            try {
-                val provider = LLMProvider2.GithubCopilot(modelName = "gpt-4")
-                val response = provider.request(Message("user", "Hello, this is a test message."))
-                var responseText = ""
-                response.collectLatest {
-                    responseText += it.chatMessage.content
-                }
-                Messages.showInfoMessage("GitHub Copilot connection successful!", "Test Result")
-            } catch (e: Exception) {
-                Messages.showErrorDialog("GitHub Copilot connection failed: ${e.message}", "Test Failed")
-            }
-        }
-    }
-
-    private fun testCustomLLM(llm: LlmConfig) {
-        val scope = CoroutineScope(CoroutineName("testCustomLLM"))
-        scope.launch {
-            try {
-                val provider = LLMProvider2.invoke(
-                    requestUrl = llm.url,
-                    authorizationKey = llm.auth.token,
-                    responseResolver = llm.getResponseFormatByStream(),
-                    requestCustomize = llm.toLegacyRequestFormat()
-                )
-
-                val response = provider.request(Message("user", "Hello, this is a test message."))
-                var responseText = ""
-                response.collectLatest {
-                    responseText += it.chatMessage.content
-                }
-                Messages.showInfoMessage("Connection to ${llm.name} successful!", "Test Result")
-            } catch (e: Exception) {
-                Messages.showErrorDialog("Connection to ${llm.name} failed: ${e.message}", "Test Failed")
-            }
-        }
-    }
-
-    // Delete an LLM
-    private fun deleteLLM(llm: LlmConfig) {
-        val result = Messages.showYesNoDialog(
-            "Are you sure you want to delete the LLM '${llm.name}'?",
-            "Delete LLM",
-            Messages.getQuestionIcon()
-        )
-
-        if (result == Messages.YES) {
-            try {
-                // Get existing LLMs
-                val existingLlms = LlmConfig.load().toMutableList()
-
-                // Remove the LLM
-                existingLlms.removeIf { it.name == llm.name }
-
-                // Update settings
-                val json = Json { prettyPrint = true }
-                settings.customLlms = json.encodeToString(
-                    kotlinx.serialization.builtins.ListSerializer(LlmConfig.serializer()),
-                    existingLlms
-                )
-
-                // Update UI
-                updateAllDropdowns()
-                updateLLMTable()
-            } catch (e: Exception) {
-                Messages.showErrorDialog("Error deleting LLM: ${e.message}", "Error")
-            }
-        }
-    }
-
-    private fun refreshGitHubCopilotModels() {
-        val manager = service<GithubCopilotManager>()
-
-        AutoDevAppScope.workerScope().launch {
-            try {
-                // Force refresh GitHub Copilot models
-                manager.getSupportedModels(forceRefresh = true)
-
-                // Update UI on EDT
-                SwingUtilities.invokeLater {
-                    updateAllDropdowns()
-                    updateLLMTable()
-                    Messages.showInfoMessage(
-                        "GitHub Copilot models refreshed successfully!",
-                        "Refresh Complete"
-                    )
-                }
-            } catch (e: Exception) {
-                SwingUtilities.invokeLater {
-                    Messages.showErrorDialog(
-                        "Failed to refresh GitHub Copilot models: ${e.message}",
-                        "Refresh Failed"
-                    )
-                }
-            }
-        }
-    }
-
     // Build the main settings panel
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
         isInitializing = true
         panel.removeAll()
 
         // Update dropdowns and table
-        updateAllDropdowns()
-        updateLLMTable()
+        modelManager.updateAllDropdowns(
+            defaultModelDropdown,
+            planLLMDropdown,
+            actLLMDropdown,
+            completionLLMDropdown,
+            embeddingLLMDropdown,
+            fastApplyLLMDropdown
+        )
+        modelManager.updateLLMTable(llmTableModel)
+        modelManager.setSelectedModels(
+            settings,
+            defaultModelDropdown,
+            planLLMDropdown,
+            actLLMDropdown,
+            completionLLMDropdown,
+            embeddingLLMDropdown,
+            fastApplyLLMDropdown
+        )
 
         // Create add LLM button
         val addLLMButton = JButton("Add New LLM")
-        addLLMButton.addActionListener { createNewLLM() }
+        addLLMButton.addActionListener { modelManager.createNewLLM() }
 
         // Create refresh button for GitHub Copilot models
         val refreshButton = JButton("Refresh GitHub Copilot Models")
-        refreshButton.addActionListener { refreshGitHubCopilotModels() }
+        refreshButton.addActionListener {
+            modelManager.refreshGitHubCopilotModels(
+                defaultModelDropdown,
+                planLLMDropdown,
+                actLLMDropdown,
+                completionLLMDropdown,
+                embeddingLLMDropdown,
+                fastApplyLLMDropdown,
+                llmTableModel
+            )
+        }
 
         // Create button panel
         val buttonPanel = JPanel()
@@ -982,153 +300,18 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
     // Helper extension function for FormBuilder
     private fun FormBuilder.addLLMParam(llmParam: LLMParam): FormBuilder = apply {
-        llmParam.addToFormBuilder(this)
-    }
-
-    private fun LLMParam.addToFormBuilder(formBuilder: FormBuilder) {
-        when (this.type) {
+        when (llmParam.type) {
             LLMParam.ParamType.Text -> {
-                formBuilder.addLabeledComponent(jBLabel(this.label), ReactiveTextField(this) {
-                    this.isEnabled = it.isEditable
+                addLabeledComponent(JBLabel(llmParam.label), ReactiveTextField(llmParam) {
+                    isEnabled = it.isEditable
                 }, 1, false)
             }
             LLMParam.ParamType.ComboBox -> {
-                formBuilder.addLabeledComponent(jBLabel(this.label), ReactiveComboBox(this), 1, false)
+                addLabeledComponent(JBLabel(llmParam.label), ReactiveComboBox(llmParam), 1, false)
             }
             else -> {
-                formBuilder.addSeparator()
+                addSeparator()
             }
-        }
-    }
-
-    // Delete button renderer for table cells
-    private inner class DeleteButtonRenderer : DefaultTableCellRenderer() {
-        private val deleteButton = JButton(AllIcons.Actions.DeleteTag)
-
-        init {
-            deleteButton.isOpaque = true
-            deleteButton.toolTipText = "Delete"
-            deleteButton.isBorderPainted = false
-            deleteButton.isContentAreaFilled = false
-        }
-
-        override fun getTableCellRendererComponent(
-            table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-        ): Component {
-            // Only show delete button for custom LLMs (not GitHub Copilot)
-            val modelName = table?.getValueAt(row, 0) as? String
-            val isCustomModel = isCustomLLM(modelName ?: "")
-
-            if (isCustomModel) {
-                deleteButton.background = if (isSelected) table?.selectionBackground else table?.background
-                return deleteButton
-            } else {
-                // For GitHub Copilot models, show empty cell
-                val label = JLabel("")
-                label.background = if (isSelected) table?.selectionBackground else table?.background
-                label.isOpaque = true
-                return label
-            }
-        }
-    }
-
-    // Delete button editor for table cells
-    private inner class DeleteButtonEditor : DefaultCellEditor(JCheckBox()) {
-        private val deleteButton = JButton(AllIcons.Actions.DeleteTag)
-        private var currentRow = -1
-
-        init {
-            deleteButton.toolTipText = "Delete"
-            deleteButton.isBorderPainted = false
-            deleteButton.isContentAreaFilled = false
-            deleteButton.addActionListener {
-                // Stop editing and delete the LLM
-                stopCellEditing()
-                deleteLLMAtRow(currentRow)
-            }
-        }
-
-        override fun getTableCellEditorComponent(
-            table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int
-        ): Component {
-            currentRow = row
-            return deleteButton
-        }
-
-        override fun getCellEditorValue(): Any {
-            return ""
-        }
-    }
-
-    // Helper method to check if a model is custom (not GitHub Copilot)
-    private fun isCustomLLM(modelName: String): Boolean {
-        // GitHub models start with "Github: "
-        if (modelName.startsWith("Github: ")) {
-            return false
-        }
-        val userModels = LlmConfig.load()
-        return userModels.any { it.name == modelName }
-    }
-
-    // Edit LLM at specific row
-    private fun editLLMAtRow(row: Int) {
-        val modelName = llmTable.getValueAt(row, 0) as? String ?: return
-
-        // Only allow editing custom LLMs
-        if (isCustomLLM(modelName)) {
-            val userModels = LlmConfig.load()
-            val llmToEdit = userModels.find { it.name == modelName }
-            if (llmToEdit != null) {
-                createNewLLM(llmToEdit)
-            }
-        } else {
-            Messages.showInfoMessage(
-                "GitHub Copilot models cannot be edited.",
-                "Read-only Model"
-            )
-        }
-    }
-
-    // Delete LLM at specific row
-    private fun deleteLLMAtRow(row: Int) {
-        val modelName = llmTable.getValueAt(row, 0) as? String ?: return
-
-        // Only allow deleting custom LLMs
-        if (isCustomLLM(modelName)) {
-            val result = Messages.showYesNoDialog(
-                "Are you sure you want to delete the LLM '$modelName'?",
-                "Delete LLM",
-                Messages.getQuestionIcon()
-            )
-
-            if (result == Messages.YES) {
-                try {
-                    // Get existing LLMs
-                    val existingLlms = LlmConfig.load().toMutableList()
-
-                    // Remove the LLM
-                    existingLlms.removeIf { it.name == modelName }
-
-                    // Update settings
-                    val json = Json { prettyPrint = true }
-                    settings.customLlms = json.encodeToString(
-                        kotlinx.serialization.builtins.ListSerializer(LlmConfig.serializer()),
-                        existingLlms
-                    )
-
-                    // Mark as modified and update UI
-                    markAsModified()
-                    updateAllDropdowns()
-                    updateLLMTable()
-                } catch (e: Exception) {
-                    Messages.showErrorDialog("Error deleting LLM: ${e.message}", "Error")
-                }
-            }
-        } else {
-            Messages.showInfoMessage(
-                "GitHub Copilot models cannot be deleted.",
-                "Read-only Model"
-            )
         }
     }
 }
