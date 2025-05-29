@@ -35,6 +35,8 @@ import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.LocalTimeCounter
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
@@ -212,6 +214,7 @@ class SingleFileDiffSketch(
         wrapperPanel.preferredSize = Dimension(wrapperPanel.preferredSize.width, maxOf(200, minHeight))
         wrapperPanel.maximumSize = Dimension(Int.MAX_VALUE, maxOf(200, minHeight))
 
+        wrapperPanel.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 1, 1, 1)
         return wrapperPanel
     }
 
@@ -268,7 +271,10 @@ class SingleFileDiffSketch(
 
         val toggleButton = JButton().apply {
             icon = AllIcons.Actions.Diff
-            preferredSize = Dimension(20, 20)
+            preferredSize = Dimension(24, 24)
+            margin = JBUI.emptyInsets()
+            isBorderPainted = false
+            isContentAreaFilled = false
             isOpaque = false
             toolTipText = AutoDevBundle.message("sketch.terminal.show.hide")
             addActionListener {
