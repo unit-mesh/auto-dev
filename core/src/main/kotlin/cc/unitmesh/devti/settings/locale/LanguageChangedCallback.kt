@@ -29,11 +29,7 @@ object LanguageChangedCallback : SelectionChangedCallback {
 
     private val callBacks = ConcurrentHashMap<String, LanguageChangedCallback.() -> Unit>()
 
-    fun jLabel(key: String, index: Int = 0): JLabel {
-        return label(key, JLabel(), index)
-    }
-
-    fun jBLabel(key: String, index: Int = 0): JLabel {
+    fun i18nLabel(key: String, index: Int = 0): JLabel {
         return label(key, JBLabel(), index)
     }
 

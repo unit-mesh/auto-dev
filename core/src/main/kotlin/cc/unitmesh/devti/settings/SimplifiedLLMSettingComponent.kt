@@ -3,6 +3,7 @@ package cc.unitmesh.devti.settings
 import cc.unitmesh.devti.llm2.GithubCopilotManager
 import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.i18nLabel
 import cc.unitmesh.devti.settings.model.LLMModelManager
 import cc.unitmesh.devti.settings.ui.DeleteButtonEditor
 import cc.unitmesh.devti.settings.ui.DeleteButtonRenderer
@@ -302,12 +303,12 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
     private fun FormBuilder.addLLMParam(llmParam: LLMParam): FormBuilder = apply {
         when (llmParam.type) {
             LLMParam.ParamType.Text -> {
-                addLabeledComponent(JBLabel(llmParam.label), ReactiveTextField(llmParam) {
+                addLabeledComponent(i18nLabel(llmParam.label), ReactiveTextField(llmParam) {
                     isEnabled = it.isEditable
                 }, 1, false)
             }
             LLMParam.ParamType.ComboBox -> {
-                addLabeledComponent(JBLabel(llmParam.label), ReactiveComboBox(llmParam), 1, false)
+                addLabeledComponent(i18nLabel(llmParam.label), ReactiveComboBox(llmParam), 1, false)
             }
             else -> {
                 addSeparator()
