@@ -53,7 +53,7 @@ class SingleFileDiffSketch(
 ) : LangSketch {
     private val mainPanel: JPanel = JPanel(VerticalLayout(0))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
-    
+
     private val patchProcessor = PatchProcessor(myProject)
     private var patchActionPanel: JPanel? = null
     private val oldCode = if (currentFile.isFile && currentFile.exists()) {
@@ -221,7 +221,13 @@ class SingleFileDiffSketch(
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
-            SimpleDiffRequest("Diff", currentDocContent, newDocContent, AutoDevBundle.message("sketch.diff.original"), AutoDevBundle.message("sketch.diff.aiSuggestion"))
+            SimpleDiffRequest(
+                "Diff",
+                currentDocContent,
+                newDocContent,
+                AutoDevBundle.message("sketch.diff.original"),
+                AutoDevBundle.message("sketch.diff.aiSuggestion")
+            )
         return diffRequest
     }
 
@@ -230,7 +236,13 @@ class SingleFileDiffSketch(
         val newDocContent = diffFactory.create(newCode)
 
         val diffRequest =
-            SimpleDiffRequest("Diff", EmptyContent(), newDocContent, "", AutoDevBundle.message("sketch.diff.aiSuggestion"))
+            SimpleDiffRequest(
+                "Diff",
+                EmptyContent(),
+                newDocContent,
+                "",
+                AutoDevBundle.message("sketch.diff.aiSuggestion")
+            )
         return diffRequest
     }
 
@@ -240,6 +252,20 @@ class SingleFileDiffSketch(
         filePatch: TextFilePatch,
         isRepaired: Boolean = false
     ): List<JButton> {
+        val regenerateButton = JButton(AutoDevBundle.message("sketch.patch.regenerate")).apply {
+            icon = if (isAutoRepair && patchProcessor.isFailure(patch)) {
+                AutoDevIcons.LOADING
+            } else {
+                AutoDevIcons.REPAIR
+            }
+            toolTipText = AutoDevBundle.message("sketch.patch.action.regenerate.tooltip")
+            isEnabled = true // always enabled
+
+            addActionListener {
+                handleRegenerateAction(file, filePatch)
+            }
+        }
+
         val viewButton = JButton(AutoDevBundle.message("sketch.patch.view")).apply {
             icon = AutoDevIcons.VIEW
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
@@ -261,56 +287,44 @@ class SingleFileDiffSketch(
             }
         }
 
-        val text = if (isRepaired) {
-            AutoDevBundle.message("sketch.patch.repaired")
-        } else {
-            AutoDevBundle.message("sketch.patch.repair")
-        }
-        val repairButton = JButton(text).apply {
-            val isFailedPatch = patchProcessor.isFailure(patch)
-            isEnabled = isFailedPatch
-            icon = if (isAutoRepair && isFailedPatch) {
-                AutoDevIcons.LOADING
-            } else {
-                AutoDevIcons.REPAIR
-            }
+        return listOf(regenerateButton, viewButton, applyButton)
+    }
 
-            toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
-            foreground = if (isEnabled) AutoDevColors.REMOVE_LINE_COLOR else JPanel().background // Replacing inline JBColor
+    private fun handleRegenerateAction(file: VirtualFile, filePatch: TextFilePatch) {
+        FileEditorManager.getInstance(myProject).openFile(file, true)
+        val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return
 
-            addActionListener {
-                FileEditorManager.getInstance(myProject).openFile(file, true)
-                val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return@addActionListener
+        if (myProject.coderSetting.state.enableDiffViewer) {
+            actionPanel.components.filterIsInstance<JButton>()
+                .firstOrNull { it.text == AutoDevBundle.message("sketch.patch.regenerate") }
+                ?.let { button -> button.icon = AutoDevIcons.LOADING }
 
-                if (myProject.coderSetting.state.enableDiffViewer) {
-                    icon = AutoDevIcons.LOADING
-                    patchProcessor.performAutoRepair(oldCode, filePatch) { repairedPatch, fixedCode ->
-                        icon = AutoDevIcons.REPAIR
-                        newCode = fixedCode
-                        updatePatchPanel(repairedPatch, fixedCode) {
-                            // do nothing
-                        }
+            patchProcessor.performAutoRepair(oldCode, filePatch) { repairedPatch, fixedCode ->
+                actionPanel.components.filterIsInstance<JButton>()
+                    .firstOrNull { it.text == AutoDevBundle.message("sketch.patch.regenerate") }
+                    ?.let { button -> button.icon = AutoDevIcons.REPAIR }
 
-                        runInEdt {
-                            createDiffViewer(oldCode, fixedCode).let { diffViewer ->
-                                mainPanel.add(diffViewer)
-                                mainPanel.revalidate()
-                                mainPanel.repaint()
-                            }
-                        }
+                newCode = fixedCode
+                updatePatchPanel(repairedPatch, fixedCode) {
+                    // do nothing
+                }
+
+                runInEdt {
+                    createDiffViewer(oldCode, fixedCode).let { diffViewer ->
+                        mainPanel.add(diffViewer)
+                        mainPanel.revalidate()
+                        mainPanel.repaint()
                     }
-                } else {
-                    val failurePatch = if (filePatch.hunks.size > 1) {
-                        filePatch.hunks.joinToString("\n") { it.text }
-                    } else {
-                        filePatch.singleHunkPatchText
-                    }
-                    DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
                 }
             }
+        } else {
+            val failurePatch = if (filePatch.hunks.size > 1) {
+                filePatch.hunks.joinToString("\n") { it.text }
+            } else {
+                filePatch.singleHunkPatchText
+            }
+            DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
         }
-
-        return listOf(viewButton, applyButton, repairButton)
     }
 
     override fun getViewText(): String = currentFile.readText()
