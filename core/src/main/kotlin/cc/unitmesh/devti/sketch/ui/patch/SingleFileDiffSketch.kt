@@ -54,6 +54,7 @@ class SingleFileDiffSketch(
     private val mainPanel: JPanel = JPanel(VerticalLayout(0))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
 
+    private var diffPanel: JComponent? = null
     private val patchProcessor = PatchProcessor(myProject)
     private var patchActionPanel: JPanel? = null
     private val oldCode = if (currentFile.isFile && currentFile.exists()) {
@@ -173,11 +174,9 @@ class SingleFileDiffSketch(
 
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
             patchProcessor.registerPatchChange(patch)
-
-            invokeLater {
-                val diffPanel = createDiffViewer(oldCode, newCode)
-                mainPanel.add(diffPanel)
-            }
+            // 默认不显示 diffPanel，通过点击图标按钮来控制显示/隐藏
+            diffPanel = createDiffViewer(oldCode, newCode)
+            // diffPanel 将由 toggleButton 控制显示
         }
     }
 
@@ -266,6 +265,15 @@ class SingleFileDiffSketch(
             }
         }
 
+        val toggleButton = JButton().apply {
+            icon = AutoDevIcons.VIEW
+            toolTipText = AutoDevBundle.message("sketch.terminal.show.hide")
+            addActionListener {
+                toggleDiffPanelVisibility()
+            }
+        }
+        
+
         val viewButton = JButton(AutoDevBundle.message("sketch.patch.view")).apply {
             icon = AutoDevIcons.VIEW
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
@@ -287,7 +295,21 @@ class SingleFileDiffSketch(
             }
         }
 
-        return listOf(regenerateButton, viewButton, applyButton)
+        return listOf(regenerateButton, viewButton, applyButton, toggleButton)
+    }
+
+    private fun toggleDiffPanelVisibility() {
+        if (diffPanel == null) {
+            diffPanel = createDiffViewer(oldCode, newCode)
+        }
+        
+        if (diffPanel!!.parent == mainPanel) {
+            mainPanel.remove(diffPanel)
+        } else {
+            mainPanel.add(diffPanel)
+        }
+        mainPanel.revalidate()
+        mainPanel.repaint()
     }
 
     private fun handleRegenerateAction(file: VirtualFile, filePatch: TextFilePatch) {
@@ -311,8 +333,10 @@ class SingleFileDiffSketch(
 
                 runInEdt {
                     createDiffViewer(oldCode, fixedCode).let { diffViewer ->
-                        mainPanel.add(diffViewer)
-                        mainPanel.revalidate()
+                        // 更新 diffPanel 引用
+                        diffPanel = diffViewer
+                        // 如果当前显示着 diffPanel，则需要更新显示
+                        toggleDiffPanelVisibility()
                         mainPanel.repaint()
                     }
                 }
