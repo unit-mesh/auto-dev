@@ -30,8 +30,8 @@ interface LangSketch : Disposable {
     fun onDoneStream(allText: String) {}
     fun onComplete(code: String) {}
 
-    fun setupActionBar(project: Project, editor: Editor, isDeclarePackageFile: Boolean): ActionToolbar? {
-        val toolbar = collectActionBar(isDeclarePackageFile) ?: return null
+    fun setupActionBar(project: Project, editor: Editor, isPackageFile: Boolean, showBottomBorder: Boolean = true): ActionToolbar? {
+        val toolbar = collectActionBar(isPackageFile) ?: return null
 
         if (editor is EditorEx) {
             toolbar.component.setBackground(editor.backgroundColor)
@@ -41,7 +41,9 @@ interface LangSketch : Disposable {
         toolbar.targetComponent = editor.contentComponent
         editor.headerComponent = toolbar.component
 
-        toolbar.component.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0)
+        if (showBottomBorder) {
+            toolbar.component.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0)
+        }
 
         val connect = project.messageBus.connect(this)
         val topic: Topic<EditorColorsListener> = EditorColorsManager.TOPIC

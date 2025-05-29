@@ -141,7 +141,7 @@ open class CodeHighlightSketch(
         
         if (textLanguage != null && lowercase != "markdown" && lowercase != "plain text") {
             if (showToolbar && lowercase != "devin") {
-                toolbar = setupActionBar(project, editor, isDeclarePackageFile)
+                toolbar = setupActionBar(project, editor, isDeclarePackageFile, showBottomBorder = devInsCollapsedPanel != null)
             }
         } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground

@@ -376,7 +376,7 @@ open class SketchToolWindow(
         val codes = CodeFence.parseAll(code.text)
 
         val panels = codes.map { code ->
-            var panel: JComponent = when (code.originLanguage) {
+            val panel: JComponent = when (code.originLanguage) {
                 "diff", "patch" -> {
                     val langSketch = LanguageSketchProvider.provide("patch")?.create(project, code.text)
                         ?: return@map null
