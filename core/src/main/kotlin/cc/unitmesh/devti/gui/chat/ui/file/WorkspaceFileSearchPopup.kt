@@ -1,10 +1,8 @@
 package cc.unitmesh.devti.gui.chat.ui.file
 
 import cc.unitmesh.devti.util.canBeAdded
-import com.intellij.ide.DataManager
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -14,8 +12,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.SearchTextField
-import com.intellij.ui.SpeedSearchComparator
-import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
@@ -25,7 +21,6 @@ import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.Point
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -45,7 +40,7 @@ class WorkspaceFileSearchPopup(
     private val searchField = SearchTextField()
     private val contentPanel = JPanel(BorderLayout())
     private val allProjectFiles = mutableListOf<FilePresentation>()
-    private val minPopupSize = Dimension(500, 400)
+    private val minPopupSize = Dimension(480, 320)
 
     init {
         loadProjectFiles()
@@ -182,7 +177,7 @@ class WorkspaceFileSearchPopup(
         })
 
         // Show popup in best position
-        popup?.showInBestPositionFor(DataManager.getInstance().getDataContext(component))
+        popup?.showUnderneathOf(component)
 
         // Request focus for search field after popup is shown
         SwingUtilities.invokeLater {
@@ -192,7 +187,6 @@ class WorkspaceFileSearchPopup(
 
     private inner class FileListCellRenderer : ListCellRenderer<FilePresentation> {
         private val noBorderFocus = BorderFactory.createEmptyBorder(1, 1, 1, 1)
-        private val speedSearchComparator = SpeedSearchComparator(false)
 
         @NotNull
         override fun getListCellRendererComponent(
