@@ -221,7 +221,7 @@ open class CodeHighlightSketch(
     private fun updateRunButtonIcon() {
         runButton?.let { button ->
             val icon = if (isComplete) AutoDevIcons.RUN else AutoDevIcons.LOADING
-            button.presentation.icon = icon
+            button.icon = icon
             button.repaint()
         }
     }
