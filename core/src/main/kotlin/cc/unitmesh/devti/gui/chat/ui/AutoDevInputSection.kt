@@ -80,7 +80,7 @@ class AutoDevInputSection(
     private val stopButtonPresentation: Presentation
     private val enhanceButtonPresentation: Presentation
     private val sendButton: ActionButton
-    private val modelSelector: JComboBox<ModelItem>
+    private val modelSelector: ComboBox<ModelItem>
     private val stopButton: ActionButton
     private val enhanceButton: ActionButton
     private var buttonPanel: JPanel = JPanel(CardLayout())
@@ -126,9 +126,8 @@ class AutoDevInputSection(
         input = AutoDevInput(project, listOf(), disposable, this)
         workspaceFilePanel = WorkspaceFilePanel(project)
 
-        // Create model selector
         val modelItems = LLMModelManager.getInstance().getAllAvailableModels()
-        modelSelector = JComboBox(modelItems.toTypedArray())
+        modelSelector = ComboBox(modelItems.toTypedArray())
 
         val currentModel = AutoDevSettingsState.getInstance().defaultModelId.ifEmpty { "Default" }
         for (i in 0 until modelSelector.itemCount) {
@@ -212,8 +211,6 @@ class AutoDevInputSection(
                 }
             }
             customAgent.selectedItem = defaultRag
-
-            // Add action listener to refresh agent list when dropdown is clicked
             customAgent.addActionListener {
                 if (customAgent.isPopupVisible) {
                     refreshAgentList()
@@ -229,7 +226,6 @@ class AutoDevInputSection(
             layoutPanel.addToLeft(modelSelector)
         }
 
-        // Set style for model selector
         modelSelector.border = JBUI.Borders.empty(0, 4)
         modelSelector.preferredSize = Dimension(200, modelSelector.preferredSize.height)
 
