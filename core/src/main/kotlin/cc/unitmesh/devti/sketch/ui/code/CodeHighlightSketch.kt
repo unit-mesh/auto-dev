@@ -121,11 +121,9 @@ open class CodeHighlightSketch(
     }
 
     private fun setupDevInsView(text: String) {
-        // 创建折叠状态的面板
         devInsCollapsedPanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(2)
 
-            // 创建左侧运行按钮
             val runAction = ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.RunDevIns") as? AutoDevRunAction
                 ?: AutoDevRunAction()
             val runButton = ActionButton(
@@ -135,7 +133,6 @@ open class CodeHighlightSketch(
                 JBUI.size(22, 22)
             )
 
-            // 创建代码预览标签
             val firstLine = text.lines().firstOrNull() ?: ""
             val previewLabel = JBLabel(firstLine).apply {
                 border = JBUI.Borders.emptyLeft(4)
@@ -147,7 +144,6 @@ open class CodeHighlightSketch(
                 })
             }
 
-            // 创建展开/折叠图标
             val expandCollapseIcon = JBLabel(AllIcons.General.ArrowRight).apply {
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                 addMouseListener(object : MouseAdapter() {
@@ -157,12 +153,10 @@ open class CodeHighlightSketch(
                 })
             }
 
-            // 左侧面板包含运行按钮
             val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 2, 0)).apply {
                 add(runButton)
             }
 
-            // 右侧面板包含预览和展开/折叠图标
             val rightPanel = JPanel(BorderLayout()).apply {
                 add(previewLabel, BorderLayout.CENTER)
                 add(expandCollapseIcon, BorderLayout.EAST)
@@ -172,28 +166,23 @@ open class CodeHighlightSketch(
             add(rightPanel, BorderLayout.CENTER)
         }
 
-        // 创建展开状态的面板
         devInsExpandedPanel = JPanel(VerticalLayout(0)).apply {
             add(editorFragment!!.getContent())
             
-            // 添加 "Fewer lines" 标签
             val fewerLinesLabel = createFewerLinesLabel()
             add(fewerLinesLabel)
         }
 
-        // 初始状态为折叠
         add(devInsCollapsedPanel!!)
         isCollapsed = true
     }
 
     private fun toggleEditorVisibility() {
         if (isCollapsed) {
-            // 展开编辑器
             remove(devInsCollapsedPanel)
             add(devInsExpandedPanel!!)
             isCollapsed = false
         } else {
-            // 折叠编辑器
             remove(devInsExpandedPanel)
             add(devInsCollapsedPanel!!)
             isCollapsed = true
@@ -212,27 +201,11 @@ open class CodeHighlightSketch(
             
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
-                    // 点击 "Fewer lines" 时折叠编辑器
                     if (!isCollapsed) {
                         toggleEditorVisibility()
                     }
                 }
             })
-        }
-    }
-
-    private fun updateCollapsedPanelIcon() {
-        devInsCollapsedPanel?.let { panel ->
-            // 更新折叠面板中的箭头图标
-            val components = panel.components
-            for (comp in components) {
-                if (comp is JPanel && comp.layout is BorderLayout) {
-                    val eastComp = (comp.layout as BorderLayout).getLayoutComponent(BorderLayout.EAST)
-                    if (eastComp is JBLabel) {
-                        eastComp.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-                    }
-                }
-            }
         }
     }
 
@@ -263,7 +236,6 @@ open class CodeHighlightSketch(
             try {
                 document?.replaceString(0, document.textLength, normalizedText)
 
-                // 更新折叠面板中的预览
                 if (isDevIns && devInsCollapsedPanel != null) {
                     val firstLine = normalizedText.lines().firstOrNull() ?: ""
                     val components = devInsCollapsedPanel!!.components
@@ -287,7 +259,6 @@ open class CodeHighlightSketch(
             }
 
             if (complete && isDevIns) {
-                // 完成后确保 DevIns 代码是折叠状态
                 if (!isCollapsed) {
                     toggleEditorVisibility()
                 }
