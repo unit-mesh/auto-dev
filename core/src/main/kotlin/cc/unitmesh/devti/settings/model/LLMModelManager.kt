@@ -56,7 +56,7 @@ class LLMModelManager(
             githubModels?.forEach { model ->
                 models.add(ModelItem(
                     displayName = "Github: ${model.id}",
-                    id = model.id,
+                    modelId = model.id,
                     isCustom = false
                 ))
             }
@@ -66,7 +66,7 @@ class LLMModelManager(
         userModels.forEach { llm ->
             models.add(ModelItem(
                 displayName = llm.name,
-                id = llm.name,
+                modelId = llm.name,
                 isCustom = true
             ))
         }
