@@ -3,29 +3,22 @@ package cc.unitmesh.devti.sketch.ui.patch
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevColors
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.settings.coder.coderSetting
-import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
-import cc.unitmesh.devti.util.DirUtil
 import cc.unitmesh.devti.util.isFile
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.DiffContext
 import com.intellij.diff.contents.EmptyContent
-import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.simple.SimpleDiffViewer
 import com.intellij.diff.tools.simple.SimpleOnesideDiffViewer
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
-import com.intellij.openapi.command.CommandProcessor
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.*
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -60,6 +53,8 @@ class SingleFileDiffSketch(
 ) : LangSketch {
     private val mainPanel: JPanel = JPanel(VerticalLayout(0))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
+    
+    private val patchProcessor = PatchProcessor(myProject)
     private var patchActionPanel: JPanel? = null
     private val oldCode = if (currentFile.isFile && currentFile.exists()) {
         try {
@@ -70,13 +65,7 @@ class SingleFileDiffSketch(
         }
     } else ""
 
-    private var appliedPatch = try {
-        val apply = GenericPatchApplier.apply(oldCode, patch.hunks)
-        apply
-    } catch (e: Exception) {
-        logger<SingleFileDiffSketch>().warn(AutoDevBundle.message("sketch.patch.failed.apply", patch.beforeFileName ?: ""), e)
-        null
-    }
+    private var appliedPatch = patchProcessor.applyPatch(oldCode, patch)
 
     private val actionPanel = JPanel(HorizontalLayout(4)).apply {
         isOpaque = true
@@ -183,8 +172,7 @@ class SingleFileDiffSketch(
         mainPanel.add(contentPanel)
 
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
-            myProject.getService<AgentStateService>(AgentStateService::class.java)
-                .addToChange(patch)
+            patchProcessor.registerPatchChange(patch)
 
             invokeLater {
                 val diffPanel = createDiffViewer(oldCode, newCode)
@@ -266,46 +254,10 @@ class SingleFileDiffSketch(
         val applyButton = JButton(AutoDevBundle.message("sketch.patch.apply")).apply {
             icon = AutoDevIcons.RUN
             toolTipText = AutoDevBundle.message("sketch.patch.action.applyDiff.tooltip")
-            isEnabled = !isFailure(patch)
+            isEnabled = !patchProcessor.isFailure(patch)
 
             addActionListener {
-                if (file is LightVirtualFile) {
-                    var fileName = file.name.substringAfterLast("/")
-                    val filePath = file.path.substringBeforeLast(fileName)
-
-                    try {
-                        runReadAction {
-                            val directory = DirUtil.getOrCreateDirectory(myProject.baseDir, filePath)
-                            val vfile = runWriteAction { directory.createChildData(this, fileName) }
-                            vfile.writeText(patch!!.patchedText)
-
-                            FileEditorManager.getInstance(myProject).openFile(vfile, true)
-                        }
-                    } catch (e: Exception) {
-                        logger<SingleFileDiffSketch>().error("Failed to create file: ${file.path}", e)
-                        return@addActionListener
-                    }
-
-                    return@addActionListener
-                }
-
-                val document = FileDocumentManager.getInstance().getDocument(file)
-                if (document == null) {
-                    logger<SingleFileDiffSketch>().error(AutoDevBundle.message("sketch.patch.document.null", file.path))
-                    return@addActionListener
-                }
-
-                CommandProcessor.getInstance().executeCommand(myProject, {
-                    WriteCommandAction.runWriteCommandAction(myProject) {
-                        document.setText(patch!!.patchedText)
-
-                        if (file is DiffVirtualFileBase) {
-                            FileEditorManager.getInstance(myProject).closeFile(file)
-                        } else {
-                            FileEditorManager.getInstance(myProject).openFile(file, true)
-                        }
-                    }
-                }, "ApplyPatch", null)
+                patchProcessor.applyPatchToFile(file, patch)
             }
         }
 
@@ -315,7 +267,7 @@ class SingleFileDiffSketch(
             AutoDevBundle.message("sketch.patch.repair")
         }
         val repairButton = JButton(text).apply {
-            val isFailedPatch = isFailure(patch)
+            val isFailedPatch = patchProcessor.isFailure(patch)
             isEnabled = isFailedPatch
             icon = if (isAutoRepair && isFailedPatch) {
                 AutoDevIcons.LOADING
@@ -330,29 +282,13 @@ class SingleFileDiffSketch(
                 FileEditorManager.getInstance(myProject).openFile(file, true)
                 val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return@addActionListener
 
-                val failurePatch = if (filePatch.hunks.size > 1) {
-                    filePatch.hunks.joinToString("\n") { it.text }
-                } else {
-                    filePatch.singleHunkPatchText
-                }
-
                 if (myProject.coderSetting.state.enableDiffViewer) {
                     icon = AutoDevIcons.LOADING
-                    DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, failurePatch) { fixedCode ->
+                    patchProcessor.performAutoRepair(oldCode, filePatch) { repairedPatch, fixedCode ->
                         icon = AutoDevIcons.REPAIR
                         newCode = fixedCode
-                        try {
-                            createPatchFromCode(oldCode, fixedCode)?.also {
-                                updatePatchPanel(it, fixedCode) {
-                                    /// do nothing
-                                }
-                            }
-                        } catch (e: Exception) {
-                            logger<SingleFileDiffSketch>().warn(
-                                "Failed to apply patch: ${this@SingleFileDiffSketch.patch.beforeFileName}",
-                                e
-                            )
-                            return@applyDiffRepairSuggestionSync
+                        updatePatchPanel(repairedPatch, fixedCode) {
+                            // do nothing
                         }
 
                         runInEdt {
@@ -364,6 +300,11 @@ class SingleFileDiffSketch(
                         }
                     }
                 } else {
+                    val failurePatch = if (filePatch.hunks.size > 1) {
+                        filePatch.hunks.joinToString("\n") { it.text }
+                    } else {
+                        filePatch.singleHunkPatchText
+                    }
                     DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
                 }
             }
@@ -371,11 +312,6 @@ class SingleFileDiffSketch(
 
         return listOf(viewButton, applyButton, repairButton)
     }
-
-    private fun isFailure(appliedPatch: GenericPatchApplier.AppliedPatch?): Boolean =
-        appliedPatch?.status != ApplyPatchStatus.SUCCESS
-                && appliedPatch?.status != ApplyPatchStatus.ALREADY_APPLIED
-                && appliedPatch?.status != ApplyPatchStatus.PARTIAL
 
     override fun getViewText(): String = currentFile.readText()
 
@@ -391,9 +327,7 @@ class SingleFileDiffSketch(
                 runAutoLint(currentFile)
             }
         } else {
-            if (myProject.coderSetting.state.enableAutoLintCode && !AutoSketchMode.getInstance(myProject).isEnable) {
-                runAutoLint(currentFile)
-            }
+            runAutoLint(currentFile)
         }
 
         isRepaired = true
@@ -424,21 +358,14 @@ class SingleFileDiffSketch(
     }
 
     private fun executeAutoRepair(postAction: () -> Unit) {
-        DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode: String ->
-            createPatchFromCode(oldCode, fixedCode)?.let { patch ->
-                this.patch = patch
-                updatePatchPanel(patch, fixedCode, postAction)
-            }
-        })
+        patchProcessor.performAutoRepair(oldCode, patch) { repairedPatch, fixedCode ->
+            this.patch = repairedPatch
+            updatePatchPanel(repairedPatch, fixedCode, postAction)
+        }
     }
 
     private fun updatePatchPanel(patch: TextFilePatch, fixedCode: String, postAction: () -> Unit) {
-        appliedPatch = try {
-            GenericPatchApplier.apply(oldCode, patch.hunks)
-        } catch (e: Exception) {
-            logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
-            null
-        }
+        appliedPatch = patchProcessor.applyPatch(oldCode, patch)
 
         runInEdt {
             WriteAction.compute<Unit, Throwable> {
@@ -446,8 +373,7 @@ class SingleFileDiffSketch(
             }
         }
 
-        myProject.getService<AgentStateService>(AgentStateService::class.java)
-            .addToChange(patch)
+        patchProcessor.registerPatchChange(patch)
 
         createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
             actionPanel.removeAll()
