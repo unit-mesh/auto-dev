@@ -14,6 +14,7 @@ import com.intellij.diff.contents.EmptyContent
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.simple.SimpleDiffViewer
 import com.intellij.diff.tools.simple.SimpleOnesideDiffViewer
+import com.intellij.icons.AllIcons
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.*
 import com.intellij.openapi.diagnostic.logger
@@ -266,7 +267,9 @@ class SingleFileDiffSketch(
         }
 
         val toggleButton = JButton().apply {
-            icon = AutoDevIcons.VIEW
+            icon = AllIcons.Actions.Diff
+            preferredSize = Dimension(20, 20)
+            isOpaque = false
             toolTipText = AutoDevBundle.message("sketch.terminal.show.hide")
             addActionListener {
                 toggleDiffPanelVisibility()

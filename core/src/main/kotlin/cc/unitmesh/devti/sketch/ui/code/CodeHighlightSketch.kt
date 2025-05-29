@@ -113,7 +113,7 @@ open class CodeHighlightSketch(
 
         setupToolbarAndStyling(fileName, editor)
     }
-    
+
     private fun setupSimpleEditor(text: String, fileName: String?) {
         val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
         
@@ -219,9 +219,9 @@ open class CodeHighlightSketch(
     }
 
     private fun updateRunButtonIcon() {
-        runButton?.let { button ->
+        runButton?.let { button: ActionButton ->
             val icon = if (isComplete) AutoDevIcons.RUN else AutoDevIcons.LOADING
-            button.icon = icon
+            button.setIcon(icon)
             button.repaint()
         }
     }

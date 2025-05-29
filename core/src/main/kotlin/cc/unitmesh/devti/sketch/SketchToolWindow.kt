@@ -260,7 +260,8 @@ open class SketchToolWindow(
         progressBar.isIndeterminate = true
 
         runInEdt {
-            historyPanel.add(createSingleTextView(text, language = "DevIn", isUser = true))
+            val isUser = !text.startsWith("/")
+            historyPanel.add(createSingleTextView(text, language = "DevIn", isUser = isUser))
             this.revalidate()
             this.repaint()
         }

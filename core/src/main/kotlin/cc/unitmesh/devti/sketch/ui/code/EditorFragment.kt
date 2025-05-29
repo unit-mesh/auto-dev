@@ -114,19 +114,8 @@ class EditorFragment(
         expandCollapseTextLabel.icon = if (collapsed) AllIcons.General.ChevronDown else AllIcons.General.ChevronUp
     }
 
-    fun resizeForNewThreshold(newThreshold: Int) {
-        content.preferredSize = calculatePreferredSize(content.preferredSize, newThreshold)
-
-        expandCollapseTextLabel.isVisible = true
-        expandCollapseTextLabel.text = "More lines"
-        expandCollapseTextLabel.icon = AllIcons.General.ChevronDown
-
-        content.revalidate()
-        content.repaint()
-    }
-
     companion object {
-        private const val EDITOR_LINE_THRESHOLD = 6
+        private const val EDITOR_LINE_THRESHOLD = 4
     }
 }
 
