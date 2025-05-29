@@ -18,6 +18,8 @@ import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.customize.customizeSetting
+import cc.unitmesh.devti.settings.model.LLMModelManager
+import cc.unitmesh.devti.settings.ui.ModelItem
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.codeInsight.lookup.LookupManagerListener
@@ -67,15 +69,18 @@ import javax.swing.*
 import kotlin.math.max
 import kotlin.math.min
 
-class AutoDevInputSection(private val project: Project, val disposable: Disposable?, showAgent: Boolean = true) :
-    BorderLayoutPanel() {
+class AutoDevInputSection(
+    private val project: Project,
+    val disposable: Disposable?,
+    showAgent: Boolean = true
+) : BorderLayoutPanel() {
     private val input: AutoDevInput
     private val documentListener: DocumentListener
     private val sendButtonPresentation: Presentation
     private val stopButtonPresentation: Presentation
     private val enhanceButtonPresentation: Presentation
     private val sendButton: ActionButton
-    private val modelLabel: JBLabel
+    private val modelSelector: JComboBox<ModelItem>
     private val stopButton: ActionButton
     private val enhanceButton: ActionButton
     private var buttonPanel: JPanel = JPanel(CardLayout())
@@ -121,9 +126,25 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         input = AutoDevInput(project, listOf(), disposable, this)
         workspaceFilePanel = WorkspaceFilePanel(project)
 
-        // Create a label to display the current model ID
-        val modelId = AutoDevSettingsState.getInstance().defaultModelId.ifEmpty { "Default" }
-        modelLabel = JBLabel("Model: $modelId").apply { foreground = JBUI.CurrentTheme.Label.disabledForeground() }
+        // Create model selector
+        val modelItems = LLMModelManager.getInstance().getAllAvailableModels()
+        modelSelector = JComboBox(modelItems.toTypedArray())
+
+        val currentModel = AutoDevSettingsState.getInstance().defaultModelId.ifEmpty { "Default" }
+        val currentModelId = LLMModelManager.getInstance().getModelIdFromProvider(currentModel)
+        for (i in 0 until modelSelector.itemCount) {
+            val item = modelSelector.getItemAt(i)
+            if (item.modelId == currentModelId) {
+                modelSelector.selectedIndex = i
+                break
+            }
+        }
+
+        modelSelector.addActionListener {
+            val selected = modelSelector.selectedItem as? ModelItem ?: return@addActionListener
+            val newProvider = LLMModelManager.getInstance().getProviderFromModelId(selected.modelId)
+            AutoDevSettingsState.getInstance().defaultModelId = newProvider
+        }
 
         setupElementsList()
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
@@ -202,12 +223,16 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
             input.minimumSize = Dimension(input.minimumSize.width, 64)
             layoutPanel.addToLeft(customAgent)
-            // Add model label next to the custom agent dropdown
+            // Add model selector next to the custom agent dropdown
             layoutPanel.addToLeft(Box.createHorizontalStrut(JBUI.scale(8)))
-            layoutPanel.addToLeft(modelLabel)
+            layoutPanel.addToLeft(modelSelector)
         } else {
-            layoutPanel.addToLeft(modelLabel)
+            layoutPanel.addToLeft(modelSelector)
         }
+
+        // Set style for model selector
+        modelSelector.border = JBUI.Borders.empty(0, 4)
+        modelSelector.preferredSize = Dimension(200, modelSelector.preferredSize.height)
 
         buttonPanel = createButtonPanel()
 

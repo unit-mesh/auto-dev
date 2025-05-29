@@ -10,6 +10,7 @@ import cc.unitmesh.devti.settings.ui.ModelItem
 import cc.unitmesh.devti.util.AutoDevAppScope
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.Messages
 import kotlinx.coroutines.CoroutineName
@@ -41,6 +42,77 @@ class LLMModelManager(
         }
         val userModels = LlmConfig.load()
         return userModels.any { it.name == modelName }
+    }
+
+    /**
+     * Get all available models (GitHub Copilot + Custom LLMs)
+     * Used by AutoDevInputSection to populate model selector
+     */
+    fun getAllAvailableModels(): List<ModelItem> {
+        val models = mutableListOf<ModelItem>()
+        val manager = service<GithubCopilotManager>()
+        if (manager.isInitialized()) {
+            val githubModels = manager.getSupportedModels(forceRefresh = false)
+            githubModels?.forEach { model ->
+                models.add(ModelItem(
+                    displayName = "Github: ${model.id}",
+                    id = model.id,
+                    isCustom = false
+                ))
+            }
+        }
+        
+        val userModels = LlmConfig.load()
+        userModels.forEach { llm ->
+            models.add(ModelItem(
+                displayName = llm.name,
+                id = llm.name,
+                isCustom = true
+            ))
+        }
+        
+        return models
+    }
+    
+    /**
+     * Get model ID from provider name
+     * Used by AutoDevInputSection to find current selected model
+     */
+    fun getModelIdFromProvider(providerName: String): String {
+        if (providerName.isEmpty() || providerName == "Default") {
+            return "Default"
+        }
+        
+        // For GitHub models, extract model ID from "Github: model-id" format
+        if (providerName.startsWith("Github: ")) {
+            return providerName.removePrefix("Github: ")
+        }
+        
+        // For custom models, the provider name is the model name
+        return providerName
+    }
+    
+    /**
+     * Get provider name from model ID
+     * Used by AutoDevInputSection when model selection changes
+     */
+    fun getProviderFromModelId(modelId: String): String {
+        if (modelId.isEmpty() || modelId == "Default") {
+            return "Default"
+        }
+        
+        // Check if it's a GitHub Copilot model
+        val manager = service<GithubCopilotManager>()
+        if (manager.isInitialized()) {
+            val githubModels = manager.getSupportedModels(forceRefresh = false)
+            val isGithubModel = githubModels?.any { it.id == modelId } == true
+            if (isGithubModel) {
+                return "Github: $modelId"
+            }
+        }
+        
+        // For custom models, return the model name directly
+        return modelId
     }
 
     /**
@@ -376,6 +448,14 @@ class LLMModelManager(
                     )
                 }
             }
+        }
+    }
+
+    companion object {
+        fun getInstance(): LLMModelManager {
+            val project = ProjectManager.getInstance().openProjects.firstOrNull()
+            val settings = AutoDevSettingsState.getInstance()
+            return LLMModelManager(project, settings, {})
         }
     }
 }

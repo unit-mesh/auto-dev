@@ -7,6 +7,7 @@ import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -31,7 +32,9 @@ object DiffRepair {
         processStreamRealtime(project, flow) { code ->
             callback?.invoke(code)
             runWriteAction {
-                editor.document.setText(code)
+                runInEdt {
+                    editor.document.setText(code)
+                }
             }
         }
     }
