@@ -75,6 +75,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val stopButtonPresentation: Presentation
     private val enhanceButtonPresentation: Presentation
     private val sendButton: ActionButton
+    private val modelLabel: JBLabel
     private val stopButton: ActionButton
     private val enhanceButton: ActionButton
     private var buttonPanel: JPanel = JPanel(CardLayout())
@@ -119,6 +120,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     init {
         input = AutoDevInput(project, listOf(), disposable, this)
         workspaceFilePanel = WorkspaceFilePanel(project)
+
+        // Create a label to display the current model ID
+        val modelId = AutoDevSettingsState.getInstance().defaultModelId.ifEmpty { "Default" }
+        modelLabel = JBLabel("Model: $modelId").apply { foreground = JBUI.CurrentTheme.Label.disabledForeground() }
 
         setupElementsList()
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
@@ -197,6 +202,11 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
             input.minimumSize = Dimension(input.minimumSize.width, 64)
             layoutPanel.addToLeft(customAgent)
+            // Add model label next to the custom agent dropdown
+            layoutPanel.addToLeft(Box.createHorizontalStrut(JBUI.scale(8)))
+            layoutPanel.addToLeft(modelLabel)
+        } else {
+            layoutPanel.addToLeft(modelLabel)
         }
 
         buttonPanel = createButtonPanel()
@@ -489,4 +499,3 @@ fun JComponent.mediumFontFunction() {
     }
     putClientProperty(FONT_KEY, f)
 }
-
