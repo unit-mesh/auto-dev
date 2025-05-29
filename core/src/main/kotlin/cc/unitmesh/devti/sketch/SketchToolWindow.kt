@@ -260,7 +260,7 @@ open class SketchToolWindow(
         progressBar.isIndeterminate = true
 
         runInEdt {
-            historyPanel.add(createSingleTextView(text, language = "DevIn"))
+            historyPanel.add(createSingleTextView(text, language = "DevIn", isUser = true))
             this.revalidate()
             this.repaint()
         }
@@ -303,8 +303,8 @@ open class SketchToolWindow(
         inputSection.setText(text.trim())
     }
 
-    fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
-        return MessageView.createSingleTextView(project, text, language)
+    fun createSingleTextView(text: String, language: String = "markdown", isUser: Boolean = false): DialogPanel {
+        return MessageView.createSingleTextView(project, text, language, isUser = isUser)
     }
 
     fun onUpdate(text: String) {

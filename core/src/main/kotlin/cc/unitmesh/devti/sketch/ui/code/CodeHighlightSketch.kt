@@ -54,7 +54,8 @@ open class CodeHighlightSketch(
     val editorLineThreshold: Int = 6,
     val fileName: String? = null,
     val withLeftRightBorder: Boolean = true,
-    val showToolbar: Boolean = true
+    val showToolbar: Boolean = true,
+    val isUser: Boolean = false,
 ) : JBPanel<CodeHighlightSketch>(VerticalLayout(2)), DataProvider, LangSketch, Disposable {
     private val minDevinLineThreshold = 1
     private var isDevIns = false
@@ -115,7 +116,7 @@ open class CodeHighlightSketch(
 
         if (lowercase == "devin") {
             editorFragment?.editor?.setBorder(JBEmptyBorder(1, 1, 0, 1))
-        } else if(lowercase != "markdown") {
+        } else if (lowercase != "markdown") {
             editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
         }
     }
@@ -124,8 +125,9 @@ open class CodeHighlightSketch(
         devInsCollapsedPanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(2)
 
-            val runAction = ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.RunDevIns") as? AutoDevRunAction
-                ?: AutoDevRunAction()
+            val runAction =
+                ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.RunDevIns") as? AutoDevRunAction
+                    ?: AutoDevRunAction()
             val runButton = ActionButton(
                 runAction,
                 runAction.templatePresentation.clone(),
@@ -168,7 +170,7 @@ open class CodeHighlightSketch(
 
         devInsExpandedPanel = JPanel(VerticalLayout(0)).apply {
             add(editorFragment!!.getContent())
-            
+
             val fewerLinesLabel = createFewerLinesLabel()
             add(fewerLinesLabel)
         }
@@ -198,7 +200,7 @@ open class CodeHighlightSketch(
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             isOpaque = true
             background = JBColor.PanelBackground
-            
+
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     if (!isCollapsed) {
