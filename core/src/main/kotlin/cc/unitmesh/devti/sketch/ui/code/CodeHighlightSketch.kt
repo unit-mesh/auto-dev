@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction
 import cc.unitmesh.devti.gui.snippet.AutoDevRunAction
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
@@ -159,8 +160,8 @@ open class CodeHighlightSketch(
             border = JBUI.Borders.empty(2)
 
             val runAction =
-                ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.RunDevIns") as? AutoDevRunAction
-                    ?: AutoDevRunAction()
+                ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.InsertCode") as? AutoDevInsertCodeAction
+                    ?: AutoDevInsertCodeAction()
 
             runButton = createRunButton(runAction)
 
@@ -209,12 +210,12 @@ open class CodeHighlightSketch(
         updateRunButtonIcon()
     }
 
-    private fun createRunButton(runAction: AutoDevRunAction): ActionButton {
+    private fun createRunButton(runAction: AutoDevInsertCodeAction): ActionButton {
         return ActionButton(
             runAction,
             runAction.templatePresentation.clone(),
             "AutoDevToolbar",
-            JBUI.size(22, 22)
+            JBUI.size(24, 24)
         )
     }
 
