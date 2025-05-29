@@ -26,13 +26,13 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
 
         filesPanel.isOpaque = false
         filesPanel.add(createAddButton())
-        filesPanel.add(createConfigButton())
+        filesPanel.add(createMcpConfigButton())
 
         add(filesPanel, BorderLayout.NORTH)
         isOpaque = false
     }
 
-    private fun createConfigButton(): JComponent {
+    private fun createMcpConfigButton(): JComponent {
         return createActionButton(McpConfigAction())
     }
 
@@ -82,7 +82,7 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
     private fun updateFilesPanel() {
         filesPanel.removeAll()
         filesPanel.add(createAddButton())
-        filesPanel.add(createConfigButton())
+        filesPanel.add(createMcpConfigButton())
 
         for (filePresentation in workspaceFiles) {
             val fileLabel = FileItemPanel(project, filePresentation) {
