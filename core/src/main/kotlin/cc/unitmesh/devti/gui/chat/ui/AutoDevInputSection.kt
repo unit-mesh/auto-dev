@@ -223,9 +223,11 @@ class AutoDevInputSection(
             }
 
             input.minimumSize = Dimension(input.minimumSize.width, 64)
-            layoutPanel.addToLeft(customAgent)
-            layoutPanel.addToLeft(Box.createHorizontalStrut(JBUI.scale(8)))
-            layoutPanel.addToLeft(modelSelector)
+            val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
+            leftPanel.add(customAgent)
+            leftPanel.add(Box.createHorizontalStrut(JBUI.scale(8)))
+            leftPanel.add(modelSelector)
+            layoutPanel.addToLeft(leftPanel)
         } else {
             layoutPanel.addToLeft(modelSelector)
         }
