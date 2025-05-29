@@ -62,6 +62,7 @@ open class CodeHighlightSketch(
     private var devInsCollapsedPanel: JPanel? = null
     private var devInsExpandedPanel: JPanel? = null
     private var isCollapsed = false
+    private var runButton: ActionButton? = null
     private var isComplete = isUser
 
     private var textLanguage: String? = if (ideaLanguage != null) ideaLanguage?.displayName else null
@@ -129,12 +130,8 @@ open class CodeHighlightSketch(
             val runAction =
                 ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.RunDevIns") as? AutoDevRunAction
                     ?: AutoDevRunAction()
-            val runButton = ActionButton(
-                runAction,
-                runAction.templatePresentation.clone(),
-                "AutoDevToolbar",
-                JBUI.size(22, 22)
-            )
+
+            runButton = createRunButton(runAction)
 
             val firstLine = text.lines().firstOrNull() ?: ""
             val previewLabel = JBLabel(firstLine).apply {
@@ -157,7 +154,7 @@ open class CodeHighlightSketch(
             }
 
             val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 2, 0)).apply {
-                add(runButton)
+                add(runButton!!)
             }
 
             val rightPanel = JPanel(BorderLayout()).apply {
@@ -178,6 +175,24 @@ open class CodeHighlightSketch(
 
         add(devInsCollapsedPanel!!)
         isCollapsed = true
+        updateRunButtonIcon()
+    }
+
+    private fun createRunButton(runAction: AutoDevRunAction): ActionButton {
+        return ActionButton(
+            runAction,
+            runAction.templatePresentation.clone(),
+            "AutoDevToolbar",
+            JBUI.size(22, 22)
+        )
+    }
+
+    private fun updateRunButtonIcon() {
+        runButton?.let { button ->
+            val icon = if (isComplete) AutoDevIcons.RUN else AutoDevIcons.LOADING
+            button.presentation.icon = icon
+            button.repaint()
+        }
     }
 
     private fun toggleEditorVisibility() {
@@ -257,6 +272,9 @@ open class CodeHighlightSketch(
             } catch (e: Throwable) {
                 logger<CodeHighlightSketch>().error("Error updating editor text", e)
             }
+
+            // 更新 runButton 图标状态
+            updateRunButtonIcon()
 
             val lineCount = document?.lineCount ?: 0
             if (lineCount > editorLineThreshold) {
