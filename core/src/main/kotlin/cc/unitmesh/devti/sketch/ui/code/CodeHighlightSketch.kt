@@ -22,6 +22,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
@@ -86,6 +87,11 @@ open class CodeHighlightSketch(
     fun initEditor(text: String, fileName: String? = null) {
         if (hasSetupAction) return
         hasSetupAction = true
+        
+        if (isUser) {
+            setupSimpleEditor(text, fileName)
+            return
+        }
 
         val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
 
@@ -102,24 +108,49 @@ open class CodeHighlightSketch(
             editorFragment = EditorFragment(editor, minDevinLineThreshold, previewEditor)
             setupDevInsView(text)
         } else {
-            editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
-            add(editorFragment!!.getContent())
+            setupRegularEditor(editor)
         }
 
+        setupToolbarAndStyling(fileName, editor)
+    }
+    
+    private fun setupSimpleEditor(text: String, fileName: String?) {
+        val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
+        
+        border = if (withLeftRightBorder) {
+            JBEmptyBorder(4, 4, 4, 4)
+        } else {
+            JBEmptyBorder(4, 0, 0, 0)
+        }
+        
+        editor.component.isOpaque = true
+        editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
+        add(editorFragment!!.getContent())
+        
+        setupToolbarAndStyling(fileName, editor)
+    }
+    
+    private fun setupRegularEditor(editor: EditorEx) {
+        editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
+        add(editorFragment!!.getContent())
+    }
+    
+    private fun setupToolbarAndStyling(fileName: String?, editor: EditorEx) {
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         val lowercase = textLanguage?.lowercase()
+        
         if (textLanguage != null && lowercase != "markdown" && lowercase != "plain text") {
-            if (showToolbar && !isDevIns) {
+            if (showToolbar && lowercase != "devin") {
                 toolbar = setupActionBar(project, editor, isDeclarePackageFile)
             }
         } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
         }
 
-        if (lowercase == "devin") {
-            editorFragment?.editor?.setBorder(JBEmptyBorder(1, 1, 0, 1))
-        } else if (lowercase != "markdown") {
-            editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
+        when (lowercase) {
+            "devin" -> editorFragment?.editor?.setBorder(JBEmptyBorder(1, 1, 0, 1))
+            "markdown" -> { /* no border changes needed */ }
+            else -> editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
         }
     }
 
@@ -244,6 +275,7 @@ open class CodeHighlightSketch(
     override fun updateViewText(text: String, complete: Boolean) {
         isComplete = complete
 
+        // Initialize editor if not already done and text is not empty
         if (!hasSetupAction && text.trim().isNotEmpty()) {
             initEditor(text)
         }
@@ -256,6 +288,7 @@ open class CodeHighlightSketch(
             try {
                 document?.replaceString(0, document.textLength, normalizedText)
 
+                // Update DevIns collapsed panel preview text if applicable
                 if (isDevIns && devInsCollapsedPanel != null) {
                     val firstLine = normalizedText.lines().firstOrNull() ?: ""
                     val components = devInsCollapsedPanel!!.components
@@ -273,24 +306,24 @@ open class CodeHighlightSketch(
                 logger<CodeHighlightSketch>().error("Error updating editor text", e)
             }
 
-            // 更新 runButton 图标状态
+            // Update run button icon state for DevIns
             updateRunButtonIcon()
 
             val lineCount = document?.lineCount ?: 0
             if (lineCount > editorLineThreshold) {
                 editorFragment?.updateExpandCollapseLabel()
             }
-
-            if (complete && isDevIns) {
-                if (!isCollapsed) {
-                    toggleEditorVisibility()
-                }
+            
+            // Auto-collapse DevIns view when complete
+            if (complete && isDevIns && !isCollapsed) {
+                toggleEditorVisibility()
             }
         }
     }
 
     override fun onDoneStream(allText: String) {
-        if (ideaLanguage?.displayName != "DevIn") return
+        // Only process DevIns commands for non-user messages
+        if (isUser || ideaLanguage?.displayName != "DevIn") return
 
         val currentText = getViewText()
         if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
