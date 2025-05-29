@@ -59,6 +59,7 @@ open class CodeHighlightSketch(
     private val minDevinLineThreshold = 1
     private var isDevIns = false
     private var devInsCollapsedPanel: JPanel? = null
+    private var devInsExpandedPanel: JPanel? = null
     private var isCollapsed = false
 
     private var textLanguage: String? = if (ideaLanguage != null) ideaLanguage?.displayName else null
@@ -171,6 +172,16 @@ open class CodeHighlightSketch(
             add(rightPanel, BorderLayout.CENTER)
         }
 
+        // 创建展开状态的面板
+        devInsExpandedPanel = JPanel(VerticalLayout(0)).apply {
+            add(editorFragment!!.getContent())
+            
+            // 添加 "Fewer lines" 标签
+            val fewerLinesLabel = createFewerLinesLabel()
+            add(fewerLinesLabel)
+        }
+
+        // 初始状态为折叠
         add(devInsCollapsedPanel!!)
         isCollapsed = true
     }
@@ -179,17 +190,50 @@ open class CodeHighlightSketch(
         if (isCollapsed) {
             // 展开编辑器
             remove(devInsCollapsedPanel)
-            add(editorFragment!!.getContent())
+            add(devInsExpandedPanel!!)
             isCollapsed = false
         } else {
             // 折叠编辑器
-            remove(editorFragment!!.getContent())
+            remove(devInsExpandedPanel)
             add(devInsCollapsedPanel!!)
             isCollapsed = true
         }
 
         revalidate()
         repaint()
+    }
+
+    private fun createFewerLinesLabel(): JBLabel {
+        return JBLabel("Fewer lines", AllIcons.General.ChevronUp, JBLabel.LEFT).apply {
+            border = JBUI.Borders.empty(4, 8)
+            cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+            isOpaque = true
+            background = JBColor.PanelBackground
+            
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    // 点击 "Fewer lines" 时折叠编辑器
+                    if (!isCollapsed) {
+                        toggleEditorVisibility()
+                    }
+                }
+            })
+        }
+    }
+
+    private fun updateCollapsedPanelIcon() {
+        devInsCollapsedPanel?.let { panel ->
+            // 更新折叠面板中的箭头图标
+            val components = panel.components
+            for (comp in components) {
+                if (comp is JPanel && comp.layout is BorderLayout) {
+                    val eastComp = (comp.layout as BorderLayout).getLayoutComponent(BorderLayout.EAST)
+                    if (eastComp is JBLabel) {
+                        eastComp.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+                    }
+                }
+            }
+        }
     }
 
     override fun getViewText(): String {
