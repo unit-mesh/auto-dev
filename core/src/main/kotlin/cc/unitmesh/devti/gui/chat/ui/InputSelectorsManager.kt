@@ -20,15 +20,13 @@ import javax.swing.JPanel
 /**
  * Manages model selector and agent selector components
  */
-class ModelSelectorsManager(
+class InputSelectorsManager(
     private val project: Project,
     private val showAgent: Boolean = true
 ) {
-    // Model selector
     lateinit var modelSelector: ComboBox<ModelItem>
         private set
     
-    // Agent selector
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
     lateinit var customAgentBox: ComboBox<CustomAgentConfig>
     

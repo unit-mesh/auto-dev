@@ -29,19 +29,13 @@ class AutoDevInputSection(
     val disposable: Disposable?,
     showAgent: Boolean = true
 ) : BorderLayoutPanel() {
-
-    // Event dispatcher
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
-
-    // Manager components
     private val inputControlsManager = InputControlsManager(project, disposable, editorListeners)
-    private val modelSelectorsManager = ModelSelectorsManager(project, showAgent)
+    private val inputSelectorsManager = InputSelectorsManager(project, showAgent)
     private val fileWorkspaceManager = FileWorkspaceManager(project, disposable)
 
-    // UI panels
     private val inputPanel = BorderLayoutPanel()
 
-    // Convenience accessors
     val focusableComponent: JComponent get() = inputControlsManager.getFocusableComponent()
 
     fun renderText(): String {
@@ -59,15 +53,11 @@ class AutoDevInputSection(
     }
 
     init {
-        // Initialize all managers
         inputControlsManager.initialize(this)
-        val leftPanel = modelSelectorsManager.initialize()
+        val leftPanel = inputSelectorsManager.initialize()
         val headerPanel = fileWorkspaceManager.initialize(inputControlsManager.input)
 
-        // Setup layout
         setupLayout(leftPanel, headerPanel)
-
-        // Setup listeners
         addListener(object : AutoDevInputListener {
             override fun editorAdded(editor: EditorEx) {
                 this@AutoDevInputSection.initEditor()
@@ -91,7 +81,7 @@ class AutoDevInputSection(
             inputControlsManager.input.minimumSize = Dimension(inputControlsManager.input.minimumSize.width, 64)
             layoutPanel.addToLeft(leftPanel)
         } else {
-            layoutPanel.addToLeft(modelSelectorsManager.modelSelector)
+            layoutPanel.addToLeft(inputSelectorsManager.modelSelector)
         }
 
         layoutPanel.addToCenter(horizontalGlue)
@@ -135,14 +125,14 @@ class AutoDevInputSection(
     }
 
     // Agent management methods
-    fun hasSelectedAgent(): Boolean = modelSelectorsManager.hasSelectedAgent()
+    fun hasSelectedAgent(): Boolean = inputSelectorsManager.hasSelectedAgent()
 
-    fun getSelectedAgent(): CustomAgentConfig = modelSelectorsManager.getSelectedAgent()
+    fun getSelectedAgent(): CustomAgentConfig = inputSelectorsManager.getSelectedAgent()
 
-    fun selectAgent(config: CustomAgentConfig) = modelSelectorsManager.selectAgent(config)
+    fun selectAgent(config: CustomAgentConfig) = inputSelectorsManager.selectAgent(config)
 
     fun resetAgent() {
-        modelSelectorsManager.resetAgent()
+        inputSelectorsManager.resetAgent()
         inputControlsManager.clearText()
         fileWorkspaceManager.clearWorkspace()
     }
