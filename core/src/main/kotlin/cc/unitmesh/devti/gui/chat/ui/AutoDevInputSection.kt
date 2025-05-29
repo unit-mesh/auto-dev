@@ -41,7 +41,11 @@ class AutoDevInputSection(
     fun renderText(): String {
         val inputText = inputControlsManager.renderText()
         val files = fileWorkspaceManager.renderText()
-        return inputText + "\n" + files
+        return if (files.isNotEmpty()) {
+            inputText + "\n" + files
+        } else {
+            inputText
+        }
     }
 
     fun clearText() {
