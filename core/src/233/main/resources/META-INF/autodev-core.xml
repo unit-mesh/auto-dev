@@ -470,7 +470,7 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.COPY"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
             <action id="AutoDev.ToolWindow.Snippet.InsertCode"
-                    icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
+                    icon="cc.unitmesh.devti.AutoDevIcons.INSERT"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
             <action id="AutoDev.ToolWindow.Snippet.RunDevIns"
                     icon="cc.unitmesh.devti.AutoDevIcons.RUN"

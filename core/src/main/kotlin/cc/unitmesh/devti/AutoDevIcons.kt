@@ -24,7 +24,7 @@ object AutoDevIcons {
     val SEND: Icon = IconLoader.getIcon("/icons/send.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val InsertCode: Icon = IconLoader.getIcon("/icons/insert-code.svg", AutoDevIcons::class.java)
+    val INSERT: Icon = IconLoader.getIcon("/icons/insert-code.svg", AutoDevIcons::class.java)
 
     @JvmField
     val RUN: Icon = IconLoader.getIcon("/icons/run.svg", AutoDevIcons::class.java)
