@@ -337,8 +337,6 @@ open class CodeHighlightSketch(
                 add(sketch)
             }
         }
-
-        editorFragment?.updateExpandCollapseLabel()
     }
 
     override fun getComponent(): JComponent = this
@@ -374,7 +372,7 @@ open class CodeHighlightSketch(
 /**
  * Add Write Command Action
  */
-private fun CodeHighlightSketch.processWriteCommand(currentText: String, fileName: String?) {
+fun CodeHighlightSketch.processWriteCommand(currentText: String, fileName: String?) {
     val button = JButton(AutoDevBundle.message("sketch.write.to.file"), AllIcons.Actions.MenuSaveall).apply {
         preferredSize = JBUI.size(120, 30)
 
