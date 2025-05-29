@@ -131,10 +131,9 @@ class AutoDevInputSection(
         modelSelector = JComboBox(modelItems.toTypedArray())
 
         val currentModel = AutoDevSettingsState.getInstance().defaultModelId.ifEmpty { "Default" }
-        val currentModelId = LLMModelManager.getInstance().getModelIdFromProvider(currentModel)
         for (i in 0 until modelSelector.itemCount) {
             val item = modelSelector.getItemAt(i)
-            if (item.modelId == currentModelId) {
+            if (item.modelId == currentModel) {
                 modelSelector.selectedIndex = i
                 break
             }

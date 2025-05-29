@@ -36,10 +36,10 @@ class LLMModelManager(
      * Check if a model is custom (not GitHub Copilot)
      */
     fun isCustomLLM(modelName: String): Boolean {
-        // GitHub models start with "Github: "
-        if (modelName.startsWith("Github: ")) {
+        if (modelName.startsWith("GitHub: ")) {
             return false
         }
+
         val userModels = LlmConfig.load()
         return userModels.any { it.name == modelName }
     }
@@ -55,7 +55,7 @@ class LLMModelManager(
             val githubModels = manager.getSupportedModels(forceRefresh = false)
             githubModels?.forEach { model ->
                 models.add(ModelItem(
-                    displayName = "Github: ${model.id}",
+                    displayName = "GitHub: ${model.id}",
                     modelId = model.id,
                     isCustom = false
                 ))
@@ -75,24 +75,6 @@ class LLMModelManager(
     }
     
     /**
-     * Get model ID from provider name
-     * Used by AutoDevInputSection to find current selected model
-     */
-    fun getModelIdFromProvider(providerName: String): String {
-        if (providerName.isEmpty() || providerName == "Default") {
-            return "Default"
-        }
-        
-        // For GitHub models, extract model ID from "Github: model-id" format
-        if (providerName.startsWith("Github: ")) {
-            return providerName.removePrefix("Github: ")
-        }
-        
-        // For custom models, the provider name is the model name
-        return providerName
-    }
-    
-    /**
      * Get provider name from model ID
      * Used by AutoDevInputSection when model selection changes
      */
@@ -107,7 +89,7 @@ class LLMModelManager(
             val githubModels = manager.getSupportedModels(forceRefresh = false)
             val isGithubModel = githubModels?.any { it.id == modelId } == true
             if (isGithubModel) {
-                return "Github: $modelId"
+                return modelId
             }
         }
         
