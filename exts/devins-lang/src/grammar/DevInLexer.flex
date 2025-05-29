@@ -485,7 +485,7 @@ AFTER_STREAMING          =afterStreaming
 }
 
 <COMMAND_VALUE_BLOCK> {
-  {COMMAND_PROP}          { return command_value();  }
+  {COMMAND_PROP}          { return COMMAND_PROP;  }
   [^]                     { yypushback(yylength()); yybegin(YYINITIAL); }
 }
 

@@ -90,9 +90,16 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             val code = content.split("\n")
                 .slice(0 until MAX_LINES)
                 .joinToString("\n")
+
+            // 计算合理的下一块行范围建议
+            val nextChunkStart = MAX_LINES + 1
+            val nextChunkEnd = minOf(size, MAX_LINES * 2)
             
-            val availableEndLine = minOf(size, MAX_LINES * 2)
-            "File too long, only show first $MAX_LINES lines.\n$code\nUse `filename#L${MAX_LINES}-L${availableEndLine}` to get more lines."
+            val suggestion = if (nextChunkEnd > nextChunkStart) {
+                "\nUse `filename#L${nextChunkStart}-L${nextChunkEnd}` to get next chunk of lines."
+            } else ""
+            
+            "File too long, only showing first $MAX_LINES lines of $size total lines.\n$code$suggestion"
         } else {
             content
         }

@@ -64,24 +64,33 @@ class SummaryMessagesAction : AnAction("Summary Messages", "Summary all current 
                 val userPrompt = copyMessages(project)
 
                 val fileEditorManager = FileEditorManager.getInstance(project)
+                var memoriesEditor: com.intellij.openapi.editor.Editor? = null
+
                 ApplicationManager.getApplication().invokeAndWait {
                     val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
                     if (virtualFile != null) {
-                        fileEditorManager.setSelectedEditor(virtualFile, "text-editor")
+                        fileEditorManager.openFile(virtualFile, true)
+                        memoriesEditor = fileEditorManager.getSelectedEditor(virtualFile)?.let { fileEditor ->
+                            (fileEditor as? com.intellij.openapi.fileEditor.TextEditor)?.editor
+                        }
                     }
                 }
 
-                val editor = fileEditorManager.selectedTextEditor
                 val stream: Flow<String> = LlmFactory.create(project).stream(systemPrompt, userPrompt)
                 val result = StringBuilder()
 
                 stream.cancellable().collect { chunk ->
                     result.append(chunk)
                     WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
-                        editor?.document?.setText(result.toString())
-                        editor?.caretModel?.moveToOffset(editor?.document?.textLength ?: 0)
-                        editor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
+                        memoriesEditor?.document?.setText(result.toString())
+                        memoriesEditor?.caretModel?.moveToOffset(memoriesEditor?.document?.textLength ?: 0)
+                        memoriesEditor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
                     }
+                }
+
+                // if memoriesEditor null append to file with result
+                if (memoriesEditor != null) {
+                    file.writeText(result.toString())
                 }
 
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Done)

@@ -3,7 +3,7 @@ package cc.unitmesh.devti.sketch
 import cc.unitmesh.devti.agent.tool.search.RipgrepSearcher
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.relativePath
-import cc.unitmesh.devti.mcp.host.Response
+import cc.unitmesh.devti.mcp.ui.McpConfigService
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
@@ -99,7 +99,7 @@ data class SketchRunContext(
                 relatedFiles = emptyList(),
                 userInput = input,
                 workspace = workspace(project),
-                toolList = SketchToolchainProvider.collect(project).joinToString("\n"),
+                toolList = getToolList(project),
                 shell = ShellUtil.detectShells().firstOrNull() ?: "/bin/bash",
                 frameworkContext = ChatContextProvider.collectChatContextList(project, creationContext)
                     .joinToString(",", transform = ChatContextItem::text),
@@ -111,6 +111,23 @@ data class SketchRunContext(
         }
 
         private val JAVA_ONE_PROJECT_SIZE_IN_IDEA = 2
+
+
+        /**
+         * Get tool list from McpConfigService if available, otherwise fall back to SketchToolchainProvider
+         */
+        fun getToolList(project: Project): String {
+            val mcpConfigService = project.getService(McpConfigService::class.java)
+            val selectedTools = mcpConfigService.convertToAgentTool()
+            val defaultTools = SketchToolchainProvider.collect(project)
+
+            return if (selectedTools.isNotEmpty()) {
+                (defaultTools + selectedTools).joinToString("\n") { it.toString() }
+            } else {
+                defaultTools.joinToString("\n")
+            }
+        }
+
         fun moduleContext(project: Project): String {
             val moduleManager = ModuleManager.getInstance(project)
             val allModules = moduleManager.modules.map { it.name }
@@ -119,7 +136,7 @@ data class SketchRunContext(
             }
 
             val rootProjectName = allModules.minByOrNull { it.length } ?: return ""
-            
+
             val cleanedModules = allModules
                 .filter { it != rootProjectName && !it.endsWith(".test") }
                 .map { moduleName ->
@@ -129,7 +146,7 @@ data class SketchRunContext(
                 }
                 .distinct() // Remove duplicates after cleaning
                 .filter { it.isNotEmpty() } // Remove any empty strings that might result
-            
+
             return if (cleanedModules.isNotEmpty()) {
                 val modules = cleanedModules.joinToString(", ") { it }
                 "- This project is a mono-repo projects, Please careful to create file in module. Here's modules: $modules"

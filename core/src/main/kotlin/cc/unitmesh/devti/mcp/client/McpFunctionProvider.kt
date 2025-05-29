@@ -25,18 +25,9 @@ class McpFunctionProvider : ToolchainFunctionProvider {
         val agentTools = mutableListOf<AgentTool>()
         for ((serverName, tools) in toolsMap) {
             for (tool in tools) {
-                val schemaJson = Json.encodeToString<Input>(tool.inputSchema)
-                val mockData = Json.encodeToString(MockDataGenerator.generateMockData(tool.inputSchema))
-                agentTools.add(
-                    AgentTool(
-                        tool.name,
-                        tool.description ?: "",
-                        "Here is command and JSON schema\n/${tool.name}\n```json\n$schemaJson\n```",
-                        isMcp = true,
-                        mcpGroup = serverName,
-                        completion = mockData
-                    )
-                )
+                val agentTool = toAgentTool(tool, serverName)
+
+                agentTools.add(agentTool)
             }
         }
         
@@ -66,4 +57,21 @@ class McpFunctionProvider : ToolchainFunctionProvider {
         val arg = args.firstOrNull().toString()
         return CustomMcpServerManager.instance(project).execute(project, tool, arg)
     }
+}
+
+fun toAgentTool(
+    tool: Tool,
+    serverName: String
+): AgentTool {
+    val schemaJson = Json.encodeToString<Input>(tool.inputSchema)
+    val mockData = Json.encodeToString(MockDataGenerator.generateMockData(tool.inputSchema))
+    val agentTool = AgentTool(
+        tool.name,
+        tool.description ?: "",
+        "Here is command and JSON schema\n/${tool.name}\n```json\n$schemaJson\n```",
+        isMcp = true,
+        mcpGroup = serverName,
+        completion = mockData
+    )
+    return agentTool
 }

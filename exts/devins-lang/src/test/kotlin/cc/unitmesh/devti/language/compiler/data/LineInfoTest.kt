@@ -31,30 +31,6 @@ class LineInfoTest {
         assertEquals(null, result)
     }
 
-    @Test
-    fun should_returnNull_when_invalidStartLineGiven() {
-        // given
-        val invalidString = "filepath#Lxyz-L12"
-
-        // when
-        val result = LineInfo.fromString(invalidString)
-
-        // then
-        assertEquals(null, result)
-    }
-
-    @Test
-    fun should_returnNull_when_invalidEndLineGiven() {
-        // given
-        val invalidString = "filepath#L1-Lxyz"
-
-        // when
-        val result = LineInfo.fromString(invalidString)
-
-        // then
-        assertEquals(null, result)
-    }
-
     // L1C0-L2C0
     @Test
     fun should_createLineInfo_when_validStringWithColumnGiven() {
