@@ -49,7 +49,7 @@ enum class BuiltinCommand(
         AllIcons.Actions.Edit,
         true,
         true,
-        enableInSketch = false
+        enableInSketch = true
     ),
     PATCH(
         "patch",

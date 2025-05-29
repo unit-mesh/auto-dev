@@ -128,6 +128,11 @@ class AutoDevInputSection(
 
         val modelItems = LLMModelManager.getInstance().getAllAvailableModels()
         modelSelector = ComboBox(modelItems.toTypedArray())
+        modelSelector.renderer = SimpleListCellRenderer.create { label: JBLabel, value: ModelItem?, _: Int ->
+            if (value != null) {
+                label.text = value.displayName
+            }
+        }
 
         val currentModel = AutoDevSettingsState.getInstance().defaultModelId.ifEmpty { "Default" }
         for (i in 0 until modelSelector.itemCount) {
@@ -219,14 +224,12 @@ class AutoDevInputSection(
 
             input.minimumSize = Dimension(input.minimumSize.width, 64)
             layoutPanel.addToLeft(customAgent)
-            // Add model selector next to the custom agent dropdown
             layoutPanel.addToLeft(Box.createHorizontalStrut(JBUI.scale(8)))
             layoutPanel.addToLeft(modelSelector)
         } else {
             layoutPanel.addToLeft(modelSelector)
         }
 
-        modelSelector.border = JBUI.Borders.empty(0, 4)
         modelSelector.preferredSize = Dimension(200, modelSelector.preferredSize.height)
 
         buttonPanel = createButtonPanel()

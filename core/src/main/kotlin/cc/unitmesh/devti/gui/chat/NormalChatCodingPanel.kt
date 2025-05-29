@@ -82,7 +82,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         )
         myScrollPane.verticalScrollBar.autoscrolls = true
 
-        inputSection = AutoDevInputSection(chatCodingService.project, disposable).apply {
+        inputSection = AutoDevInputSection(chatCodingService.project, disposable, true).apply {
             border = JBUI.Borders.empty(8)
         }
         inputSection.addListener(object : AutoDevInputListener {
