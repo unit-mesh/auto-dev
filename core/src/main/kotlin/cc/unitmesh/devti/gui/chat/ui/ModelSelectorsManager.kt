@@ -20,7 +20,7 @@ import javax.swing.JPanel
 /**
  * Manages model selector and agent selector components
  */
-class SelectorsManager(
+class ModelSelectorsManager(
     private val project: Project,
     private val showAgent: Boolean = true
 ) {

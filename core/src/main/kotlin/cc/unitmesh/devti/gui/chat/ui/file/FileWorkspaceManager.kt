@@ -1,10 +1,7 @@
-package cc.unitmesh.devti.gui.chat.ui
+package cc.unitmesh.devti.gui.chat.ui.file
 
 import cc.unitmesh.devti.completion.AutoDevInputLookupManagerListener
-import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListCellRenderer
-import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileListViewModel
-import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFilePanel
-import cc.unitmesh.devti.gui.chat.ui.file.WorkspaceFileToolbar
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInput
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.openapi.Disposable
@@ -43,30 +40,30 @@ class FileWorkspaceManager(
         setupElementsList()
         setupEditorListener()
         setupRelatedListener()
-        
+
         // Initialize with current file
         val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
         currentFile?.let {
             relatedFileListViewModel.addFileIfAbsent(currentFile, first = true)
         }
-        
+
         return createHeaderPanel(input)
     }
-    
+
     private fun setupElementsList() {
         elementsList.selectionMode = ListSelectionModel.SINGLE_SELECTION
         elementsList.layoutOrientation = JList.HORIZONTAL_WRAP
         elementsList.visibleRowCount = 2
         elementsList.cellRenderer = RelatedFileListCellRenderer(project)
         elementsList.setEmptyText("")
-        
+
         elementsList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 calculateRelativeFile(e)
             }
         })
     }
-    
+
     private fun setupEditorListener() {
         project.messageBus.connect(disposable!!).subscribe(
             FileEditorManagerListener.FILE_EDITOR_MANAGER,
@@ -80,25 +77,25 @@ class FileWorkspaceManager(
             }
         )
     }
-    
+
     private fun setupRelatedListener() {
         project.messageBus.connect(disposable!!)
             .subscribe(LookupManagerListener.TOPIC, AutoDevInputLookupManagerListener(project) {
                 ApplicationManager.getApplication().invokeLater {
-                    val relatedElements = RelatedClassesProvider.provide(it.language)?.lookupIO(it)
+                    val relatedElements = RelatedClassesProvider.Companion.provide(it.language)?.lookupIO(it)
                     updateElements(relatedElements)
                 }
             })
     }
-    
+
     private fun calculateRelativeFile(e: MouseEvent) {
         val list = e.source as JBList<*>
         val index = list.locationToIndex(e.point)
         if (index == -1) return
-        
+
         val wrapper = relatedFileListViewModel.getListModel().getElementAt(index)
         val cellBounds = list.getCellBounds(index, index)
-        
+
         val actionType = relatedFileListViewModel.determineFileAction(wrapper, e.point, cellBounds)
         val actionPerformed = relatedFileListViewModel.handleFileAction(wrapper, actionType) { vfile, relativePath ->
             if (relativePath != null) {
@@ -106,35 +103,35 @@ class FileWorkspaceManager(
                 ApplicationManager.getApplication().invokeLater {
                     if (!vfile.isValid) return@invokeLater
                     val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
-                    val relatedElements = RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
+                    val relatedElements = RelatedClassesProvider.Companion.provide(psiFile.language)?.lookupIO(psiFile)
                     updateElements(relatedElements)
                 }
             }
         }
-        
+
         if (!actionPerformed) {
             list.clearSelection()
         }
     }
-    
+
     private fun updateElements(elements: List<PsiElement>?) {
         elements?.forEach { relatedFileListViewModel.addFileIfAbsent(it.containingFile.virtualFile) }
     }
-    
+
     private fun createHeaderPanel(input: AutoDevInput): JPanel {
         val scrollPane = JBScrollPane(elementsList)
         scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        
+
         val toolbar = WorkspaceFileToolbar.createToolbar(project, relatedFileListViewModel, input)
-        
+
         val headerPanel = JPanel(BorderLayout())
         headerPanel.add(toolbar, BorderLayout.NORTH)
         headerPanel.add(scrollPane, BorderLayout.CENTER)
-        
+
         return headerPanel
     }
-    
+
     // Public API methods
     fun renderText(): String {
         relatedFileListViewModel.clearAllFiles()
@@ -142,12 +139,12 @@ class FileWorkspaceManager(
         workspaceFilePanel.clear()
         return files
     }
-    
+
     fun clearWorkspace() {
         workspaceFilePanel.clear()
     }
-    
+
     fun getWorkspacePanel(): WorkspaceFilePanel = workspaceFilePanel
-    
+
     fun getRelatedFileListViewModel(): RelatedFileListViewModel = relatedFileListViewModel
 }

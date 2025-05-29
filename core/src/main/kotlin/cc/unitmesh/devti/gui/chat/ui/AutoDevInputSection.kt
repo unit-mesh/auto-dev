@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.gui.AutoDevCoolBorder
+import cc.unitmesh.devti.gui.chat.ui.file.FileWorkspaceManager
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.Disposable
@@ -34,7 +35,7 @@ class AutoDevInputSection(
 
     // Manager components
     private val inputControlsManager = InputControlsManager(project, disposable, editorListeners)
-    private val selectorsManager = SelectorsManager(project, showAgent)
+    private val modelSelectorsManager = ModelSelectorsManager(project, showAgent)
     private val fileWorkspaceManager = FileWorkspaceManager(project, disposable)
 
     // UI panels
@@ -60,7 +61,7 @@ class AutoDevInputSection(
     init {
         // Initialize all managers
         inputControlsManager.initialize(this)
-        val leftPanel = selectorsManager.initialize()
+        val leftPanel = modelSelectorsManager.initialize()
         val headerPanel = fileWorkspaceManager.initialize(inputControlsManager.input)
 
         // Setup layout
@@ -90,7 +91,7 @@ class AutoDevInputSection(
             inputControlsManager.input.minimumSize = Dimension(inputControlsManager.input.minimumSize.width, 64)
             layoutPanel.addToLeft(leftPanel)
         } else {
-            layoutPanel.addToLeft(selectorsManager.modelSelector)
+            layoutPanel.addToLeft(modelSelectorsManager.modelSelector)
         }
 
         layoutPanel.addToCenter(horizontalGlue)
@@ -134,14 +135,14 @@ class AutoDevInputSection(
     }
 
     // Agent management methods
-    fun hasSelectedAgent(): Boolean = selectorsManager.hasSelectedAgent()
+    fun hasSelectedAgent(): Boolean = modelSelectorsManager.hasSelectedAgent()
 
-    fun getSelectedAgent(): CustomAgentConfig = selectorsManager.getSelectedAgent()
+    fun getSelectedAgent(): CustomAgentConfig = modelSelectorsManager.getSelectedAgent()
 
-    fun selectAgent(config: CustomAgentConfig) = selectorsManager.selectAgent(config)
+    fun selectAgent(config: CustomAgentConfig) = modelSelectorsManager.selectAgent(config)
 
     fun resetAgent() {
-        selectorsManager.resetAgent()
+        modelSelectorsManager.resetAgent()
         inputControlsManager.clearText()
         fileWorkspaceManager.clearWorkspace()
     }
