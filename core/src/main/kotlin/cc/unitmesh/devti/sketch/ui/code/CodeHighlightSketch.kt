@@ -4,19 +4,19 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction
-import cc.unitmesh.devti.gui.snippet.AutoDevRunAction
+import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
+import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DataProvider
+import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -27,6 +27,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.text.StringUtil
@@ -88,7 +89,7 @@ open class CodeHighlightSketch(
     fun initEditor(text: String, fileName: String? = null) {
         if (hasSetupAction) return
         hasSetupAction = true
-        
+
         if (isUser) {
             setupSimpleEditor(text, fileName)
             return
@@ -117,32 +118,37 @@ open class CodeHighlightSketch(
 
     private fun setupSimpleEditor(text: String, fileName: String?) {
         val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
-        
+
         border = if (withLeftRightBorder) {
             JBEmptyBorder(4, 4, 4, 4)
         } else {
             JBEmptyBorder(4, 0, 0, 0)
         }
-        
+
         editor.component.isOpaque = true
         editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
         add(editorFragment!!.getContent())
-        
+
         setupToolbarAndStyling(fileName, editor)
     }
-    
+
     private fun setupRegularEditor(editor: EditorEx) {
         editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
         add(editorFragment!!.getContent())
     }
-    
+
     private fun setupToolbarAndStyling(fileName: String?, editor: EditorEx) {
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         val lowercase = textLanguage?.lowercase()
-        
+
         if (textLanguage != null && lowercase != "markdown" && lowercase != "plain text") {
             if (showToolbar && lowercase != "devin") {
-                toolbar = setupActionBar(project, editor, isDeclarePackageFile, showBottomBorder = devInsCollapsedPanel != null)
+                toolbar = setupActionBar(
+                    project,
+                    editor,
+                    isDeclarePackageFile,
+                    showBottomBorder = devInsCollapsedPanel != null
+                )
             }
         } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
@@ -150,7 +156,9 @@ open class CodeHighlightSketch(
 
         when (lowercase) {
             "devin" -> editorFragment?.editor?.setBorder(JBEmptyBorder(1, 1, 0, 1))
-            "markdown" -> { /* no border changes needed */ }
+            "markdown" -> { /* no border changes needed */
+            }
+
             else -> editorFragment?.editor?.setBorder(JBEmptyBorder(1, 0, 0, 0))
         }
     }
@@ -158,12 +166,7 @@ open class CodeHighlightSketch(
     private fun setupDevInsView(text: String) {
         devInsCollapsedPanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(2)
-
-            val runAction =
-                ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.InsertCode") as? AutoDevInsertCodeAction
-                    ?: AutoDevInsertCodeAction()
-
-            runButton = createRunButton(runAction)
+            runButton = createRunButton(text)
 
             val firstLine = text.lines().firstOrNull() ?: ""
             val previewLabel = JBLabel(firstLine).apply {
@@ -210,10 +213,19 @@ open class CodeHighlightSketch(
         updateRunButtonIcon()
     }
 
-    private fun createRunButton(runAction: AutoDevInsertCodeAction): ActionButton {
+    var devinRunButtonPresentation = Presentation()
+    private fun createRunButton(newText: String): ActionButton {
+        devinRunButtonPresentation.icon = AutoDevIcons.RUN
         return ActionButton(
-            runAction,
-            runAction.templatePresentation.clone(),
+            DumbAwareAction.create {
+                val sketchService = project.getService(AutoSketchMode::class.java)
+                if (sketchService.listener == null) {
+                    AutoInputService.getInstance(project).putText(newText)
+                } else {
+                    sketchService.send(newText)
+                }
+            },
+            devinRunButtonPresentation,
             "AutoDevToolbar",
             JBUI.size(24, 24)
         )
@@ -222,7 +234,7 @@ open class CodeHighlightSketch(
     private fun updateRunButtonIcon() {
         runButton?.let { button: ActionButton ->
             val icon = if (isComplete) AutoDevIcons.RUN else AutoDevIcons.LOADING
-            button.setIcon(icon)
+            devinRunButtonPresentation.setIcon(icon)
             button.repaint()
         }
     }
@@ -243,7 +255,7 @@ open class CodeHighlightSketch(
     }
 
     private fun createFewerLinesLabel(): JBLabel {
-        return JBLabel("Fewer lines", AllIcons.General.ChevronUp, JBLabel.LEFT).apply {
+        return JBLabel("Hidden", AllIcons.General.ChevronUp, JBLabel.LEFT).apply {
             border = JBUI.Borders.empty(4, 8)
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             isOpaque = true
@@ -314,7 +326,7 @@ open class CodeHighlightSketch(
             if (lineCount > editorLineThreshold) {
                 editorFragment?.updateExpandCollapseLabel()
             }
-            
+
             // Auto-collapse DevIns view when complete
             if (complete && isDevIns && !isCollapsed) {
                 toggleEditorVisibility()

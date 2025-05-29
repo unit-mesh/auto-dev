@@ -1,37 +1,16 @@
 package cc.unitmesh.devti.sketch.ui.code
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.event.CaretEvent
-import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
-import java.awt.Color
 import java.awt.Dimension
 import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.Box
 import javax.swing.JComponent
-
-class EditorPadding(private val editor: Editor, pad: Int) :
-    Box.Filler(Dimension(pad, pad), Dimension(pad, pad), Dimension(pad, pad)) {
-    init {
-        setOpaque(true)
-        editor.caretModel.addCaretListener(object : CaretListener {
-            override fun caretPositionChanged(event: CaretEvent) {
-                this@EditorPadding.repaint()
-            }
-        })
-    }
-
-    override fun getBackground(): Color = editor.contentComponent.getBackground()
-}
-
 
 class EditorFragment(
     var editor: EditorEx,
@@ -41,14 +20,27 @@ class EditorFragment(
     private val expandCollapseTextLabel: JBLabel = JBLabel("", 0).apply {
         isOpaque = true
         isVisible = false
-        border = JBUI.Borders.customLine(JBColor.border(), 0, 1, 1, 1)
+        border = JBUI.Borders.empty()
     }
 
-    private val content: BorderLayoutPanel = createContentPanel().also {
-        it.border = JBUI.Borders.empty()
+    private val content: BorderLayoutPanel = createContentPanel().apply {
+        this.border = JBUI.Borders.empty()
     }
 
     private var collapsed = false
+
+    init {
+        expandCollapseTextLabel.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent?) {
+                toggleCollapsedState()
+            }
+        })
+
+        editor.component.border = JBUI.Borders.empty()
+        editor.contentComponent.border = JBUI.Borders.empty()
+        editor.setBorder(JBUI.Borders.empty())
+        editor.headerComponent?.border = JBUI.Borders.empty()
+    }
 
     private fun createContentPanel(): BorderLayoutPanel {
         return object : BorderLayoutPanel() {
@@ -57,6 +49,7 @@ class EditorFragment(
                 if (editor.document.lineCount > editorLineThreshold && collapsed) {
                     return calculatePreferredSize(preferredSize, this@EditorFragment.editorLineThreshold)
                 }
+
                 return preferredSize
             }
         }.apply {
@@ -82,14 +75,6 @@ class EditorFragment(
         val headerHeight = editor.headerComponent?.preferredSize?.height ?: 0
         val labelHeight = expandCollapseTextLabel.preferredSize.height
         return height + headerHeight + labelHeight + insets.height
-    }
-
-    init {
-        expandCollapseTextLabel.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent?) {
-                toggleCollapsedState()
-            }
-        })
     }
 
     fun getContent(): JComponent = content
