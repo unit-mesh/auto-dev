@@ -68,6 +68,7 @@ class WorkspaceFilePanel(private val project: Project) : JPanel(BorderLayout()) 
                 addFileToWorkspace(file)
             }
         }
+
         popup.show(component)
     }
 

@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat.ui.file
 
 import cc.unitmesh.devti.util.canBeAdded
+import com.intellij.ide.DataManager
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -53,7 +54,7 @@ class WorkspaceFileSearchPopup(
 
     private fun loadProjectFiles() {
         allProjectFiles.clear()
-        
+
         // Add recent files with higher priority
         val fileList = EditorHistoryManager.getInstance(project).fileList
         fileList.take(20).forEach { file ->
@@ -90,7 +91,7 @@ class WorkspaceFileSearchPopup(
                 }
             }
         })
-        
+
         // Configure file list
         fileList.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
@@ -99,10 +100,12 @@ class WorkspaceFileSearchPopup(
                         selectFiles()
                         e.consume()
                     }
+
                     KeyEvent.VK_ESCAPE -> {
                         popup?.cancel()
                         e.consume()
                     }
+
                     KeyEvent.VK_UP -> {
                         if (fileList.selectedIndex == 0) {
                             searchField.requestFocus()
@@ -135,20 +138,20 @@ class WorkspaceFileSearchPopup(
         } else {
             allProjectFiles.filter { file ->
                 file.name.contains(query, ignoreCase = true) ||
-                file.path.contains(query, ignoreCase = true)
+                        file.path.contains(query, ignoreCase = true)
             }.take(50)
         }
-        
+
         // Sort files: recent files first, then by name
         val sortedFiles = filteredFiles.sortedWith(compareBy<FilePresentation> { !it.isRecentFile }.thenBy { it.name })
         sortedFiles.forEach { fileListModel.addElement(it) }
-        
+
         // Auto-select first item if available
         if (fileListModel.size > 0) {
             fileList.selectedIndex = 0
         }
     }
-    
+
     private fun selectFiles() {
         val selectedFiles = fileList.selectedValuesList.map { it.virtualFile }
         if (selectedFiles.isNotEmpty()) {
@@ -169,7 +172,7 @@ class WorkspaceFileSearchPopup(
             .setCancelOnOtherWindowOpen(true)
             .setMinSize(minPopupSize)
             .createPopup()
-            
+
         popup?.addListener(object : JBPopupListener {
             override fun onClosed(event: LightweightWindowEvent) {
                 // Clean up resources when popup is closed
@@ -179,9 +182,8 @@ class WorkspaceFileSearchPopup(
         })
 
         // Show popup in best position
-//        popup?.showInBestPositionFor(component)
-        popup?.showInCenterOf(component)
-        
+        popup?.showInBestPositionFor(DataManager.getInstance().getDataContext(component))
+
         // Request focus for search field after popup is shown
         SwingUtilities.invokeLater {
             IdeFocusManager.findInstance().requestFocus(searchField.textEditor, false)
