@@ -87,7 +87,7 @@ object PatchConverter {
                         }
 
                         else -> {
-                            val localContent: String = loadLocalContent()
+                            val localContent: String = loadLocalContent(beforeFilePath) ?: ""
                             val appliedPatch = GenericPatchApplier.apply(localContent, patch.hunks)
                             if (appliedPatch != null) {
                                 return appliedPatch.patchedText
@@ -104,7 +104,7 @@ object PatchConverter {
     }
 
     @Throws(VcsException::class)
-    private fun loadLocalContent(): String {
+    private fun loadLocalContent(beforeFilePath: FilePath): String? {
         return compute<String?, VcsException?>(ThrowableComputable {
             val file: VirtualFile? = beforeFilePath.virtualFile
             if (file == null) return@ThrowableComputable null
