@@ -159,18 +159,18 @@ class LLMDialog(
 
     override fun createCenterPanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        panel.preferredSize = Dimension(600, 750)
+        panel.preferredSize = Dimension(640, 480)
 
         val formBuilder = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Name:"), nameField)
             .addLabeledComponent(JBLabel("Description:"), descriptionField)
             .addLabeledComponent(JBLabel("URL:"), urlField)
             .addLabeledComponent(JBLabel("Token (optional):"), tokenField)
-            .addLabeledComponent(JBLabel("Max Tokens:"), maxTokensField)
+            .addLabeledComponent(JBLabel("Max tokens:"), maxTokensField)
             .addSeparator()
 
         // Model parameters section
-        formBuilder.addLabeledComponent(JBLabel("Model Parameters"), JPanel(), 1, false)
+        formBuilder.addLabeledComponent(JBLabel("Model parameters"), JPanel(), 1, false)
         formBuilder.addLabeledComponent(JBLabel("Model:"), modelField)
         formBuilder.addComponent(streamCheckbox)
         formBuilder.addLabeledComponent(JBLabel("Temperature:"), temperatureField)
@@ -181,10 +181,10 @@ class LLMDialog(
         formBuilder.addSeparator()
 
         // Custom headers section with JSON highlighting
-        formBuilder.addLabeledComponent(JBLabel("Custom Headers (JSON):"), headersField)
+        formBuilder.addLabeledComponent(JBLabel("Custom headers (JSON):"), headersField)
 
         // Custom body section (additional fields) with JSON highlighting
-        formBuilder.addLabeledComponent(JBLabel("Additional Request Body (JSON):"), bodyField)
+        formBuilder.addLabeledComponent(JBLabel("Additional request body (JSON):"), bodyField)
 
         formBuilder.addSeparator()
 
