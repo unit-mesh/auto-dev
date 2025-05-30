@@ -101,6 +101,20 @@ class AgentStateService(val project: Project) {
         updatePlan(planItems.toMutableList())
     }
 
+    /**
+     * Reset all messages in the agent state
+     */
+    fun resetMessages() {
+        state = state.copy(messages = emptyList())
+    }
+
+    /**
+     * Add a single message to the agent state
+     */
+    fun addMessage(message: Message) {
+        state = state.copy(messages = state.messages + message)
+    }
+
     fun resetState() {
         state = AgentState()
         val syncPublisher = ApplicationManager.getApplication().messageBus

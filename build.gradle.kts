@@ -410,6 +410,11 @@ project(":core") {
             testFramework(TestFrameworkType.Platform)
         }
 
+        implementation("org.jetbrains.xodus:xodus-openAPI:2.0.1")
+        implementation("org.jetbrains.xodus:xodus-environment:2.0.1")
+        implementation("org.jetbrains.xodus:xodus-entity-store:2.0.1")
+        implementation("org.jetbrains.xodus:xodus-vfs:2.0.1")
+
         implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
 
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")

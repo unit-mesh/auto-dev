@@ -9,6 +9,7 @@ import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.gui.toolbar.SummaryMessagesAction
+import cc.unitmesh.devti.gui.toolbar.ViewHistoryAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
@@ -157,6 +158,7 @@ open class SketchToolWindow(
                     buttonBox.add(createActionButton(NewSketchAction()))
                     buttonBox.add(createActionButton(CopyAllMessagesAction()))
                     buttonBox.add(createActionButton(SummaryMessagesAction()))
+                    buttonBox.add(createActionButton(ViewHistoryAction()))
                     cell(buttonBox).alignRight()
                 }
             }
@@ -484,17 +486,47 @@ open class SketchToolWindow(
         isInterrupted = true
     }
 
-    fun resetSketchSession() {
-        chatCodingService.clearSession()
-        progressBar.isIndeterminate = false
-        progressBar.isVisible = false
-        blockViews.clear()
-        systemPromptPanel.removeAll()
-        myList.removeAll()
-        historyPanel.removeAll()
-        initializePreAllocatedBlocks(project)
 
-        project.getService(AgentStateService::class.java).resetState()
+    /**
+     * Display a list of messages in the UI
+     */
+    fun displayMessages(messages: List<cc.unitmesh.devti.llms.custom.Message>) {
+        runInEdt {
+            messages.forEach { message ->
+                val chatRole = if (message.role.lowercase() == "user") {
+                    cc.unitmesh.devti.gui.chat.message.ChatRole.User
+                } else {
+                    cc.unitmesh.devti.gui.chat.message.ChatRole.Assistant
+                }
+                val messageView = cc.unitmesh.devti.gui.chat.view.MessageView(
+                    project,
+                    message.content,
+                    chatRole,
+                    message.content
+                )
+                historyPanel.add(messageView)
+            }
+
+            // Scroll to bottom to show latest messages
+            scrollToBottom()
+            this.revalidate()
+            this.repaint()
+        }
+    }
+
+    fun resetSketchSession() {
+        runInEdt {
+            progressBar.isVisible = false
+            blockViews.clear()
+            systemPromptPanel.removeAll()
+            myList.removeAll()
+            historyPanel.removeAll()
+            initializePreAllocatedBlocks(project)
+
+            myText = ""
+            this.revalidate()
+            this.repaint()
+        }
     }
 
     fun printThinking(string: String) {
