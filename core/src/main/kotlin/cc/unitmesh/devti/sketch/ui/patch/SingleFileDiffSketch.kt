@@ -75,7 +75,11 @@ class SingleFileDiffSketch(
         isOpaque = true
     }
 
-    private var newCode = appliedPatch?.patchedText ?: ""
+    private var newCode: String = when {
+        appliedPatch?.patchedText != null -> appliedPatch!!.patchedText
+        else -> oldCode
+    }
+
     private val isAutoRepair = myProject.coderSetting.state.enableAutoRepairDiff
 
     init {
