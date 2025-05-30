@@ -94,6 +94,7 @@ open class SketchToolWindow(
 
     var isUserScrolling: Boolean = false
     protected var isInterrupted: Boolean = false
+    var isDisplayingHistoryMessages: Boolean = false
 
     protected var systemPromptPanel: JPanel = JPanel(BorderLayout())
     protected var contentPanel = JPanel(BorderLayout())
@@ -489,6 +490,7 @@ open class SketchToolWindow(
 
     fun displayMessages(messages: List<cc.unitmesh.devti.llms.custom.Message>) {
         runInEdt {
+            isDisplayingHistoryMessages = true
             messages.forEach { message ->
                 val isUser = message.role.lowercase() == "user"
                 val language = "markdown"
@@ -506,6 +508,7 @@ open class SketchToolWindow(
 
     fun resetSketchSession() {
         runInEdt {
+            isDisplayingHistoryMessages = false
             progressBar.isVisible = false
             blockViews.clear()
             systemPromptPanel.removeAll()

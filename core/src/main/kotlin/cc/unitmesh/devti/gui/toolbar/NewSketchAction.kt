@@ -43,12 +43,16 @@ class NewSketchAction : AnAction(AllIcons.General.Add), CustomComponentAction {
         val sketchPanel =
             contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
 
-        saveCurrentSession(project, sketchPanel)
+        if (sketchPanel?.isDisplayingHistoryMessages != true) {
+            saveCurrentSession(project, sketchPanel)
+        }
+
         sketchPanel?.resetSketchSession()
     }
 
     private fun saveCurrentSession(project: Project, sketchToolWindow: SketchToolWindow?) {
         if (sketchToolWindow == null) return
+        if (sketchToolWindow.isDisplayingHistoryMessages) return
 
         val agentStateService = project.getService(AgentStateService::class.java) ?: return
         val chatHistoryService = project.getService(ChatHistoryService::class.java) ?: return
@@ -82,7 +86,10 @@ class NewSketchAction : AnAction(AllIcons.General.Add), CustomComponentAction {
                     if (sketchPanel == null) {
                         return@addActionListener
                     }
-                    saveCurrentSession(project, sketchPanel)
+                    // 只有在不是显示历史消息时才保存当前会话
+                    if (!sketchPanel.isDisplayingHistoryMessages) {
+                        saveCurrentSession(project, sketchPanel)
+                    }
                     sketchPanel.resetSketchSession()
                 }
             }
