@@ -21,14 +21,12 @@ import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
 import com.intellij.util.ui.JBUI
-import java.util.*
 import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JButton
-import javax.swing.JPanel
 import javax.swing.JLabel
+import javax.swing.JPanel
 import javax.swing.ListSelectionModel
 
 class ViewHistoryAction : AnAction(
@@ -36,7 +34,7 @@ class ViewHistoryAction : AnAction(
     AutoDevBundle.message("action.view.history.description"),
     AutoDevIcons.HISTORY
 ) {
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     private fun formatRelativeTime(timestamp: Long): String {
         val now = System.currentTimeMillis()
