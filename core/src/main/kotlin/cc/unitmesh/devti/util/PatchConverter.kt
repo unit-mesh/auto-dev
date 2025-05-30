@@ -2,6 +2,7 @@ package cc.unitmesh.devti.util
 
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ReadAction.*
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
@@ -88,7 +89,6 @@ object PatchConverter {
                         else -> {
                             val localContent: String = loadLocalContent()
                             val appliedPatch = GenericPatchApplier.apply(localContent, patch.hunks)
-                            /// sometimes llm will return a wrong patch which the content is not correct
                             if (appliedPatch != null) {
                                 return appliedPatch.patchedText
                             }
@@ -97,21 +97,20 @@ object PatchConverter {
                         }
                     }
                 }
-
-                @Throws(VcsException::class)
-                private fun loadLocalContent(): String {
-                    return ReadAction.compute<String?, VcsException?>(ThrowableComputable {
-                        val file: VirtualFile? = beforeFilePath.virtualFile
-                        if (file == null) return@ThrowableComputable null
-                        val doc = FileDocumentManager.getInstance().getDocument(file)
-                        if (doc == null) return@ThrowableComputable null
-                        doc.text
-                    })
-                }
             }
         }
 
         return Change(beforeRevision, afterRevision, fileStatus)
     }
 
+    @Throws(VcsException::class)
+    private fun loadLocalContent(): String {
+        return compute<String?, VcsException?>(ThrowableComputable {
+            val file: VirtualFile? = beforeFilePath.virtualFile
+            if (file == null) return@ThrowableComputable null
+            val doc = FileDocumentManager.getInstance().getDocument(file)
+            if (doc == null) return@ThrowableComputable null
+            doc.text
+        })
+    }
 }
