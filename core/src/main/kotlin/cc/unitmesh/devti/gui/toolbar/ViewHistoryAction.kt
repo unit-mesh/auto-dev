@@ -58,7 +58,7 @@ class ViewHistoryAction : AnAction(
                 }
             }
             .createPopup()
-            .showCenteredInCurrentWindow(project)
+            .showInBestPositionFor(e.dataContext)
     }
 
     private fun loadSessionIntoSketch(project: Project, session: ChatSessionHistory) {
@@ -68,26 +68,15 @@ class ViewHistoryAction : AnAction(
         val sketchPanel = contentManager.contents.firstNotNullOfOrNull { it.component as? SketchToolWindow }
 
         sketchPanel?.let {
-            // Clear current state in SketchToolWindow
             it.resetSketchSession()
 
-            // Load messages into AgentStateService
             val agentStateService = project.getService(AgentStateService::class.java)
-            agentStateService.resetMessages() // Clear existing messages first
+            agentStateService.resetMessages()
             session.messages.forEach { msg ->
-                // We need to ensure messages are added in a way AgentStateService expects.
-                // This might need adjustment based on how AgentStateService handles message addition.
-                // For now, assuming a simple addMessage or similar.
-                // If AgentStateService expects specific roles or types, this needs to be mapped.
                 agentStateService.addMessage(Message(msg.role, msg.content))
             }
 
-            // Refresh or update SketchToolWindow UI to display loaded messages
-            // This is a placeholder for the actual UI update logic in SketchToolWindow
             it.displayMessages(session.messages)
-
-            // Potentially set the "intention" or context if that's part of the session
-            // For example, if the first user message is considered the intention:
             session.messages.firstOrNull { msg -> msg.role == "user" }?.content?.let { intention ->
                  agentStateService.state = agentStateService.state.copy(originIntention = intention)
             }

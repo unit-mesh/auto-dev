@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
@@ -486,19 +487,15 @@ open class SketchToolWindow(
         isInterrupted = true
     }
 
-
-    /**
-     * Display a list of messages in the UI
-     */
     fun displayMessages(messages: List<cc.unitmesh.devti.llms.custom.Message>) {
         runInEdt {
             messages.forEach { message ->
                 val chatRole = if (message.role.lowercase() == "user") {
-                    cc.unitmesh.devti.gui.chat.message.ChatRole.User
+                    ChatRole.User
                 } else {
-                    cc.unitmesh.devti.gui.chat.message.ChatRole.Assistant
+                    ChatRole.Assistant
                 }
-                val messageView = cc.unitmesh.devti.gui.chat.view.MessageView(
+                val messageView = MessageView(
                     project,
                     message.content,
                     chatRole,

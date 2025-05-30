@@ -56,7 +56,8 @@ class NewSketchAction : AnAction(AllIcons.General.Add), CustomComponentAction {
         val messages = agentStateService.getAllMessages()
         if (messages.isNotEmpty()) {
             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-            val sessionName = "Session - $timestamp"
+            val firstUser = messages.firstOrNull { it.role.lowercase() == "user" }
+            val sessionName = "Session - ${firstUser?.content ?: timestamp}"
             chatHistoryService.saveSession(sessionName, messages)
             logger.info("Saved session: $sessionName")
         }
