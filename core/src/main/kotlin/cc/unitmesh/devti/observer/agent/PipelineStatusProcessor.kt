@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.observer.agent
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.Logger
@@ -19,6 +20,8 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
     private val timeoutMinutes = 30
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
+        if (!project.coderSetting.state.enableObserver) return
+
         // 检查 push 是否成功
         if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
             log.info("Push failed, skipping pipeline monitoring")
