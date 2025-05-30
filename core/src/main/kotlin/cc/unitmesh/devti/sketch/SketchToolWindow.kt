@@ -493,7 +493,6 @@ open class SketchToolWindow(
             isDisplayingHistoryMessages = true
             messages.forEach { message ->
                 val isUser = message.role.lowercase() == "user"
-                val language = "markdown"
                 val messageView = createSingleTextView(message.content, language = "markdown", isUser = isUser)
                 historyPanel.add(messageView)
                 onUpdate(message.content)
