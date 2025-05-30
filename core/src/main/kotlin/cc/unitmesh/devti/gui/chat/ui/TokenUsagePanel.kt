@@ -50,8 +50,8 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
         // Setup progress bar
         progressBar.apply {
             isStringPainted = false
-            preferredSize = java.awt.Dimension(150, 16)
-            minimumSize = java.awt.Dimension(100, 16)
+            preferredSize = java.awt.Dimension(150, 8)
+            minimumSize = java.awt.Dimension(100, 8)
             font = font.deriveFont(Font.PLAIN, 10f)
             isOpaque = false
         }
@@ -84,54 +84,29 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
         
         // Progress bar and ratio in the middle
         gbc.gridx = 1
-        gbc.weightx = 1.0
+        gbc.weightx = 0.9
         gbc.fill = GridBagConstraints.HORIZONTAL
-        gbc.insets = JBUI.insets(0, 8, 0, 8)
+        gbc.insets = JBUI.insets(0, 8)
         
         val progressPanel = JPanel(BorderLayout())
         progressPanel.isOpaque = false
         progressPanel.add(progressBar, BorderLayout.CENTER)
-        progressPanel.add(usageRatioLabel, BorderLayout.SOUTH)
         
         mainPanel.add(progressPanel, gbc)
         
-        // Bottom row: Token stats
-        // Create right panel for token stats
+        // Right panel for token count display (10% width)
         val rightPanel = JPanel()
         rightPanel.isOpaque = false
         
-        // Style the labels
-        val labels = listOf(promptTokensLabel, completionTokensLabel, totalTokensLabel)
-        labels.forEach { label ->
-            label.font = label.font.deriveFont(Font.PLAIN, 11f)
-            label.foreground = UIUtil.getContextHelpForeground()
-        }
-        
-        // Add labels with separators
-        rightPanel.add(JBLabel("Prompt: ").apply {
-            font = font.deriveFont(Font.PLAIN, 11f)
-            foreground = UIUtil.getContextHelpForeground()
-        })
-        rightPanel.add(promptTokensLabel)
-        
-        rightPanel.add(Box.createHorizontalStrut(8))
-        rightPanel.add(JBLabel("Completion: ").apply {
-            font = font.deriveFont(Font.PLAIN, 11f)
-            foreground = UIUtil.getContextHelpForeground()
-        })
-        rightPanel.add(completionTokensLabel)
-        
-        rightPanel.add(Box.createHorizontalStrut(8))
-        rightPanel.add(JBLabel("Total: ").apply {
-            font = font.deriveFont(Font.PLAIN, 11f)
-            foreground = UIUtil.getContextHelpForeground()
-        })
-        rightPanel.add(totalTokensLabel)
+        // Add usage ratio label to the right panel
+        usageRatioLabel.horizontalAlignment = SwingConstants.RIGHT
+        rightPanel.add(usageRatioLabel)
         
         gbc.gridx = 2
-        gbc.weightx = 0.0
+        gbc.weightx = 0.1
         gbc.fill = GridBagConstraints.NONE
-        gbc.insets = JBUI.insets(0, 0, 0, 0)
+        gbc.anchor = GridBagConstraints.EAST
+        gbc.insets = JBUI.emptyInsets()
         mainPanel.add(rightPanel, gbc)
         
         // Add panels to main layout
@@ -158,10 +133,6 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             // Get max tokens for current model
             updateMaxTokens()
             
-            // Update token displays
-            promptTokensLabel.text = formatTokenCount(event.usage.promptTokens ?: 0)
-            completionTokensLabel.text = formatTokenCount(event.usage.completionTokens ?: 0)
-            totalTokensLabel.text = formatTokenCount(event.usage.totalTokens ?: 0)
             
             // Update progress bar
             updateProgressBar(event.usage.totalTokens ?: 0)
@@ -232,9 +203,6 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             currentUsage = Usage()
             currentModel = null
             maxContextWindowTokens = 0
-            promptTokensLabel.text = "0"
-            completionTokensLabel.text = "0"
-            totalTokensLabel.text = "0"
             modelLabel.text = ""
             progressBar.value = 0
             progressBar.isVisible = false
