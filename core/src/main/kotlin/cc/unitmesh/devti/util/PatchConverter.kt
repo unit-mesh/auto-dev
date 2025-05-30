@@ -56,8 +56,10 @@ object PatchConverter {
             }
         }
 
-        val beforeFilePath = VcsUtil.getFilePath(getAbsolutePath(baseDir, beforePath), false)
-        val afterFilePath = VcsUtil.getFilePath(getAbsolutePath(baseDir, afterPath), false)
+        val before = getAbsolutePath(baseDir, beforePath)
+        val beforeFilePath = VcsUtil.getFilePath(before, false)
+        val after = getAbsolutePath(baseDir, afterPath)
+        val afterFilePath = VcsUtil.getFilePath(after, false)
 
         var beforeRevision: ContentRevision? = null
         if (fileStatus !== FileStatus.ADDED) {
