@@ -79,6 +79,7 @@ class InputControlsManager(
     private fun createInput(inputSection: AutoDevInputSection) {
         input = AutoDevInput(project, listOf(), disposable, inputSection)
         input.border = JBEmptyBorder(10)
+        input.minimumSize = Dimension(input.minimumSize.width, 64)
     }
     
     private fun createButtons(inputSection: AutoDevInputSection) {

@@ -17,6 +17,7 @@ import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.ui.HintHint
 import com.intellij.util.EventDispatcher
+import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
@@ -195,13 +196,6 @@ class AutoDevInputSection(
     fun addListener(listener: AutoDevInputListener) {
         editorListeners.addListener(listener)
     }
-    
-    // Token usage management methods
-    fun getTokenUsage() = tokenUsagePanel.getCurrentUsage()
-    
-    fun getCurrentModel() = tokenUsagePanel.getCurrentModel()
-    
-    fun resetTokenUsage() = tokenUsagePanel.reset()
 
     private val maxHeight: Int
         get() {
