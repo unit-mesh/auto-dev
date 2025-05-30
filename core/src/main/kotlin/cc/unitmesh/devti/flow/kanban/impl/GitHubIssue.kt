@@ -4,6 +4,8 @@ import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
+import org.kohsuke.github.GHIssueState
+import java.time.Instant
 
 class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
     private val gitHub: GitHub
@@ -18,7 +20,7 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
                 .withOAuthToken(token)
                 .build()
         } catch (e: Exception) {
-            throw e
+            throw IllegalStateException("Failed to initialize GitHub client: ${e.message}", e)
         }
     }
 
@@ -31,7 +33,7 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
     override fun getStoryById(storyId: String): SimpleStory {
         val issue = gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(storyId))
         if (issue.comments.size == 0) {
-            return SimpleStory(issue.number.toString(), issue.title, issue.body)
+            return SimpleStory(issue.number.toString(), issue.title, issue.body ?: "")
         }
 
         // get all comments and filter body contains "用户故事"
@@ -41,6 +43,22 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
             return SimpleStory(issue.number.toString(), issue.title, comment.body)
         }
 
-        return SimpleStory(issue.number.toString(), issue.title, issue.body)
+        return SimpleStory(issue.number.toString(), issue.title, issue.body ?: "")
+    }
+    
+    /**
+     * Get recent issue IDs (within last 24 hours)
+     */
+    fun getRecentIssueIds(): List<String> {
+        return try {
+            val repository = gitHub.getRepository(repoUrl)
+            val yesterday = Instant.now().minusSeconds(24 * 60 * 60)
+            
+            repository.getIssues(GHIssueState.ALL)
+                .filter { it.createdAt.toInstant().isAfter(yesterday) }
+                .map { it.number.toString() }
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to fetch recent issues: ${e.message}", e)
+        }
     }
 }

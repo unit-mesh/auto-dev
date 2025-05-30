@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.observer
 
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.observer.agent.AgentProcessor
 import cc.unitmesh.devti.provider.observer.AgentObserver
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
@@ -22,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Remote Hook observer will receive the remote hook event and process it.
  * like:
  * - [x] GitHub issue
- * - [ ] Jira issue
+ * - [ ] Jira issue  
  * - [ ] GitLab issue
  * and Trigger after processor, and send the notification to the chat window.
  */
@@ -51,90 +50,95 @@ class IssueWorker(private val project: Project) : AgentProcessor {
                 log.debug("No Git repositories found in the project")
                 return
             }
-            
-            for (repository in repositories) {
-                processRepository(repository)
+
+            repositories.forEach { repo ->
+                processRepository(repo)
             }
         } catch (e: Exception) {
-            log.warn("Error processing GitHub/GitLab issues", e)
+            log.error("Error processing issues", e)
         }
     }
-    
-    private fun processRepository(repository: GitRepository) {
-        val remoteUrl = repository.remotes.firstOrNull()?.firstUrl ?: return
-        
-        if (remoteUrl.contains("github.com")) {
-            processGitHubIssues(remoteUrl)
-        } else if (remoteUrl.contains("gitlab")) {
-            // GitLab implementation would go here
-            log.debug("GitLab integration not yet implemented")
-        }
-    }
-    
-    private fun processGitHubIssues(repoUrl: String) {
-        val token = project.devopsPromptsSettings.state.githubToken
-        if (token.isBlank()) {
-            log.debug("GitHub token not configured")
-            return
-        }
-        
+
+    private fun processRepository(repo: GitRepository) {
         try {
-            val github = GitHubIssue(repoUrl, token)
+            val remoteUrl = repo.remotes.firstOrNull()?.firstUrl
+            if (remoteUrl == null) {
+                log.debug("No remote URL found for repository: ${repo.root.path}")
+                return
+            }
+
+            if (!remoteUrl.contains("github.com")) {
+                log.debug("Repository is not a GitHub repository: $remoteUrl")
+                return
+            }
+
+            val github = GitHubIssue(remoteUrl, getGitHubToken())
             val latestIssues = getLatestIssues(github)
             
-            for (latestIssueId in latestIssues) {
-                if (!processedIssues.contains(latestIssueId)) {
-                    processNewIssue(github, latestIssueId)
+            latestIssues.forEach { issueId ->
+                if (!processedIssues.contains(issueId)) {
+                    processNewIssue(github, issueId)
+                    processedIssues.add(issueId)
                 }
             }
         } catch (e: Exception) {
-            log.warn("Error processing GitHub issues for repo: $repoUrl", e)
+            log.error("Error processing repository: ${repo.root.path}", e)
         }
     }
     
     private fun processNewIssue(github: GitHubIssue, issueId: String) {
         try {
             val story = github.getStoryById(issueId)
-            processedIssues.add(issueId)
+            log.info("Processing new issue: ${story.title}")
             notifyNewIssue(story)
-            log.info("Processed new GitHub issue: #$issueId - ${story.title}")
         } catch (e: Exception) {
-            log.warn("Error processing issue $issueId", e)
+            log.error("Error processing issue $issueId", e)
         }
     }
     
     private fun getLatestIssues(github: GitHubIssue): List<String> {
         return try {
-            github.getRecentIssueIds()
+            // Get issues from the last 24 hours
+            github.getRecentIssues(1)
         } catch (e: Exception) {
-            log.warn("Error fetching latest issues", e)
+            log.error("Error fetching latest issues", e)
             emptyList()
         }
-    }
-    
-    private fun notifyNewIssue(story: SimpleStory) {
-        val prompt = buildIssuePrompt(story)
-        AutoDevNotifications.error(project, prompt)
-    }
-    
-    private fun buildIssuePrompt(story: SimpleStory): String {
-        return """
-            New issue received: #${story.id} - ${story.title}
-            
-            ${story.description}
-            
-            How would you like to proceed with this issue?
-        """.trimIndent()
     }
 
     private fun getGitRepositories(): List<GitRepository> {
         val vcsManager = ProjectLevelVcsManager.getInstance(project)
-        val roots: Array<VcsRoot> = vcsManager.allVcsRoots
         val repositoryManager = VcsRepositoryManager.getInstance(project)
+        
+        return vcsManager.allVcsRoots
+            .mapNotNull { vcsRoot: VcsRoot ->
+                repositoryManager.getRepositoryForRoot(vcsRoot.path) as? GitRepository
+            }
+    }
 
-        return roots.mapNotNull { root ->
-            val repo = repositoryManager.getRepositoryForRoot(root.path)
-            if (repo is GitRepository) repo else null
-        }
+    private fun getGitHubToken(): String {
+        // TODO: Implement proper token retrieval from settings or environment
+        return System.getenv("GITHUB_TOKEN") ?: ""
+    }
+
+    private fun notifyNewIssue(story: SimpleStory) {
+        val prompt = buildIssuePrompt(story)
+        sendErrorNotification(project, prompt)
+    }
+    
+    private fun buildIssuePrompt(story: SimpleStory): String {
+        val prompts = devopsPromptsSettings.prompts
+        val issuePrompt = prompts.find { it.title == "Issue" }?.content ?: "New issue: \${title}"
+        
+        return issuePrompt
+            .replace("\${title}", story.title)
+            .replace("\${description}", story.description)
+    }
+
+    private fun sendErrorNotification(project: Project, message: String) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("AutoDev.Issue")
+            .createNotification("New Issue Detected", message, NotificationType.INFORMATION)
+            .notify(project)
     }
 }
