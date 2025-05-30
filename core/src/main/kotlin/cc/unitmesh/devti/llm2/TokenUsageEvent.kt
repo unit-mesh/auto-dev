@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.llm2
 
 import cc.unitmesh.devti.llms.custom.Usage
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.util.messages.Topic
 import kotlinx.serialization.Serializable
 
@@ -33,7 +34,7 @@ interface TokenUsageListener {
          * Notify all subscribers about token usage
          */
         fun notify(event: TokenUsageEvent) {
-            com.intellij.openapi.application.ApplicationManager.getApplication().messageBus
+            ApplicationManager.getApplication().messageBus
                 .syncPublisher(TOPIC)
                 .onTokenUsage(event)
         }
