@@ -215,7 +215,7 @@ open class CodeHighlightSketch(
 
     var devinRunButtonPresentation = Presentation()
     private fun createRunButton(newText: String): ActionButton {
-        devinRunButtonPresentation.icon = AutoDevIcons.RUN
+        devinRunButtonPresentation?.icon = AutoDevIcons.RUN
         return ActionButton(
             DumbAwareAction.create {
                 val sketchService = project.getService(AutoSketchMode::class.java)
@@ -234,7 +234,7 @@ open class CodeHighlightSketch(
     private fun updateRunButtonIcon() {
         runButton?.let { button: ActionButton ->
             val icon = if (isComplete) AutoDevIcons.RUN else AutoDevIcons.LOADING
-            devinRunButtonPresentation.setIcon(icon)
+            devinRunButtonPresentation?.setIcon(icon)
             button.repaint()
         }
     }
