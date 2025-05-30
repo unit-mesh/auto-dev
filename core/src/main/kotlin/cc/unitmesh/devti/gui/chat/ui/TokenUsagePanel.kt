@@ -13,7 +13,6 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Font
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -25,10 +24,6 @@ import javax.swing.SwingConstants
  * Panel that displays token usage statistics for the current session
  */
 class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
-    
-    private val promptTokensLabel = JBLabel("0", SwingConstants.RIGHT)
-    private val completionTokensLabel = JBLabel("0", SwingConstants.RIGHT)
-    private val totalTokensLabel = JBLabel("0", SwingConstants.RIGHT)
     private val modelLabel = JBLabel("", SwingConstants.LEFT)
     private val progressBar = JProgressBar(0, 100)
     private val usageRatioLabel = JBLabel("", SwingConstants.CENTER)
@@ -46,7 +41,6 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
         isOpaque = false
         border = JBUI.Borders.empty(4, 8)
         
-        // Setup progress bar
         progressBar.apply {
             isStringPainted = false
             preferredSize = java.awt.Dimension(150, 8)
@@ -55,19 +49,16 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             isOpaque = false
         }
         
-        // Setup usage ratio label
         usageRatioLabel.apply {
             font = font.deriveFont(Font.PLAIN, 10f)
             foreground = UIUtil.getContextHelpForeground()
         }
         
-        // Create main layout
         val mainPanel = JPanel(GridBagLayout())
         mainPanel.isOpaque = false
         
         val gbc = GridBagConstraints()
         
-        // Top row: Model info and progress bar
         gbc.gridx = 0
         gbc.gridy = 0
         gbc.anchor = GridBagConstraints.WEST
@@ -129,18 +120,13 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             currentUsage = event.usage
             currentModel = event.model
             
-            // Get max tokens for current model
             updateMaxTokens()
-            
-            
-            // Update progress bar
             updateProgressBar(event.usage.totalTokens ?: 0)
-            
+
             if (!event.model.isNullOrBlank()) {
                 modelLabel.text = "Model: ${event.model}"
             }
             
-            // Show the panel when we have data
             isVisible = true
             revalidate()
             repaint()
@@ -154,7 +140,6 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             val limits = modelManager.getUsedMaxToken()
             maxContextWindowTokens = limits.maxContextWindowTokens?.toLong() ?: 0
         } catch (e: Exception) {
-            // Fallback to default if unable to get limits
             maxContextWindowTokens = 4096
         }
     }
@@ -169,7 +154,6 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
         val usageRatio = (totalTokens.toDouble() / maxContextWindowTokens * 100).toInt()
         progressBar.value = usageRatio.coerceIn(0, 100)
         
-        // Update color based on usage ratio
         progressBar.foreground = when {
             usageRatio >= 90 -> JBColor.RED
             usageRatio >= 75 -> JBColor.ORANGE
@@ -178,12 +162,9 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             else -> UIUtil.getPanelBackground().brighter()
         }
         
-        // Update ratio label
         usageRatioLabel.text = "${formatTokenCount(totalTokens)}/${formatTokenCount(maxContextWindowTokens)} (${usageRatio}%)"
-        
         progressBar.isVisible = true
         usageRatioLabel.isVisible = true
-        
         progressBar.toolTipText = "Token usage: $usageRatio% of context window"
     }
     
@@ -194,10 +175,7 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             else -> count.toString()
         }
     }
-    
-    /**
-     * Reset the token usage display
-     */
+
     fun reset() {
         ApplicationManager.getApplication().invokeLater {
             currentUsage = Usage()
@@ -213,14 +191,8 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             repaint()
         }
     }
-    
-    /**
-     * Get current usage for external access
-     */
+
     fun getCurrentUsage(): Usage = currentUsage
-    
-    /**
-     * Get current model for external access
-     */
+
     fun getCurrentModel(): String? = currentModel
 }
