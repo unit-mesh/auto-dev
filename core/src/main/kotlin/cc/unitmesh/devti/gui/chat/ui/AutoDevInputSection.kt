@@ -6,12 +6,15 @@ import cc.unitmesh.devti.gui.chat.ui.file.FileWorkspaceManager
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.ui.popup.Balloon.Position
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
+import com.intellij.util.messages.MessageBusConnection
 import com.intellij.ui.HintHint
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBUI
@@ -33,8 +36,10 @@ class AutoDevInputSection(
     private val inputControlsManager = InputControlsManager(project, disposable, editorListeners)
     private val inputSelectorsManager = InputSelectorsManager(project, showAgent)
     private val fileWorkspaceManager = FileWorkspaceManager(project, disposable)
+    private val tokenUsagePanel = TokenUsagePanel(project)
 
     private val inputPanel = BorderLayoutPanel()
+    private var messageBusConnection: MessageBusConnection? = null
 
     val focusableComponent: JComponent get() = inputControlsManager.getFocusableComponent()
 
@@ -60,6 +65,7 @@ class AutoDevInputSection(
         inputControlsManager.initialize(this)
         val leftPanel = inputSelectorsManager.initialize()
         val headerPanel = fileWorkspaceManager.initialize(inputControlsManager.input)
+        setupTokenUsageListener()
 
         setupLayout(leftPanel, headerPanel)
         addListener(object : AutoDevInputListener {
@@ -67,6 +73,15 @@ class AutoDevInputSection(
                 this@AutoDevInputSection.initEditor()
             }
         })
+    }
+
+    private fun setupTokenUsageListener() {
+        messageBusConnection = ApplicationManager.getApplication().messageBus.connect()
+        disposable?.let { 
+            messageBusConnection?.let { connection -> 
+                Disposer.register(it) { connection.disconnect() }
+            }
+        }
     }
 
     private fun setupLayout(leftPanel: JPanel?, headerPanel: JPanel) {
@@ -91,9 +106,15 @@ class AutoDevInputSection(
         layoutPanel.addToCenter(horizontalGlue)
         layoutPanel.addToRight(inputControlsManager.buttonPanel)
 
-        // Setup input panel
+        // Create bottom panel with controls and token usage
+        val bottomPanel = BorderLayoutPanel()
+        bottomPanel.isOpaque = false
+        bottomPanel.addToTop(layoutPanel)
+        bottomPanel.addToBottom(tokenUsagePanel)
+
+        // Setup input panel layout
         inputPanel.add(inputControlsManager.input, BorderLayout.CENTER)
-        inputPanel.addToBottom(layoutPanel)
+        inputPanel.addToBottom(bottomPanel)
         inputPanel.addToTop(fileWorkspaceManager.getWorkspacePanel())
 
         // Add panels to main layout
@@ -139,6 +160,7 @@ class AutoDevInputSection(
         inputSelectorsManager.resetAgent()
         inputControlsManager.clearText()
         fileWorkspaceManager.clearWorkspace()
+        tokenUsagePanel.reset()
     }
 
     // Input management methods
@@ -173,6 +195,13 @@ class AutoDevInputSection(
     fun addListener(listener: AutoDevInputListener) {
         editorListeners.addListener(listener)
     }
+    
+    // Token usage management methods
+    fun getTokenUsage() = tokenUsagePanel.getCurrentUsage()
+    
+    fun getCurrentModel() = tokenUsagePanel.getCurrentModel()
+    
+    fun resetTokenUsage() = tokenUsagePanel.reset()
 
     private val maxHeight: Int
         get() {
