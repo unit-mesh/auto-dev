@@ -66,16 +66,12 @@ class LLMProviderAdapter(
             }
         }
 
-        // Recreate provider if config changed
         val actualProvider = LLMProvider2.fromConfig(actualLlmConfig, project)
-
-        // Clear history if needed
         if (!keepHistory || project.coderSetting.state.noChatHistory) {
             clearMessage()
             currentSession = ChatSession("adapter-session")
         }
 
-        // Handle system prompt
         if (systemPrompt.isNotEmpty()) {
             if (messages.isNotEmpty() && messages[0].role != "system") {
                 messages.add(0, Message("system", systemPrompt))
@@ -93,18 +89,11 @@ class LLMProviderAdapter(
             promptText
         }
 
-        // Add user message
         messages.add(Message("user", prompt))
-
-        // Process messages through agent service
         val finalMsgs = agentService.processMessages(messages)
-
-        // Create new session with all messages
         currentSession = ChatSession("adapter-session", finalMsgs)
 
-        // Make request to LLMProvider2 and convert the response
         return try {
-            // Use suspend function in a flow context
             kotlinx.coroutines.flow.flow {
                 var fullResponse = ""
                 var lastEmittedLength = 0

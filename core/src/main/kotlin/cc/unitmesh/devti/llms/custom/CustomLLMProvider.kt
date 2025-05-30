@@ -49,12 +49,12 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
     var backupLlmConfigForPlan: LlmConfig = llmConfig
 
     override fun stream(
-        originPrompt: String,
+        promptText: String,
         systemPrompt: String,
         keepHistory: Boolean,
-        canUsePlanModel: Boolean
+        usePlanForFirst: Boolean
     ): Flow<String> {
-        llmConfig = if (canUsePlanModel) {
+        llmConfig = if (usePlanForFirst) {
             tryUpdateModelForPlan(systemPrompt)
         } else {
             backupLlmConfigForPlan
@@ -76,9 +76,9 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         }
 
         val prompt = if (project.coderSetting.state.trimCodeBeforeSend) {
-            PromptOptimizer.trimCodeSpace(originPrompt)
+            PromptOptimizer.trimCodeSpace(promptText)
         } else {
-            originPrompt
+            promptText
         }
 
         messages += Message("user", prompt)
