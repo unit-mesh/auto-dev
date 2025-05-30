@@ -6,8 +6,8 @@ import cc.unitmesh.devti.llms.custom.Usage
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.model.LLMModelManager
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -17,7 +17,6 @@ import java.awt.Color
 import java.awt.Font
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import javax.swing.Box
 import javax.swing.JPanel
 import javax.swing.JProgressBar
 import javax.swing.SwingConstants
@@ -172,9 +171,10 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
         
         // Update color based on usage ratio
         progressBar.foreground = when {
-            usageRatio >= 90 -> Color.RED
-            usageRatio >= 75 -> Color.ORANGE
-            usageRatio >= 50 -> Color.YELLOW
+            usageRatio >= 90 -> JBColor.RED
+            usageRatio >= 75 -> JBColor.ORANGE
+            usageRatio >= 50 -> JBColor.YELLOW
+            usageRatio >= 25 -> JBColor.GREEN
             else -> UIUtil.getPanelBackground().brighter()
         }
         
