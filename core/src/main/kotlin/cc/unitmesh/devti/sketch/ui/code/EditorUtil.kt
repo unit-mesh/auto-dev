@@ -19,6 +19,7 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
+import java.util.concurrent.atomic.AtomicBoolean
 
 object EditorUtil {
     private val LINE_NO_REGEX = Regex("^\\d+:")
@@ -78,8 +79,18 @@ object EditorUtil {
             }
         }
 
+        val isReleased = AtomicBoolean(false)
         disposable.whenDisposed {
-            EditorFactory.getInstance().releaseEditor(editor)
+            if (isReleased.compareAndSet(false, true)) {
+                try {
+                    if (!editor.isDisposed) {
+                        EditorFactory.getInstance().releaseEditor(editor)
+                    }
+                } catch (e: Exception) {
+                    // Log the exception but don't let it propagate
+                    // to avoid breaking the disposal chain
+                }
+            }
         }
 
         editor.setFile(file)
