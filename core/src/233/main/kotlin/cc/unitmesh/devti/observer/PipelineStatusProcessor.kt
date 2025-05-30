@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.observer.agent
+package cc.unitmesh.devti.observer
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.observer.agent.AgentProcessor
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import com.intellij.notification.NotificationType
@@ -10,7 +11,9 @@ import com.intellij.util.concurrency.AppExecutorUtil
 import git4idea.push.GitPushListener
 import git4idea.push.GitPushRepoResult
 import git4idea.repo.GitRepository
-import org.kohsuke.github.*
+import org.kohsuke.github.GHRepository
+import org.kohsuke.github.GHWorkflowRun
+import org.kohsuke.github.GitHub
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
@@ -36,7 +39,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
         }
 
         log.info("Push successful, starting pipeline monitoring for commit: $latestCommit")
-        
+
         // 获取远程仓库信息
         val remoteUrl = getGitHubRemoteUrl(repository)
         if (remoteUrl == null) {
@@ -54,21 +57,21 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
 
     private fun getGitHubRemoteUrl(repository: GitRepository): String? {
         return repository.remotes.firstOrNull { remote ->
-            remote.urls.any { url -> 
-                url.contains("github.com") 
+            remote.urls.any { url ->
+                url.contains("github.com")
             }
         }?.urls?.firstOrNull { it.contains("github.com") }
     }
 
     private fun startMonitoring(repository: GitRepository, commitSha: String, remoteUrl: String) {
         log.info("Starting pipeline monitoring for commit: $commitSha")
-        
+
         val startTime = System.currentTimeMillis()
-        
+
         monitoringJob = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay({
             try {
                 val elapsedMinutes = (System.currentTimeMillis() - startTime) / (1000 * 60)
-                
+
                 if (elapsedMinutes >= timeoutMinutes) {
                     log.info("Pipeline monitoring timeout reached for commit: $commitSha")
                     AutoDevNotifications.notify(
@@ -79,7 +82,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
                     stopMonitoring()
                     return@scheduleWithFixedDelay
                 }
-                
+
                 val workflowRun = findWorkflowRunForCommit(remoteUrl, commitSha)
                 if (workflowRun != null) {
                     val isComplete = checkWorkflowStatus(workflowRun, commitSha)
@@ -103,10 +106,10 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
         try {
             val github = createGitHubConnection()
             val ghRepository = getGitHubRepository(github, remoteUrl) ?: return null
-            
+
             // 获取所有 workflows
             val workflows = ghRepository.listWorkflows().toList()
-            
+
             // 查找与指定 commit 相关的 workflow run
             for (workflow in workflows) {
                 val runs = workflow.listRuns()
@@ -114,12 +117,12 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
                     .asSequence()
                     .take(10) // 限制检查最近的 10 个运行
                     .find { it.headSha == commitSha }
-                
+
                 if (runs != null) {
                     return runs
                 }
             }
-            
+
             return null
         } catch (e: Exception) {
             log.error("Error finding workflow run for commit: $commitSha", e)
@@ -139,7 +142,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
                         )
                         true
                     }
-                    GHWorkflowRun.Conclusion.FAILURE, 
+                    GHWorkflowRun.Conclusion.FAILURE,
                     GHWorkflowRun.Conclusion.CANCELLED,
                     GHWorkflowRun.Conclusion.TIMED_OUT -> {
                         AutoDevNotifications.notify(
@@ -189,7 +192,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
         // Handle both HTTPS and SSH URLs
         val httpsPattern = Regex("https://github\\.com/([^/]+/[^/]+)(?:\\.git)?/?")
         val sshPattern = Regex("git@github\\.com:([^/]+/[^/]+)(?:\\.git)?/?")
-        
+
         return httpsPattern.find(remoteUrl)?.groupValues?.get(1)
             ?: sshPattern.find(remoteUrl)?.groupValues?.get(1)
     }
