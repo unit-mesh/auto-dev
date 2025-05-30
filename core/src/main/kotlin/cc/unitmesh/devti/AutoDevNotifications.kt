@@ -10,8 +10,12 @@ object AutoDevNotifications {
         return NotificationGroupManager.getInstance().getNotificationGroup("AutoDev.notification.group")
     }
 
-    fun notify(project: Project, msg: String) {
-        group()?.createNotification(msg, NotificationType.INFORMATION)?.notify(project)
+    fun notify(project: Project, msg: String, type: NotificationType?) {
+        if (type == null) {
+            info(project, msg)
+        } else {
+            group()?.createNotification(msg, type)?.notify(project)
+        }
     }
 
     fun error(project: Project, msg: String) {
