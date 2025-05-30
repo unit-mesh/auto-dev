@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -49,62 +48,6 @@ private object GithubOAuthProvider {
         return appsFile.readText().let {
             val arr: List<String>? = JsonPath.parse(it)?.read("$..oauth_token")
             arr?.lastOrNull()
-        }
-    }
-
-    /**
-     * 获取GitHub Copilot支持的模型列表
-     *
-     * @param client HTTP客户端
-     * @param forceRefresh 是否强制刷新缓存的模型列表
-     * @return 支持的模型列表，如果获取失败则返回null
-     */
-    fun getSupportedModels(client: OkHttpClient, forceRefresh: Boolean = false): CopilotModelsResponse? {
-        val currentApiToken = apiToken ?: requestApiToken(client) ?: return null
-
-        // 如果已经有缓存的模型列表且不需要强制刷新，则直接返回缓存的结果
-        if (!forceRefresh && supportedModels != null) {
-            return supportedModels
-        }
-
-        val request = Request.Builder()
-            .url("https://api.githubcopilot.com/models")
-            .addHeader("Authorization", "Bearer ${currentApiToken.apiKey}")
-            .addHeader("Editor-Version", "Neovim/0.6.1")
-            .addHeader("Content-Type", "application/json")
-            .addHeader("Copilot-Integration-Id", "vscode-chat")
-            .build()
-
-        return try {
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val responseBody = response.body?.string() ?: throw IllegalStateException("响应体为空")
-                // 使用kotlinx.serialization解析JSON响应
-                val json = Json { ignoreUnknownKeys = true }
-                val parsedResponse = json.decodeFromString<CopilotModelsResponse>(responseBody)
-
-                // Filter models to only include those with enabled policy state
-                // Keep models where policy is null (backward compatibility) or policy.state is "enabled"
-                val filteredModels = parsedResponse.data.filter { model ->
-                    model.policy?.state == "enabled" || model.policy == null
-                }
-
-                val originalCount = parsedResponse.data.size
-                val filteredCount = filteredModels.size
-                if (originalCount != filteredCount) {
-                    logger.info("Filtered GitHub Copilot models: $originalCount -> $filteredCount (removed ${originalCount - filteredCount} disabled models)")
-                }
-
-                val filteredResponse = CopilotModelsResponse(data = filteredModels)
-                supportedModels = filteredResponse
-                filteredResponse
-            } else {
-                logger.warn("获取支持的模型列表失败: ${response.code}")
-                null
-            }
-        } catch (e: Exception) {
-            logger.warn("获取支持的模型列表时发生异常", e)
-            null
         }
     }
 

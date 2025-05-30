@@ -113,7 +113,7 @@ object GithubCopilotDetector {
                 try {
                     // Parse the JSON response
                     val json = Json { ignoreUnknownKeys = true }
-                    println(responseBody)
+                    logger.info(responseBody)
                     val parsedResponse = json.decodeFromString<CopilotModelsResponse>(responseBody)
 
                     // Filter models to only include those with enabled policy state
