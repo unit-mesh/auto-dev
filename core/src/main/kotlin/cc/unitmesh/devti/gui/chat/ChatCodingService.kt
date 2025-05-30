@@ -9,6 +9,7 @@ import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.llm2.LLMProvider2
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -28,8 +29,17 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     fun getLabel(): String = "$actionType Code"
 
     fun stop() {
+        // Cancel the coroutine job
         currentJob?.cancel()
+
+        // Also cancel the underlying LLM provider if it supports cancellation
+        if (llmProvider is LLMProvider2) {
+            (llmProvider as LLMProvider2).cancelCurrentRequestSync()
+        }
+
+        currentJob = null
     }
+
 
     private var isLastAgent: Boolean = false
 
@@ -130,6 +140,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
     fun clearSession() {
         // recreate session to make sure the history is cleared
+        stop()
         llmProvider = LlmFactory.create(project)
     }
 
