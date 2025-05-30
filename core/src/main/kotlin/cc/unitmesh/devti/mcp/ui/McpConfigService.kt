@@ -19,7 +19,7 @@ interface SketchConfigListener {
     fun onSelectedToolsChanged(tools: Map<String, Set<Tool>>)
 
     companion object {
-        val TOPIC = Topic.create("SketchConfigChanged", SketchConfigListener::class.java)
+        val TOPIC = Topic.create("autodev.sketch.configChanged", SketchConfigListener::class.java)
     }
 }
 

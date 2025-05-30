@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import kotlinx.serialization.Serializable
 
 data class ChatFunctionCall(
     val name: String? = null,
@@ -27,6 +28,7 @@ data class ChatCompletionChoice(
     val finishReason: String? = null,
 )
 
+@Serializable
 data class Usage(
     @JsonProperty("prompt_tokens")
     val promptTokens: Long = 0,
