@@ -75,7 +75,7 @@ open class SketchToolWindow(
         preferredSize = JBUI.size(Int.MAX_VALUE, JBUI.scale(250)) // Limit height to 100
         maximumSize = JBUI.size(Int.MAX_VALUE, JBUI.scale(250))  // Enforce maximum height
     }
-    
+
     private var thinkingPanel = JPanel(BorderLayout()).apply {
         add(thinkingScrollPane, BorderLayout.CENTER)
         isVisible = false
@@ -490,18 +490,11 @@ open class SketchToolWindow(
     fun displayMessages(messages: List<cc.unitmesh.devti.llms.custom.Message>) {
         runInEdt {
             messages.forEach { message ->
-                val chatRole = if (message.role.lowercase() == "user") {
-                    ChatRole.User
-                } else {
-                    ChatRole.Assistant
-                }
-                val messageView = MessageView(
-                    project,
-                    message.content,
-                    chatRole,
-                    message.content
-                )
+                val isUser = message.role.lowercase() == "user"
+                val language = "markdown"
+                val messageView = createSingleTextView(message.content, language = "markdown", isUser = isUser)
                 historyPanel.add(messageView)
+                onUpdate(message.content)
             }
 
             // Scroll to bottom to show latest messages
