@@ -1,2 +1,3 @@
 支持 Regex 的全局搜索
 /ripgrepSearch:.*AutoDev.*
+优化使用 Regex 方式，诸如使用 /s 替换空格

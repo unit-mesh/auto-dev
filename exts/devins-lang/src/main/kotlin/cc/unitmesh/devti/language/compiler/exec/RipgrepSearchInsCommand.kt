@@ -6,9 +6,7 @@ import cc.unitmesh.devti.agent.tool.search.RipgrepSearcher
 import com.intellij.openapi.project.Project
 
 /// https://github.com/MituuZ/fuzzier
-class RipgrepSearchInsCommand(
-    val myProject: Project, private val scope: String, val text: String?,
-) : InsCommand {
+class RipgrepSearchInsCommand(val myProject: Project, private val scope: String, val text: String?) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.RIPGREP_SEARCH
 
     override fun isApplicable(): Boolean {
