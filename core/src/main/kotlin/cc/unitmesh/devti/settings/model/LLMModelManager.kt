@@ -3,6 +3,7 @@ package cc.unitmesh.devti.settings.model
 import cc.unitmesh.devti.llm2.GithubCopilotManager
 import cc.unitmesh.devti.llm2.LLMProvider2
 import cc.unitmesh.devti.llm2.model.LlmConfig
+import cc.unitmesh.devti.llm2.model.ModelLimits
 import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.dialog.LLMDialog
@@ -73,7 +74,38 @@ class LLMModelManager(
         
         return models
     }
-    
+
+    fun getUsedMaxToken(): ModelLimits {
+        val settingsState = AutoDevSettingsState.getInstance()
+        val modelId = settingsState.defaultModelId
+        
+        // If no model ID is set, use the default max token length
+        if (modelId.isEmpty() || modelId == "Default") {
+            return ModelLimits(
+                maxContextWindowTokens = settingsState.fetchMaxTokenLength(),
+                maxPromptTokens = settingsState.fetchMaxTokenLength(),
+                maxOutputTokens = settingsState.fetchMaxTokenLength()
+            )
+        }
+        
+        // Check if it's a GitHub Copilot model
+        val manager = service<GithubCopilotManager>()
+        if (manager.isInitialized()) {
+            val githubModels = manager.getSupportedModels(forceRefresh = false)
+            val githubModel = githubModels?.find { it.id == modelId }
+            if (githubModel != null && githubModel.capabilities.limits != null) {
+                return githubModel.capabilities.limits
+            }
+        }
+        
+        // For custom models, use the settings max token length
+        return ModelLimits(
+            maxContextWindowTokens = settingsState.fetchMaxTokenLength(),
+            maxPromptTokens = settingsState.fetchMaxTokenLength(),
+            maxOutputTokens = settingsState.fetchMaxTokenLength()
+        )
+    }
+
     /**
      * Get provider name from model ID
      * Used by AutoDevInputSection when model selection changes
