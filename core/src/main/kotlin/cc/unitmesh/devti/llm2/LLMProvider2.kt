@@ -2,11 +2,13 @@ package cc.unitmesh.devti.llm2
 
 import cc.unitmesh.devti.llms.custom.CustomRequest
 import cc.unitmesh.devti.llms.custom.Message
+import cc.unitmesh.devti.llms.custom.Usage
 import cc.unitmesh.devti.llms.custom.appendCustomHeaders
 import cc.unitmesh.devti.llms.custom.updateCustomFormat
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.util.AutoDevAppScope
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -23,35 +25,12 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import okhttp3.sse.EventSource
-import okhttp3.sse.EventSourceListener
-import okhttp3.sse.EventSources
+import okhttp3.sse.*
 import java.time.Duration
 
 /**
- * LLMProvider provide only session-free interfaces
- *
- * It's LLMProvider's responsibility to maintain the network connection But
- * the chat session is maintained by the client
- *
- * [LLMProvider2] provides a factory companion object to create different
- * providers
- *
- * for now, we only support text completion, see [DefaultLLMTextProvider].
- * you can implement your own provider by extending [LLMProvider2] and
- * override [textComplete] method
- *
- * ```kotlin
- * val provider = LLMProvider2()
- * val session = ChatSession("sessionName")
- * // if you don't need to maintain the history, you can ignore the session
- * // stream is default to true
- * provider.request("text", session = session, stream = true).catch {
- *   // handle errors
- * }.collect {
- *    // incoming new message without the original history messages
- * }
- * ```
+ * LLMProvider2 is an abstract class that provides a base implementation for LLM (Large Language Model) providers.
+ * It handles the communication with LLM services and manages the streaming of responses.
  *
  * @property project if not null means this is a project level provider,
  *    will be disposed when project closed
@@ -89,12 +68,21 @@ abstract class LLMProvider2 protected constructor(
     ) {
         val factory = EventSources.createFactory(client)
         var result = ""
+        var sessionId: String? = null
+
         factory.newEventSource(request, object : EventSourceListener() {
             override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
                 super.onEvent(eventSource, id, type, data)
                 if (data == "[DONE]") {
                     return
                 }
+
+                if (sessionId == null) {
+                    sessionId = tryExtractSessionId(data)
+                }
+
+                tryParseAndNotifyTokenUsage(data, sessionId)
+
                 val chunk: String = runCatching {
                     val result: String? = JsonPath.parse(data)?.read(responseResolver)
                     result ?: ""
@@ -123,6 +111,60 @@ abstract class LLMProvider2 protected constructor(
                 onOpen()
             }
         })
+    }
+
+    /**
+     * Try to parse token usage data from SSE response and notify listeners
+     *
+     * @param data The raw SSE data string
+     * @param sessionId The session ID if available
+     */
+    private fun tryParseAndNotifyTokenUsage(data: String, sessionId: String?) {
+        try {
+            val usageData: Usage? = runCatching {
+                JsonPath.parse(data)?.read<Map<String, Any>>("\$.usage")?.let { usageMap ->
+                    Usage(
+                        promptTokens = (usageMap["prompt_tokens"] as? Number)?.toLong() ?: 0,
+                        completionTokens = (usageMap["completion_tokens"] as? Number)?.toLong() ?: 0,
+                        totalTokens = (usageMap["total_tokens"] as? Number)?.toLong() ?: 0
+                    )
+                }
+            }.getOrNull()
+
+            val model: String? = runCatching {
+                JsonPath.parse(data)?.read<String>("\$.model")
+            }.getOrNull()
+
+            usageData?.let { usage ->
+                val tokenUsageEvent = TokenUsageEvent(
+                    usage = usage,
+                    model = model,
+                    sessionId = sessionId,
+                    timestamp = System.currentTimeMillis()
+                )
+
+                ApplicationManager.getApplication().messageBus
+                    .syncPublisher(TokenUsageListener.TOPIC)
+                    .onTokenUsage(tokenUsageEvent)
+
+                logger.info("Token usage event published: prompt=${usage.promptTokens}, completion=${usage.completionTokens}, total=${usage.totalTokens}")
+            }
+        } catch (e: Exception) {
+            // Silently ignore parsing errors for usage data since it's optional
+            logger.debug("Failed to parse token usage from response data", e)
+        }
+    }
+
+    /**
+     * Try to extract session ID from response data
+     *
+     * @param data The raw SSE data string
+     * @return The session ID if found, null otherwise
+     */
+    private fun tryExtractSessionId(data: String): String? {
+        return runCatching {
+            JsonPath.parse(data)?.read<String>("\$.id")
+        }.getOrNull()
     }
 
     protected fun directResult(client: OkHttpClient, request: Request): SessionMessageItem<Message> {
