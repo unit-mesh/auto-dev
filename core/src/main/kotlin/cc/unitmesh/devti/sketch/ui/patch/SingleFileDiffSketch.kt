@@ -181,9 +181,7 @@ class SingleFileDiffSketch(
 
         if (myProject.coderSetting.state.enableDiffViewer && appliedPatch?.status == ApplyPatchStatus.SUCCESS) {
             patchProcessor.registerPatchChange(patch)
-            // 默认不显示 diffPanel，通过点击图标按钮来控制显示/隐藏
             diffPanel = createDiffViewer(oldCode, newCode)
-            // diffPanel 将由 toggleButton 控制显示
         }
     }
 

@@ -38,9 +38,14 @@ object PatchConverter {
     }
 
     fun createChange(project: Project, patch: TextFilePatch): Change {
-        val baseDir = File(project.basePath!!)
-        val beforePath = patch.beforeName
-        val afterPath = patch.afterName
+        val basePath = project.basePath
+        if (basePath == null) {
+            logger<PatchConverter>().warn("Project base path is null, using current directory")
+        }
+
+        val baseDir = File(basePath ?: System.getProperty("user.dir"))
+        val beforePath = patch.beforeName ?: ""
+        val afterPath = patch.afterName ?: ""
 
         val fileStatus = when {
             patch.isNewFile -> {
