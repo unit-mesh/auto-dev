@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.gui.AutoDevCoolBorder
-import cc.unitmesh.devti.gui.chat.ui.file.FileWorkspaceManager
+import cc.unitmesh.devti.gui.chat.ui.file.RelatedFileWorkspaceManager
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.Disposable
@@ -17,7 +17,6 @@ import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.ui.HintHint
 import com.intellij.util.EventDispatcher
-import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
@@ -36,7 +35,7 @@ class AutoDevInputSection(
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
     private val inputControlsManager = InputControlsManager(project, disposable, editorListeners)
     private val inputSelectorsManager = InputSelectorsManager(project, showAgent)
-    private val fileWorkspaceManager = FileWorkspaceManager(project, disposable)
+    private val relatedFileWorkspaceManager = RelatedFileWorkspaceManager(project, disposable)
     private val tokenUsagePanel = TokenUsagePanel(project)
 
     private val inputPanel = BorderLayoutPanel()
@@ -46,7 +45,7 @@ class AutoDevInputSection(
 
     fun renderText(): String {
         val inputText = inputControlsManager.renderText()
-        val files = fileWorkspaceManager.renderText()
+        val files = relatedFileWorkspaceManager.renderText()
         return if (files.isNotEmpty()) {
             inputText + "\n" + files
         } else {
@@ -65,7 +64,7 @@ class AutoDevInputSection(
     init {
         inputControlsManager.initialize(this)
         val leftPanel = inputSelectorsManager.initialize()
-        val headerPanel = fileWorkspaceManager.initialize(inputControlsManager.input)
+        val headerPanel = relatedFileWorkspaceManager.initialize(inputControlsManager.input)
         setupTokenUsageListener()
 
         setupLayout(leftPanel, headerPanel)
@@ -116,7 +115,7 @@ class AutoDevInputSection(
         // Setup input panel layout
         inputPanel.add(inputControlsManager.input, BorderLayout.CENTER)
         inputPanel.addToBottom(bottomPanel)
-        inputPanel.addToTop(fileWorkspaceManager.getWorkspacePanel())
+        inputPanel.addToTop(relatedFileWorkspaceManager.getWorkspacePanel())
 
         // Add panels to main layout
         this.add(headerPanel, BorderLayout.NORTH)
@@ -160,7 +159,7 @@ class AutoDevInputSection(
     fun resetAgent() {
         inputSelectorsManager.resetAgent()
         inputControlsManager.clearText()
-        fileWorkspaceManager.clearWorkspace()
+        relatedFileWorkspaceManager.clearWorkspace()
         tokenUsagePanel.reset()
     }
 

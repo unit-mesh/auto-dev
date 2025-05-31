@@ -25,7 +25,7 @@ import javax.swing.ListSelectionModel
 /**
  * Manages file operations and workspace functionality
  */
-class FileWorkspaceManager(
+class RelatedFileWorkspaceManager(
     private val project: Project,
     private val disposable: Disposable?
 ) {
@@ -132,7 +132,6 @@ class FileWorkspaceManager(
         return headerPanel
     }
 
-    // Public API methods
     fun renderText(): String {
         relatedFileListViewModel.clearAllFiles()
         val files = workspaceFilePanel.getAllFilesFormat()
