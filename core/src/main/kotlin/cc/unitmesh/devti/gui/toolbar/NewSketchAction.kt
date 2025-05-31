@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.history.ChatHistoryService
-import cc.unitmesh.devti.history.ChatSessionHistory
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
@@ -61,10 +60,10 @@ class NewSketchAction : AnAction(AllIcons.General.Add), CustomComponentAction {
         if (messages.isNotEmpty()) {
             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
             val firstUser = messages.firstOrNull { it.role.lowercase() == "user" }
-            val limit = (firstUser?.content ?: timestamp).toString().take(32)
-            val sessionName = "Session - $limit"
-            chatHistoryService.saveSession(sessionName, messages)
-            logger.info("Saved session: $sessionName")
+            val sessionName = firstUser?.content ?: timestamp
+            val limitName = sessionName.toString().take(32)
+            chatHistoryService.saveSession(limitName, messages)
+            logger.info("Saved session: $limitName")
         }
     }
 
