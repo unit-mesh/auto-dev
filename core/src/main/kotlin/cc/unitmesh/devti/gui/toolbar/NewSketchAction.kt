@@ -61,7 +61,8 @@ class NewSketchAction : AnAction(AllIcons.General.Add), CustomComponentAction {
         if (messages.isNotEmpty()) {
             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
             val firstUser = messages.firstOrNull { it.role.lowercase() == "user" }
-            val sessionName = "Session - ${firstUser?.content ?: timestamp}"
+            val limit = (firstUser?.content ?: timestamp).toString().take(32)
+            val sessionName = "Session - $limit"
             chatHistoryService.saveSession(sessionName, messages)
             logger.info("Saved session: $sessionName")
         }
