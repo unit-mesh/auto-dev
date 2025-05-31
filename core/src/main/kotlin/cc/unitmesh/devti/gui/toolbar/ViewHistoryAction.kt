@@ -23,6 +23,7 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
+import javax.swing.border.EmptyBorder
 
 class ViewHistoryAction : AnAction(
     AutoDevBundle.message("action.view.history.text"),
@@ -59,21 +60,25 @@ class ViewHistoryAction : AnAction(
         val relativeTime: String
     )
 
+    // 跟踪正在删除的会话ID，避免冲突
+    private var deletingSessionId: String? = null
+
     private inner class SessionListCellRenderer(
         private val project: Project,
         private val onDelete: (ChatSessionHistory) -> Unit
     ) : ListCellRenderer<SessionListItem> {
         
         override fun getListCellRendererComponent(
-            list: javax.swing.JList<out SessionListItem>,
+            list: JList<out SessionListItem>,
             value: SessionListItem,
             index: Int,
             selected: Boolean,
             hasFocus: Boolean
         ): Component {
-            // 创建主面板，使用 BorderLayout
+            // 创建主面板
             val panel = JPanel(BorderLayout(10, 0))
             panel.border = JBUI.Borders.empty(4, 8)
+            panel.name = "CELL_PANEL_$index"  // 添加唯一标识
 
             // 设置背景颜色
             if (selected) {
@@ -86,7 +91,7 @@ class ViewHistoryAction : AnAction(
             panel.isOpaque = true
 
             val sessionName = value.session.name
-            val maxLength = 30  // 根据UI宽度调整最大长度
+            val maxLength = 30
             val displayName = if (sessionName.length > maxLength) {
                 sessionName.substring(0, maxLength - 3) + "..."
             } else {
@@ -95,6 +100,7 @@ class ViewHistoryAction : AnAction(
             
             val contentPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
             contentPanel.isOpaque = false
+            contentPanel.name = "CONTENT_PANEL_$index"  // 添加唯一标识
 
             // 会话名称
             val titleLabel = JLabel(displayName)
@@ -116,26 +122,41 @@ class ViewHistoryAction : AnAction(
             contentPanel.add(titleLabel)
             contentPanel.add(timeLabel)
 
-            val deleteButton = JLabel(AllIcons.Actions.Close)
+            // 删除按钮面板，添加唯一标识
+            val deleteButtonPanel = JPanel(BorderLayout())
+            deleteButtonPanel.isOpaque = false
+            deleteButtonPanel.name = "DELETE_BUTTON_PANEL_$index"
+
+            // 使用按钮代替标签，避免事件冲突
+            val deleteButton = JButton()
+            deleteButton.name = "DELETE_BUTTON_$index"  // 添加唯一标识
+            deleteButton.isOpaque = false
+            deleteButton.isBorderPainted = false
+            deleteButton.isContentAreaFilled = false
+            deleteButton.isFocusPainted = false
+            deleteButton.icon = AllIcons.Actions.Close
+            deleteButton.rolloverIcon = AllIcons.Actions.CloseHovered
             deleteButton.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-            deleteButton.border = JBUI.Borders.emptyLeft(8)
-            deleteButton.addMouseListener(object : MouseAdapter() {
-                override fun mouseClicked(e: MouseEvent) {
-                    e.consume() // 防止事件传播到列表
-                    onDelete(value.session)
+            deleteButton.preferredSize = Dimension(16, 16)
+            deleteButton.toolTipText = "删除会话"
+            
+            // 为删除按钮添加事件标记，便于在列表的鼠标监听器中识别
+            deleteButton.putClientProperty("sessionId", value.session.id)
+            
+            deleteButton.addActionListener { e ->
+                e.source?.let { source ->
+                    if (source is JButton) {
+                        // 将正在删除的会话ID记录下来
+                        deletingSessionId = value.session.id
+                        onDelete(value.session)
+                    }
                 }
-                
-                override fun mouseEntered(e: MouseEvent) {
-                    deleteButton.icon = AllIcons.Actions.CloseHovered
-                }
-                
-                override fun mouseExited(e: MouseEvent) {
-                    deleteButton.icon = AllIcons.Actions.Close
-                }
-            })
+            }
+
+            deleteButtonPanel.add(deleteButton, BorderLayout.CENTER)
 
             panel.add(contentPanel, BorderLayout.CENTER)
-            panel.add(deleteButton, BorderLayout.EAST)
+            panel.add(deleteButtonPanel, BorderLayout.EAST)
 
             panel.preferredSize = Dimension(panel.preferredSize.width, 35)
             return panel
@@ -151,7 +172,11 @@ class ViewHistoryAction : AnAction(
             return
         }
 
+        var currentPopup: JBPopup? = null
+        
         fun createAndShowPopup() {
+            currentPopup?.cancel()
+            
             val listItems = sessions.map { SessionListItem(it, formatRelativeTime(it.createdAt)) }
             val jbList = JBList(listItems)
             jbList.selectionMode = ListSelectionModel.SINGLE_SELECTION
@@ -168,7 +193,10 @@ class ViewHistoryAction : AnAction(
                 if (result == Messages.YES) {
                     historyService.deleteSession(session.id)
                     sessions = historyService.getAllSessions().sortedByDescending { it.createdAt }
+                    deletingSessionId = null  // 重置删除标记
                     createAndShowPopup()
+                } else {
+                    deletingSessionId = null  // 用户取消删除，重置标记
                 }
             }
 
@@ -180,7 +208,7 @@ class ViewHistoryAction : AnAction(
             // 设置 Popup 的固定宽度和自适应高度
             val popupWidth = 400
             val maxPopupHeight = 400
-            val itemHeight = 35  // 与fixedCellHeight一致
+            val itemHeight = 35
             val calculatedHeight = (sessions.size * itemHeight + 20).coerceAtMost(maxPopupHeight)
             
             scrollPane.preferredSize = Dimension(popupWidth, calculatedHeight)
@@ -193,6 +221,26 @@ class ViewHistoryAction : AnAction(
                             jbList.selectedIndex = index
                             val selectedSession = listItems[index].session
                             onDeleteSession(selectedSession)
+                        }
+                    } else if (e.button == MouseEvent.BUTTON1 && e.clickCount == 1) { // 左键单击
+                        val index = jbList.locationToIndex(e.point)
+                        if (index >= 0) {
+                            // 检查点击位置是否在删除按钮区域
+                            val cell = jbList.getCellBounds(index, index)
+                            val cellComponent = jbList.cellRenderer.getListCellRendererComponent(
+                                jbList, listItems[index], index, false, false
+                            )
+
+                            // 在该方法之外，显式检查是否点击了删除按钮
+                            val isDeleteButtonClick = isClickOnDeleteButton(e.point, cellComponent, cell)
+                            
+                            // 如果不是点击删除按钮，或者当前没有正在处理的删除操作，则处理选择逻辑
+                            if (!isDeleteButtonClick && deletingSessionId != listItems[index].session.id) {
+                                jbList.selectedIndex = index
+                                val selectedSession = listItems[index].session
+                                currentPopup?.closeOk(null)
+                                loadSessionIntoSketch(project, selectedSession)
+                            }
                         }
                     }
                 }
@@ -207,24 +255,57 @@ class ViewHistoryAction : AnAction(
                 .setCancelOnClickOutside(true)
                 .setCancelOnOtherWindowOpen(true)
 
-            val popup: JBPopup = popupBuilder.createPopup()
-
-            // 设置 Popup 的最小尺寸
-            popup.setMinimumSize(Dimension(300, 150))
-
-            jbList.addListSelectionListener {
-                if (!it.valueIsAdjusting && jbList.selectedIndex != -1) {
-                    val selectedIndex = jbList.selectedIndex
-                    popup.closeOk(null)
-                    val selectedSession = listItems[selectedIndex].session
-                    loadSessionIntoSketch(project, selectedSession)
-                }
-            }
-
-            popup.showInBestPositionFor(e.dataContext)
+            currentPopup = popupBuilder.createPopup()
+            currentPopup?.setMinimumSize(Dimension(300, 150))
+            currentPopup?.showInBestPositionFor(e.dataContext)
         }
 
         createAndShowPopup()
+    }
+
+    // 检查点击是否在删除按钮上
+    private fun isClickOnDeleteButton(point: Point, cellComponent: Component, cellBounds: Rectangle): Boolean {
+        if (cellComponent is JPanel) {
+            val pointInCell = Point(
+                point.x - cellBounds.x,
+                point.y - cellBounds.y
+            )
+            
+            // 递归查找所有子组件，检查是否点击在DELETE_BUTTON开头的组件上
+            return findComponentAtPoint(cellComponent, pointInCell, "DELETE_BUTTON")
+        }
+        return false
+    }
+    
+    // 递归查找指定前缀名称的组件
+    private fun findComponentAtPoint(container: Container, point: Point, namePrefix: String): Boolean {
+        // 检查当前容器是否匹配
+        if (container.name?.startsWith(namePrefix) == true) {
+            return true
+        }
+        
+        // 递归检查所有子组件
+        for (i in 0 until container.componentCount) {
+            val child = container.getComponent(i)
+            if (!child.isVisible || !child.bounds.contains(point)) {
+                continue
+            }
+            
+            // 检查子组件名称
+            if (child.name?.startsWith(namePrefix) == true) {
+                return true
+            }
+            
+            // 递归检查子容器
+            if (child is Container) {
+                val childPoint = Point(point.x - child.x, point.y - child.y)
+                if (findComponentAtPoint(child, childPoint, namePrefix)) {
+                    return true
+                }
+            }
+        }
+        
+        return false
     }
 
     private fun loadSessionIntoSketch(project: Project, session: ChatSessionHistory) {
