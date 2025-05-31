@@ -46,7 +46,7 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
             fileInfoPanel.add(fileIconLabel)
             fileInfoPanel.toolTipText = value.relativePath(project)
 
-            val fileNameLabel = JLabel(buildDisplayName(value))
+            val fileNameLabel = JLabel(value.displayName())
             fileInfoPanel.add(fileNameLabel)
             
             add(fileInfoPanel)
@@ -59,58 +59,5 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
             value.namePanel = fileInfoPanel
             this.toolTipText = value.relativePath(project)
         }
-    }
-
-    /**
-     * Constructs a display name for the given file presentation based on the associated virtual file.
-     * 
-     * For file-system routing frameworks where files have conventional names but directories carry semantic meaning:
-     * - Next.js: app/dashboard/page.tsx -> dashboard/page.tsx
-     * - Django: myapp/views.py -> myapp/views.py  
-     * - Nuxt: pages/about/index.vue -> about/index.vue
-     * 
-     * Shows directory context for conventional filenames that appear frequently across projects.
-     */
-    private fun buildDisplayName(value: FilePresentation): @NlsSafe String {
-        val filename = value.virtualFile.name
-        val filenameWithoutExtension = filename.substringBeforeLast('.')
-        
-        // File-system routing and framework convention patterns
-        val routingConventionFiles = setOf(
-            // Next.js App Router
-            "page", "layout", "loading", "error", "not-found", "route", "template", "default",
-            // Traditional index files
-            "index",
-            // Django patterns  
-            "views", "models", "urls", "forms", "admin", "serializers", "tests",
-            // Flask/FastAPI patterns
-            "app", "main", "routes", "models", "schemas",
-            // Vue/Nuxt patterns
-            "middleware", "plugins", "store",
-            // React/Vue component patterns
-            "component", "components", "hook", "hooks", "context", "provider",
-            // General patterns
-            "config", "settings", "constants", "types", "utils", "helpers"
-        )
-        
-        if (filenameWithoutExtension in routingConventionFiles) {
-            val parent = value.virtualFile.parent?.name
-            if (parent != null) {
-                // For index files, show more context as they're especially common
-                if (filenameWithoutExtension == "index") {
-                    val grandParent = value.virtualFile.parent?.parent?.name
-                    return if (grandParent != null) {
-                        "$grandParent/$parent/$filename"
-                    } else {
-                        "$parent/$filename"
-                    }
-                } else {
-                    // For other conventional files, show parent directory context
-                    return "$parent/$filename"
-                }
-            }
-        }
-
-        return filename
     }
 }
