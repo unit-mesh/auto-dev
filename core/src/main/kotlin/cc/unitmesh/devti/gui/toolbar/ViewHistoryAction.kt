@@ -20,12 +20,9 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.*
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
-import javax.swing.border.EmptyBorder
 
 class ViewHistoryAction : AnAction(
     AutoDevBundle.message("action.view.history.text"),
@@ -75,8 +72,8 @@ class ViewHistoryAction : AnAction(
             hasFocus: Boolean
         ): Component {
             // 创建主面板，使用 BorderLayout
-            val panel = JPanel(BorderLayout())
-            panel.border = JBUI.Borders.empty(8, 12)
+            val panel = JPanel(BorderLayout(10, 0))
+            panel.border = JBUI.Borders.empty(4, 8)
 
             // 设置背景颜色
             if (selected) {
@@ -88,46 +85,37 @@ class ViewHistoryAction : AnAction(
             }
             panel.isOpaque = true
 
-            // 左侧内容面板 - 包含会话名称和时间
-            val contentPanel = JPanel()
-            contentPanel.layout = BoxLayout(contentPanel, BoxLayout.Y_AXIS)
-            contentPanel.isOpaque = false
-
-            // 会话名称标签 - 处理过长文本
             val sessionName = value.session.name
-            val displayName = if (sessionName.length > 40) {
-                sessionName.substring(0, 37) + "..."
+            val maxLength = 30  // 根据UI宽度调整最大长度
+            val displayName = if (sessionName.length > maxLength) {
+                sessionName.substring(0, maxLength - 3) + "..."
             } else {
                 sessionName
             }
             
+            val contentPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
+            contentPanel.isOpaque = false
+
+            // 会话名称
             val titleLabel = JLabel(displayName)
-            titleLabel.font = titleLabel.font.deriveFont(Font.BOLD, 13f)
+            titleLabel.font = titleLabel.font.deriveFont(Font.BOLD, 12f)
             titleLabel.toolTipText = sessionName // 完整名称作为工具提示
+            
+            // 时间标签
+            val timeLabel = JLabel(" - ${value.relativeTime}")
+            timeLabel.font = timeLabel.font.deriveFont(11f)
+            
             if (selected) {
                 titleLabel.foreground = list.selectionForeground
-            } else {
-                titleLabel.foreground = list.foreground
-            }
-
-            // 时间标签
-            val timeLabel = JLabel(value.relativeTime)
-            timeLabel.font = timeLabel.font.deriveFont(11f)
-            if (selected) {
                 timeLabel.foreground = list.selectionForeground.darker()
             } else {
+                titleLabel.foreground = list.foreground
                 timeLabel.foreground = list.foreground.darker()
             }
 
-            // 设置标签对齐
-            titleLabel.alignmentX = Component.LEFT_ALIGNMENT
-            timeLabel.alignmentX = Component.LEFT_ALIGNMENT
-
             contentPanel.add(titleLabel)
-            contentPanel.add(Box.createVerticalStrut(2))
             contentPanel.add(timeLabel)
 
-            // 右侧删除按钮
             val deleteButton = JLabel(AllIcons.Actions.Close)
             deleteButton.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             deleteButton.border = JBUI.Borders.emptyLeft(8)
@@ -146,13 +134,10 @@ class ViewHistoryAction : AnAction(
                 }
             })
 
-            // 组装面板
             panel.add(contentPanel, BorderLayout.CENTER)
             panel.add(deleteButton, BorderLayout.EAST)
 
-            // 设置固定高度
-            panel.preferredSize = Dimension(panel.preferredSize.width, 50)
-
+            panel.preferredSize = Dimension(panel.preferredSize.width, 35)
             return panel
         }
     }
@@ -170,8 +155,8 @@ class ViewHistoryAction : AnAction(
             val listItems = sessions.map { SessionListItem(it, formatRelativeTime(it.createdAt)) }
             val jbList = JBList(listItems)
             jbList.selectionMode = ListSelectionModel.SINGLE_SELECTION
-            jbList.fixedCellHeight = 50 // 固定单元格高度
-
+            jbList.fixedCellHeight = 35
+            
             val onDeleteSession = { session: ChatSessionHistory ->
                 val result = Messages.showYesNoDialog(
                     project,
@@ -193,9 +178,9 @@ class ViewHistoryAction : AnAction(
             scrollPane.border = null
 
             // 设置 Popup 的固定宽度和自适应高度
-            val popupWidth = 450
+            val popupWidth = 400
             val maxPopupHeight = 400
-            val itemHeight = 50
+            val itemHeight = 35  // 与fixedCellHeight一致
             val calculatedHeight = (sessions.size * itemHeight + 20).coerceAtMost(maxPopupHeight)
             
             scrollPane.preferredSize = Dimension(popupWidth, calculatedHeight)
@@ -224,8 +209,8 @@ class ViewHistoryAction : AnAction(
 
             val popup: JBPopup = popupBuilder.createPopup()
 
-            // 设置 Popup 的最小和最大尺寸
-            popup.setMinimumSize(Dimension(popupWidth, 150))
+            // 设置 Popup 的最小尺寸
+            popup.setMinimumSize(Dimension(300, 150))
 
             jbList.addListSelectionListener {
                 if (!it.valueIsAdjusting && jbList.selectedIndex != -1) {
