@@ -14,8 +14,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.ui.popup.PopupStep
-import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
@@ -113,30 +111,6 @@ class ViewHistoryAction : AnAction(
             append(value.session.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             append(" - ${value.relativeTime}", SimpleTextAttributes.GRAYED_ATTRIBUTES)
         }
-    }
-
-    private inner class SessionPopupStep(
-        private val project: Project,
-        private val sessions: List<ChatSessionHistory>
-    ) : BaseListPopupStep<SessionListItem>(
-        AutoDevBundle.message("popup.title.session.history"),
-        sessions.map { SessionListItem(it, formatRelativeTime(it.createdAt)) }
-    ) {
-        
-        override fun getTextFor(value: SessionListItem): String {
-            return value.session.name
-        }
-        
-        override fun onChosen(selectedValue: SessionListItem, finalChoice: Boolean): PopupStep<*>? {
-            if (finalChoice) {
-                loadSessionIntoSketch(project, selectedValue.session)
-            }
-            return PopupStep.FINAL_CHOICE
-        }
-        
-        override fun hasSubstep(selectedValue: SessionListItem): Boolean = false
-        
-        override fun isSelectable(value: SessionListItem): Boolean = true
     }
 
     override fun actionPerformed(e: AnActionEvent) {
