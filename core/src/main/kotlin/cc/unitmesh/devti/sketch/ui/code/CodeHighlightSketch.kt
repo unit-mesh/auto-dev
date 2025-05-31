@@ -218,6 +218,7 @@ open class CodeHighlightSketch(
         devinRunButtonPresentation?.icon = AutoDevIcons.RUN
         return ActionButton(
             DumbAwareAction.create {
+                if (isComplete) return@create
                 val sketchService = project.getService(AutoSketchMode::class.java)
                 if (sketchService.listener == null) {
                     AutoInputService.getInstance(project).putText(newText)
