@@ -23,7 +23,6 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
-import javax.swing.border.EmptyBorder
 
 class ViewHistoryAction : AnAction(
     AutoDevBundle.message("action.view.history.text"),
@@ -31,36 +30,11 @@ class ViewHistoryAction : AnAction(
     AutoDevIcons.HISTORY
 ) {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
-
-    private fun formatRelativeTime(timestamp: Long): String {
-        val now = System.currentTimeMillis()
-        val diff = now - timestamp
-
-        val seconds = diff / 1000
-        val minutes = seconds / 60
-        val hours = minutes / 60
-        val days = hours / 24
-        val weeks = days / 7
-        val months = days / 30
-        val years = days / 365
-
-        return when {
-            years > 0 -> "${years}年前"
-            months > 0 -> "${months}个月前"
-            weeks > 0 -> "${weeks}周前"
-            days > 0 -> "${days}天前"
-            hours > 0 -> "${hours}小时前"
-            minutes > 0 -> "${minutes}分钟前"
-            else -> "刚刚"
-        }
-    }
-
     private inner class SessionListItem(
         val session: ChatSessionHistory,
         val relativeTime: String
     )
 
-    // 跟踪正在删除的会话ID，避免冲突
     private var deletingSessionId: String? = null
 
     private inner class SessionListCellRenderer(
@@ -122,12 +96,10 @@ class ViewHistoryAction : AnAction(
             contentPanel.add(titleLabel)
             contentPanel.add(timeLabel)
 
-            // 删除按钮面板，添加唯一标识
             val deleteButtonPanel = JPanel(BorderLayout())
             deleteButtonPanel.isOpaque = false
             deleteButtonPanel.name = "DELETE_BUTTON_PANEL_$index"
 
-            // 使用按钮代替标签，避免事件冲突
             val deleteButton = JButton()
             deleteButton.name = "DELETE_BUTTON_$index"  // 添加唯一标识
             deleteButton.isOpaque = false
@@ -139,8 +111,6 @@ class ViewHistoryAction : AnAction(
             deleteButton.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             deleteButton.preferredSize = Dimension(16, 16)
             deleteButton.toolTipText = "删除会话"
-            
-            // 为删除按钮添加事件标记，便于在列表的鼠标监听器中识别
             deleteButton.putClientProperty("sessionId", value.session.id)
             
             deleteButton.addActionListener { e ->
@@ -167,11 +137,6 @@ class ViewHistoryAction : AnAction(
         val project = e.project ?: return
         val historyService = project.getService(ChatHistoryService::class.java)
         var sessions = historyService.getAllSessions().sortedByDescending { it.createdAt }
-
-        if (sessions.isEmpty()) {
-            return
-        }
-
         var currentPopup: JBPopup? = null
         
         fun createAndShowPopup() {
@@ -205,7 +170,6 @@ class ViewHistoryAction : AnAction(
             val scrollPane = JBScrollPane(jbList)
             scrollPane.border = null
 
-            // 设置 Popup 的固定宽度和自适应高度
             val popupWidth = 400
             val maxPopupHeight = 400
             val itemHeight = 35
@@ -231,7 +195,6 @@ class ViewHistoryAction : AnAction(
                                 jbList, listItems[index], index, false, false
                             )
 
-                            // 在该方法之外，显式检查是否点击了删除按钮
                             val isDeleteButtonClick = isClickOnDeleteButton(e.point, cellComponent, cell)
                             
                             // 如果不是点击删除按钮，或者当前没有正在处理的删除操作，则处理选择逻辑
@@ -263,7 +226,6 @@ class ViewHistoryAction : AnAction(
         createAndShowPopup()
     }
 
-    // 检查点击是否在删除按钮上
     private fun isClickOnDeleteButton(point: Point, cellComponent: Component, cellBounds: Rectangle): Boolean {
         if (cellComponent is JPanel) {
             val pointInCell = Point(
@@ -271,32 +233,26 @@ class ViewHistoryAction : AnAction(
                 point.y - cellBounds.y
             )
             
-            // 递归查找所有子组件，检查是否点击在DELETE_BUTTON开头的组件上
             return findComponentAtPoint(cellComponent, pointInCell, "DELETE_BUTTON")
         }
         return false
     }
     
-    // 递归查找指定前缀名称的组件
     private fun findComponentAtPoint(container: Container, point: Point, namePrefix: String): Boolean {
-        // 检查当前容器是否匹配
         if (container.name?.startsWith(namePrefix) == true) {
             return true
         }
         
-        // 递归检查所有子组件
         for (i in 0 until container.componentCount) {
             val child = container.getComponent(i)
             if (!child.isVisible || !child.bounds.contains(point)) {
                 continue
             }
             
-            // 检查子组件名称
             if (child.name?.startsWith(namePrefix) == true) {
                 return true
             }
             
-            // 递归检查子容器
             if (child is Container) {
                 val childPoint = Point(point.x - child.x, point.y - child.y)
                 if (findComponentAtPoint(child, childPoint, namePrefix)) {
