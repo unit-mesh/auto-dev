@@ -137,25 +137,25 @@ open class CodeHighlightSketch(
         add(editorFragment!!.getContent())
     }
 
+    private val plainText = PlainTextLanguage.INSTANCE.displayName
+
+    private val devinLanguageId = "devin"
+
     private fun setupToolbarAndStyling(fileName: String?, editor: EditorEx) {
-        val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
+        val isPackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         val lowercase = textLanguage?.lowercase()
 
-        if (textLanguage != null && lowercase != "markdown" && lowercase != "plain text") {
-            if (showToolbar && lowercase != "devin") {
-                toolbar = setupActionBar(
-                    project,
-                    editor,
-                    isDeclarePackageFile,
-                    showBottomBorder = devInsCollapsedPanel != null
-                )
+        if (textLanguage != null && lowercase != "markdown" && textLanguage != plainText) {
+            if (showToolbar && lowercase != devinLanguageId) {
+                val isShowBottomBorder = devInsCollapsedPanel != null
+                toolbar = setupActionBar(project, editor, isPackageFile, isShowBottomBorder)
             }
         } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
         }
 
         when (lowercase) {
-            "devin" -> editorFragment?.editor?.setBorder(JBEmptyBorder(1, 1, 0, 1))
+            devinLanguageId -> editorFragment?.editor?.setBorder(JBEmptyBorder(1, 1, 0, 1))
             "markdown" -> { /* no border changes needed */
             }
 
@@ -276,9 +276,9 @@ open class CodeHighlightSketch(
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {
-        if (originLanguage == "devin") {
+        if (originLanguage == devinLanguageId) {
             ideaLanguage = Language.findLanguageByID("DevIn")
-            textLanguage = "devin"
+            textLanguage = devinLanguageId
         } else if (ideaLanguage == null || ideaLanguage == PlainTextLanguage.INSTANCE) {
             ideaLanguage = language
             textLanguage = originLanguage
