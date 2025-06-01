@@ -25,13 +25,11 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
         if (!project.coderSetting.state.enableObserver) return
 
-        // 检查 push 是否成功
         if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
             log.info("Push failed, skipping pipeline monitoring")
             return
         }
 
-        // 获取最新的 commit SHA
         val latestCommit = repository.currentRevision
         if (latestCommit == null) {
             log.warn("Could not determine latest commit SHA")
@@ -40,19 +38,16 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
 
         log.info("Push successful, starting pipeline monitoring for commit: $latestCommit")
 
-        // 获取远程仓库信息
         val remoteUrl = getGitHubRemoteUrl(repository)
         if (remoteUrl == null) {
             log.warn("No GitHub remote URL found")
             return
         }
 
-        // 开始监听流水线
         startMonitoring(repository, latestCommit, remoteUrl)
     }
 
     override fun process() {
-        // AgentProcessor 接口要求的方法，这里可以为空
     }
 
     private fun getGitHubRemoteUrl(repository: GitRepository): String? {
@@ -107,15 +102,13 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
             val github = createGitHubConnection()
             val ghRepository = getGitHubRepository(github, remoteUrl) ?: return null
 
-            // 获取所有 workflows
             val workflows = ghRepository.listWorkflows().toList()
 
-            // 查找与指定 commit 相关的 workflow run
             for (workflow in workflows) {
                 val runs = workflow.listRuns()
                     .iterator()
                     .asSequence()
-                    .take(10) // 限制检查最近的 10 个运行
+                    .take(10)
                     .find { it.headSha == commitSha }
 
                 if (runs != null) {
@@ -189,7 +182,6 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
     }
 
     private fun extractRepositoryPath(remoteUrl: String): String? {
-        // Handle both HTTPS and SSH URLs
         val httpsPattern = Regex("https://github\\.com/([^/]+/[^/]+)(?:\\.git)?/?")
         val sshPattern = Regex("git@github\\.com:([^/]+/[^/]+)(?:\\.git)?/?")
 
