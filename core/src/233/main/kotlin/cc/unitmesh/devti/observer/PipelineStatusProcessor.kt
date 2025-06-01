@@ -5,9 +5,11 @@ import cc.unitmesh.devti.observer.agent.AgentProcessor
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.AppExecutorUtil
+import com.intellij.util.messages.MessageBusConnection
 import git4idea.push.GitPushListener
 import git4idea.push.GitPushRepoResult
 import git4idea.repo.GitRepository
@@ -17,7 +19,7 @@ import org.kohsuke.github.GitHub
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class PipelineStatusProcessor(private val project: Project) : AgentProcessor, GitPushListener {
+class PipelineStatusProcessor(private val project: Project) : AgentProcessor, GitPushListener, Disposable {
     private val log = Logger.getInstance(PipelineStatusProcessor::class.java)
     private var monitoringJob: ScheduledFuture<*>? = null
     private val timeoutMinutes = 30
@@ -47,7 +49,10 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
         startMonitoring(repository, latestCommit, remoteUrl)
     }
 
+    private var connection: MessageBusConnection? = null
     override fun process() {
+        val connection = project.messageBus.connect(this)
+        connection.subscribe(GitPushListener.TOPIC, this)
     }
 
     private fun getGitHubRemoteUrl(repository: GitRepository): String? {
@@ -193,5 +198,10 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
         monitoringJob?.cancel(false)
         monitoringJob = null
         log.info("Pipeline monitoring stopped")
+    }
+
+    override fun dispose() {
+        monitoringJob?.cancel(false)
+        connection?.disconnect()
     }
 }

@@ -333,8 +333,6 @@
     <projectListeners>
         <listener class="cc.unitmesh.devti.actions.rename.RenameLookupManagerListener"
                   topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>
-        <listener class="cc.unitmesh.devti.observer.PipelineStatusProcessor"
-                  topic="git4idea.push.GitPushListener"/>
     </projectListeners>
 
     <extensions defaultExtensionNs="cc.unitmesh">
