@@ -25,8 +25,6 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
     private val timeoutMinutes = 30
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
-        if (!project.coderSetting.state.enableObserver) return
-
         if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
             log.info("Push failed, skipping pipeline monitoring")
             return
@@ -51,6 +49,8 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
 
     private var connection: MessageBusConnection? = null
     override fun process() {
+        if (!project.coderSetting.state.enableObserver) return
+
         val connection = project.messageBus.connect(this)
         connection.subscribe(GitPushListener.TOPIC, this)
     }
@@ -99,7 +99,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
                 )
                 stopMonitoring()
             }
-        }, 30, 30, TimeUnit.SECONDS) // Check every 30 seconds
+        }, 30, 30, TimeUnit.SECONDS)
     }
 
     private fun findWorkflowRunForCommit(remoteUrl: String, commitSha: String): GHWorkflowRun? {
