@@ -19,25 +19,24 @@ enum class BuiltinCommand(
     val requireProps: Boolean = false,
     val enableInSketch: Boolean = true
 ) : Tool {
-    FILE("file", "Read the content of a file by project relative path", AllIcons.Actions.Copy, true, true),
+    FILE(
+        "file", 
+        "Read and retrieve file content from project using relative path. Essential for examining existing code, configurations, or documentation before modifications. Supports line ranges (L1-L10) and global filename search. Returns complete file content with line numbers for context understanding.",
+        AllIcons.Actions.Copy, 
+        true, 
+        true
+    ),
     REV(
         "rev",
-        "Read git changes by sha hash; For other git operations, it is recommended to use native git commands",
+        "Retrieve Git revision details and change history by commit SHA hash. Use when you need to understand code evolution, review specific commits, or analyze change patterns. For complex Git operations, prefer native Git commands. Returns commit metadata, changed files, and diff information.",
         AllIcons.Vcs.History,
         true,
         true,
         enableInSketch = false
     ),
-
-    /**
-     * Every language will have a symbol completion, which is the most basic completion, for example,
-     * - Java: [com.intellij.codeInsight.completion.JavaKeywordCompletion]
-     * - Kotlin: [org.jetbrains.kotlin.idea.completion.KotlinCompletionContributor]
-     * - Python: [com.jetbrains.python.codeInsight.completion.PyClassNameCompletionContributor]
-     */
     SYMBOL(
         "symbol",
-        "Read content by Java/Kotlin canonical name, such as package name, class name.",
+        "Resolve and locate symbol definitions using Java/Kotlin canonical names (package.class.method format). Essential for understanding code structure, finding class definitions, method signatures, and field declarations. Returns precise symbol location with complete context including types and documentation.",
         AllIcons.Toolwindows.ToolWindowStructure,
         true,
         true,
@@ -45,7 +44,7 @@ enum class BuiltinCommand(
     ),
     WRITE(
         "write",
-        "Write content to a file with markdown code block, /write:path/to/file:L1-L2",
+        "Create new files or completely replace existing file content using markdown code blocks. Use for new file creation or major rewrites. Always verify file existence with /file first. Supports line range specification (L1-L2). Creates proper directory structure automatically.",
         AllIcons.Actions.Edit,
         true,
         true,
@@ -53,13 +52,13 @@ enum class BuiltinCommand(
     ),
     PATCH(
         "patch",
-        "Apply GNU unified diff format structure patch to a file, /patch:path/to/file, if has multiple changes or patches, just use /write will be better.",
+        "Apply precise code modifications using GNU unified diff format. Preferred for targeted changes to existing files while preserving surrounding code. Use when making multiple changes or complex modifications, prefer /write command for better reliability.",
         AllIcons.Vcs.Patch_file,
         false
     ),
     RUN(
         "run",
-        "Run the Intellij IDEA's built-in command, like build tool command Gradle, run test.",
+        "Execute IntelliJ IDEA's built-in build and test commands. Use for running Gradle tasks, Maven goals, npm scripts, or test suites. Essential for validating code changes and ensuring project builds correctly. Returns execution output, exit codes, and error information.",
         AllIcons.Actions.Execute,
         true,
         true,
@@ -67,70 +66,99 @@ enum class BuiltinCommand(
     ),
     SHELL(
         "shell",
-        "Execute a shell command and collect (ProcessBuild) the result",
+        "Execute shell commands in project environment using ProcessBuilder. Use for system operations, build scripts, environment setup, or external tool execution. Commands run in project directory context. Returns stdout, stderr, and exit codes. Handle with security considerations.",
         AllIcons.Debugger.Console,
         true,
         true,
         enableInSketch = false
     ),
-    COMMIT("commit", "Do commit with current workspace with some messages.", AllIcons.Vcs.CommitNode, false),
-    BROWSE("browse", "Fetch the content of a given URL.", AllIcons.Toolwindows.WebToolWindow, false, true),
+    COMMIT(
+        "commit", 
+        "Execute Git commit operation for current workspace changes. Use after completing code modifications to save progress. Requires commit message following conventional commit format (feat:, fix:, docs:, etc.). Commits all staged changes in current workspace.",
+        AllIcons.Vcs.CommitNode, 
+        false
+    ),
+    BROWSE(
+        "browse", 
+        "Fetch and retrieve content from external URLs and web resources. Use when gathering information from documentation, APIs, or external references. Returns web page content as text for analysis. Essential for researching external dependencies or documentation.",
+        AllIcons.Toolwindows.WebToolWindow, 
+        false, 
+        true
+    ),
     REFACTOR(
         "refactor",
-        "Refactor the content of a file, support for rename, safeDelete and move with Intellij IDEA API.",
+        "Perform safe code refactoring operations using IntelliJ IDEA's refactoring engine. Supports rename, safe delete, and move operations while maintaining all references. Use for restructuring code while preserving functionality. Ensures code integrity during complex refactoring tasks.",
         AutoDevIcons.IDEA,
         true,
         true
     ),
     STRUCTURE(
         "structure",
-        "Get the structure of a file with AST/PSI, for example, class name, method name, and field name.",
+        "Analyze and extract code structure using AST/PSI parsing. Returns architectural overview including class names, method signatures, field declarations, and inheritance relationships. Essential for understanding codebase organization before making modifications.",
         AllIcons.Toolwindows.ToolWindowStructure,
         true,
         true,
         enableInSketch = false
     ),
-    DIR("dir", "List files and directories in a tree-like structure", AllIcons.Actions.ProjectDirectory, true, true),
+    DIR(
+        "dir", 
+        "Explore project structure by listing files and directories in tree format. Use when you need to understand project organization or locate specific files. Default depth 2, intelligently handles deep structures. Excludes binary files and VCS-ignored content. Essential for project navigation.",
+        AllIcons.Actions.ProjectDirectory, 
+        true, 
+        true
+    ),
     DATABASE(
         "database",
-        "interaction with database, such as database schema, table names, or execute sql like query, insert, update",
+        "Interact with project databases for schema inspection and SQL operations. Use when working with data-driven applications. Supports schema listing, table inspection, and SQL query execution (SELECT, INSERT, UPDATE). Returns database structure or query results with proper formatting.",
         AllIcons.Toolwindows.ToolWindowHierarchy,
         true,
         true
     ),
     LOCAL_SEARCH(
         "localSearch",
-        "Search text in the scope (current only support project) will return 5 line before and after",
+        "Search for text patterns within project scope with surrounding context. Use when finding code references, similar implementations, or understanding concept usage. Returns matches with 5 lines before/after for context. Minimum 4 characters required for search terms.",
         AllIcons.Actions.Search,
         false,
         true
     ),
     RELATED(
         "related",
-        "Get related code by AST (abstract syntax tree) for the current file, which can make the code more readable.",
+        "Discover related code components using AST analysis and dependency relationships. Use when understanding code architecture, finding connected components, or analyzing impact of changes. Returns structurally related classes, methods, and modules for better code comprehension.",
         AllIcons.Actions.Find,
         false,
         true
     ),
-    OPEN("open", "Open a file in the editor", AllIcons.Actions.MenuOpen, false, true),
-    RIPGREP_SEARCH("ripgrepSearch", "Search text in the project with ripgrep", AllIcons.Actions.Regex, false, true),
+    OPEN(
+        "open", 
+        "Open specified file in IDE editor for viewing or manual editing. Use when preparing files for inspection or making them available for subsequent operations. Input: file path relative to project root. Makes file active in editor interface.",
+        AllIcons.Actions.MenuOpen, 
+        false, 
+        true
+    ),
+    RIPGREP_SEARCH(
+        "ripgrepSearch", 
+        "Perform high-speed regex-based text search across entire project using ripgrep tool. Use for complex pattern matching and large-scale code searches. Supports full regex syntax including advanced patterns. More powerful than localSearch for complex queries.",
+        AllIcons.Actions.Regex, 
+        false, 
+        true
+    ),
     RULE(
         "rule",
-        "Get the rule (code spec) from file, such as code style, code quality, and code smell or others.",
+        "Retrieve project-specific coding rules and specifications from prompts/rule/ directory. Use when understanding project conventions before writing code. Returns coding standards, style guides, and quality requirements. Essential for generating compliant code that matches project standards.",
         AutoDevIcons.RULE,
         true,
         true
     ),
     USAGE(
         "usage",
-        "Get the usage of a class, method, or field in the project, which will help you to find the caller code, and make it easier to understand the code",
+        "Find all usages of classes, methods, or fields across the project codebase. Use when understanding impact of changes or how components are utilized. Input: fully qualified name (package.class.method). Returns caller locations with file paths and usage context. Critical for safe refactoring decisions.",
         AllIcons.Actions.DynamicUsages,
         true,
         true
     ),
     TOOLCHAIN_COMMAND(
         "x",
-        "Execute custom toolchain command",
+        "Access specialized toolchain functions and domain-specific integrations through plugin ecosystem. Use when standard commands are insufficient and you need specialized tools. Provides extensibility for custom development workflows and external tool integration.",
         AllIcons.Actions.Execute,
         true,
         false,
