@@ -53,13 +53,13 @@ enum class BuiltinCommand(
     ),
     PATCH(
         "patch",
-        "Apply GNU unified diff format structure patch to a file, /patch:path/to/file",
+        "Apply GNU unified diff format structure patch to a file, /patch:path/to/file, if has multiple changes or patches, just use /write will be better.",
         AllIcons.Vcs.Patch_file,
         false
     ),
     RUN(
         "run",
-        "Run the Intellij IDEA's built-in command, like build tool command, run test.",
+        "Run the Intellij IDEA's built-in command, like build tool command Gradle, run test.",
         AllIcons.Actions.Execute,
         true,
         true,
