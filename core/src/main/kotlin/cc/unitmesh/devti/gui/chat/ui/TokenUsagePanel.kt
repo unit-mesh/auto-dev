@@ -1,11 +1,7 @@
 package cc.unitmesh.devti.gui.chat.ui
 
-import cc.unitmesh.devti.llm2.TokenUsageEvent
-import cc.unitmesh.devti.llm2.TokenUsageListener
+import cc.unitmesh.devti.gui.chat.ui.TokenUsageViewModel.TokenUsageData
 import cc.unitmesh.devti.llms.custom.Usage
-import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.model.LLMModelManager
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -22,25 +18,140 @@ import javax.swing.SwingConstants
 
 /**
  * Panel that displays token usage statistics for the current session
+ * Refactored to separate UI concerns from business logic
  */
 class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
-    private val modelLabel = JBLabel("", SwingConstants.LEFT)
-    private val progressBar = JProgressBar(0, 100)
-    private val usageRatioLabel = JBLabel("", SwingConstants.CENTER)
-    
-    private var currentUsage = Usage()
-    private var currentModel: String? = null
-    private var maxContextWindowTokens: Long = 0
-    
+    private val uiComponents = TokenUsageUIComponents()
+    private val viewModel = TokenUsageViewModel(project)
+
+    private var currentData: TokenUsageData? = null
+
     init {
         setupUI()
-        setupTokenUsageListener()
+        setupViewModel()
     }
-    
+
     private fun setupUI() {
         isOpaque = false
         border = JBUI.Borders.empty(4, 8)
-        
+
+        val mainPanel = createMainPanel()
+        addToCenter(mainPanel)
+
+        isVisible = false
+    }
+
+    private fun createMainPanel(): JPanel {
+        val mainPanel = JPanel(GridBagLayout())
+        mainPanel.isOpaque = false
+
+        val gbc = GridBagConstraints()
+
+        // Model label (left)
+        gbc.gridx = 0
+        gbc.gridy = 0
+        gbc.anchor = GridBagConstraints.WEST
+        gbc.fill = GridBagConstraints.NONE
+        mainPanel.add(uiComponents.createModelLabelPanel(), gbc)
+
+        // Progress bar (center)
+        gbc.gridx = 1
+        gbc.weightx = 0.9
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        gbc.insets = JBUI.insets(0, 8)
+        mainPanel.add(uiComponents.createProgressPanel(), gbc)
+
+        // Usage ratio label (right)
+        gbc.gridx = 2
+        gbc.weightx = 0.1
+        gbc.fill = GridBagConstraints.NONE
+        gbc.anchor = GridBagConstraints.EAST
+        gbc.insets = JBUI.emptyInsets()
+        mainPanel.add(uiComponents.createUsageRatioPanel(), gbc)
+
+        return mainPanel
+    }
+
+    private fun setupViewModel() {
+        viewModel.setOnTokenUsageUpdated { data ->
+            updateUI(data)
+        }
+    }
+
+    private fun updateUI(data: TokenUsageData) {
+        currentData = data
+
+        // Update model label
+        val modelText = if (!data.model.isNullOrBlank()) {
+            "Model: ${data.model}"
+        } else {
+            ""
+        }
+        uiComponents.updateModelLabel(modelText)
+
+        // Update progress bar and ratio
+        if (data.maxContextWindowTokens > 0) {
+            val totalTokens = data.usage.totalTokens
+            val usageRatio = (data.usageRatio * 100).toInt().coerceIn(0, 100)
+
+            uiComponents.updateProgressBar(usageRatio, createProgressBarColor(usageRatio))
+            uiComponents.updateUsageRatioLabel(
+                createUsageRatioText(
+                    totalTokens,
+                    data.maxContextWindowTokens,
+                    usageRatio
+                )
+            )
+            uiComponents.setProgressBarTooltip("Token usage: $usageRatio% of context window")
+            uiComponents.setProgressComponentsVisible(true)
+        } else {
+            uiComponents.setProgressComponentsVisible(false)
+        }
+
+        // Update panel visibility
+        isVisible = data.isVisible
+        revalidate()
+        repaint()
+    }
+
+    private fun createProgressBarColor(usageRatio: Int): JBColor {
+        return when {
+            usageRatio >= 90 -> JBColor.RED
+            usageRatio >= 75 -> JBColor.ORANGE
+            usageRatio >= 50 -> JBColor.YELLOW
+            usageRatio >= 25 -> JBColor.GREEN
+            else -> UIUtil.getPanelBackground() as JBColor
+        }
+    }
+
+    private fun createUsageRatioText(totalTokens: Long, maxTokens: Long, usageRatio: Int): String {
+        return "${TokenUsageViewModel.formatTokenCount(totalTokens)}/${TokenUsageViewModel.formatTokenCount(maxTokens)} (${usageRatio}%)"
+    }
+
+    fun reset() {
+        viewModel.reset()
+    }
+
+    fun dispose() {
+        viewModel.dispose()
+    }
+}
+
+/**
+ * Encapsulates UI component creation and management
+ * Separates UI component logic from main panel logic
+ */
+private class TokenUsageUIComponents {
+    val modelLabel = JBLabel("", SwingConstants.LEFT)
+    val progressBar = JProgressBar(0, 100)
+    val usageRatioLabel = JBLabel("", SwingConstants.CENTER)
+
+    init {
+        setupComponents()
+    }
+
+    private fun setupComponents() {
+        // Setup progress bar
         progressBar.apply {
             isStringPainted = false
             preferredSize = java.awt.Dimension(150, 8)
@@ -48,151 +159,61 @@ class TokenUsagePanel(private val project: Project) : BorderLayoutPanel() {
             font = font.deriveFont(Font.PLAIN, 10f)
             isOpaque = false
         }
-        
+
+        // Setup usage ratio label
         usageRatioLabel.apply {
             font = font.deriveFont(Font.PLAIN, 10f)
             foreground = UIUtil.getContextHelpForeground()
+            horizontalAlignment = SwingConstants.RIGHT
         }
-        
-        val mainPanel = JPanel(GridBagLayout())
-        mainPanel.isOpaque = false
-        
-        val gbc = GridBagConstraints()
-        
-        gbc.gridx = 0
-        gbc.gridy = 0
-        gbc.anchor = GridBagConstraints.WEST
-        gbc.fill = GridBagConstraints.NONE
-        // Create left panel for model info
+
+        // Setup model label
+        modelLabel.apply {
+            font = font.deriveFont(Font.PLAIN, 11f)
+            foreground = UIUtil.getContextHelpForeground()
+        }
+    }
+
+    fun createModelLabelPanel(): JPanel {
         val leftPanel = JPanel(BorderLayout())
         leftPanel.isOpaque = false
-        modelLabel.font = modelLabel.font.deriveFont(Font.PLAIN, 11f)
-        modelLabel.foreground = UIUtil.getContextHelpForeground()
         leftPanel.add(modelLabel, BorderLayout.WEST)
-        
-        mainPanel.add(leftPanel, gbc)
-        
-        // Progress bar and ratio in the middle
-        gbc.gridx = 1
-        gbc.weightx = 0.9
-        gbc.fill = GridBagConstraints.HORIZONTAL
-        gbc.insets = JBUI.insets(0, 8)
-        
+        return leftPanel
+    }
+
+    fun createProgressPanel(): JPanel {
         val progressPanel = JPanel(BorderLayout())
         progressPanel.isOpaque = false
         progressPanel.add(progressBar, BorderLayout.CENTER)
-        
-        mainPanel.add(progressPanel, gbc)
-        
-        // Right panel for token count display (10% width)
+        return progressPanel
+    }
+
+    fun createUsageRatioPanel(): JPanel {
         val rightPanel = JPanel()
         rightPanel.isOpaque = false
-        
-        // Add usage ratio label to the right panel
-        usageRatioLabel.horizontalAlignment = SwingConstants.RIGHT
         rightPanel.add(usageRatioLabel)
-        
-        gbc.gridx = 2
-        gbc.weightx = 0.1
-        gbc.fill = GridBagConstraints.NONE
-        gbc.anchor = GridBagConstraints.EAST
-        gbc.insets = JBUI.emptyInsets()
-        mainPanel.add(rightPanel, gbc)
-        
-        // Add panels to main layout
-        addToCenter(mainPanel)
-        
-        // Initially hidden
-        isVisible = false
-    }
-    
-    private fun setupTokenUsageListener() {
-        val messageBus = ApplicationManager.getApplication().messageBus
-        messageBus.connect().subscribe(TokenUsageListener.TOPIC, object : TokenUsageListener {
-            override fun onTokenUsage(event: TokenUsageEvent) {
-                updateTokenUsage(event)
-            }
-        })
-    }
-    
-    private fun updateTokenUsage(event: TokenUsageEvent) {
-        ApplicationManager.getApplication().invokeLater {
-            currentUsage = event.usage
-            currentModel = event.model
-            
-            updateMaxTokens()
-            updateProgressBar(event.usage.totalTokens ?: 0)
-
-            if (!event.model.isNullOrBlank()) {
-                modelLabel.text = "Model: ${event.model}"
-            }
-            
-            isVisible = true
-            revalidate()
-            repaint()
-        }
-    }
-    
-    private fun updateMaxTokens() {
-        try {
-            val settings = AutoDevSettingsState.getInstance()
-            val modelManager = LLMModelManager(project, settings) {}
-            val limits = modelManager.getUsedMaxToken()
-            maxContextWindowTokens = limits.maxContextWindowTokens?.toLong() ?: 0
-        } catch (e: Exception) {
-            maxContextWindowTokens = 4096
-        }
-    }
-    
-    private fun updateProgressBar(totalTokens: Long) {
-        if (maxContextWindowTokens <= 0) {
-            progressBar.isVisible = false
-            usageRatioLabel.isVisible = false
-            return
-        }
-        
-        val usageRatio = (totalTokens.toDouble() / maxContextWindowTokens * 100).toInt()
-        progressBar.value = usageRatio.coerceIn(0, 100)
-        
-        progressBar.foreground = when {
-            usageRatio >= 90 -> JBColor.RED
-            usageRatio >= 75 -> JBColor.ORANGE
-            usageRatio >= 50 -> JBColor.YELLOW
-            usageRatio >= 25 -> JBColor.GREEN
-            else -> UIUtil.getPanelBackground().brighter()
-        }
-        
-        usageRatioLabel.text = "${formatTokenCount(totalTokens)}/${formatTokenCount(maxContextWindowTokens)} (${usageRatio}%)"
-        progressBar.isVisible = true
-        usageRatioLabel.isVisible = true
-        progressBar.toolTipText = "Token usage: $usageRatio% of context window"
-    }
-    
-    private fun formatTokenCount(count: Long): String {
-        return when {
-            count >= 1_000_000 -> String.format("%.1fM", count / 1_000_000.0)
-            count >= 1_000 -> String.format("%.1fK", count / 1_000.0)
-            else -> count.toString()
-        }
+        return rightPanel
     }
 
-    fun reset() {
-        ApplicationManager.getApplication().invokeLater {
-            currentUsage = Usage()
-            currentModel = null
-            maxContextWindowTokens = 0
-            modelLabel.text = ""
-            progressBar.value = 0
-            progressBar.isVisible = false
-            usageRatioLabel.text = ""
-            usageRatioLabel.isVisible = false
-            isVisible = false
-            revalidate()
-            repaint()
-        }
+    fun updateModelLabel(text: String) {
+        modelLabel.text = text
     }
 
-    fun getCurrentUsage(): Usage = currentUsage
+    fun updateProgressBar(value: Int, color: JBColor) {
+        progressBar.value = value
+        progressBar.foreground = color
+    }
 
-    fun getCurrentModel(): String? = currentModel
+    fun updateUsageRatioLabel(text: String) {
+        usageRatioLabel.text = text
+    }
+
+    fun setProgressBarTooltip(tooltip: String) {
+        progressBar.toolTipText = tooltip
+    }
+
+    fun setProgressComponentsVisible(visible: Boolean) {
+        progressBar.isVisible = visible
+        usageRatioLabel.isVisible = visible
+    }
 }
