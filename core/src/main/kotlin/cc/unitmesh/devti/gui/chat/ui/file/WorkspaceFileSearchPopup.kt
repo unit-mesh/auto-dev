@@ -14,7 +14,6 @@ import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.search.FilenameIndex
@@ -43,6 +42,10 @@ class WorkspaceFileSearchPopup(
         private const val MAX_RECENT_FILES = 30
         private const val SEARCH_DELAY_MS = 300
         private const val BATCH_SIZE = 50
+        private const val MAX_FILES_TO_SCAN = 10000
+        private const val PROGRESS_UPDATE_INTERVAL = 100
+        private const val SCROLL_THRESHOLD = 10
+        private const val MIN_QUERY_LENGTH = 2
     }
 
     private var popup: JBPopup? = null
@@ -61,11 +64,11 @@ class WorkspaceFileSearchPopup(
     private val minPopupSize = Dimension(480, 320)
     private val searchAlarm = Alarm(Alarm.ThreadToUse.POOLED_THREAD)
 
-    // 存储已加载的文件
+    // File storage
     private val recentFiles = mutableListOf<FilePresentation>()
     private val projectFiles = mutableListOf<FilePresentation>()
 
-    // 标志是否正在加载项目文件
+    // Loading state flags
     private var isLoadingFiles = false
     private var hasLoadedAllFiles = false
     private var currentSearchQuery = ""
@@ -76,74 +79,101 @@ class WorkspaceFileSearchPopup(
     }
 
     private fun setupUI() {
-        // Configure search field
+        configureSearchField()
+        configureFileList()
+        setupLayout()
+    }
+
+    private fun configureSearchField() {
         searchField.textEditor.addKeyListener(object : KeyAdapter() {
             override fun keyReleased(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_DOWN && fileListModel.size > 0) {
-                    fileList.requestFocus()
-                    fileList.selectedIndex = 0
+                    transferFocusToFileList()
                     return
                 }
 
-                // 使用延迟搜索，避免每次按键都触发搜索
+                // Use delayed search to avoid triggering search on every keystroke
                 val query = searchField.text.trim()
                 scheduleSearch(query)
             }
         })
+    }
 
-        // Configure file list
-        fileList.addKeyListener(object : KeyAdapter() {
-            override fun keyPressed(e: KeyEvent) {
-                when (e.keyCode) {
-                    KeyEvent.VK_ENTER -> {
-                        selectFiles()
-                        e.consume()
-                    }
+    private fun configureFileList() {
+        fileList.addKeyListener(createFileListKeyListener())
+        fileList.addMouseListener(createFileListMouseListener())
+    }
 
-                    KeyEvent.VK_ESCAPE -> {
-                        popup?.cancel()
-                        e.consume()
-                    }
-
-                    KeyEvent.VK_UP -> {
-                        if (fileList.selectedIndex == 0) {
-                            searchField.requestFocus()
-                            e.consume()
-                        }
-                    }
-                }
-            }
-        })
-
-        fileList.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
+    private fun createFileListKeyListener() = object : KeyAdapter() {
+        override fun keyPressed(e: KeyEvent) {
+            when (e.keyCode) {
+                KeyEvent.VK_ENTER -> {
                     selectFiles()
+                    e.consume()
+                }
+
+                KeyEvent.VK_ESCAPE -> {
+                    popup?.cancel()
+                    e.consume()
+                }
+
+                KeyEvent.VK_UP -> {
+                    if (fileList.selectedIndex == 0) {
+                        searchField.requestFocus()
+                        e.consume()
+                    }
                 }
             }
-        })
+        }
+    }
 
-        // 添加滚动监听器来实现滚动加载更多文件
+    private fun createFileListMouseListener() = object : MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent) {
+            if (e.clickCount == 2) {
+                selectFiles()
+            }
+        }
+    }
+
+    private fun setupLayout() {
+        val scrollPane = createScrollPane()
+        val statusPanel = createStatusPanel()
+
+        contentPanel.apply {
+            border = JBUI.Borders.empty()
+            add(searchField, BorderLayout.NORTH)
+            add(scrollPane, BorderLayout.CENTER)
+            add(statusPanel, BorderLayout.SOUTH)
+            preferredSize = minPopupSize
+        }
+    }
+
+    private fun createScrollPane(): JBScrollPane {
         val scrollPane = JBScrollPane(fileList)
         scrollPane.verticalScrollBar.addAdjustmentListener { e ->
             val scrollBar = e.adjustable
-            // 当滚动到底部且还有更多文件可加载时，加载更多文件
-            if (!isLoadingFiles && !hasLoadedAllFiles &&
-                scrollBar.value + scrollBar.visibleAmount >= scrollBar.maximum - 10
-            ) {
+            // Load more files when scrolled near bottom
+            if (shouldLoadMoreFiles(scrollBar)) {
                 loadMoreProjectFiles()
             }
         }
+        return scrollPane
+    }
 
-        // Setup layout with proper borders and spacing
+    private fun createStatusPanel(): JPanel {
         val statusPanel = JPanel(BorderLayout())
         statusPanel.add(loadingLabel, BorderLayout.CENTER)
+        return statusPanel
+    }
 
-        contentPanel.border = JBUI.Borders.empty()
-        contentPanel.add(searchField, BorderLayout.NORTH)
-        contentPanel.add(scrollPane, BorderLayout.CENTER)
-        contentPanel.add(statusPanel, BorderLayout.SOUTH)
-        contentPanel.preferredSize = minPopupSize
+    private fun transferFocusToFileList() {
+        fileList.requestFocus()
+        fileList.selectedIndex = 0
+    }
+
+    private fun shouldLoadMoreFiles(scrollBar: java.awt.Adjustable): Boolean {
+        return !isLoadingFiles && !hasLoadedAllFiles &&
+                scrollBar.value + scrollBar.visibleAmount >= scrollBar.maximum - SCROLL_THRESHOLD
     }
 
     private fun scheduleSearch(query: String) {
@@ -162,37 +192,46 @@ class WorkspaceFileSearchPopup(
     private fun performSearch(query: String) {
         fileListModel.clear()
 
-        if (query.isBlank()) {
-            // 空查询，显示最近文件和已加载的项目文件
-            showRecentAndLoadedFiles()
-        } else if (query.length >= 2) {
-            // 有查询词，使用索引搜索文件
-            searchFilesWithQuery(query)
-        } else {
-            // 查询词太短，只显示最近文件
-            showRecentFiles()
+        when {
+            query.isBlank() -> showRecentAndLoadedFiles()
+            query.length >= MIN_QUERY_LENGTH -> searchFilesWithQuery(query)
+            else -> showRecentFiles()
         }
     }
 
     private fun showRecentAndLoadedFiles() {
-        // 添加最近文件
-        val filesToShow = ArrayList<FilePresentation>()
-        filesToShow.addAll(recentFiles)
+        val filesToShow = buildFileListForDisplay()
+        displayFiles(filesToShow)
 
-        // 添加已加载的项目文件（不包括已显示的最近文件）
-        val recentPaths = recentFiles.map { it.path }.toSet()
-        filesToShow.addAll(projectFiles.filter { it.path !in recentPaths }.take(BATCH_SIZE))
-
-        // 排序并显示
-        filesToShow.sortWith(compareBy<FilePresentation> { !it.isRecentFile }.thenBy { it.name })
-        filesToShow.forEach { fileListModel.addElement(it) }
-
-        // 如果还没开始加载项目文件，则开始加载
-        if (projectFiles.isEmpty() && !isLoadingFiles && !hasLoadedAllFiles) {
+        // Start loading project files if not already started
+        if (shouldStartLoadingProjectFiles()) {
             startLoadingProjectFiles()
         }
 
         selectFirstItemIfAvailable()
+    }
+
+    private fun buildFileListForDisplay(): List<FilePresentation> {
+        val filesToShow = ArrayList<FilePresentation>()
+        filesToShow.addAll(recentFiles)
+
+        // Add loaded project files (excluding already shown recent files)
+        val recentPaths = recentFiles.map { it.path }.toSet()
+        filesToShow.addAll(projectFiles.filter { it.path !in recentPaths }.take(BATCH_SIZE))
+
+        return filesToShow.sortedWith(createFileSortComparator())
+    }
+
+    private fun displayFiles(files: List<FilePresentation>) {
+        files.forEach { fileListModel.addElement(it) }
+    }
+
+    private fun createFileSortComparator(): Comparator<FilePresentation> {
+        return compareBy<FilePresentation> { !it.isRecentFile }.thenBy { it.name }
+    }
+
+    private fun shouldStartLoadingProjectFiles(): Boolean {
+        return projectFiles.isEmpty() && !isLoadingFiles && !hasLoadedAllFiles
     }
 
     private fun showRecentFiles() {
@@ -201,100 +240,126 @@ class WorkspaceFileSearchPopup(
     }
 
     private fun searchFilesWithQuery(query: String) {
-        // 先搜索内存中已加载的文件
+        val matchingLoaded = searchLoadedFiles(query)
+        val additionalFiles = searchIndexedFiles(query, matchingLoaded)
+
+        val allResults = combineAndSortResults(matchingLoaded, additionalFiles)
+        displaySearchResults(allResults)
+
+        selectFirstItemIfAvailable()
+    }
+
+    private fun searchLoadedFiles(query: String): List<FilePresentation> {
         val matchingLoaded = ArrayList<FilePresentation>()
 
-        // 搜索最近文件
-        matchingLoaded.addAll(recentFiles.filter {
-            it.name.contains(query, ignoreCase = true) ||
-                    it.path.contains(query, ignoreCase = true)
-        })
+        // Search recent files
+        matchingLoaded.addAll(recentFiles.filter { fileMatchesQuery(it, query) })
 
-        // 搜索已加载的项目文件
+        // Search loaded project files (excluding recent files)
         val recentPaths = recentFiles.map { it.path }.toSet()
         matchingLoaded.addAll(projectFiles.filter {
-            it.path !in recentPaths &&
-                    (it.name.contains(query, ignoreCase = true) || it.path.contains(query, ignoreCase = true))
+            it.path !in recentPaths && fileMatchesQuery(it, query)
         })
 
-        // 使用 IDEA 的索引API搜索额外的文件
+        return matchingLoaded
+    }
+
+    private fun fileMatchesQuery(file: FilePresentation, query: String): Boolean {
+        return file.name.contains(query, ignoreCase = true) ||
+               file.path.contains(query, ignoreCase = true)
+    }
+
+    private fun searchIndexedFiles(query: String, existingFiles: List<FilePresentation>): List<FilePresentation> {
         val scope = GlobalSearchScope.projectScope(project)
         val additionalFiles = mutableListOf<FilePresentation>()
+        val existingPaths = existingFiles.map { it.path }.toSet()
 
         ApplicationManager.getApplication().runReadAction {
-            // 按文件名搜索
             FilenameIndex.processFilesByName(query, false, scope) { file ->
-                if (file.canBeAdded(project) &&
-                    !matchingLoaded.any { it.path == file.path }
-                ) {
+                if (file.canBeAdded(project) && file.path !in existingPaths) {
                     additionalFiles.add(FilePresentation.from(project, file))
                 }
                 true
             }
         }
 
-        // 合并结果并排序
+        return additionalFiles
+    }
+
+    private fun combineAndSortResults(
+        matchingLoaded: List<FilePresentation>,
+        additionalFiles: List<FilePresentation>
+    ): List<FilePresentation> {
         val allResults = ArrayList<FilePresentation>()
         allResults.addAll(matchingLoaded)
         allResults.addAll(additionalFiles)
 
-        allResults.sortWith(compareBy<FilePresentation> { !it.isRecentFile }.thenBy { it.name })
-        allResults.take(BATCH_SIZE).forEach { fileListModel.addElement(it) }
+        return allResults.sortedWith(createFileSortComparator())
+    }
 
-        selectFirstItemIfAvailable()
+    private fun displaySearchResults(results: List<FilePresentation>) {
+        results.take(BATCH_SIZE).forEach { fileListModel.addElement(it) }
     }
 
     private fun loadRecentFiles() {
         recentFiles.clear()
 
-        // 加载最近打开的文件
+        // Load recently opened files
         val fileList = EditorHistoryManager.getInstance(project).fileList
-        fileList.take(MAX_RECENT_FILES).forEach { file ->
-            if (file.canBeAdded(project)) {
+        fileList.take(MAX_RECENT_FILES)
+            .filter { it.canBeAdded(project) }
+            .forEach { file ->
                 val presentation = FilePresentation.from(project, file)
                 presentation.isRecentFile = true
                 recentFiles.add(presentation)
             }
-        }
 
-        // 初始显示最近文件
+        // Initially display recent files
         showRecentFiles()
     }
 
     private fun startLoadingProjectFiles() {
         if (isLoadingFiles || hasLoadedAllFiles) return
 
-        isLoadingFiles = true
-        loadingLabel.isVisible = true
+        setLoadingState(true)
 
-        // 在后台加载项目文件
+        // Load project files in background
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Loading Files", false) {
             override fun run(indicator: ProgressIndicator) {
                 try {
                     loadMoreProjectFilesInternal(indicator)
                 } finally {
                     ApplicationManager.getApplication().invokeLater({
-                        isLoadingFiles = false
-                        loadingLabel.isVisible = false
-
-                        // 如果有搜索查询，更新搜索结果
-                        if (currentSearchQuery.isNotBlank()) {
-                            performSearch(currentSearchQuery)
-                        } else if (fileListModel.size == 0 || fileListModel.size == recentFiles.size) {
-                            // 如果当前只显示了最近文件，添加新加载的项目文件
-                            showRecentAndLoadedFiles()
-                        }
+                        setLoadingState(false)
+                        updateUIAfterLoading()
                     }, ModalityState.any())
                 }
             }
         })
     }
 
+    private fun setLoadingState(loading: Boolean) {
+        isLoadingFiles = loading
+        loadingLabel.isVisible = loading
+    }
+
+    private fun updateUIAfterLoading() {
+        // Update search results if there's a query, otherwise show recent and loaded files
+        if (currentSearchQuery.isNotBlank()) {
+            performSearch(currentSearchQuery)
+        } else if (shouldShowRecentAndLoadedFiles()) {
+            showRecentAndLoadedFiles()
+        }
+    }
+
+    private fun shouldShowRecentAndLoadedFiles(): Boolean {
+        return fileListModel.size == 0 || fileListModel.size == recentFiles.size
+    }
+
     private fun loadMoreProjectFiles() {
         if (isLoadingFiles || hasLoadedAllFiles) return
 
-        isLoadingFiles = true
-        loadingLabel.isVisible = true
+        setLoadingState(true)
 
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Loading More Files", false) {
             override fun run(indicator: ProgressIndicator) {
@@ -302,78 +367,98 @@ class WorkspaceFileSearchPopup(
                     loadMoreProjectFilesInternal(indicator)
                 } finally {
                     ApplicationManager.getApplication().invokeLater({
-                        isLoadingFiles = false
-                        loadingLabel.isVisible = false
-
-                        // 如果当前有搜索查询，更新搜索结果
-                        if (currentSearchQuery.isNotBlank()) {
-                            performSearch(currentSearchQuery)
-                        } else {
-                            // 添加新加载的项目文件到当前列表
-                            val currentSize = fileListModel.size
-                            val recentPaths = recentFiles.map { it.path }.toSet()
-                            val currentPaths = (0 until currentSize).mapNotNull {
-                                fileListModel.getElementAt(it)?.path
-                            }.toSet()
-
-                            projectFiles
-                                .filter { it.path !in recentPaths && it.path !in currentPaths }
-                                .take(BATCH_SIZE)
-                                .forEach { fileListModel.addElement(it) }
-                        }
+                        setLoadingState(false)
+                        updateUIAfterLoadingMore()
                     }, ModalityState.any())
                 }
             }
         })
     }
 
+    private fun updateUIAfterLoadingMore() {
+        if (currentSearchQuery.isNotBlank()) {
+            performSearch(currentSearchQuery)
+        } else {
+            addNewlyLoadedFilesToList()
+        }
+    }
+
+    private fun addNewlyLoadedFilesToList() {
+        val currentPaths = getCurrentDisplayedPaths()
+        val recentPaths = recentFiles.map { it.path }.toSet()
+
+        projectFiles
+            .filter { it.path !in recentPaths && it.path !in currentPaths }
+            .take(BATCH_SIZE)
+            .forEach { fileListModel.addElement(it) }
+    }
+
+    private fun getCurrentDisplayedPaths(): Set<String> {
+        val currentSize = fileListModel.size
+        return (0 until currentSize).mapNotNull {
+            fileListModel.getElementAt(it)?.path
+        }.toSet()
+    }
+
     private fun loadMoreProjectFilesInternal(indicator: ProgressIndicator) {
         indicator.isIndeterminate = false
 
-        val currentSize = projectFiles.size
-        val loadedPaths = (recentFiles + projectFiles).map { it.path }.toSet()
+        val loadedPaths = getAllLoadedPaths()
         val newFiles = mutableListOf<FilePresentation>()
         var count = 0
 
-        // 使用项目文件索引迭代文件
+        // Use project file index to iterate through files
         ProjectFileIndex.getInstance(project).iterateContent { file ->
             if (indicator.isCanceled) return@iterateContent false
 
             count++
-            if (count % 100 == 0) {
-                indicator.fraction = count.toDouble() / 10000.0
-                indicator.text = "Scanned $count files..."
-            }
+            updateProgressIndicator(indicator, count)
 
-            // 添加符合条件且尚未加载的文件
-            if (file.canBeAdded(project) &&
-                !ProjectFileIndex.getInstance(project).isUnderIgnored(file) &&
-                ProjectFileIndex.getInstance(project).isInContent(file) &&
-                file.path !in loadedPaths
-            ) {
+            if (shouldAddFile(file, loadedPaths)) {
                 newFiles.add(FilePresentation.from(project, file))
 
-                // 每处理BATCH_SIZE个文件检查一次是否应该停止
+                // Stop if we've collected enough files for this batch
                 if (newFiles.size >= BATCH_SIZE) {
                     return@iterateContent false
                 }
             }
 
-            // 如果已经处理了超过10000个文件，也停止扫描
-            if (count > 10000) {
+            // Stop scanning if we've processed too many files
+            if (count > MAX_FILES_TO_SCAN) {
                 return@iterateContent false
             }
 
             true
         }
 
-        // 更新加载状态
+        updateProjectFilesState(newFiles, count)
+        LOG.info("Loaded ${newFiles.size} more files. Total loaded: ${projectFiles.size}")
+    }
+
+    private fun getAllLoadedPaths(): Set<String> {
+        return (recentFiles + projectFiles).map { it.path }.toSet()
+    }
+
+    private fun updateProgressIndicator(indicator: ProgressIndicator, count: Int) {
+        if (count % PROGRESS_UPDATE_INTERVAL == 0) {
+            indicator.fraction = count.toDouble() / MAX_FILES_TO_SCAN.toDouble()
+            indicator.text = "Scanned $count files..."
+        }
+    }
+
+    private fun shouldAddFile(file: VirtualFile, loadedPaths: Set<String>): Boolean {
+        val fileIndex = ProjectFileIndex.getInstance(project)
+        return file.canBeAdded(project) &&
+                !fileIndex.isUnderIgnored(file) &&
+                fileIndex.isInContent(file) &&
+                file.path !in loadedPaths
+    }
+
+    private fun updateProjectFilesState(newFiles: List<FilePresentation>, count: Int) {
         synchronized(projectFiles) {
             projectFiles.addAll(newFiles)
-            hasLoadedAllFiles = newFiles.size < BATCH_SIZE || count > 10000
+            hasLoadedAllFiles = newFiles.size < BATCH_SIZE || count > MAX_FILES_TO_SCAN
         }
-
-        LOG.info("Loaded ${newFiles.size} more files. Total loaded: ${projectFiles.size}")
     }
 
     private fun selectFirstItemIfAvailable() {
@@ -391,7 +476,18 @@ class WorkspaceFileSearchPopup(
     }
 
     fun show(component: JComponent) {
-        popup = JBPopupFactory.getInstance()
+        popup = createPopup()
+        popup?.addListener(createPopupListener())
+        popup?.showUnderneathOf(component)
+
+        // Request focus for search field after popup is shown
+        SwingUtilities.invokeLater {
+            IdeFocusManager.findInstance().requestFocus(searchField.textEditor, false)
+        }
+    }
+
+    private fun createPopup(): JBPopup {
+        return JBPopupFactory.getInstance()
             .createComponentPopupBuilder(contentPanel, searchField.textEditor)
             .setTitle("Add Files to Workspace")
             .setMovable(true)
@@ -402,29 +498,25 @@ class WorkspaceFileSearchPopup(
             .setCancelOnOtherWindowOpen(true)
             .setMinSize(minPopupSize)
             .createPopup()
+    }
 
-        popup?.addListener(object : JBPopupListener {
-            override fun onClosed(event: LightweightWindowEvent) {
-                // 取消所有后台任务
-                searchAlarm.cancelAllRequests()
-
-                // 清理资源
-                recentFiles.clear()
-                projectFiles.clear()
-                fileListModel.clear()
-
-                isLoadingFiles = false
-                hasLoadedAllFiles = false
-            }
-        })
-
-        // Show popup in best position
-        popup?.showUnderneathOf(component)
-
-        // Request focus for search field after popup is shown
-        SwingUtilities.invokeLater {
-            IdeFocusManager.findInstance().requestFocus(searchField.textEditor, false)
+    private fun createPopupListener() = object : JBPopupListener {
+        override fun onClosed(event: LightweightWindowEvent) {
+            cleanupResources()
         }
+    }
+
+    private fun cleanupResources() {
+        // Cancel all background tasks
+        searchAlarm.cancelAllRequests()
+
+        // Clear resources
+        recentFiles.clear()
+        projectFiles.clear()
+        fileListModel.clear()
+
+        isLoadingFiles = false
+        hasLoadedAllFiles = false
     }
 
     private inner class FileListCellRenderer : ListCellRenderer<FilePresentation> {
