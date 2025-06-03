@@ -26,37 +26,35 @@ object StructureCommandUtil {
     private const val MAX_LINES_FOR_SHOW_LINENO = 60
 
     fun getFileStructure(project: Project, file: VirtualFile, psiFile: PsiFile): String {
-        val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
-        val fileEditor: FileEditor = FileEditorManager.getInstance(project).getEditors(file).firstOrNull()
-            ?: runBlocking { createFileEditor(project, file) }
-            ?: openEditor(project, file)
-            ?: return "No FileEditor found."
+        return runReadAction {
+            val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
+            val fileEditor: FileEditor = FileEditorManager.getInstance(project).getEditors(file).firstOrNull()
+                ?: runBlocking { createFileEditor(project, file) }
+                ?: openEditor(project, file)
+                ?: return@runReadAction "No FileEditor found."
 
-        if (viewFactory != null) {
-            val view: StructureView = viewFactory.getStructureViewBuilder(psiFile)
-                ?.createStructureView(fileEditor, project)
-                ?: return "No StructureView found."
+            if (viewFactory != null) {
+                val view: StructureView = viewFactory.getStructureViewBuilder(psiFile)
+                    ?.createStructureView(fileEditor, project)
+                    ?: return@runReadAction "No StructureView found."
 
-            invokeLater {
-                FileEditorManager.getInstance(project).closeFile(file)
+                invokeLater {
+                    FileEditorManager.getInstance(project).closeFile(file)
+                }
+
+                val root: StructureViewTreeElement = view.treeModel.root
+                return@runReadAction traverseStructure(root, 0, StringBuilder()).toString()
             }
 
-            val root: StructureViewTreeElement = view.treeModel.root
-            return runReadAction { traverseStructure(root, 0, StringBuilder()).toString() }
+            return@runReadAction "No StructureViewModel found."
         }
-
-        return "No StructureViewModel found."
     }
 
     private fun openEditor(
         project: Project,
         file: VirtualFile
     ): FileEditor? {
-        var fileEditors = emptyArray<FileEditor>()
-        runReadAction {
-            fileEditors = FileEditorManager.getInstance(project).openFile(file, false, true)
-        }
-
+        val fileEditors = FileEditorManager.getInstance(project).openFile(file, false, true)
         return fileEditors.firstOrNull()
     }
 
