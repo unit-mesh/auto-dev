@@ -62,8 +62,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
         startMonitoring(repository, latestCommit, remoteUrl)
     }
 
-    private var connection: MessageBusConnection? = null
-
     override fun onRegister(project: Project) {
         this.project = project;
         if (!project.coderSetting.state.enableObserver) return
