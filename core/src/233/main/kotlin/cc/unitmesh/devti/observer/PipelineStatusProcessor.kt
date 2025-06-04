@@ -359,13 +359,11 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
             }
             
             if (connection.responseCode == 302) {
-                // 处理重定向到日志下载链接
                 val redirectUrl = connection.getHeaderField("Location")
                 if (redirectUrl != null) {
                     val logConnection = URL(redirectUrl).openConnection() as HttpURLConnection
                     logConnection.inputStream.use { stream ->
                         BufferedReader(InputStreamReader(stream)).use { reader ->
-                            // 返回所有日志信息，不限制长度
                             reader.readText()
                         }
                     }
@@ -427,36 +425,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
         }
 
         return message.toString()
-    }
-
-    private fun extractKeyErrorLines(logs: String): List<String> {
-        val errorPatterns = listOf(
-            "Error:",
-            "Exception:",
-            "Failed:",
-            "FAILED:",
-            "BUILD FAILED",
-            "npm ERR!",
-            "fatal:",
-            "Traceback",
-            "AssertionError",
-            "SyntaxError",
-            "CompileError",
-            "✗",
-            "FAIL:",
-            "stderr:"
-        )
-        
-        return logs.lines()
-            .filter { line ->
-                errorPatterns.any { pattern ->
-                    line.contains(pattern, ignoreCase = true)
-                }
-            }
-            .map { it.trim() }
-            .filter { it.isNotBlank() && it.length > 10 } // 过滤太短的行
-            .distinct()
-            .take(10) // 最多返回10行
     }
 
     private fun createGitHubConnection(): GitHub {
