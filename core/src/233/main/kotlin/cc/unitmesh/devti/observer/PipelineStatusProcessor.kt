@@ -126,7 +126,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 )
                 stopMonitoring()
             }
-        }, 0, 1, TimeUnit.MINUTES)  // 1分钟后开始第一次检查，然后每5分钟检查一次
+        }, 3, 5, TimeUnit.MINUTES)  // 1分钟后开始第一次检查，然后每5分钟检查一次
     }
 
     private fun findWorkflowRunForCommit(remoteUrl: String, commitSha: String): GHWorkflowRun? {
