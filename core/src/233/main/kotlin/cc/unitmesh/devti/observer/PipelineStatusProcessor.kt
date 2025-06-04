@@ -75,6 +75,8 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
     private fun startMonitoring(repository: GitRepository, commitSha: String, remoteUrl: String) {
         log.info("Starting pipeline monitoring for commit: $commitSha")
 
+        var workflowNotFoundCount = 0
+        val maxWorkflowNotFoundAttempts = 3  // 如果连续3次找不到workflow，停止监控
         val startTime = System.currentTimeMillis()
 
         monitoringJob = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay({
@@ -94,8 +96,21 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
                 val workflowRun = findWorkflowRunForCommit(remoteUrl, commitSha)
                 if (workflowRun != null) {
+                    workflowNotFoundCount = 0  // 重置计数器
                     val isComplete = checkWorkflowStatus(workflowRun, commitSha)
                     if (isComplete) {
+                        stopMonitoring()
+                    }
+                } else {
+                    workflowNotFoundCount++
+                    log.info("Workflow not found for commit: $commitSha (attempt $workflowNotFoundCount/$maxWorkflowNotFoundAttempts)")
+                    if (workflowNotFoundCount >= maxWorkflowNotFoundAttempts) {
+                        log.info("No workflow found after $maxWorkflowNotFoundAttempts attempts, stopping monitoring for commit: $commitSha")
+                        AutoDevNotifications.notify(
+                            project!!,
+                            "No GitHub Action workflow found for commit: ${commitSha.take(7)}",
+                            NotificationType.INFORMATION
+                        )
                         stopMonitoring()
                     }
                 }
@@ -108,7 +123,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 )
                 stopMonitoring()
             }
-        }, 30, 30, TimeUnit.SECONDS)
+        }, 1, 5, TimeUnit.MINUTES)  // 1分钟后开始第一次检查，然后每5分钟检查一次
     }
 
     private fun findWorkflowRunForCommit(remoteUrl: String, commitSha: String): GHWorkflowRun? {
@@ -116,21 +131,25 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
             val github = createGitHubConnection()
             val ghRepository = getGitHubRepository(github, remoteUrl) ?: return null
 
-            val workflows = ghRepository.listWorkflows().toList()
-
-            for (workflow in workflows) {
-                val runs = workflow.listRuns()
-                    .iterator()
-                    .asSequence()
-                    .take(10)
-                    .find { it.headSha == commitSha }
-
-                if (runs != null) {
-                    return runs
-                }
+            // 使用 queryWorkflowRuns 查询workflow runs
+            // 这样可以减少API调用次数
+            val allRuns = ghRepository.queryWorkflowRuns()
+                .list()
+                .iterator()
+                .asSequence()
+                .take(50)
+                .toList()
+            
+            // 查找匹配commit SHA的workflow run
+            val matchingRun = allRuns.find { it.headSha == commitSha }
+            
+            if (matchingRun != null) {
+                log.info("Found workflow run for commit $commitSha: ${matchingRun.name} (${matchingRun.status})")
+                return matchingRun
+            } else {
+                log.debug("No workflow run found for commit $commitSha in recent ${allRuns.size} runs")
+                return null
             }
-
-            return null
         } catch (e: Exception) {
             log.error("Error finding workflow run for commit: $commitSha", e)
             return null
