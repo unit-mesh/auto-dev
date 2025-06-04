@@ -32,7 +32,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
             log.warn("Cannot get project from component: $this")
             return
         }
-        if (project.coderSetting.state.enableObserver) return
+        if (!project.coderSetting.state.enableObserver) return
 
         if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
             log.info("Push failed, skipping pipeline monitoring")
@@ -60,7 +60,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
     override fun onRegister(project: Project) {
         this.project = project;
-        if (project.coderSetting.state.enableObserver) return
+        if (!project.coderSetting.state.enableObserver) return
     }
 
     private fun getGitHubRemoteUrl(repository: GitRepository): String? {
