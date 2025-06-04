@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.settings.devops
 
 import cc.unitmesh.devti.AutoDevBundle
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.components.*
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
@@ -37,6 +38,9 @@ class DevOpsConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.mes
                 }
                 row("GitHub Token:") {
                     githubTokenField = passwordField().component
+                    link("Create Token") {
+                        BrowserUtil.browse("https://github.com/settings/tokens/new?scopes=repo,workflow&description=AutoDev%20IDE%20Plugin")
+                    }
                 }
                 row("GitLab URL:") {
                     gitlabUrlField = textField().component
