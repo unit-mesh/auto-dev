@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.observer
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.observer.agent.AgentProcessor
+import cc.unitmesh.devti.provider.observer.AgentObserver
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import com.intellij.notification.NotificationType
@@ -19,10 +19,11 @@ import org.kohsuke.github.GitHub
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class PipelineStatusProcessor(private val project: Project) : AgentProcessor, GitPushListener, Disposable {
+class PipelineStatusProcessor : AgentObserver, GitPushListener, Disposable {
     private val log = Logger.getInstance(PipelineStatusProcessor::class.java)
     private var monitoringJob: ScheduledFuture<*>? = null
     private val timeoutMinutes = 30
+    private var project: Project? = null
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
         if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
@@ -48,8 +49,10 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
     }
 
     private var connection: MessageBusConnection? = null
-    override fun process() {
-        if (!project.coderSetting.state.enableObserver) return
+
+    override fun onRegister(project: Project) {
+        this.project = project;
+        if (project.coderSetting.state.enableObserver) return
 
         val connection = project.messageBus.connect(this)
         connection.subscribe(GitPushListener.TOPIC, this)
@@ -75,7 +78,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
                 if (elapsedMinutes >= timeoutMinutes) {
                     log.info("Pipeline monitoring timeout reached for commit: $commitSha")
                     AutoDevNotifications.notify(
-                        project,
+                        project!!,
                         "GitHub Action monitoring timeout (30 minutes) for commit: ${commitSha.take(7)}",
                         NotificationType.WARNING
                     )
@@ -93,7 +96,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
             } catch (e: Exception) {
                 log.error("Error monitoring pipeline for commit: $commitSha", e)
                 AutoDevNotifications.notify(
-                    project,
+                    project!!,
                     "Error monitoring GitHub Action: ${e.message}",
                     NotificationType.ERROR
                 )
@@ -134,7 +137,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
                 when (workflowRun.conclusion) {
                     GHWorkflowRun.Conclusion.SUCCESS -> {
                         AutoDevNotifications.notify(
-                            project,
+                            project!!,
                             "✅ GitHub Action completed successfully for commit: ${commitSha.take(7)}",
                             NotificationType.INFORMATION
                         )
@@ -144,7 +147,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
                     GHWorkflowRun.Conclusion.CANCELLED,
                     GHWorkflowRun.Conclusion.TIMED_OUT -> {
                         AutoDevNotifications.notify(
-                            project,
+                            project!!,
                             "❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}",
                             NotificationType.ERROR
                         )
@@ -168,7 +171,7 @@ class PipelineStatusProcessor(private val project: Project) : AgentProcessor, Gi
     }
 
     private fun createGitHubConnection(): GitHub {
-        val token = project.devopsPromptsSettings?.githubToken
+        val token = project?.devopsPromptsSettings?.githubToken
         return if (token.isNullOrBlank()) {
             GitHub.connectAnonymously()
         } else {
