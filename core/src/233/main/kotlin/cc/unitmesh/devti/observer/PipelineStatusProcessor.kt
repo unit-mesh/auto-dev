@@ -192,28 +192,40 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
     private fun handleWorkflowFailure(workflowRun: GHWorkflowRun, commitSha: String) {
         try {
             log.info("Analyzing workflow failure for commit: $commitSha")
-            
+
             // 获取失败的构建详情
             val failureDetails = getWorkflowFailureDetails(workflowRun)
-            
+
             // 构建详细的错误通知
             val detailedMessage = buildDetailedFailureMessage(workflowRun, commitSha, failureDetails)
-            
+
             AutoDevNotifications.notify(
                 project!!,
                 detailedMessage,
                 NotificationType.ERROR
             )
-            
+
             // 记录详细日志
             log.info("Workflow failure details for commit $commitSha: $failureDetails")
-            
+
         } catch (e: Exception) {
             log.error("Error analyzing workflow failure for commit: $commitSha", e)
-            // 回退到简单通知
+
+            // 提供更好的错误回退消息
+            val fallbackMessage = if (e.message?.contains("admin rights", ignoreCase = true) == true ||
+                                     e.message?.contains("403", ignoreCase = true) == true) {
+                "❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}\n" +
+                "⚠️ Detailed logs unavailable - admin rights required\n" +
+                "View details at: ${workflowRun.htmlUrl}"
+            } else {
+                "❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}\n" +
+                "URL: ${workflowRun.htmlUrl}\n" +
+                "Error getting details: ${e.message}"
+            }
+
             AutoDevNotifications.notify(
                 project!!,
-                "❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}\nURL: ${workflowRun.htmlUrl}",
+                fallbackMessage,
                 NotificationType.ERROR
             )
         }
@@ -278,7 +290,18 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 }
             }
         } catch (e: Exception) {
-            log.error("Error downloading job logs for job: ${job.name}", e)
+            log.warn("Cannot download job logs for job: ${job.name} - ${e.message}")
+
+            // Check if it's a permission error
+            if (e.message?.contains("admin rights", ignoreCase = true) == true ||
+                e.message?.contains("403", ignoreCase = true) == true) {
+                log.info("Admin rights required to download job logs. Falling back to alternative approach.")
+                return "⚠️ Job logs unavailable - admin rights required to download logs from GitHub Actions.\n" +
+                       "Job URL: ${job.htmlUrl}\n" +
+                       "You can view the logs directly at: ${job.htmlUrl}"
+            }
+
+            // Try alternative API approach for other errors
             getLogsViaDirectAPI(workflowRun, job.id)
         }
     }
@@ -305,7 +328,17 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 }
             }
         } catch (e: Exception) {
-            log.error("Error downloading workflow logs", e)
+            log.warn("Cannot download workflow logs - ${e.message}")
+
+            // Check if it's a permission error
+            if (e.message?.contains("admin rights", ignoreCase = true) == true ||
+                e.message?.contains("403", ignoreCase = true) == true) {
+                log.info("Admin rights required to download workflow logs.")
+                return "⚠️ Workflow logs unavailable - admin rights required to download logs from GitHub Actions.\n" +
+                       "Workflow URL: ${workflowRun.htmlUrl}\n" +
+                       "You can view the logs directly at: ${workflowRun.htmlUrl}"
+            }
+
             null
         }
     }
