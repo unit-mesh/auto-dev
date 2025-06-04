@@ -8,6 +8,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.messages.MessageBusConnection
 import git4idea.push.GitPushListener
@@ -19,13 +20,20 @@ import org.kohsuke.github.GitHub
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class PipelineStatusProcessor : AgentObserver, GitPushListener, Disposable {
+class PipelineStatusProcessor : AgentObserver, GitPushListener {
     private val log = Logger.getInstance(PipelineStatusProcessor::class.java)
     private var monitoringJob: ScheduledFuture<*>? = null
     private val timeoutMinutes = 30
     private var project: Project? = null
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
+        val project = ProjectManager.getInstance().openProjects.firstOrNull()
+        if (project == null) {
+            log.warn("Cannot get project from component: $this")
+            return
+        }
+        if (project.coderSetting.state.enableObserver) return
+
         if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
             log.info("Push failed, skipping pipeline monitoring")
             return
@@ -53,9 +61,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener, Disposable {
     override fun onRegister(project: Project) {
         this.project = project;
         if (project.coderSetting.state.enableObserver) return
-
-        val connection = project.messageBus.connect(this)
-        connection.subscribe(GitPushListener.TOPIC, this)
     }
 
     private fun getGitHubRemoteUrl(repository: GitRepository): String? {
@@ -201,10 +206,5 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener, Disposable {
         monitoringJob?.cancel(false)
         monitoringJob = null
         log.info("Pipeline monitoring stopped")
-    }
-
-    override fun dispose() {
-        monitoringJob?.cancel(false)
-        connection?.disconnect()
     }
 }
