@@ -28,6 +28,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
         val project = ProjectManager.getInstance().openProjects.firstOrNull()
+        this.project = project
         if (project == null) {
             log.warn("Cannot get project from component: $this")
             return
