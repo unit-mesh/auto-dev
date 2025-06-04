@@ -281,21 +281,15 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
     private fun getJobLogsFromAPI(workflowRun: GHWorkflowRun, job: GHWorkflowJob): String? {
         return try {
-            // 尝试使用 GitHub Java API 获取日志
             job.downloadLogs { logStream ->
                 logStream.use { stream ->
                     BufferedReader(InputStreamReader(stream)).use { reader ->
-                        val logs = reader.readText()
-                        // 提取关键错误信息（最后2000个字符，通常包含错误信息）
-                        if (logs.length > 2000) {
-                            "...\n" + logs.takeLast(2000)
-                        } else logs
+                        reader.readText()
                     }
                 }
             }
         } catch (e: Exception) {
             log.error("Error downloading job logs for job: ${job.name}", e)
-            // 如果GitHub Java API失败，尝试直接API调用
             getLogsViaDirectAPI(workflowRun, job.id)
         }
     }
@@ -308,7 +302,8 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 ZipInputStream(logStream).use { zipStream ->
                     val logContents = StringBuilder()
                     var entry = zipStream.nextEntry
-                    while (entry != null && logContents.length < 5000) { // 限制日志长度
+                    // 移除日志长度限制，获取所有日志信息
+                    while (entry != null) {
                         if (entry.name.endsWith(".txt")) {
                             val content = zipStream.readBytes().toString(Charsets.UTF_8)
                             logContents.append("=== ${entry.name} ===\n")
@@ -320,7 +315,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                     logContents.toString()
                 }
             }
-        } catch (e: Exception) { 
+        } catch (e: Exception) {
             log.error("Error downloading workflow logs", e)
             null
         }
@@ -348,12 +343,8 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                     val logConnection = URL(redirectUrl).openConnection() as HttpURLConnection
                     logConnection.inputStream.use { stream ->
                         BufferedReader(InputStreamReader(stream)).use { reader ->
-                            val logs = reader.readText()
-                            if (logs.length > 2000) {
-                                "...\n" + logs.takeLast(2000)
-                            } else {
-                                logs
-                            }
+                            // 返回所有日志信息，不限制长度
+                            reader.readText()
                         }
                     }
                 } else null
@@ -365,55 +356,54 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
     }
 
     private fun buildDetailedFailureMessage(
-        workflowRun: GHWorkflowRun, 
-        commitSha: String, 
+        workflowRun: GHWorkflowRun,
+        commitSha: String,
         failureDetails: WorkflowFailureDetails
     ): String {
         val message = StringBuilder()
         message.append("❌ GitHub Action failed for commit: ${commitSha.take(7)}\n")
         message.append("Workflow: ${workflowRun.name}\n")
         message.append("URL: ${workflowRun.htmlUrl}\n\n")
-        
+
         if (failureDetails.error != null) {
             message.append("Error getting details: ${failureDetails.error}\n")
         } else if (failureDetails.failedJobs.isNotEmpty()) {
             message.append("Failed Jobs:\n")
-            
-            for (jobFailure in failureDetails.failedJobs.take(2)) { // 最多显示2个失败的job
+
+            for (jobFailure in failureDetails.failedJobs) { // 显示所有失败的job
                 message.append("• ${jobFailure.jobName}\n")
                 if (jobFailure.jobUrl != null) {
                     message.append("  URL: ${jobFailure.jobUrl}\n")
                 }
-                
+
                 if (jobFailure.errorSteps.isNotEmpty()) {
                     message.append("  Failed steps:\n")
-                    for (step in jobFailure.errorSteps.take(3)) { // 最多显示3个失败步骤
+                    for (step in jobFailure.errorSteps) { // 显示所有失败步骤
                         message.append("    - $step\n")
                     }
                 }
-                
-                // 添加关键错误信息
+
                 jobFailure.logs?.let { logs ->
-                    val errorLines = extractKeyErrorLines(logs)
-                    if (errorLines.isNotEmpty()) {
-                        message.append("  Key errors:\n")
-                        for (errorLine in errorLines.take(3)) { // 最多显示3行关键错误
-                            message.append("    ${errorLine.take(100)}\n") // 限制每行长度
+                    if (logs.isNotBlank()) {
+                        message.append("  Logs:\n")
+                        logs.lines().forEach { line ->
+                            if (line.isNotBlank()) {
+                                message.append("    $line\n")
+                            }
                         }
                     }
                 }
                 message.append("\n")
             }
         } else if (failureDetails.workflowLogs != null) {
-            val errorLines = extractKeyErrorLines(failureDetails.workflowLogs!!)
-            if (errorLines.isNotEmpty()) {
-                message.append("Key errors:\n")
-                for (errorLine in errorLines.take(5)) {
-                    message.append("  ${errorLine.take(100)}\n")
+            message.append("Workflow Logs:\n")
+            failureDetails.workflowLogs!!.lines().forEach { line ->
+                if (line.isNotBlank()) {
+                    message.append("  $line\n")
                 }
             }
         }
-        
+
         return message.toString()
     }
 
