@@ -9,7 +9,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.util.concurrency.AppExecutorUtil
-import com.intellij.util.messages.MessageBusConnection
 import git4idea.push.GitPushListener
 import git4idea.push.GitPushRepoResult
 import git4idea.repo.GitRepository
@@ -134,7 +133,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
             val github = createGitHubConnection()
             val ghRepository = getGitHubRepository(github, remoteUrl) ?: return null
 
-            // 使用 queryWorkflowRuns 查询workflow runs
             val allRuns = ghRepository.queryWorkflowRuns()
                 .list()
                 .iterator()
@@ -142,9 +140,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 .take(50)  // 检查最近50个runs
                 .toList()
             
-            // 查找匹配commit SHA的workflow run
             val matchingRun = allRuns.find { it.headSha == commitSha }
-            
             if (matchingRun != null) {
                 log.info("Found workflow run for commit $commitSha: ${matchingRun.name} (${matchingRun.status})")
                 return matchingRun
@@ -162,14 +158,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
         return when (workflowRun.status) {
             GHWorkflowRun.Status.COMPLETED -> {
                 when (workflowRun.conclusion) {
-                    GHWorkflowRun.Conclusion.SUCCESS -> {
-                        AutoDevNotifications.notify(
-                            project!!,
-                            "✅ GitHub Action completed successfully for commit: ${commitSha.take(7)}",
-                            NotificationType.INFORMATION
-                        )
-                        true
-                    }
+                    GHWorkflowRun.Conclusion.SUCCESS -> true
                     GHWorkflowRun.Conclusion.FAILURE -> {
                         handleWorkflowFailure(workflowRun, commitSha)
                         true
