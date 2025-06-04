@@ -41,6 +41,8 @@ class DevOpsConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.mes
                     link("Create Token") {
                         BrowserUtil.browse("https://github.com/settings/tokens/new?scopes=repo,workflow&description=AutoDev%20IDE%20Plugin")
                     }
+
+                    comment("Note: Admin rights to repository are required to download detailed job logs. Basic monitoring works with read access.")
                 }
                 row("GitLab URL:") {
                     gitlabUrlField = textField().component
