@@ -3,7 +3,6 @@ package cc.unitmesh.devti.gui.chat.ui.file
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInput
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
-import cc.unitmesh.devti.gui.chat.ui.mediumFontFunction
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.labels.LinkLabel
@@ -39,6 +38,7 @@ object WorkspaceFileToolbar {
 
                 component = component.parent
             }
+
             null
         }
 
@@ -62,7 +62,6 @@ object WorkspaceFileToolbar {
             }
         }
         
-        recentFiles.mediumFontFunction()
         recentFiles.border = JBUI.Borders.emptyRight(10)
         toolbar.add(recentFiles)
 
@@ -71,7 +70,6 @@ object WorkspaceFileToolbar {
             findWorkspaceFilePanel()?.clear()
         }
 
-        clearAll.mediumFontFunction()
         clearAll.border = JBUI.Borders.emptyRight(20)
 
         toolbar.add(clearAll)

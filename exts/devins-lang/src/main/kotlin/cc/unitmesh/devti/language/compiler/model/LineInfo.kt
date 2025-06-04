@@ -7,7 +7,7 @@ data class LineInfo(
     val endColumn: Int = 0
 ) {
     companion object {
-        private val regex = Regex("""L(\d+)(?:C(\d+))?(?:-L(\d+)(?:C(\d+))?)?""")
+        private val regex = Regex("""L(\d+)(?:C(\d+))?(?:-L(\d+)(?:C(\d+))?)?""") 
 
         /**
          * Convert a string to a `TextRange`, if possible. The string should be in the format: "filepath#L1-L12",
@@ -21,7 +21,7 @@ data class LineInfo(
 
             val startLine = matchResult.groupValues[1].toIntOrNull() ?: return null
             val startColumn = matchResult.groupValues[2].toIntOrNull() ?: 0
-            val endLine = matchResult.groupValues[3].toIntOrNull() ?: return null
+            val endLine = matchResult.groupValues[3].toIntOrNull() ?: startLine
             val endColumn = matchResult.groupValues[4].toIntOrNull() ?: 0
 
             return LineInfo(startLine, endLine, startColumn, endColumn)

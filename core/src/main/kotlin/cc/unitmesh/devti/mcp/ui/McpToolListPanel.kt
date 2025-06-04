@@ -14,7 +14,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.GridLayout
-import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.SwingConstants
@@ -22,15 +21,14 @@ import javax.swing.SwingUtilities
 
 class McpToolListPanel(private val project: Project) : JPanel() {
     private val mcpServerManager = CustomMcpServerManager.instance(project)
-    private val allTools = mutableMapOf<String, List<Tool>>()
-    private var currentFilteredTools = mutableMapOf<String, List<Tool>>()
+    private val allMcpTools = mutableMapOf<String, List<Tool>>()
+    private var currentFilteredMcpTools = mutableMapOf<String, List<Tool>>()
     private var loadingJob: Job? = null
     private val serverLoadingStatus = mutableMapOf<String, Boolean>()
     private val serverPanels = mutableMapOf<String, JPanel>()
 
-    private val borderColor = JBColor(0xE5E7EB, 0x3C3F41) // Equivalent to Tailwind gray-200
-    private val textGray = JBColor(0x6B7280, 0x9DA0A8)    // Equivalent to Tailwind gray-500
-    private val headerColor = JBColor(0xF3F4F6, 0x2B2D30)  // Light gray for section headers
+    private val textGray = JBColor(0x6B7280, 0x9DA0A8)
+    private val headerColor = JBColor(0xF3F4F6, 0x2B2D30)
 
     init {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -41,8 +39,8 @@ class McpToolListPanel(private val project: Project) : JPanel() {
         loadingJob?.cancel()
         serverLoadingStatus.clear()
         serverPanels.clear()
-        allTools.clear()
-        currentFilteredTools.clear()
+        allMcpTools.clear()
+        currentFilteredMcpTools.clear()
 
         SwingUtilities.invokeLater {
             removeAll()
@@ -72,9 +70,9 @@ class McpToolListPanel(private val project: Project) : JPanel() {
                     try {
                         val tools = mcpServerManager.collectServerInfo(serverName, serverConfig)
                         
-                        synchronized(allTools) {
-                            allTools[serverName] = tools
-                            currentFilteredTools[serverName] = tools
+                        synchronized(allMcpTools) {
+                            allMcpTools[serverName] = tools
+                            currentFilteredMcpTools[serverName] = tools
                         }
                         
                         SwingUtilities.invokeLater {
@@ -91,27 +89,24 @@ class McpToolListPanel(private val project: Project) : JPanel() {
             }
             
             jobs.forEach { it.join() }
-            onToolsLoaded(allTools)
+            onToolsLoaded(allMcpTools)
         }
     }
 
     fun filterTools(searchText: String) {
-        if (searchText.isEmpty()) {
-            // If search text is empty, restore all tools
-            currentFilteredTools = allTools.toMutableMap()
+        currentFilteredMcpTools = if (searchText.isEmpty()) {
+            allMcpTools.toMutableMap()
         } else {
-            // Filter tools based on search text
-            currentFilteredTools = allTools.mapValues { (_, tools) ->
+            allMcpTools.mapValues { (_, tools) ->
                 tools.filter { tool ->
                     tool.name.contains(searchText, ignoreCase = true) ||
-                    tool.description?.contains(searchText, ignoreCase = true) == true
+                            tool.description?.contains(searchText, ignoreCase = true) == true
                 }
             }.toMutableMap()
         }
 
-        // Update UI with filtered tools
         SwingUtilities.invokeLater {
-            currentFilteredTools.forEach { (serverName, tools) ->
+            currentFilteredMcpTools.forEach { (serverName, tools) ->
                 updateServerSection(serverName, tools)
             }
             revalidate()
@@ -218,5 +213,5 @@ class McpToolListPanel(private val project: Project) : JPanel() {
         loadingJob?.cancel()
     }
 
-    fun getTools(): Map<String, List<Tool>> = allTools
+    fun getTools(): Map<String, List<Tool>> = allMcpTools
 }

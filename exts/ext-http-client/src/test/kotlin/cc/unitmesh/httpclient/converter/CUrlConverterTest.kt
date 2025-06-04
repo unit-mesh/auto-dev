@@ -58,9 +58,9 @@ class CUrlConverterTest : BasePlatformTestCase() {
         val messageBody = "Hello \${name}, my name is \${myName}!"
 
         // When
-        val result = ShireEnvVariableFiller.fillVariables(messageBody, variables, obj, mapOf("myName" to "Shire"))
+        val result = ShireEnvVariableFiller.fillVariables(messageBody, variables, obj, mapOf("myName" to "DevIn"))
 
         // Then
-        assertEquals("Hello Phodal, my name is Shire!", result)
+        assertEquals("Hello Phodal, my name is DevIn!", result)
     }
 }

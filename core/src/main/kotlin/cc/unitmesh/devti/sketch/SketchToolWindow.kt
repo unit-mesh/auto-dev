@@ -4,15 +4,17 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
+import cc.unitmesh.devti.gui.toolbar.SummaryMessagesAction
+import cc.unitmesh.devti.gui.toolbar.ViewHistoryAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.agent.AgentStateService
-import cc.unitmesh.devti.observer.plan.reviewPlan
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
@@ -41,9 +43,7 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import java.awt.event.KeyAdapter
@@ -70,7 +70,16 @@ open class SketchToolWindow(
     private var thinkingHighlight: CodeHighlightSketch =
         CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE, withLeftRightBorder = false)
 
-    private var thinkingPanel = thinkingHighlight
+    private var thinkingScrollPane = JBScrollPane(thinkingHighlight).apply {
+        verticalScrollBar.unitIncrement = 16
+        preferredSize = JBUI.size(Int.MAX_VALUE, JBUI.scale(250)) // Limit height to 100
+        maximumSize = JBUI.size(Int.MAX_VALUE, JBUI.scale(250))  // Enforce maximum height
+    }
+
+    private var thinkingPanel = JPanel(BorderLayout()).apply {
+        add(thinkingScrollPane, BorderLayout.CENTER)
+        isVisible = false
+    }
 
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
@@ -85,6 +94,7 @@ open class SketchToolWindow(
 
     var isUserScrolling: Boolean = false
     protected var isInterrupted: Boolean = false
+    var isDisplayingHistoryMessages: Boolean = false
 
     protected var systemPromptPanel: JPanel = JPanel(BorderLayout())
     protected var contentPanel = JPanel(BorderLayout())
@@ -149,6 +159,8 @@ open class SketchToolWindow(
                     buttonBox.add(Box.createHorizontalGlue())
                     buttonBox.add(createActionButton(NewSketchAction()))
                     buttonBox.add(createActionButton(CopyAllMessagesAction()))
+                    buttonBox.add(createActionButton(SummaryMessagesAction()))
+                    buttonBox.add(createActionButton(ViewHistoryAction()))
                     cell(buttonBox).alignRight()
                 }
             }
@@ -252,7 +264,8 @@ open class SketchToolWindow(
         progressBar.isIndeterminate = true
 
         runInEdt {
-            historyPanel.add(createSingleTextView(text, language = "DevIn"))
+            val isUser = !text.startsWith("/")
+            historyPanel.add(createSingleTextView(text, language = "DevIn", isUser = isUser))
             this.revalidate()
             this.repaint()
         }
@@ -261,6 +274,17 @@ open class SketchToolWindow(
     fun addSystemPrompt(text: String) {
         runInEdt {
             systemPromptPanel.add(createSingleTextView(text, language = "VTL"))
+            this.revalidate()
+            this.repaint()
+        }
+    }
+
+    fun updateSystemPrompt(text: String) {
+        runInEdt {
+            systemPromptPanel.removeAll()
+            systemPromptPanel.add(createSingleTextView(text, language = "VTL"))
+            systemPromptPanel.revalidate()
+            systemPromptPanel.repaint()
             this.revalidate()
             this.repaint()
         }
@@ -284,8 +308,8 @@ open class SketchToolWindow(
         inputSection.setText(text.trim())
     }
 
-    fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
-        return MessageView.createSingleTextView(project, text, language)
+    fun createSingleTextView(text: String, language: String = "markdown", isUser: Boolean = false): DialogPanel {
+        return MessageView.createSingleTextView(project, text, language, isUser = isUser)
     }
 
     fun onUpdate(text: String) {
@@ -357,7 +381,7 @@ open class SketchToolWindow(
         val codes = CodeFence.parseAll(code.text)
 
         val panels = codes.map { code ->
-            var panel: JComponent = when (code.originLanguage) {
+            val panel: JComponent = when (code.originLanguage) {
                 "diff", "patch" -> {
                     val langSketch = LanguageSketchProvider.provide("patch")?.create(project, code.text)
                         ?: return@map null
@@ -464,23 +488,46 @@ open class SketchToolWindow(
         isInterrupted = true
     }
 
-    fun resetSketchSession() {
-        chatCodingService.clearSession()
-        progressBar.isIndeterminate = false
-        progressBar.isVisible = false
-        blockViews.clear()
-        systemPromptPanel.removeAll()
-        myList.removeAll()
-        historyPanel.removeAll()
-        initializePreAllocatedBlocks(project)
+    fun displayMessages(messages: List<cc.unitmesh.devti.llms.custom.Message>) {
+        runInEdt {
+            isDisplayingHistoryMessages = true
+            messages.forEach { message ->
+                val isUser = message.role.lowercase() == "user"
+                val messageView = createSingleTextView(message.content, language = "markdown", isUser = isUser)
+                historyPanel.add(messageView)
+                onUpdate(message.content)
+            }
 
-        project.getService(AgentStateService::class.java).resetState()
+            // Scroll to bottom to show latest messages
+            scrollToBottom()
+            this.revalidate()
+            this.repaint()
+        }
+    }
+
+    fun resetSketchSession() {
+        runInEdt {
+            isDisplayingHistoryMessages = false
+            progressBar.isVisible = false
+            blockViews.clear()
+            systemPromptPanel.removeAll()
+            myList.removeAll()
+            historyPanel.removeAll()
+            initializePreAllocatedBlocks(project)
+
+            myText = ""
+            this.revalidate()
+            this.repaint()
+        }
     }
 
     fun printThinking(string: String) {
         runInEdt {
             thinkingPanel.isVisible = true
             thinkingHighlight.updateViewText(string, false)
+            SwingUtilities.invokeLater {
+                thinkingScrollPane.verticalScrollBar.value = thinkingScrollPane.verticalScrollBar.maximum
+            }
         }
     }
 

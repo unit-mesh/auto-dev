@@ -2,7 +2,7 @@ package cc.unitmesh.devti.settings.coder
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidthCell
-import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jLabel
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.i18nLabel
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.tips
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
@@ -13,7 +13,6 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.toMutableProperty
 import org.jetbrains.builtInWebServer.BuiltInServerOptions
 import java.net.InetAddress
-import java.net.NetworkInterface
 import javax.swing.JCheckBox
 import javax.swing.JTextField
 
@@ -39,7 +38,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     val state = settings.state.copy()
 
     override fun createPanel(): DialogPanel = panel {
-        row(jLabel("settings.autodev.coder.recordingInLocal")) {
+        row(i18nLabel("settings.autodev.coder.recordingInLocal")) {
             fullWidthCell(recordingInLocalCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -48,7 +47,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.disableAdvanceContext")) {
+        row(i18nLabel("settings.autodev.coder.disableAdvanceContext")) {
             fullWidthCell(disableAdvanceContextCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -57,7 +56,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.noChatHistory")) {
+        row(i18nLabel("settings.autodev.coder.noChatHistory")) {
             fullWidthCell(noChatHistoryCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -66,7 +65,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableExportAsMcpServer")) {
+        row(i18nLabel("settings.autodev.coder.enableExportAsMcpServer")) {
             fullWidthCell(enableMcpServerCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -84,7 +83,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
             cell(portLabel)
         }
 
-        row(jLabel("settings.autodev.coder.enableObserver")) {
+        row(i18nLabel("settings.autodev.coder.enableObserver")) {
             fullWidthCell(enableObserver)
                 .bind(
                     componentGet = { it.isSelected },
@@ -93,7 +92,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.trimCodeBeforeSend")) {
+        row(i18nLabel("settings.autodev.coder.trimCodeBeforeSend")) {
             fullWidthCell(trimCodeBeforeSend)
                 .bind(
                     componentGet = { it.isSelected },
@@ -102,7 +101,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.inEditorCompletion")) {
+        row(i18nLabel("settings.autodev.coder.inEditorCompletion")) {
             fullWidthCell(inEditorCompletionCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -111,7 +110,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableRenameSuggestion")) {
+        row(i18nLabel("settings.autodev.coder.enableRenameSuggestion")) {
             fullWidthCell(JCheckBox())
                 .bind(
                     componentGet = { it.isSelected },
@@ -120,7 +119,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableAutoRepairDiff")) {
+        row(i18nLabel("settings.autodev.coder.enableAutoRepairDiff")) {
             fullWidthCell(enableAutoRepairDiff)
                 .bind(
                     componentGet = { it.isSelected },
@@ -129,7 +128,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableAutoRunTerminal")) {
+        row(i18nLabel("settings.autodev.coder.enableAutoRunTerminal")) {
             fullWidthCell(enableAutoRunTerminal)
                 .bind(
                     componentGet = { it.isSelected },
@@ -138,7 +137,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableAutoLintCode")) {
+        row(i18nLabel("settings.autodev.coder.enableAutoLintCode")) {
             fullWidthCell(enableAutoLintCode)
                 .bind(
                     componentGet = { it.isSelected },
@@ -147,7 +146,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableRenderWebview")) {
+        row(i18nLabel("settings.autodev.coder.enableRenderWebview")) {
             fullWidthCell(enableRenderWebview)
                 .bind(
                     componentGet = { it.isSelected },
@@ -156,7 +155,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableAutoScrollInSketch")) {
+        row(i18nLabel("settings.autodev.coder.enableAutoScrollInSketch")) {
             fullWidthCell(enableAutoScrollInSketch)
                 .bind(
                     componentGet = { it.isSelected },
@@ -165,7 +164,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableDiffViewer")) {
+        row(i18nLabel("settings.autodev.coder.enableDiffViewer")) {
             fullWidthCell(JCheckBox())
                 .bind(
                     componentGet = { it.isSelected },
@@ -174,7 +173,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.external.team.prompts.path")) {
+        row(i18nLabel("settings.external.team.prompts.path")) {
             fullWidthCell(teamPromptsField)
                 .bind(
                     componentGet = { it.text },

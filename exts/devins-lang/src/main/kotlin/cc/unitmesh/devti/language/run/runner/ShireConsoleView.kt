@@ -25,7 +25,7 @@ class ShireConsoleView(private val executionConsole: ShireExecutionConsole) : De
     private var myPanel: NonOpaquePanel = NonOpaquePanel(BorderLayout())
 
     private var shireRunner: ShireRunner? = null
-    private val id = ProjectSystemId("Shire")
+    private val id = ProjectSystemId("DevIn")
     private fun createTaskId() =
         ExternalSystemTaskId.create(id, ExternalSystemTaskType.RESOLVE_PROJECT, executionConsole.project)
 
@@ -33,7 +33,7 @@ class ShireConsoleView(private val executionConsole: ShireExecutionConsole) : De
 
     val task = createTaskId()
     val buildDescriptor: DefaultBuildDescriptor =
-        DefaultBuildDescriptor(task.id, "Shire", scriptPath, System.currentTimeMillis())
+        DefaultBuildDescriptor(task.id, "DevIn", scriptPath, System.currentTimeMillis())
 
     val viewManager: ExternalSystemRunConfigurationViewManager =
         executionConsole.project.getService(ExternalSystemRunConfigurationViewManager::class.java)

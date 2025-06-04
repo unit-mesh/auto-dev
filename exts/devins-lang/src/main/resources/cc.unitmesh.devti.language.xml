@@ -17,14 +17,14 @@
         <fileType name="DevInFile" implementationClass="cc.unitmesh.devti.language.DevInFileType" fieldName="INSTANCE"
                   language="DevIn" extensions="devin"/>
 
-        <fileBasedIndex implementation="cc.unitmesh.devti.language.index.ShireIdentifierIndex"/>
+        <fileBasedIndex implementation="cc.unitmesh.devti.language.index.DevInIdentifierIndex"/>
 
         <lang.parserDefinition language="DevIn"
                                implementationClass="cc.unitmesh.devti.language.parser.DevInParserDefinition"/>
         <lang.syntaxHighlighterFactory language="DevIn"
                                        implementationClass="cc.unitmesh.devti.language.highlight.DevInSyntaxHighlighterFactory"/>
 
-        <annotator language="Shire" implementationClass="cc.unitmesh.devti.language.highlight.DevInHighlightingAnnotator"/>
+        <annotator language="DevIn" implementationClass="cc.unitmesh.devti.language.highlight.DevInHighlightingAnnotator"/>
 
         <lang.ast.factory language="DevIn"
                           implementationClass="cc.unitmesh.devti.language.DevInAstFactory"/>
@@ -65,6 +65,8 @@
 
         <lang.commenter language="DevIn" implementationClass="cc.unitmesh.devti.language.commenter.DevInsCommenter"/>
 
+        <lang.foldingBuilder language="DevIn"
+                             implementationClass="cc.unitmesh.devti.language.folding.DevInFoldingBuilder"/>
         <lang.documentationProvider language="DevIn"
                                     id="devinsDocumentationProvider"
                                     implementationClass="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>

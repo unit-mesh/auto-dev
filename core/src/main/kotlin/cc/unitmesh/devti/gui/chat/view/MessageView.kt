@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -63,7 +64,7 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
             var bg = AutoDevColors.USER_ROLE_BG
 
             runInEdt {
-                val comp = createSingleTextView(project, message, background = bg)
+                val comp = createSingleTextView(project, message, background = bg, isUser = true)
                 myList.add(comp)
             }
 
@@ -189,9 +190,10 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
             project: Project,
             text: String,
             language: String = "markdown",
-            background: JBColor? = null
+            background: JBColor? = null,
+            isUser: Boolean = false,
         ): DialogPanel {
-            val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage(language)).apply {
+            val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage(language), isUser = isUser).apply {
                 initEditor(text)
             }
 

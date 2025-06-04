@@ -66,7 +66,7 @@ Here is the AutoDev architecture:
 ## AutoDev 1.0~ Feature Overview
 
 <p align="center">
-  <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
+  <img src="https://ide.unitmesh.cc/img/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
 </p>
 
 Features:

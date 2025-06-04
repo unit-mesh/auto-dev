@@ -119,19 +119,19 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
 
         // className only, like `String` not Dot
         if (symbol.contains(".").not()) {
-            val psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope)
+            val psiClasses = runReadAction { PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope) }
             if (psiClasses.isNotEmpty()) {
                 return psiClasses.toList()
             }
         }
 
         // for package name only, like `cc.unitmesh`
-        JavaFileManagerImpl(project).findPackage(symbol)?.let { pkg ->
+        runReadAction { JavaFileManagerImpl(project).findPackage(symbol) }?.let { pkg ->
             return runReadAction { pkg.classes.toList() }
         }
 
         // for single class, with function name, like `cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider`
-        val clazz = JavaFileManagerImpl(project).findClass(symbol, scope)
+        val clazz = runReadAction { JavaFileManagerImpl(project).findClass(symbol, scope) }
         if (clazz != null) {
             return listOf(clazz)
         }
@@ -162,9 +162,11 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         scope: GlobalSearchScope,
         methodName: String
     ): List<String> {
-        val psiClass = JavaFileManagerImpl(project).findClass(clazzName, scope)
+        val psiClass = runReadAction { JavaFileManagerImpl(project).findClass(clazzName, scope) }
         if (psiClass != null) {
-            val psiMethod = psiClass.findMethodsByName(methodName, true).firstOrNull()
+            val psiMethod = runReadAction { 
+                psiClass.findMethodsByName(methodName, true).firstOrNull()
+            }
             if (psiMethod != null) {
                 return listOf(psiMethod.text)
             }
@@ -179,9 +181,11 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         scope: GlobalSearchScope,
         methodName: String
     ): List<PsiElement> {
-        val psiClass = JavaFileManagerImpl(project).findClass(clazzName, scope)
+        val psiClass = runReadAction { JavaFileManagerImpl(project).findClass(clazzName, scope) }
         if (psiClass != null) {
-            val psiMethod = psiClass.findMethodsByName(methodName, true).firstOrNull()
+            val psiMethod = runReadAction { 
+                psiClass.findMethodsByName(methodName, true).firstOrNull()
+            }
             if (psiMethod != null) {
                 return listOf(psiMethod)
             }

@@ -10,7 +10,7 @@ import com.intellij.testFramework.LightVirtualFile
 
 
 class ShireSplitEditorProvider : WeighedFileEditorProvider() {
-    override fun getEditorTypeId() = "shire-split-editor"
+    override fun getEditorTypeId() = "devin-split-editor"
     private val mainProvider: TextEditorProvider = TextEditorProvider.getInstance()
     private val previewProvider: FileEditorProvider = ShirePreviewEditorProvider()
 

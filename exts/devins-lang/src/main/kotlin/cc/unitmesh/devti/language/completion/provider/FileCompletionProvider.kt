@@ -10,7 +10,6 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.codeInsight.lookup.LookupElementRenderer
-import com.intellij.ide.presentation.VirtualFilePresentation
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -29,7 +28,8 @@ class FileCompletionProvider : CompletionProvider<CompletionParameters>() {
         var recentlyFiles: MutableList<VirtualFile> = mutableListOf()
         EditorHistoryManager.getInstance(project).fileList.forEach {
             if (!it.canBeAdded()) return@forEach
-            result.addElement(buildElement(it, project, 99.0))
+            val element = buildElement(it, project, 99.0) ?: return@forEach
+            result.addElement(element)
             recentlyFiles.add(it)
         }
 
@@ -38,14 +38,14 @@ class FileCompletionProvider : CompletionProvider<CompletionParameters>() {
             if (recentlyFiles.contains(it)) return@iterateContent true
             if (!ProjectFileIndex.getInstance(project).isInContent(it)) return@iterateContent true
             if (ProjectFileIndex.getInstance(project).isUnderIgnored(it)) return@iterateContent true
-            result.addElement(buildElement(it, project, 1.0))
+            val element = buildElement(it, project, 1.0)  ?: return@iterateContent true
+            result.addElement(element)
             true
         }
     }
 
-    private fun buildElement(virtualFile: VirtualFile, project: Project, priority: Double): LookupElement {
-        val filepath = virtualFile.relativePath(project)
-
+    private fun buildElement(virtualFile: VirtualFile, project: Project, priority: Double): LookupElement? {
+        val filepath = virtualFile.relativePath(project) ?: return null
         val elementBuilder = LookupElementBuilder.create(filepath)
             .withCaseSensitivity(false)
             .withRenderer(object : LookupElementRenderer<LookupElement>() {

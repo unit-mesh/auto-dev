@@ -24,8 +24,25 @@ class AutoDevAppScope: Disposable {
     }
 
     companion object {
-        fun scope(): CoroutineScope = service<AutoDevAppScope>().coroutineScope
-        fun workerScope(): CoroutineScope = service<AutoDevAppScope>().workerScope
+        fun scope(): CoroutineScope {
+            return try {
+                service<AutoDevAppScope>().coroutineScope
+            } catch (e: Exception) {
+                // Fallback for testing environments where ApplicationManager is not available
+                CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
+                    logger<AutoDevAppScope>().error(throwable)
+                })
+            }
+        }
+
+        fun workerScope(): CoroutineScope {
+            return try {
+                service<AutoDevAppScope>().workerScope
+            } catch (e: Exception) {
+                // Fallback for testing environments where ApplicationManager is not available
+                CoroutineScope(SupervisorJob() + workerThread)
+            }
+        }
     }
 }
 

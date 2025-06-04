@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.mcp.client
 
 import cc.unitmesh.devti.settings.customize.customizeSetting
+import cc.unitmesh.devti.mcp.ui.McpConfigService
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project

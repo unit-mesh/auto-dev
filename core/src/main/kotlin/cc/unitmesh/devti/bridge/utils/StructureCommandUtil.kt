@@ -2,7 +2,9 @@ package cc.unitmesh.devti.bridge.utils
 
 import com.intellij.ide.structureView.StructureView
 import com.intellij.ide.structureView.StructureViewTreeElement
+import com.intellij.ide.structureView.impl.common.PsiTreeElementBase
 import com.intellij.lang.LanguageStructureViewBuilder
+import com.intellij.lang.html.structureView.HtmlTagTreeElement
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runInEdt
@@ -24,37 +26,35 @@ object StructureCommandUtil {
     private const val MAX_LINES_FOR_SHOW_LINENO = 60
 
     fun getFileStructure(project: Project, file: VirtualFile, psiFile: PsiFile): String {
-        val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
-        val fileEditor: FileEditor = FileEditorManager.getInstance(project).getEditors(file).firstOrNull()
-            ?: runBlocking { createFileEditor(project, file) }
-            ?: openEditor(project, file)
-            ?: return "No FileEditor found."
+        return runReadAction {
+            val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
+            val fileEditor: FileEditor = FileEditorManager.getInstance(project).getEditors(file).firstOrNull()
+                ?: runBlocking { createFileEditor(project, file) }
+                ?: openEditor(project, file)
+                ?: return@runReadAction "No FileEditor found."
 
-        if (viewFactory != null) {
-            val view: StructureView = viewFactory.getStructureViewBuilder(psiFile)
-                ?.createStructureView(fileEditor, project)
-                ?: return "No StructureView found."
+            if (viewFactory != null) {
+                val view: StructureView = viewFactory.getStructureViewBuilder(psiFile)
+                    ?.createStructureView(fileEditor, project)
+                    ?: return@runReadAction "No StructureView found."
 
-            invokeLater {
-                FileEditorManager.getInstance(project).closeFile(file)
+                invokeLater {
+                    FileEditorManager.getInstance(project).closeFile(file)
+                }
+
+                val root: StructureViewTreeElement = view.treeModel.root
+                return@runReadAction traverseStructure(root, 0, StringBuilder()).toString()
             }
 
-            val root: StructureViewTreeElement = view.treeModel.root
-            return runReadAction { traverseStructure(root, 0, StringBuilder()).toString() }
+            return@runReadAction "No StructureViewModel found."
         }
-
-        return "No StructureViewModel found."
     }
 
     private fun openEditor(
         project: Project,
         file: VirtualFile
     ): FileEditor? {
-        var fileEditors = emptyArray<FileEditor>()
-        runReadAction {
-            fileEditors = FileEditorManager.getInstance(project).openFile(file, false, true)
-        }
-
+        val fileEditors = FileEditorManager.getInstance(project).openFile(file, false, true)
         return fileEditors.firstOrNull()
     }
 
@@ -64,7 +64,7 @@ object StructureCommandUtil {
     ): TextEditor? {
         val future = CompletableFuture<FileEditor>()
         runInEdt(ModalityState.any()) {
-            var createEditor = TextEditorProvider.getInstance().createEditor(project, file)
+            val createEditor = TextEditorProvider.getInstance().createEditor(project, file)
             future.complete(createEditor)
         }
 
@@ -79,7 +79,21 @@ object StructureCommandUtil {
      */
     private fun traverseStructure(element: StructureViewTreeElement, depth: Int, sb: StringBuilder): StringBuilder {
         val indent = formatBeforeCode(element, depth)
-        var str = element.presentation.presentableText
+        val str = when(element) {
+            is HtmlTagTreeElement -> {
+                if (element.locationString?.length == 0 || element.locationString == null) {
+                    element.presentableText
+                } else {
+                    element.presentableText + " " + element.locationString
+                }
+            }
+            is PsiTreeElementBase<*> -> {
+                element.presentableText
+            }
+            else -> {
+                element.presentation.presentableText
+            }
+        }
 
         if (!str.isNullOrBlank()) {
             sb.append(indent).append(str).append("\n")

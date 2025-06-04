@@ -29,16 +29,6 @@ import com.intellij.psi.util.elementType
 
 object HobbitHoleParser {
     private val logger = logger<HobbitHoleParser>()
-
-    fun hasFrontMatter(file: DevInFile): Boolean {
-        return PsiTreeUtil.getChildrenOfTypeAsList(file, DevInFrontMatterHeader::class.java).isNotEmpty()
-    }
-
-    fun frontMatterOffset(file: DevInFile): Int {
-        val frontMatterHeader = PsiTreeUtil.getChildrenOfTypeAsList(file, DevInFrontMatterHeader::class.java).firstOrNull()
-        return frontMatterHeader?.textOffset ?: 0
-    }
-
     /**
      * Parses the given DevInFrontMatterHeader and returns a FrontMatterDevInConfig object.
      *

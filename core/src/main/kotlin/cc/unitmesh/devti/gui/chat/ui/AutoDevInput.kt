@@ -20,6 +20,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.fileTypes.FileTypes
+import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -33,6 +34,7 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.ui.JBUI
 import java.awt.Color
+import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke
@@ -45,6 +47,37 @@ class AutoDevInput(
     val inputSection: AutoDevInputSection,
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
     private var editorListeners: EventDispatcher<AutoDevInputListener> = inputSection.editorListeners
+    
+    // 处理普通 Enter 键提交的 Action
+    private val submitAction = DumbAwareAction.create {
+        editorListeners.multicaster.onSubmit(inputSection, AutoDevInputTrigger.Key)
+    }
+    
+    private val newlineAction = DumbAwareAction.create {
+        val editor = editor ?: return@create
+        insertNewLine(editor)
+    }
+
+    private fun insertNewLine(editor: Editor) {
+        CommandProcessor.getInstance().executeCommand(project, {
+            val eol = "\n"
+            val document = editor.document
+            val caretOffset = editor.caretModel.offset
+            val lineEndOffset = document.getLineEndOffset(document.getLineNumber(caretOffset))
+            val textAfterCaret = document.getText(TextRange(caretOffset, lineEndOffset))
+
+            WriteCommandAction.runWriteCommandAction(project) {
+                if (textAfterCaret.isBlank()) {
+                    document.insertString(caretOffset, eol)
+                    // move to next line
+                    EditorModificationUtil.moveCaretRelatively(editor, 1)
+                } else {
+                    document.insertString(caretOffset, eol)
+                    editor.caretModel.moveToOffset(caretOffset + eol.length)
+                }
+            }
+        }, "Insert New Line", null)
+    }
 
     init {
         AutoInputService.getInstance(project).registerAutoDevInput(this)
@@ -61,43 +94,18 @@ class AutoDevInput(
 
         background = EditorColorsManager.getInstance().globalScheme.defaultBackground
 
-        DumbAwareAction.create {
-            val editor = editor ?: return@create
-            CommandProcessor.getInstance().executeCommand(project, {
-                val eol = "\n"
-                val document = editor.document
-                val caretOffset = editor.caretModel.offset
-                val lineEndOffset = document.getLineEndOffset(document.getLineNumber(caretOffset))
-                val textAfterCaret = document.getText(TextRange(caretOffset, lineEndOffset))
-
-                WriteCommandAction.runWriteCommandAction(project) {
-                    if (textAfterCaret.isBlank()) {
-                        document.insertString(caretOffset, eol)
-                        // move to next line
-                        EditorModificationUtil.moveCaretRelatively(editor, 1)
-                    } else {
-                        document.insertString(caretOffset, eol)
-                        editor.caretModel.moveToOffset(caretOffset + eol.length)
-                    }
-                }
-            }, "Insert New Line", null)
-        }.registerCustomShortcutSet(
+        submitAction.registerCustomShortcutSet(
+            CustomShortcutSet(KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), null)), 
+            this
+        )
+        
+        newlineAction.registerCustomShortcutSet(
             CustomShortcutSet(
                 KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), null),
                 KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.META_DOWN_MASK), null),
                 KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK), null),
             ), this
         )
-
-        val connect: MessageBusConnection = project.messageBus.connect(disposable ?: this)
-        val topic = AnActionListener.TOPIC
-        connect.subscribe(topic, object : AnActionListener {
-            override fun afterActionPerformed(action: AnAction, event: AnActionEvent, result: AnActionResult) {
-                if (event.dataContext.getData(CommonDataKeys.EDITOR) === editor && action is EnterAction) {
-                    editorListeners.multicaster.onSubmit(inputSection, AutoDevInputTrigger.Key)
-                }
-            }
-        })
 
         listeners.forEach { listener ->
             document.addDocumentListener(listener)

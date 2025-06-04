@@ -18,14 +18,14 @@ class AutoDevDevOpsConfigurableProvider(private val project: Project) : Configur
     }
 }
 
-val GIT_TYPE = arrayOf("Github" , "Gitlab")
+val GIT_TYPE = arrayOf("Github", "Gitlab")
 val DEFAULT_GIT_TYPE = GIT_TYPE[0]
 
 class DevOpsConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("settings.autodev.devops")) {
     private val settings = AutoDevDevOpsSettingService.getInstance(project)
 
     private lateinit var gitTypeComboBox: JComboBox<String>
-    private lateinit var githubTokenField: JPasswordField  
+    private lateinit var githubTokenField: JPasswordField
     private lateinit var gitlabUrlField: JTextField
     private lateinit var gitlabTokenField: JPasswordField
 
@@ -76,6 +76,8 @@ val Project.devopsPromptsSettings: AutoDevDevOpsSettingService get() = service<A
 class AutoDevDevOpsSettingService(
     val project: Project,
 ) : SimplePersistentStateComponent<AutoDevDevOpsSettingService.AutoDevCoderSettings>(AutoDevCoderSettings()) {
+    var githubToken = state.githubToken
+
     fun modify(action: (AutoDevCoderSettings) -> Unit) {
         action(state)
     }
@@ -94,7 +96,7 @@ class AutoDevDevOpsSettingService(
     class AutoDevCoderSettings : AdProjectSettingsBase<AutoDevCoderSettings>() {
         var recordingInLocal by property(false)
         var gitType = DEFAULT_GIT_TYPE
-        var githubToken = ""
+        var githubToken by property("") { it.isEmpty() }
         var gitlabToken = ""
         var gitlabUrl = ""
 

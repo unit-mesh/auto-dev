@@ -39,7 +39,6 @@ class LLMProvider2Test {
         mockWebServer.shutdown()
     }
 
-    @Ignore("Cannot invoke \"com.intellij.openapi.application.Application.getService(java.lang.Class)\" because the return value of \"com.intellij.openapi.application.ApplicationManager.getApplication()\" is null")
     @Test
     fun shouldWorkWithJson() = runBlocking {
         val mockResponse = MockResponse()
@@ -158,6 +157,19 @@ class LLMProvider2Test {
             "codellama:13b",
             responseResolver = "\$.choices[0].message.content"
         ).request(Message("User", "hi!"), stream = false)
+        result.collect {
+            println(it.chatMessage.content)
+        }
+    }
+
+    @Ignore
+    @Test
+    fun githubCopilotStream() = runTest {
+        val result = LLMProvider2.GithubCopilot(
+            modelName = "o3-mini",
+        ).request(
+            Message("user", "你是谁"), stream = true
+        )
         result.collect {
             println(it.chatMessage.content)
         }

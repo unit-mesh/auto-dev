@@ -3,6 +3,7 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
+    <depends>Git4Idea</depends>
 
     <depends optional="true" config-file="json-contrib.xml">com.intellij.modules.json</depends>
     <depends optional="true" config-file="docker.xml">Docker</depends>
@@ -80,6 +81,8 @@
         <httpRequestHandler implementation="cc.unitmesh.devti.mcp.host.MCPService"/>
         <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>
         <postStartupActivity implementation="cc.unitmesh.devti.mcp.MCPServerStartupValidator"/>
+        <postStartupActivity implementation="cc.unitmesh.devti.llm2.GithubCopilotModelInitActivity"/>
+        <jbProtocolCommand implementation="cc.unitmesh.devti.mcp.AutoDevJbProtocolService"/>
         <notificationGroup id="UnitMesh.MCPServer" displayType="BALLOON"/>
     </extensions>
 
@@ -331,6 +334,8 @@
     <projectListeners>
         <listener class="cc.unitmesh.devti.actions.rename.RenameLookupManagerListener"
                   topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>
+        <listener class="cc.unitmesh.devti.observer.PipelineStatusProcessor"
+                  topic="git4idea.push.GitPushListener"/>
     </projectListeners>
 
     <extensions defaultExtensionNs="cc.unitmesh">
@@ -468,7 +473,7 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.COPY"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
             <action id="AutoDev.ToolWindow.Snippet.InsertCode"
-                    icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
+                    icon="cc.unitmesh.devti.AutoDevIcons.INSERT"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
             <action id="AutoDev.ToolWindow.Snippet.RunDevIns"
                     icon="cc.unitmesh.devti.AutoDevIcons.RUN"

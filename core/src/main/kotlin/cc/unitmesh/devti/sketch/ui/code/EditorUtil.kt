@@ -16,9 +16,11 @@ import com.intellij.openapi.editor.ex.EditorMarkupModel
 import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.editor.ex.MarkupModelEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
+import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
+import java.util.concurrent.atomic.AtomicBoolean
 
 object EditorUtil {
     private val LINE_NO_REGEX = Regex("^\\d+:")
@@ -31,13 +33,14 @@ object EditorUtil {
         disposable: Disposable,
     ): EditorEx {
         var editorText = text
-        val language = ideaLanguage ?: CodeFence.findLanguage("Plain text")
-        val ext = if (language.displayName == "Plain text") {
+        val language = ideaLanguage ?: PlainTextLanguage.INSTANCE
+        val ext = if (language.displayName == PlainTextLanguage.INSTANCE.displayName) {
             CodeFence.lookupFileExt(language.displayName)
         } else {
             language.associatedFileType?.defaultExtension ?: "Unknown"
         }
-        /// check text easyline starts with Lineno and :, for example: 1:
+
+        /// check text easy line starts with Lineno and : for example, 1:
         var isShowLineNo = true
         editorText.lines().forEach {
             if (!it.matches(LINE_NO_REGEX)) {
@@ -78,8 +81,18 @@ object EditorUtil {
             }
         }
 
+        val isReleased = AtomicBoolean(false)
         disposable.whenDisposed {
-            EditorFactory.getInstance().releaseEditor(editor)
+            if (isReleased.compareAndSet(false, true)) {
+                try {
+                    if (!editor.isDisposed) {
+                        EditorFactory.getInstance().releaseEditor(editor)
+                    }
+                } catch (e: Exception) {
+                    // Log the exception but don't let it propagate
+                    // to avoid breaking the disposal chain
+                }
+            }
         }
 
         editor.setFile(file)

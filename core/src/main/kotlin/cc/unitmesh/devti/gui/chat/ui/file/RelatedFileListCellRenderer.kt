@@ -46,7 +46,7 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
             fileInfoPanel.add(fileIconLabel)
             fileInfoPanel.toolTipText = value.relativePath(project)
 
-            val fileNameLabel = JLabel(buildDisplayName(value))
+            val fileNameLabel = JLabel(value.displayName())
             fileInfoPanel.add(fileNameLabel)
             
             add(fileInfoPanel)
@@ -59,25 +59,5 @@ class RelatedFileListCellRenderer(val project: Project) : ListCellRenderer<FileP
             value.namePanel = fileInfoPanel
             this.toolTipText = value.relativePath(project)
         }
-    }
-
-    /**
-     * Constructs a display name for the given file presentation based on the associated virtual file.
-     */
-    private fun buildDisplayName(value: FilePresentation): @NlsSafe String {
-        val filename = value.virtualFile.name
-        if (filename.startsWith("index.")) {
-            val parent = value.virtualFile.parent?.name
-            if (parent != null) {
-                val grandParent = value.virtualFile.parent?.parent?.name
-                return if (grandParent != null) {
-                    "$grandParent/$parent/$filename"
-                } else {
-                    "$parent/$filename"
-                }
-            }
-        }
-
-        return filename
     }
 }

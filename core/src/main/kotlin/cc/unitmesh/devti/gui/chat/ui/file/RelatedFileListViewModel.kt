@@ -41,18 +41,26 @@ class RelatedFileListViewModel(private val project: Project) : Disposable {
         if (!isInProject(vfile, project)) return
         if (vfile is DiffVirtualFileBase) return
 
-        if (listModel.elements().asSequence().none { it.virtualFile == vfile }) {
+        val existingFile = listModel.elements().asSequence().find { it.virtualFile == vfile }
+        
+        if (existingFile == null) {
+            // File doesn't exist, add it
             val filePresentation = FilePresentation(vfile)
             if (first) {
                 listModel.insertElementAt(filePresentation, 0)
             } else {
                 listModel.addElement(filePresentation)
             }
-            
             listeners.forEach { it.onFileAdded(filePresentation) }
+        } else if (first && listModel.indexOf(existingFile) != 0) {
+            // File exists but not at first position, move it to first
+            listModel.removeElement(existingFile)
+            listModel.insertElementAt(existingFile, 0)
+            // Note: We don't fire onFileAdded/onFileRemoved events for repositioning
+            // as the file content hasn't changed, only its position
         }
     }
-    
+
     fun removeFile(file: FilePresentation) {
         if (listModel.contains(file)) {
             listModel.removeElement(file)

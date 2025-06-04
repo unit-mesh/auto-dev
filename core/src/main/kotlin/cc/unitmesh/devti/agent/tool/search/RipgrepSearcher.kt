@@ -174,17 +174,23 @@ object RipgrepSearcher {
         return cmd
     }
 
-    private fun formatResults(results: MutableList<RipgrepSearchResult>, basePath: String): String {
+    private fun formatResults(searchResults: MutableList<RipgrepSearchResult>, basePath: String): String {
         val output = StringBuilder()
         val grouped: MutableMap<String?, MutableList<RipgrepSearchResult?>?> =
             LinkedHashMap<String?, MutableList<RipgrepSearchResult?>?>()
+
+        var results = searchResults
+        output.append("Total results: ").append(results.size)
+        if (results.size > 30) {
+            results = results.subList(0, 30)
+            output.append("Too many results, only show first 30 results\n")
+        }
 
         for (result in results) {
             val relPath = getRelativePath(basePath, result.filePath!!)
             grouped.computeIfAbsent(relPath) { k: String? -> ArrayList<RipgrepSearchResult?>() }!!.add(result)
         }
-
-        output.append("Total results: ").append(results.size).append("\n```bash\n")
+        output.append("\n```bash\n")
         for (entry in grouped.entries) {
             output.append("## filepath: ").append(entry.key).append("\n")
             val filePath = Paths.get(basePath, entry.key)
