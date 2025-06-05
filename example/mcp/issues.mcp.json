@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "autodev.commitMenu": {
+      "command": "/Users/phodal/test/github-mcp-server/cmd/github-mcp-server/github-mcp-server",
+      "args": ["stdio"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "xxx"
+      }
+    }
+  }
+}

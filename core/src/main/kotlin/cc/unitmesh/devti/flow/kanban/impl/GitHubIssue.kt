@@ -2,10 +2,15 @@ package cc.unitmesh.devti.flow.kanban.impl
 
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
+import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
+import com.intellij.openapi.project.Project
+import git4idea.repo.GitRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import org.kohsuke.github.GHIssueState
+import org.kohsuke.github.GHRepository
 import java.time.Instant
+import kotlin.text.contains
 
 class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
     private val gitHub: GitHub
@@ -60,5 +65,40 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
         } catch (e: Exception) {
             throw RuntimeException("Failed to fetch recent issues: ${e.message}", e)
         }
+    }
+
+    companion object {
+        fun getGitHubRepository(project: Project, remoteUrl: String): GHRepository? {
+            val github = createGitHubConnection(project)
+            return try {
+                extractRepositoryPath(remoteUrl)?.let { repoPath ->
+                    github.getRepository(repoPath)
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        fun createGitHubConnection(project: Project): GitHub {
+            val token = project.devopsPromptsSettings.githubToken
+            return if (token.isEmpty()) {
+                GitHub.connectAnonymously()
+            } else {
+                GitHub.connectUsingOAuth(token)
+            }
+        }
+
+        private fun extractRepositoryPath(remoteUrl: String): String? {
+            val httpsPattern = Regex("https://github\\.com/([^/]+/[^/]+)(?:\\.git)?/?")
+            val sshPattern = Regex("git@github\\.com:([^/]+/[^/]+)(?:\\.git)?/?")
+
+            return httpsPattern.find(remoteUrl)?.groupValues?.get(1)
+                ?: sshPattern.find(remoteUrl)?.groupValues?.get(1)
+        }
+
+        fun parseGitHubRemoteUrl(repository: GitRepository): String? =
+            repository.remotes.firstOrNull { remote ->
+                remote.urls.any { it.contains("github.com") }
+            }?.urls?.firstOrNull { it.contains("github.com") }
     }
 }
