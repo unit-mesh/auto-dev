@@ -302,7 +302,7 @@ abstract class LLMProvider2 protected constructor(
             return LLMProvider2(
                 requestUrl = llmConfig.url,
                 authorizationKey = llmConfig.auth.token,
-                responseResolver = llmConfig.getResponseFormatByStream(),
+                responseResolver = llmConfig.responseFormat,
                 requestCustomize = llmConfig.toLegacyRequestFormat()
             )
         }
