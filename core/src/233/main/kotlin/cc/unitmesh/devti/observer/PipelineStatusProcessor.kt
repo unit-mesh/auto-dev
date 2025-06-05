@@ -260,8 +260,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                        "You can view the logs directly at: ${job.htmlUrl}"
             }
 
-            // Try alternative API approach for other errors
-            getLogsViaDirectAPI(workflowRun, job.id)
+            null
         }
     }
 
@@ -293,38 +292,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                        "You can view the logs directly at: ${workflowRun.htmlUrl}"
             }
 
-            null
-        }
-    }
-
-    private fun getLogsViaDirectAPI(workflowRun: GHWorkflowRun, jobId: Long): String? {
-        return try {
-            val token = project?.devopsPromptsSettings?.githubToken
-            val repoPath = extractRepositoryPath(workflowRun.repository.htmlUrl.toString())
-            val apiUrl = "https://api.github.com/repos/$repoPath/actions/jobs/$jobId/logs"
-            
-            val connection = URL(apiUrl).openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.setRequestProperty("Accept", "application/vnd.github+json")
-            connection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28")
-            
-            if (!token.isNullOrBlank()) {
-                connection.setRequestProperty("Authorization", "Bearer $token")
-            }
-            
-            if (connection.responseCode == 302) {
-                val redirectUrl = connection.getHeaderField("Location")
-                if (redirectUrl != null) {
-                    val logConnection = URL(redirectUrl).openConnection() as HttpURLConnection
-                    logConnection.inputStream.use { stream ->
-                        BufferedReader(InputStreamReader(stream)).use { reader ->
-                            reader.readText()
-                        }
-                    }
-                } else null
-            } else null
-        } catch (e: Exception) {
-            log.error("Error getting logs via direct API", e)
             null
         }
     }
