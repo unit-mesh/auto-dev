@@ -63,11 +63,13 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
+
         val commitWorkflowUi = VcsUtil.getCommitWorkFlowUi(event)
         if (commitWorkflowUi == null) {
             AutoDevNotifications.notify(project, "Cannot get commit workflow UI.")
             return
         }
+
         val changes = getChanges(commitWorkflowUi)
         if (changes == null || changes.isEmpty()) {
             AutoDevNotifications.notify(project, "No changes to commit. Do you select any files?")
@@ -75,7 +77,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         }
 
         val diffContext = project.service<VcsPrompting>().prepareContext(changes)
-
         if (diffContext.isEmpty() || diffContext == "\n") {
             logger.warn("Diff context is empty or cannot get enough useful context.")
             AutoDevNotifications.notify(project, "Diff context is empty or cannot get enough useful context.")
@@ -84,42 +85,52 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         val editorField = (event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage).editorField
         val originText = editorField.editor?.selectionModel?.selectedText ?: ""
+
         currentJob?.cancel()
         editorField.text = ""
+        event.presentation.icon = AutoDevStatus.InProgress.icon
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val prompt = generateCommitMessage(diffContext, project, originText)
-
-            logger.info("Start generating commit message.")
             logger.info(prompt)
 
-            event.presentation.icon = AutoDevStatus.InProgress.icon
             try {
                 val stream = LlmFactory.create(project).stream(prompt, "", false)
                 currentJob = AutoDevCoroutineScope.scope(project).launch {
-                    runBlocking {
-                        stream.cancellable().collect {
-                                invokeLater {
-                                    if (this@launch.isActive) editorField.text += it
+                    try {
+                        stream.cancellable().collect { chunk ->
+                            invokeLater {
+                                if (isActive) {
+                                    editorField.text += chunk
                                 }
                             }
-                    }
-
-                    val text = editorField.text
-                    if (isActive && text.startsWith("```") && text.endsWith("```")) {
-                        invokeLater {
-                            editorField.text = CodeFence.parse(text).text
                         }
-                    } else {
+
+                        val text = editorField.text
+                        if (isActive && text.startsWith("```") && text.endsWith("```")) {
+                            invokeLater {
+                                editorField.text = CodeFence.parse(text).text
+                            }
+                        } else if (isActive) {
+                            invokeLater {
+                                editorField.text = text.removePrefix("```\n").removeSuffix("```")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        logger.error("Error during commit message generation", e)
                         invokeLater {
-                            editorField.text = text.removePrefix("```\n").removeSuffix("```")
+                            AutoDevNotifications.notify(project, "Error generating commit message: ${e.message}")
+                        }
+                    } finally {
+                        invokeLater {
+                            event.presentation.icon = AutoDevStatus.Ready.icon
                         }
                     }
-
-                    event.presentation.icon = AutoDevStatus.Ready.icon
                 }
             } catch (e: Exception) {
+                logger.error("Failed to start commit message generation", e)
                 event.presentation.icon = AutoDevStatus.Error.icon
+                AutoDevNotifications.notify(project, "Failed to start commit message generation: ${e.message}")
             }
         }
     }
@@ -134,7 +145,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     private fun findExampleCommitMessages(project: Project): String? {
         val logProviders = VcsProjectLog.getLogProviders(project)
         val entry = logProviders.entries.firstOrNull() ?: return null
-
         val logProvider = entry.value
         val branch = logProvider.getCurrentBranch(entry.key) ?: return null
         val user = logProvider.getCurrentUser(entry.key)
@@ -162,12 +172,10 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         filter: VcsLogFilterCollection
     ): String? {
         val commits = logProvider.getCommitsMatchingFilter(root, filter, 3)
-
         if (commits.isEmpty()) return null
 
         val builder = StringBuilder("")
         val commitIds = commits.map { it.id.asString() }
-
         logProvider.readMetadata(root, commitIds) {
             val shortMsg = it.fullMessage.split("\n").firstOrNull() ?: it.fullMessage
             builder.append(shortMsg).append("\n")
@@ -192,8 +200,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             diffContent = diff,
             originText = originText
         )
-        val prompter = templateRender.renderTemplate(template)
 
+        val prompter = templateRender.renderTemplate(template)
         logger.info("Prompt: $prompter")
         return prompter
     }
@@ -213,7 +221,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         return null
     }
 }
-
 
 data class CommitMsgGenContext(
     var historyExamples: String = "",
