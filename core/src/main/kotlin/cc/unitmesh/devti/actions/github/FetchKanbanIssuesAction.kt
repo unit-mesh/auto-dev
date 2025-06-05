@@ -101,9 +101,7 @@ class FetchKanbanIssuesAction : DumbAwareAction() {
             .setSelectionMode(SINGLE_SELECTION)
             .setItemSelectedCallback { selectedIssue = it }
             .setItemChosenCallback {
-                commitMessage.setCommitMessage(
-                    "#${it.issue} ${it.displayText}"
-                )
+                commitMessage.setCommitMessage(it.displayText)
                 commitMessage.editorField.selectAll()
                 chosenIssue = it
             }
