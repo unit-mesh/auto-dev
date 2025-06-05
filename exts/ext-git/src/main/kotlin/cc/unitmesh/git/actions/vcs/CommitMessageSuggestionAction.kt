@@ -70,6 +70,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     private var selectedIssue: IssueDisplayItem? = null
     private var currentChanges: List<Change>? = null
     private var currentEvent: AnActionEvent? = null
+    private var isGitHubRepository: Boolean = false
 
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
@@ -86,8 +87,11 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val prompting = project.service<VcsPrompting>()
         val changes: List<Change> = prompting.getChanges()
 
+        // Check if it's a GitHub repository (safe to call in BGT)
+        isGitHubRepository = GitHubIssue.isGitHubRepository(project)
+
         // Update presentation text based on whether it's a GitHub repository
-        if (GitHubIssue.isGitHubRepository(project)) {
+        if (isGitHubRepository) {
             e.presentation.text = "Smart Commit Message (GitHub Enhanced)"
             e.presentation.description = "Generate commit message with AI or GitHub issue integration"
         } else {
@@ -120,33 +124,16 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         currentEvent = event
         selectedIssue = null
 
-        // Check if it's a GitHub repository and show options
-        if (GitHubIssue.isGitHubRepository(project)) {
-            showGitHubOptions(project, commitMessage, changes, event)
+        // For GitHub repositories, show issue selection popup directly
+        // For non-GitHub repositories, generate AI commit message directly
+        if (isGitHubRepository) {
+            generateGitHubIssueCommitMessage(project, commitMessage, event)
         } else {
             generateAICommitMessage(project, commitMessage, changes, event)
         }
     }
 
     private fun getCommitMessage(e: AnActionEvent) = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as? CommitMessage
-
-    private fun showGitHubOptions(project: Project, commitMessage: CommitMessage, changes: List<Change>, event: AnActionEvent) {
-        val options = arrayOf("Use GitHub Issue", "Generate with AI", "Cancel")
-        val choice = Messages.showDialog(
-            project,
-            "Choose how to generate commit message:",
-            "Commit Message Generation",
-            options,
-            0,
-            Messages.getQuestionIcon()
-        )
-
-        when (choice) {
-            0 -> generateGitHubIssueCommitMessage(project, commitMessage, event)
-            1 -> generateAICommitMessage(project, commitMessage, changes, event)
-            // 2 or -1 (Cancel or ESC) - do nothing
-        }
-    }
 
     private fun generateGitHubIssueCommitMessage(project: Project, commitMessage: CommitMessage, event: AnActionEvent) {
         val task = object : Task.Backgroundable(project, "Loading GitHub issues", true) {
@@ -160,22 +147,19 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                     indicator.fraction = 0.9
                     ApplicationManager.getApplication().invokeLater {
                         if (issues.isEmpty()) {
-                            Messages.showInfoMessage(
-                                project,
-                                "No issues found in this GitHub repository.",
-                                "GitHub Issues"
-                            )
+                            // No issues found, fall back to AI generation
+                            val changes = currentChanges ?: return@invokeLater
+                            generateAICommitMessage(project, commitMessage, changes, event)
                         } else {
                             createIssuesPopup(commitMessage, issues).showInBestPositionFor(event.dataContext)
                         }
                     }
                 } catch (ex: Exception) {
                     ApplicationManager.getApplication().invokeLater {
-                        Messages.showErrorDialog(
-                            project,
-                            "Failed to fetch GitHub issues: ${ex.message}",
-                            "GitHub Issues Error"
-                        )
+                        logger.warn("Failed to fetch GitHub issues, falling back to AI generation", ex)
+                        // Fall back to AI generation when GitHub issues fetch fails
+                        val changes = currentChanges ?: return@invokeLater
+                        generateAICommitMessage(project, commitMessage, changes, event)
                     }
                 }
             }
@@ -243,9 +227,10 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     private fun createIssuesPopup(commitMessage: CommitMessage, issues: List<IssueDisplayItem>): JBPopup {
         var chosenIssue: IssueDisplayItem? = null
+        var selectedIndex: Int = -1
 
         return JBPopupFactory.getInstance().createPopupChooserBuilder(issues)
-            .setTitle("Select Issue")
+            .setTitle("Select GitHub Issue (ESC to skip)")
             .setVisibleRowCount(10)
             .setSelectionMode(SINGLE_SELECTION)
             .setItemSelectedCallback { chosenIssue = it }
@@ -283,8 +268,12 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                 override fun onClosed(event: LightweightWindowEvent) {
                     // IDEA-195094 Regression: New CTRL-E in "commit changes" breaks keyboard shortcuts
                     commitMessage.editorField.requestFocusInWindow()
-                    chosenIssue?.let { issue ->
-                        handleIssueSelection(issue, commitMessage)
+                    if (chosenIssue != null) {
+                        // User selected an issue
+                        handleIssueSelection(chosenIssue!!, commitMessage)
+                    } else {
+                        // User cancelled (ESC) - skip issue selection and generate with AI
+                        handleSkipIssueSelection(commitMessage)
                     }
                 }
             })
@@ -307,13 +296,26 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     }
 
     private fun handleIssueSelection(issueItem: IssueDisplayItem, commitMessage: CommitMessage) {
+        // Store the selected issue for AI generation
         selectedIssue = issueItem
 
-        // Now generate AI commit message with issue context
         val project = commitMessage.editorField.project ?: return
         val changes = currentChanges ?: return
         val event = currentEvent ?: return
 
+        // Generate AI commit message with issue context
+        generateAICommitMessage(project, commitMessage, changes, event)
+    }
+
+    private fun handleSkipIssueSelection(commitMessage: CommitMessage) {
+        // Skip issue selection, generate with AI only
+        selectedIssue = null
+
+        val project = commitMessage.editorField.project ?: return
+        val changes = currentChanges ?: return
+        val event = currentEvent ?: return
+
+        // Generate AI commit message without issue context
         generateAICommitMessage(project, commitMessage, changes, event)
     }
 
