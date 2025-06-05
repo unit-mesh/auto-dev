@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.observer
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.provider.observer.AgentObserver
 import cc.unitmesh.devti.settings.coder.coderSetting
-import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -12,14 +12,10 @@ import com.intellij.util.concurrency.AppExecutorUtil
 import git4idea.push.GitPushListener
 import git4idea.push.GitPushRepoResult
 import git4idea.repo.GitRepository
-import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GHWorkflowRun
 import org.kohsuke.github.GHWorkflowJob
-import org.kohsuke.github.GitHub
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
@@ -27,10 +23,7 @@ import java.util.zip.ZipInputStream
 class PipelineStatusProcessor : AgentObserver, GitPushListener {
     private val log = Logger.getInstance(PipelineStatusProcessor::class.java)
     private var monitoringJob: ScheduledFuture<*>? = null
-
-    /** 最长监控时间: 4分钟初始延迟 + 1分钟网络请求 + 30分钟执行 */
     private val timeoutMinutes = 35
-
     private var project: Project? = null
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
@@ -49,7 +42,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
             repository.currentRevision?.let { latestCommit ->
                 log.info("Push successful, starting pipeline monitoring for commit: $latestCommit")
 
-                getGitHubRemoteUrl(repository)?.let { remoteUrl ->
+                GitHubIssue.parseGitHubRemoteUrl(repository)?.let { remoteUrl ->
                     startMonitoring(repository, latestCommit, remoteUrl)
                 } ?: log.warn("No GitHub remote URL found")
             } ?: log.warn("Could not determine latest commit SHA")
@@ -58,22 +51,13 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
     override fun onRegister(project: Project) {
         this.project = project
-
-        if (!project.coderSetting.state.enableObserver) {
-            return
-        }
     }
-
-    private fun getGitHubRemoteUrl(repository: GitRepository): String? =
-        repository.remotes.firstOrNull { remote ->
-            remote.urls.any { it.contains("github.com") }
-        }?.urls?.firstOrNull { it.contains("github.com") }
 
     private fun startMonitoring(repository: GitRepository, commitSha: String, remoteUrl: String) {
         log.info("Starting pipeline monitoring for commit: $commitSha")
 
         var workflowNotFoundCount = 0
-        val maxWorkflowNotFoundAttempts = 3  // 如果连续3次找不到workflow，停止监控
+        val maxWorkflowNotFoundAttempts = 3
         val startTime = System.currentTimeMillis()
 
         monitoringJob = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay({
@@ -87,7 +71,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 }
 
                 findWorkflowRunForCommit(remoteUrl, commitSha)?.let { workflowRun ->
-                    // 重置计数器
                     workflowNotFoundCount = 0
 
                     val isComplete = checkWorkflowStatus(workflowRun, commitSha)
@@ -126,9 +109,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
     private fun findWorkflowRunForCommit(remoteUrl: String, commitSha: String): GHWorkflowRun? {
         return try {
-            val github = createGitHubConnection()
-
-            getGitHubRepository(github, remoteUrl)?.let { ghRepository ->
+            GitHubIssue.getGitHubRepository(project!!, remoteUrl)?.let { ghRepository ->
                 val allRuns = ghRepository.queryWorkflowRuns()
                     .list()
                     .iterator()
@@ -199,26 +180,19 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
         }
     }
 
-    /**
-     * 获取工作流失败的详细信息
-     */
     private fun getWorkflowFailureDetails(workflowRun: GHWorkflowRun): WorkflowFailureDetails {
         return try {
-            // 获取所有作业
-            val jobs = workflowRun.listJobs().toList()
-
-            // 查找失败的作业
-            val failedJobs = jobs
+            val failedJobs = workflowRun
+                .listJobs()
                 .filter { it.conclusion == GHWorkflowRun.Conclusion.FAILURE }
-                .map { job ->
+                .map {
                     JobFailure(
-                        jobName = job.name,
-                        errorSteps = extractFailedSteps(job),
-                        logs = getJobLogsFromAPI(workflowRun, job),
-                        jobUrl = job.htmlUrl?.toString()
+                        jobName = it.name,
+                        errorSteps = extractFailedSteps(it),
+                        logs = getJobLogsFromAPI(it),
+                        jobUrl = it.htmlUrl?.toString()
                     )
                 }
-
             if (failedJobs.isNotEmpty()) {
                 WorkflowFailureDetails(failedJobs = failedJobs.toMutableList())
             } else {
@@ -241,7 +215,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
         }
     }
 
-    private fun getJobLogsFromAPI(workflowRun: GHWorkflowRun, job: GHWorkflowJob): String? {
+    private fun getJobLogsFromAPI(job: GHWorkflowJob): String? {
         return try {
             job.downloadLogs { logStream ->
                 logStream.use { stream ->
@@ -249,9 +223,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 }
             }
         } catch (e: Exception) {
-            log.warn("Cannot download job logs for job: ${job.name} - ${e.message}")
-
-            // 处理权限错误
             if (isPermissionError(e.message)) {
                 log.info("Admin rights required to download job logs. Falling back to alternative approach.")
                 """
@@ -357,34 +328,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                     }
             }
         }
-    }
-
-    private fun createGitHubConnection(): GitHub {
-        val token = project?.devopsPromptsSettings?.githubToken
-        return if (token.isNullOrBlank()) {
-            GitHub.connectAnonymously()
-        } else {
-            GitHub.connectUsingOAuth(token)
-        }
-    }
-
-    private fun getGitHubRepository(github: GitHub, remoteUrl: String): GHRepository? {
-        return try {
-            extractRepositoryPath(remoteUrl)?.let { repoPath ->
-                github.getRepository(repoPath)
-            }
-        } catch (e: Exception) {
-            log.error("Error getting GitHub repository from URL: $remoteUrl", e)
-            null
-        }
-    }
-
-    private fun extractRepositoryPath(remoteUrl: String): String? {
-        val httpsPattern = Regex("https://github\\.com/([^/]+/[^/]+)(?:\\.git)?/?")
-        val sshPattern = Regex("git@github\\.com:([^/]+/[^/]+)(?:\\.git)?/?")
-
-        return httpsPattern.find(remoteUrl)?.groupValues?.get(1)
-            ?: sshPattern.find(remoteUrl)?.groupValues?.get(1)
     }
 
     private fun stopMonitoring() {
