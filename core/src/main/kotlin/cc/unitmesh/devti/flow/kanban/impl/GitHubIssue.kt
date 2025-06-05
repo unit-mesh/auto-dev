@@ -3,6 +3,7 @@ package cc.unitmesh.devti.flow.kanban.impl
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
+import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.openapi.project.Project
 import git4idea.repo.GitRepository
 import org.kohsuke.github.GitHub
@@ -50,7 +51,7 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
 
         return SimpleStory(issue.number.toString(), issue.title, issue.body ?: "")
     }
-    
+
     /**
      * Get recent issue IDs (within last 24 hours)
      */
@@ -58,7 +59,7 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
         return try {
             val repository = gitHub.getRepository(repoUrl)
             val yesterday = Instant.now().minusSeconds(24 * 60 * 60)
-            
+
             repository.getIssues(GHIssueState.ALL)
                 .filter { it.createdAt.toInstant().isAfter(yesterday) }
                 .map { it.number.toString() }
@@ -100,5 +101,21 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
             repository.remotes.firstOrNull { remote ->
                 remote.urls.any { it.contains("github.com") }
             }?.urls?.firstOrNull { it.contains("github.com") }
+
+        fun parseGitHubRepository(project: Project): GHRepository? {
+            val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
+            val repository = repositoryManager.getRepositoryForFile(project.baseDir)
+
+            if (repository == null) {
+                return null
+            }
+
+            if (repository !is GitRepository) {
+                return null
+            }
+
+            val remoteUrl = parseGitHubRemoteUrl(repository) ?: return null
+            return getGitHubRepository(project, remoteUrl)
+        }
     }
 }
