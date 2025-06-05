@@ -60,7 +60,8 @@ enum class BuiltinCommand(
         "edit_file",
         "Apply structured file edits using target_file, instructions, and code_edit parameters. Designed for precise code modifications with clear context markers. Use // ... existing code ... to represent unchanged sections. Ideal for targeted edits with explicit instructions.",
         AllIcons.Actions.Edit,
-        false
+        false,
+        true
     ),
     RUN(
         "run",
