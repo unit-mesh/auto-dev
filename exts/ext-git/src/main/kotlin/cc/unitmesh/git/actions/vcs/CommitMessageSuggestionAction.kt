@@ -99,12 +99,29 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             e.presentation.description = "Generate commit message with AI"
         }
 
-        e.presentation.icon = AutoDevStatus.Ready.icon
+        // Update icon based on current job status
+        if (currentJob?.isActive == true) {
+            e.presentation.icon = AutoDevStatus.InProgress.icon
+            e.presentation.text = "Cancel Commit Message Generation"
+            e.presentation.description = "Click to cancel current generation"
+        } else {
+            e.presentation.icon = AutoDevStatus.Ready.icon
+        }
+
         e.presentation.isEnabled = changes.isNotEmpty()
     }
 
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
+
+        // If there's an active job, cancel it
+        if (currentJob?.isActive == true) {
+            currentJob?.cancel()
+            currentJob = null
+            AutoDevNotifications.notify(project, "Commit message generation cancelled.")
+            return
+        }
+
         val commitMessage = getCommitMessage(event) ?: return
 
         val commitWorkflowUi = VcsUtil.getCommitWorkFlowUi(event)
@@ -129,7 +146,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         if (isGitHubRepository) {
             generateGitHubIssueCommitMessage(project, commitMessage, event)
         } else {
-            generateAICommitMessage(project, commitMessage, changes, event)
+            generateAICommitMessage(project, commitMessage, changes)
         }
     }
 
@@ -149,7 +166,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                         if (issues.isEmpty()) {
                             // No issues found, fall back to AI generation
                             val changes = currentChanges ?: return@invokeLater
-                            generateAICommitMessage(project, commitMessage, changes, event)
+                            generateAICommitMessage(project, commitMessage, changes)
                         } else {
                             createIssuesPopup(commitMessage, issues).showInBestPositionFor(event.dataContext)
                         }
@@ -159,7 +176,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                         logger.warn("Failed to fetch GitHub issues, falling back to AI generation", ex)
                         // Fall back to AI generation when GitHub issues fetch fails
                         val changes = currentChanges ?: return@invokeLater
-                        generateAICommitMessage(project, commitMessage, changes, event)
+                        generateAICommitMessage(project, commitMessage, changes)
                     }
                 }
             }
@@ -304,7 +321,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val event = currentEvent ?: return
 
         // Generate AI commit message with issue context
-        generateAICommitMessage(project, commitMessage, changes, event)
+        generateAICommitMessage(project, commitMessage, changes)
     }
 
     private fun handleSkipIssueSelection(commitMessage: CommitMessage) {
@@ -316,10 +333,10 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val event = currentEvent ?: return
 
         // Generate AI commit message without issue context
-        generateAICommitMessage(project, commitMessage, changes, event)
+        generateAICommitMessage(project, commitMessage, changes)
     }
 
-    private fun generateAICommitMessage(project: Project, commitMessage: CommitMessage, changes: List<Change>, event: AnActionEvent) {
+    private fun generateAICommitMessage(project: Project, commitMessage: CommitMessage, changes: List<Change>) {
         val diffContext = project.service<VcsPrompting>().prepareContext(changes)
         if (diffContext.isEmpty() || diffContext == "\n") {
             logger.warn("Diff context is empty or cannot get enough useful context.")
@@ -332,7 +349,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         currentJob?.cancel()
         editorField.text = ""
-        event.presentation.icon = AutoDevStatus.InProgress.icon
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val prompt = generateCommitMessage(diffContext, project, originText)
@@ -366,14 +382,13 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                             AutoDevNotifications.notify(project, "Error generating commit message: ${e.message}")
                         }
                     } finally {
-                        invokeLater {
-                            event.presentation.icon = AutoDevStatus.Ready.icon
-                        }
+                        // Job completed, will be reflected in next update() call
+                        currentJob = null
                     }
                 }
             } catch (e: Exception) {
                 logger.error("Failed to start commit message generation", e)
-                event.presentation.icon = AutoDevStatus.Error.icon
+                currentJob = null
                 AutoDevNotifications.notify(project, "Failed to start commit message generation: ${e.message}")
             }
         }
