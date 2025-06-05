@@ -34,16 +34,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
+    private val logger = logger<CommitMessageSuggestionAction>()
 
     init {
         presentationText("settings.autodev.others.commitMessage", templatePresentation)
     }
 
-    override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
-    }
-
-    private val logger = logger<CommitMessageSuggestionAction>()
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     private var currentJob: Job? = null
 
