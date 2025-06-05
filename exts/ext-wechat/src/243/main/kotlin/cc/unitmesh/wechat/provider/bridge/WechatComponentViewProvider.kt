@@ -3,6 +3,7 @@ package cc.unitmesh.wechat.provider.bridge
 import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import cc.unitmesh.devti.bridge.provider.ComponentViewMode
 import cc.unitmesh.devti.bridge.provider.ComponentViewProvider
+import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
@@ -10,10 +11,11 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.wechat.miniprogram.lang.wxml.WxmlFileType
 import com.intellij.wechat.miniprogram.lang.wxml.psi.impl.WxmlFile
+import com.intellij.wechat.miniprogram.project.WxnProjectManager
 
 class WechatComponentViewProvider : ComponentViewProvider() {
     override fun isApplicable(project: Project): Boolean {
-        return false
+        return WxnProjectManager.getInstance(project).isWxnProject()
     }
 
     override fun collect(
@@ -35,7 +37,7 @@ class WechatComponentViewProvider : ComponentViewProvider() {
     }
 
     companion object {
-        fun buildComponent(wxmlFile: WxmlFile): List<UiComponent>? {
+        fun buildComponent(jsFile: WxmlFile): List<UiComponent>? {
             return emptyList()
         }
     }
