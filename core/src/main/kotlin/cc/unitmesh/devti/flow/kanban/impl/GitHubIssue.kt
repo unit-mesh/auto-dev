@@ -117,5 +117,25 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
             val remoteUrl = parseGitHubRemoteUrl(repository) ?: return null
             return getGitHubRepository(project, remoteUrl)
         }
+
+        fun isGitHubRepository(project: Project): Boolean {
+            val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
+            val repository = repositoryManager.getRepositoryForFile(project.baseDir)
+
+            if (repository == null) {
+                return false
+            }
+
+            if (repository !is GitRepository) {
+                return false
+            }
+
+            val remoteUrl = parseGitHubRemoteUrl(repository) ?: return false
+            if (remoteUrl.contains("github.com")) {
+                return true
+            }
+
+            return false
+        }
     }
 }

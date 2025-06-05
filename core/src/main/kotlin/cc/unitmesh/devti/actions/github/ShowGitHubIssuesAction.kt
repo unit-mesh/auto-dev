@@ -15,11 +15,16 @@ import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
+import com.intellij.openapi.vcs.VcsDataKeys
+import com.intellij.openapi.vcs.ui.CommitMessage
 import com.intellij.ui.ColoredListCellRenderer
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.speedSearch.SpeedSearchUtil.applySpeedSearchHighlighting
 import com.intellij.util.containers.nullize
+import com.intellij.util.ui.JBUI.scale
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.GHIssueState
+import java.awt.Point
 import javax.swing.JList
 import javax.swing.ListSelectionModel.SINGLE_SELECTION
 
@@ -35,7 +40,7 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
         e.presentation.text = "Show GitHub Issues"
         e.presentation.description = "Show and select GitHub issues from current repository"
         
-        e.presentation.isVisible = project != null && isGitHubProject(project)
+        e.presentation.isVisible = project != null && GitHubIssue.isGitHubRepository(project)
         e.presentation.isEnabled = e.presentation.isVisible
     }
 
@@ -43,6 +48,8 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project!!
+        val commitMessage = getCommitMessage(e)!!
+
         ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 val issues = fetchGitHubIssues(project)
@@ -58,7 +65,7 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
                 }
                 
                 ApplicationManager.getApplication().invokeLater {
-                    createIssuesPopup(project, issues).showInBestPositionFor(e.dataContext)
+                    createIssuesPopup(project, commitMessage, issues).showInBestPositionFor(e.dataContext)
                 }
             } catch (ex: Exception) {
                 ApplicationManager.getApplication().invokeLater {
@@ -72,13 +79,7 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
         }
     }
 
-    private fun isGitHubProject(project: Project): Boolean {
-        return try {
-            GitHubIssue.parseGitHubRepository(project) != null
-        } catch (e: Exception) {
-            false
-        }
-    }
+    private fun getCommitMessage(e: AnActionEvent) = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as? CommitMessage
 
     private fun fetchGitHubIssues(project: Project): List<IssueDisplayItem> {
         val ghRepository = GitHubIssue.parseGitHubRepository(project) 
@@ -95,7 +96,7 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
         }
     }
 
-    private fun createIssuesPopup(project: Project, issues: List<IssueDisplayItem>): JBPopup {
+    private fun createIssuesPopup(project: Project, commitMessage: CommitMessage, issues: List<IssueDisplayItem>): JBPopup {
         var chosenIssue: IssueDisplayItem? = null
         var selectedIssue: IssueDisplayItem? = null
 
@@ -128,6 +129,13 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
                 }
             })
             .addListener(object : JBPopupListener {
+                override fun beforeShown(event: LightweightWindowEvent) {
+                    val popup = event.asPopup()
+                    val relativePoint = RelativePoint(commitMessage.editorField, Point(0, -scale(3)))
+                    val screenPoint = Point(relativePoint.screenPoint).apply { translate(0, -popup.size.height) }
+
+                    popup.setLocation(screenPoint)
+                }
                 override fun onClosed(event: LightweightWindowEvent) {
                     chosenIssue?.let { issue ->
                         handleIssueSelection(project, issue)
