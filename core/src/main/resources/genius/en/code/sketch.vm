@@ -139,7 +139,8 @@ have created a routes.py and main.js file, and updated the main.html file.
 ```
 target_file: "src/main/route.py"
 instructions: "Create route.py file with upload and query endpoints"
-code_edit: "// the rest code"
+code_edit: |
+  // the rest code
 ```
 </devin>
 // edit_file to call tools for step 3 with DevIn language, should use `<devin />` tag with DevIn language
@@ -149,7 +150,8 @@ code_edit: "// the rest code"
 ```
 target_file: "src/main/index.html"
 instructions: "Update index.html file"
-code_edit: "..."
+code_edit: |
+  ...
 ```
 </devin>
 // step 4.1, call tools to create test code and run test code

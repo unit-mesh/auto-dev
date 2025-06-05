@@ -54,7 +54,8 @@ enum class BuiltinCommand(
         "patch",
         "Apply precise code modifications using GNU unified diff format. Preferred for targeted changes to existing files while preserving surrounding code. Use when making multiple changes or complex modifications, prefer /write command for better reliability.",
         AllIcons.Vcs.Patch_file,
-        false
+        false,
+        enableInSketch = false
     ),
     EDIT_FILE(
         "edit_file",

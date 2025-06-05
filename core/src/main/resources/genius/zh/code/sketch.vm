@@ -115,19 +115,19 @@ say 'I will edit your file'.
 ```
 target_file: "src/main/route.py"
 instructions: "Create route.py file with upload and query endpoints"
-code_edit: "// the rest code"
+code_edit: |
+  // the rest code
 ```
 </devin>
-# 第二步. 创建 main.js
-我将创建一个专用的 main.js 文件来存储所有的交互式前端代码。它定义了显示窗口和按钮的 UI 元素，并为这些按钮创建了事件监听器。
-   // edit_file to call tools for step 3 with DevIn language, should use `<devin />` tag with DevIn language
+// edit_file to call tools for step 3 with DevIn language, should use `<devin />` tag with DevIn language
 // 如果要编辑文件，请使用 `/edit_file` 命令，然后在代码块中编写编辑内容，每个 edit_file 只能修改一个文件，并且使用独立的 `<devin />` 标签
 <devin>
 /edit_file:src/main/index.html
 ```
 target_file: "src/main/index.html"
 instructions: "Update index.html file"
-code_edit: "..."
+code_edit: |
+  ...
 ```
 </devin>
 

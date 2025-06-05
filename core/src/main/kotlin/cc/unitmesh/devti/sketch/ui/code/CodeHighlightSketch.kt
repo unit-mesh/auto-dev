@@ -69,6 +69,7 @@ open class CodeHighlightSketch(
     private val minDevinLineThreshold = 1
     private var isDevIns = false
     private var collapsedPanel: JPanel? = null
+    private var previewLabel: JBLabel? = null // 存储预览标签的引用
     private var isCollapsed = true // 默认折叠状态
     private var actionButton: ActionButton? = null
     private var isComplete = isUser
@@ -175,8 +176,8 @@ open class CodeHighlightSketch(
             }
 
             val firstLine = text.lines().firstOrNull() ?: ""
-            /// firstline 需要在 updateViewText 更新
-            val previewLabel = JBLabel(firstLine).apply {
+            // 创建预览标签并存储引用，以便在 updateViewText 中直接更新
+            previewLabel = JBLabel(firstLine).apply {
                 border = JBUI.Borders.emptyLeft(4)
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                 addMouseListener(object : MouseAdapter() {
@@ -200,7 +201,7 @@ open class CodeHighlightSketch(
             }
 
             val rightPanel = JPanel(BorderLayout()).apply {
-                add(previewLabel, BorderLayout.CENTER)
+                add(previewLabel!!, BorderLayout.CENTER)
                 add(expandCollapseIcon, BorderLayout.EAST)
             }
 
@@ -345,21 +346,9 @@ open class CodeHighlightSketch(
                 document?.replaceString(0, document.textLength, normalizedText)
 
                 // Update collapsed panel preview text if applicable
-                if (collapsedPanel != null && shouldUseCollapsedView()) {
+                if (previewLabel != null && shouldUseCollapsedView()) {
                     val firstLine = normalizedText.lines().firstOrNull() ?: ""
-                    val components = collapsedPanel!!.components
-                    for (comp in components) {
-                        if (comp is JPanel && comp.layout is BorderLayout) {
-                            val centerComp = (comp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
-                            if (centerComp is JPanel && centerComp.layout is BorderLayout) {
-                                val labelComp = (centerComp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
-                                if (labelComp is JBLabel) {
-                                    labelComp.text = firstLine
-                                    break
-                                }
-                            }
-                        }
-                    }
+                    previewLabel!!.text = firstLine
                 }
             } catch (e: Throwable) {
                 logger<CodeHighlightSketch>().error("Error updating editor text", e)
