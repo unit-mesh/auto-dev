@@ -27,7 +27,8 @@ import java.util.zip.ZipInputStream
 class PipelineStatusProcessor : AgentObserver, GitPushListener {
     private val log = Logger.getInstance(PipelineStatusProcessor::class.java)
     private var monitoringJob: ScheduledFuture<*>? = null
-    private val timeoutMinutes = 30
+    /// we limit for 4mins delay + 1mins networks (maybe) request + 30mins
+    private val timeoutMinutes = 35
     private var project: Project? = null
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
@@ -87,11 +88,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
                 if (elapsedMinutes >= timeoutMinutes) {
                     log.info("Pipeline monitoring timeout reached for commit: $commitSha")
-                    AutoDevNotifications.notify(
-                        project!!,
-                        "GitHub Action monitoring timeout (30 minutes) for commit: ${commitSha.take(7)}",
-                        NotificationType.WARNING
-                    )
                     stopMonitoring()
                     return@scheduleWithFixedDelay
                 }
@@ -125,7 +121,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 )
                 stopMonitoring()
             }
-        }, 3, 5, TimeUnit.MINUTES)  // 1分钟后开始第一次检查，然后每5分钟检查一次
+        }, 4, 5, TimeUnit.MINUTES)  // 1分钟后开始第一次检查，然后每5分钟检查一次
     }
 
     private fun findWorkflowRunForCommit(remoteUrl: String, commitSha: String): GHWorkflowRun? {
