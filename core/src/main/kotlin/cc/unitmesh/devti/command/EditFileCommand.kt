@@ -13,6 +13,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.diff.util.DiffUtil
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import org.yaml.snakeyaml.LoaderOptions
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.SafeConstructor
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -155,9 +158,44 @@ class EditFileCommand(private val project: Project) {
     }
 
     /**
-     * Parse edit_file function call format
+     * Parse edit_file function call format using YAML parsing for better handling of quotes and special characters
      */
     fun parseEditRequest(content: String): EditRequest? {
+        return try {
+            // First try YAML parsing (new format)
+            parseAsYaml(content) ?: parseAsLegacyFormat(content)
+        } catch (e: Exception) {
+            // If YAML parsing fails, try legacy regex parsing for backward compatibility
+            parseAsLegacyFormat(content)
+        }
+    }
+
+    /**
+     * Parse content as YAML format (recommended approach)
+     */
+    private fun parseAsYaml(content: String): EditRequest? {
+        return try {
+            val yaml = Yaml(SafeConstructor(LoaderOptions()))
+            val data = yaml.load<Map<String, Any>>(content) ?: return null
+
+            val targetFile = data["target_file"] as? String ?: return null
+            val instructions = data["instructions"] as? String ?: ""
+            val codeEdit = data["code_edit"] as? String ?: return null
+
+            EditRequest(
+                targetFile = targetFile,
+                instructions = instructions,
+                codeEdit = codeEdit
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Parse content using legacy regex format for backward compatibility
+     */
+    private fun parseAsLegacyFormat(content: String): EditRequest? {
         return try {
             // Parse the edit_file function call format - handle both JSON-like and function parameter formats
             val targetFileRegex = """target_file["\s]*[:=]["\s]*["']([^"']+)["']""".toRegex()

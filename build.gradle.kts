@@ -443,7 +443,7 @@ project(":core") {
         implementation("org.commonmark:commonmark:0.21.0")
         implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
 
-        implementation("org.yaml:snakeyaml:2.2")
+        implementation("org.yaml:snakeyaml:2.4")
 
 //        implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
         implementation("com.jayway.jsonpath:json-path:2.9.0")
@@ -470,6 +470,9 @@ project(":core") {
 
         // token count
         implementation("com.knuddels:jtokkit:1.1.0")
+
+        // YAML parsing for edit_file command
+        implementation("org.yaml:snakeyaml:2.2")
 
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     }

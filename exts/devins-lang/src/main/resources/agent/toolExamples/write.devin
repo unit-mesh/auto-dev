@@ -1,4 +1,4 @@
-注意：如果原先的文件已经存在，请优先考虑使用 file 读取文件信息，再通过 patch 生成 diff
+注意：如果原先的文件已经存在，请优先考虑使用 file 读取文件信息，再通过 edit_file
 /write:src/main/kotlin/cc/unitmesh/context/CppFileContextBuilder.kt
 ```kotlin
 // the kotlin code
