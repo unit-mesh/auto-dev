@@ -23,6 +23,11 @@ $context.historyExamples
 用户先前的意图是: $context.originText
 #end
 
+#if( $context.issueId.length() > 0 )
+相关 GitHub Issue: #$context.issueId
+$context.issueDetail
+#end
+
 代码变更（Diff）：
 
 ```diff
