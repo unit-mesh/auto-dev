@@ -27,53 +27,47 @@ import java.util.zip.ZipInputStream
 class PipelineStatusProcessor : AgentObserver, GitPushListener {
     private val log = Logger.getInstance(PipelineStatusProcessor::class.java)
     private var monitoringJob: ScheduledFuture<*>? = null
-    /// we limit for 4mins delay + 1mins networks (maybe) request + 30mins
+
+    /** 最长监控时间: 4分钟初始延迟 + 1分钟网络请求 + 30分钟执行 */
     private val timeoutMinutes = 35
+
     private var project: Project? = null
 
     override fun onCompleted(repository: GitRepository, pushResult: GitPushRepoResult) {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull()
-        this.project = project
-        if (project == null) {
-            log.warn("Cannot get project from component: $this")
-            return
-        }
-        if (!project.coderSetting.state.enableObserver) return
+        ProjectManager.getInstance().openProjects.firstOrNull()?.let { currentProject ->
+            this.project = currentProject
 
-        if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
-            log.info("Push failed, skipping pipeline monitoring")
-            return
-        }
+            if (!currentProject.coderSetting.state.enableObserver) {
+                return
+            }
 
-        val latestCommit = repository.currentRevision
-        if (latestCommit == null) {
-            log.warn("Could not determine latest commit SHA")
-            return
-        }
+            if (pushResult.type != GitPushRepoResult.Type.SUCCESS) {
+                log.info("Push failed, skipping pipeline monitoring")
+                return
+            }
 
-        log.info("Push successful, starting pipeline monitoring for commit: $latestCommit")
+            repository.currentRevision?.let { latestCommit ->
+                log.info("Push successful, starting pipeline monitoring for commit: $latestCommit")
 
-        val remoteUrl = getGitHubRemoteUrl(repository)
-        if (remoteUrl == null) {
-            log.warn("No GitHub remote URL found")
-            return
-        }
-
-        startMonitoring(repository, latestCommit, remoteUrl)
+                getGitHubRemoteUrl(repository)?.let { remoteUrl ->
+                    startMonitoring(repository, latestCommit, remoteUrl)
+                } ?: log.warn("No GitHub remote URL found")
+            } ?: log.warn("Could not determine latest commit SHA")
+        } ?: log.warn("Cannot get project from component: $this")
     }
 
     override fun onRegister(project: Project) {
-        this.project = project;
-        if (!project.coderSetting.state.enableObserver) return
+        this.project = project
+
+        if (!project.coderSetting.state.enableObserver) {
+            return
+        }
     }
 
-    private fun getGitHubRemoteUrl(repository: GitRepository): String? {
-        return repository.remotes.firstOrNull { remote ->
-            remote.urls.any { url ->
-                url.contains("github.com")
-            }
+    private fun getGitHubRemoteUrl(repository: GitRepository): String? =
+        repository.remotes.firstOrNull { remote ->
+            remote.urls.any { it.contains("github.com") }
         }?.urls?.firstOrNull { it.contains("github.com") }
-    }
 
     private fun startMonitoring(repository: GitRepository, commitSha: String, remoteUrl: String) {
         log.info("Starting pipeline monitoring for commit: $commitSha")
@@ -92,66 +86,71 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                     return@scheduleWithFixedDelay
                 }
 
-                val workflowRun = findWorkflowRunForCommit(remoteUrl, commitSha)
-                if (workflowRun != null) {
-                    workflowNotFoundCount = 0  // 重置计数器
+                findWorkflowRunForCommit(remoteUrl, commitSha)?.let { workflowRun ->
+                    // 重置计数器
+                    workflowNotFoundCount = 0
+
                     val isComplete = checkWorkflowStatus(workflowRun, commitSha)
                     if (isComplete) {
                         stopMonitoring()
                     }
-                } else {
+                } ?: run {
                     workflowNotFoundCount++
                     log.info("Workflow not found for commit: $commitSha (attempt $workflowNotFoundCount/$maxWorkflowNotFoundAttempts)")
+
                     if (workflowNotFoundCount >= maxWorkflowNotFoundAttempts) {
-                        log.info("No workflow found after $maxWorkflowNotFoundAttempts attempts, stopping monitoring for commit: $commitSha")
-                        AutoDevNotifications.notify(
-                            project!!,
-                            "No GitHub Action workflow found for commit: ${commitSha.take(7)}",
-                            NotificationType.INFORMATION
-                        )
+                        log.info("No workflow found after $maxWorkflowNotFoundAttempts attempts, stopping monitoring")
+                        project?.let { currentProject ->
+                            AutoDevNotifications.notify(
+                                currentProject,
+                                "No GitHub Action workflow found for commit: ${commitSha.take(7)}",
+                                NotificationType.INFORMATION
+                            )
+                        }
                         stopMonitoring()
                     }
                 }
             } catch (e: Exception) {
                 log.error("Error monitoring pipeline for commit: $commitSha", e)
-                AutoDevNotifications.notify(
-                    project!!,
-                    "Error monitoring GitHub Action: ${e.message}",
-                    NotificationType.ERROR
-                )
+                project?.let { currentProject ->
+                    AutoDevNotifications.notify(
+                        currentProject,
+                        "Error monitoring GitHub Action: ${e.message}",
+                        NotificationType.ERROR
+                    )
+                }
                 stopMonitoring()
             }
-        }, 4, 5, TimeUnit.MINUTES)  // 1分钟后开始第一次检查，然后每5分钟检查一次
+        }, 4, 5, TimeUnit.MINUTES)  // 4分钟后开始第一次检查，然后每5分钟检查一次
     }
 
     private fun findWorkflowRunForCommit(remoteUrl: String, commitSha: String): GHWorkflowRun? {
-        try {
+        return try {
             val github = createGitHubConnection()
-            val ghRepository = getGitHubRepository(github, remoteUrl) ?: return null
 
-            val allRuns = ghRepository.queryWorkflowRuns()
-                .list()
-                .iterator()
-                .asSequence()
-                .take(50)  // 检查最近50个runs
-                .toList()
-            
-            val matchingRun = allRuns.find { it.headSha == commitSha }
-            if (matchingRun != null) {
-                log.info("Found workflow run for commit $commitSha: ${matchingRun.name} (${matchingRun.status})")
-                return matchingRun
-            } else {
-                log.debug("No workflow run found for commit $commitSha in recent ${allRuns.size} runs")
-                return null
+            getGitHubRepository(github, remoteUrl)?.let { ghRepository ->
+                val allRuns = ghRepository.queryWorkflowRuns()
+                    .list()
+                    .iterator()
+                    .asSequence()
+                    .take(50)  // 检查最近50个runs
+                    .toList()
+
+                allRuns.find { it.headSha == commitSha }?.also { matchingRun ->
+                    log.info("Found workflow run for commit $commitSha: ${matchingRun.name} (${matchingRun.status})")
+                } ?: run {
+                    log.debug("No workflow run found for commit $commitSha in recent ${allRuns.size} runs")
+                    null
+                }
             }
         } catch (e: Exception) {
             log.error("Error finding workflow run for commit: $commitSha", e)
-            return null
+            null
         }
     }
 
-    private fun checkWorkflowStatus(workflowRun: GHWorkflowRun, commitSha: String): Boolean {
-        return when (workflowRun.status) {
+    private fun checkWorkflowStatus(workflowRun: GHWorkflowRun, commitSha: String): Boolean =
+        when (workflowRun.status) {
             GHWorkflowRun.Status.COMPLETED -> {
                 when (workflowRun.conclusion) {
                     GHWorkflowRun.Conclusion.SUCCESS -> true
@@ -160,107 +159,109 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                         true
                     }
                     GHWorkflowRun.Conclusion.CANCELLED,
-                    GHWorkflowRun.Conclusion.TIMED_OUT -> {
-                        true
-                    }
+                    GHWorkflowRun.Conclusion.TIMED_OUT -> true
                     else -> {
                         log.info("Workflow completed with conclusion: ${workflowRun.conclusion}")
                         false
                     }
                 }
             }
-            GHWorkflowRun.Status.IN_PROGRESS, GHWorkflowRun.Status.QUEUED -> false
+            GHWorkflowRun.Status.IN_PROGRESS,
+            GHWorkflowRun.Status.QUEUED -> false
             else -> false
         }
-    }
 
     private fun handleWorkflowFailure(workflowRun: GHWorkflowRun, commitSha: String) {
         try {
             val failureDetails = getWorkflowFailureDetails(workflowRun)
             val detailedMessage = buildDetailedFailureMessage(workflowRun, commitSha, failureDetails)
-
-            AutoDevNotifications.error(project!!, detailedMessage)
+            project?.let { AutoDevNotifications.error(it, detailedMessage) }
         } catch (e: Exception) {
-            val fallbackMessage = if (e.message?.contains("admin rights", ignoreCase = true) == true ||
-                                     e.message?.contains("403", ignoreCase = true) == true) {
-                "❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}\n" +
-                "⚠️ Detailed logs unavailable - admin rights required\n" +
-                "View details at: ${workflowRun.htmlUrl}"
+            val isPermissionError = e.message?.run {
+                contains("admin rights", ignoreCase = true) || contains("403", ignoreCase = true)
+            } ?: false
+
+            val fallbackMessage = if (isPermissionError) {
+                """
+                |❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}
+                |⚠️ Detailed logs unavailable - admin rights required
+                |View details at: ${workflowRun.htmlUrl}
+                """.trimMargin()
             } else {
-                "❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}\n" +
-                "URL: ${workflowRun.htmlUrl}\n" +
-                "Error getting details: ${e.message}"
+                """
+                |❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}
+                |URL: ${workflowRun.htmlUrl}
+                |Error getting details: ${e.message}
+                """.trimMargin()
             }
-            AutoDevNotifications.error(project!!, fallbackMessage)
+
+            project?.let { AutoDevNotifications.error(it, fallbackMessage) }
         }
     }
 
+    /**
+     * 获取工作流失败的详细信息
+     */
     private fun getWorkflowFailureDetails(workflowRun: GHWorkflowRun): WorkflowFailureDetails {
-        val failureDetails = WorkflowFailureDetails()
-        try {
+        return try {
+            // 获取所有作业
             val jobs = workflowRun.listJobs().toList()
-            
-            for (job in jobs) {
-                if (job.conclusion == GHWorkflowRun.Conclusion.FAILURE) {
-                    val jobFailure = JobFailure(
+
+            // 查找失败的作业
+            val failedJobs = jobs
+                .filter { it.conclusion == GHWorkflowRun.Conclusion.FAILURE }
+                .map { job ->
+                    JobFailure(
                         jobName = job.name,
                         errorSteps = extractFailedSteps(job),
                         logs = getJobLogsFromAPI(workflowRun, job),
                         jobUrl = job.htmlUrl?.toString()
                     )
-                    failureDetails.failedJobs.add(jobFailure)
                 }
+
+            if (failedJobs.isNotEmpty()) {
+                WorkflowFailureDetails(failedJobs = failedJobs.toMutableList())
+            } else {
+                WorkflowFailureDetails(workflowLogs = getWorkflowLogsFromAPI(workflowRun))
             }
-            
-            if (failureDetails.failedJobs.isEmpty()) {
-                failureDetails.workflowLogs = getWorkflowLogsFromAPI(workflowRun)
-            }
-            
         } catch (e: Exception) {
             log.error("Error getting workflow failure details", e)
-            failureDetails.error = e.message
+            WorkflowFailureDetails(error = e.message)
         }
-        
-        return failureDetails
     }
 
     private fun extractFailedSteps(job: GHWorkflowJob): List<String> {
-        val failedSteps = mutableListOf<String>()
-        
-        try {
-            val steps = job.steps
-            for (step in steps) {
-                if (step.conclusion == GHWorkflowRun.Conclusion.FAILURE) {
-                    failedSteps.add("${step.name}: ${step.conclusion} (${step.number})")
-                }
-            }
+        return try {
+            job.steps
+                .filter { it.conclusion == GHWorkflowRun.Conclusion.FAILURE }
+                .map { step -> "${step.name}: ${step.conclusion} (${step.number})" }
         } catch (e: Exception) {
             log.error("Error extracting failed steps", e)
+            emptyList()
         }
-        
-        return failedSteps
     }
 
     private fun getJobLogsFromAPI(workflowRun: GHWorkflowRun, job: GHWorkflowJob): String? {
         return try {
             job.downloadLogs { logStream ->
                 logStream.use { stream ->
-                    BufferedReader(InputStreamReader(stream)).use { reader ->
-                        reader.readText()
-                    }
+                    BufferedReader(InputStreamReader(stream)).readText()
                 }
             }
         } catch (e: Exception) {
             log.warn("Cannot download job logs for job: ${job.name} - ${e.message}")
-            if (e.message?.contains("admin rights", ignoreCase = true) == true ||
-                e.message?.contains("403", ignoreCase = true) == true) {
-                log.info("Admin rights required to download job logs. Falling back to alternative approach.")
-                return "⚠️ Job logs unavailable - admin rights required to download logs from GitHub Actions.\n" +
-                       "Job URL: ${job.htmlUrl}\n" +
-                       "You can view the logs directly at: ${job.htmlUrl}"
-            }
 
-            null
+            // 处理权限错误
+            if (isPermissionError(e.message)) {
+                log.info("Admin rights required to download job logs. Falling back to alternative approach.")
+                """
+                |⚠️ Job logs unavailable - admin rights required to download logs from GitHub Actions.
+                |Job URL: ${job.htmlUrl}
+                |You can view the logs directly at: ${job.htmlUrl}
+                """.trimMargin()
+            } else {
+                null
+            }
         }
     }
 
@@ -268,84 +269,94 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
         return try {
             workflowRun.downloadLogs { logStream ->
                 ZipInputStream(logStream).use { zipStream ->
-                    val logContents = StringBuilder()
-                    var entry = zipStream.nextEntry
-                    while (entry != null) {
-                        if (entry.name.endsWith(".txt")) {
-                            val content = zipStream.readBytes().toString(Charsets.UTF_8)
-                            logContents.append("=== ${entry.name} ===\n")
-                            logContents.append(content)
-                            logContents.append("\n\n")
-                        }
-                        entry = zipStream.nextEntry
-                    }
-                    logContents.toString()
+                    extractLogsFromZipStream(zipStream)
                 }
             }
         } catch (e: Exception) {
             log.warn("Cannot download workflow logs - ${e.message}")
-            if (e.message?.contains("admin rights", ignoreCase = true) == true ||
-                e.message?.contains("403", ignoreCase = true) == true) {
+            if (isPermissionError(e.message)) {
                 log.info("Admin rights required to download workflow logs.")
-                return "⚠️ Workflow logs unavailable - admin rights required to download logs from GitHub Actions.\n" +
-                       "Workflow URL: ${workflowRun.htmlUrl}\n" +
-                       "You can view the logs directly at: ${workflowRun.htmlUrl}"
+                """
+                |⚠️ Workflow logs unavailable - admin rights required to download logs from GitHub Actions.
+                |Workflow URL: ${workflowRun.htmlUrl}
+                |You can view the logs directly at: ${workflowRun.htmlUrl}
+                """.trimMargin()
+            } else {
+                null
+            }
+        }
+    }
+
+    private fun extractLogsFromZipStream(zipStream: ZipInputStream): String {
+        val logContents = StringBuilder()
+        generateSequence { zipStream.nextEntry }
+            .filter { it.name.endsWith(".txt") }
+            .forEach { entry ->
+                val content = zipStream.readBytes().toString(Charsets.UTF_8)
+                logContents.append("=== ${entry.name} ===\n")
+                    .append(content)
+                    .append("\n\n")
             }
 
-            null
-        }
+        return logContents.toString()
+    }
+
+    private fun isPermissionError(errorMessage: String?): Boolean {
+        return errorMessage?.let {
+            it.contains("admin rights", ignoreCase = true) || it.contains("403", ignoreCase = true)
+        } ?: false
     }
 
     private fun buildDetailedFailureMessage(
         workflowRun: GHWorkflowRun,
         commitSha: String,
         failureDetails: WorkflowFailureDetails
-    ): String {
-        val message = StringBuilder()
-        message.append("❌ GitHub Action failed for commit: ${commitSha.take(7)}\n")
-        message.append("Workflow: ${workflowRun.name}\n")
-        message.append("URL: ${workflowRun.htmlUrl}\n\n")
+    ): String = buildString {
+        append("❌ GitHub Action failed for commit: ${commitSha.take(7)}\n")
+        append("Workflow: ${workflowRun.name}\n")
+        append("URL: ${workflowRun.htmlUrl}\n\n")
 
-        if (failureDetails.error != null) {
-            message.append("Error getting details: ${failureDetails.error}\n")
-        } else if (failureDetails.failedJobs.isNotEmpty()) {
-            message.append("Failed Jobs:\n")
+        when {
+            failureDetails.error != null -> {
+                append("Error getting details: ${failureDetails.error}\n")
+            }
+            failureDetails.failedJobs.isNotEmpty() -> {
+                append("Failed Jobs:\n")
+                failureDetails.failedJobs.forEach { jobFailure ->
+                    append("• ${jobFailure.jobName}\n")
 
-            for (jobFailure in failureDetails.failedJobs) { // 显示所有失败的job
-                message.append("• ${jobFailure.jobName}\n")
-                if (jobFailure.jobUrl != null) {
-                    message.append("  URL: ${jobFailure.jobUrl}\n")
-                }
-
-                if (jobFailure.errorSteps.isNotEmpty()) {
-                    message.append("  Failed steps:\n")
-                    for (step in jobFailure.errorSteps) { // 显示所有失败步骤
-                        message.append("    - $step\n")
+                    jobFailure.jobUrl?.let {
+                        append("  URL: $it\n")
                     }
-                }
 
-                jobFailure.logs?.let { logs ->
-                    if (logs.isNotBlank()) {
-                        message.append("  Logs:\n")
-                        logs.lines().forEach { line ->
-                            if (line.isNotBlank()) {
-                                message.append("    $line\n")
-                            }
+                    if (jobFailure.errorSteps.isNotEmpty()) {
+                        append("  Failed steps:\n")
+                        jobFailure.errorSteps.forEach { step ->
+                            append("    - $step\n")
                         }
                     }
+
+                    jobFailure.logs?.takeIf { it.isNotBlank() }?.let { logs ->
+                        append("  Logs:\n")
+                        logs.lineSequence()
+                            .filter { it.isNotBlank() }
+                            .forEach { line ->
+                                append("    $line\n")
+                            }
+                    }
+
+                    append("\n")
                 }
-                message.append("\n")
             }
-        } else if (failureDetails.workflowLogs != null) {
-            message.append("Workflow Logs:\n")
-            failureDetails.workflowLogs!!.lines().forEach { line ->
-                if (line.isNotBlank()) {
-                    message.append("  $line\n")
-                }
+            failureDetails.workflowLogs != null -> {
+                append("Workflow Logs:\n")
+                failureDetails.workflowLogs.lineSequence()
+                    .filter { it.isNotBlank() }
+                    .forEach { line ->
+                        append("  $line\n")
+                    }
             }
         }
-
-        return message.toString()
     }
 
     private fun createGitHubConnection(): GitHub {
@@ -358,12 +369,13 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
     }
 
     private fun getGitHubRepository(github: GitHub, remoteUrl: String): GHRepository? {
-        try {
-            val repoPath = extractRepositoryPath(remoteUrl) ?: return null
-            return github.getRepository(repoPath)
+        return try {
+            extractRepositoryPath(remoteUrl)?.let { repoPath ->
+                github.getRepository(repoPath)
+            }
         } catch (e: Exception) {
             log.error("Error getting GitHub repository from URL: $remoteUrl", e)
-            return null
+            null
         }
     }
 
@@ -381,11 +393,10 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
         log.info("Pipeline monitoring stopped")
     }
 
-    // 数据类用于存储失败详情
     private data class WorkflowFailureDetails(
         val failedJobs: MutableList<JobFailure> = mutableListOf(),
-        var workflowLogs: String? = null,
-        var error: String? = null
+        val workflowLogs: String? = null,
+        val error: String? = null
     )
 
     private data class JobFailure(
