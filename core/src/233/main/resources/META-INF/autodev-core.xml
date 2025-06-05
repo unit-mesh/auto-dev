@@ -437,13 +437,13 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
-<!--        <action id="autodev.Vcs.ShowGitHubIssues"-->
-<!--                class="cc.unitmesh.devti.actions.github.ShowGitHubIssuesAction"-->
-<!--                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"-->
-<!--                description="Fetch GitHub issues for AI">-->
+        <action id="autodev.Vcs.ShowGitHubIssues"
+                class="cc.unitmesh.devti.actions.github.ShowGitHubIssuesAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.GITHUB_ISSUE"
+                description="Fetch GitHub issues for AI">
 
-<!--            <add-to-group group-id="Vcs.MessageActionGroup"/>-->
-<!--        </action>-->
+            <add-to-group group-id="Vcs.MessageActionGroup"/>
+        </action>
 
         <action id="cc.unitmesh.devti.QuickAssistant"
                 class="cc.unitmesh.devti.actions.quick.QuickAssistantAction"

@@ -32,7 +32,6 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
 
     override fun update(e: AnActionEvent) {
         val project = e.project
-        e.presentation.icon = AllIcons.Vcs.Branch
         e.presentation.text = "Show GitHub Issues"
         e.presentation.description = "Show and select GitHub issues from current repository"
         
@@ -44,7 +43,6 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project!!
-        
         ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 val issues = fetchGitHubIssues(project)
@@ -115,11 +113,9 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
                     selected: Boolean,
                     hasFocus: Boolean
                 ) {
-                    // Show issue number and title
                     append("#${value.issue.number} ", com.intellij.ui.SimpleTextAttributes.GRAYED_ATTRIBUTES)
                     append(value.issue.title)
-                    
-                    // Add labels if any
+
                     val labels = value.issue.labels.map { it.name }
                     if (labels.isNotEmpty()) {
                         append(" ")
