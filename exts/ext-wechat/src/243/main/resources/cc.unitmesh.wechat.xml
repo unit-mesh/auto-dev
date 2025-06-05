@@ -5,6 +5,6 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-
+        <componentProvider implementation="cc.unitmesh.wechat.provider.bridge.WechatComponentViewProvider"/>
     </extensions>
 </idea-plugin>
