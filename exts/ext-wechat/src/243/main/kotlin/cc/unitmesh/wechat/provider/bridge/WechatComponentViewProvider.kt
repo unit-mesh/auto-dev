@@ -3,7 +3,6 @@ package cc.unitmesh.wechat.provider.bridge
 import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import cc.unitmesh.devti.bridge.provider.ComponentViewMode
 import cc.unitmesh.devti.bridge.provider.ComponentViewProvider
-import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex

@@ -161,11 +161,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                     }
                     GHWorkflowRun.Conclusion.CANCELLED,
                     GHWorkflowRun.Conclusion.TIMED_OUT -> {
-                        AutoDevNotifications.notify(
-                            project!!,
-                            "❌ GitHub Action ${workflowRun.conclusion.toString().lowercase()} for commit: ${commitSha.take(7)}",
-                            NotificationType.ERROR
-                        )
                         true
                     }
                     else -> {
@@ -174,40 +169,18 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                     }
                 }
             }
-            GHWorkflowRun.Status.IN_PROGRESS, GHWorkflowRun.Status.QUEUED -> {
-                log.info("Workflow still running: ${workflowRun.status}")
-                false
-            }
-            else -> {
-                log.info("Unknown workflow status: ${workflowRun.status}")
-                false
-            }
+            GHWorkflowRun.Status.IN_PROGRESS, GHWorkflowRun.Status.QUEUED -> false
+            else -> false
         }
     }
 
     private fun handleWorkflowFailure(workflowRun: GHWorkflowRun, commitSha: String) {
         try {
-            log.info("Analyzing workflow failure for commit: $commitSha")
-
-            // 获取失败的构建详情
             val failureDetails = getWorkflowFailureDetails(workflowRun)
-
-            // 构建详细的错误通知
             val detailedMessage = buildDetailedFailureMessage(workflowRun, commitSha, failureDetails)
 
-            AutoDevNotifications.notify(
-                project!!,
-                detailedMessage,
-                NotificationType.ERROR
-            )
-
-            // 记录详细日志
-            log.info("Workflow failure details for commit $commitSha: $failureDetails")
-
+            AutoDevNotifications.error(project!!, detailedMessage)
         } catch (e: Exception) {
-            log.error("Error analyzing workflow failure for commit: $commitSha", e)
-
-            // 提供更好的错误回退消息
             val fallbackMessage = if (e.message?.contains("admin rights", ignoreCase = true) == true ||
                                      e.message?.contains("403", ignoreCase = true) == true) {
                 "❌ GitHub Action failed for commit: ${commitSha.take(7)} - ${workflowRun.conclusion}\n" +
@@ -218,20 +191,13 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 "URL: ${workflowRun.htmlUrl}\n" +
                 "Error getting details: ${e.message}"
             }
-
-            AutoDevNotifications.notify(
-                project!!,
-                fallbackMessage,
-                NotificationType.ERROR
-            )
+            AutoDevNotifications.error(project!!, fallbackMessage)
         }
     }
 
     private fun getWorkflowFailureDetails(workflowRun: GHWorkflowRun): WorkflowFailureDetails {
         val failureDetails = WorkflowFailureDetails()
-        
         try {
-            // 获取所有jobs
             val jobs = workflowRun.listJobs().toList()
             
             for (job in jobs) {
@@ -246,7 +212,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                 }
             }
             
-            // 如果没有具体的job失败信息，尝试获取整个workflow的日志
             if (failureDetails.failedJobs.isEmpty()) {
                 failureDetails.workflowLogs = getWorkflowLogsFromAPI(workflowRun)
             }
@@ -287,8 +252,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
             }
         } catch (e: Exception) {
             log.warn("Cannot download job logs for job: ${job.name} - ${e.message}")
-
-            // Check if it's a permission error
             if (e.message?.contains("admin rights", ignoreCase = true) == true ||
                 e.message?.contains("403", ignoreCase = true) == true) {
                 log.info("Admin rights required to download job logs. Falling back to alternative approach.")
@@ -304,13 +267,10 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
     private fun getWorkflowLogsFromAPI(workflowRun: GHWorkflowRun): String? {
         return try {
-            // 使用GitHub Java API获取整个workflow的日志
             workflowRun.downloadLogs { logStream ->
-                // 处理ZIP格式的日志文件
                 ZipInputStream(logStream).use { zipStream ->
                     val logContents = StringBuilder()
                     var entry = zipStream.nextEntry
-                    // 移除日志长度限制，获取所有日志信息
                     while (entry != null) {
                         if (entry.name.endsWith(".txt")) {
                             val content = zipStream.readBytes().toString(Charsets.UTF_8)
@@ -325,8 +285,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
             }
         } catch (e: Exception) {
             log.warn("Cannot download workflow logs - ${e.message}")
-
-            // Check if it's a permission error
             if (e.message?.contains("admin rights", ignoreCase = true) == true ||
                 e.message?.contains("403", ignoreCase = true) == true) {
                 log.info("Admin rights required to download workflow logs.")
