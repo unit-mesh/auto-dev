@@ -790,6 +790,37 @@ project(":exts:ext-openrewrite") {
     }
 }
 
+
+project(":exts:ext-wechat") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("wechatPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+
+    sourceSets {
+        main {
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
+    }
+}
+
 project(":exts:devins-lang") {
     apply {
         plugin("org.jetbrains.grammarkit")
