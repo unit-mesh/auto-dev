@@ -2,14 +2,16 @@
 package cc.unitmesh.devti.actions.github
 
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import com.intellij.icons.AllIcons
 import com.intellij.ide.TextCopyProvider
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys.COPY_PROVIDER
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -28,7 +30,7 @@ import java.awt.Point
 import javax.swing.JList
 import javax.swing.ListSelectionModel.SINGLE_SELECTION
 
-class ShowGitHubIssuesAction : DumbAwareAction() {
+class FetchKanbanIssuesAction : DumbAwareAction() {
     data class IssueDisplayItem(val issue: GHIssue, val displayText: String)
 
     init {
@@ -39,7 +41,6 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
         val project = e.project
         e.presentation.text = "Show GitHub Issues"
         e.presentation.description = "Show and select GitHub issues from current repository"
-        
         e.presentation.isVisible = project != null && GitHubIssue.isGitHubRepository(project)
         e.presentation.isEnabled = e.presentation.isVisible
     }
@@ -49,48 +50,42 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project!!
         val commitMessage = getCommitMessage(e)!!
-
-        ApplicationManager.getApplication().executeOnPooledThread {
-            try {
-                val issues = fetchGitHubIssues(project)
-                if (issues.isEmpty()) {
+        val task = object : Task.Backgroundable(project, "Loading GitHub Issues", true) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.text = "Connecting to GitHub..."
+                indicator.fraction = 0.1
+                try {
+                    indicator.text = "Fetching repository issues..."
+                    indicator.fraction = 0.5
+                    val issues = fetchGitHubIssues(project)
+                    indicator.fraction = 0.9
                     ApplicationManager.getApplication().invokeLater {
-                        Messages.showInfoMessage(
-                            project,
-                            "No issues found in this GitHub repository.",
-                            "GitHub Issues"
-                        )
+                        if (issues.isEmpty()) {
+                            Messages.showInfoMessage(
+                                project,
+                                "No issues found in this GitHub repository.",
+                                "GitHub Issues"
+                            )
+                        } else {
+                            createIssuesPopup(project, commitMessage, issues).showInBestPositionFor(e.dataContext)
+                        }
                     }
-                    return@executeOnPooledThread
-                }
-                
-                ApplicationManager.getApplication().invokeLater {
-                    createIssuesPopup(project, commitMessage, issues).showInBestPositionFor(e.dataContext)
-                }
-            } catch (ex: Exception) {
-                ApplicationManager.getApplication().invokeLater {
-                    Messages.showErrorDialog(
-                        project,
-                        "Failed to fetch GitHub issues: ${ex.message}",
-                        "GitHub Issues Error"
-                    )
+                } catch (ex: Exception) {
+                    ApplicationManager.getApplication().invokeLater {
+                        Messages.showErrorDialog(project, "Failed to fetch GitHub issues: ${ex.message}", "GitHub Issues Error")
+                    }
                 }
             }
         }
+
+        ProgressManager.getInstance().run(task)
     }
 
     private fun getCommitMessage(e: AnActionEvent) = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as? CommitMessage
 
     private fun fetchGitHubIssues(project: Project): List<IssueDisplayItem> {
-        val ghRepository = GitHubIssue.parseGitHubRepository(project) 
-            ?: throw IllegalStateException("Not a GitHub repository")
-        
-        val repoUrl = "${ghRepository.ownerName}/${ghRepository.name}"
-
-        val repository = GitHubIssue.createGitHubConnection(project).getRepository(repoUrl)
-        val issues = repository.getIssues(GHIssueState.OPEN).toList()
-        
-        return issues.map { issue ->
+        val ghRepository = GitHubIssue.parseGitHubRepository(project) ?: throw IllegalStateException("Not a GitHub repository")
+        return ghRepository.getIssues(GHIssueState.OPEN).map { issue ->
             val displayText = "#${issue.number} - ${issue.title}"
             IssueDisplayItem(issue, displayText)
         }
@@ -101,11 +96,17 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
         var selectedIssue: IssueDisplayItem? = null
 
         return JBPopupFactory.getInstance().createPopupChooserBuilder(issues)
-            .setTitle("Select GitHub Issue")
+            .setTitle("Select Issue")
             .setVisibleRowCount(10)
             .setSelectionMode(SINGLE_SELECTION)
             .setItemSelectedCallback { selectedIssue = it }
-            .setItemChosenCallback { chosenIssue = it }
+            .setItemChosenCallback {
+                commitMessage.setCommitMessage(
+                    "#${it.issue} ${it.displayText}"
+                )
+                commitMessage.editorField.selectAll()
+                chosenIssue = it
+            }
             .setRenderer(object : ColoredListCellRenderer<IssueDisplayItem>() {
                 override fun customizeCellRenderer(
                     list: JList<out IssueDisplayItem>,
@@ -116,7 +117,6 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
                 ) {
                     append("#${value.issue.number} ", com.intellij.ui.SimpleTextAttributes.GRAYED_ATTRIBUTES)
                     append(value.issue.title)
-
                     val labels = value.issue.labels.map { it.name }
                     if (labels.isNotEmpty()) {
                         append(" ")
@@ -124,7 +124,6 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
                             append("[$label] ", com.intellij.ui.SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES)
                         }
                     }
-                    
                     applySpeedSearchHighlighting(list, this, true, selected)
                 }
             })
@@ -133,10 +132,12 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
                     val popup = event.asPopup()
                     val relativePoint = RelativePoint(commitMessage.editorField, Point(0, -scale(3)))
                     val screenPoint = Point(relativePoint.screenPoint).apply { translate(0, -popup.size.height) }
-
                     popup.setLocation(screenPoint)
                 }
+
                 override fun onClosed(event: LightweightWindowEvent) {
+                    // IDEA-195094 Regression: New CTRL-E in "commit changes" breaks keyboard shortcuts
+                    commitMessage.editorField.requestFocusInWindow()
                     chosenIssue?.let { issue ->
                         handleIssueSelection(project, issue)
                     }
@@ -166,19 +167,24 @@ class ShowGitHubIssuesAction : DumbAwareAction() {
             appendLine("Title: ${issue.title}")
             appendLine("State: ${issue.state}")
             appendLine("Author: ${issue.user?.login ?: "Unknown"}")
+
             issue.assignees?.let { assignees ->
                 if (assignees.isNotEmpty()) {
                     appendLine("Assignees: ${assignees.joinToString(", ") { it.login }}")
                 }
             }
+
             val labels = issue.labels.map { it.name }
             if (labels.isNotEmpty()) {
                 appendLine("Labels: ${labels.joinToString(", ")}")
             }
+
             issue.milestone?.let { milestone ->
                 appendLine("Milestone: ${milestone.title}")
             }
+
             appendLine("URL: ${issue.htmlUrl}")
+
             if (!issue.body.isNullOrBlank()) {
                 appendLine("\nDescription:")
                 appendLine(issue.body)
