@@ -3,6 +3,7 @@ package cc.unitmesh.devti.sketch.ui.code
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.command.EditFileCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import cc.unitmesh.devti.provider.BuildSystemProvider
@@ -23,6 +24,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
@@ -524,25 +526,21 @@ fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
     }
 }
 
-private suspend fun executeEditFileCommand(project: Project, editFileContent: String, callback: (String?) -> Unit) {
+private suspend fun executeEditFileCommand(project: Project, currentText: String, callback: (String?) -> Unit) {
     try {
-        val editFileCommand = cc.unitmesh.devti.command.EditFileCommand(project)
-        val editRequest = editFileCommand.parseEditRequest(editFileContent)
+        val newFileName = "DevIn-${System.currentTimeMillis()}.devin"
+        val language = Language.findLanguageByID("DevIn")
+        val file = ScratchRootType.getInstance()
+            .createScratchFile(project, newFileName, language, currentText)
 
-        if (editRequest == null) {
-            callback("DEVINS_ERROR: Failed to parse edit_file request")
-            return
-        }
+        if (file == null) return callback("DEVINS_ERROR: Failed to create scratch file")
 
-        val result = editFileCommand.executeEdit(editRequest)
-        when (result) {
-            is cc.unitmesh.devti.command.EditResult.Success -> {
-                callback(result.patchContent)
-            }
-            is cc.unitmesh.devti.command.EditResult.Error -> {
-                callback("DEVINS_ERROR: ${result.message}")
-            }
-        }
+        val psiFile = runReadAction { PsiManager.getInstance(project).findFile(file)!! }
+
+        RunService.provider(project, file)
+            ?.runFile(project, file, psiFile, isFromToolAction = true)
+            ?: RunService.runInCli(project, psiFile)
+            ?: AutoDevNotifications.notify(project, "No run service found for ${file.name}")
     } catch (e: Exception) {
         callback("DEVINS_ERROR: ${e.message}")
     }
