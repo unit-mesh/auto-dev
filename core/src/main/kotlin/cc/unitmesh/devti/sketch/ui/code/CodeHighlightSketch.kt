@@ -175,6 +175,7 @@ open class CodeHighlightSketch(
             }
 
             val firstLine = text.lines().firstOrNull() ?: ""
+            /// firstline 需要在 updateViewText 更新
             val previewLabel = JBLabel(firstLine).apply {
                 border = JBUI.Borders.emptyLeft(4)
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
@@ -474,7 +475,6 @@ fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
     val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
 
     if (isAutoSketchMode) {
-        // In AutoSketchMode, automatically execute the edit_file command
         val button = JButton("Auto Executing...", AutoDevIcons.LOADING).apply {
             isEnabled = false
             preferredSize = JBUI.size(150, 30)
@@ -485,12 +485,10 @@ fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
         panel.add(button)
         add(panel)
 
-        // Execute automatically
         AutoDevCoroutineScope.scope(project).launch {
             executeEditFileCommand(project, currentText) { result ->
                 runInEdt {
                     if (result != null && !result.startsWith("DEVINS_ERROR")) {
-                        // Create DiffLangSketch to show the result
                         val diffSketch = DiffLangSketchProvider().create(project, result)
                         add(diffSketch.getComponent())
                         button.text = "Executed"
@@ -515,7 +513,6 @@ fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
                     executeEditFileCommand(project, currentText) { result ->
                         runInEdt {
                             if (result != null && !result.startsWith("DEVINS_ERROR")) {
-                                // Create DiffLangSketch to show the result
                                 val diffSketch = DiffLangSketchProvider().create(project, result)
                                 add(diffSketch.getComponent())
                                 this@apply.text = "Executed"
@@ -540,44 +537,25 @@ fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
 
 private suspend fun executeEditFileCommand(project: Project, editFileContent: String, callback: (String?) -> Unit) {
     try {
-        val newFileName = "EditFile-${System.currentTimeMillis()}.devin"
-        val language = Language.findLanguageByID("DevIn")
-        val file = ScratchRootType.getInstance()
-            .createScratchFile(project, newFileName, language, editFileContent)
+        val editFileCommand = cc.unitmesh.devti.command.EditFileCommand(project)
+        val editRequest = editFileCommand.parseEditRequest(editFileContent)
 
-        if (file == null) {
-            callback("DEVINS_ERROR: Failed to create temporary file")
+        if (editRequest == null) {
+            callback("DEVINS_ERROR: Failed to parse edit_file request")
             return
         }
 
-        val psiFile = PsiManager.getInstance(project).findFile(file)
-        if (psiFile == null) {
-            callback("DEVINS_ERROR: Failed to find PSI file")
-            return
+        val result = editFileCommand.executeEdit(editRequest)
+        when (result) {
+            is cc.unitmesh.devti.command.EditResult.Success -> {
+                callback(result.patchContent)
+            }
+            is cc.unitmesh.devti.command.EditResult.Error -> {
+                callback("DEVINS_ERROR: ${result.message}")
+            }
         }
-
-        // Use RunService to execute the DevIn file
-        val result = executeDevInFile(project, file, psiFile)
-        callback(result)
     } catch (e: Exception) {
         callback("DEVINS_ERROR: ${e.message}")
-    }
-}
-
-private fun executeDevInFile(project: Project, file: VirtualFile, psiFile: PsiFile): String? {
-    return try {
-        // Use RunService to execute the DevIn file
-        val runService = RunService.provider(project, file)
-        if (runService != null) {
-            runService.runFile(project, file, psiFile, isFromToolAction = true)
-            "Edit file command executed successfully"
-        } else {
-            // Fallback to RunService.runInCli
-            RunService.runInCli(project, psiFile)
-            "Edit file command executed via CLI"
-        }
-    } catch (e: Exception) {
-        "DEVINS_ERROR: Failed to execute DevIn file: ${e.message}"
     }
 }
 
