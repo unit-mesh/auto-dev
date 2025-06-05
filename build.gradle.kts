@@ -611,6 +611,11 @@ project(":exts:ext-git") {
 
         implementation(project(":core"))
         implementation(project(":exts:devins-lang"))
+
+        // kanban
+        implementation("org.kohsuke:github-api:1.326")
+        implementation("org.gitlab4j:gitlab4j-api:5.8.0")
+
         implementation("cc.unitmesh:git-commit-message:0.4.6") {
             excludeKotlinDeps()
         }

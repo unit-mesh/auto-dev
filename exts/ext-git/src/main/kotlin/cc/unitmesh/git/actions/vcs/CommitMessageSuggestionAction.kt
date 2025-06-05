@@ -2,6 +2,7 @@ package cc.unitmesh.git.actions.vcs
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
+import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
@@ -13,18 +14,33 @@ import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.vcs.VcsUtil
+import com.intellij.ide.TextCopyProvider
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.PlatformDataKeys.COPY_PROVIDER
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.popup.JBPopup
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.ui.popup.JBPopupListener
+import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.CurrentContentRevision
 import com.intellij.openapi.vcs.ui.CommitMessage
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.ColoredListCellRenderer
+import com.intellij.ui.awt.RelativePoint
+import com.intellij.ui.speedSearch.SpeedSearchUtil.applySpeedSearchHighlighting
+import com.intellij.util.containers.nullize
+import com.intellij.util.ui.JBUI.scale
 import com.intellij.vcs.commit.CommitWorkflowUi
 import com.intellij.vcs.log.VcsLogFilterCollection
 import com.intellij.vcs.log.VcsLogProvider
@@ -32,12 +48,20 @@ import com.intellij.vcs.log.impl.VcsProjectLog
 import com.intellij.vcs.log.visible.filters.VcsLogFilterObject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.kohsuke.github.GHIssue
+import org.kohsuke.github.GHIssueState
+import java.awt.Point
+import javax.swing.JList
+import javax.swing.ListSelectionModel.SINGLE_SELECTION
+
+data class IssueDisplayItem(val issue: GHIssue, val displayText: String)
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
     private val logger = logger<CommitMessageSuggestionAction>()
 
     init {
         presentationText("settings.autodev.others.commitMessage", templatePresentation)
+        isEnabledInModalContext = true
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -47,15 +71,26 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
     override fun update(e: AnActionEvent) {
+        val project = e.project
         val data = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
-        if (data == null) {
+
+        if (data == null || project == null) {
             e.presentation.icon = AutoDevStatus.WAITING.icon
             e.presentation.isEnabled = false
             return
         }
 
-        val prompting = e.project?.service<VcsPrompting>()
-        val changes: List<Change> = prompting?.getChanges() ?: listOf()
+        val prompting = project.service<VcsPrompting>()
+        val changes: List<Change> = prompting.getChanges()
+
+        // Update presentation text based on whether it's a GitHub repository
+        if (GitHubIssue.isGitHubRepository(project)) {
+            e.presentation.text = "Smart Commit Message (GitHub Enhanced)"
+            e.presentation.description = "Generate commit message with AI or GitHub issue integration"
+        } else {
+            e.presentation.text = "Smart Commit Message"
+            e.presentation.description = "Generate commit message with AI"
+        }
 
         e.presentation.icon = AutoDevStatus.Ready.icon
         e.presentation.isEnabled = changes.isNotEmpty()
@@ -63,6 +98,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
+        val commitMessage = getCommitMessage(event) ?: return
 
         val commitWorkflowUi = VcsUtil.getCommitWorkFlowUi(event)
         if (commitWorkflowUi == null) {
@@ -76,62 +112,75 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             return
         }
 
-        val diffContext = project.service<VcsPrompting>().prepareContext(changes)
-        if (diffContext.isEmpty() || diffContext == "\n") {
-            logger.warn("Diff context is empty or cannot get enough useful context.")
-            AutoDevNotifications.notify(project, "Diff context is empty or cannot get enough useful context.")
-            return
+        // Check if it's a GitHub repository and show options
+        if (GitHubIssue.isGitHubRepository(project)) {
+            showGitHubOptions(project, commitMessage, changes, event)
+        } else {
+            generateAICommitMessage(project, commitMessage, changes, event)
         }
+    }
 
-        val editorField = (event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage).editorField
-        val originText = editorField.editor?.selectionModel?.selectedText ?: ""
+    private fun getCommitMessage(e: AnActionEvent) = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as? CommitMessage
 
-        currentJob?.cancel()
-        editorField.text = ""
-        event.presentation.icon = AutoDevStatus.InProgress.icon
+    private fun showGitHubOptions(project: Project, commitMessage: CommitMessage, changes: List<Change>, event: AnActionEvent) {
+        val options = arrayOf("Use GitHub Issue", "Generate with AI", "Cancel")
+        val choice = Messages.showDialog(
+            project,
+            "Choose how to generate commit message:",
+            "Commit Message Generation",
+            options,
+            0,
+            Messages.getQuestionIcon()
+        )
 
-        ApplicationManager.getApplication().executeOnPooledThread {
-            val prompt = generateCommitMessage(diffContext, project, originText)
-            logger.info(prompt)
+        when (choice) {
+            0 -> generateGitHubIssueCommitMessage(project, commitMessage, event)
+            1 -> generateAICommitMessage(project, commitMessage, changes, event)
+            // 2 or -1 (Cancel or ESC) - do nothing
+        }
+    }
 
-            try {
-                val stream = LlmFactory.create(project).stream(prompt, "", false)
-                currentJob = AutoDevCoroutineScope.scope(project).launch {
-                    try {
-                        stream.cancellable().collect { chunk ->
-                            invokeLater {
-                                if (isActive) {
-                                    editorField.text += chunk
-                                }
-                            }
-                        }
-
-                        val text = editorField.text
-                        if (isActive && text.startsWith("```") && text.endsWith("```")) {
-                            invokeLater {
-                                editorField.text = CodeFence.parse(text).text
-                            }
-                        } else if (isActive) {
-                            invokeLater {
-                                editorField.text = text.removePrefix("```\n").removeSuffix("```")
-                            }
-                        }
-                    } catch (e: Exception) {
-                        logger.error("Error during commit message generation", e)
-                        invokeLater {
-                            AutoDevNotifications.notify(project, "Error generating commit message: ${e.message}")
-                        }
-                    } finally {
-                        invokeLater {
-                            event.presentation.icon = AutoDevStatus.Ready.icon
+    private fun generateGitHubIssueCommitMessage(project: Project, commitMessage: CommitMessage, event: AnActionEvent) {
+        val task = object : Task.Backgroundable(project, "Loading GitHub issues", true) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.text = "Connecting to GitHub..."
+                indicator.fraction = 0.1
+                try {
+                    indicator.text = "Fetching repository issues..."
+                    indicator.fraction = 0.5
+                    val issues = fetchGitHubIssues(project)
+                    indicator.fraction = 0.9
+                    ApplicationManager.getApplication().invokeLater {
+                        if (issues.isEmpty()) {
+                            Messages.showInfoMessage(
+                                project,
+                                "No issues found in this GitHub repository.",
+                                "GitHub Issues"
+                            )
+                        } else {
+                            createIssuesPopup(commitMessage, issues).showInBestPositionFor(event.dataContext)
                         }
                     }
+                } catch (ex: Exception) {
+                    ApplicationManager.getApplication().invokeLater {
+                        Messages.showErrorDialog(
+                            project,
+                            "Failed to fetch GitHub issues: ${ex.message}",
+                            "GitHub Issues Error"
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                logger.error("Failed to start commit message generation", e)
-                event.presentation.icon = AutoDevStatus.Error.icon
-                AutoDevNotifications.notify(project, "Failed to start commit message generation: ${e.message}")
             }
+        }
+        ProgressManager.getInstance().run(task)
+    }
+
+    private fun fetchGitHubIssues(project: Project): List<IssueDisplayItem> {
+        val ghRepository =
+            GitHubIssue.parseGitHubRepository(project) ?: throw IllegalStateException("Not a GitHub repository")
+        return ghRepository.getIssues(GHIssueState.OPEN).map { issue ->
+            val displayText = "#${issue.number} - ${issue.title}"
+            IssueDisplayItem(issue, displayText)
         }
     }
 
@@ -182,6 +231,147 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         }
 
         return builder.toString()
+    }
+
+    private fun createIssuesPopup(commitMessage: CommitMessage, issues: List<IssueDisplayItem>): JBPopup {
+        var chosenIssue: IssueDisplayItem? = null
+
+        return JBPopupFactory.getInstance().createPopupChooserBuilder(issues)
+            .setTitle("Select Issue")
+            .setVisibleRowCount(10)
+            .setSelectionMode(SINGLE_SELECTION)
+            .setItemSelectedCallback { chosenIssue = it }
+            .setItemChosenCallback {
+                chosenIssue = it
+            }
+            .setRenderer(object : ColoredListCellRenderer<IssueDisplayItem>() {
+                override fun customizeCellRenderer(
+                    list: JList<out IssueDisplayItem>,
+                    value: IssueDisplayItem,
+                    index: Int,
+                    selected: Boolean,
+                    hasFocus: Boolean
+                ) {
+                    append("#${value.issue.number} ", com.intellij.ui.SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    append(value.issue.title)
+                    val labels = value.issue.labels.map { it.name }
+                    if (labels.isNotEmpty()) {
+                        append(" ")
+                        labels.forEach { label ->
+                            append("[$label] ", com.intellij.ui.SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES)
+                        }
+                    }
+                    applySpeedSearchHighlighting(list, this, true, selected)
+                }
+            })
+            .addListener(object : JBPopupListener {
+                override fun beforeShown(event: LightweightWindowEvent) {
+                    val popup = event.asPopup()
+                    val relativePoint = RelativePoint(commitMessage.editorField, Point(0, -scale(3)))
+                    val screenPoint = Point(relativePoint.screenPoint).apply { translate(0, -popup.size.height) }
+                    popup.setLocation(screenPoint)
+                }
+
+                override fun onClosed(event: LightweightWindowEvent) {
+                    // IDEA-195094 Regression: New CTRL-E in "commit changes" breaks keyboard shortcuts
+                    commitMessage.editorField.requestFocusInWindow()
+                    chosenIssue?.let { issue ->
+                        handleIssueSelection(issue, commitMessage)
+                    }
+                }
+            })
+            .setNamerForFiltering { it.displayText }
+            .setAutoPackHeightOnFiltering(true)
+            .createPopup()
+            .apply {
+                setDataProvider { dataId ->
+                    when (dataId) {
+                        // default list action does not work as "CopyAction" is invoked first, but with other copy provider
+                        COPY_PROVIDER.name -> object : TextCopyProvider() {
+                            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+                            override fun getTextLinesToCopy() = listOfNotNull(chosenIssue?.displayText).nullize()
+                        }
+
+                        else -> null
+                    }
+                }
+            }
+    }
+
+    private fun handleIssueSelection(issueItem: IssueDisplayItem, commitMessage: CommitMessage) {
+        val issue = issueItem.issue
+        val message = buildString {
+            appendLine("Selected Issue: #${issue.number}")
+            appendLine("Title: ${issue.title}")
+
+            if (!issue.body.isNullOrBlank()) {
+                appendLine("\nDescription:")
+                appendLine(issue.body)
+            }
+        }
+
+        commitMessage.setCommitMessage(message)
+        commitMessage.editorField.selectAll()
+    }
+
+    private fun generateAICommitMessage(project: Project, commitMessage: CommitMessage, changes: List<Change>, event: AnActionEvent) {
+        val diffContext = project.service<VcsPrompting>().prepareContext(changes)
+        if (diffContext.isEmpty() || diffContext == "\n") {
+            logger.warn("Diff context is empty or cannot get enough useful context.")
+            AutoDevNotifications.notify(project, "Diff context is empty or cannot get enough useful context.")
+            return
+        }
+
+        val editorField = commitMessage.editorField
+        val originText = editorField.editor?.selectionModel?.selectedText ?: ""
+
+        currentJob?.cancel()
+        editorField.text = ""
+        event.presentation.icon = AutoDevStatus.InProgress.icon
+
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val prompt = generateCommitMessage(diffContext, project, originText)
+            logger.info(prompt)
+
+            try {
+                val stream = LlmFactory.create(project).stream(prompt, "", false)
+                currentJob = AutoDevCoroutineScope.scope(project).launch {
+                    try {
+                        stream.cancellable().collect { chunk ->
+                            invokeLater {
+                                if (isActive) {
+                                    editorField.text += chunk
+                                }
+                            }
+                        }
+
+                        val text = editorField.text
+                        if (isActive && text.startsWith("```") && text.endsWith("```")) {
+                            invokeLater {
+                                editorField.text = CodeFence.parse(text).text
+                            }
+                        } else if (isActive) {
+                            invokeLater {
+                                editorField.text = text.removePrefix("```\n").removeSuffix("```")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        logger.error("Error during commit message generation", e)
+                        invokeLater {
+                            AutoDevNotifications.notify(project, "Error generating commit message: ${e.message}")
+                        }
+                    } finally {
+                        invokeLater {
+                            event.presentation.icon = AutoDevStatus.Ready.icon
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to start commit message generation", e)
+                event.presentation.icon = AutoDevStatus.Error.icon
+                AutoDevNotifications.notify(project, "Failed to start commit message generation: ${e.message}")
+            }
+        }
     }
 
     private fun generateCommitMessage(diff: String, project: Project, originText: String): String {
