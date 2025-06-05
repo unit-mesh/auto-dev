@@ -49,6 +49,7 @@ import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.Icon
 
 open class CodeHighlightSketch(
     open val project: Project,
@@ -62,10 +63,9 @@ open class CodeHighlightSketch(
 ) : JBPanel<CodeHighlightSketch>(VerticalLayout(2)), DataProvider, LangSketch, Disposable {
     private val minDevinLineThreshold = 1
     private var isDevIns = false
-    private var devInsCollapsedPanel: JPanel? = null
-    private var devInsExpandedPanel: JPanel? = null
-    private var isCollapsed = false
-    private var runButton: ActionButton? = null
+    private var collapsedPanel: JPanel? = null
+    private var isCollapsed = true // 默认折叠状态
+    private var actionButton: ActionButton? = null
     private var isComplete = isUser
 
     private var textLanguage: String? = if (ideaLanguage != null) ideaLanguage?.displayName else null
@@ -84,16 +84,21 @@ open class CodeHighlightSketch(
         return this != null && this.trim().isNotEmpty()
     }
 
+    private fun shouldUseCollapsedView(): Boolean {
+        val displayName = ideaLanguage?.displayName
+        return when {
+            displayName == "Markdown" -> false
+            ideaLanguage == PlainTextLanguage.INSTANCE -> false
+            displayName == plainText -> false
+            else -> true
+        }
+    }
+
     private var toolbar: ActionToolbar? = null
 
     fun initEditor(text: String, fileName: String? = null) {
         if (hasSetupAction) return
         hasSetupAction = true
-
-        if (isUser) {
-            setupSimpleEditor(text, fileName)
-            return
-        }
 
         val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
 
@@ -108,34 +113,24 @@ open class CodeHighlightSketch(
         if (ideaLanguage?.displayName == "DevIn") {
             isDevIns = true
             editorFragment = EditorFragment(editor, minDevinLineThreshold, previewEditor)
-            setupDevInsView(text)
         } else {
-            setupRegularEditor(editor)
+            editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
+        }
+
+        // 检查是否需要折叠视图
+        val needsCollapsedView = shouldUseCollapsedView()
+        if (needsCollapsedView) {
+            setupCollapsedView(text)
+        } else {
+            // 直接添加编辑器内容，不使用折叠
+            add(editorFragment!!.getContent())
+            isCollapsed = false
         }
 
         setupToolbarAndStyling(fileName, editor)
     }
 
-    private fun setupSimpleEditor(text: String, fileName: String?) {
-        val editor = EditorUtil.createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
 
-        border = if (withLeftRightBorder) {
-            JBEmptyBorder(4, 4, 4, 4)
-        } else {
-            JBEmptyBorder(4, 0, 0, 0)
-        }
-
-        editor.component.isOpaque = true
-        editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
-        add(editorFragment!!.getContent())
-
-        setupToolbarAndStyling(fileName, editor)
-    }
-
-    private fun setupRegularEditor(editor: EditorEx) {
-        editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
-        add(editorFragment!!.getContent())
-    }
 
     private val plainText = PlainTextLanguage.INSTANCE.displayName
 
@@ -147,7 +142,7 @@ open class CodeHighlightSketch(
 
         if (textLanguage != null && lowercase != "markdown" && textLanguage != plainText) {
             if (showToolbar && lowercase != devinLanguageId) {
-                val isShowBottomBorder = devInsCollapsedPanel != null
+                val isShowBottomBorder = collapsedPanel != null
                 toolbar = setupActionBar(project, editor, isPackageFile, isShowBottomBorder)
             }
         } else {
@@ -163,10 +158,16 @@ open class CodeHighlightSketch(
         }
     }
 
-    private fun setupDevInsView(text: String) {
-        devInsCollapsedPanel = JPanel(BorderLayout()).apply {
+    private fun setupCollapsedView(text: String) {
+        collapsedPanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(2)
-            runButton = createRunButton(text)
+
+            // 根据是否为 DevIns 创建不同的按钮
+            actionButton = if (isDevIns) {
+                createDevInsButton(text)
+            } else {
+                createGenericButton()
+            }
 
             val firstLine = text.lines().firstOrNull() ?: ""
             val previewLabel = JBLabel(firstLine).apply {
@@ -189,7 +190,7 @@ open class CodeHighlightSketch(
             }
 
             val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 2, 0)).apply {
-                add(runButton!!)
+                add(actionButton!!)
             }
 
             val rightPanel = JPanel(BorderLayout()).apply {
@@ -201,21 +202,17 @@ open class CodeHighlightSketch(
             add(rightPanel, BorderLayout.CENTER)
         }
 
-        devInsExpandedPanel = JPanel(VerticalLayout(0)).apply {
-            add(editorFragment!!.getContent())
-
-            val fewerLinesLabel = createFewerLinesLabel()
-            add(fewerLinesLabel)
-        }
-
-        add(devInsCollapsedPanel!!)
+        add(collapsedPanel!!)
         isCollapsed = true
-        updateRunButtonIcon()
+        updateActionButtonIcon()
     }
 
-    var devinRunButtonPresentation = Presentation()
-    private fun createRunButton(newText: String): ActionButton {
-        devinRunButtonPresentation?.icon = AutoDevIcons.RUN
+    private var actionButtonPresentation = Presentation()
+
+    private fun createDevInsButton(newText: String): ActionButton {
+        val commandIcon = getDevInsCommandIcon(newText)
+        actionButtonPresentation = Presentation()
+        actionButtonPresentation.icon = commandIcon
         return ActionButton(
             DumbAwareAction.create {
                 if (isComplete) return@create
@@ -226,28 +223,67 @@ open class CodeHighlightSketch(
                     sketchService.send(newText)
                 }
             },
-            devinRunButtonPresentation,
+            actionButtonPresentation,
             "AutoDevToolbar",
             JBUI.size(24, 24)
         )
     }
 
-    private fun updateRunButtonIcon() {
-        runButton?.let { button: ActionButton ->
-            val icon = if (isComplete) AutoDevIcons.RUN else AutoDevIcons.LOADING
-            devinRunButtonPresentation?.setIcon(icon)
+    private fun createGenericButton(): ActionButton {
+        actionButtonPresentation = Presentation()
+        actionButtonPresentation.icon = AllIcons.General.ArrowRight
+        return ActionButton(
+            DumbAwareAction.create {
+                // 普通编辑器的按钮行为，可以根据需要扩展
+            },
+            actionButtonPresentation,
+            "AutoDevToolbar",
+            JBUI.size(24, 24)
+        )
+    }
+
+    private fun getDevInsCommandIcon(text: String): Icon {
+        val firstLine = text.lines().firstOrNull() ?: ""
+        if (firstLine.startsWith("/")) {
+            val commandName = firstLine.substring(1).split(":").firstOrNull()?.trim()
+            if (commandName != null) {
+                val command = BuiltinCommand.entries.find { it.commandName == commandName }
+                if (command != null) {
+                    return command.icon
+                }
+            }
+        }
+        return AutoDevIcons.RUN // 默认图标
+    }
+
+    private fun updateActionButtonIcon() {
+        actionButton?.let { button: ActionButton ->
+            if (isDevIns) {
+                val icon = if (isComplete) {
+                    getDevInsCommandIcon(getViewText())
+                } else {
+                    AutoDevIcons.LOADING
+                }
+                actionButtonPresentation.setIcon(icon)
+            }
             button.repaint()
         }
     }
 
     private fun toggleEditorVisibility() {
         if (isCollapsed) {
-            remove(devInsCollapsedPanel)
-            add(devInsExpandedPanel!!)
+            // 展开：移除折叠面板，添加编辑器内容和折叠标签
+            remove(collapsedPanel)
+            add(editorFragment!!.getContent())
+
+            val fewerLinesLabel = createFewerLinesLabel()
+            add(fewerLinesLabel)
+
             isCollapsed = false
         } else {
-            remove(devInsExpandedPanel)
-            add(devInsCollapsedPanel!!)
+            // 折叠：移除所有内容，只显示折叠面板
+            removeAll()
+            add(collapsedPanel!!)
             isCollapsed = true
         }
 
@@ -302,16 +338,19 @@ open class CodeHighlightSketch(
             try {
                 document?.replaceString(0, document.textLength, normalizedText)
 
-                // Update DevIns collapsed panel preview text if applicable
-                if (isDevIns && devInsCollapsedPanel != null) {
+                // Update collapsed panel preview text if applicable
+                if (collapsedPanel != null && shouldUseCollapsedView()) {
                     val firstLine = normalizedText.lines().firstOrNull() ?: ""
-                    val components = devInsCollapsedPanel!!.components
+                    val components = collapsedPanel!!.components
                     for (comp in components) {
                         if (comp is JPanel && comp.layout is BorderLayout) {
                             val centerComp = (comp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
-                            if (centerComp is JBLabel) {
-                                centerComp.text = firstLine
-                                break
+                            if (centerComp is JPanel && centerComp.layout is BorderLayout) {
+                                val labelComp = (centerComp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
+                                if (labelComp is JBLabel) {
+                                    labelComp.text = firstLine
+                                    break
+                                }
                             }
                         }
                     }
@@ -320,16 +359,16 @@ open class CodeHighlightSketch(
                 logger<CodeHighlightSketch>().error("Error updating editor text", e)
             }
 
-            // Update run button icon state for DevIns
-            updateRunButtonIcon()
+            // Update action button icon state
+            updateActionButtonIcon()
 
             val lineCount = document?.lineCount ?: 0
             if (lineCount > editorLineThreshold) {
                 editorFragment?.updateExpandCollapseLabel()
             }
 
-            // Auto-collapse DevIns view when complete
-            if (complete && isDevIns && !isCollapsed) {
+            // Auto-collapse view when complete (only for collapsible views)
+            if (complete && !isCollapsed && shouldUseCollapsedView()) {
                 toggleEditorVisibility()
             }
         }
