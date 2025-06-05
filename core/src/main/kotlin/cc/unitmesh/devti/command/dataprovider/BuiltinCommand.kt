@@ -22,7 +22,7 @@ enum class BuiltinCommand(
     FILE(
         "file", 
         "Read and retrieve file content from project using relative path. Essential for examining existing code, configurations, or documentation before modifications. Supports line ranges (L1-L10) and global filename search. Returns complete file content with line numbers for context understanding.",
-        AllIcons.Actions.Copy, 
+        AllIcons.FileTypes.Any_type,
         true, 
         true
     ),
@@ -60,8 +60,7 @@ enum class BuiltinCommand(
         "edit_file",
         "Apply structured file edits using target_file, instructions, and code_edit parameters. Designed for precise code modifications with clear context markers. Use // ... existing code ... to represent unchanged sections. Ideal for targeted edits with explicit instructions.",
         AllIcons.Actions.Edit,
-        false,
-        true
+        false
     ),
     RUN(
         "run",
