@@ -437,8 +437,8 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
-        <action id="autodev.Vcs.ShowGitHubIssues"
-                class="cc.unitmesh.devti.actions.github.FetchKanbanIssuesAction"
+        <action id="autodev.Vcs.CommitMessageWithIssueId"
+                class="cc.unitmesh.devti.actions.github.CommitMessageWithIssueIdAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.GITHUB_ISSUE"
                 description="Fetch GitHub issues for AI">
 

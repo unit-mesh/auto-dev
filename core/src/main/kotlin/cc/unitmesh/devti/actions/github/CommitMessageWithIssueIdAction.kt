@@ -30,17 +30,17 @@ import java.awt.Point
 import javax.swing.JList
 import javax.swing.ListSelectionModel.SINGLE_SELECTION
 
-class FetchKanbanIssuesAction : DumbAwareAction() {
-    data class IssueDisplayItem(val issue: GHIssue, val displayText: String)
+data class IssueDisplayItem(val issue: GHIssue, val displayText: String)
 
+class CommitMessageWithIssueIdAction : DumbAwareAction() {
     init {
         isEnabledInModalContext = true
     }
 
     override fun update(e: AnActionEvent) {
         val project = e.project
-        e.presentation.text = "Show GitHub Issues"
-        e.presentation.description = "Show and select GitHub issues from current repository"
+        e.presentation.text = "Commit Message with GitHub Issue ID"
+        e.presentation.description = "Generate commit message with GitHub issue ID"
         e.presentation.isVisible = project != null && GitHubIssue.isGitHubRepository(project)
         e.presentation.isEnabled = e.presentation.isVisible
     }
@@ -50,7 +50,7 @@ class FetchKanbanIssuesAction : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project!!
         val commitMessage = getCommitMessage(e)!!
-        val task = object : Task.Backgroundable(project, "Loading GitHub Issues", true) {
+        val task = object : Task.Backgroundable(project, "Loading GitHub issues", true) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.text = "Connecting to GitHub..."
                 indicator.fraction = 0.1
@@ -67,12 +67,16 @@ class FetchKanbanIssuesAction : DumbAwareAction() {
                                 "GitHub Issues"
                             )
                         } else {
-                            createIssuesPopup(project, commitMessage, issues).showInBestPositionFor(e.dataContext)
+                            createIssuesPopup(commitMessage, issues).showInBestPositionFor(e.dataContext)
                         }
                     }
                 } catch (ex: Exception) {
                     ApplicationManager.getApplication().invokeLater {
-                        Messages.showErrorDialog(project, "Failed to fetch GitHub issues: ${ex.message}", "GitHub Issues Error")
+                        Messages.showErrorDialog(
+                            project,
+                            "Failed to fetch GitHub issues: ${ex.message}",
+                            "GitHub Issues Error"
+                        )
                     }
                 }
             }
@@ -84,25 +88,23 @@ class FetchKanbanIssuesAction : DumbAwareAction() {
     private fun getCommitMessage(e: AnActionEvent) = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as? CommitMessage
 
     private fun fetchGitHubIssues(project: Project): List<IssueDisplayItem> {
-        val ghRepository = GitHubIssue.parseGitHubRepository(project) ?: throw IllegalStateException("Not a GitHub repository")
+        val ghRepository =
+            GitHubIssue.parseGitHubRepository(project) ?: throw IllegalStateException("Not a GitHub repository")
         return ghRepository.getIssues(GHIssueState.OPEN).map { issue ->
             val displayText = "#${issue.number} - ${issue.title}"
             IssueDisplayItem(issue, displayText)
         }
     }
 
-    private fun createIssuesPopup(project: Project, commitMessage: CommitMessage, issues: List<IssueDisplayItem>): JBPopup {
+    private fun createIssuesPopup(commitMessage: CommitMessage, issues: List<IssueDisplayItem>): JBPopup {
         var chosenIssue: IssueDisplayItem? = null
-        var selectedIssue: IssueDisplayItem? = null
 
         return JBPopupFactory.getInstance().createPopupChooserBuilder(issues)
             .setTitle("Select Issue")
             .setVisibleRowCount(10)
             .setSelectionMode(SINGLE_SELECTION)
-            .setItemSelectedCallback { selectedIssue = it }
+            .setItemSelectedCallback { chosenIssue = it }
             .setItemChosenCallback {
-                commitMessage.setCommitMessage(it.displayText)
-                commitMessage.editorField.selectAll()
                 chosenIssue = it
             }
             .setRenderer(object : ColoredListCellRenderer<IssueDisplayItem>() {
@@ -137,7 +139,7 @@ class FetchKanbanIssuesAction : DumbAwareAction() {
                     // IDEA-195094 Regression: New CTRL-E in "commit changes" breaks keyboard shortcuts
                     commitMessage.editorField.requestFocusInWindow()
                     chosenIssue?.let { issue ->
-                        handleIssueSelection(project, issue)
+                        handleIssueSelection(issue, commitMessage)
                     }
                 }
             })
@@ -150,38 +152,20 @@ class FetchKanbanIssuesAction : DumbAwareAction() {
                         // default list action does not work as "CopyAction" is invoked first, but with other copy provider
                         COPY_PROVIDER.name -> object : TextCopyProvider() {
                             override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
-                            override fun getTextLinesToCopy() =  listOfNotNull(selectedIssue?.displayText).nullize()
+                            override fun getTextLinesToCopy() = listOfNotNull(chosenIssue?.displayText).nullize()
                         }
+
                         else -> null
                     }
                 }
             }
     }
 
-    private fun handleIssueSelection(project: Project, issueItem: IssueDisplayItem) {
+    private fun handleIssueSelection(issueItem: IssueDisplayItem, commitMessage: CommitMessage) {
         val issue = issueItem.issue
         val message = buildString {
             appendLine("Selected Issue: #${issue.number}")
             appendLine("Title: ${issue.title}")
-            appendLine("State: ${issue.state}")
-            appendLine("Author: ${issue.user?.login ?: "Unknown"}")
-
-            issue.assignees?.let { assignees ->
-                if (assignees.isNotEmpty()) {
-                    appendLine("Assignees: ${assignees.joinToString(", ") { it.login }}")
-                }
-            }
-
-            val labels = issue.labels.map { it.name }
-            if (labels.isNotEmpty()) {
-                appendLine("Labels: ${labels.joinToString(", ")}")
-            }
-
-            issue.milestone?.let { milestone ->
-                appendLine("Milestone: ${milestone.title}")
-            }
-
-            appendLine("URL: ${issue.htmlUrl}")
 
             if (!issue.body.isNullOrBlank()) {
                 appendLine("\nDescription:")
@@ -189,6 +173,7 @@ class FetchKanbanIssuesAction : DumbAwareAction() {
             }
         }
 
-        Messages.showInfoMessage(project, message, "GitHub Issue Details")
+        commitMessage.setCommitMessage(message)
+        commitMessage.editorField.selectAll()
     }
 }
