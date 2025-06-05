@@ -56,7 +56,7 @@ class CommandProcessor(private val commandFactory: InsCommandFactory) {
         val result = if (isSucceed) {
             val hasReadCodeBlock = commandNode in listOf(
                 BuiltinCommand.WRITE,
-                BuiltinCommand.PATCH,
+                BuiltinCommand.EDIT_FILE,
                 BuiltinCommand.COMMIT,
                 BuiltinCommand.DATABASE,
                 BuiltinCommand.SHELL,

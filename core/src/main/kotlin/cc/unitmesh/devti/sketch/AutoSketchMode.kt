@@ -89,7 +89,7 @@ class AutoSketchMode(val project: Project) {
         )
 
         of += setOf(
-            PATCH, DATABASE, WRITE
+            EDIT_FILE, DATABASE, WRITE
         )
 
         return of

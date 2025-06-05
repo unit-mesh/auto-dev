@@ -18,6 +18,7 @@ class DevInCompletionContributorTest: LightJavaCodeInsightFixtureTestCase() {
         assertTrue(lookupElements.contains("rev"))
         assertTrue(lookupElements.contains("write"))
         assertTrue(lookupElements.contains("file"))
+        assertTrue(lookupElements.contains("edit_file"))
     }
 }
 
