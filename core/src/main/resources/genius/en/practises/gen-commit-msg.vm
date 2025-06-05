@@ -24,6 +24,11 @@ $context.historyExamples
 User origin intention was: $context.originText
 #end
 
+#if($context.issueId.length() > 0)
+Related GitHub Issue: #$context.issueId
+$context.issueDetail
+#end
+
 Diff:
 
 ```diff

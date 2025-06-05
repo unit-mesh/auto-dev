@@ -67,6 +67,9 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     private var currentJob: Job? = null
+    private var selectedIssue: IssueDisplayItem? = null
+    private var currentChanges: List<Change>? = null
+    private var currentEvent: AnActionEvent? = null
 
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
@@ -111,6 +114,11 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             AutoDevNotifications.notify(project, "No changes to commit. Do you select any files?")
             return
         }
+
+        // Store current state for later use
+        currentChanges = changes
+        currentEvent = event
+        selectedIssue = null
 
         // Check if it's a GitHub repository and show options
         if (GitHubIssue.isGitHubRepository(project)) {
@@ -299,19 +307,14 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     }
 
     private fun handleIssueSelection(issueItem: IssueDisplayItem, commitMessage: CommitMessage) {
-        val issue = issueItem.issue
-        val message = buildString {
-            appendLine("Selected Issue: #${issue.number}")
-            appendLine("Title: ${issue.title}")
+        selectedIssue = issueItem
 
-            if (!issue.body.isNullOrBlank()) {
-                appendLine("\nDescription:")
-                appendLine(issue.body)
-            }
-        }
+        // Now generate AI commit message with issue context
+        val project = commitMessage.editorField.project ?: return
+        val changes = currentChanges ?: return
+        val event = currentEvent ?: return
 
-        commitMessage.setCommitMessage(message)
-        commitMessage.editorField.selectAll()
+        generateAICommitMessage(project, commitMessage, changes, event)
     }
 
     private fun generateAICommitMessage(project: Project, commitMessage: CommitMessage, changes: List<Change>, event: AnActionEvent) {
@@ -385,10 +388,22 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             ""
         }
 
+        val issue = selectedIssue?.issue
+        val issueDetail = if (issue != null) {
+            buildString {
+                appendLine("Title: ${issue.title}")
+                if (!issue.body.isNullOrBlank()) {
+                    appendLine("Description: ${issue.body}")
+                }
+            }
+        } else ""
+
         templateRender.context = CommitMsgGenContext(
             historyExamples = historyExamples,
             diffContent = diff,
-            originText = originText
+            originText = originText,
+            issueId = issue?.number?.toString() ?: "",
+            issueDetail = issueDetail
         )
 
         val prompter = templateRender.renderTemplate(template)
@@ -417,4 +432,7 @@ data class CommitMsgGenContext(
     var diffContent: String = "",
     // the origin commit message which is to be optimized
     val originText: String = "",
+    // GitHub issue information if selected
+    val issueId: String = "",
+    val issueDetail: String = "",
 ) : TemplateContext
