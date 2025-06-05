@@ -127,7 +127,7 @@ Here is an example output to the USER:
 根据您的项目结构，我建议您先使用  gogocode 迁移工具进行迁移，这是一个非常好的选择。先提供 gogocode 迁移方案，然后等待用户的回复。与此同时，
 我将更新项目的依赖信息：
 ```bash
-./gradlew :build --refresh-dependencies  [注释：需要，用户先打 patch，再刷新项目依赖]
+./gradlew :build --refresh-dependencies  [注释：需要，用户先编辑文件，再刷新项目依赖]
 ```
 
 </you.answer4>
@@ -138,8 +138,11 @@ Here is an example output to the USER:
 // ... 优先使用 DevIns 指令来修改代码和提供范例
 现在，我将读取 xx 文件，然后为您提供迁移示例：
 <devin>
-```patch
-//
+/edit_file:xx_file.java
+```
+target_file: "xx_file.java"
+instructions: "迁移代码结构"
+code_edit: "// 迁移代码"
 ```
 </devin>
 </your.answer5>

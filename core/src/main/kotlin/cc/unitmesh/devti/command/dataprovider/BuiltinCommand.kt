@@ -56,6 +56,12 @@ enum class BuiltinCommand(
         AllIcons.Vcs.Patch_file,
         false
     ),
+    EDIT_FILE(
+        "edit_file",
+        "Apply structured file edits using target_file, instructions, and code_edit parameters. Designed for precise code modifications with clear context markers. Use // ... existing code ... to represent unchanged sections. Ideal for targeted edits with explicit instructions.",
+        AllIcons.Actions.Edit,
+        false
+    ),
     RUN(
         "run",
         "Execute IntelliJ IDEA's built-in build and test commands. Use for running Gradle tasks, Maven goals, npm scripts, or test suites. Essential for validating code changes and ensuring project builds correctly. Returns execution output, exit codes, and error information.",

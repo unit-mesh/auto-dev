@@ -1,0 +1,16 @@
+/edit_file
+```
+target_file: "src/main/kotlin/MyClass.kt"
+instructions: "Add a new method to calculate the sum of two numbers"
+code_edit: "class MyClass {
+    // ... existing code ...
+    
+    fun calculateSum(a: Int, b: Int): Int {
+        return a + b
+    }
+    
+    // ... existing code ...
+}"
+```
+
+Use this command for precise file edits with clear context markers. The code_edit should contain the exact changes with // ... existing code ... markers to represent unchanged sections.

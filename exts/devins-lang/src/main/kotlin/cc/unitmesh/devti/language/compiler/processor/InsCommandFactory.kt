@@ -53,6 +53,15 @@ class InsCommandFactory {
                 PatchInsCommand(context.project, prop, devInCode.codeText())
             }
         }
+        BuiltinCommand.EDIT_FILE -> {
+            context.result.isLocalCommand = true
+            val devInCode: CodeBlockElement? = lookupNextCode(used)
+            if (devInCode == null) {
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+            } else {
+                EditFileInsCommand(context.project, prop, devInCode.codeText())
+            }
+        }
         BuiltinCommand.COMMIT -> {
             context.result.isLocalCommand = true
             val devInCode: CodeBlockElement? = lookupNextCode(used)

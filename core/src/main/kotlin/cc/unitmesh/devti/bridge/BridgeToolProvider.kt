@@ -7,7 +7,7 @@ import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 
 object BridgeToolProvider {
-    val Tools = setOf(STRUCTURE, RIPGREP_SEARCH, DATABASE, DIR, WRITE, PATCH, FILE)
+    val Tools = setOf(STRUCTURE, RIPGREP_SEARCH, DATABASE, DIR, WRITE, FILE, EDIT_FILE)
 
     suspend fun collect(project: Project): List<AgentTool> {
         val commonTools = Tools
