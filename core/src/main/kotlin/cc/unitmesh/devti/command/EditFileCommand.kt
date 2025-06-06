@@ -10,8 +10,6 @@ import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.diff.util.DiffUtil
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
