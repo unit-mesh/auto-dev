@@ -85,24 +85,24 @@ class CodeFence(
             for (startMatch in startMatches) {
                 if (startMatch.range.first > currentIndex) {
                     val beforeText = content.substring(currentIndex, startMatch.range.first)
-                    if (beforeText.isNotEmpty()) {
+                    if (beforeText.trim().isNotEmpty()) {
                         parseMarkdownContent(beforeText, codeFences)
                     }
                 }
 
-                val searchRegion = content.substring(startMatch.range.first)
-                val endMatch = devinEndRegex.find(searchRegion)
+                // 在整个内容中查找对应的结束标签，而不是在子字符串中查找
+                val endMatch = devinEndRegex.find(content, startMatch.range.last + 1)
                 val isComplete = endMatch != null
 
                 val devinContent = if (isComplete) {
-                    searchRegion.substring(startMatch.range.length(), endMatch!!.range.first).trim()
+                    content.substring(startMatch.range.last + 1, endMatch!!.range.first).trim()
                 } else {
-                    searchRegion.substring(startMatch.range.length()).trim()
+                    content.substring(startMatch.range.last + 1).trim()
                 }
 
                 codeFences.add(CodeFence(findLanguage("DevIn"), devinContent, isComplete, "devin", "DevIn"))
                 currentIndex = if (isComplete) {
-                    startMatch.range.first + endMatch!!.range.last + 1
+                    endMatch!!.range.last + 1
                 } else {
                     content.length
                 }
@@ -110,7 +110,9 @@ class CodeFence(
 
             if (currentIndex < content.length) {
                 val remainingContent = content.substring(currentIndex)
-                parseMarkdownContent(remainingContent, codeFences)
+                if (remainingContent.trim().isNotEmpty()) {
+                    parseMarkdownContent(remainingContent, codeFences)
+                }
             }
 
             return codeFences.filter {
