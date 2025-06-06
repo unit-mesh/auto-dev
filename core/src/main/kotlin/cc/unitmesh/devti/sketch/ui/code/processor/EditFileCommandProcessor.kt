@@ -39,10 +39,10 @@ class EditFileCommandProcessor(private val project: Project) {
         }
 
         if (isAutoSketchMode) {
-            executeEditFileCommand(currentText, button, onDiffSketchCreated)
+            executeEditFileCommand(currentText, button, panel, onDiffSketchCreated)
         } else {
             button.addActionListener {
-                executeEditFileCommand(currentText, button, onDiffSketchCreated)
+                executeEditFileCommand(currentText, button, panel, onDiffSketchCreated)
             }
         }
 
@@ -65,6 +65,7 @@ class EditFileCommandProcessor(private val project: Project) {
     private fun executeEditFileCommand(
         currentText: String,
         button: JButton,
+        panel: JPanel,
         onDiffSketchCreated: (SingleFileDiffSketch) -> Unit
     ) {
         val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
@@ -74,7 +75,7 @@ class EditFileCommandProcessor(private val project: Project) {
 
         executeEditFileCommandAsync(project, currentText) { result ->
             runInEdt {
-                handleExecutionResult(result, button, onDiffSketchCreated)
+                handleExecutionResult(result, button, panel, onDiffSketchCreated)
             }
         }
     }
@@ -82,14 +83,16 @@ class EditFileCommandProcessor(private val project: Project) {
     private fun handleExecutionResult(
         result: EditResult?,
         button: JButton,
+        panel: JPanel,
         onDiffSketchCreated: (SingleFileDiffSketch) -> Unit
     ) {
         when (result) {
             is EditResult.Success -> {
                 val diffSketch = createSingleFileDiffSketch(result.targetFile, result.patch)
                 onDiffSketchCreated(diffSketch)
-                button.text = "Executed"
-                button.icon = AllIcons.Actions.Checked
+                panel.remove(button)
+                panel.revalidate()
+                panel.repaint()
             }
 
             is EditResult.Error -> {
