@@ -60,7 +60,7 @@ open class CodeHighlightSketch(
     private var isDevIns = false
     private var collapsedPanel: JPanel? = null
     private var previewLabel: JBLabel? = null // 存储预览标签的引用
-    private var isCollapsed = true // 默认折叠状态
+    private var isCollapsed = true
     private var actionButton: ActionButton? = null
     private var isComplete = isUser
     private var hasProcessedDevInCommands = false
@@ -115,12 +115,10 @@ open class CodeHighlightSketch(
             editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
         }
 
-        // 检查是否需要折叠视图
         val needsCollapsedView = shouldUseCollapsedView()
         if (needsCollapsedView) {
             setupCollapsedView(text)
         } else {
-            // 直接添加编辑器内容，不使用折叠
             add(editorFragment!!.getContent())
             isCollapsed = false
         }
@@ -229,7 +227,6 @@ open class CodeHighlightSketch(
         actionButtonPresentation.icon = AllIcons.General.ArrowRight
         return ActionButton(
             DumbAwareAction.create {
-                // 普通编辑器的按钮行为，可以根据需要扩展
             },
             actionButtonPresentation,
             "AutoDevToolbar",
@@ -323,7 +320,6 @@ open class CodeHighlightSketch(
     override fun updateViewText(text: String, complete: Boolean) {
         isComplete = complete
 
-        // Initialize editor if not already done and text is not empty
         if (!hasSetupAction && text.trim().isNotEmpty()) {
             initEditor(text)
         }
@@ -339,8 +335,6 @@ open class CodeHighlightSketch(
             val normalizedText = StringUtil.convertLineSeparators(text)
             try {
                 document?.replaceString(0, document.textLength, normalizedText)
-
-                // Update collapsed panel preview text if applicable
                 if (previewLabel != null && shouldUseCollapsedView()) {
                     val firstLine = normalizedText.lines().firstOrNull() ?: ""
                     previewLabel!!.text = firstLine
@@ -349,7 +343,6 @@ open class CodeHighlightSketch(
                 logger<CodeHighlightSketch>().error("Error updating editor text", e)
             }
 
-            // Update action button icon state
             updateActionButtonIcon()
 
             val lineCount = document?.lineCount ?: 0
@@ -357,14 +350,11 @@ open class CodeHighlightSketch(
                 editorFragment?.updateExpandCollapseLabel()
             }
 
-            // Auto-collapse view when complete (only for collapsible views)
-            // 注意：现在 shouldUseCollapsedView() 已经考虑了 isUser 和 isDevIns 状态
             if (complete && !isCollapsed && shouldUseCollapsedView()) {
                 toggleEditorVisibility()
             }
         }
 
-        // Process DevIn commands when complete (only once)
         if (complete && !isUser && ideaLanguage?.displayName == "DevIn") {
             processDevInCommands(text)
             hasProcessedDevInCommands = true
