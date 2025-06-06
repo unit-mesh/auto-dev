@@ -5,16 +5,15 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.command.EditResult
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.ui.patch.SingleFileDiffSketch
-import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ui.JBUI
-import kotlinx.coroutines.launch
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JPanel
@@ -23,6 +22,7 @@ import javax.swing.JPanel
  * Processor for handling edit file command operations
  */
 class EditFileCommandProcessor(private val project: Project) {
+    private val logger = logger<EditFileCommandProcessor>()
 
     /**
      * Process edit file command and return UI panel with callback for adding diff sketch
@@ -32,22 +32,18 @@ class EditFileCommandProcessor(private val project: Project) {
         onDiffSketchCreated: (SingleFileDiffSketch) -> Unit
     ): JPanel {
         val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
-
         val button = createEditButton(isAutoSketchMode)
-
         val panel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
             add(button)
         }
 
-        val executeCommand = {
-            executeEditFileCommand(currentText, button, onDiffSketchCreated)
-        }
-
         if (isAutoSketchMode) {
-            executeCommand()
+            executeEditFileCommand(currentText, button, onDiffSketchCreated)
         } else {
-            button.addActionListener { executeCommand() }
+            button.addActionListener {
+                executeEditFileCommand(currentText, button, onDiffSketchCreated)
+            }
         }
 
         return panel
@@ -72,16 +68,13 @@ class EditFileCommandProcessor(private val project: Project) {
         onDiffSketchCreated: (SingleFileDiffSketch) -> Unit
     ) {
         val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
-
         button.isEnabled = false
         button.text = if (isAutoSketchMode) "Auto Executing..." else "Executing..."
         button.icon = AutoDevIcons.LOADING
 
-        AutoDevCoroutineScope.scope(project).launch {
-            executeEditFileCommandAsync(project, currentText) { result ->
-                runInEdt {
-                    handleExecutionResult(result, button, onDiffSketchCreated)
-                }
+        executeEditFileCommandAsync(project, currentText) { result ->
+            runInEdt {
+                handleExecutionResult(result, button, onDiffSketchCreated)
             }
         }
     }
@@ -120,26 +113,23 @@ class EditFileCommandProcessor(private val project: Project) {
         }
     }
 
-    private suspend fun executeEditFileCommandAsync(
+    fun executeEditFileCommandAsync(
         project: Project,
         currentText: String,
         callback: (EditResult?) -> Unit
     ) {
         try {
             val codeFences = CodeFence.parseAll(currentText)
-
             if (codeFences.isEmpty()) {
                 callback(EditResult.error("No edit_file commands found in content"))
                 return
             }
 
             val editFileCommand = cc.unitmesh.devti.command.EditFileCommand(project)
-
             for (codeFence in codeFences) {
                 val editRequest = editFileCommand.parseEditRequest(codeFence.text)
-                // the first codefence should be `/edit_file` we can skip it
                 if (editRequest == null) {
-                    return
+                    continue
                 }
 
                 val result = editFileCommand.executeEdit(editRequest)
@@ -153,14 +143,15 @@ class EditFileCommandProcessor(private val project: Project) {
                     }
 
                     is EditResult.Error -> {
+                        logger.error("编辑失败: ${result.message}")
                         callback(result)
                         return
                     }
                 }
             }
-
             callback(EditResult.error("No valid edit_file commands found"))
         } catch (e: Exception) {
+            logger.error("执行过程中发生异常", e)
             callback(EditResult.error("Execution failed: ${e.message}"))
         }
     }
