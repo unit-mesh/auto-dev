@@ -1,10 +1,12 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.command.EditResult
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.sketch.AutoSketchMode
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -27,12 +29,12 @@ class EditFileInsCommand(val myProject: Project, val prop: String, val codeConte
         val result = editFileCommand.executeEdit(editRequest)
 
         return when (result) {
-            is cc.unitmesh.devti.command.EditResult.Success -> {
+            is EditResult.Success -> {
                 // Open the file in editor using EDT
                 val projectDir = myProject.guessProjectDir()
                 val targetFile = projectDir?.findFileByRelativePath(editRequest.targetFile)
                 if (targetFile != null) {
-                    com.intellij.openapi.application.runInEdt {
+                    runInEdt {
                         FileEditorManager.getInstance(myProject).openFile(targetFile, true)
                     }
                 }
@@ -43,7 +45,7 @@ class EditFileInsCommand(val myProject: Project, val prop: String, val codeConte
                     result.message
                 }
             }
-            is cc.unitmesh.devti.command.EditResult.Error -> {
+            is EditResult.Error -> {
                 "$DEVINS_ERROR: ${result.message}"
             }
         }
