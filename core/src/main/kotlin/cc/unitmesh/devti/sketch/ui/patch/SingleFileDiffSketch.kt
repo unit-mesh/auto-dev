@@ -457,16 +457,6 @@ fun createPatchFromCode(oldCode: String, newCode: String): TextFilePatch? {
         textFilePatch.addHunk(hunk)
     }
 
-    ///  List<Difference> differences = Entry.getDifferencesBetween(getEntryFor(l, myRoot), getEntryFor(r, myRoot));
-    //    List<Change> changes = new ArrayList<>();
-    //    for (Difference d : differences) {
-    //      Change c = new Change(d.getLeftContentRevision(myGateway), d.getRightContentRevision(myGateway));
-    //      changes.add(c);
-    //    }
-    //
-    //    Path basePath = myRoot.toNioPath();
-    //    List<FilePatch> patches = IdeaTextPatchBuilder.buildPatch(myProject, changes, basePath, reverse, false);
-
     return textFilePatch
 }
 

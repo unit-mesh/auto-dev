@@ -12,7 +12,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ui.JBUI
 import javax.swing.BoxLayout
 import javax.swing.JButton
