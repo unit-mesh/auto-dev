@@ -31,12 +31,8 @@ class EditFileInsCommand(val myProject: Project, val prop: String, val codeConte
         return when (result) {
             is EditResult.Success -> {
                 // Open the file in editor using EDT
-                val projectDir = myProject.guessProjectDir()
-                val targetFile = projectDir?.findFileByRelativePath(editRequest.targetFile)
-                if (targetFile != null) {
-                    runInEdt {
-                        FileEditorManager.getInstance(myProject).openFile(targetFile, true)
-                    }
+                runInEdt {
+                    FileEditorManager.getInstance(myProject).openFile(result.targetFile, true)
                 }
 
                 if (AutoSketchMode.getInstance(myProject).isEnable) {

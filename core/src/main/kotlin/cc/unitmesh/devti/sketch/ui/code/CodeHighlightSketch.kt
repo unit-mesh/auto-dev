@@ -3,6 +3,7 @@ package cc.unitmesh.devti.sketch.ui.code
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.command.EditResult
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import cc.unitmesh.devti.provider.BuildSystemProvider
@@ -10,6 +11,7 @@ import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider
+import cc.unitmesh.devti.sketch.ui.patch.SingleFileDiffSketch
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import kotlinx.coroutines.launch
@@ -40,6 +42,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -503,58 +506,73 @@ fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
     }
 }
 
-private fun CodeHighlightSketch.handleExecutionResult(result: String?, button: JButton) {
-    if (result != null && !result.startsWith("DEVINS_ERROR")) {
-        val diffSketch = DiffLangSketchProvider().create(project, result)
-        add(diffSketch.getComponent())
-        button.text = "Executed"
-        button.icon = AllIcons.Actions.Checked
-    } else {
-        button.text = "Failed"
-        button.icon = AllIcons.General.Error
-        AutoDevNotifications.warn(project, result ?: "Unknown error occurred")
+private fun CodeHighlightSketch.handleExecutionResult(result: EditResult?, button: JButton) {
+    when (result) {
+        is EditResult.Success -> {
+            val diffSketch = createSingleFileDiffSketch(result.targetFile, result.patch)
+            add(diffSketch.getComponent())
+            button.text = "Executed"
+            button.icon = AllIcons.Actions.Checked
+        }
+        is EditResult.Error -> {
+            button.text = "Failed"
+            button.icon = AllIcons.General.Error
+            AutoDevNotifications.warn(project, result.message)
+        }
+        null -> {
+            button.text = "Failed"
+            button.icon = AllIcons.General.Error
+            AutoDevNotifications.warn(project, "Unknown error occurred")
+        }
     }
 }
 
-private suspend fun executeEditFileCommand(project: Project, currentText: String, callback: (String?) -> Unit) {
+private fun CodeHighlightSketch.createSingleFileDiffSketch(virtualFile: VirtualFile, patch: TextFilePatch): SingleFileDiffSketch {
+    return SingleFileDiffSketch(project, virtualFile, patch) {
+        // Handle view diff action if needed
+    }.apply {
+        this.onComplete("")
+    }
+}
+
+private suspend fun executeEditFileCommand(project: Project, currentText: String, callback: (EditResult?) -> Unit) {
     try {
         val codeFences = CodeFence.parseAll(currentText)
 
         if (codeFences.isEmpty()) {
-            callback("DEVINS_ERROR: No edit_file commands found in content")
+            callback(EditResult.error("No edit_file commands found in content"))
             return
         }
 
         val editFileCommand = cc.unitmesh.devti.command.EditFileCommand(project)
-        val results = mutableListOf<String>()
 
-        // Execute each edit_file command
         for (codeFence in codeFences) {
             val editRequest = editFileCommand.parseEditRequest(codeFence.text)
-            if (editRequest == null) continue
+            // the first codefence should be `/edit_file` we can skip it
+            if (editRequest == null) {
+                return
+            }
 
             val result = editFileCommand.executeEdit(editRequest)
             when (result) {
-                is cc.unitmesh.devti.command.EditResult.Success -> {
-                    val projectDir = project.guessProjectDir()
-                    val targetFile = projectDir?.findFileByRelativePath(editRequest.targetFile)
-                    if (targetFile != null) {
-                        runInEdt {
-                            FileEditorManager.getInstance(project).openFile(targetFile, true)
-                        }
+                is EditResult.Success -> {
+                    runInEdt {
+                        FileEditorManager.getInstance(project).openFile(result.targetFile, true)
                     }
-                    results.add(result.message)
+                    callback(result)
+                    return
                 }
 
-                is cc.unitmesh.devti.command.EditResult.Error -> {
-                    results.add("DEVINS_ERROR: ${result.message}")
+                is EditResult.Error -> {
+                    callback(result)
+                    return
                 }
             }
         }
 
-        callback(results.joinToString("\n"))
+        callback(EditResult.error("No valid edit_file commands found"))
     } catch (e: Exception) {
-        callback("DEVINS_ERROR: ${e.message}")
+        callback(EditResult.error("Execution failed: ${e.message}"))
     }
 }
 

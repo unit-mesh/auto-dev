@@ -10,6 +10,7 @@ import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
@@ -54,9 +55,9 @@ class EditFileCommand(private val project: Project) {
 
             // Generate patch for display
             val patch = createPatchFromCode(originalContent, editedContent)
-            val patchContent = patch?.toString() ?: "No changes detected"
+                ?: return EditResult.error("No changes detected in ${editRequest.targetFile}")
 
-            EditResult.success("File edited successfully: ${editRequest.targetFile}", patchContent)
+            EditResult.success("File edited successfully: ${editRequest.targetFile}", patch, targetFile)
         } catch (e: Exception) {
             EditResult.error("Failed to apply edit to ${editRequest.targetFile}: ${e.message}")
         }
@@ -147,11 +148,11 @@ data class EditRequest(
 )
 
 sealed class EditResult {
-    data class Success(val message: String, val patchContent: String) : EditResult()
+    data class Success(val message: String, val patch: TextFilePatch, val targetFile: VirtualFile) : EditResult()
     data class Error(val message: String) : EditResult()
 
     companion object {
-        fun success(message: String, patchContent: String) = Success(message, patchContent)
+        fun success(message: String, patch: TextFilePatch, targetFile: VirtualFile) = Success(message, patch, targetFile)
         fun error(message: String) = Error(message)
     }
 }
