@@ -3,7 +3,6 @@ package cc.unitmesh.devti.sketch.ui.code
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.command.EditFileCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import cc.unitmesh.devti.provider.BuildSystemProvider
@@ -25,6 +24,7 @@ import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
@@ -38,7 +38,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -137,7 +136,6 @@ open class CodeHighlightSketch(
 
         setupToolbarAndStyling(fileName, editor)
     }
-
 
 
     private val plainText = PlainTextLanguage.INSTANCE.displayName
@@ -517,22 +515,26 @@ private fun CodeHighlightSketch.handleExecutionResult(result: String?, button: J
 }
 
 private suspend fun executeEditFileCommand(project: Project, currentText: String, callback: (String?) -> Unit) {
+    var file: VirtualFile? = null
     try {
         val newFileName = "DevIn-${System.currentTimeMillis()}.devin"
         val language = Language.findLanguageByID("DevIn")
-        val file = ScratchRootType.getInstance()
+        file = ScratchRootType.getInstance()
             .createScratchFile(project, newFileName, language, currentText)
 
         if (file == null) return callback("DEVINS_ERROR: Failed to create scratch file")
 
         val psiFile = runReadAction { PsiManager.getInstance(project).findFile(file)!! }
 
-        RunService.provider(project, file)
-            ?.runFile(project, file, psiFile, isFromToolAction = true)
-            ?: RunService.runInCli(project, psiFile)
-            ?: AutoDevNotifications.notify(project, "No run service found for ${file.name}")
+        runWriteAction {
+            RunService.provider(project, file)
+                ?.runFileAsync(project, file, psiFile)
+                ?: AutoDevNotifications.notify(project, "No run service found for ${file.name}")
+        }
     } catch (e: Exception) {
         callback("DEVINS_ERROR: ${e.message}")
+    } finally {
+        file?.delete(project)
     }
 }
 
