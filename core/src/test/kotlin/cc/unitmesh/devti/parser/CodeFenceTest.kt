@@ -629,7 +629,7 @@ Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
     fun testShouldResolveContinueDevinBlock() {
         val content = """
             我将更新 `CreateBlogRequest` 和 `CreateBlogResponse` 以匹配新的领域模型。
-            
+
             <devin>
             /patch:src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java
             ```patch
@@ -638,21 +638,70 @@ Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
             +++ src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java
             @@ -1,7 +1,7 @@
              package cc.unitmesh.untitled.demo.dto;
-            
+
             -import cc.unitmesh.untitled.demo.entity.Author;
              import lombok.Data;
             +import cc.unitmesh.untitled.demo.domain.Author;
-            
+
              @Data
              public class CreateBlogRequest {
             ```
             </devin>
-            
+
             <devin>
         """.trimIndent()
 
         val codeFences = CodeFence.parseAll(content)
         assertEquals(3, codeFences.size)
+    }
+
+    fun testShouldParseMultipleConsecutiveDevinBlocks() {
+        val content = """
+            这里有多个连续的 devin 块：
+
+            <devin>
+            /write:file1.java
+            public class File1 {}
+            </devin>
+
+            <devin>
+            /write:file2.java
+            public class File2 {}
+            </devin>
+
+            <devin>
+            /write:file3.java
+            public class File3 {}
+            </devin>
+
+            结束文本
+        """.trimIndent()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(5, codeFences.size)
+
+        // 第一个应该是文本块
+        assertEquals("这里有多个连续的 devin 块：", codeFences[0].text)
+        assertEquals(null, codeFences[0].originLanguage)
+
+        // 第二个应该是第一个 devin 块
+        assertEquals("/write:file1.java\npublic class File1 {}", codeFences[1].text)
+        assertEquals("DevIn", codeFences[1].originLanguage)
+        assertTrue(codeFences[1].isComplete)
+
+        // 第三个应该是第二个 devin 块
+        assertEquals("/write:file2.java\npublic class File2 {}", codeFences[2].text)
+        assertEquals("DevIn", codeFences[2].originLanguage)
+        assertTrue(codeFences[2].isComplete)
+
+        // 第四个应该是第三个 devin 块
+        assertEquals("/write:file3.java\npublic class File3 {}", codeFences[3].text)
+        assertEquals("DevIn", codeFences[3].originLanguage)
+        assertTrue(codeFences[3].isComplete)
+
+        // 第五个应该是结束文本
+        assertEquals("结束文本", codeFences[4].text)
+        assertEquals(null, codeFences[4].originLanguage)
     }
 
     fun testShouldResolveContinueDevinBlock2() {
