@@ -34,26 +34,50 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class DiffLangSketch(private val myProject: Project, private var patchContent: String) : ExtensionLangSketch {
+class DiffLangSketch : ExtensionLangSketch {
+    private val myProject: Project
+    private var patchContent: String
     private val mainPanel: JPanel = JPanel(VerticalLayout(2))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
-    private val shelfExecutor = ApplyPatchDefaultExecutor(myProject)
-    private val myReader: PatchReader? = PatchReader(patchContent).also {
-        try {
-            it.parseAllPatches()
-        } catch (e: Exception) {
-            AutoDevNotifications.error(myProject, "Failed to parse patch: ${e.message}")
-            null
-        }
-    }
-    private val filePatches: MutableList<TextFilePatch> = try {
-        myReader?.textPatches
-    } catch (e: Exception) {
-        logger<DiffLangSketch>().warn("Failed to parse patch: ${e.message}")
-        mutableListOf()
-    } ?: mutableListOf()
+    private val shelfExecutor: ApplyPatchDefaultExecutor
+    private val myReader: PatchReader?
+    private val filePatches: MutableList<TextFilePatch>
 
-    init {
+    // Constructor for string-based patch content
+    constructor(myProject: Project, patchContent: String) {
+        this.myProject = myProject
+        this.patchContent = patchContent
+        this.shelfExecutor = ApplyPatchDefaultExecutor(myProject)
+        this.myReader = PatchReader(patchContent).also {
+            try {
+                it.parseAllPatches()
+            } catch (e: Exception) {
+                AutoDevNotifications.error(myProject, "Failed to parse patch: ${e.message}")
+                null
+            }
+        }
+        this.filePatches = try {
+            myReader?.textPatches
+        } catch (e: Exception) {
+            logger<DiffLangSketch>().warn("Failed to parse patch: ${e.message}")
+            mutableListOf()
+        } ?: mutableListOf()
+
+        initializeUI()
+    }
+
+    // Constructor for direct TextFilePatch input
+    constructor(myProject: Project, patch: TextFilePatch) {
+        this.myProject = myProject
+        this.patchContent = patch.singleHunkPatchText
+        this.shelfExecutor = ApplyPatchDefaultExecutor(myProject)
+        this.myReader = null
+        this.filePatches = mutableListOf(patch)
+
+        initializeUI()
+    }
+
+    private fun initializeUI() {
         if (filePatches.size > 1 || filePatches.any { it.beforeName == null }) {
             val header = createHeaderAction()
             myHeaderPanel.add(header, BorderLayout.EAST)
