@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.command.EditResult
 import cc.unitmesh.devti.sketch.AutoSketchMode
-import cc.unitmesh.devti.sketch.ui.patch.SingleFileDiffSketch
+import cc.unitmesh.devti.sketch.ui.patch.DiffLangSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.runInEdt
@@ -29,7 +29,7 @@ class EditFileCommandProcessor(private val project: Project) {
      */
     fun processEditFileCommand(
         currentText: String,
-        onDiffSketchCreated: (SingleFileDiffSketch) -> Unit
+        onDiffSketchCreated: (DiffLangSketch) -> Unit
     ): JPanel {
         val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
         val button = createEditButton(isAutoSketchMode)
@@ -66,7 +66,7 @@ class EditFileCommandProcessor(private val project: Project) {
         currentText: String,
         button: JButton,
         panel: JPanel,
-        onDiffSketchCreated: (SingleFileDiffSketch) -> Unit
+        onDiffSketchCreated: (DiffLangSketch) -> Unit
     ) {
         val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
         button.isEnabled = false
@@ -84,11 +84,11 @@ class EditFileCommandProcessor(private val project: Project) {
         result: EditResult?,
         button: JButton,
         panel: JPanel,
-        onDiffSketchCreated: (SingleFileDiffSketch) -> Unit
+        onDiffSketchCreated: (DiffLangSketch) -> Unit
     ) {
         when (result) {
             is EditResult.Success -> {
-                val diffSketch = createSingleFileDiffSketch(result.targetFile, result.patch)
+                val diffSketch = createDiffLangSketch(result.patch)
                 onDiffSketchCreated(diffSketch)
                 panel.remove(button)
                 panel.revalidate()
@@ -109,11 +109,8 @@ class EditFileCommandProcessor(private val project: Project) {
         }
     }
 
-    private fun createSingleFileDiffSketch(virtualFile: VirtualFile, patch: TextFilePatch): SingleFileDiffSketch {
-        return SingleFileDiffSketch(project, virtualFile, patch) {
-        }.apply {
-            this.onComplete("")
-        }
+    private fun createDiffLangSketch(patch: TextFilePatch): DiffLangSketch {
+        return DiffLangSketch(project, patch)
     }
 
     fun executeEditFileCommandAsync(

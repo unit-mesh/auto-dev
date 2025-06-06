@@ -4,6 +4,7 @@ import cc.unitmesh.devti.bridge.knowledge.lookupFile
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import cc.unitmesh.devti.sketch.ui.patch.writeText
 import cc.unitmesh.devti.sketch.ui.patch.createPatchFromCode
+import cc.unitmesh.devti.util.relativePath
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.WriteAction
@@ -11,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import git4idea.changes.filePath
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
@@ -54,8 +56,11 @@ class EditFileCommand(private val project: Project) {
             }
 
             // Generate patch for display
-            val patch = createPatchFromCode(originalContent, editedContent)
+            var patch = createPatchFromCode(originalContent, editedContent)
                 ?: return EditResult.error("No changes detected in ${editRequest.targetFile}")
+
+            patch.beforeName = targetFile.relativePath(project)
+            patch.afterName = targetFile.relativePath(project)
 
             EditResult.success("File edited successfully: ${editRequest.targetFile}", patch, targetFile)
         } catch (e: Exception) {
