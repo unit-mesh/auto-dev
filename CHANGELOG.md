@@ -1,6 +1,47 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v2.2.0...v) (2025-06-04)
+# [](https://github.com/unit-mesh/auto-dev/compare/v2.2.1...v) (2025-06-06)
 
 ## Unreleased
+
+# [2.2.1](https://github.com/unit-mesh/auto-dev/compare/v2.2.0...v2.2.1) (2025-06-06)
+
+
+### Bug Fixes
+
+* **observer:** correct pipeline monitoring interval ([5210b1e](https://github.com/unit-mesh/auto-dev/commit/5210b1e89a19503211843e82d752a0557d19a0bd))
+* **observer:** improve error handling for GitHub API permissions ([c041f8e](https://github.com/unit-mesh/auto-dev/commit/c041f8e1b89f3820c4c766941fc12e19dae72e88))
+* **observer:** remove log truncation limits for complete failure analysis ([8576cf4](https://github.com/unit-mesh/auto-dev/commit/8576cf4e7744a4b7d925d129ec956d0210ba6232))
+* **observer:** remove success notification and clean comments ([4bd3afe](https://github.com/unit-mesh/auto-dev/commit/4bd3afeeb71bbaddb7d721f6f52308cfadf01b9b))
+* **pipeline:** adjust monitoring timeout and delay settings ([e987065](https://github.com/unit-mesh/auto-dev/commit/e987065e6bd4157b603bbab452583c607ca0be4a))
+* **test:** fix batch test generation cancel button ([9d02979](https://github.com/unit-mesh/auto-dev/commit/9d02979a7e57fd0a163b8b254a387b3286776e5c)), closes [#407](https://github.com/unit-mesh/auto-dev/issues/407)
+
+
+### Features
+
+* **codehighlight:** improve editor visibility logic ([6b74688](https://github.com/unit-mesh/auto-dev/commit/6b74688bf5cc5ff8947d2548b4e42f1e0efc4302))
+* **commands:** replace PATCH with EDIT_FILE command [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([937cd23](https://github.com/unit-mesh/auto-dev/commit/937cd23fe4dfe241be948dcd4abb0eac02a138ec))
+* **commit:** add job cancellation support for AI generation [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([efdbe21](https://github.com/unit-mesh/auto-dev/commit/efdbe211064509e86c1511e80ce92f9df17dbec2))
+* **commit:** add support for shelving changes based on AutoSketchMode [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([39768e4](https://github.com/unit-mesh/auto-dev/commit/39768e484d6658f3d39ea82edf35f2ee8ddb551a))
+* **commit:** integrate GitHub issue context into AI generation [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([ccfcbcd](https://github.com/unit-mesh/auto-dev/commit/ccfcbcd6d07f3c9be357ed74442424b9effe158d))
+* **commit:** streamline GitHub issue integration workflow ([610f67a](https://github.com/unit-mesh/auto-dev/commit/610f67a92a9173a61c9d00310603da78f0737606))
+* **git:** add GitHub repository parsing from project [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([dde0c55](https://github.com/unit-mesh/auto-dev/commit/dde0c55fa24dbe5bad470ee7c03bb8fffeefc31d))
+* **github:** add GitHub issues browser action [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([c864bbe](https://github.com/unit-mesh/auto-dev/commit/c864bbe85a713fc8686e2030b4cfe7d76e708825))
+* **github:** enable GitHub issues action with dedicated icon ([dc48d17](https://github.com/unit-mesh/auto-dev/commit/dc48d17725de9c676be26e196b2f83504e329463))
+* **github:** improve GitHub issues popup positioning [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([979ef19](https://github.com/unit-mesh/auto-dev/commit/979ef19060b403a5dd7fce669aaf33c8fdc9c553))
+* **github:** simplify commit message format for issues [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([e44cdb4](https://github.com/unit-mesh/auto-dev/commit/e44cdb49457b765f3c66bc1fb4a18d06ee85102d))
+* **git:** integrate GitHub issues into commit message action [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([61b5395](https://github.com/unit-mesh/auto-dev/commit/61b5395b61ee78c1348372ab55f0c4d7b6141eae))
+* **llm:** add EventSource cancellation support ([728d341](https://github.com/unit-mesh/auto-dev/commit/728d3415fa3b046b9660a10910649c3c02ad0a2a))
+* **observer:** add detailed GitHub workflow failure analysis ([b5e67af](https://github.com/unit-mesh/auto-dev/commit/b5e67af6556e9e22a0b8b7884374fe72db7b1b6b))
+* remove button after success and use apply ([212234f](https://github.com/unit-mesh/auto-dev/commit/212234f3719dd403f4440df85a78f9c4838133ee))
+* **sketch:** add plan compression and auto-pin to tool window [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([0b7eaa8](https://github.com/unit-mesh/auto-dev/commit/0b7eaa8925d0a08fcab38a584781c041575ee9a0))
+* **sketch:** add plan compression and auto-pin to tool window [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([ff8937b](https://github.com/unit-mesh/auto-dev/commit/ff8937b3bdec6686cf0227d5d33ad8fa412e00e6))
+* **ui:** add AI-assisted commit dialog with diff viewer ([c46fd9e](https://github.com/unit-mesh/auto-dev/commit/c46fd9e0e9890e64cbc3e39c9d36cbd3f3eb033e)), closes [#408](https://github.com/unit-mesh/auto-dev/issues/408)
+* **ui:** add EDIT_FILE command support with diff view [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([b31f560](https://github.com/unit-mesh/auto-dev/commit/b31f560beca363c63abc23dfa879015a48fd99d8))
+* **ui:** refactor CodeHighlightSketch for unified collapse view [#408](https://github.com/unit-mesh/auto-dev/issues/408) ([d2036fb](https://github.com/unit-mesh/auto-dev/commit/d2036fb2497393e66b3b96eead2fed350062ea0a))
+* **wechat:** add WeChat component view provider ([db78ba2](https://github.com/unit-mesh/auto-dev/commit/db78ba215243fe7ce35129db8bb48989c66a6cc2)), closes [#406](https://github.com/unit-mesh/auto-dev/issues/406)
+* **wechat:** add WeChat miniprogram plugin configuration [#406](https://github.com/unit-mesh/auto-dev/issues/406) ([ec1aa92](https://github.com/unit-mesh/auto-dev/commit/ec1aa928e395b3b3de7fa4bdd78d7e154433b5db))
+* **wechat:** add WeChat miniprogram plugin support ([a013e48](https://github.com/unit-mesh/auto-dev/commit/a013e481850ed0f235e385f89baeb283476c5a09))
+* **wechat:** enable component view provider for WeChat projects [#406](https://github.com/unit-mesh/auto-dev/issues/406) ([5d3df2f](https://github.com/unit-mesh/auto-dev/commit/5d3df2f23d7085a97bc74860d2005234cb0daa67))
+
 
 
 # [2.2.0](https://github.com/unit-mesh/auto-dev/compare/v2.1.3...v2.2.0) (2025-06-03)
