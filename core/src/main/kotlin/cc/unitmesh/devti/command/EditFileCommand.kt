@@ -56,7 +56,7 @@ class EditFileCommand(private val project: Project) {
             }
 
             // Generate patch for display
-            var patch = createPatchFromCode(originalContent, editedContent)
+            val patch = createPatchFromCode(originalContent, editedContent)
                 ?: return EditResult.error("No changes detected in ${editRequest.targetFile}")
 
             patch.beforeName = targetFile.relativePath(project)

@@ -13,6 +13,7 @@ import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorProvider
@@ -29,6 +30,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.containers.MultiMap
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.io.StringWriter
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
@@ -69,7 +71,10 @@ class DiffLangSketch : ExtensionLangSketch {
     // Constructor for direct TextFilePatch input
     constructor(myProject: Project, patch: TextFilePatch) {
         this.myProject = myProject
-        this.patchContent = patch.singleHunkPatchText
+        val writer = StringWriter()
+        UnifiedDiffWriter.write(myProject, listOf(patch), writer, "\n", null)
+        this.patchContent = writer.toString()
+
         this.shelfExecutor = ApplyPatchDefaultExecutor(myProject)
         this.myReader = null
         this.filePatches = mutableListOf(patch)
