@@ -1,20 +1,15 @@
 package cc.unitmesh.devti.sketch.ui.code
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.command.EditResult
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import cc.unitmesh.devti.provider.BuildSystemProvider
-import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.ui.LangSketch
-import cc.unitmesh.devti.sketch.ui.patch.SingleFileDiffSketch
-import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import cc.unitmesh.devti.sketch.ui.code.processor.EditFileCommandProcessor
+import cc.unitmesh.devti.sketch.ui.code.processor.WriteCommandProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
-import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -22,23 +17,19 @@ import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
@@ -46,13 +37,14 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
-import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.Cursor
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.Icon
+import javax.swing.JComponent
+import javax.swing.JPanel
 
 open class CodeHighlightSketch(
     open val project: Project,
@@ -164,8 +156,6 @@ open class CodeHighlightSketch(
     private fun setupCollapsedView(text: String) {
         collapsedPanel = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(2)
-
-            // 根据是否为 DevIns 创建不同的按钮
             actionButton = if (isDevIns) {
                 createDevInsButton(text)
             } else {
@@ -173,7 +163,6 @@ open class CodeHighlightSketch(
             }
 
             val firstLine = text.lines().firstOrNull() ?: ""
-            // 创建预览标签并存储引用，以便在 updateViewText 中直接更新
             previewLabel = JBLabel(firstLine).apply {
                 border = JBUI.Borders.emptyLeft(4)
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
@@ -373,7 +362,10 @@ open class CodeHighlightSketch(
         val currentText = getViewText()
         if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
             val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
-            processWriteCommand(currentText, fileName)
+            val writeProcessor = WriteCommandProcessor(project)
+            val panel = writeProcessor.processWriteCommand(currentText, fileName)
+            add(panel)
+
             if (BuildSystemProvider.isDeclarePackageFile(fileName)) {
                 val ext = fileName?.substringAfterLast(".")
                 val parse = CodeFence.parse(editorFragment!!.editor.document.text)
@@ -382,7 +374,11 @@ open class CodeHighlightSketch(
                 add(sketch)
             }
         } else if (currentText.startsWith("/" + BuiltinCommand.EDIT_FILE.commandName)) {
-            processEditFileCommand(currentText)
+            val editProcessor = EditFileCommandProcessor(project)
+            val panel = editProcessor.processEditFileCommand(currentText) { diffSketch ->
+                add(diffSketch.getComponent())
+            }
+            add(panel)
         }
     }
 
@@ -417,153 +413,6 @@ open class CodeHighlightSketch(
             }
         }
         Disposer.dispose(this)
-    }
-}
-
-/**
- * Add Write Command Action
- */
-fun CodeHighlightSketch.processWriteCommand(currentText: String, fileName: String?) {
-    val button = JButton(AutoDevBundle.message("sketch.write.to.file"), AllIcons.Actions.MenuSaveall).apply {
-        preferredSize = JBUI.size(120, 30)
-
-        addActionListener {
-            val newFileName = "DevIn-${System.currentTimeMillis()}.devin"
-            val language = Language.findLanguageByID("DevIn")
-            val file = ScratchRootType.getInstance()
-                .createScratchFile(project, newFileName, language, currentText)
-
-            this.text = "Written to $fileName"
-            this.isEnabled = false
-
-            if (file == null) return@addActionListener
-
-            val psiFile = PsiManager.getInstance(project).findFile(file)!!
-
-            RunService.provider(project, file)
-                ?.runFile(project, file, psiFile, isFromToolAction = true)
-                ?: RunService.runInCli(project, psiFile)
-                ?: AutoDevNotifications.notify(project, "No run service found for ${file.name}")
-        }
-    }
-
-    val panel = JPanel()
-    panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
-    panel.add(button)
-
-    add(panel)
-}
-
-/**
- * Add Edit File Command Action
- */
-fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
-    val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
-
-    val button = if (isAutoSketchMode) {
-        JButton("Auto Executing...", AutoDevIcons.LOADING).apply {
-            isEnabled = false
-            preferredSize = JBUI.size(150, 30)
-        }
-    } else {
-        JButton("Execute Edit File", AllIcons.Actions.Execute).apply {
-            preferredSize = JBUI.size(120, 30)
-        }
-    }
-
-    val panel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.X_AXIS)
-        add(button)
-    }
-    add(panel)
-
-    val executeCommand = {
-        button.isEnabled = false
-        button.text = if (isAutoSketchMode) "Auto Executing..." else "Executing..."
-        button.icon = AutoDevIcons.LOADING
-
-        AutoDevCoroutineScope.scope(project).launch {
-            executeEditFileCommand(project, currentText) { result ->
-                runInEdt {
-                    handleExecutionResult(result, button)
-                }
-            }
-        }
-    }
-
-    if (isAutoSketchMode) {
-        executeCommand()
-    } else {
-        button.addActionListener { executeCommand() }
-    }
-}
-
-private fun CodeHighlightSketch.handleExecutionResult(result: EditResult?, button: JButton) {
-    when (result) {
-        is EditResult.Success -> {
-            val diffSketch = createSingleFileDiffSketch(result.targetFile, result.patch)
-            add(diffSketch.getComponent())
-            button.text = "Executed"
-            button.icon = AllIcons.Actions.Checked
-        }
-        is EditResult.Error -> {
-            button.text = "Failed"
-            button.icon = AllIcons.General.Error
-            AutoDevNotifications.warn(project, result.message)
-        }
-        null -> {
-            button.text = "Failed"
-            button.icon = AllIcons.General.Error
-            AutoDevNotifications.warn(project, "Unknown error occurred")
-        }
-    }
-}
-
-private fun CodeHighlightSketch.createSingleFileDiffSketch(virtualFile: VirtualFile, patch: TextFilePatch): SingleFileDiffSketch {
-    return SingleFileDiffSketch(project, virtualFile, patch) {
-    }.apply {
-        this.onComplete("")
-    }
-}
-
-private suspend fun executeEditFileCommand(project: Project, currentText: String, callback: (EditResult?) -> Unit) {
-    try {
-        val codeFences = CodeFence.parseAll(currentText)
-
-        if (codeFences.isEmpty()) {
-            callback(EditResult.error("No edit_file commands found in content"))
-            return
-        }
-
-        val editFileCommand = cc.unitmesh.devti.command.EditFileCommand(project)
-
-        for (codeFence in codeFences) {
-            val editRequest = editFileCommand.parseEditRequest(codeFence.text)
-            // the first codefence should be `/edit_file` we can skip it
-            if (editRequest == null) {
-                return
-            }
-
-            val result = editFileCommand.executeEdit(editRequest)
-            when (result) {
-                is EditResult.Success -> {
-                    runInEdt {
-                        FileEditorManager.getInstance(project).openFile(result.targetFile, true)
-                    }
-                    callback(result)
-                    return
-                }
-
-                is EditResult.Error -> {
-                    callback(result)
-                    return
-                }
-            }
-        }
-
-        callback(EditResult.error("No valid edit_file commands found"))
-    } catch (e: Exception) {
-        callback(EditResult.error("Execution failed: ${e.message}"))
     }
 }
 
