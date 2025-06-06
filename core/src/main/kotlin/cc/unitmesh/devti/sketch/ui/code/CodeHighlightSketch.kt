@@ -533,8 +533,6 @@ private suspend fun executeEditFileCommand(project: Project, currentText: String
         }
     } catch (e: Exception) {
         callback("DEVINS_ERROR: ${e.message}")
-    } finally {
-        file?.delete(project)
     }
 }
 
