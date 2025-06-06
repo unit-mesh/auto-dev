@@ -160,10 +160,8 @@ class EditFileCommand(private val project: Project) {
      */
     fun parseEditRequest(content: String): EditRequest? {
         return try {
-            // First try YAML parsing (new format)
             parseAsYaml(content) ?: parseAsLegacyFormat(content)
         } catch (e: Exception) {
-            // If YAML parsing fails, try legacy regex parsing for backward compatibility
             parseAsLegacyFormat(content)
         }
     }
