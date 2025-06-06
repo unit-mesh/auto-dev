@@ -86,6 +86,7 @@ open class CodeHighlightSketch(
             displayName == "Markdown" -> false
             ideaLanguage == PlainTextLanguage.INSTANCE -> false
             displayName == plainText -> false
+            !isUser && !isDevIns -> false
             else -> true
         }
     }
@@ -265,16 +266,19 @@ open class CodeHighlightSketch(
 
     private fun toggleEditorVisibility() {
         if (isCollapsed) {
-            // 展开：移除折叠面板，添加编辑器内容和折叠标签
             remove(collapsedPanel)
             add(editorFragment!!.getContent())
 
-            val fewerLinesLabel = createFewerLinesLabel()
-            add(fewerLinesLabel)
+            val lineCount = editorFragment?.editor?.document?.lineCount ?: 0
+            if (lineCount > editorLineThreshold) {
+                editorFragment?.updateExpandCollapseLabel()
+            } else {
+                val fewerLinesLabel = createFewerLinesLabel()
+                add(fewerLinesLabel)
+            }
 
             isCollapsed = false
         } else {
-            // 折叠：移除所有内容，只显示折叠面板
             removeAll()
             add(collapsedPanel!!)
             isCollapsed = true
@@ -349,6 +353,7 @@ open class CodeHighlightSketch(
             }
 
             // Auto-collapse view when complete (only for collapsible views)
+            // 注意：现在 shouldUseCollapsedView() 已经考虑了 isUser 和 isDevIns 状态
             if (complete && !isCollapsed && shouldUseCollapsedView()) {
                 toggleEditorVisibility()
             }
