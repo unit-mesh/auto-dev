@@ -465,64 +465,54 @@ fun CodeHighlightSketch.processWriteCommand(currentText: String, fileName: Strin
 fun CodeHighlightSketch.processEditFileCommand(currentText: String) {
     val isAutoSketchMode = AutoSketchMode.getInstance(project).isEnable
 
-    if (isAutoSketchMode) {
-        val button = JButton("Auto Executing...", AutoDevIcons.LOADING).apply {
+    val button = if (isAutoSketchMode) {
+        JButton("Auto Executing...", AutoDevIcons.LOADING).apply {
             isEnabled = false
             preferredSize = JBUI.size(150, 30)
         }
+    } else {
+        JButton("Execute Edit File", AllIcons.Actions.Execute).apply {
+            preferredSize = JBUI.size(120, 30)
+        }
+    }
 
-        val panel = JPanel()
-        panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
-        panel.add(button)
-        add(panel)
+    val panel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.X_AXIS)
+        add(button)
+    }
+    add(panel)
+
+    val executeCommand = {
+        button.isEnabled = false
+        button.text = if (isAutoSketchMode) "Auto Executing..." else "Executing..."
+        button.icon = AutoDevIcons.LOADING
 
         AutoDevCoroutineScope.scope(project).launch {
             executeEditFileCommand(project, currentText) { result ->
                 runInEdt {
-                    if (result != null && !result.startsWith("DEVINS_ERROR")) {
-                        val diffSketch = DiffLangSketchProvider().create(project, result)
-                        add(diffSketch.getComponent())
-                        button.text = "Executed"
-                        button.icon = AllIcons.Actions.Checked
-                    } else {
-                        button.text = "Failed"
-                        button.icon = AllIcons.General.Error
-                        AutoDevNotifications.warn(project, result ?: "Unknown error occurred")
-                    }
+                    handleExecutionResult(result, button)
                 }
             }
         }
+    }
+
+    if (isAutoSketchMode) {
+        executeCommand()
     } else {
-        val executeButton = JButton("Execute Edit File", AllIcons.Actions.Execute).apply {
-            preferredSize = JBUI.size(120, 30)
-            addActionListener {
-                this.isEnabled = false
-                this.text = "Executing..."
-                this.icon = AutoDevIcons.LOADING
+        button.addActionListener { executeCommand() }
+    }
+}
 
-                AutoDevCoroutineScope.scope(project).launch {
-                    executeEditFileCommand(project, currentText) { result ->
-                        runInEdt {
-                            if (result != null && !result.startsWith("DEVINS_ERROR")) {
-                                val diffSketch = DiffLangSketchProvider().create(project, result)
-                                add(diffSketch.getComponent())
-                                this@apply.text = "Executed"
-                                this@apply.icon = AllIcons.Actions.Checked
-                            } else {
-                                this@apply.text = "Failed"
-                                this@apply.icon = AllIcons.General.Error
-                                AutoDevNotifications.warn(project, result ?: "Unknown error occurred")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        val panel = JPanel()
-        panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
-        panel.add(executeButton)
-        add(panel)
+private fun CodeHighlightSketch.handleExecutionResult(result: String?, button: JButton) {
+    if (result != null && !result.startsWith("DEVINS_ERROR")) {
+        val diffSketch = DiffLangSketchProvider().create(project, result)
+        add(diffSketch.getComponent())
+        button.text = "Executed"
+        button.icon = AllIcons.Actions.Checked
+    } else {
+        button.text = "Failed"
+        button.icon = AllIcons.General.Error
+        AutoDevNotifications.warn(project, result ?: "Unknown error occurred")
     }
 }
 
