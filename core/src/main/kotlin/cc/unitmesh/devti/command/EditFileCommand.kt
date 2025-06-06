@@ -12,21 +12,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
-import git4idea.changes.filePath
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import java.util.concurrent.CompletableFuture
 
-/**
- * Core edit file functionality that can be used across modules
- */
 class EditFileCommand(private val project: Project) {
     private val editApply = EditApply()
 
-    /**
-     * Apply edit to a file and return the patch content
-     */
     fun executeEdit(editRequest: EditRequest): EditResult {
         val projectDir = project.guessProjectDir() ?: return EditResult.error("Project directory not found")
 
@@ -37,7 +30,6 @@ class EditFileCommand(private val project: Project) {
             val originalContent = targetFile.readText()
             val editedContent = editApply.applyEdit(originalContent, editRequest.codeEdit)
 
-            // Write the edited content to file using EDT
             val future = CompletableFuture<String>()
             runInEdt {
                 try {
@@ -70,15 +62,11 @@ class EditFileCommand(private val project: Project) {
 
     private fun findTargetFile(targetPath: String, projectDir: VirtualFile): VirtualFile? {
         return runReadAction {
-            // Try relative path first
             projectDir.findFileByRelativePath(targetPath)
                 ?: project.lookupFile(targetPath)
         }
     }
 
-    /**
-     * Parse edit_file function call format using YAML parsing for better handling of quotes and special characters
-     */
     fun parseEditRequest(content: String): EditRequest? {
         return try {
             parseAsYaml(content) ?: parseAsLegacyFormat(content)
@@ -87,9 +75,6 @@ class EditFileCommand(private val project: Project) {
         }
     }
 
-    /**
-     * Parse content as YAML format (recommended approach)
-     */
     private fun parseAsYaml(content: String): EditRequest? {
         return try {
             val yaml = Yaml(SafeConstructor(LoaderOptions()))
@@ -109,17 +94,12 @@ class EditFileCommand(private val project: Project) {
         }
     }
 
-    /**
-     * Parse content using legacy regex format for backward compatibility
-     */
     private fun parseAsLegacyFormat(content: String): EditRequest? {
         return try {
-            // Parse the edit_file function call format - handle both JSON-like and function parameter formats
             val targetFileRegex = """target_file["\s]*[:=]["\s]*["']([^"']+)["']""".toRegex()
             val instructionsRegex =
                 """instructions["\s]*[:=]["\s]*["']([^"']*?)["']""".toRegex(RegexOption.DOT_MATCHES_ALL)
 
-            // For code_edit, we need to handle multiline content more carefully
             val codeEditPattern = """code_edit["\s]*[:=]["\s]*["'](.*?)["']""".toRegex(RegexOption.DOT_MATCHES_ALL)
 
             val targetFileMatch = targetFileRegex.find(content)
