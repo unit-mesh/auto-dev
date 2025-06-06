@@ -6,7 +6,6 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.findFile
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -142,7 +141,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     }
 
     private fun tryGetEditor(): Editor? {
-        var defaultEditor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return null
+        val defaultEditor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return null
 
         val fileRegex = Regex("/patch:(.*)")
         val matchResult = fileRegex.find(patchContent)
@@ -184,7 +183,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         return panel
     }
 
-    private fun handleAcceptAction() {
+    fun handleAcceptAction() {
         PsiDocumentManager.getInstance(myProject).commitAllDocuments()
         val commandProcessor: CommandProcessor = CommandProcessor.getInstance()
 
@@ -224,7 +223,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             MyApplyPatchFromClipboardDialog(myProject, patchContent).show()
             return
         } else {
-            showSingleDiff(this@DiffLangSketch.myProject, this@DiffLangSketch.patchContent, this) {
+            showSingleDiff(this@DiffLangSketch.myProject, this@DiffLangSketch.patchContent) {
                 handleAcceptAction()
             }
         }
@@ -240,7 +239,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     override fun dispose() {}
 }
 
-fun showSingleDiff(project: Project, patchContent: String, disposable: Disposable, handleAccept: (() -> Unit)?) {
+fun showSingleDiff(project: Project, patchContent: String, handleAccept: (() -> Unit)?) {
     val editorProvider = FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
         it.javaClass.simpleName == "DiffPatchFileEditorProvider" || it.javaClass.simpleName == "DiffEditorProvider"
     }
