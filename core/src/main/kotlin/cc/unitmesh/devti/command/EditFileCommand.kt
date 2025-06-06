@@ -12,6 +12,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
@@ -126,9 +128,13 @@ class EditFileCommand(private val project: Project) {
     }
 }
 
+@Serializable
 data class EditRequest(
+    @SerialName("target_file")
     val targetFile: String,
+    @SerialName("instructions")
     val instructions: String,
+    @SerialName("code_edit")
     val codeEdit: String
 )
 
