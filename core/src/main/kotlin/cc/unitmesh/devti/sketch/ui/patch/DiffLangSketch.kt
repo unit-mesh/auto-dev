@@ -45,7 +45,6 @@ class DiffLangSketch : ExtensionLangSketch {
     private val myReader: PatchReader?
     private val filePatches: MutableList<TextFilePatch>
 
-    // Constructor for string-based patch content
     constructor(myProject: Project, patchContent: String) {
         this.myProject = myProject
         this.patchContent = patchContent
@@ -68,7 +67,6 @@ class DiffLangSketch : ExtensionLangSketch {
         initializeUI()
     }
 
-    // Constructor for direct TextFilePatch input
     constructor(myProject: Project, patch: TextFilePatch) {
         this.myProject = myProject
         val writer = StringWriter()
@@ -133,7 +131,6 @@ class DiffLangSketch : ExtensionLangSketch {
     private fun createDiffPanel(patch: TextFilePatch): SingleFileDiffSketch? {
         return when {
             patch.beforeName != null -> {
-                /// if before file is empty, should set new code empty, it should be new file
                 val originFile = myProject.findFile(patch.beforeName!!) ?: LightVirtualFile(patch.beforeName!!, "")
                 createSingleFileDiffSketch(originFile, patch)
             }
