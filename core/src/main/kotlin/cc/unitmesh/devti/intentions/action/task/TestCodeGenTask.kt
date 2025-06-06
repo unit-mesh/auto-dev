@@ -54,14 +54,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
-        // Check for cancellation early
         indicator.checkCanceled()
 
         AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
         val testContext = autoTestService.findOrCreateTestFile(request.file, request.project, request.element)
         DumbService.getInstance(request.project).waitForSmartMode()
 
-        // Check for cancellation after waiting for smart mode
         indicator.checkCanceled()
 
         if (testContext == null) {
@@ -73,7 +71,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
 
-        // Check for cancellation before collecting context
         indicator.checkCanceled()
 
         val testPromptContext = TestCodeGenContext()
@@ -90,8 +87,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         }
 
         testPromptContext.frameworkContext = contextItems.joinToString("\n", transform = ChatContextItem::text)
-
-        // Check for cancellation before read actions
         indicator.checkCanceled()
 
         ReadAction.compute<Unit, Throwable> {

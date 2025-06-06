@@ -72,7 +72,6 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
                 indicator.fraction = 0.0
 
                 files.forEachIndexed { index, file ->
-                    // Check for cancellation before processing each file
                     indicator.checkCanceled()
 
                     indicator.text = "Processing ${index + 1}/$total: ${file.name}"
@@ -87,11 +86,9 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
                         task.run(indicator)
                         indicator.fraction = (index + 1).toDouble() / total
                     } catch (e: ProcessCanceledException) {
-                        // User cancelled, stop processing
                         indicator.text = "Batch test generation cancelled"
                         throw e
                     } catch (e: Exception) {
-                        // Log error but continue with next file
                         logger.warn("Failed to generate test for file: ${file.name}", e)
                         indicator.fraction = (index + 1).toDouble() / total
                     }
