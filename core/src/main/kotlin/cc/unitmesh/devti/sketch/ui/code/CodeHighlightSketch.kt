@@ -63,6 +63,7 @@ open class CodeHighlightSketch(
     private var isCollapsed = true // 默认折叠状态
     private var actionButton: ActionButton? = null
     private var isComplete = isUser
+    private var hasProcessedDevInCommands = false
 
     private var textLanguage: String? = if (ideaLanguage != null) ideaLanguage?.displayName else null
 
@@ -327,6 +328,10 @@ open class CodeHighlightSketch(
             initEditor(text)
         }
 
+        if (hasProcessedDevInCommands) {
+            return
+        }
+
         WriteCommandAction.runWriteCommandAction(project) {
             if (editorFragment?.editor?.isDisposed == true) return@runWriteCommandAction
 
@@ -358,13 +363,16 @@ open class CodeHighlightSketch(
                 toggleEditorVisibility()
             }
         }
+
+        // Process DevIn commands when complete (only once)
+        if (complete && !isUser && ideaLanguage?.displayName == "DevIn") {
+            processDevInCommands(text)
+        }
+
+        hasProcessedDevInCommands = true
     }
 
-    override fun onDoneStream(allText: String) {
-        // Only process DevIns commands for non-user messages
-        if (isUser || ideaLanguage?.displayName != "DevIn") return
-
-        val currentText = getViewText()
+    private fun processDevInCommands(currentText: String) {
         if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
             val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
             val writeProcessor = WriteCommandProcessor(project)
@@ -385,6 +393,10 @@ open class CodeHighlightSketch(
             }
             add(panel)
         }
+    }
+
+    override fun onDoneStream(allText: String) {
+        // Logic moved to updateViewText with isComplete condition for better real-time performance
     }
 
     override fun getComponent(): JComponent = this
