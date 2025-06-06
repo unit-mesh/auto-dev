@@ -10,11 +10,9 @@ import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.ui.LangSketch
-import cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider
 import cc.unitmesh.devti.sketch.ui.patch.SingleFileDiffSketch
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
-import kotlinx.coroutines.launch
 import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
@@ -25,10 +23,9 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEx
@@ -38,11 +35,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -51,16 +46,13 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.Cursor
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.BoxLayout
-import javax.swing.JButton
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.Icon
+import javax.swing.*
 
 open class CodeHighlightSketch(
     open val project: Project,
@@ -529,7 +521,6 @@ private fun CodeHighlightSketch.handleExecutionResult(result: EditResult?, butto
 
 private fun CodeHighlightSketch.createSingleFileDiffSketch(virtualFile: VirtualFile, patch: TextFilePatch): SingleFileDiffSketch {
     return SingleFileDiffSketch(project, virtualFile, patch) {
-        // Handle view diff action if needed
     }.apply {
         this.onComplete("")
     }
