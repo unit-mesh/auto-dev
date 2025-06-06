@@ -26,6 +26,7 @@ import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -53,9 +54,15 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
+        // Check for cancellation early
+        indicator.checkCanceled()
+
         AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
         val testContext = autoTestService.findOrCreateTestFile(request.file, request.project, request.element)
         DumbService.getInstance(request.project).waitForSmartMode()
+
+        // Check for cancellation after waiting for smart mode
+        indicator.checkCanceled()
 
         if (testContext == null) {
             AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
@@ -66,16 +73,27 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
 
+        // Check for cancellation before collecting context
+        indicator.checkCanceled()
+
         val testPromptContext = TestCodeGenContext()
 
         val creationContext =
             ChatCreationContext(ChatOrigin.Intention, actionType, request.file, listOf(), element = request.element)
 
         val contextItems: List<ChatContextItem> = runBlocking {
+            // Check for cancellation in the blocking context
+            if (indicator.isCanceled) {
+                throw ProcessCanceledException()
+            }
             ChatContextProvider.collectChatContextList(request.project, creationContext)
         }
 
         testPromptContext.frameworkContext = contextItems.joinToString("\n", transform = ChatContextItem::text)
+
+        // Check for cancellation before read actions
+        indicator.checkCanceled()
+
         ReadAction.compute<Unit, Throwable> {
             if (testContext.relatedClasses.isNotEmpty()) {
                 testPromptContext.relatedClasses = testContext.relatedClasses.joinToString("\n") {
@@ -113,6 +131,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         testPromptContext.isNewFile = testContext.isNewFile
         testPromptContext.extContext = getCustomAgentTestContext(testPromptContext)
 
+        // Check for cancellation before template rendering
+        indicator.checkCanceled()
+
         templateRender.context = testPromptContext
         val prompter = templateRender.renderTemplate(template)
 
@@ -120,6 +141,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
 
         indicator.fraction = 0.6
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
+
+        // Check for cancellation before LLM request
+        indicator.checkCanceled()
 
         val flow: Flow<String> = try {
             LlmFactory.create(request.project).stream(prompter, "", false)
@@ -130,13 +154,28 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         }
 
         runBlocking {
-            writeTestToFile(request.project, flow, testContext)
+            // Check for cancellation before writing to file
+            if (indicator.isCanceled) {
+                throw ProcessCanceledException()
+            }
+
+            writeTestToFile(request.project, flow, testContext, indicator)
+
+            // Check for cancellation before verification
+            if (indicator.isCanceled) {
+                throw ProcessCanceledException()
+            }
 
             indicator.fraction = 1.0
             indicator.text = AutoDevBundle.message("intentions.chat.code.test.verify")
 
             try {
                 autoTestService.collectSyntaxError(testContext.outputFile, request.project) {
+                    // Check for cancellation before fixing syntax errors
+                    if (indicator.isCanceled) {
+                        throw ProcessCanceledException()
+                    }
+
                     autoTestService.tryFixSyntaxError(testContext.outputFile, request.project, it)
 
                     if (it.isNotEmpty()) {
@@ -146,9 +185,15 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
                         )
                         indicator.fraction = 1.0
                     } else {
-                        autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement, false)
+                        // Check for cancellation before running tests
+                        if (!indicator.isCanceled) {
+                            autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement, false)
+                        }
                     }
                 }
+            } catch (e: ProcessCanceledException) {
+                // Re-throw cancellation exception
+                throw e
             } catch (e: Exception) {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
                 indicator.fraction = 1.0
@@ -169,6 +214,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         project: Project,
         flow: Flow<String>,
         context: TestFileContext,
+        indicator: ProgressIndicator
     ) {
         val fileEditorManager = FileEditorManager.getInstance(project)
         var editors: Array<FileEditor> = emptyArray()
@@ -183,6 +229,11 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
             val editor = fileEditorManager.selectedTextEditor
 
             flow.collect {
+                // Check for cancellation during flow collection
+                if (indicator.isCanceled) {
+                    throw ProcessCanceledException()
+                }
+
                 suggestion.append(it)
                 val codeBlocks = MarkdownCodeHelper.parseCodeFromString(suggestion.toString())
                 codeBlocks.forEach {
@@ -200,6 +251,10 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
 
         val suggestion = StringBuilder()
         flow.collect {
+            // Check for cancellation during flow collection
+            if (indicator.isCanceled) {
+                throw ProcessCanceledException()
+            }
             suggestion.append(it)
         }
 

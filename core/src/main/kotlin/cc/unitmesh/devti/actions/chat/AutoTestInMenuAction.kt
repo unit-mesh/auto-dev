@@ -8,8 +8,7 @@ import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ActionPlaces.PROJECT_VIEW_POPUP
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.progress.EmptyProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.*
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
@@ -21,9 +20,11 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.file.PsiDirectoryFactory
-import java.util.concurrent.Executors
+import com.intellij.openapi.diagnostic.logger
 
 class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.code.test.name")) {
+    private val logger = logger<AutoTestInMenuAction>()
+
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST
@@ -60,26 +61,49 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
     }
 
     private fun batchGenerateTests(files: List<PsiFile>, project: Project, editor: Editor?) {
-        val total = files.size
-        val executor = Executors.newSingleThreadExecutor()
-        files.forEachIndexed { index, file ->
-            val task = TestCodeGenTask(
-                TestCodeGenRequest(file, file, project, editor),
-                AutoDevBundle.message("intentions.chat.code.test.name")
-            )
+        val batchTask = object : Task.Backgroundable(
+            project,
+            AutoDevBundle.message("intentions.chat.code.test.name") + " (Batch)",
+            true
+        ) {
+            override fun run(indicator: ProgressIndicator) {
+                val total = files.size
+                indicator.isIndeterminate = false
+                indicator.fraction = 0.0
 
-            executor.submit {
-                val progressMessage = """${index + 1}/${total} Processing file ${file.name} for test generation"""
-                ProgressManager.getInstance().runProcessWithProgressSynchronously(
-                    {
-                        task.run(object : EmptyProgressIndicator() {})
-                    },
-                    progressMessage, true, project
-                )
+                files.forEachIndexed { index, file ->
+                    // Check for cancellation before processing each file
+                    indicator.checkCanceled()
+
+                    indicator.text = "Processing ${index + 1}/$total: ${file.name}"
+                    indicator.fraction = index.toDouble() / total
+
+                    val task = TestCodeGenTask(
+                        TestCodeGenRequest(file, file, project, editor),
+                        AutoDevBundle.message("intentions.chat.code.test.name")
+                    )
+
+                    try {
+                        task.run(indicator)
+                        indicator.fraction = (index + 1).toDouble() / total
+                    } catch (e: ProcessCanceledException) {
+                        // User cancelled, stop processing
+                        indicator.text = "Batch test generation cancelled"
+                        throw e
+                    } catch (e: Exception) {
+                        // Log error but continue with next file
+                        logger.warn("Failed to generate test for file: ${file.name}", e)
+                        indicator.fraction = (index + 1).toDouble() / total
+                    }
+                }
+
+                indicator.fraction = 1.0
+                indicator.text = "Batch test generation completed"
             }
         }
 
-        executor.shutdown()
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(batchTask, BackgroundableProcessIndicator(batchTask))
     }
 
     private fun isEnabled(e: AnActionEvent): Boolean {
