@@ -157,26 +157,48 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             override fun run(indicator: ProgressIndicator) {
                 indicator.text = "Connecting to GitHub..."
                 indicator.fraction = 0.1
-                try {
-                    indicator.text = "Fetching repository issues..."
-                    indicator.fraction = 0.5
-                    val issues = fetchGitHubIssues(project)
-                    indicator.fraction = 0.9
-                    ApplicationManager.getApplication().invokeLater {
-                        if (issues.isEmpty()) {
-                            // No issues found, fall back to AI generation
+
+                val job = AutoDevCoroutineScope.scope(project).launch {
+                    try {
+                        val issues = withTimeout(5000) {
+                            indicator.text = "Fetching repository issues..."
+                            indicator.fraction = 0.5
+                            fetchGitHubIssues(project)
+                        }
+                        indicator.fraction = 0.9
+
+                        ApplicationManager.getApplication().invokeLater {
+                            if (issues.isEmpty()) {
+                                // No issues found, fall back to AI generation
+                                val changes = currentChanges ?: return@invokeLater
+                                generateAICommitMessage(project, commitMessage, changes)
+                            } else {
+                                createIssuesPopup(commitMessage, issues).showInBestPositionFor(event.dataContext)
+                            }
+                        }
+                    } catch (ex: TimeoutCancellationException) {
+                        ApplicationManager.getApplication().invokeLater {
+                            logger.info("GitHub issues fetch timed out after 5 seconds, falling back to AI generation")
+                            AutoDevNotifications.notify(project, "GitHub connection timeout, generating commit message without issue context.")
+                            // Fall back to AI generation when timeout occurs
                             val changes = currentChanges ?: return@invokeLater
                             generateAICommitMessage(project, commitMessage, changes)
-                        } else {
-                            createIssuesPopup(commitMessage, issues).showInBestPositionFor(event.dataContext)
+                        }
+                    } catch (ex: Exception) {
+                        ApplicationManager.getApplication().invokeLater {
+                            logger.warn("Failed to fetch GitHub issues, falling back to AI generation", ex)
+                            // Fall back to AI generation when GitHub issues fetch fails
+                            val changes = currentChanges ?: return@invokeLater
+                            generateAICommitMessage(project, commitMessage, changes)
                         }
                     }
-                } catch (ex: Exception) {
-                    ApplicationManager.getApplication().invokeLater {
-                        logger.warn("Failed to fetch GitHub issues, falling back to AI generation", ex)
-                        // Fall back to AI generation when GitHub issues fetch fails
-                        val changes = currentChanges ?: return@invokeLater
-                        generateAICommitMessage(project, commitMessage, changes)
+                }
+
+                runBlocking {
+                    try {
+                        job.join()
+                    } catch (ex: Exception) {
+                        logger.warn("Error waiting for GitHub issues fetch", ex)
                     }
                 }
             }
