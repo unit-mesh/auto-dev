@@ -40,28 +40,17 @@ class InputControlsManager(
     private val editorListeners: EventDispatcher<AutoDevInputListener>
 ) {
     private val logger = logger<InputControlsManager>()
+    lateinit var input: AutoDevInput private set
     
-    // Input components
-    lateinit var input: AutoDevInput
-        private set
-    
-    // Button components
     private lateinit var sendButtonPresentation: Presentation
     private lateinit var stopButtonPresentation: Presentation
     private lateinit var enhanceButtonPresentation: Presentation
-    lateinit var sendButton: ActionButton
-        private set
-    lateinit var stopButton: ActionButton
-        private set
-    lateinit var enhanceButton: ActionButton
-        private set
-    lateinit var buttonPanel: JPanel
-        private set
+    lateinit var sendButton: ActionButton private set
+    lateinit var stopButton: ActionButton private set
+    lateinit var enhanceButton: ActionButton private set
+    lateinit var buttonPanel: JPanel private set
     
-    // Document listener
     private lateinit var documentListener: DocumentListener
-    
-    // Tokenizer for validation
     private var tokenizer: Tokenizer? = try {
         lazy { TokenizerFactory.createTokenizer() }.value
     } catch (e: Exception) {
@@ -83,7 +72,6 @@ class InputControlsManager(
     }
     
     private fun createButtons(inputSection: AutoDevInputSection) {
-        // Create presentations
         sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send")).apply {
             icon = AutoDevIcons.SEND
         }
@@ -97,7 +85,6 @@ class InputControlsManager(
             isEnabled = project.service<DomainDictService>().loadContent()?.isNotEmpty() == true
         }
         
-        // Create buttons
         sendButton = ActionButton(
             DumbAwareAction.create {
                 editorListeners.multicaster.onSubmit(inputSection, AutoDevInputTrigger.Button)
