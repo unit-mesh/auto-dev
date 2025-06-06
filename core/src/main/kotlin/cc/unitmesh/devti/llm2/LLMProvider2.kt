@@ -45,6 +45,9 @@ abstract class LLMProvider2 protected constructor(
     /** The job that is sending the request */
     protected var _sendingJob: Job? = null
 
+    /** The current EventSource for SSE streaming */
+    protected var _currentEventSource: EventSource? = null
+
     /**
      * 为会话创建一个 CoroutineScope
      *
@@ -70,7 +73,7 @@ abstract class LLMProvider2 protected constructor(
         var result = ""
         var sessionId: String? = null
 
-        factory.newEventSource(request, object : EventSourceListener() {
+        val eventSource = factory.newEventSource(request, object : EventSourceListener() {
             override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
                 super.onEvent(eventSource, id, type, data)
                 if (data == "[DONE]") {
@@ -90,11 +93,13 @@ abstract class LLMProvider2 protected constructor(
                     logger.warn(IllegalStateException("cannot parse with responseResolver: ${responseResolver}, ori data: $data"))
                     ""
                 }
+
                 result += chunk
                 onEvent(SessionMessageItem(Message("system", result)))
             }
 
             override fun onClosed(eventSource: EventSource) {
+                _currentEventSource = null
                 if (result.isEmpty()) {
                     onFailure(IllegalStateException("response is empty"))
                 }
@@ -102,6 +107,7 @@ abstract class LLMProvider2 protected constructor(
             }
 
             override fun onFailure(eventSource: EventSource, t: Throwable?, response: Response?) {
+                _currentEventSource = null
                 onFailure(
                     t ?: RuntimeException("error: ${response?.code} ${response?.message} ${response?.body?.string()}")
                 )
@@ -111,6 +117,9 @@ abstract class LLMProvider2 protected constructor(
                 onOpen()
             }
         })
+
+        // Store the EventSource reference so we can cancel it later
+        _currentEventSource = eventSource
     }
 
     /**
@@ -142,11 +151,9 @@ abstract class LLMProvider2 protected constructor(
                     sessionId = sessionId,
                     timestamp = System.currentTimeMillis()
                 )
-
                 ApplicationManager.getApplication().messageBus
                     .syncPublisher(TokenUsageListener.TOPIC)
                     .onTokenUsage(tokenUsageEvent)
-
                 logger.info("Token usage event published: prompt=${usage.promptTokens}, completion=${usage.completionTokens}, total=${usage.totalTokens}")
             }
         } catch (e: Exception) {
@@ -182,10 +189,12 @@ abstract class LLMProvider2 protected constructor(
                 logger.info("response: $content")
                 val result: String = runCatching<String> {
                     val result: String? = JsonPath.parse(content)?.read(responseResolver)
-                    result ?: throw java.lang.IllegalStateException("cannot parse with responseResolver: ${responseResolver}, ori data: $content")
+                    result
+                        ?: throw java.lang.IllegalStateException("cannot parse with responseResolver: ${responseResolver}, ori data: $content")
                 }.getOrElse {
                     throw IllegalStateException("cannot parse with responseResolver: ${responseResolver}, ori data: $content")
                 }
+
                 return SessionMessageItem(Message("system", result))
             }
         }
@@ -217,15 +226,18 @@ abstract class LLMProvider2 protected constructor(
     /** 同步取消当前请求，并将等待请求完成 */
     suspend fun cancelCurrentRequest(session: ChatSession<Message>) {
         _sendingJob?.cancelAndJoin()
+        _currentEventSource?.cancel()
+        _currentEventSource = null
     }
 
     /** 取消当前请求，本 api 不会等待请求完成 */
     fun cancelCurrentRequestSync() {
         _sendingJob?.cancel()
+        _currentEventSource?.cancel()
+        _currentEventSource = null
     }
 
     companion object {
-
         /** 返回在配置中设置的 provider */
         operator fun invoke(autoDevSettingsState: AutoDevSettingsState = AutoDevSettingsState.getInstance()): LLMProvider2 =
             LLMProvider2(
@@ -273,12 +285,12 @@ abstract class LLMProvider2 protected constructor(
             return GithubCopilotProvider(
                 responseResolver = if (stream) "\$.choices[0].delta.content" else "\$.choices[0].message.content",
                 requestCustomize = """{"customFields": {
-                        "model": "$actualModelName",
-                        "intent": false,
-                        "n": 1,
-                        "temperature": 0.1,
-                        "stream": ${ if (stream) "true" else "false" }
-                    }}
+                    "model": "$actualModelName",
+                    "intent": false,
+                    "n": 1,
+                    "temperature": 0.1,
+                    "stream": ${if (stream) "true" else "false"}
+                }}
                 """.trimIndent(),
                 project = project,
             )
@@ -319,16 +331,19 @@ private class DefaultLLMTextProvider(
 
     override fun textComplete(session: ChatSession<Message>, stream: Boolean): Flow<SessionMessageItem<Message>> {
         val client = httpClient.newBuilder().readTimeout(Duration.ofSeconds(30)).build()
+
         val requestBuilder = Request.Builder().apply {
             if (authorizationKey.isNotEmpty()) {
                 addHeader("Authorization", "Bearer $authorizationKey")
             }
             appendCustomHeaders(requestCustomize)
         }
+
         val customRequest = CustomRequest(session.chatHistory.map {
             val cm = it.chatMessage
             Message(cm.role, cm.content)
         })
+
         val requestBodyText = customRequest.updateCustomFormat(requestCustomize)
         val content = requestBodyText.toByteArray()
         val requestBody = content.toRequestBody("application/json".toMediaTypeOrNull(), 0, content.size)
@@ -360,6 +375,7 @@ private class DefaultLLMTextProvider(
                     }
                 }
             }
+
             awaitClose()
         }
     }
