@@ -367,9 +367,8 @@ open class CodeHighlightSketch(
         // Process DevIn commands when complete (only once)
         if (complete && !isUser && ideaLanguage?.displayName == "DevIn") {
             processDevInCommands(text)
+            hasProcessedDevInCommands = true
         }
-
-        hasProcessedDevInCommands = true
     }
 
     private fun processDevInCommands(currentText: String) {
