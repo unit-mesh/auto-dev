@@ -32,9 +32,11 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -515,22 +517,42 @@ private fun CodeHighlightSketch.handleExecutionResult(result: String?, button: J
 }
 
 private suspend fun executeEditFileCommand(project: Project, currentText: String, callback: (String?) -> Unit) {
-    var file: VirtualFile? = null
     try {
-        val newFileName = "DevIn-${System.currentTimeMillis()}.devin"
-        val language = Language.findLanguageByID("DevIn")
-        file = ScratchRootType.getInstance()
-            .createScratchFile(project, newFileName, language, currentText)
+        val codeFences = CodeFence.parseAll(currentText)
 
-        if (file == null) return callback("DEVINS_ERROR: Failed to create scratch file")
-
-        val psiFile = runReadAction { PsiManager.getInstance(project).findFile(file)!! }
-
-        runWriteAction {
-            RunService.provider(project, file)
-                ?.runFileAsync(project, file, psiFile)
-                ?: AutoDevNotifications.notify(project, "No run service found for ${file.name}")
+        if (codeFences.isEmpty()) {
+            callback("DEVINS_ERROR: No edit_file commands found in content")
+            return
         }
+
+        val editFileCommand = cc.unitmesh.devti.command.EditFileCommand(project)
+        val results = mutableListOf<String>()
+
+        // Execute each edit_file command
+        for (codeFence in codeFences) {
+            val editRequest = editFileCommand.parseEditRequest(codeFence.text)
+            if (editRequest == null) continue
+
+            val result = editFileCommand.executeEdit(editRequest)
+            when (result) {
+                is cc.unitmesh.devti.command.EditResult.Success -> {
+                    val projectDir = project.guessProjectDir()
+                    val targetFile = projectDir?.findFileByRelativePath(editRequest.targetFile)
+                    if (targetFile != null) {
+                        runInEdt {
+                            FileEditorManager.getInstance(project).openFile(targetFile, true)
+                        }
+                    }
+                    results.add(result.message)
+                }
+
+                is cc.unitmesh.devti.command.EditResult.Error -> {
+                    results.add("DEVINS_ERROR: ${result.message}")
+                }
+            }
+        }
+
+        callback(results.joinToString("\n"))
     } catch (e: Exception) {
         callback("DEVINS_ERROR: ${e.message}")
     }
