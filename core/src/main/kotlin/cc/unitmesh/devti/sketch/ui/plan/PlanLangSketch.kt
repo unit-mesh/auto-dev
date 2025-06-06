@@ -48,9 +48,10 @@ class PlanLangSketch(
         setupUI()
         renderPlan()
 
-        // 默认Pin到工具窗口（如果启用）
+        // 如果启用自动Pin，默认显示为压缩状态
         if (autoPinEnabled && !isInToolwindow) {
-            // 延迟执行，确保组件已完全初始化
+            showCompressedContent()
+            // 延迟执行Pin操作，确保组件已完全初始化
             invokeLater {
                 autoPinToToolWindow()
             }
@@ -83,6 +84,7 @@ class PlanLangSketch(
 
                 val expandIcon = JBLabel(AllIcons.General.ArrowRight).apply {
                     cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                    toolTipText = "Click to expand plan details"
                     addMouseListener(object : MouseAdapter() {
                         override fun mouseClicked(e: MouseEvent) {
                             toggleCompression()
@@ -90,11 +92,21 @@ class PlanLangSketch(
                     })
                 }
 
-                val titleLabel = JLabel("Plan (${agentTaskItems.size} tasks)").apply {
+                val pinIcon = JBLabel(AllIcons.Toolbar.Pin).apply {
+                    toolTipText = "Plan is pinned to tool window"
+                }
+
+                val titleLabel = JLabel().apply {
                     font = font.deriveFont(font.style or java.awt.Font.BOLD)
+                    text = if (autoPinEnabled) {
+                        "Plan pinned (${agentTaskItems.size} tasks)"
+                    } else {
+                        "Plan (${agentTaskItems.size} tasks)"
+                    }
                 }
 
                 add(expandIcon)
+                if (autoPinEnabled) add(pinIcon)
                 add(titleLabel)
             }
 
@@ -160,6 +172,10 @@ class PlanLangSketch(
             showFullContent()
         } else {
             showCompressedContent()
+            // 当切换到压缩模式时，自动Pin到工具窗口
+            if (!isInToolwindow) {
+                autoPinToToolWindow()
+            }
         }
     }
 
@@ -185,8 +201,13 @@ class PlanLangSketch(
         compressedPanel?.let { panel ->
             val titlePanel = panel.getComponent(0) as? JPanel
             titlePanel?.let { tp ->
-                val titleLabel = tp.components.find { it is JLabel && it != tp.components[0] } as? JLabel
-                titleLabel?.text = "Plan (${agentTaskItems.size} tasks)"
+                // 找到标题标签（最后一个JLabel组件）
+                val titleLabel = tp.components.filterIsInstance<JLabel>().lastOrNull()
+                titleLabel?.text = if (autoPinEnabled) {
+                    "Plan pinned (${agentTaskItems.size} tasks)"
+                } else {
+                    "Plan (${agentTaskItems.size} tasks)"
+                }
             }
         }
     }
@@ -237,10 +258,11 @@ class PlanLangSketch(
             updatePlan(agentPlans)
             savePlanToService()
 
-            // 自动Pin到工具窗口
-            if (autoPinEnabled) {
+            // 如果没有启用自动Pin，则在完成时Pin到工具窗口
+            if (!autoPinEnabled) {
                 autoPinToToolWindow()
             }
+            // 如果启用了自动Pin，工具窗口内容会自动更新，因为我们调用了updatePlan
 
             hasUpdated = true
         }
