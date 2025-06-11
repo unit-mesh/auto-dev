@@ -50,5 +50,6 @@ data class JsonSchemaObject(
 
 @Serializable
 data class PropertySchema(
-    val type: String
+    val type: String,
+    val description: String? = null
 )

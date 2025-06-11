@@ -76,7 +76,7 @@ class IssueEvaluateTool : AbstractMcpTool<IssueArgs>() {
 }
 
 @Serializable
-data class CreateTestForFileArgs(val fileName: String)
+data class CreateTestForFileArgs(@McpParam(description = "file_name for create test") val fileName: String)
 
 class CreateTestForFileTool : AbstractMcpTool<CreateTestForFileArgs>() {
     override val name: String = "create_test_for_file"
