@@ -14,27 +14,6 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.guessProjectDir
 import kotlin.io.path.createDirectories
 
-/**
- * The `GenerateGitHubActionsAction` class is a Kotlin class that extends the `AnAction` class. It represents an action that can be performed in the IntelliJ IDEA IDE to generate GitHub Actions for Continuous Integration and Continuous Deployment (CI/CD) workflows.
- *
- * This action is triggered when the user selects the option to generate GitHub Actions from the IDE's menu. It performs the following steps:
- * 1. Retrieves the current project from the `AnActionEvent` object.
- * 2. Guesses the build system used in the project by calling the `BuildSystemProvider.guess()` method.
- * 3. Initializes a `TemplateRender` object with the template path "genius/cicd".
- * 4. Creates a `DevOpsContext` object from the guessed build system and sets it as the context for the `TemplateRender` object.
- * 5. Retrieves the template named "generate-github-action.vm" from the `TemplateRender` object.
- * 6. Resolves the path to the `.github/workflows` directory in the project and creates it if it doesn't exist.
- * 7. Builds the messages required for the template rendering by calling the `buildMsgs()` method of the `TemplateRender` object.
- * 8. Creates a `FileGenerateTask` object with the project, messages, and output file name "ci.yml".
- * 9. Runs the `FileGenerateTask` asynchronously with a progress indicator using the `ProgressManager.getInstance().runProcessWithProgressAsynchronously()` method.
- *
- * This class does not return any code directly. It is responsible for triggering the generation of GitHub Actions and handling the progress of the generation process.
- *
- * @constructor Creates a new instance of the `GenerateGitHubActionsAction` class.
- * @extends AnAction
- *
- * @param name The name of the action, which is displayed in the IDE's menu.
- */
 class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.genius.cicd.github")) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
