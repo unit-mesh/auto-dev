@@ -83,13 +83,6 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
 
                     if (workflowNotFoundCount >= maxWorkflowNotFoundAttempts) {
                         log.info("No workflow found after $maxWorkflowNotFoundAttempts attempts, stopping monitoring")
-                        project?.let { currentProject ->
-                            AutoDevNotifications.notify(
-                                currentProject,
-                                "No GitHub Action workflow found for commit: ${commitSha.take(7)}",
-                                NotificationType.INFORMATION
-                            )
-                        }
                         stopMonitoring()
                     }
                 }

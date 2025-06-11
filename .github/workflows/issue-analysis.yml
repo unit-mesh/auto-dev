@@ -1,0 +1,38 @@
+name: 🤖 AutoDev Remote Agent - automated Issue Analysis
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+jobs:
+  analyze:
+    name: Analyze Issue with AI
+    runs-on: ubuntu-latest
+
+    # Only run on issues, not pull requests
+    if: github.event.issue && !github.event.issue.pull_request
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: 🔍 Analyze Issue with AutoDev
+        uses: unit-mesh/autodev-remote-agent-action@v0.4.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deepseek-token: ${{ secrets.DEEPSEEK_TOKEN }}
+          analysis-depth: medium
+          auto-comment: true
+          auto-label: true
+          exclude-labels: 'wontfix,duplicate,invalid'
+          include-labels: 'bug,enhancement,question,documentation'
+
+      - name: 📊 Log Analysis Results
+        if: always()
+        run: |
+          echo "Issue analysis completed for #${{ github.event.issue.number }}"
+          echo "Issue title: ${{ github.event.issue.title }}"
+          echo "Analysis depth: medium"
