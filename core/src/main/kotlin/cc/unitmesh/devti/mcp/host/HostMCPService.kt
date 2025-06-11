@@ -170,12 +170,13 @@ class MCPService : RestService() {
 
         val properties = constructor.parameters.mapNotNull { param ->
             param.name?.let { name ->
+                val description = param.annotations.filterIsInstance<McpParam>().firstOrNull()?.description
                 name to when (param.type.classifier) {
-                    String::class -> PropertySchema("string")
-                    Int::class, Long::class, Double::class, Float::class -> PropertySchema("number")
-                    Boolean::class -> PropertySchema("boolean")
-                    List::class -> PropertySchema("array")
-                    else -> PropertySchema("object")
+                    String::class -> PropertySchema("string", description)
+                    Int::class, Long::class, Double::class, Float::class -> PropertySchema("number", description)
+                    Boolean::class -> PropertySchema("boolean", description)
+                    List::class -> PropertySchema("array", description)
+                    else -> PropertySchema("object", description)
                 }
             }
         }.toMap()
