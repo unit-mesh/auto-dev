@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.llm2
 
+import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomRequest
 import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.llms.custom.Usage
@@ -20,6 +21,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -27,6 +31,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.sse.*
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * LLMProvider2 is an abstract class that provides a base implementation for LLM (Large Language Model) providers.
@@ -42,11 +47,10 @@ abstract class LLMProvider2 protected constructor(
     protected val logger: Logger = logger<LLMProvider2>(),
     protected val httpClient: OkHttpClient = OkHttpClient(),
 ) {
-    /** The job that is sending the request */
     protected var _sendingJob: Job? = null
-
-    /** The current EventSource for SSE streaming */
-    protected var _currentEventSource: EventSource? = null
+    private val _currentEventSource = AtomicReference<EventSource?>(null)
+    private val eventSourceManager = EventSourceManager()
+    private val jobMutex = Mutex()
 
     /**
      * 为会话创建一个 CoroutineScope
@@ -99,15 +103,18 @@ abstract class LLMProvider2 protected constructor(
             }
 
             override fun onClosed(eventSource: EventSource) {
-                _currentEventSource = null
+                clearCurrentEventSource()
+                eventSourceManager.clearReference()
                 if (result.isEmpty()) {
                     onFailure(IllegalStateException("response is empty"))
+                } else {
+                    onClosed()
                 }
-                onClosed()
             }
 
             override fun onFailure(eventSource: EventSource, t: Throwable?, response: Response?) {
-                _currentEventSource = null
+                clearCurrentEventSource()
+                eventSourceManager.clearReference()
                 onFailure(
                     t ?: RuntimeException("error: ${response?.code} ${response?.message} ${response?.body?.string()}")
                 )
@@ -118,8 +125,25 @@ abstract class LLMProvider2 protected constructor(
             }
         })
 
-        // Store the EventSource reference so we can cancel it later
-        _currentEventSource = eventSource
+        // Store the EventSource reference atomically
+        _currentEventSource.set(eventSource)
+
+        // Set the EventSource using the manager
+        try {
+            runBlocking {
+                eventSourceManager.setEventSource(eventSource)
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to set EventSource", e)
+            onFailure(e)
+        }
+    }
+
+    /**
+     * Safely clear the current EventSource reference
+     */
+    private fun clearCurrentEventSource() {
+        _currentEventSource.set(null)
     }
 
     /**
@@ -223,18 +247,58 @@ abstract class LLMProvider2 protected constructor(
         stream: Boolean = true,
     ): Flow<SessionMessageItem<Message>>
 
-    /** 同步取消当前请求，并将等待请求完成 */
+    /**
+     * 同步取消当前请求，并将等待请求完成
+     *
+     * This method safely cancels both the coroutine job and EventSource
+     */
     suspend fun cancelCurrentRequest(session: ChatSession<Message>) {
-        _sendingJob?.cancelAndJoin()
-        _currentEventSource?.cancel()
-        _currentEventSource = null
+        jobMutex.withLock {
+            // Cancel the coroutine job first
+            _sendingJob?.cancelAndJoin()
+            _sendingJob = null
+
+            // Then cancel and clear the EventSource
+            val eventSource = _currentEventSource.get()
+            if (eventSource != null) {
+                try {
+                    eventSource.cancel()
+                    logger.debug("EventSource cancelled successfully")
+                } catch (e: Exception) {
+                    logger.warn("Error cancelling EventSource", e)
+                } finally {
+                    _currentEventSource.set(null)
+                }
+            }
+        }
+
+        // Cancel the EventSource
+        eventSourceManager.cancelCurrent()
     }
 
-    /** 取消当前请求，本 api 不会等待请求完成 */
+    /**
+     * 取消当前请求，本 api 不会等待请求完成
+     *
+     * This method provides non-blocking cancellation
+     */
     fun cancelCurrentRequestSync() {
+        // Cancel the coroutine job without waiting
         _sendingJob?.cancel()
-        _currentEventSource?.cancel()
-        _currentEventSource = null
+        _sendingJob = null
+
+        // Cancel the EventSource without waiting
+        val eventSource = _currentEventSource.getAndSet(null)
+        if (eventSource != null) {
+            try {
+                eventSource.cancel()
+                logger.debug("EventSource cancelled synchronously")
+            } catch (e: Exception) {
+                logger.warn("Error cancelling EventSource synchronously", e)
+            }
+        }
+
+        // Cancel the EventSource synchronously
+        eventSourceManager.cancelCurrentSync()
     }
 
     companion object {
