@@ -369,8 +369,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     private fun createIssuesPopup(commitMessage: CommitMessage, issues: List<IssueDisplayItem>): JBPopup {
         var chosenIssue: IssueDisplayItem? = null
-        var selectedIndex: Int = -1
-
         return JBPopupFactory.getInstance().createPopupChooserBuilder(issues)
             .setTitle("Select GitHub Issue (ESC to skip)")
             .setVisibleRowCount(10)
@@ -454,8 +452,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         selectedIssue = null
         val project = commitMessage.editorField.project ?: return
         val changes = currentChanges ?: return
-        val event = currentEvent ?: return
-
         // Generate AI commit message without issue context
         generateAICommitMessage(project, commitMessage, changes)
     }
