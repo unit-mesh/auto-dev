@@ -5,6 +5,7 @@ import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.utils.lookupFile
+import cc.unitmesh.devti.sketch.AutoSketchMode
 import cc.unitmesh.devti.sketch.ui.patch.writeText
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
@@ -37,7 +38,9 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val virtualFile = runReadAction { myProject.lookupFile(filepath) }!!
         runInEdt {
             virtualFile.writeText(content)
-            FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+            if (!AutoSketchMode.getInstance(myProject).isEnable) {
+                FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+            }
         }
 
         return "Writing to file: $argument"
