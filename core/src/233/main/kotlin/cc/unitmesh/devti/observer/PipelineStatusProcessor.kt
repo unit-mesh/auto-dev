@@ -79,7 +79,7 @@ class PipelineStatusProcessor : AgentObserver, GitPushListener {
                     }
                 } ?: run {
                     workflowNotFoundCount++
-                    log.info("Workflow not found for commit: $commitSha (attempt $workflowNotFoundCount/$maxWorkflowNotFoundAttempts)")
+                    log.info("Workflow not found for $remoteUrl commit: $commitSha (attempt $workflowNotFoundCount/$maxWorkflowNotFoundAttempts)")
 
                     if (workflowNotFoundCount >= maxWorkflowNotFoundAttempts) {
                         log.info("No workflow found after $maxWorkflowNotFoundAttempts attempts, stopping monitoring")
