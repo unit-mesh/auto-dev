@@ -71,9 +71,9 @@ class EditFileCommand(private val project: Project) {
 
     fun parseEditRequest(content: String): EditRequest? {
         return try {
-            parseAsYaml(content) ?: parseAsLegacyFormat(content)
+            parseAsYaml(content) ?: parseAsAdvancedFormat(content) ?: parseAsLegacyFormat(content)
         } catch (e: Exception) {
-            parseAsLegacyFormat(content)
+            parseAsAdvancedFormat(content) ?: parseAsLegacyFormat(content)
         }
     }
 
@@ -91,6 +91,44 @@ class EditFileCommand(private val project: Project) {
                 instructions = instructions,
                 codeEdit = codeEdit
             )
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun parseAsAdvancedFormat(content: String): EditRequest? {
+        return try {
+            val targetFileRegex = """target_file\s*:\s*["']?([^"'\n]+)["']?""".toRegex()
+            val instructionsRegex = """instructions\s*:\s*["']?([^"'\n]*?)["']?""".toRegex()
+
+            val blockScalarPattern = """code_edit\s*:\s*\|\s*\n(.*?)(?=\n\S|\n*$)""".toRegex(RegexOption.DOT_MATCHES_ALL)
+
+            val quotedStringPattern = """code_edit\s*:\s*["'](.*?)["']""".toRegex(RegexOption.DOT_MATCHES_ALL)
+
+            val targetFileMatch = targetFileRegex.find(content)
+            val instructionsMatch = instructionsRegex.find(content)
+
+            val codeEditMatch = blockScalarPattern.find(content) ?: quotedStringPattern.find(content)
+
+            if (targetFileMatch != null && codeEditMatch != null) {
+                val codeEditContent = if (blockScalarPattern.matches(codeEditMatch.value)) {
+                    codeEditMatch.groupValues[1].trimEnd()
+                } else {
+                    // Handle quoted string - process escape sequences
+                    codeEditMatch.groupValues[1]
+                        .replace("\\n", "\n")
+                        .replace("\\\"", "\"")
+                        .replace("\\'", "'")
+                }
+
+                EditRequest(
+                    targetFile = targetFileMatch.groupValues[1].trim(),
+                    instructions = instructionsMatch?.groupValues?.get(1)?.trim() ?: "",
+                    codeEdit = codeEditContent
+                )
+            } else {
+                null
+            }
         } catch (e: Exception) {
             null
         }
