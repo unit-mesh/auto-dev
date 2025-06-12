@@ -155,6 +155,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     private fun generateGitHubIssueCommitMessage(project: Project, commitMessage: CommitMessage, event: AnActionEvent) {
         val task = object : Task.Backgroundable(project, "Loading GitHub issues", true) {
             override fun run(indicator: ProgressIndicator) {
+                // Fix: Set indeterminate to false before setting fraction
+                indicator.isIndeterminate = false
                 indicator.text = "Connecting to GitHub..."
                 indicator.fraction = 0.1
 
