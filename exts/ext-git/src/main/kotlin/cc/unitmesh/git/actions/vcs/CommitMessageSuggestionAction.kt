@@ -51,10 +51,21 @@ import kotlinx.coroutines.flow.*
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.GHIssueState
 import java.awt.Point
+import java.util.concurrent.ConcurrentHashMap
 import javax.swing.JList
 import javax.swing.ListSelectionModel.SINGLE_SELECTION
 
 data class IssueDisplayItem(val issue: GHIssue, val displayText: String)
+
+/**
+ * Cache entry for GitHub issues with timestamp for TTL management
+ */
+private data class IssueCacheEntry(
+    val issues: List<IssueDisplayItem>,
+    val timestamp: Long
+) {
+    fun isExpired(ttlMs: Long): Boolean = System.currentTimeMillis() - timestamp > ttlMs
+}
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
     private val logger = logger<CommitMessageSuggestionAction>()
@@ -71,6 +82,37 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     private var currentChanges: List<Change>? = null
     private var currentEvent: AnActionEvent? = null
     private var isGitHubRepository: Boolean = false
+
+    companion object {
+        // In-memory cache for GitHub issues with 5-minute TTL
+        private val issuesCache = ConcurrentHashMap<String, IssueCacheEntry>()
+        private const val CACHE_TTL_MS = 5 * 60 * 1000L // 5 minutes
+        private const val MAX_CACHE_SIZE = 50 // Maximum number of repositories to cache
+
+        // Cache statistics
+        @Volatile
+        private var cacheHits = 0
+
+        @Volatile
+        private var cacheMisses = 0
+
+        /**
+         * Clear all cached GitHub issues
+         */
+        fun clearIssuesCache() {
+            issuesCache.clear()
+            logger<CommitMessageSuggestionAction>().info("GitHub issues cache cleared manually")
+        }
+
+        /**
+         * Get cache statistics for debugging
+         */
+        fun getCacheStats(): String {
+            val total = cacheHits + cacheMisses
+            val hitRate = if (total > 0) (cacheHits * 100.0 / total) else 0.0
+            return "Cache Stats - Hits: $cacheHits, Misses: $cacheMisses, Hit Rate: ${"%.2f".format(hitRate)}%, Entries: ${issuesCache.size}"
+        }
+    }
 
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
@@ -181,7 +223,10 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                     } catch (ex: TimeoutCancellationException) {
                         ApplicationManager.getApplication().invokeLater {
                             logger.info("GitHub issues fetch timed out after 5 seconds, falling back to AI generation")
-                            AutoDevNotifications.notify(project, "GitHub connection timeout, generating commit message without issue context.")
+                            AutoDevNotifications.notify(
+                                project,
+                                "GitHub connection timeout, generating commit message without issue context."
+                            )
                             // Fall back to AI generation when timeout occurs
                             val changes = currentChanges ?: return@invokeLater
                             generateAICommitMessage(project, commitMessage, changes)
@@ -211,10 +256,66 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     private fun fetchGitHubIssues(project: Project): List<IssueDisplayItem> {
         val ghRepository =
             GitHubIssue.parseGitHubRepository(project) ?: throw IllegalStateException("Not a GitHub repository")
-        return ghRepository.getIssues(GHIssueState.OPEN).map { issue ->
+
+        // Generate cache key based on repository URL
+        val cacheKey = "${ghRepository.url}/issues"
+
+        // Check cache first
+        val cachedEntry = issuesCache[cacheKey]
+        if (cachedEntry != null && !cachedEntry.isExpired(CACHE_TTL_MS)) {
+            cacheHits++
+            logger.info("Using cached GitHub issues for repository: ${ghRepository.url} (${getCacheStats()})")
+            return cachedEntry.issues
+        }
+
+        // Cache miss - fetch fresh data from GitHub API
+        cacheMisses++
+        logger.info("Fetching fresh GitHub issues for repository: ${ghRepository.url} (${getCacheStats()})")
+        val issues = ghRepository.getIssues(GHIssueState.OPEN).map { issue ->
             val displayText = "#${issue.number} - ${issue.title}"
             IssueDisplayItem(issue, displayText)
         }
+
+        // Cache the results
+        issuesCache[cacheKey] = IssueCacheEntry(issues, System.currentTimeMillis())
+
+        // Clean up expired entries and enforce size limit
+        cleanupExpiredCacheEntries()
+        enforceCacheSizeLimit()
+
+        return issues
+    }
+
+    /**
+     * Clean up expired cache entries to prevent memory leaks
+     */
+    private fun cleanupExpiredCacheEntries() {
+        val currentTime = System.currentTimeMillis()
+        val expiredKeys = issuesCache.entries
+            .filter { it.value.timestamp + CACHE_TTL_MS < currentTime }
+            .map { it.key }
+
+        expiredKeys.forEach { key ->
+            issuesCache.remove(key)
+            logger.debug("Removed expired cache entry for key: $key")
+        }
+    }
+
+    /**
+     * Enforce cache size limit by removing oldest entries
+     */
+    private fun enforceCacheSizeLimit() {
+        if (issuesCache.size <= MAX_CACHE_SIZE) return
+
+        val sortedEntries = issuesCache.entries.sortedBy { it.value.timestamp }
+        val toRemove = sortedEntries.take(issuesCache.size - MAX_CACHE_SIZE)
+
+        toRemove.forEach { entry ->
+            issuesCache.remove(entry.key)
+            logger.debug("Removed oldest cache entry to enforce size limit: ${entry.key}")
+        }
+
+        logger.info("Enforced cache size limit. Removed ${toRemove.size} entries. Current size: ${issuesCache.size}")
     }
 
     /**
@@ -309,6 +410,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                 override fun onClosed(event: LightweightWindowEvent) {
                     // IDEA-195094 Regression: New CTRL-E in "commit changes" breaks keyboard shortcuts
                     commitMessage.editorField.requestFocusInWindow()
+
                     if (chosenIssue != null) {
                         // User selected an issue
                         handleIssueSelection(chosenIssue!!, commitMessage)
@@ -339,7 +441,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     private fun handleIssueSelection(issueItem: IssueDisplayItem, commitMessage: CommitMessage) {
         // Store the selected issue for AI generation
         selectedIssue = issueItem
-
         val project = commitMessage.editorField.project ?: return
         val changes = currentChanges ?: return
         val event = currentEvent ?: return
@@ -351,7 +452,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     private fun handleSkipIssueSelection(commitMessage: CommitMessage) {
         // Skip issue selection, generate with AI only
         selectedIssue = null
-
         val project = commitMessage.editorField.project ?: return
         val changes = currentChanges ?: return
         val event = currentEvent ?: return
@@ -362,6 +462,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     private fun generateAICommitMessage(project: Project, commitMessage: CommitMessage, changes: List<Change>) {
         val diffContext = project.service<VcsPrompting>().prepareContext(changes)
+
         if (diffContext.isEmpty() || diffContext == "\n") {
             logger.warn("Diff context is empty or cannot get enough useful context.")
             AutoDevNotifications.notify(project, "Diff context is empty or cannot get enough useful context.")
@@ -380,6 +481,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
             try {
                 val stream = LlmFactory.create(project).stream(prompt, "", false)
+
                 currentJob = AutoDevCoroutineScope.scope(project).launch {
                     try {
                         stream.cancellable().collect { chunk ->
