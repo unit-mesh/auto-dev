@@ -140,18 +140,13 @@ class EditFileCommand(private val project: Project) {
             val instructionsRegex =
                 """instructions["\s]*[:=]["\s]*["']([^"']*?)["']""".toRegex(RegexOption.DOT_MATCHES_ALL)
 
-            val codeEditPattern = """code_edit["\s]*[:=]["\s]*["'](.*?)["']""".toRegex(RegexOption.DOT_MATCHES_ALL)
-
             val targetFileMatch = targetFileRegex.find(content)
             val instructionsMatch = instructionsRegex.find(content)
-            val codeEditMatch = codeEditPattern.find(content)
 
-            if (targetFileMatch != null && codeEditMatch != null) {
-                val codeEditContent = codeEditMatch.groupValues[1]
-                    .replace("\\n", "\n")  // Handle escaped newlines
-                    .replace("\\\"", "\"") // Handle escaped quotes
-                    .replace("\\'", "'")   // Handle escaped single quotes
+            // Extract code_edit content more carefully to handle nested quotes
+            val codeEditContent = extractCodeEditContent(content)
 
+            if (targetFileMatch != null && codeEditContent != null) {
                 EditRequest(
                     targetFile = targetFileMatch.groupValues[1],
                     instructions = instructionsMatch?.groupValues?.get(1) ?: "",
@@ -163,6 +158,43 @@ class EditFileCommand(private val project: Project) {
         } catch (e: Exception) {
             null
         }
+    }
+
+    private fun extractCodeEditContent(content: String): String? {
+        // Look for code_edit field
+        val codeEditStart = """code_edit["\s]*[:=]["\s]*["']""".toRegex().find(content) ?: return null
+        val startIndex = codeEditStart.range.last + 1
+
+        if (startIndex >= content.length) return null
+
+        // Determine the quote type used to open the string
+        val openingQuote = content[startIndex - 1]
+
+        // Find the matching closing quote, handling escaped quotes
+        var index = startIndex
+        var escapeNext = false
+
+        while (index < content.length) {
+            val char = content[index]
+
+            if (escapeNext) {
+                escapeNext = false
+            } else if (char == '\\') {
+                escapeNext = true
+            } else if (char == openingQuote) {
+                // Found the closing quote
+                val extractedContent = content.substring(startIndex, index)
+                return extractedContent
+                    .replace("\\n", "\n")  // Handle escaped newlines
+                    .replace("\\\"", "\"") // Handle escaped quotes
+                    .replace("\\'", "'")   // Handle escaped single quotes
+                    .replace("\\\\", "\\") // Handle escaped backslashes
+            }
+
+            index++
+        }
+
+        return null
     }
 }
 
