@@ -247,20 +247,46 @@ class LLMModelManager(
                 }
             }
         } else {
-            // Initialize GitHub Copilot in background and update UI when ready
+            // Initialize GitHub Copilot in background and incrementally add models
             AutoDevAppScope.workerScope().launch {
                 try {
                     GithubCopilotManager.getInstance().initialize()
-                    // After initialization, update the UI on the EDT
+                    // Get fresh GitHub models after initialization
+                    val freshGithubModels = manager.getSupportedModels(forceRefresh = false)
+
+                    // Add GitHub models incrementally without clearing existing items
                     SwingUtilities.invokeLater {
-                        updateAllDropdowns(
-                            defaultModelDropdown,
-                            planLLMDropdown,
-                            actLLMDropdown,
-                            completionLLMDropdown,
-                            embeddingLLMDropdown,
-                            fastApplyLLMDropdown
-                        )
+                        freshGithubModels?.forEach { model ->
+                            val modelItem = ModelItem("Github: ${model.id}", model.id, false)
+
+                            // Check if we need to replace placeholder items
+                            fun ComboBox<ModelItem>.replaceOrAddModel(newItem: ModelItem) {
+                                // Look for placeholder with same modelId
+                                for (i in 0 until this.itemCount) {
+                                    val existingItem = this.getItemAt(i)
+                                    if (existingItem.modelId == newItem.modelId && 
+                                        existingItem.displayName.contains("(loading...)")) {
+                                        // Replace placeholder with real model
+                                        this.removeItemAt(i)
+                                        this.insertItemAt(newItem, i)
+                                        this.selectedItem = newItem
+                                        return
+                                    }
+                                }
+                                // No placeholder found, just add the model
+                                this.addItem(newItem)
+                            }
+
+                            if (model.isEmbedding) {
+                                embeddingLLMDropdown.replaceOrAddModel(modelItem)
+                            } else {
+                                defaultModelDropdown.replaceOrAddModel(modelItem)
+                                planLLMDropdown.replaceOrAddModel(modelItem)
+                                actLLMDropdown.replaceOrAddModel(modelItem)
+                                completionLLMDropdown.replaceOrAddModel(modelItem)
+                                fastApplyLLMDropdown.replaceOrAddModel(modelItem)
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     // Silently handle initialization failures
@@ -301,12 +327,24 @@ class LLMModelManager(
         fun ComboBox<ModelItem>.selectModelById(modelId: String) {
             if (modelId.isEmpty()) return
 
+            // First try to find existing item
             for (i in 0 until this.itemCount) {
                 val item = this.getItemAt(i)
                 if (item.modelId == modelId) {
                     this.selectedItem = item
-                    break
+                    return
                 }
+            }
+
+            // If not found, check if it's likely a GitHub Copilot model
+            val userModels = LlmConfig.load()
+            val isUserCustomModel = userModels.any { it.name == modelId }
+
+            if (!isUserCustomModel && modelId.isNotEmpty()) {
+                // This is likely a GitHub Copilot model that's not loaded yet
+                val placeholderItem = ModelItem("Github: $modelId (loading...)", modelId, false)
+                this.addItem(placeholderItem)
+                this.selectedItem = placeholderItem
             }
         }
 
