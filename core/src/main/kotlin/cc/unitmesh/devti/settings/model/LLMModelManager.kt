@@ -449,6 +449,18 @@ class LLMModelManager(
                         fastApplyLLMDropdown
                     )
                     updateLLMTable(tableModel)
+
+                    // Option to restore user settings after refresh
+                    setSelectedModels(
+                        settings,
+                        defaultModelDropdown,
+                        planLLMDropdown,
+                        actLLMDropdown,
+                        completionLLMDropdown,
+                        embeddingLLMDropdown,
+                        fastApplyLLMDropdown
+                    )
+
                     Messages.showInfoMessage(
                         "GitHub Copilot models refreshed successfully!",
                         "Refresh Complete"
