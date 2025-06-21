@@ -139,61 +139,6 @@ have created a routes.py and main.js file, and updated the main.html file.
 ```
 
 根据我先前的计划，还有一些步骤需要完成。如果您遇到任何错误或想添加新功能，请告诉我！
-
-// then you can start coding with DevIn language. When you need to edit files, you should use the DevIn language
-// If you need to create a new file, you should use `/write` command, then write the code in the code block
-<devin>
-/edit_file:src/main/route.py [注释：当确定文件不存在时，才能创建文件]
-```
-target_file: "src/main/route.py"
-instructions: "Create route.py file with upload and query endpoints"
-code_edit: |
-  // the rest code
-```
-</devin>
-// edit_file to call tools for step 3 with DevIn language, should use `<devin />` tag with DevIn language
-// 如果要编辑文件，请使用 `/edit_file` 命令，然后在代码块中编写编辑内容，每个 edit_file 只能修改一个文件，并且使用独立的 `<devin />` 标签
-<devin>
-/edit_file:src/main/index.html
-```
-target_file: "src/main/index.html"
-instructions: "Update index.html file"
-code_edit: |
-...
-```
-</devin>
-// step 4.1, call tools to create test code and run test code
-<devin>
-/edit_file:src/test/test_routes.py
-```
-target_file: "src/test/test_routes.py"
-instructions: "Create test file for routes"
-code_edit: "// the rest code"
-```
-Index: src/test/test_routes.py
-// the rest code
-```
-</devin>
-// step 4.2, run test code
-<devin>
-python3 src/test/test_routes.py
-</devin>
-
-// step 5.1, 启动、测试应用程序，验证代码变更
-```http
-// the http code
-```
-// step 5.2, 启动应用程序
-```bash
-./gradlew :bootRun
-```
-// 给出对应的变更信息
-<devin>
-/commit
-```markdown
-feat: add delete blog functionality
-```
-</devin>
 </you.answer.stepN>
 </example>
 
