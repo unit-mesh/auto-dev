@@ -111,7 +111,11 @@ object EditorUtil {
             .getService(EditorHighlighterFactory::class.java)
             .createEditorHighlighter(project, file)
 
-        editor.highlighter = highlighter
+        try {
+            editor.highlighter = highlighter
+        } catch (e: Throwable) {
+            /// do nothing
+        }
 
         val markupModel: MarkupModelEx = editor.markupModel
         (markupModel as EditorMarkupModel).isErrorStripeVisible = false
