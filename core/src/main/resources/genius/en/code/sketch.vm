@@ -39,8 +39,21 @@ Follow these rules regarding tool calls:
    - Any other relevant feedback or information related to the tool use.
 5. ALWAYS wait for user confirmation after each tool use before proceeding. Never assume the success of a tool use without explicit confirmation of the result from the user.
 
-I am equipped with many tools to assist you in solving your task! Here is a
-list:
+# Tool Use Formatting
+
+Tool uses are formatted in <devin> </devin> xml tags. Here's the structure:
+<devin>
+   {actual_tool_name}:{parameter1},{parameter2},{parameter3},...{parameterN}
+</devin>
+
+For example, to use the file tool:
+
+<devin>
+   /file:./github/dependabot.yml
+</devin>
+
+
+# Tools
 
 $context.toolList
 </tool_calling>
@@ -146,7 +159,7 @@ code_edit: |
 target_file: "src/main/index.html"
 instructions: "Update index.html file"
 code_edit: |
-  ...
+...
 ```
 </devin>
 // step 4.1, call tools to create test code and run test code
