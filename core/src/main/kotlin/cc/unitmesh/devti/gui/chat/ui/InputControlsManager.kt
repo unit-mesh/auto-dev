@@ -37,7 +37,8 @@ import javax.swing.*
 class InputControlsManager(
     private val project: Project,
     private val disposable: Disposable?,
-    private val editorListeners: EventDispatcher<AutoDevInputListener>
+    private val editorListeners: EventDispatcher<AutoDevInputListener>,
+    private val showAgent: Boolean = true
 ) {
     private val logger = logger<InputControlsManager>()
     lateinit var input: AutoDevInput private set
@@ -66,7 +67,7 @@ class InputControlsManager(
     }
     
     private fun createInput(inputSection: AutoDevInputSection) {
-        input = AutoDevInput(project, listOf(), disposable, inputSection)
+        input = AutoDevInput(project, listOf(), disposable, inputSection, showAgent)
         input.border = JBEmptyBorder(10)
         input.minimumSize = Dimension(input.minimumSize.width, 64)
     }

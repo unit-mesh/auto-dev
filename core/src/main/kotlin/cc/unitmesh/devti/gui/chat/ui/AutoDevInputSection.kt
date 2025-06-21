@@ -33,7 +33,7 @@ class AutoDevInputSection(
     showAgent: Boolean = true
 ) : BorderLayoutPanel() {
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
-    private val inputControlsManager = InputControlsManager(project, disposable, editorListeners)
+    private val inputControlsManager = InputControlsManager(project, disposable, editorListeners, showAgent)
     private val inputSelectorsManager = InputSelectorsManager(project, showAgent)
     private val relatedFileWorkspaceManager = RelatedFileWorkspaceManager(project, disposable)
     private val tokenUsagePanel = TokenUsagePanel(project)

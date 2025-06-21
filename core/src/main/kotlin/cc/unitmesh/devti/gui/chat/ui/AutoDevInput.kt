@@ -46,6 +46,7 @@ class AutoDevInput(
     private val listeners: List<DocumentListener>,
     val disposable: Disposable?,
     val inputSection: AutoDevInputSection,
+    val showAgent: Boolean = true
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
     private var editorListeners: EventDispatcher<AutoDevInputListener> = inputSection.editorListeners
     
@@ -85,7 +86,11 @@ class AutoDevInput(
     init {
         AutoInputService.getInstance(project).registerAutoDevInput(this)
         isOneLineMode = false
-        placeholder("chat.panel.initial.text", this)
+        if (showAgent) {
+            placeholder("chat.panel.initial.text.noAgent", this)
+        } else {
+            placeholder("chat.panel.initial.text", this)
+        }
         setFontInheritedFromLAF(true)
         addSettingsProvider {
             it.putUserData(IncrementalFindAction.SEARCH_DISABLED, true)
@@ -97,7 +102,6 @@ class AutoDevInput(
 
         background = EditorColorsManager.getInstance().globalScheme.defaultBackground
 
-        // 初始注册 Enter 键快捷键
         registerEnterShortcut()
         
         newlineAction.registerCustomShortcutSet(
