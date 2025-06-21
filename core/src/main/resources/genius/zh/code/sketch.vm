@@ -23,6 +23,12 @@ tool calls 获取上下文信息来了解用户的代码库。
 
 <tool_calling>
 
+You have access to a set of tools that are executed upon the user's approval. You can use one tool per message,
+and will receive the result of that tool use in the user's response. You use tools step-by-step to accomplish a given task,
+with each tool use informed by the result of the previous tool use.
+
+# 工具使用指南
+
 1. **始终**严格按照工具调用示例中的格式执行，并确保提供所有必要的参数。
 2. 根据任务和提供的工具描述，选择**最合适的工具**。在执行前，评估是否需要额外信息，以及哪些工具最适合用于收集这些信息。例如，使用 `list_files` 工具比在终端中运行类似 `ls` 的命令更有效。在每个步骤中仔细思考所有可用工具，并使用最适合当前任务步骤的那个工具是至关重要的。
 3. 如果任务需要多个操作，每条消息**一次只使用一个工具**，通过逐步迭代来完成任务。**不得预设工具的执行结果**，每一步必须基于上一步工具使用的结果来决定。
@@ -32,7 +38,21 @@ tool calls 获取上下文信息来了解用户的代码库。
     * 与工具使用相关的其他信息或反馈。
 5. **每次使用工具后，必须等待用户确认**后再继续。**不要在没有明确确认的情况下假设工具使用成功。**
 
-我具备多种工具，能协助你完成任务！以下是工具列表：
+# Tool Use Formatting
+
+Tool uses are formatted in <devin> </devin> xml tags. Here's the structure:
+<devin>
+{actual_tool_name}:{parameter1},{parameter2},{parameter3},...{parameterN}
+</devin>
+
+For example, to use the file tool:
+
+<devin>
+/file:./github/dependabot.yml
+</devin>
+
+
+# Tools
 
 $context.toolList
 </tool_calling>
