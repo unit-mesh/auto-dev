@@ -9,7 +9,8 @@ import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.gui.chat.message.ChatRole
-import cc.unitmesh.devti.llm2.LLMProvider2
+import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.llms.LLMProviderAdapter
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -22,7 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
-    private var llmProvider = LlmFactory.create(project)
+    private var llmProvider: LLMProvider = LlmFactory.create(project)
     private val counitProcessor = project.service<CustomAgentChatProcessor>()
     private var currentJob: Job? = null
 
@@ -32,9 +33,8 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         // Cancel the coroutine job
         currentJob?.cancel()
 
-        // Also cancel the underlying LLM provider if it supports cancellation
-        if (llmProvider is LLMProvider2) {
-            (llmProvider as LLMProvider2).cancelCurrentRequestSync()
+        if (llmProvider is LLMProviderAdapter) {
+            (llmProvider as LLMProviderAdapter).cancelCurrentRequestSync()
         }
 
         currentJob = null
