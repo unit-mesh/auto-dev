@@ -87,9 +87,9 @@ class AutoDevInput(
         AutoInputService.getInstance(project).registerAutoDevInput(this)
         isOneLineMode = false
         if (showAgent) {
-            placeholder("chat.panel.initial.text.noAgent", this)
-        } else {
             placeholder("chat.panel.initial.text", this)
+        } else {
+            placeholder("chat.panel.initial.text.noAgent", this)
         }
         setFontInheritedFromLAF(true)
         addSettingsProvider {
