@@ -94,8 +94,19 @@ abstract class LLMProvider2 protected constructor(
                     val result: String? = JsonPath.parse(data)?.read(responseResolver)
                     result ?: ""
                 }.getOrElse {
-                    logger.warn(IllegalStateException("cannot parse with responseResolver: ${responseResolver}, ori data: $data"))
-                    ""
+                    // Check if this is the final message with finish_reason="stop"
+                    val hasFinishReason = runCatching {
+                        JsonPath.parse(data)?.read<String?>("\$.choices[0].finish_reason") != null
+                    }.getOrElse { false }
+
+                    // If it's the final message, just return empty string without logging an error
+                    if (hasFinishReason) {
+                        ""
+                    } else {
+                        // Log as debug instead of warning for better log management
+                        logger.debug("Cannot parse with responseResolver: ${responseResolver}, data: $data")
+                        ""
+                    }
                 }
 
                 result += chunk
