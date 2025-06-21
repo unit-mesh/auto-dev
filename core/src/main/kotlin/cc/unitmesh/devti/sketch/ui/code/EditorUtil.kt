@@ -32,7 +32,13 @@ object EditorUtil {
         fileName: String?,
         disposable: Disposable,
     ): EditorEx {
+        // 处理可能的混合行分隔符问题，特别是Windows风格的\r\n
+        // Handle potential mixed line separators, especially Windows-style \r\n
         var editorText = text
+        if (text.contains("\r\n")) {
+            editorText = text.replace("\r\n", "\n")
+        }
+        
         val language = ideaLanguage ?: PlainTextLanguage.INSTANCE
         val ext = if (language.displayName == PlainTextLanguage.INSTANCE.displayName) {
             CodeFence.lookupFileExt(language.displayName)
@@ -50,7 +56,7 @@ object EditorUtil {
         }
 
         if (isShowLineNo) {
-            val newLines = text.lines().map { it.replace(LINE_NO_REGEX, "") }
+            val newLines = editorText.lines().map { it.replace(LINE_NO_REGEX, "") }
             editorText = newLines.joinToString("\n")
         }
 
