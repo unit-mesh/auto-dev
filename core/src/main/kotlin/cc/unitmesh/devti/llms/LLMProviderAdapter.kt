@@ -22,19 +22,10 @@ class LLMProviderAdapter(
     private val project: Project,
     private val modelType: ModelType = ModelType.Default
 ) : LLMProvider {
-
     private val logger = logger<LLMProviderAdapter>()
     private val agentService = project.getService(AgentStateService::class.java)
 
-    // Internal message history to maintain compatibility with old interface
     private val messages: MutableList<Message> = mutableListOf()
-
-    // The underlying LLMProvider2 instance
-    private val provider2: LLMProvider2 by lazy {
-        createProvider2()
-    }
-
-    // Current session for LLMProvider2
     private var currentSession: ChatSession<Message> = ChatSession("adapter-session")
 
     override val defaultTimeout: Long get() = 600
