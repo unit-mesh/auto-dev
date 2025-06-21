@@ -79,11 +79,9 @@ class GithubCopilotManager() : Disposable {
         scope.launch {
             try {
                 if (!GithubCopilotDetector.isGithubCopilotConfigured()) {
-                    logger.info("GitHub Copilot not configured, skipping model initialization")
                     return@launch
                 }
 
-                logger.info("Initializing GitHub Copilot models...")
                 val modelsResponse = withContext(Dispatchers.IO) {
                     GithubCopilotDetector.getSupportedModels(forceRefresh = true)
                 }
@@ -94,8 +92,6 @@ class GithubCopilotManager() : Disposable {
                     lastUpdateTime = System.currentTimeMillis()
                     isInitialized = true
                     logger.info("GitHub Copilot models initialized successfully: ${models.size} models available")
-
-                    // 通知所有监听器
                     notifyListeners(models)
                 } else {
                     logger.warn("Failed to initialize GitHub Copilot models")

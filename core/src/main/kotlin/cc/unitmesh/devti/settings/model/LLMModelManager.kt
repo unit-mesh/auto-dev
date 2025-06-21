@@ -251,7 +251,6 @@ class LLMModelManager(
             AutoDevAppScope.workerScope().launch {
                 try {
                     GithubCopilotManager.getInstance().initialize()
-                    // Get fresh GitHub models after initialization
                     val freshGithubModels = manager.getSupportedModels(forceRefresh = false)
 
                     // Add GitHub models incrementally without clearing existing items
