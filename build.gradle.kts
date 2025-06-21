@@ -108,6 +108,12 @@ configure(subprojects - project(":exts")) {
         targetCompatibility = VERSION_17
     }
 
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "17"
+        }
+    }
+
     tasks {
         prepareSandbox { enabled = false }
     }
