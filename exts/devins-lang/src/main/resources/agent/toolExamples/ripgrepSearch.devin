@@ -1,3 +1,9 @@
-支持 Regex 的全局搜索
+使用 ripgrep 在文件或目录中查找精确的模式匹配。支持正则表达式的全局搜索，如
 /ripgrepSearch:.*AutoDev.*
-优化使用 Regex 方式，诸如使用 /s 替换空格
+
+示例：
+- 搜索特定函数：`/ripgrepSearch:function\s+processData`
+- 搜索带命名空间的类：`/ripgrepSearch:cc\.unitmesh\..*Service`
+- 在特定文件类型中搜索：`/ripgrepSearch:import.*kotlin --include="*.kt"`
+
+当你搜索业务领域名词出错时，可以尝试是否存在 prompts/domain.csv 来帮助你找到正确的领域名词
