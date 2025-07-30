@@ -1,0 +1,9 @@
+Terminate a running process by its process ID. Supports both graceful termination and force kill options.
+
+Gracefully terminate a process:
+/kill-process:proc_1234567890_1
+
+Force kill a process:
+/kill-process:proc_1234567890_1 --force
+
+Use /list-processes to find the process ID of the process you want to terminate. Only running processes can be killed.

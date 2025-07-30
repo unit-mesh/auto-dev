@@ -128,6 +128,28 @@ class InsCommandFactory {
             context.result.isLocalCommand = true
             OpenInsCommand(context.project, prop)
         }
+        BuiltinCommand.LAUNCH_PROCESS -> {
+            context.result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.codeText()
+            LaunchProcessInsCommand(context.project, prop, shireCode)
+        }
+        BuiltinCommand.LIST_PROCESSES -> {
+            context.result.isLocalCommand = true
+            ListProcessesInsCommand(context.project, prop)
+        }
+        BuiltinCommand.KILL_PROCESS -> {
+            context.result.isLocalCommand = true
+            KillProcessInsCommand(context.project, prop)
+        }
+        BuiltinCommand.READ_PROCESS_OUTPUT -> {
+            context.result.isLocalCommand = true
+            ReadProcessOutputInsCommand(context.project, prop)
+        }
+        BuiltinCommand.WRITE_PROCESS_INPUT -> {
+            context.result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.codeText()
+            WriteProcessInputInsCommand(context.project, prop, shireCode)
+        }
         BuiltinCommand.TOOLCHAIN_COMMAND -> {
             context.result.isLocalCommand = true
             createToolchainCommand(used, prop, originCmdName, commandNode, context)

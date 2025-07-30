@@ -1,0 +1,21 @@
+List all active and terminated processes managed by the system. Shows process status, command, working directory, and execution times.
+
+List only running processes:
+/list-processes
+
+List all processes including terminated ones:
+/list-processes:--include-terminated
+
+List all processes with custom limit:
+/list-processes:--all --max-results=20
+
+The output includes:
+- Process ID (for use with other process commands)
+- Command that was executed
+- Working directory
+- Current status (🟢 RUNNING, ✅ COMPLETED, ❌ FAILED, 🛑 KILLED, ⏰ TIMED_OUT)
+- Exit code (if terminated)
+- Start and end times
+- Duration
+- Environment variables (if any)
+- Summary statistics

@@ -171,6 +171,46 @@ enum class BuiltinCommand(
         false,
         enableInSketch = false
     ),
+    LAUNCH_PROCESS(
+        "launch-process",
+        "Launch a new process with specified command and options. Supports background execution, timeout control, and environment variable configuration. Returns process ID for management and monitoring. Essential for running external tools and scripts.",
+        AllIcons.Actions.Execute,
+        true,
+        true,
+        enableInSketch = false
+    ),
+    LIST_PROCESSES(
+        "list-processes",
+        "List all active and terminated processes managed by the system. Shows process status, command, working directory, and execution times. Use for monitoring running processes and debugging execution issues.",
+        AllIcons.General.TodoDefault,
+        false,
+        false,
+        enableInSketch = false
+    ),
+    KILL_PROCESS(
+        "kill-process",
+        "Terminate a running process by its process ID. Supports both graceful termination and force kill options. Use when processes need to be stopped or are consuming excessive resources.",
+        AllIcons.Actions.Suspend,
+        true,
+        true,
+        enableInSketch = false
+    ),
+    READ_PROCESS_OUTPUT(
+        "read-process-output",
+        "Read stdout and stderr output from a running or completed process. Supports streaming output and output size limits. Essential for monitoring process execution and debugging.",
+        AllIcons.Actions.Show,
+        true,
+        true,
+        enableInSketch = false
+    ),
+    WRITE_PROCESS_INPUT(
+        "write-process-input",
+        "Write input data to a running process's stdin. Supports interactive process communication and automation of command-line tools. Use for processes that require user input or commands.",
+        AllIcons.Actions.Edit,
+        true,
+        true,
+        enableInSketch = false
+    ),
     ;
 
     companion object {
