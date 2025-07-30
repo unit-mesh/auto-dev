@@ -28,35 +28,7 @@ data class ProcessInfo(
     val waitForCompletion: Boolean = false,
     val timeoutSeconds: Int = 0,
     val showInTerminal: Boolean = false
-) {
-    fun copy(
-        processId: String = this.processId,
-        command: String = this.command,
-        workingDirectory: String = this.workingDirectory,
-        status: ProcessStatus = this.status,
-        exitCode: Int? = this.exitCode,
-        startTime: Long = this.startTime,
-        endTime: Long? = this.endTime,
-        environment: Map<String, String> = this.environment,
-        waitForCompletion: Boolean = this.waitForCompletion,
-        timeoutSeconds: Int = this.timeoutSeconds,
-        showInTerminal: Boolean = this.showInTerminal
-    ): ProcessInfo {
-        return ProcessInfo(
-            processId = processId,
-            command = command,
-            workingDirectory = workingDirectory,
-            status = status,
-            exitCode = exitCode,
-            startTime = startTime,
-            endTime = endTime,
-            environment = environment,
-            waitForCompletion = waitForCompletion,
-            timeoutSeconds = timeoutSeconds,
-            showInTerminal = showInTerminal
-        )
-    }
-}
+)
 
 /**
  * Result of a process execution
