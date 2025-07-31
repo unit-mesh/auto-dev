@@ -4,10 +4,6 @@
       "url": "http://localhost:8080/mcp",
       "args": []
     },
-    "remote-sse-server": {
-      "sseUrl": "http://localhost:8080/sse",
-      "args": []
-    },
     "stdio-server": {
       "command": "npx",
       "args": ["@modelcontextprotocol/server-stdio"]
@@ -25,11 +21,6 @@
       "disabled": false,
       "autoApprove": ["safe_tool"],
       "requiresConfirmation": ["dangerous_tool"]
-    },
-    "sse-with-query-params": {
-      "sseUrl": "https://api.example.com/mcp/sse?session=123&token=abc",
-      "args": [],
-      "autoApprove": ["read_only_tool"]
     }
   }
 }
