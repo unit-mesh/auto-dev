@@ -10,6 +10,7 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import io.modelcontextprotocol.kotlin.sdk.client.Client
 import io.modelcontextprotocol.kotlin.sdk.client.StdioClientTransport
 import io.modelcontextprotocol.kotlin.sdk.client.StreamableHttpClientTransport
+import io.modelcontextprotocol.kotlin.sdk.client.SseClientTransport
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
 import kotlinx.io.asSource
@@ -63,6 +64,10 @@ class CustomMcpServerManager(val project: Project) {
         val client = Client(clientInfo = Implementation(name = serverKey, version = "1.0.0"))
 
         val transport = when {
+            serverConfig.sseUrl != null -> {
+                logger<CustomMcpServerManager>().info("Using SSE transport for $serverKey: ${serverConfig.sseUrl}")
+                SseClientTransport(serverConfig.sseUrl)
+            }
             serverConfig.url != null -> {
                 logger<CustomMcpServerManager>().info("Using HTTP transport for $serverKey: ${serverConfig.url}")
                 StreamableHttpClientTransport(serverConfig.url)
@@ -85,7 +90,7 @@ class CustomMcpServerManager(val project: Project) {
                 StdioClientTransport(input, output)
             }
             else -> {
-                logger<CustomMcpServerManager>().warn("Server $serverKey has neither command nor url configured, skipping")
+                logger<CustomMcpServerManager>().warn("Server $serverKey has neither command, url, nor sseUrl configured, skipping")
                 return emptyList()
             }
         }

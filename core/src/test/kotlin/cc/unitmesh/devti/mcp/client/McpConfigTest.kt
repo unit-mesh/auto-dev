@@ -48,10 +48,36 @@ class McpConfigTest {
 
         assertNotNull(config)
         assertEquals(1, config.mcpServers.size)
-        
+
         val server = config.mcpServers["http-server"]!!
         assertNull(server.command)
         assertEquals("http://localhost:8080/mcp", server.url)
+        assertNull(server.sseUrl)
+        assertEquals(emptyList(), server.args)
+    }
+
+    @Test
+    fun should_parse_config_with_sse_url_only() {
+        val configJson = """
+        {
+          "mcpServers": {
+            "sse-server": {
+              "sseUrl": "http://localhost:8080/sse",
+              "args": []
+            }
+          }
+        }
+        """.trimIndent()
+
+        val config = McpServer.tryParse(configJson)
+
+        assertNotNull(config)
+        assertEquals(1, config.mcpServers.size)
+
+        val server = config.mcpServers["sse-server"]!!
+        assertNull(server.command)
+        assertNull(server.url)
+        assertEquals("http://localhost:8080/sse", server.sseUrl)
         assertEquals(emptyList(), server.args)
     }
 
@@ -73,10 +99,38 @@ class McpConfigTest {
 
         assertNotNull(config)
         assertEquals(1, config.mcpServers.size)
-        
+
         val server = config.mcpServers["mixed-server"]!!
         assertEquals("npx", server.command)
         assertEquals("http://localhost:8080/mcp", server.url)
+        assertNull(server.sseUrl)
+        assertEquals(listOf("@modelcontextprotocol/server-stdio"), server.args)
+    }
+
+    @Test
+    fun should_parse_config_with_all_transport_types() {
+        val configJson = """
+        {
+          "mcpServers": {
+            "all-transports-server": {
+              "command": "npx",
+              "url": "http://localhost:8080/mcp",
+              "sseUrl": "http://localhost:8080/sse",
+              "args": ["@modelcontextprotocol/server-stdio"]
+            }
+          }
+        }
+        """.trimIndent()
+
+        val config = McpServer.tryParse(configJson)
+
+        assertNotNull(config)
+        assertEquals(1, config.mcpServers.size)
+
+        val server = config.mcpServers["all-transports-server"]!!
+        assertEquals("npx", server.command)
+        assertEquals("http://localhost:8080/mcp", server.url)
+        assertEquals("http://localhost:8080/sse", server.sseUrl)
         assertEquals(listOf("@modelcontextprotocol/server-stdio"), server.args)
     }
 
