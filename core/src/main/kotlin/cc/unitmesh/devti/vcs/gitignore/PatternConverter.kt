@@ -85,18 +85,21 @@ object PatternConverter {
     
     private fun handleWildcards(pattern: String): String {
         var result = pattern
-        
+
         // Handle ** (matches zero or more directories)
+        // First handle the special cases
         result = result.replace("**/", "(?:.*/)?")
         result = result.replace("/**", "(?:/.*)?")
+
+        // Then handle standalone **
         result = result.replace("**", ".*")
-        
+
         // Handle * (matches any characters except path separator)
         result = result.replace("*", "[^/]*")
-        
+
         // Handle ? (matches any single character except path separator)
         result = result.replace("?", "[^/]")
-        
+
         return result
     }
     
@@ -121,7 +124,7 @@ object PatternConverter {
             "^" + pattern.substring(1)
         } else {
             // Pattern not starting with / can match anywhere in the path
-            "(?:^|.*/)$pattern"
+            "(?:^|.*/)" + pattern
         }
     }
 }
