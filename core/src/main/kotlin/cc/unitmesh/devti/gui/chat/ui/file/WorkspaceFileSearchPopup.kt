@@ -448,8 +448,17 @@ class WorkspaceFileSearchPopup(
 
     private fun shouldAddFile(file: VirtualFile, loadedPaths: Set<String>): Boolean {
         val fileIndex = ProjectFileIndex.getInstance(project)
+
+        // Use new high-performance gitignore engine for ignore checking
+        val isIgnored = try {
+            cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil.isIgnored(project, file)
+        } catch (e: Exception) {
+            // Fallback to original ignore checking
+            fileIndex.isUnderIgnored(file)
+        }
+
         return file.canBeAdded(project) &&
-                !fileIndex.isUnderIgnored(file) &&
+                !isIgnored &&
                 fileIndex.isInContent(file) &&
                 file.path !in loadedPaths
     }

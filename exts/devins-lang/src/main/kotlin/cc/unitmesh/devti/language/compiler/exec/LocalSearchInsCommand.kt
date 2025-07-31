@@ -79,7 +79,14 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
                 return@iterateContent true
             }
 
-            if (ProjectFileIndex.getInstance(project).isUnderIgnored(file)) return@iterateContent true
+            // Use new high-performance gitignore engine for ignore checking
+            val isIgnored = try {
+                cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil.isIgnored(project, file)
+            } catch (e: Exception) {
+                // Fallback to original ignore checking
+                ProjectFileIndex.getInstance(project).isUnderIgnored(file)
+            }
+            if (isIgnored) return@iterateContent true
             if (file.path.contains(".idea")) return@iterateContent true
 
             val content = file.contentsToByteArray().toString(Charsets.UTF_8).lines()
