@@ -9,6 +9,7 @@ import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import io.modelcontextprotocol.kotlin.sdk.client.Client
 import io.modelcontextprotocol.kotlin.sdk.client.StdioClientTransport
+import io.modelcontextprotocol.kotlin.sdk.client.StreamableHttpClientTransport
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
 import kotlinx.io.asSource
@@ -59,23 +60,35 @@ class CustomMcpServerManager(val project: Project) {
     }
 
     suspend fun collectServerInfo(serverKey: String, serverConfig: McpServer): List<Tool> {
-        val resolvedCommand = resolveCommand(serverConfig.command)
-        logger<CustomMcpServerManager>().info("Found MCP command for $serverKey: $resolvedCommand")
         val client = Client(clientInfo = Implementation(name = serverKey, version = "1.0.0"))
 
-        val cmd = GeneralCommandLine(resolvedCommand)
-        cmd.addParameters(*serverConfig.args.toTypedArray())
+        val transport = when {
+            serverConfig.url != null -> {
+                logger<CustomMcpServerManager>().info("Using HTTP transport for $serverKey: ${serverConfig.url}")
+                StreamableHttpClientTransport(serverConfig.url)
+            }
+            serverConfig.command != null -> {
+                val resolvedCommand = resolveCommand(serverConfig.command)
+                logger<CustomMcpServerManager>().info("Using stdio transport for $serverKey: $resolvedCommand")
 
-        cmd.workDirectory = File(project.guessProjectDir()!!.path)
+                val cmd = GeneralCommandLine(resolvedCommand)
+                cmd.addParameters(*serverConfig.args.toTypedArray())
+                cmd.workDirectory = File(project.guessProjectDir()!!.path)
 
-        serverConfig.env?.forEach { (key, value) ->
-            cmd.environment[key] = value
+                serverConfig.env?.forEach { (key, value) ->
+                    cmd.environment[key] = value
+                }
+
+                val process = cmd.createProcess()
+                val input = process.inputStream.asSource().buffered()
+                val output = process.outputStream.asSink().buffered()
+                StdioClientTransport(input, output)
+            }
+            else -> {
+                logger<CustomMcpServerManager>().warn("Server $serverKey has neither command nor url configured, skipping")
+                return emptyList()
+            }
         }
-
-        val process = cmd.createProcess()
-        val input = process.inputStream.asSource().buffered()
-        val output = process.outputStream.asSink().buffered()
-        val transport = StdioClientTransport(input, output)
 
         return try {
             client.connect(transport)
