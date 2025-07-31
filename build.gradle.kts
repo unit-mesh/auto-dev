@@ -480,6 +480,9 @@ project(":core") {
         // YAML parsing for edit_file command
         implementation("org.yaml:snakeyaml:2.2")
 
+        // gitignore parsing library for fallback engine
+        implementation("nl.basjes.gitignore:gitignore-reader:1.6.0")
+
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     }
 

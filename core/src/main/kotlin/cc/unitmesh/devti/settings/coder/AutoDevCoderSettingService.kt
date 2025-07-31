@@ -35,6 +35,7 @@ class AutoDevCoderSettingService(
         var enableAutoScrollInSketch by property(false)
         var enableDiffViewer by property(true)
         var teamPromptsDir by property("prompts") { it.isEmpty() }
+        var enableHomeSpunGitIgnore by property(true)
 
         override fun copy(): AutoDevCoderSettings {
             val state = AutoDevCoderSettings()

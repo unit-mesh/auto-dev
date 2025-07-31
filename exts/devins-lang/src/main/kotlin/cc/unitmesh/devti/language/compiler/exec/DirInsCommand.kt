@@ -126,8 +126,14 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
     private fun isExclude(project: Project, directory: PsiDirectory): Boolean {
         if (directory.name == ".idea") return true
 
-        val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
-        return status == FileStatus.IGNORED
+        // Use new high-performance gitignore engine
+        return try {
+            cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil.isIgnored(project, directory.virtualFile)
+        } catch (e: Exception) {
+            // Fallback to original VCS status check
+            val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
+            status == FileStatus.IGNORED
+        }
     }
 
     private val defaultMaxDepth = 2
@@ -348,7 +354,13 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         val excludedDirs = setOf(".idea", "build", "target", ".gradle", "node_modules")
         if (directory.name in excludedDirs) return true
 
-        val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
-        return status == FileStatus.IGNORED
+        // Use new high-performance gitignore engine
+        return try {
+            cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil.isIgnored(project, directory.virtualFile)
+        } catch (e: Exception) {
+            // Fallback to original VCS status check
+            val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
+            status == FileStatus.IGNORED
+        }
     }
 }

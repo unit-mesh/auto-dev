@@ -64,8 +64,16 @@ fun VirtualFile.relativePath(project: Project): String {
 }
 
 fun isIgnoredByVcs(project: Project?, file: VirtualFile?): Boolean {
-    val ignoreManager = VcsIgnoreManager.getInstance(project!!)
-    return ignoreManager.isPotentiallyIgnoredFile(file!!)
+    if (project == null || file == null) return false
+
+    // Use new high-performance gitignore engine
+    return try {
+        cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil.isIgnored(project, file)
+    } catch (e: Exception) {
+        // Fallback to original VCS ignore manager if new engine fails
+        val ignoreManager = VcsIgnoreManager.getInstance(project)
+        ignoreManager.isPotentiallyIgnoredFile(file)
+    }
 }
 
 fun virtualFile(editor: Editor?): VirtualFile? {
