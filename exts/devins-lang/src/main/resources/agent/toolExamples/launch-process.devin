@@ -1,0 +1,36 @@
+Launch a new process with specified command and options. Supports background execution, timeout control, and environment variable configuration.
+
+Basic usage - launch and wait for completion:
+/launch-process:--wait --timeout=30
+```bash
+echo "Hello World"
+ls -la
+```
+
+Launch in background:
+/launch-process:
+```bash
+npm run dev
+```
+
+Launch with custom working directory:
+/launch-process:--working-dir=/tmp --wait
+```bash
+pwd
+ls -la
+```
+
+Launch with environment variables:
+/launch-process:--env=NODE_ENV=development --env=PORT=3000 --wait
+```bash
+echo "NODE_ENV: $NODE_ENV"
+echo "PORT: $PORT"
+```
+
+Launch with timeout and show in terminal:
+/launch-process:--wait --timeout=60 --show-terminal
+```bash
+./gradlew build
+```
+
+The command returns a process ID that can be used with other process management commands like list-processes, kill-process, read-process-output, and write-process-input.

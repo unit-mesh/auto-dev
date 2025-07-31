@@ -1,0 +1,18 @@
+Write input data to a running process's stdin. Supports interactive process communication and automation of command-line tools.
+
+Write input from code block:
+/write-process-input:proc_1234567890_1
+```
+hello world
+```
+
+Write input without automatic newline:
+/write-process-input:proc_1234567890_1 --no-newline
+```
+input without newline
+```
+
+Write simple text input:
+/write-process-input:proc_1234567890_1 simple text input
+
+Use /list-processes to find the process ID. Only works with running processes that accept stdin input.

@@ -1,0 +1,21 @@
+Read stdout and stderr output from a running or completed process. Supports streaming output and output size limits.
+
+Read all output from a process:
+/read-process-output:proc_1234567890_1
+
+Read only stdout:
+/read-process-output:proc_1234567890_1 --stderr-only
+
+Read only stderr:
+/read-process-output:proc_1234567890_1 --stdout-only
+
+Read with custom byte limit:
+/read-process-output:proc_1234567890_1 --max-bytes=5000
+
+Exclude stdout:
+/read-process-output:proc_1234567890_1 --no-stdout
+
+Exclude stderr:
+/read-process-output:proc_1234567890_1 --no-stderr
+
+Use /list-processes to find the process ID. Works with both running and completed processes.
