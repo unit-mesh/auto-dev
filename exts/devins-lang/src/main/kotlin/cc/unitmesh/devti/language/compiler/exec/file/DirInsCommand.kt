@@ -1,8 +1,9 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.file
 
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
+import cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -128,7 +129,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
         // Use new high-performance gitignore engine
         return try {
-            cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil.isIgnored(project, directory.virtualFile)
+            GitIgnoreUtil.isIgnored(project, directory.virtualFile)
         } catch (e: Exception) {
             // Fallback to original VCS status check
             val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
@@ -356,7 +357,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
         // Use new high-performance gitignore engine
         return try {
-            cc.unitmesh.devti.vcs.gitignore.GitIgnoreUtil.isIgnored(project, directory.virtualFile)
+            GitIgnoreUtil.isIgnored(project, directory.virtualFile)
         } catch (e: Exception) {
             // Fallback to original VCS status check
             val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)

@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.file
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.command.EditFileCommand
 import cc.unitmesh.devti.command.EditResult
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
@@ -9,13 +10,12 @@ import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 
 class EditFileInsCommand(val myProject: Project, val prop: String, val codeContent: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.EDIT_FILE
 
     override suspend fun execute(): String? {
-        val editFileCommand = cc.unitmesh.devti.command.EditFileCommand(myProject)
+        val editFileCommand = EditFileCommand(myProject)
         val editRequest = editFileCommand.parseEditRequest(codeContent)
 
         if (editRequest == null) {
