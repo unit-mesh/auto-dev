@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.process
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.command.InsCommand
@@ -13,11 +13,10 @@ import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.util.concurrency.AppExecutorUtil
+import com.intellij.openapi.util.Key
 import kotlinx.coroutines.*
 import java.io.File
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.TimeUnit
 
 /**
  * InsCommand implementation for launching processes
@@ -163,7 +162,7 @@ class LaunchProcessInsCommand(
             val errorCapture = StringBuilder()
             
             processHandler.addProcessListener(object : ProcessAdapter() {
-                override fun onTextAvailable(event: ProcessEvent, outputType: com.intellij.openapi.util.Key<*>) {
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                     when (outputType) {
                         ProcessOutputTypes.STDOUT -> {
                             outputCapture.append(event.text)
@@ -221,7 +220,7 @@ class LaunchProcessInsCommand(
                 
                 // Add process listener
                 processHandler.addProcessListener(object : ProcessAdapter() {
-                    override fun onTextAvailable(event: ProcessEvent, outputType: com.intellij.openapi.util.Key<*>) {
+                    override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                         when (outputType) {
                             ProcessOutputTypes.STDOUT -> {
                                 processStateManager.appendStdout(processInfo.processId, event.text)

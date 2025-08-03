@@ -1,7 +1,8 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.process
 
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.process.ProcessInfo
 import cc.unitmesh.devti.process.ProcessStateManager
 import cc.unitmesh.devti.process.ProcessStatus
 import com.intellij.openapi.project.Project
@@ -42,7 +43,7 @@ class ListProcessesInsCommand(
         return match?.groupValues?.get(1)?.toIntOrNull() ?: 50
     }
     
-    private fun formatProcessList(processes: List<cc.unitmesh.devti.process.ProcessInfo>): String {
+    private fun formatProcessList(processes: List<ProcessInfo>): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         
         return buildString {

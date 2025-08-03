@@ -1,8 +1,10 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.process
 
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.process.ProcessInfo
 import cc.unitmesh.devti.process.ProcessStateManager
+import cc.unitmesh.devti.process.ReadProcessOutputResponse
 import com.intellij.openapi.project.Project
 
 /**
@@ -78,8 +80,8 @@ class ReadProcessOutputInsCommand(
     
     private fun formatOutput(
         processId: String,
-        processInfo: cc.unitmesh.devti.process.ProcessInfo,
-        outputResponse: cc.unitmesh.devti.process.ReadProcessOutputResponse,
+        processInfo: ProcessInfo,
+        outputResponse: ReadProcessOutputResponse,
         includeStdout: Boolean,
         includeStderr: Boolean,
         maxBytes: Int

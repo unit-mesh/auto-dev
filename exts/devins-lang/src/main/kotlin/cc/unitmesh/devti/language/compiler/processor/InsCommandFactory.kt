@@ -5,6 +5,11 @@ import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand.Companion.toolchainProviderName
 import cc.unitmesh.devti.language.compiler.exec.*
+import cc.unitmesh.devti.language.compiler.exec.process.KillProcessInsCommand
+import cc.unitmesh.devti.language.compiler.exec.process.LaunchProcessInsCommand
+import cc.unitmesh.devti.language.compiler.exec.process.ListProcessesInsCommand
+import cc.unitmesh.devti.language.compiler.exec.process.ReadProcessOutputInsCommand
+import cc.unitmesh.devti.language.compiler.exec.process.WriteProcessInputInsCommand
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
