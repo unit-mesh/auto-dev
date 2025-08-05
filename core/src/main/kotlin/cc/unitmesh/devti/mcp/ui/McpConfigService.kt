@@ -52,7 +52,7 @@ class McpConfigService(private val project: Project) : PersistentStateComponent<
             selectedTools[server] = tools.associateWith { toolName ->
                 // Create placeholder Tool until we can load the actual Tool
                 cachedTools[Pair(server, toolName)]
-                    ?: Tool(toolName, "Placeholder until loaded", Input())
+                    ?: Tool(toolName, "Placeholder until loaded", Tool.Input(), null, null)
             }.toMutableMap()
         }
     }

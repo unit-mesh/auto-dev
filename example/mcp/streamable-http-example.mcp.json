@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "remote-http-server": {
+      "url": "http://localhost:8080/mcp",
+      "args": []
+    },
+    "stdio-server": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-stdio"]
+    },
+    "github-server": {
+      "command": "/path/to/github-mcp-server",
+      "args": ["stdio"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-token-here"
+      }
+    },
+    "remote-api-server": {
+      "url": "https://api.example.com/mcp",
+      "args": [],
+      "disabled": false,
+      "autoApprove": ["safe_tool"],
+      "requiresConfirmation": ["dangerous_tool"]
+    }
+  }
+}
