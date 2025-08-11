@@ -93,11 +93,15 @@ object RipgrepSearcher {
     }
 
     private fun findRipgrepBinaryOnUnix(binName: String): Path? {
-        // Check macOS specific location
         if (System.getProperty("os.name").lowercase(Locale.getDefault()).contains("mac")) {
-            val path = Paths.get("/usr/local/bin/rg")
-            if (path.toFile().exists()) {
-                return path
+            val brewPath = Paths.get("/opt/homebrew/bin/rg")
+            if (brewPath.toFile().exists()) {
+                return brewPath
+            }
+
+            val usrLocalPath = Paths.get("/usr/local/bin/rg")
+            if (usrLocalPath.toFile().exists()) {
+                return usrLocalPath
             }
         }
 
@@ -228,4 +232,3 @@ object RipgrepSearcher {
         return base.relativize(target).toString().replace('\\', '/')
     }
 }
-
