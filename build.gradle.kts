@@ -426,6 +426,8 @@ project(":core") {
         implementation("io.ktor:ktor-client-cio:3.2.3")
         implementation("io.ktor:ktor-server-sse:3.2.3")
 
+        implementation("io.github.a2asdk:a2a-java-sdk-client:0.2.5")
+
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 
         testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
