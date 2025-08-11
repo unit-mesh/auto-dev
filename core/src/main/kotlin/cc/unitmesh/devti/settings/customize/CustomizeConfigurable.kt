@@ -31,10 +31,10 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
             cell(i18nLabel("settings.autodev.coder.customActions", 1))
 
             link(AutoDevBundle.message("custom.action"), {
-                BrowserUtil.browse("https://ide.unitmesh.cc/custom/action")
+                BrowserUtil.browse("https://ide.unitmesh.cc/customize/custom-action")
             })
             link(AutoDevBundle.message("custom.living.documentation"), {
-                BrowserUtil.browse("https://ide.unitmesh.cc/custom/living-documentation")
+                BrowserUtil.browse("https://ide.unitmesh.cc/customize/custom-living-documentation")
             })
         }
         row {
