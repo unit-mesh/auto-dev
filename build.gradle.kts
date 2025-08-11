@@ -422,6 +422,9 @@ project(":core") {
         implementation("org.jetbrains.xodus:xodus-vfs:2.0.1")
 
         implementation("io.modelcontextprotocol:kotlin-sdk:0.6.0")
+        /// # Ktor
+        implementation("io.ktor:ktor-client-cio:3.2.3")
+        implementation("io.ktor:ktor-server-sse:3.2.3")
 
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 

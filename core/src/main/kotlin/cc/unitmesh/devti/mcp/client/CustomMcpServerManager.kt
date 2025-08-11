@@ -8,7 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.SystemInfo
 import io.ktor.client.*
-import io.ktor.client.plugins.sse.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.sse.SSE
 import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import io.modelcontextprotocol.kotlin.sdk.client.Client
@@ -35,11 +36,9 @@ class CustomMcpServerManager(val project: Project) {
     val cached = mutableMapOf<String, Map<String, List<Tool>>>()
     val toolClientMap = mutableMapOf<Tool, Client>()
 
-    val httpClient = HttpClient().apply {
-        this.config {
-            install(SSE) {
-                reconnectionTime = 30.seconds
-            }
+    val httpClient = HttpClient(CIO) {
+        install(SSE) {
+            reconnectionTime = 30.seconds
         }
     }
 
