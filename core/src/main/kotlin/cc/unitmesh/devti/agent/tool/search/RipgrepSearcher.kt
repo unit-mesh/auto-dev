@@ -55,10 +55,20 @@ object RipgrepSearcher {
         val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
         val binName = if (osName.contains("win")) "rg.exe" else "rg"
 
-        return when {
+        LOG.debug("Searching for ripgrep binary on OS: $osName")
+
+        val result = when {
             osName.contains("win") -> findRipgrepBinaryOnWindows(binName)
             else -> findRipgrepBinaryOnUnix(binName)
         }
+
+        if (result != null) {
+            LOG.debug("Found ripgrep binary at: $result")
+        } else {
+            LOG.warn("Ripgrep binary not found. Please install ripgrep: https://github.com/BurntSushi/ripgrep#installation")
+        }
+
+        return result
     }
 
     private fun findRipgrepBinaryOnWindows(binName: String): Path? {
@@ -94,42 +104,68 @@ object RipgrepSearcher {
 
     private fun findRipgrepBinaryOnUnix(binName: String): Path? {
         if (System.getProperty("os.name").lowercase(Locale.getDefault()).contains("mac")) {
-            val brewPath = Paths.get("/opt/homebrew/bin/rg")
-            if (brewPath.toFile().exists()) {
-                return brewPath
+            // Check common macOS installation paths in order of preference
+            val macPaths = listOf(
+                "/opt/homebrew/bin/rg",        // Apple Silicon Homebrew
+                "/usr/local/bin/rg",           // Intel Homebrew / manual install
+                "/opt/homebrew/sbin/rg",       // Alternative Homebrew location
+                "/usr/local/sbin/rg",          // Alternative manual install location
+                System.getProperty("user.home") + "/.cargo/bin/rg"  // Cargo install
+            )
+
+            LOG.debug("Checking macOS-specific paths for ripgrep: $macPaths")
+
+            for (pathStr in macPaths) {
+                val path = Paths.get(pathStr)
+                LOG.debug("Checking path: $pathStr")
+                if (path.toFile().exists() && path.toFile().canExecute()) {
+                    LOG.debug("Found ripgrep at macOS path: $path")
+                    return path
+                }
             }
 
-            val usrLocalPath = Paths.get("/usr/local/bin/rg")
-            if (usrLocalPath.toFile().exists()) {
-                return usrLocalPath
-            }
+            LOG.debug("Ripgrep not found in any macOS-specific paths")
         }
 
+        // Try using 'which' command to find the binary in PATH
         try {
             val pb = ProcessBuilder("which", binName)
             val process = pb.start()
             if (process.waitFor(1, TimeUnit.SECONDS) && process.exitValue() == 0) {
-                val path = String(process.inputStream.readAllBytes(), StandardCharsets.UTF_8).trim { it <= ' ' }
-                return Paths.get(path)
+                val path = String(process.inputStream.readAllBytes(), StandardCharsets.UTF_8).trim()
+                if (path.isNotEmpty()) {
+                    val rgPath = Paths.get(path)
+                    if (rgPath.toFile().exists() && rgPath.toFile().canExecute()) {
+                        return rgPath
+                    }
+                }
             }
         } catch (e: Exception) {
             LOG.debug("Failed to locate rg using 'which' command", e)
         }
 
+        // Fallback to manual PATH search
         return findInPath(binName)
     }
 
     private fun findInPath(executable: String): Path? {
         val pathEnv = System.getenv("PATH") ?: return null
         val pathSeparator = if (System.getProperty("os.name").lowercase().contains("win")) ";" else ":"
-        
+
         for (dir in pathEnv.split(pathSeparator)) {
-            val path = Paths.get(dir, executable)
-            if (path.toFile().exists() && path.toFile().canExecute()) {
-                return path
+            if (dir.isBlank()) continue
+            try {
+                val path = Paths.get(dir, executable)
+                if (path.toFile().exists() && path.toFile().canExecute()) {
+                    LOG.debug("Found ripgrep binary at: $path")
+                    return path
+                }
+            } catch (e: Exception) {
+                LOG.debug("Error checking path $dir for $executable", e)
             }
         }
-        
+
+        LOG.debug("Ripgrep binary not found in PATH. PATH=$pathEnv")
         return null
     }
 
