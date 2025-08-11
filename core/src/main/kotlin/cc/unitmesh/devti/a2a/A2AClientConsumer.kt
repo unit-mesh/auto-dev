@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agent.a2a
+package cc.unitmesh.devti.a2a
 
 import io.a2a.client.A2AClient
 

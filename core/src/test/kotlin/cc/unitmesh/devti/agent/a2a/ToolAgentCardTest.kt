@@ -1,12 +1,15 @@
 package cc.unitmesh.devti.agent.a2a
 
+import cc.unitmesh.devti.a2a.AgentCapabilities
+import cc.unitmesh.devti.a2a.AgentProvider
+import cc.unitmesh.devti.a2a.AgentSkill
+import cc.unitmesh.devti.a2a.ToolAgentCard
+import cc.unitmesh.devti.a2a.ToolInput
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ToolAgentCardTest {

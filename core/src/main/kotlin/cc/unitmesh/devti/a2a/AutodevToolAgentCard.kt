@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agent.a2a
+package cc.unitmesh.devti.a2a
 
 import cc.unitmesh.devti.agent.Tool
 import kotlinx.serialization.Serializable
