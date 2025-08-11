@@ -260,7 +260,6 @@ class McpServicesTestDialog(private val project: Project) : DialogWrapper(projec
 
                 updateServerPanels(serverInfos)
 
-                // Expand all servers by default
                 serverInfos.keys.forEach { server ->
                     expandedServers.add(server)
                 }

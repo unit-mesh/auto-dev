@@ -13,7 +13,7 @@ data class McpConfig(
 data class McpServer(
     val command: String? = null,
     val url: String? = null,
-    val args: List<String>,
+    val args: List<String> = emptyList(),
     val disabled: Boolean? = null,
     val autoApprove: List<String>? = null,
     val env: Map<String, String>? = null,

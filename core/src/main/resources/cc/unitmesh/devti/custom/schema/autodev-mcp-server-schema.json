@@ -7,6 +7,9 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
+          "url":  {
+            "type": "string"
+          },
           "command": {
             "type": "string"
           },
@@ -38,7 +41,6 @@
             }
           }
         },
-        "required": ["command", "args"],
         "additionalProperties": false
       }
     }
