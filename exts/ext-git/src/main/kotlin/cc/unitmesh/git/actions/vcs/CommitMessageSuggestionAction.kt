@@ -98,9 +98,9 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                 val stream = LlmFactory.create(project).stream(prompt, "", false)
                 currentJob = AutoDevCoroutineScope.scope(project).launch {
                     try {
-                        var result = ""
+                        var finalText = ""
                         stream.cancellable().collect { chunk ->
-                            result += chunk
+                            finalText += chunk
                             invokeLater {
                                 if (isActive) {
                                     editorField.text += chunk
@@ -108,14 +108,13 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                             }
                         }
 
-                        val text = result
-                        if (isActive && text.startsWith("```") && text.endsWith("```")) {
+                        if (isActive && finalText.startsWith("```") && finalText.endsWith("```")) {
                             invokeLater {
-                                editorField.text = CodeFence.parse(text).text
+                                editorField.text = CodeFence.parse(finalText).text
                             }
                         } else if (isActive) {
                             invokeLater {
-                                editorField.text = text.removePrefix("```\n").removeSuffix("```")
+                                editorField.text = finalText.removePrefix("```\n").removeSuffix("```")
                             }
                         }
                     } catch (e: Exception) {
