@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.ui.JBColor
 import com.intellij.uml.components.UmlGraphZoomableViewport
+import cc.unitmesh.diagram.graphviz.editor.GraphvizPreviewFileEditorInterface
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -22,7 +23,7 @@ import javax.swing.JPanel
  * Similar to JdlDiagramPanel in JHipster UML implementation
  */
 class GraphvizDiagramPanel(
-    private val fileEditor: GraphvizPreviewFileEditor
+    private val fileEditor: GraphvizPreviewFileEditorInterface
 ) : Disposable {
     
     private var builder: DiagramBuilder? = null
@@ -83,10 +84,4 @@ class GraphvizDiagramPanel(
     }
 }
 
-/**
- * Interface for file editor that can provide project and file information
- */
-interface GraphvizPreviewFileEditor {
-    fun getProject(): Project
-    fun getFile(): VirtualFile
-}
+

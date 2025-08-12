@@ -5,14 +5,22 @@
     </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- Register file type -->
+        <fileType name="DOT" implementationClass="cc.unitmesh.diagram.graphviz.DotFileType"
+                  fieldName="INSTANCE" extensions="dot;gv;graphviz"/>
+
         <!-- Register Graphviz diagram provider -->
         <diagram.Provider implementation="cc.unitmesh.diagram.graphviz.GraphvizUmlProvider"/>
 
         <!-- Register project service -->
         <projectService serviceImplementation="cc.unitmesh.diagram.graphviz.GraphvizDiagramService"/>
+
+        <!-- Register file editor provider -->
+        <fileEditorProvider implementation="cc.unitmesh.diagram.graphviz.editor.GraphvizSplitEditorProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-
+        <!-- Register Graphviz language sketch provider -->
+        <langSketchProvider implementation="cc.unitmesh.diagram.graphviz.GraphvizSketchProvider"/>
     </extensions>
 </idea-plugin>
