@@ -13,13 +13,13 @@ import cc.unitmesh.diagram.graphviz.model.GraphvizEdgeType
  * Diagram edge implementation for Graphviz graphs
  * Similar to JdlDiagramEntityEdge in JHipster UML implementation
  */
-class GraphvizDiagramEdge(
+class GraphvizEntityEdge(
     source: DiagramNode<GraphvizNodeData>,
     target: DiagramNode<GraphvizNodeData>,
     private val edgeData: GraphvizEdgeData
 ) : DiagramEdgeBase<GraphvizNodeData>(source, target, createRelationshipInfo(edgeData)) {
     
-    companion object {
+    companion object Companion {
         /**
          * Create relationship info based on edge data
          */
@@ -97,7 +97,7 @@ class GraphvizDiagramEdge(
     
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GraphvizDiagramEdge) return false
+        if (other !is GraphvizEntityEdge) return false
         return edgeData == other.edgeData
     }
     

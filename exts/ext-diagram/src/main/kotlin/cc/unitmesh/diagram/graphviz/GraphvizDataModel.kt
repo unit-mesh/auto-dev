@@ -67,7 +67,7 @@ class GraphvizDataModel(
                 val targetNode = nodeMapping[edgeData.targetNodeId]
 
                 if (sourceNode != null && targetNode != null) {
-                    edges.add(GraphvizDiagramEdge(sourceNode, targetNode, edgeData))
+                    edges.add(GraphvizEntityEdge(sourceNode, targetNode, edgeData))
                 }
             }
 
