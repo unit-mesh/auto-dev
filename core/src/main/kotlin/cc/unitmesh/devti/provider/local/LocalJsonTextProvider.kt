@@ -24,7 +24,7 @@ class LocalJsonTextProvider : JsonTextProvider {
 class JsonLanguageField(
     private val myProject: Project?,
     val value: String,
-    private val placeholder: String,
+    private val placeholder: String = "",
     private val fileName: String? = null,
     private val oneLineMode: Boolean = false
 ) :

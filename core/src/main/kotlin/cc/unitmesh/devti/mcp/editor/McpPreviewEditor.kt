@@ -423,7 +423,7 @@ open class McpPreviewEditor(
                 val response = a2aClient.sendMessage(agentName, message)
 
                 SwingUtilities.invokeLater {
-                    resultPanel.setText("Response from $agentName:\n\n$response")
+                    resultPanel.setText(response)
                     mainPanel.revalidate()
                     mainPanel.repaint()
                 }

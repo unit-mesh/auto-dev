@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.a2a.ui
 
 import cc.unitmesh.devti.a2a.A2AClientConsumer
+import cc.unitmesh.devti.provider.local.JsonLanguageField
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.HyperlinkLabel
@@ -10,8 +11,6 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import io.a2a.spec.AgentCard
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -351,7 +350,7 @@ class A2AAgentCardPanel(
     ) : DialogWrapper(project) {
         
         private val messageField = JTextField("Hello, how can you help me?")
-        private val resultArea = JTextArea()
+        private val resultArea = JsonLanguageField(project, "")
         
         init {
             title = "Test Agent: ${getAgentName()}"
@@ -389,12 +388,10 @@ class A2AAgentCardPanel(
             bottomPanel.add(JLabel("Response:"), BorderLayout.NORTH)
             
             resultArea.apply {
-                lineWrap = true
-                wrapStyleWord = true
-                isEditable = false
                 font = JBUI.Fonts.create("Monospaced", 12)
-                text = "Click 'Send' to test the agent..."
+                setPlaceholder("Click 'Send' to test the agent...")
             }
+
             bottomPanel.add(JBScrollPane(resultArea), BorderLayout.CENTER)
             
             panel.add(topPanel, BorderLayout.NORTH)
@@ -412,11 +409,8 @@ class A2AAgentCardPanel(
             
             try {
                 resultArea.text = "Sending message..."
-                // Note: A2AClientConsumer.sendMessage currently doesn't return a response
-                // This is a limitation that might need to be addressed
-                val agentName = getAgentName()
-                val result = a2aClientConsumer.sendMessage(agentName, message)
-                resultArea.text = "Message sent successfully to $agentName.\n\n$result"
+                val result = a2aClientConsumer.sendMessage(getAgentName(), message)
+                resultArea.text = result
             } catch (e: Exception) {
                 resultArea.text = "Error sending message: ${e.message}"
             }
