@@ -6,11 +6,12 @@ import io.a2a.spec.AgentCard
 import io.a2a.spec.MessageSendParams
 import io.a2a.spec.SendMessageResponse
 import kotlinx.serialization.Serializable
-
+import com.fasterxml.jackson.databind.ObjectMapper
 
 class A2AClientConsumer {
     var clientMap: MutableMap<String, A2AClient> = mutableMapOf()
     var cardMap: MutableMap<String, AgentCard> = mutableMapOf()
+    var jacksonObjectMapper = ObjectMapper()
 
     fun init(servers: List<A2aServer>): List<A2AClient> {
         servers.forEach {
@@ -36,7 +37,8 @@ class A2AClientConsumer {
 
         return try {
             val response: SendMessageResponse = client.sendMessage(msgParams)
-            response.toString()
+            val resultString = jacksonObjectMapper.writeValueAsString(response.result)
+            resultString
         } catch (e: Exception) {
             throw RuntimeException("Failed to send message to agent $agentName: ${e.message}", e)
         }
