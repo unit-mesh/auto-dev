@@ -3,8 +3,6 @@ package cc.unitmesh.diagram.graphviz.parser
 import cc.unitmesh.diagram.graphviz.model.*
 import guru.nidi.graphviz.model.MutableGraph
 import guru.nidi.graphviz.parse.Parser
-import java.io.InputStream
-import java.io.StringReader
 
 /**
  * Parser for DOT files using guru.nidi.graphviz library
@@ -17,8 +15,8 @@ class DotFileParser {
      */
     fun parse(dotContent: String): GraphvizDiagramData {
         return try {
-            val parser = Parser()
-            val graph = parser.read(dotContent)
+            // Use string directly for parsing
+            val graph = Parser().read(dotContent)
             convertToGraphvizData(graph)
         } catch (e: Exception) {
             // Return empty data if parsing fails
@@ -31,24 +29,7 @@ class DotFileParser {
         }
     }
     
-    /**
-     * Parse DOT content from input stream
-     */
-    fun parse(inputStream: InputStream): GraphvizDiagramData {
-        return try {
-            val parser = Parser()
-            val graph = parser.read(inputStream)
-            convertToGraphvizData(graph)
-        } catch (e: Exception) {
-            // Return empty data if parsing fails
-            GraphvizDiagramData(
-                nodes = emptyList(),
-                edges = emptyList(),
-                graphAttributes = emptyMap(),
-                graphType = GraphvizGraphType.DIGRAPH
-            )
-        }
-    }
+
     
     /**
      * Convert guru.nidi.graphviz MutableGraph to our internal model
