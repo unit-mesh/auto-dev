@@ -7,6 +7,8 @@ import com.intellij.ide.DataManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataProvider
+import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
 import com.intellij.openapi.graph.services.GraphLayoutService
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiManager
@@ -80,11 +82,16 @@ class GraphvizDiagramPanel(private val fileEditor: GraphvizPreviewFileEditor) : 
     private inner class MyPanel : JPanel(BorderLayout()) {
         init {
             DataManager.registerDataProvider(this) { dataId ->
-                when (dataId) {
-                    CommonDataKeys.VIRTUAL_FILE.name -> fileEditor.getFile()
-                    CommonDataKeys.PSI_FILE.name -> PsiManager.getInstance(fileEditor.getProject())
-                        .findFile(fileEditor.getFile())
-
+                when {
+                    PlatformCoreDataKeys.BGT_DATA_PROVIDER.`is`(dataId) -> DataProvider { slowId ->
+                        when {
+                            CommonDataKeys.PSI_FILE.`is`(slowId) ->
+                                PsiManager.getInstance(fileEditor.getProject())
+                                    .findFile(fileEditor.getFile())
+                            else -> null
+                        }
+                    }
+                    CommonDataKeys.VIRTUAL_FILE.`is`(dataId) -> fileEditor.getFile()
                     else -> null
                 }
             }
