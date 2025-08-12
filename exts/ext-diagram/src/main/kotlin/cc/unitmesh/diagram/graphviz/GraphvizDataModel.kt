@@ -53,6 +53,14 @@ class GraphvizDataModel(
                 }
             }
 
+            // Add all entities
+            diagramData?.entities?.forEach { entityData ->
+                val diagramNode = addElement(entityData)
+                if (diagramNode != null) {
+                    nodeMapping[entityData.getName()] = diagramNode
+                }
+            }
+
             // Add all edges
             diagramData?.edges?.forEach { edgeData ->
                 val sourceNode = nodeMapping[edgeData.sourceNodeId]
@@ -106,6 +114,7 @@ class GraphvizDataModel(
             if (virtualFile == null || !virtualFile.exists()) {
                 return GraphvizDiagramData(
                     nodes = emptyList(),
+                    entities = emptyList(),
                     edges = emptyList()
                 )
             }
@@ -118,6 +127,7 @@ class GraphvizDataModel(
                 // Return empty data if parsing fails
                 GraphvizDiagramData(
                     nodes = emptyList(),
+                    entities = emptyList(),
                     edges = emptyList()
                 )
             }

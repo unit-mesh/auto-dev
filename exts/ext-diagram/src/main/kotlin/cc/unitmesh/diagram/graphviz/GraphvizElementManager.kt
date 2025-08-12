@@ -13,6 +13,10 @@ import com.intellij.ui.SimpleTextAttributes
 import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
 import cc.unitmesh.diagram.graphviz.model.GraphvizDiagramRootData
 import cc.unitmesh.diagram.graphviz.model.GraphvizSimpleNodeData
+import cc.unitmesh.diagram.graphviz.model.GraphvizEntityNodeData
+import cc.unitmesh.diagram.graphviz.model.GraphvizNodeField
+import cc.unitmesh.diagram.graphviz.model.GraphvizAttributeItem
+import com.intellij.util.ArrayUtil
 import javax.swing.Icon
 
 /**
@@ -44,7 +48,23 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
     }
     
     override fun isAcceptableAsNode(element: Any?): Boolean {
-        return element is GraphvizNodeData
+        return element is GraphvizEntityNodeData || element is GraphvizSimpleNodeData
+    }
+
+    /**
+     * Get node items (fields for entities, attributes for simple nodes)
+     */
+    override fun getNodeItems(nodeElement: GraphvizNodeData): Array<Any> {
+        return when (nodeElement) {
+            is GraphvizEntityNodeData -> nodeElement.getFields().toTypedArray()
+            is GraphvizSimpleNodeData -> {
+                // Convert attributes to GraphvizAttributeItem objects
+                nodeElement.getAttributes().map { (key, value) ->
+                    GraphvizAttributeItem(key, value)
+                }.toTypedArray()
+            }
+            else -> ArrayUtil.EMPTY_OBJECT_ARRAY
+        }
     }
     
     override fun getElementTitle(element: GraphvizNodeData): String? {
@@ -53,6 +73,22 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
     
     override fun getNodeTooltip(element: GraphvizNodeData): String? {
         return when (element) {
+            is GraphvizEntityNodeData -> {
+                buildString {
+                    append("Entity: ${element.getName()}")
+                    append("\nFields: ${element.getFields().size}")
+                    if (element.hasFields()) {
+                        append("\n")
+                        element.getFields().take(3).forEach { field ->
+                            append("\n  ${field.name}")
+                            field.type?.let { append(": $it") }
+                        }
+                        if (element.getFields().size > 3) {
+                            append("\n  ...")
+                        }
+                    }
+                }
+            }
             is GraphvizSimpleNodeData -> {
                 buildString {
                     append("Node: ${element.getName()}")
@@ -73,9 +109,27 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
         nodeItem: Any?,
         builder: DiagramBuilder
     ): SimpleColoredText? {
-        // For now, we don't have sub-items in nodes
-        // This could be extended to show node attributes as sub-items
-        return null
+        return when (nodeItem) {
+            is GraphvizNodeField -> SimpleColoredText(nodeItem.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            is GraphvizAttributeItem -> SimpleColoredText(nodeItem.key, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            else -> null
+        }
+    }
+
+    override fun getItemType(
+        nodeElement: GraphvizNodeData?,
+        nodeItem: Any?,
+        builder: DiagramBuilder?
+    ): SimpleColoredText? {
+        return when (nodeItem) {
+            is GraphvizNodeField -> {
+                nodeItem.type?.let {
+                    SimpleColoredText(it, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                }
+            }
+            is GraphvizAttributeItem -> SimpleColoredText(nodeItem.value, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            else -> null
+        }
     }
 
     override fun getItemIcon(
@@ -83,8 +137,17 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
         nodeItem: Any?,
         builder: DiagramBuilder?
     ): Icon? {
-        // For now, we don't have sub-items in nodes
-        return null
+        return when (nodeItem) {
+            is GraphvizNodeField -> {
+                if (nodeItem.isRequired()) {
+                    com.intellij.util.PlatformIcons.FIELD_ICON // Could use a different icon for required fields
+                } else {
+                    com.intellij.util.PlatformIcons.FIELD_ICON
+                }
+            }
+            is GraphvizAttributeItem -> com.intellij.util.PlatformIcons.PROPERTY_ICON
+            else -> null
+        }
     }
     
     companion object {

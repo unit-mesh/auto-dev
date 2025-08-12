@@ -11,7 +11,8 @@ class GraphvizSimpleNodeData(
     private val id: String,
     private val label: String? = null,
     private val attributes: Map<String, String> = emptyMap(),
-    private val nodeType: GraphvizNodeType = GraphvizNodeType.REGULAR
+    private val nodeType: GraphvizNodeType = GraphvizNodeType.REGULAR,
+    private val fields: List<GraphvizNodeField> = emptyList()
 ) : GraphvizNodeData {
     
     override fun getName(): String = id
@@ -50,6 +51,16 @@ class GraphvizSimpleNodeData(
      * Get the node type
      */
     fun getNodeType(): GraphvizNodeType = nodeType
+
+    /**
+     * Get node fields/properties
+     */
+    fun getFields(): List<GraphvizNodeField> = fields
+
+    /**
+     * Check if this node has fields
+     */
+    fun hasFields(): Boolean = fields.isNotEmpty()
     
     override fun getIcon(): Icon? {
         return when (nodeType) {

@@ -6,6 +6,7 @@ package cc.unitmesh.diagram.graphviz.model
  */
 data class GraphvizDiagramData(
     val nodes: Collection<GraphvizSimpleNodeData>,
+    val entities: Collection<GraphvizEntityNodeData> = emptyList(),
     val edges: Collection<GraphvizEdgeData>,
     val graphAttributes: Map<String, String> = emptyMap(),
     val graphType: GraphvizGraphType = GraphvizGraphType.DIGRAPH
@@ -38,12 +39,19 @@ data class GraphvizDiagramData(
     fun getGraphAttribute(key: String): String? = graphAttributes[key]
     
     /**
+     * Get an entity by name
+     */
+    fun getEntityByName(name: String): GraphvizEntityNodeData? {
+        return entities.find { it.getName() == name }
+    }
+
+    /**
      * Check if the graph is empty
      */
-    fun isEmpty(): Boolean = nodes.isEmpty() && edges.isEmpty()
+    fun isEmpty(): Boolean = nodes.isEmpty() && entities.isEmpty() && edges.isEmpty()
     
     override fun toString(): String {
-        return "GraphvizDiagramData(nodes=${nodes.size}, edges=${edges.size}, type=$graphType)"
+        return "GraphvizDiagramData(nodes=${nodes.size}, entities=${entities.size}, edges=${edges.size}, type=$graphType)"
     }
 }
 

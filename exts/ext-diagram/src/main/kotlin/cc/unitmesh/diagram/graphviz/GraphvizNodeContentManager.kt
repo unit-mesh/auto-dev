@@ -6,6 +6,10 @@ import com.intellij.diagram.DiagramCategory
 import com.intellij.util.PlatformIcons
 import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
 import cc.unitmesh.diagram.graphviz.model.GraphvizSimpleNodeData
+import cc.unitmesh.diagram.graphviz.model.GraphvizEntityNodeData
+import cc.unitmesh.diagram.graphviz.model.GraphvizNodeField
+import cc.unitmesh.diagram.graphviz.model.GraphvizAttributeItem
+import com.intellij.icons.AllIcons
 
 /**
  * Node content manager for Graphviz diagrams
@@ -14,16 +18,23 @@ import cc.unitmesh.diagram.graphviz.model.GraphvizSimpleNodeData
 class GraphvizNodeContentManager : AbstractDiagramNodeContentManager() {
     
     companion object {
+        private val FIELDS_CATEGORY = DiagramCategory(
+            "Fields",
+            AllIcons.Nodes.Field,
+            true,
+            false
+        )
+
         private val ATTRIBUTES_CATEGORY = DiagramCategory(
             "Attributes",
             PlatformIcons.PROPERTY_ICON,
             true,
-            true
+            false
         )
     }
     
     override fun getContentCategories(): Array<DiagramCategory> {
-        return arrayOf(ATTRIBUTES_CATEGORY)
+        return arrayOf(FIELDS_CATEGORY, ATTRIBUTES_CATEGORY)
     }
     
     override fun isInCategory(
@@ -32,18 +43,10 @@ class GraphvizNodeContentManager : AbstractDiagramNodeContentManager() {
         category: DiagramCategory,
         builder: DiagramBuilder?
     ): Boolean {
-        return category == ATTRIBUTES_CATEGORY && item is GraphvizAttributeItem
-    }
-}
-
-/**
- * Represents a node attribute as a diagram item
- */
-data class GraphvizAttributeItem(
-    val key: String,
-    val value: String
-) {
-    override fun toString(): String {
-        return "$key = $value"
+        return when {
+            item is GraphvizNodeField -> category == FIELDS_CATEGORY
+            item is GraphvizAttributeItem -> category == ATTRIBUTES_CATEGORY
+            else -> super.isInCategory(nodeElement, item, category, builder)
+        }
     }
 }

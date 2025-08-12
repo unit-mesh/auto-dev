@@ -49,9 +49,39 @@ The extension is built following the JHipster UML module architecture and includ
 
 - **GraphvizNodeData**: Base interface for all node data types
 - **GraphvizSimpleNodeData**: Represents regular graph nodes with attributes
+- **GraphvizEntityNodeData**: Represents entity nodes with fields/properties (similar to JHipster UML entities)
+- **GraphvizNodeField**: Represents a field/property of an entity node
 - **GraphvizDiagramRootData**: Represents the root DOT file
 - **GraphvizEdgeData**: Represents edges/connections between nodes
 - **GraphvizDiagramData**: Container for all diagram data
+
+## Features
+
+### Node Properties Support
+
+The extension now supports parsing and displaying node properties/fields from Graphviz record-shaped nodes, similar to JHipster UML entities:
+
+```dot
+digraph ClassDiagram {
+    // Entity nodes with fields
+    User [shape=record, label="{User|id:Long|name:String|email:String|active:Boolean}"];
+    Order [shape=record, label="{Order|id:Long|userId:Long|amount:Double|status:String}"];
+
+    // Method-like records
+    UserService [shape=record, label="{UserService|+createUser(name:String):User|+findById(id:Long):User}"];
+
+    // Relationships
+    User -> Order [label="has many"];
+    UserService -> User [label="manages"];
+}
+```
+
+The parser automatically:
+- Detects record-shaped nodes (`shape=record` or `shape=Mrecord`)
+- Parses field definitions from the label (format: `{ClassName|field1:Type1|field2:Type2}`)
+- Creates `GraphvizEntityNodeData` objects with `GraphvizNodeField` collections
+- Supports port specifications (e.g., `<port1>fieldName:Type`)
+- Falls back to simple nodes if no fields are found
 
 ## Usage
 

@@ -22,6 +22,7 @@ class DotFileParser {
             // Return empty data if parsing fails
             GraphvizDiagramData(
                 nodes = emptyList(),
+                entities = emptyList(),
                 edges = emptyList(),
                 graphAttributes = emptyMap(),
                 graphType = GraphvizGraphType.DIGRAPH
@@ -36,6 +37,7 @@ class DotFileParser {
      */
     private fun convertToGraphvizData(graph: MutableGraph): GraphvizDiagramData {
         val nodes = mutableListOf<GraphvizSimpleNodeData>()
+        val entities = mutableListOf<GraphvizEntityNodeData>()
         val edges = mutableListOf<GraphvizEdgeData>()
         
         // Extract graph type
@@ -74,15 +76,38 @@ class DotFileParser {
                 "box", "rectangle" -> GraphvizNodeType.REGULAR
                 else -> GraphvizNodeType.REGULAR
             }
-            
-            nodes.add(
-                GraphvizSimpleNodeData(
-                    id = nodeId,
-                    label = if (label != nodeId) label else null,
-                    attributes = nodeAttrs,
-                    nodeType = nodeType
+
+            // Parse fields for record-type nodes
+            if (nodeType == GraphvizNodeType.RECORD) {
+                val fields = parseRecordFields(label)
+                if (fields.isNotEmpty()) {
+                    entities.add(
+                        GraphvizEntityNodeData(
+                            name = nodeId,
+                            fields = fields
+                        )
+                    )
+                } else {
+                    // Fallback to simple node if no fields found
+                    nodes.add(
+                        GraphvizSimpleNodeData(
+                            id = nodeId,
+                            label = if (label != nodeId) label else null,
+                            attributes = nodeAttrs,
+                            nodeType = nodeType
+                        )
+                    )
+                }
+            } else {
+                nodes.add(
+                    GraphvizSimpleNodeData(
+                        id = nodeId,
+                        label = if (label != nodeId) label else null,
+                        attributes = nodeAttrs,
+                        nodeType = nodeType
+                    )
                 )
-            )
+            }
         }
         
         // Extract edges
@@ -119,9 +144,69 @@ class DotFileParser {
         
         return GraphvizDiagramData(
             nodes = nodes,
+            entities = entities,
             edges = edges,
             graphAttributes = graphAttributes,
             graphType = graphType
         )
+    }
+
+    /**
+     * Parse fields from a Graphviz record label
+     * Record format examples:
+     * - "{field1|field2|field3}"
+     * - "{field1:type1|field2:type2}"
+     * - "{<port1>field1|<port2>field2:type2}"
+     */
+    private fun parseRecordFields(label: String): List<GraphvizNodeField> {
+        if (label.isBlank()) return emptyList()
+
+        // Remove outer braces if present
+        val cleanLabel = label.trim().removeSurrounding("{", "}")
+
+        if (cleanLabel.isBlank()) return emptyList()
+
+        // Split by | to get individual fields
+        val fieldParts = cleanLabel.split("|")
+
+        return fieldParts.mapNotNull { fieldPart ->
+            parseRecordField(fieldPart.trim())
+        }
+    }
+
+    /**
+     * Parse a single field from record format
+     * Examples:
+     * - "fieldName" -> GraphvizNodeField("fieldName", null, false)
+     * - "fieldName:String" -> GraphvizNodeField("fieldName", "String", false)
+     * - "<port>fieldName:String" -> GraphvizNodeField("fieldName", "String", false)
+     */
+    private fun parseRecordField(fieldPart: String): GraphvizNodeField? {
+        if (fieldPart.isBlank()) return null
+
+        var cleanField = fieldPart
+
+        // Remove port specification if present (e.g., "<port1>fieldName" -> "fieldName")
+        if (cleanField.contains(">")) {
+            val portEndIndex = cleanField.indexOf(">")
+            if (portEndIndex < cleanField.length - 1) {
+                cleanField = cleanField.substring(portEndIndex + 1)
+            }
+        }
+
+        // Split by : to separate name and type
+        val parts = cleanField.split(":", limit = 2)
+        val fieldName = parts[0].trim()
+        val fieldType = if (parts.size > 1) parts[1].trim().takeIf { it.isNotBlank() } else null
+
+        return if (fieldName.isNotBlank()) {
+            GraphvizNodeField(
+                name = fieldName,
+                type = fieldType,
+                required = false // Could be enhanced to detect required fields
+            )
+        } else {
+            null
+        }
     }
 }
