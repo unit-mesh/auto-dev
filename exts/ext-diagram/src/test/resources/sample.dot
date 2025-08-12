@@ -1,0 +1,20 @@
+digraph SampleGraph {
+    // Graph attributes
+    rankdir=TB;
+    bgcolor=white;
+    
+    // Node definitions with attributes
+    A [label="Start Node", shape=box, color=green, style=filled];
+    B [label="Process 1", shape=ellipse, color=blue];
+    C [label="Process 2", shape=ellipse, color=blue];
+    D [label="Decision", shape=diamond, color=yellow, style=filled];
+    E [label="End Node", shape=box, color=red, style=filled];
+    
+    // Edge definitions with attributes
+    A -> B [label="begin", color=black];
+    A -> C [label="parallel", color=black, style=dashed];
+    B -> D [label="check", color=blue];
+    C -> D [label="merge", color=blue];
+    D -> E [label="finish", color=green, style=bold];
+    D -> B [label="retry", color=red, style=dotted];
+}

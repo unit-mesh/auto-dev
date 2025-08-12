@@ -42,5 +42,7 @@
         <module name="cc.unitmesh.vue"/>
         <module name="cc.unitmesh.dependencies"/>
         <module name="cc.unitmesh.container"/>
+
+        <module name="cc.unitmesh.diagram"/>
     </content>
 </idea-plugin>

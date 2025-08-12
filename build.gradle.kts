@@ -274,6 +274,7 @@ project(":") {
             pluginModule(implementation(project(":exts:ext-endpoints")))
             pluginModule(implementation(project(":exts:ext-plantuml")))
             pluginModule(implementation(project(":exts:ext-container")))
+            pluginModule(implementation(project(":exts:ext-diagram")))
             pluginModule(implementation(project(":exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
@@ -298,6 +299,7 @@ project(":") {
         implementation(project(":exts:ext-plantuml"))
         implementation(project(":exts:ext-endpoints"))
         implementation(project(":exts:ext-container"))
+        implementation(project(":exts:ext-diagram"))
         implementation(project(":exts:devins-lang"))
 
         kover(project(":core"))
@@ -851,6 +853,13 @@ project(":exts:ext-diagram") {
         }
 
         implementation(project(":core"))
+
+        // Graphviz DOT parser library
+        implementation("guru.nidi:graphviz-java:0.18.1")
+
+        // Test dependencies
+        testImplementation(kotlin("test"))
+        testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     }
 
     sourceSets {
