@@ -17,8 +17,9 @@
         <!-- Register project service -->
         <projectService serviceImplementation="cc.unitmesh.diagram.graphviz.GraphvizDiagramService"/>
 
-        <!-- Register file editor provider -->
+        <!-- Register file editor providers -->
         <fileEditorProvider implementation="cc.unitmesh.diagram.graphviz.editor.GraphvizSplitEditorProvider"/>
+        <fileEditorProvider implementation="cc.unitmesh.diagram.graphviz.editor.MermaidSplitEditorProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="cc.unitmesh">

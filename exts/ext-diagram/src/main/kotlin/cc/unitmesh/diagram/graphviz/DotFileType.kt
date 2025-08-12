@@ -47,7 +47,7 @@ class MermaidFileType private constructor() : FileType {
 
     override fun getDefaultExtension(): String = "mmd"
 
-    override fun getIcon(): Icon? = IconLoader.getIcon("/icons/graphviz.svg", MermaidFileType::class.java)
+    override fun getIcon(): Icon? = IconLoader.getIcon("/icons/mermaid.svg", MermaidFileType::class.java)
 
     override fun getCharset(file: VirtualFile, content: ByteArray): String = "UTF-8"
 

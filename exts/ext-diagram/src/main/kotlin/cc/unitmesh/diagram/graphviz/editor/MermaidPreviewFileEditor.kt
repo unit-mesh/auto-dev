@@ -1,10 +1,7 @@
 package cc.unitmesh.diagram.graphviz.editor
 
 import cc.unitmesh.diagram.graphviz.GraphvizDiagramPanel
-import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -13,6 +10,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.util.Alarm
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
@@ -24,10 +24,10 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 /**
- * Preview file editor for Graphviz DOT files
- * Similar to JdlPreviewFileEditor in JHipster UML implementation
+ * Preview file editor for Mermaid files
+ * Similar to GraphvizPreviewFileEditor but for Mermaid diagrams
  */
-class GraphvizPreviewFileEditor(private val project: Project, private val file: VirtualFile) : UserDataHolderBase(),
+class MermaidPreviewFileEditor(private val project: Project, private val file: VirtualFile) : UserDataHolderBase(),
     FileEditor, DiagramPreviewFileEditor {
 
     companion object {
@@ -41,7 +41,7 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
 
     private var myPanel: GraphvizDiagramPanel? = null
 
-    private val mergingUpdateQueue = MergingUpdateQueue("Graphviz", RENDERING_DELAY_MS, true, null, this)
+    private val mergingUpdateQueue = MergingUpdateQueue("Mermaid", RENDERING_DELAY_MS, true, null, this)
     private val swingAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
 
     init {
@@ -53,26 +53,37 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
 
         umlPanelWrapper.addComponentListener(object : ComponentAdapter() {
             override fun componentShown(e: ComponentEvent?) {
-                swingAlarm.addRequest(Runnable {
-                    if (myPanel == null) {
-                        attachHtmlPanel()
-                    }
-                }, 0, ModalityState.stateForComponent(getComponent()))
+                if (myPanel == null) {
+                    attachHtmlPanel()
+                }
             }
 
             override fun componentHidden(e: ComponentEvent?) {
-                swingAlarm.addRequest(Runnable {
-                    if (myPanel != null) {
-                        detachHtmlPanel()
-                    }
-                }, 0, ModalityState.stateForComponent(getComponent()))
+                if (myPanel != null) {
+                    detachHtmlPanel()
+                }
             }
         })
-        attachHtmlPanel()
+    }
+
+    override fun dispose() {
+        if (isDisposed) return
+        isDisposed = true
+        detachHtmlPanel()
+    }
+
+    override fun isValid(): Boolean = !isDisposed
+
+    override fun addPropertyChangeListener(listener: PropertyChangeListener) {
+        // No properties to listen to
+    }
+
+    override fun removePropertyChangeListener(listener: PropertyChangeListener) {
+        // No properties to listen to
     }
 
     private fun attachHtmlPanel() {
-        myPanel = GraphvizDiagramPanel(this)
+        myPanel = GraphvizDiagramPanel(this as DiagramPreviewFileEditor)
         umlPanelWrapper.add(myPanel!!.getComponent(), BorderLayout.CENTER)
         Disposer.register(this, myPanel!!)
 
@@ -94,7 +105,7 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
 
     override fun getPreferredFocusedComponent(): JComponent? = myPanel?.getComponent()
 
-    override fun getName(): String = "Graphviz Preview"
+    override fun getName(): String = "Mermaid Preview"
 
     override fun setState(state: FileEditorState) {
         // No state to set
@@ -102,21 +113,17 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
 
     override fun isModified(): Boolean = false
 
-    override fun isValid(): Boolean = !isDisposed
+    override fun selectNotify() {
+        if (myPanel == null) {
+            attachHtmlPanel()
+        }
+    }
 
-    override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
-
-    override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
+    override fun deselectNotify() {
+        // Keep panel attached for better performance
+    }
 
     override fun getCurrentLocation(): FileEditorLocation? = null
-
-    override fun dispose() {
-        if (isDisposed) return
-        isDisposed = true
-
-        myPanel?.let { Disposer.dispose(it) }
-        myPanel = null
-    }
 
     override fun getFile(): VirtualFile = file
     override fun getProject(): Project = project

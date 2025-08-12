@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.graphviz
 
-import cc.unitmesh.diagram.graphviz.editor.GraphvizPreviewFileEditor
+import cc.unitmesh.diagram.graphviz.editor.DiagramPreviewFileEditor
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramBuilderFactory
 import com.intellij.ide.DataManager
@@ -23,7 +23,7 @@ import javax.swing.JPanel
  * Panel for displaying Graphviz diagrams
  * Similar to JdlDiagramPanel in JHipster UML implementation
  */
-class GraphvizDiagramPanel(private val fileEditor: GraphvizPreviewFileEditor) : Disposable {
+class GraphvizDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : Disposable {
     private var builder: DiagramBuilder? = null
     private val chartPanel = MyPanel()
     private val umlProvider = GraphvizUmlProvider()
