@@ -843,6 +843,36 @@ project(":exts:ext-wechat") {
     }
 }
 
+project(":exts:ext-diagram") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins("com.intellij.diagram")
+        }
+
+        implementation(project(":core"))
+    }
+
+    sourceSets {
+        main {
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
+    }
+}
+
 project(":exts:devins-lang") {
     apply {
         plugin("org.jetbrains.grammarkit")

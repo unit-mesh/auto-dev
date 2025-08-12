@@ -28,6 +28,7 @@ include(
     "exts:ext-container",
     "exts:ext-openrewrite",
     "exts:ext-wechat",
+    "exts:ext-diagram",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"

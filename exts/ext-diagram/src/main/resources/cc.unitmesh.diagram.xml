@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.diagram">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.diagram"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+
+    </extensions>
+</idea-plugin>
