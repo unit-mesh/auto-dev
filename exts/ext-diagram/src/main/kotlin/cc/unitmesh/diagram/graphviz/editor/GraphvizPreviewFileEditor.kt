@@ -1,6 +1,7 @@
 package cc.unitmesh.diagram.graphviz.editor
 
 import cc.unitmesh.diagram.graphviz.GraphvizDiagramPanel
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
@@ -16,6 +17,8 @@ import com.intellij.util.Alarm
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
 import java.awt.BorderLayout
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -24,10 +27,8 @@ import javax.swing.JPanel
  * Preview file editor for Graphviz DOT files
  * Similar to JdlPreviewFileEditor in JHipster UML implementation
  */
-class GraphvizPreviewFileEditor(
-    private val project: Project,
-    private val file: VirtualFile
-) : UserDataHolderBase(), FileEditor {
+class GraphvizPreviewFileEditor(private val project: Project, private val file: VirtualFile) : UserDataHolderBase(),
+    FileEditor {
 
     companion object {
         private const val RENDERING_DELAY_MS = 1000
@@ -37,7 +38,8 @@ class GraphvizPreviewFileEditor(
     private var isDisposed = false
 
     private val umlPanelWrapper: JPanel = JPanel(BorderLayout())
-    private var panel: GraphvizDiagramPanel? = null
+
+    private var myPanel: GraphvizDiagramPanel? = null
 
     private val mergingUpdateQueue = MergingUpdateQueue("Graphviz", RENDERING_DELAY_MS, true, null, this)
     private val swingAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
@@ -48,11 +50,49 @@ class GraphvizPreviewFileEditor(
                 updateUml()
             }
         }, this)
+
+        umlPanelWrapper.addComponentListener(object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                swingAlarm.addRequest(Runnable {
+                    if (myPanel == null) {
+                        attachHtmlPanel()
+                    }
+                }, 0, ModalityState.stateForComponent(getComponent()))
+            }
+
+            override fun componentHidden(e: ComponentEvent?) {
+                swingAlarm.addRequest(Runnable {
+                    if (myPanel != null) {
+                        detachHtmlPanel()
+                    }
+                }, 0, ModalityState.stateForComponent(getComponent()))
+            }
+        })
+        attachHtmlPanel()
+    }
+
+    private fun attachHtmlPanel() {
+        myPanel = GraphvizDiagramPanel(this)
+        umlPanelWrapper.add(myPanel!!.getComponent(), BorderLayout.CENTER)
+        Disposer.register(this, myPanel!!)
+
+        if (umlPanelWrapper.isShowing()) umlPanelWrapper.validate()
+        umlPanelWrapper.repaint()
+
+        myPanel!!.draw()
+    }
+
+    private fun detachHtmlPanel() {
+        if (myPanel != null) {
+            umlPanelWrapper.remove(myPanel!!.getComponent())
+            Disposer.dispose(myPanel!!)
+            myPanel = null
+        }
     }
 
     override fun getComponent(): JComponent = umlPanelWrapper
 
-    override fun getPreferredFocusedComponent(): JComponent? = umlPanelWrapper
+    override fun getPreferredFocusedComponent(): JComponent? = myPanel?.getComponent()
 
     override fun getName(): String = "Graphviz Preview"
 
@@ -78,8 +118,8 @@ class GraphvizPreviewFileEditor(
         if (isDisposed) return
         isDisposed = true
 
-        panel?.let { Disposer.dispose(it) }
-        panel = null
+        myPanel?.let { Disposer.dispose(it) }
+        myPanel = null
     }
 
     override fun getFile(): VirtualFile = file
@@ -110,16 +150,16 @@ class GraphvizPreviewFileEditor(
         if (isDisposed) return
 
         // Dispose old panel
-        panel?.let { Disposer.dispose(it) }
+        myPanel?.let { Disposer.dispose(it) }
 
         // Create new panel
-        panel = GraphvizDiagramPanel(this)
+        myPanel = GraphvizDiagramPanel(this)
 
         umlPanelWrapper.removeAll()
-        umlPanelWrapper.add(panel!!.getComponent())
+        umlPanelWrapper.add(myPanel!!.getComponent())
 
         // Draw the diagram
-        panel!!.draw()
+        myPanel!!.draw()
 
         umlPanelWrapper.revalidate()
         umlPanelWrapper.repaint()

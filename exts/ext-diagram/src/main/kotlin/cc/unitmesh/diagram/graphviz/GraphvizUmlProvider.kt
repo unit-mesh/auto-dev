@@ -21,6 +21,7 @@ class GraphvizUmlProvider : DiagramProvider<GraphvizNodeData>() {
 
     @Pattern("[a-zA-Z0-9_-]*")
     override fun getID(): String {
+
         return "GraphvizDOT"
     }
 
@@ -41,24 +42,16 @@ class GraphvizUmlProvider : DiagramProvider<GraphvizNodeData>() {
         return model
     }
 
-    override fun createVisibilityManager(): DiagramVisibilityManager {
-        return EmptyDiagramVisibilityManager.INSTANCE
-    }
+    override fun createVisibilityManager(): DiagramVisibilityManager = EmptyDiagramVisibilityManager.INSTANCE
 
-    override fun getElementManager(): DiagramElementManager<GraphvizNodeData> {
-        return elementManager
-    }
+    override fun getElementManager(): DiagramElementManager<GraphvizNodeData> = elementManager
 
-    override fun getVfsResolver(): DiagramVfsResolver<GraphvizNodeData> {
-        return vfsResolver
-    }
+    override fun getVfsResolver(): DiagramVfsResolver<GraphvizNodeData> = vfsResolver
 
     @Suppress("UNCHECKED_CAST")
     override fun getRelationshipManager(): DiagramRelationshipManager<GraphvizNodeData> {
         return NO_RELATIONSHIP_MANAGER as DiagramRelationshipManager<GraphvizNodeData>
     }
 
-    override fun createNodeContentManager(): DiagramNodeContentManager {
-        return GraphvizNodeCategoryManager()
-    }
+    override fun createNodeContentManager(): DiagramNodeContentManager = GraphvizNodeCategoryManager()
 }
