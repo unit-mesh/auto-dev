@@ -7,17 +7,25 @@ import guru.nidi.graphviz.parse.Parser
 /**
  * Parser for DOT files using guru.nidi.graphviz library
  * Converts DOT format to internal GraphvizDiagramData model
+ * Also supports Mermaid class diagrams
  */
 class DotFileParser {
-    
+
+    private val mermaidParser = MermaidClassDiagramParser()
+
     /**
-     * Parse DOT content from string
+     * Parse content from string - supports both DOT and Mermaid formats
      */
-    fun parse(dotContent: String): GraphvizDiagramData {
+    fun parse(content: String): GraphvizDiagramData {
         return try {
-            // Use string directly for parsing
-            val graph = Parser().read(dotContent)
-            convertToGraphvizData(graph)
+            // Check if content is Mermaid class diagram
+            if (isMermaidClassDiagram(content)) {
+                mermaidParser.parse(content)
+            } else {
+                // Use string directly for DOT parsing
+                val graph = Parser().read(content)
+                convertToGraphvizData(graph)
+            }
         } catch (e: Exception) {
             // Return empty data if parsing fails
             GraphvizDiagramData(
@@ -28,6 +36,13 @@ class DotFileParser {
                 graphType = GraphvizGraphType.DIGRAPH
             )
         }
+    }
+
+    /**
+     * Check if content is a Mermaid class diagram
+     */
+    private fun isMermaidClassDiagram(content: String): Boolean {
+        return content.contains("classDiagram")
     }
     
 

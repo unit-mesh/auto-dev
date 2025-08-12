@@ -5,9 +5,11 @@
     </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Register file type -->
+        <!-- Register file types -->
         <fileType name="DOT" implementationClass="cc.unitmesh.diagram.graphviz.DotFileType"
                   fieldName="INSTANCE" extensions="dot;gv;graphviz"/>
+        <fileType name="Mermaid" implementationClass="cc.unitmesh.diagram.graphviz.MermaidFileType"
+                  fieldName="INSTANCE" extensions="mmd;mermaid"/>
 
         <!-- Register Graphviz diagram provider -->
         <diagram.Provider implementation="cc.unitmesh.diagram.graphviz.GraphvizUmlProvider"/>
