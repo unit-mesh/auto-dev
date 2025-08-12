@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class McpConfig(
     val mcpServers: Map<String, McpServer>,
-    val a2aServer: Map<String, A2aServer>
+    val a2aServers: Map<String, A2aServer>
 )
 
 @Serializable

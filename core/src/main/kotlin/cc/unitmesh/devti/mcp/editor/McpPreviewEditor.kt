@@ -3,6 +3,8 @@ package cc.unitmesh.devti.mcp.editor
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.a2a.A2aServer
+import cc.unitmesh.devti.a2a.ui.A2AAgentListPanel
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.mcp.ui.McpToolListPanel
@@ -54,6 +56,10 @@ open class McpPreviewEditor(
     private var mainEditor = MutableStateFlow<Editor?>(null)
     private val mainPanel = JPanel(BorderLayout())
 
+    private enum class ProtocolType { MCP, A2A }
+    private var currentProtocol = ProtocolType.MCP
+    private lateinit var protocolToggleButton: JButton
+
     private lateinit var toolListPanel: McpToolListPanel
     private lateinit var chatbotSelector: JComboBox<String>
     private lateinit var chatInput: JBTextField
@@ -61,12 +67,23 @@ open class McpPreviewEditor(
     private lateinit var configButton: JButton
     private lateinit var resultPanel: McpChatResultPanel
     private val config = McpChatConfig()
+
+    // A2A components
+    private lateinit var agentListPanel: A2AAgentListPanel
+
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private lateinit var searchField: SearchTextField
 
     init {
         createUI()
-        loadTools()
+        loadContent()
+    }
+
+    private fun loadContent() {
+        when (currentProtocol) {
+            ProtocolType.MCP -> loadTools()
+            ProtocolType.A2A -> loadAgents()
+        }
     }
 
     private fun loadTools() {
@@ -74,54 +91,74 @@ open class McpPreviewEditor(
         toolListPanel.loadTools(content)
     }
 
+    private fun loadAgents() {
+        val content = runReadAction { virtualFile.readText() }
+        agentListPanel.loadAgents(content)
+    }
+
     fun refreshMcpTool() {
         loadTools()
+    }
+
+    fun refreshA2AAgents() {
+        loadAgents()
     }
 
     private fun createUI() {
         val headerPanel = panel {
             row {
-                val label = JBLabel(AutoDevBundle.message("mcp.preview.editor.title")).apply {
+                val label = JBLabel(getHeaderTitle()).apply {
                     font = JBUI.Fonts.label(14.0f).asBold()
                     border = JBUI.Borders.emptyLeft(8)
                     isOpaque = true
                 }
 
                 cell(label).align(Align.FILL).resizableColumn()
-                
+
+                // Protocol toggle button
+                protocolToggleButton = JButton(getToggleButtonText()).apply {
+                    addActionListener { toggleProtocol() }
+                }
+                cell(protocolToggleButton)
+
                 searchField = SearchTextField().apply {
-                    textEditor.emptyText.text = AutoDevBundle.message("mcp.preview.editor.search.placeholder")
+                    textEditor.emptyText.text = getSearchPlaceholder()
                     textEditor.document.addDocumentListener(object : DocumentListener {
-                        override fun insertUpdate(e: DocumentEvent) = filterTools()
-                        override fun removeUpdate(e: DocumentEvent) = filterTools()
-                        override fun changedUpdate(e: DocumentEvent) = filterTools()
+                        override fun insertUpdate(e: DocumentEvent) = filterContent()
+                        override fun removeUpdate(e: DocumentEvent) = filterContent()
+                        override fun changedUpdate(e: DocumentEvent) = filterContent()
                     })
                 }
-                
+
                 cell(searchField).align(Align.FILL).resizableColumn()
             }
         }.apply {
             border = BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor)
         }
 
-        val toolsWrapper = JPanel(BorderLayout()).apply {
+        val contentWrapper = JPanel(BorderLayout()).apply {
             background = UIUtil.getPanelBackground()
             border = JBUI.Borders.empty()
         }
 
+        // Initialize both panels
         toolListPanel = McpToolListPanel(project)
-        
-        val toolsScrollPane = JBScrollPane(toolListPanel).apply {
+        agentListPanel = A2AAgentListPanel(project)
+
+        val contentScrollPane = JBScrollPane().apply {
             border = BorderFactory.createEmptyBorder()
             background = UIUtil.getPanelBackground()
         }
+
+        // Set initial content based on current protocol
+        updateContentPanel(contentScrollPane)
 
         resultPanel = McpChatResultPanel(project, config).apply {
             background = UIUtil.getPanelBackground()
             isVisible = false
         }
-        
-        toolsWrapper.add(toolsScrollPane, BorderLayout.CENTER)
+
+        contentWrapper.add(contentScrollPane, BorderLayout.CENTER)
         
         val bottomPanel = BorderLayoutPanel().apply {
             background = UIUtil.getPanelBackground()
@@ -214,7 +251,7 @@ open class McpPreviewEditor(
         bottomPanel.add(chatControlsPanel, BorderLayout.SOUTH)
 
         val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
-            topComponent = toolsWrapper
+            topComponent = contentWrapper
             bottomComponent = bottomPanel
             resizeWeight = 0.8
             isContinuousLayout = true
@@ -226,9 +263,72 @@ open class McpPreviewEditor(
         mainPanel.add(splitPane, BorderLayout.CENTER)
     }
 
-    private fun filterTools() {
+    private fun getHeaderTitle(): String {
+        return when (currentProtocol) {
+            ProtocolType.MCP -> AutoDevBundle.message("mcp.preview.editor.title")
+            ProtocolType.A2A -> "A2A Agent Preview"
+        }
+    }
+
+    private fun getToggleButtonText(): String {
+        return when (currentProtocol) {
+            ProtocolType.MCP -> "Switch to A2A"
+            ProtocolType.A2A -> "Switch to MCP"
+        }
+    }
+
+    private fun getSearchPlaceholder(): String {
+        return when (currentProtocol) {
+            ProtocolType.MCP -> AutoDevBundle.message("mcp.preview.editor.search.placeholder")
+            ProtocolType.A2A -> "Search agents..."
+        }
+    }
+
+    private fun toggleProtocol() {
+        currentProtocol = when (currentProtocol) {
+            ProtocolType.MCP -> ProtocolType.A2A
+            ProtocolType.A2A -> ProtocolType.MCP
+        }
+
+        // Update UI
+        updateHeaderTitle()
+        updateContentPanel()
+        updateSearchPlaceholder()
+        loadContent()
+    }
+
+    private fun updateHeaderTitle() {
+        // Find and update the header label
+        // This is a simplified approach - in a real implementation you might want to store a reference to the label
+        protocolToggleButton.text = getToggleButtonText()
+    }
+
+    private fun updateContentPanel(scrollPane: JBScrollPane? = null) {
+        val targetScrollPane = scrollPane ?: (mainPanel.components
+            .filterIsInstance<JSplitPane>()
+            .firstOrNull()?.topComponent as? JPanel)
+            ?.components?.filterIsInstance<JBScrollPane>()?.firstOrNull()
+
+        targetScrollPane?.let { sp ->
+            when (currentProtocol) {
+                ProtocolType.MCP -> sp.setViewportView(toolListPanel)
+                ProtocolType.A2A -> sp.setViewportView(agentListPanel)
+            }
+            sp.revalidate()
+            sp.repaint()
+        }
+    }
+
+    private fun updateSearchPlaceholder() {
+        searchField.textEditor.emptyText.text = getSearchPlaceholder()
+    }
+
+    private fun filterContent() {
         val searchText = searchField.text.trim()
-        toolListPanel.filterTools(searchText)
+        when (currentProtocol) {
+            ProtocolType.MCP -> toolListPanel.filterTools(searchText)
+            ProtocolType.A2A -> agentListPanel.filterAgents(searchText)
+        }
     }
 
     private fun showConfigDialog() {
@@ -242,6 +342,13 @@ open class McpPreviewEditor(
     }
 
     fun sendMessage() {
+        when (currentProtocol) {
+            ProtocolType.MCP -> sendMcpMessage()
+            ProtocolType.A2A -> sendA2AMessage()
+        }
+    }
+
+    private fun sendMcpMessage() {
         if (config.enabledTools.isEmpty()) {
             val allTools = toolListPanel.getTools()
             config.enabledTools = allTools.map { it.value }.flatten().toMutableList()
@@ -284,6 +391,51 @@ open class McpPreviewEditor(
         }
     }
 
+    private fun sendA2AMessage() {
+        if (chatInput.text.isEmpty()) {
+            AutoDevNotifications.warn(project, "Please enter a message to send.")
+            return
+        }
+
+        val message = chatInput.text
+        val agents = agentListPanel.getAgents()
+
+        if (agents.isEmpty()) {
+            AutoDevNotifications.warn(project, "No A2A agents available. Please check your configuration.")
+            return
+        }
+
+        // For now, send to the first available agent
+        // In a real implementation, you might want to let the user select which agent to use
+        val firstAgent = agents.values.flatten().firstOrNull()
+        if (firstAgent == null) {
+            AutoDevNotifications.warn(project, "No A2A agents found.")
+            return
+        }
+
+        val agentName = firstAgent.name ?: "Unknown Agent"
+        resultPanel.isVisible = true
+        resultPanel.setText("Sending message to $agentName...")
+
+        AutoDevCoroutineScope.scope(project).launch {
+            try {
+                val a2aClient = agentListPanel.getA2AClientConsumer()
+                val response = a2aClient.sendMessage(agentName, message)
+
+                SwingUtilities.invokeLater {
+                    resultPanel.setText("Response from $agentName:\n\n$response")
+                    mainPanel.revalidate()
+                    mainPanel.repaint()
+                }
+            } catch (e: Exception) {
+                SwingUtilities.invokeLater {
+                    resultPanel.setText("Error sending message: ${e.message}")
+                    AutoDevNotifications.error(project, "Failed to send A2A message: ${e.message}")
+                }
+            }
+        }
+    }
+
     fun setMainEditor(editor: Editor) {
         check(mainEditor.value == null)
         mainEditor.value = editor
@@ -300,5 +452,6 @@ open class McpPreviewEditor(
     override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
     override fun dispose() {
         toolListPanel.dispose()
+        agentListPanel.dispose()
     }
 }
