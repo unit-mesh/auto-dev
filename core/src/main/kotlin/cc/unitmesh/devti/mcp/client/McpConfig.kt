@@ -1,12 +1,14 @@
 package cc.unitmesh.devti.mcp.client
 
+import cc.unitmesh.devti.a2a.A2aServer
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 @Serializable
 data class McpConfig(
-    val mcpServers: Map<String, McpServer>
+    val mcpServers: Map<String, McpServer>,
+    val a2aServer: Map<String, A2aServer>
 )
 
 @Serializable
