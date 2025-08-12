@@ -1,5 +1,6 @@
 package cc.unitmesh.diagram.graphviz
 
+import cc.unitmesh.diagram.graphviz.model.*
 import com.intellij.diagram.AbstractDiagramElementManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -7,15 +8,8 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager
-import com.intellij.psi.PsiManager
 import com.intellij.ui.SimpleColoredText
 import com.intellij.ui.SimpleTextAttributes
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
-import cc.unitmesh.diagram.graphviz.model.GraphvizDiagramRootData
-import cc.unitmesh.diagram.graphviz.model.GraphvizSimpleNodeData
-import cc.unitmesh.diagram.graphviz.model.GraphvizEntityNodeData
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeField
-import cc.unitmesh.diagram.graphviz.model.GraphvizAttributeItem
 import com.intellij.util.ArrayUtil
 import javax.swing.Icon
 
@@ -42,7 +36,6 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
         return when (nodeElement) {
             is GraphvizEntityNodeData -> nodeElement.getFields().toTypedArray()
             is GraphvizSimpleNodeData -> {
-                // Convert attributes to GraphvizAttributeItem objects
                 nodeElement.getAttributes().map { (key, value) ->
                     GraphvizAttributeItem(key, value)
                 }.toTypedArray()
@@ -87,7 +80,11 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
             else -> element.getName()
         }
     }
-    
+
+    override fun canBeBuiltFrom(element: Any?): Boolean {
+        return element is GraphvizDiagramRootData || super.canBeBuiltFrom(element)
+    }
+
     override fun getItemName(
         nodeElement: GraphvizNodeData?,
         nodeItem: Any?,

@@ -21,12 +21,11 @@ class GraphvizUmlProvider : DiagramProvider<GraphvizNodeData>() {
 
     @Pattern("[a-zA-Z0-9_-]*")
     override fun getID(): String {
-
-        return "GraphvizDOT"
+        return "AutoDev GraphvizDOT"
     }
 
     override fun getPresentableName(): String {
-        return "Graphviz DOT Diagram"
+        return "AutoDev Graphviz DOT Diagram"
     }
 
     override fun createDataModel(

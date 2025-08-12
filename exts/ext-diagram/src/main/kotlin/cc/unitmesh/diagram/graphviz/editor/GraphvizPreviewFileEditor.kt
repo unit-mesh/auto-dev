@@ -104,13 +104,9 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
 
     override fun isValid(): Boolean = !isDisposed
 
-    override fun addPropertyChangeListener(listener: PropertyChangeListener) {
-        // No properties to listen to
-    }
+    override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
 
-    override fun removePropertyChangeListener(listener: PropertyChangeListener) {
-        // No properties to listen to
-    }
+    override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
 
     override fun getCurrentLocation(): FileEditorLocation? = null
 
@@ -136,7 +132,7 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
                     if (isDisposed) return@addRequest
 
                     try {
-                        renderUml()
+                        myPanel!!.draw()
                     } catch (e: Exception) {
                         // Handle rendering errors gracefully
                         e.printStackTrace()
@@ -144,24 +140,5 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
                 }, 0)
             }
         })
-    }
-
-    private fun renderUml() {
-        if (isDisposed) return
-
-        // Dispose old panel
-        myPanel?.let { Disposer.dispose(it) }
-
-        // Create new panel
-        myPanel = GraphvizDiagramPanel(this)
-
-        umlPanelWrapper.removeAll()
-        umlPanelWrapper.add(myPanel!!.getComponent())
-
-        // Draw the diagram
-        myPanel!!.draw()
-
-        umlPanelWrapper.revalidate()
-        umlPanelWrapper.repaint()
     }
 }
