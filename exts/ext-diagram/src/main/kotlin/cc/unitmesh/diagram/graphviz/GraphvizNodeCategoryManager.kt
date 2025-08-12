@@ -4,9 +4,6 @@ import com.intellij.diagram.AbstractDiagramNodeContentManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramCategory
 import com.intellij.util.PlatformIcons
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
-import cc.unitmesh.diagram.graphviz.model.GraphvizSimpleNodeData
-import cc.unitmesh.diagram.graphviz.model.GraphvizEntityNodeData
 import cc.unitmesh.diagram.graphviz.model.GraphvizNodeField
 import cc.unitmesh.diagram.graphviz.model.GraphvizAttributeItem
 import com.intellij.icons.AllIcons
@@ -15,9 +12,9 @@ import com.intellij.icons.AllIcons
  * Node content manager for Graphviz diagrams
  * Similar to JdlUmlCategoryManager in JHipster UML implementation
  */
-class GraphvizNodeContentManager : AbstractDiagramNodeContentManager() {
+class GraphvizNodeCategoryManager : AbstractDiagramNodeContentManager() {
     
-    companion object {
+    companion object Companion {
         private val FIELDS_CATEGORY = DiagramCategory(
             "Fields",
             AllIcons.Nodes.Field,
@@ -27,7 +24,7 @@ class GraphvizNodeContentManager : AbstractDiagramNodeContentManager() {
 
         private val ATTRIBUTES_CATEGORY = DiagramCategory(
             "Attributes",
-            PlatformIcons.PROPERTY_ICON,
+            AllIcons.Nodes.Method,
             true,
             false
         )
@@ -43,9 +40,9 @@ class GraphvizNodeContentManager : AbstractDiagramNodeContentManager() {
         category: DiagramCategory,
         builder: DiagramBuilder?
     ): Boolean {
-        return when {
-            item is GraphvizNodeField -> category == FIELDS_CATEGORY
-            item is GraphvizAttributeItem -> category == ATTRIBUTES_CATEGORY
+        return when (item) {
+            is GraphvizNodeField -> category == FIELDS_CATEGORY
+            is GraphvizAttributeItem -> category == ATTRIBUTES_CATEGORY
             else -> super.isInCategory(nodeElement, item, category, builder)
         }
     }

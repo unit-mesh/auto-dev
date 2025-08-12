@@ -52,7 +52,7 @@ class GraphvizDiagramPanel(private val fileEditor: GraphvizPreviewFileEditor) : 
 
             val actionsProvider = builder!!.provider.getExtras().toolbarActionsProvider
             val actionGroup = actionsProvider.createToolbarActions(builder!!)
-            val actionToolbar = ActionManager.getInstance().createActionToolbar("AUTODEV.DOT", actionGroup, true)
+            val actionToolbar = ActionManager.getInstance().createActionToolbar("JDL.UML", actionGroup, true)
             actionToolbar.targetComponent = graphView
             actionToolbar.component.setBorder(JBUI.Borders.customLine(JBColor.border(), 0, 0, 1, 0))
 

@@ -12,23 +12,22 @@ import com.intellij.diagram.DiagramRelationshipManager.NO_RELATIONSHIP_MANAGER
  * Similar to JdlUmlProvider in JHipster UML implementation
  */
 class GraphvizUmlProvider : DiagramProvider<GraphvizNodeData>() {
-    
     private val vfsResolver: DiagramVfsResolver<GraphvizNodeData> = GraphvizVfsResolver()
     private val elementManager: DiagramElementManager<GraphvizNodeData> = GraphvizElementManager()
-    
+
     init {
         (elementManager as GraphvizElementManager).setUmlProvider(this)
     }
-    
+
     @Pattern("[a-zA-Z0-9_-]*")
     override fun getID(): String {
         return "GraphvizDOT"
     }
-    
+
     override fun getPresentableName(): String {
         return "Graphviz DOT Diagram"
     }
-    
+
     override fun createDataModel(
         project: Project,
         seedData: GraphvizNodeData?,
@@ -41,25 +40,25 @@ class GraphvizUmlProvider : DiagramProvider<GraphvizNodeData>() {
         }
         return model
     }
-    
+
     override fun createVisibilityManager(): DiagramVisibilityManager {
         return EmptyDiagramVisibilityManager.INSTANCE
     }
-    
+
     override fun getElementManager(): DiagramElementManager<GraphvizNodeData> {
         return elementManager
     }
-    
+
     override fun getVfsResolver(): DiagramVfsResolver<GraphvizNodeData> {
         return vfsResolver
     }
-    
+
     @Suppress("UNCHECKED_CAST")
     override fun getRelationshipManager(): DiagramRelationshipManager<GraphvizNodeData> {
         return NO_RELATIONSHIP_MANAGER as DiagramRelationshipManager<GraphvizNodeData>
     }
-    
+
     override fun createNodeContentManager(): DiagramNodeContentManager {
-        return GraphvizNodeContentManager()
+        return GraphvizNodeCategoryManager()
     }
 }

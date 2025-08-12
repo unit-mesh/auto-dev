@@ -24,26 +24,10 @@ import javax.swing.Icon
  * Similar to JdlUmlElementManager in JHipster UML implementation
  */
 class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>() {
-    
-    private var umlProvider: GraphvizUmlProvider? = null
-    
-    /**
-     * Set the UML provider
-     */
-    fun setUmlProvider(provider: GraphvizUmlProvider) {
-        this.umlProvider = provider
-    }
-    
     override fun findInDataContext(dataContext: DataContext): GraphvizNodeData? {
-        val psiFile = CommonDataKeys.PSI_FILE.getData(dataContext)
-        if (psiFile == null) return null
-        
-        val virtualFile = psiFile.virtualFile
-        if (virtualFile == null) return null
-        
-        // Check if this is a DOT file
+        val psiFile = CommonDataKeys.PSI_FILE.getData(dataContext) ?: return null
+        val virtualFile = psiFile.virtualFile ?: return null
         if (!isDotFile(virtualFile)) return null
-        
         return getRootData(psiFile.project, virtualFile)
     }
     
@@ -145,7 +129,7 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
                     com.intellij.util.PlatformIcons.FIELD_ICON
                 }
             }
-            is GraphvizAttributeItem -> com.intellij.util.PlatformIcons.PROPERTY_ICON
+            is GraphvizAttributeItem -> com.intellij.util.PlatformIcons.METHOD_ICON
             else -> null
         }
     }
