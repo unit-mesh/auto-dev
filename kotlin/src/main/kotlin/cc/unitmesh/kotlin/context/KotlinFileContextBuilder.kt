@@ -16,7 +16,7 @@ class KotlinFileContextBuilder : FileContextBuilder {
         if (psiFile !is KtFile) return null
 
         val name = psiFile.name
-        val path = psiFile.virtualFile?.path ?: ""
+        val path = psiFile.virtualFile?.path ?: "temp.kt"
 
         val packageDirective = PsiTreeUtil.getChildrenOfTypeAsList(psiFile, KtPackageDirective::class.java).firstOrNull()
         val packageName = packageDirective?.text ?: ""

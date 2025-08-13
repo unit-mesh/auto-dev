@@ -19,7 +19,7 @@ class PythonFileContextBuilder : FileContextBuilder {
         return FileContext(
             root = psiFile,
             name = psiFile.name,
-            path = psiFile.virtualFile.path,
+            path = psiFile.virtualFile?.path ?: "temp.py",
             imports = importStatements,
             classes = classNames,
             methods = functionNames,

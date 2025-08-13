@@ -58,6 +58,7 @@ class PrepushReviewAction : AnAction() {
     private fun showMermaidDiagramPopup(project: Project, mermaidContent: String) {
         ApplicationManager.getApplication().invokeLater {
             val editor: FileEditor = createEditor(mermaidContent, project)
+            editor.selectNotify()
 
             object : DialogWrapper(project) {
                 init {

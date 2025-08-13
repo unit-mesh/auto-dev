@@ -3,13 +3,13 @@ package cc.unitmesh.git.actions.vcs
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.context.FileContextProvider
-import com.intellij.lang.Language
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiNamedElement
 
 /**
  * 获取变更前后的代码结构变化，以生成 Mermaid 变化图
@@ -69,9 +69,8 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
         }
 
         val fileContext = FileContextProvider().from(psiFile)
-        return fileContext?.classes?.mapNotNull { psiElement ->
-            val context = ClassContextProvider(true).from(psiElement)
-            if (context.name == null) null else context
+        return fileContext?.classes?.map { psiElement ->
+            ClassContextProvider(true).from(psiElement)
         } ?: emptyList()
     }
 
@@ -236,26 +235,11 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
     private fun sanitizeClassName(className: String): String {
         return className.replace(Regex("[^a-zA-Z0-9_]"), "_")
     }
-
-    /**
-     * 检查类是否发生了变化
-     */
-    private fun hasClassChanged(beforeClass: ClassContext, afterClass: ClassContext): Boolean {
-        // 比较方法签名（更精确的比较）
-        val beforeMethods = beforeClass.methods.mapNotNull { extractMethodSignature(it) }.toSet()
-        val afterMethods = afterClass.methods.mapNotNull { extractMethodSignature(it) }.toSet()
-
-        // 比较字段签名
-        val beforeFields = beforeClass.fields.mapNotNull { extractFieldSignature(it) }.toSet()
-        val afterFields = afterClass.fields.mapNotNull { extractFieldSignature(it) }.toSet()
-
-        return beforeMethods != afterMethods || beforeFields != afterFields
-    }
-
-    /**
-     * 从 PsiElement 提取方法名
-     */
     private fun extractMethodName(methodElement: PsiElement): String {
+        if (methodElement is PsiNamedElement && methodElement.name != null) {
+            return methodElement.name!!
+        }
+
         return extractMethodSignature(methodElement)?.substringBefore("(") ?: "unknown"
     }
 
@@ -323,6 +307,10 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
      * 从 PsiElement 提取字段名
      */
     private fun extractFieldName(fieldElement: PsiElement): String {
+        if (fieldElement is PsiNamedElement && fieldElement.name != null) {
+            return fieldElement.name!!
+        }
+
         return extractFieldSignature(fieldElement)?.substringAfterLast(" ")?.substringBefore(";")?.substringBefore("=")
             ?: "unknown"
     }
