@@ -173,31 +173,21 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
         builder.appendLine("    class $sanitizedClassName {")
 
         // 生成字段变化
-        val beforeFields = beforeClass.fields.map { extractFieldName(it) }.toSet()
-        val afterFields = afterClass.fields.map { extractFieldName(it) }.toSet()
-
-        // 显示删除的字段
-        beforeFields.subtract(afterFields).forEach { fieldName ->
-            if (fieldName.isNotEmpty()) {
-                builder.appendLine("        -$fieldName")
-            }
-        }
-
-        // 显示保持的字段
-        beforeFields.intersect(afterFields).forEach { fieldName ->
-            if (fieldName.isNotEmpty()) {
-                builder.appendLine("        $fieldName")
-            }
-        }
-
-        // 显示新增的字段
-        afterFields.subtract(beforeFields).forEach { fieldName ->
-            if (fieldName.isNotEmpty()) {
-                builder.appendLine("        +$fieldName")
-            }
-        }
+        buildFields(beforeClass, afterClass, builder)
 
         // 生成方法变化
+        buildMethod(beforeClass, afterClass, className, builder)
+
+        builder.appendLine("    }")
+        builder.appendLine("    $sanitizedClassName : Modified")
+    }
+
+    private fun buildMethod(
+        beforeClass: ClassContext,
+        afterClass: ClassContext,
+        className: String,
+        builder: StringBuilder
+    ) {
         val beforeMethods = beforeClass.methods.map { extractMethodName(it) }.toSet()
         val afterMethods = afterClass.methods.map { extractMethodName(it) }.toSet()
 
@@ -227,9 +217,36 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
                 builder.appendLine("        +$methodName")
             }
         }
+    }
 
-        builder.appendLine("    }")
-        builder.appendLine("    $sanitizedClassName : Modified")
+    private fun buildFields(
+        beforeClass: ClassContext,
+        afterClass: ClassContext,
+        builder: StringBuilder
+    ) {
+        val beforeFields = beforeClass.fields.map { extractFieldName(it) }.toSet()
+        val afterFields = afterClass.fields.map { extractFieldName(it) }.toSet()
+
+        // 显示删除的字段
+        beforeFields.subtract(afterFields).forEach { fieldName ->
+            if (fieldName.isNotEmpty()) {
+                builder.appendLine("        -$fieldName")
+            }
+        }
+
+        // 显示保持的字段
+        beforeFields.intersect(afterFields).forEach { fieldName ->
+            if (fieldName.isNotEmpty()) {
+                builder.appendLine("        $fieldName")
+            }
+        }
+
+        // 显示新增的字段
+        afterFields.subtract(beforeFields).forEach { fieldName ->
+            if (fieldName.isNotEmpty()) {
+                builder.appendLine("        +$fieldName")
+            }
+        }
     }
 
     /**
