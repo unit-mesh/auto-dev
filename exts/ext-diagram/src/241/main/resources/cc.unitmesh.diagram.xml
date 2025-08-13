@@ -19,7 +19,7 @@
 
         <!-- Register file editor providers -->
         <fileEditorProvider implementation="cc.unitmesh.diagram.editor.GraphvizSplitEditorProvider"/>
-        <fileEditorProvider implementation="cc.unitmesh.diagram.editor.MermaidSplitEditorProvider"/>
+        <fileEditorProvider implementation="cc.unitmesh.diagram.editor.mermaid.MermaidSplitEditorProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="cc.unitmesh">

@@ -1,7 +1,7 @@
-package cc.unitmesh.diagram.editor
+package cc.unitmesh.diagram.editor.mermaid
 
 import cc.unitmesh.diagram.GraphvizDiagramPanel
-import com.intellij.openapi.Disposable
+import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation

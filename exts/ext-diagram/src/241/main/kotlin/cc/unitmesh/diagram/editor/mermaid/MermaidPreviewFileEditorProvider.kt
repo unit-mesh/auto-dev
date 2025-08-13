@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram.editor
+package cc.unitmesh.diagram.editor.mermaid
 
 import cc.unitmesh.diagram.MermaidFileType
 import com.intellij.openapi.fileEditor.FileEditor
