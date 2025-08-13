@@ -13,21 +13,15 @@ class DotFileParser {
 
     private val mermaidParser = MermaidClassDiagramParser()
 
-    /**
-     * Parse content from string - supports both DOT and Mermaid formats
-     */
     fun parse(content: String): GraphvizDiagramData {
         return try {
-            // Check if content is Mermaid class diagram
             if (isMermaidClassDiagram(content)) {
                 mermaidParser.parse(content)
             } else {
-                // Use string directly for DOT parsing
                 val graph = Parser().read(content)
                 convertToGraphvizData(graph)
             }
         } catch (e: Exception) {
-            // Return empty data if parsing fails
             GraphvizDiagramData(
                 nodes = emptyList(),
                 entities = emptyList(),
@@ -38,18 +32,11 @@ class DotFileParser {
         }
     }
 
-    /**
-     * Check if content is a Mermaid class diagram
-     */
+
     private fun isMermaidClassDiagram(content: String): Boolean {
         return content.contains("classDiagram")
     }
-    
 
-    
-    /**
-     * Convert guru.nidi.graphviz MutableGraph to our internal model
-     */
     private fun convertToGraphvizData(graph: MutableGraph): GraphvizDiagramData {
         val nodes = mutableListOf<GraphvizSimpleNodeData>()
         val entities = mutableListOf<GraphvizEntityNodeData>()
