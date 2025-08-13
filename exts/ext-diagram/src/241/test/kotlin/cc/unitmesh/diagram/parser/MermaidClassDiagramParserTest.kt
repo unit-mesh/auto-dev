@@ -125,11 +125,38 @@ class MermaidClassDiagramParserTest {
         val emptyContent = """
             classDiagram
         """.trimIndent()
-        
+
         val result = parser.parse(emptyContent)
-        
+
         assertNotNull(result)
         assertEquals(0, result.entities.size)
         assertEquals(0, result.edges.size)
+    }
+
+    @Test
+    fun `should parse class annotation statements`() {
+        val mermaidContent = """
+            classDiagram
+                class User {
+                    +name
+                    +email
+                    +getName()
+                    +setName(String)
+                }
+                User : Added
+        """.trimIndent()
+
+        val result = parser.parse(mermaidContent)
+
+        assertNotNull(result)
+        assertEquals(1, result.entities.size)
+
+        val userEntity = result.getEntityByName("User")
+        assertNotNull(userEntity)
+        assertEquals(4, userEntity!!.getFields().size)
+
+        // Check that change status is captured in graph attributes
+        assertTrue(result.graphAttributes.containsKey("User_change"))
+        assertEquals("Added", result.graphAttributes["User_change"])
     }
 }

@@ -33,6 +33,7 @@ data class ClassStatementNode(
     val classLabel: String? = null,
     val members: List<MemberNode> = emptyList(),
     val cssClass: String? = null,
+    val changeStatus: ChangeStatus = ChangeStatus.UNCHANGED,
     override val position: TokenPosition? = null
 ) : StatementNode
 
@@ -64,6 +65,15 @@ data class RelationStatementNode(
 data class MemberStatementNode(
     val className: String,
     val member: MemberNode,
+    override val position: TokenPosition? = null
+) : StatementNode
+
+/**
+ * Class annotation statement (ClassName : ChangeType)
+ */
+data class ClassAnnotationStatementNode(
+    val className: String,
+    val annotation: String,
     override val position: TokenPosition? = null
 ) : StatementNode
 
@@ -139,6 +149,7 @@ data class MemberNode(
     val isMethod: Boolean = false,
     val parameters: List<ParameterNode> = emptyList(),
     val returnType: String? = null,
+    val changeStatus: ChangeStatus = ChangeStatus.UNCHANGED,
     override val position: TokenPosition? = null
 ) : AstNode
 
@@ -197,6 +208,16 @@ enum class VisibilityType(val symbol: String) {
     PRIVATE("-"),
     PROTECTED("#"),
     PACKAGE("~")
+}
+
+/**
+ * Change status for class members and classes
+ */
+enum class ChangeStatus(val symbol: String) {
+    UNCHANGED(""),
+    ADDED("+"),
+    REMOVED("-"),
+    MODIFIED("~")
 }
 
 enum class RelationType {

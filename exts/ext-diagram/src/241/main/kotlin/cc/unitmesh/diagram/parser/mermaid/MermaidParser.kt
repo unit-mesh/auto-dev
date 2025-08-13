@@ -72,6 +72,7 @@ class MermaidParser(private val tokens: List<MermaidToken>) {
             check(TokenType.ACC_DESCR) -> parseAccessibilityStatement()
             checkRelationStatement() -> parseRelationStatement()
             checkMemberStatement() -> parseMemberStatement()
+            checkClassAnnotationStatement() -> parseClassAnnotationStatement()
             else -> {
                 if (!check(TokenType.NEWLINE, TokenType.EOF)) {
                     advance() // Skip unknown token
@@ -109,7 +110,7 @@ class MermaidParser(private val tokens: List<MermaidToken>) {
             consume(TokenType.STRUCT_STOP, "Expected '}'")
         }
         
-        return ClassStatementNode(className, classLabel, members, cssClass, getCurrentPosition())
+        return ClassStatementNode(className, classLabel, members, cssClass, ChangeStatus.UNCHANGED, getCurrentPosition())
     }
     
     private fun parseNamespaceStatement(): NamespaceStatementNode {
@@ -427,41 +428,57 @@ class MermaidParser(private val tokens: List<MermaidToken>) {
     
     private fun parseMemberFromText(text: String): MemberNode {
         val trimmed = text.trim()
-        
-        // Parse visibility
-        val visibility = when {
-            trimmed.startsWith("+") -> VisibilityType.PUBLIC
-            trimmed.startsWith("-") -> VisibilityType.PRIVATE
-            trimmed.startsWith("#") -> VisibilityType.PROTECTED
-            trimmed.startsWith("~") -> VisibilityType.PACKAGE
-            else -> VisibilityType.PUBLIC
+
+        // Parse change status first (for StructureDiagramBuilder output)
+        val changeStatus = when {
+            trimmed.startsWith("+") -> ChangeStatus.ADDED
+            trimmed.startsWith("-") -> ChangeStatus.REMOVED
+            trimmed.startsWith("~") -> ChangeStatus.MODIFIED
+            else -> ChangeStatus.UNCHANGED
         }
-        
-        val withoutVisibility = if (trimmed.startsWithAny("+", "-", "#", "~")) {
+
+        // Remove change status prefix if present
+        val withoutChangeStatus = if (trimmed.startsWithAny("+", "-", "~")) {
             trimmed.substring(1).trim()
         } else {
             trimmed
         }
-        
+
+        // Parse visibility (traditional Mermaid syntax)
+        val visibility = when {
+            withoutChangeStatus.startsWith("+") -> VisibilityType.PUBLIC
+            withoutChangeStatus.startsWith("-") -> VisibilityType.PRIVATE
+            withoutChangeStatus.startsWith("#") -> VisibilityType.PROTECTED
+            withoutChangeStatus.startsWith("~") -> VisibilityType.PACKAGE
+            else -> VisibilityType.PUBLIC
+        }
+
+        val withoutVisibility = if (withoutChangeStatus.startsWithAny("+", "-", "#", "~")) {
+            withoutChangeStatus.substring(1).trim()
+        } else {
+            withoutChangeStatus
+        }
+
         // Check if it's a method
         val isMethod = withoutVisibility.contains("(")
-        
+
         return if (isMethod) {
-            parseMemberMethod(withoutVisibility, visibility)
+            parseMemberMethod(withoutVisibility, visibility, changeStatus)
         } else {
-            parseMemberField(withoutVisibility, visibility)
+            parseMemberField(withoutVisibility, visibility, changeStatus)
         }
     }
     
-    private fun parseMemberField(text: String, visibility: VisibilityType): MemberNode {
+    private fun parseMemberField(text: String, visibility: VisibilityType, changeStatus: ChangeStatus): MemberNode {
         val parts = text.split("\\s+".toRegex(), 2)
-        
+
         return if (parts.size >= 2) {
             MemberNode(
                 name = parts[1],
                 type = parts[0],
                 visibility = visibility,
                 isMethod = false,
+                changeStatus = changeStatus,
                 position = getCurrentPosition()
             )
         } else {
@@ -470,21 +487,23 @@ class MermaidParser(private val tokens: List<MermaidToken>) {
                 type = null,
                 visibility = visibility,
                 isMethod = false,
+                changeStatus = changeStatus,
                 position = getCurrentPosition()
             )
         }
     }
     
-    private fun parseMemberMethod(text: String, visibility: VisibilityType): MemberNode {
+    private fun parseMemberMethod(text: String, visibility: VisibilityType, changeStatus: ChangeStatus): MemberNode {
         val parenIndex = text.indexOf('(')
         val methodName = text.substring(0, parenIndex).trim()
-        
+
         // For now, we'll keep it simple and not parse parameters
         return MemberNode(
             name = methodName,
             type = "method",
             visibility = visibility,
             isMethod = true,
+            changeStatus = changeStatus,
             position = getCurrentPosition()
         )
     }
@@ -492,13 +511,55 @@ class MermaidParser(private val tokens: List<MermaidToken>) {
     private fun parseClassList(): List<String> {
         val classes = mutableListOf<String>()
         classes.add(consume(TokenType.ALPHA, "Expected class name").value)
-        
+
         while (check(TokenType.COMMA)) {
             advance()
             classes.add(consume(TokenType.ALPHA, "Expected class name").value)
         }
-        
+
         return classes
+    }
+
+    /**
+     * Extension function to check if string starts with any of the given prefixes
+     */
+    private fun String.startsWithAny(vararg prefixes: String): Boolean {
+        return prefixes.any { this.startsWith(it) }
+    }
+
+    /**
+     * Check if current position looks like a class annotation statement (ClassName : Annotation)
+     */
+    private fun checkClassAnnotationStatement(): Boolean {
+        // Look ahead to see if this looks like a class annotation (ClassName : annotation)
+        val saved = position
+        try {
+            if (check(TokenType.ALPHA, TokenType.BQUOTE_STR)) {
+                advance()
+                if (check(TokenType.COLON)) {
+                    advance()
+                    // Check if the next token is an alpha token (any annotation)
+                    val hasAnnotation = check(TokenType.ALPHA)
+                    position = saved
+                    return hasAnnotation
+                }
+            }
+        } catch (e: Exception) {
+            position = saved
+        }
+        position = saved
+        return false
+    }
+
+    /**
+     * Parse class annotation statement (ClassName : ChangeType)
+     */
+    private fun parseClassAnnotationStatement(): ClassAnnotationStatementNode {
+        val className = parseClassName()
+        consume(TokenType.COLON, "Expected ':'")
+        val annotation = consume(TokenType.ALPHA, "Expected annotation").value
+
+        return ClassAnnotationStatementNode(className, annotation, getCurrentPosition())
     }
     
     private fun parseStyles(): List<StyleNode> {
@@ -598,9 +659,7 @@ class MermaidParser(private val tokens: List<MermaidToken>) {
         }
     }
 
-    private fun String.startsWithAny(vararg chars: String): Boolean {
-        return chars.any { this.startsWith(it) }
-    }
+
 }
 
 /**

@@ -511,10 +511,19 @@ class MermaidLexer(private val input: String) {
                             }
                             return true
                         } else {
-                            // This is a regular label
-                            addToken(TokenType.LABEL, ":$content")
-                            position = end
-                            return true
+                            // Check if this is a class annotation (single word after colon)
+                            val words = content.split(Regex("\\s+"))
+                            if (words.size == 1 && words[0].matches(Regex("[A-Za-z][A-Za-z0-9_]*"))) {
+                                // This looks like a class annotation (ClassName : AnnotationType)
+                                addToken(TokenType.COLON, ":")
+                                advance()
+                                return true
+                            } else {
+                                // This is a regular label
+                                addToken(TokenType.LABEL, ":$content")
+                                position = end
+                                return true
+                            }
                         }
                     }
                 }

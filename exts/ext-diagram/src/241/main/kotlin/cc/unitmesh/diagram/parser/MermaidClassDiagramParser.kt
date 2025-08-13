@@ -88,6 +88,20 @@ class MermaidClassDiagramParser {
                     }
                 }
 
+                is ClassAnnotationStatementNode -> {
+                    // Handle class annotation (ClassName : ChangeType)
+                    // Update the change status of the class if it exists
+                    if (entities.containsKey(statement.className)) {
+                        // The class already exists, we can update its change status
+                        // For now, we'll store this information in graph attributes
+                        graphAttributes["${statement.className}_change"] = statement.annotation
+                    } else {
+                        // Create an empty class with change status
+                        entities[statement.className] = mutableListOf()
+                        graphAttributes["${statement.className}_change"] = statement.annotation
+                    }
+                }
+
                 is DirectionStatementNode -> {
                     graphAttributes["direction"] = statement.direction.name
                 }
@@ -134,17 +148,33 @@ class MermaidClassDiagramParser {
             VisibilityType.PACKAGE -> "~"
         }
 
+        // Convert change status from AST to GraphvizNodeField ChangeStatus
+        val changeStatus = when (member.changeStatus) {
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.ADDED -> cc.unitmesh.diagram.model.ChangeStatus.ADDED
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.REMOVED -> cc.unitmesh.diagram.model.ChangeStatus.REMOVED
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.MODIFIED -> cc.unitmesh.diagram.model.ChangeStatus.UNCHANGED
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.UNCHANGED -> cc.unitmesh.diagram.model.ChangeStatus.UNCHANGED
+        }
+
         val name = if (member.isMethod) {
-            "$visibilitySymbol${member.name}()"
+            "${member.name}()"
         } else {
-            "$visibilitySymbol${member.name}"
+            member.name
+        }
+
+        // Include change status prefix in the name if it's not unchanged
+        val nameWithChangeStatus = when (member.changeStatus) {
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.ADDED -> "+$name"
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.REMOVED -> "-$name"
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.MODIFIED -> "~$name"
+            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.UNCHANGED -> "$visibilitySymbol$name"
         }
 
         return GraphvizNodeField(
-            name = name,
+            name = nameWithChangeStatus,
             type = member.type ?: if (member.isMethod) "method" else "field",
             required = false,
-            changeStatus = ChangeStatus.UNCHANGED, // Default to unchanged, can be set later during comparison
+            changeStatus = changeStatus,
             isMethodField = member.isMethod
         )
     }
