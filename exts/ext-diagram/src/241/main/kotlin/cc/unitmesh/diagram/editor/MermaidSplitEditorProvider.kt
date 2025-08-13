@@ -9,7 +9,6 @@ import com.intellij.openapi.fileEditor.TextEditorWithPreviewProvider
  * Similar to GraphvizSplitEditorProvider but for Mermaid diagrams
  */
 class MermaidSplitEditorProvider : TextEditorWithPreviewProvider(MermaidPreviewFileEditorProvider()) {
-    
     override fun createSplitEditor(firstEditor: TextEditor, secondEditor: FileEditor): FileEditor {
         return MermaidEditorWithPreview(firstEditor, secondEditor as MermaidPreviewFileEditor)
     }

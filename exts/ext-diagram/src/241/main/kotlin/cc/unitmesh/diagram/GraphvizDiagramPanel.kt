@@ -57,13 +57,13 @@ class GraphvizDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : D
             actionToolbar.component.setBorder(JBUI.Borders.customLine(JBColor.border(), 0, 0, 1, 0))
 
             chartPanel.add(actionToolbar.component, BorderLayout.NORTH)
-
-            builder!!.queryUpdate()
-                .withDataReload()
-                .withPresentationUpdate()
-                .withRelayout()
-                .runAsync()
         }
+
+        builder!!.queryUpdate()
+            .withDataReload()
+            .withPresentationUpdate()
+            .withRelayout()
+            .runAsync()
     }
 
     private fun createSimpleGraphView(builder: DiagramBuilder): JComponent {

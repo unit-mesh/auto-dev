@@ -134,7 +134,6 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
         mergingUpdateQueue.queue(object : Update("update") {
             override fun run() {
                 if (isDisposed) return
-
                 swingAlarm.addRequest({
                     if (isDisposed) return@addRequest
 
