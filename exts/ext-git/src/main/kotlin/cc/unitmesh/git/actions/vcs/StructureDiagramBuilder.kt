@@ -203,6 +203,8 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
 
         // 显示删除的方法
         beforeMethods.subtract(afterMethods).forEach { methodName ->
+            if (methodName == className) return@forEach
+
             if (methodName.isNotEmpty()) {
                 builder.appendLine("        -$methodName")
             }
@@ -210,6 +212,8 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
 
         // 显示保持的方法
         beforeMethods.intersect(afterMethods).forEach { methodName ->
+            if (methodName == className) return@forEach
+
             if (methodName.isNotEmpty()) {
                 builder.appendLine("        $methodName")
             }
@@ -217,6 +221,8 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
 
         // 显示新增的方法
         afterMethods.subtract(beforeMethods).forEach { methodName ->
+            if (methodName == className) return@forEach
+
             if (methodName.isNotEmpty()) {
                 builder.appendLine("        +$methodName")
             }
