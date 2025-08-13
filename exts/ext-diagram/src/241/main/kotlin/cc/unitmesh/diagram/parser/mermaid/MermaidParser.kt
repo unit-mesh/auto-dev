@@ -597,14 +597,18 @@ class MermaidParser(private val tokens: List<MermaidToken>) {
         try {
             if (check(TokenType.ALPHA, TokenType.BQUOTE_STR)) {
                 advance()
-                val hasColon = check(TokenType.COLON)
-                position = saved
-                return hasColon
+                if (check(TokenType.COLON)) {
+                    advance()
+                    // Check if the next token is a member definition
+                    val hasMember = check(TokenType.LABEL, TokenType.MEMBER)
+                    position = saved
+                    return hasMember
+                }
             }
         } catch (e: Exception) {
             position = saved
         }
-        
+
         return false
     }
     

@@ -42,6 +42,13 @@ class MermaidClassDiagramParser {
     }
 
     /**
+     * Parse Mermaid class diagram from AST
+     */
+    fun parse(ast: ClassDiagramNode): GraphvizDiagramData {
+        return convertAstToGraphvizData(ast)
+    }
+
+    /**
      * Convert AST to GraphvizDiagramData
      */
     private fun convertAstToGraphvizData(ast: ClassDiagramNode): GraphvizDiagramData {
