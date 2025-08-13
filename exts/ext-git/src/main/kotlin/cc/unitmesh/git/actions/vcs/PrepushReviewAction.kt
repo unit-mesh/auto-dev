@@ -110,7 +110,8 @@ class PrepushReviewAction : AnAction() {
     }
 
     private fun createEditor(mermaidContent: String, project: Project): FileEditor {
-        val virtualFile = LightVirtualFile("mermaid.mmd", mermaidContent)
+        val time = System.currentTimeMillis()
+        val virtualFile = LightVirtualFile("mermaid-$time.mmd", mermaidContent)
         virtualFile.putUserData(
             Key.create<Layout>("TextEditorWithPreview.DefaultLayout"),
             Layout.SHOW_EDITOR_AND_PREVIEW

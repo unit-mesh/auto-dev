@@ -49,6 +49,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
     init {
         document?.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
+                file.setBinaryContent(event.document.text.toByteArray())
                 updateUml()
             }
         }, this)
@@ -138,7 +139,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
     override fun getProject(): Project = project
 
     private fun updateUml() {
-        if (myPanel == null || document == null || !file.isValid() || isDisposed) {
+        if (myPanel == null || document == null || !file.isValid || isDisposed) {
             return
         }
 
