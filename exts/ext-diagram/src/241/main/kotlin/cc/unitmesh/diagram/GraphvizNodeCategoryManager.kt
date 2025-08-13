@@ -3,7 +3,6 @@ package cc.unitmesh.diagram
 import com.intellij.diagram.AbstractDiagramNodeContentManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramCategory
-import com.intellij.util.PlatformIcons
 import cc.unitmesh.diagram.model.GraphvizNodeField
 import cc.unitmesh.diagram.model.GraphvizAttributeItem
 import com.intellij.icons.AllIcons
@@ -38,28 +37,28 @@ class GraphvizNodeCategoryManager : AbstractDiagramNodeContentManager() {
 
         private val ADDED_FIELDS_CATEGORY = DiagramCategory(
             "Added Fields",
-            AllIcons.General.Add,
+            DiagramIcons.DIAGRAM_ADD,
             true,
             false
         )
 
         private val REMOVED_FIELDS_CATEGORY = DiagramCategory(
             "Removed Fields",
-            AllIcons.General.Remove,
+            DiagramIcons.DIAGRAM_REMOVE,
             true,
             false
         )
 
         private val ADDED_METHODS_CATEGORY = DiagramCategory(
             "Added Methods",
-            AllIcons.General.Add,
+            DiagramIcons.DIAGRAM_ADD,
             true,
             false
         )
 
         private val REMOVED_METHODS_CATEGORY = DiagramCategory(
             "Removed Methods",
-            AllIcons.General.Remove,
+            DiagramIcons.DIAGRAM_REMOVE,
             true,
             false
         )
