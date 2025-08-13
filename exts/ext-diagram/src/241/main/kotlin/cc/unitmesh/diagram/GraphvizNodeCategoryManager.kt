@@ -22,16 +22,59 @@ class GraphvizNodeCategoryManager : AbstractDiagramNodeContentManager() {
             false
         )
 
+        private val METHODS_CATEGORY = DiagramCategory(
+            "Methods",
+            AllIcons.Nodes.Method,
+            true,
+            false
+        )
+
         private val ATTRIBUTES_CATEGORY = DiagramCategory(
             "Attributes",
-            AllIcons.Nodes.Method,
+            AllIcons.Nodes.Property,
+            true,
+            false
+        )
+
+        private val ADDED_FIELDS_CATEGORY = DiagramCategory(
+            "Added Fields",
+            AllIcons.General.Add,
+            true,
+            false
+        )
+
+        private val REMOVED_FIELDS_CATEGORY = DiagramCategory(
+            "Removed Fields",
+            AllIcons.General.Remove,
+            true,
+            false
+        )
+
+        private val ADDED_METHODS_CATEGORY = DiagramCategory(
+            "Added Methods",
+            AllIcons.General.Add,
+            true,
+            false
+        )
+
+        private val REMOVED_METHODS_CATEGORY = DiagramCategory(
+            "Removed Methods",
+            AllIcons.General.Remove,
             true,
             false
         )
     }
     
     override fun getContentCategories(): Array<DiagramCategory> {
-        return arrayOf(FIELDS_CATEGORY, ATTRIBUTES_CATEGORY)
+        return arrayOf(
+            FIELDS_CATEGORY,
+            METHODS_CATEGORY,
+            ATTRIBUTES_CATEGORY,
+            ADDED_FIELDS_CATEGORY,
+            REMOVED_FIELDS_CATEGORY,
+            ADDED_METHODS_CATEGORY,
+            REMOVED_METHODS_CATEGORY
+        )
     }
     
     override fun isInCategory(
@@ -41,7 +84,17 @@ class GraphvizNodeCategoryManager : AbstractDiagramNodeContentManager() {
         builder: DiagramBuilder?
     ): Boolean {
         return when (item) {
-            is GraphvizNodeField -> category == FIELDS_CATEGORY
+            is GraphvizNodeField -> {
+                when (category) {
+                    FIELDS_CATEGORY -> !item.isMethod() && item.isUnchanged()
+                    METHODS_CATEGORY -> item.isMethod() && item.isUnchanged()
+                    ADDED_FIELDS_CATEGORY -> !item.isMethod() && item.isAdded()
+                    REMOVED_FIELDS_CATEGORY -> !item.isMethod() && item.isRemoved()
+                    ADDED_METHODS_CATEGORY -> item.isMethod() && item.isAdded()
+                    REMOVED_METHODS_CATEGORY -> item.isMethod() && item.isRemoved()
+                    else -> false
+                }
+            }
             is GraphvizAttributeItem -> category == ATTRIBUTES_CATEGORY
             else -> super.isInCategory(nodeElement, item, category, builder)
         }

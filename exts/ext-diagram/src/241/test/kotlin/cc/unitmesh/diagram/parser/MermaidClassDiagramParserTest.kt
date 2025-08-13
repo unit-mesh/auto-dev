@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.parser
 
-import cc.unitmesh.diagram.graphviz.model.GraphvizGraphType
+import cc.unitmesh.diagram.model.GraphvizGraphType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

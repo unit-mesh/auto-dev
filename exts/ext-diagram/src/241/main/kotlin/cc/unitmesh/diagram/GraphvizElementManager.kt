@@ -91,7 +91,15 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
         builder: DiagramBuilder
     ): SimpleColoredText? {
         return when (nodeItem) {
-            is GraphvizNodeField -> SimpleColoredText(nodeItem.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            is GraphvizNodeField -> {
+                val displayName = nodeItem.getDisplayName()
+                val attributes = when (nodeItem.changeStatus) {
+                    ChangeStatus.ADDED -> SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
+                    ChangeStatus.REMOVED -> SimpleTextAttributes.GRAYED_ATTRIBUTES
+                    ChangeStatus.UNCHANGED -> SimpleTextAttributes.REGULAR_ATTRIBUTES
+                }
+                SimpleColoredText(displayName, attributes)
+            }
             is GraphvizAttributeItem -> SimpleColoredText(nodeItem.key, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             else -> null
         }

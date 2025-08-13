@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram
 
-import cc.unitmesh.diagram.graphviz.parser.DotFileParser
+import cc.unitmesh.diagram.parser.DotFileParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -34,7 +34,7 @@ class IntegrationTest {
         println("\nNodes (${result.nodes.size}):")
         result.nodes.forEach { node ->
             println("  - ID: ${node.getName()}")
-            if (node is cc.unitmesh.diagram.graphviz.model.GraphvizSimpleNodeData) {
+            if (node is cc.unitmesh.diagram.model.GraphvizSimpleNodeData) {
                 println("    Label: ${node.getDisplayLabel()}")
                 println("    Shape: ${node.getShape()}")
                 println("    Attributes: ${node.getAttributes()}")

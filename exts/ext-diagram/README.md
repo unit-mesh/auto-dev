@@ -57,6 +57,48 @@ The extension is built following the JHipster UML module architecture and includ
 
 ## Features
 
+### Diagram Diff and Change Tracking
+
+The extension now supports comparing AI-generated code structures before and after changes, with visual indicators for:
+
+- **Added classes/entities** - New classes created by AI
+- **Removed classes/entities** - Classes deleted by AI
+- **Added fields/methods** - New fields or methods added to existing classes
+- **Removed fields/methods** - Fields or methods removed from existing classes
+
+#### Usage
+
+```kotlin
+import cc.unitmesh.diagram.diff.DiagramDiffUtils
+
+// Compare two Mermaid diagrams
+val diffResult = DiagramDiffUtils.compareMermaidDiagrams(oldMermaid, newMermaid)
+
+// Generate change summary
+val summary = DiagramDiffUtils.generateChangeSummary(diffResult)
+println("Added ${summary.addedEntities} classes, ${summary.addedFields} fields")
+
+// Generate detailed report
+val report = DiagramDiffUtils.generateChangeReport(diffResult)
+println(report)
+```
+
+#### Visual Representation
+
+- **Added elements**: Shown with `+` prefix and bold text
+- **Removed elements**: Shown with `-` prefix and grayed out text
+- **Unchanged elements**: Shown normally
+
+#### Diagram Categories
+
+The diagram interface categorizes elements into:
+- **Fields** - Regular unchanged fields
+- **Attributes** - Node attributes
+- **Added Fields** - New fields (+ icon)
+- **Removed Fields** - Deleted fields (- icon)
+- **Added Methods** - New methods (+ icon)
+- **Removed Methods** - Deleted methods (- icon)
+
 ### Node Properties Support
 
 The extension now supports parsing and displaying node properties/fields from Graphviz record-shaped nodes, similar to JHipster UML entities:

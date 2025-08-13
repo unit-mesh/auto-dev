@@ -7,7 +7,7 @@ import javax.swing.Icon
  * Represents an entity node in a Graphviz graph with fields/properties
  * Similar to JdlEntityNodeData in JHipster UML implementation
  */
-class GraphvizEntityNodeData(
+data class GraphvizEntityNodeData(
     private val name: String,
     private val fields: List<GraphvizNodeField>
 ) : GraphvizNodeData {

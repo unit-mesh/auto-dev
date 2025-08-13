@@ -1,8 +1,8 @@
 package cc.unitmesh.diagram.parser
 
-import cc.unitmesh.diagram.graphviz.model.GraphvizEdgeType
-import cc.unitmesh.diagram.graphviz.model.GraphvizGraphType
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeType
+import cc.unitmesh.diagram.model.GraphvizEdgeType
+import cc.unitmesh.diagram.model.GraphvizGraphType
+import cc.unitmesh.diagram.model.GraphvizNodeType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 

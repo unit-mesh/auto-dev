@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram
 
-import cc.unitmesh.diagram.graphviz.parser.DotFileParser
+import cc.unitmesh.diagram.parser.DotFileParser
 import org.junit.jupiter.api.Test
 
 class SimpleParserTest {

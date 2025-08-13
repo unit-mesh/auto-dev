@@ -143,7 +143,9 @@ class MermaidClassDiagramParser {
         return GraphvizNodeField(
             name = name,
             type = member.type ?: if (member.isMethod) "method" else "field",
-            required = false
+            required = false,
+            changeStatus = ChangeStatus.UNCHANGED, // Default to unchanged, can be set later during comparison
+            isMethodField = member.isMethod
         )
     }
 

@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.parser
 
-import cc.unitmesh.diagram.graphviz.parser.mermaid.*
+import cc.unitmesh.diagram.parser.mermaid.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
