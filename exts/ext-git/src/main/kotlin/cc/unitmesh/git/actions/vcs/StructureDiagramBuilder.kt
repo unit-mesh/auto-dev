@@ -9,8 +9,10 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
+import com.intellij.profiler.ultimate.util.deduplicate
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNamedElement
 
 /**
@@ -112,6 +114,28 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
                     }
                 }
             }
+        }
+
+        /// generate usages
+        val items = (beforeStructure + afterStructure).distinct().map { classContext ->
+            val mapNotNull: List<String> = classContext.usages.mapNotNull { usage ->
+                if (usage.element.containingFile !is PsiNamedElement) {
+                    return@mapNotNull null
+                }
+
+                val element = usage.element.containingFile as PsiNamedElement
+                val className = classContext.name ?: return@mapNotNull null
+                val sanitizedClassName = sanitizeClassName(className)
+                val name = element.name?.substringBeforeLast(".")
+                val usageClassName = sanitizeClassName(name ?: "unknown")
+                return@mapNotNull "    $sanitizedClassName --> $usageClassName"
+            }
+
+            mapNotNull
+        }.flatten().distinct()
+
+        items.forEach {
+            builder.appendLine(it)
         }
     }
 

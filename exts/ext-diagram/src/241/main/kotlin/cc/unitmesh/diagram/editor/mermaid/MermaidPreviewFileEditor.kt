@@ -137,7 +137,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
             return
         }
 
-        mergingUpdateQueue.queue(object : Update("update") {
+        mergingUpdateQueue.queue(object : Update("AUTODEV.UML.UPDATE") {
             override fun run() {
                 ApplicationManager.getApplication().invokeLater {
                     myPanel!!.draw()

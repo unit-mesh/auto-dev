@@ -65,6 +65,8 @@ class PrepushReviewAction : AnAction() {
                     setOKButtonText("Accept")
                     setSize(1200, 800)
                     init()
+
+                    editor.selectNotify()
                 }
 
                 override fun doOKAction() {
@@ -72,11 +74,9 @@ class PrepushReviewAction : AnAction() {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    editor.selectNotify()
                     return editor.component
                 }
-
-            }.show()
+            }.showAndGet()
         }
     }
 
