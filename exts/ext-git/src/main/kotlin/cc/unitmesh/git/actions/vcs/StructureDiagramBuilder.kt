@@ -48,9 +48,9 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
         }
 
         return if (mermaidBuilder.length > "classDiagram\n".length) {
-            "\n```mermaid\n$mermaidBuilder\n```\n"
+            mermaidBuilder.toString()
         } else {
-            "\n```mermaid\nclassDiagram\n    class NoChanges {\n        +No structural changes detected\n    }\n```\n"
+            "classDiagram\n    class NoChanges {\n        +No structural changes detected\n    }"
         }
     }
 

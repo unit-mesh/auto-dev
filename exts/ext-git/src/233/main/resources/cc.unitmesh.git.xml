@@ -14,6 +14,16 @@
             <add-to-group group-id="Vcs.MessageActionGroup"/>
         </action>
 
+        <action id="autodev.Vcs.PrepushReview"
+                class="cc.unitmesh.git.actions.vcs.PrepushReviewAction" text="Prepush Review (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="ChangesViewToolbar" anchor="last"/>
+            <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
+
+        </action>
+
         <action id="autodev.Vcs.LLMChangelog"
                 class="cc.unitmesh.git.actions.vcs.ReleaseNoteSuggestionAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"

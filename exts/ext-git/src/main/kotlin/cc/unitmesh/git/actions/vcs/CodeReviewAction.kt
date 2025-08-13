@@ -77,7 +77,7 @@ open class CodeReviewAction : ChatBaseAction() {
         val fullChangeContent =
             vcsPrompting.buildDiffPrompt(details, changes, project)
 
-        val structureContext = StructureDiagramBuilder(project, changes).build()
+        val structureContext = "```mermaid\n" + StructureDiagramBuilder(project, changes).build() + "\n```"
 
         if (fullChangeContent == null) {
             AutoDevNotifications.notify(project, "No code to review.")
