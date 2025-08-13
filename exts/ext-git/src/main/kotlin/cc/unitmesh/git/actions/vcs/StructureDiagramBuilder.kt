@@ -2,18 +2,14 @@ package cc.unitmesh.git.actions.vcs
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
-import cc.unitmesh.devti.context.FileContext
 import cc.unitmesh.devti.context.FileContextProvider
+import com.intellij.lang.Language
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
-import com.intellij.psi.PsiManager
-import com.intellij.lang.Language
-import com.intellij.openapi.fileTypes.FileTypeManager
 
 /**
  * 获取变更前后的代码结构变化，以生成 Mermaid 变化图
@@ -34,11 +30,6 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
      * - "~" 表示修改的方法/类/字段
      *
      * 返回：Mermaid 格式的字符串，可直接用于渲染结构变化图
-     *
-     * 使用场景：
-     * - 代码审查时展示结构变化
-     * - 版本对比分析
-     * - 重构影响评估
      */
     fun build(): String {
         val mermaidBuilder = StringBuilder()
@@ -84,27 +75,6 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
         } ?: emptyList()
     }
 
-    /**
-     * 根据文件路径推断语言类型
-     */
-    private fun getLanguageFromFilePath(filePath: String): Language {
-        val extension = filePath.substringAfterLast('.', "")
-        return when (extension.lowercase()) {
-            "java" -> Language.findLanguageByID("JAVA") ?: Language.ANY
-            "kt", "kts" -> Language.findLanguageByID("kotlin") ?: Language.ANY
-            "py" -> Language.findLanguageByID("Python") ?: Language.ANY
-            "js", "ts" -> Language.findLanguageByID("JavaScript") ?: Language.ANY
-            "cpp", "cc", "cxx" -> Language.findLanguageByID("ObjectiveC") ?: Language.ANY
-            "cs" -> Language.findLanguageByID("C#") ?: Language.ANY
-            "go" -> Language.findLanguageByID("go") ?: Language.ANY
-            "rs" -> Language.findLanguageByID("Rust") ?: Language.ANY
-            else -> Language.ANY
-        }
-    }
-
-    /**
-     * 生成类图变化的 Mermaid Class Diagram
-     */
     private fun generateClassDiagramChanges(
         builder: StringBuilder,
         fileName: String,
@@ -419,14 +389,6 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
     }
 
     /**
-     * 清理节点ID，确保符合 Mermaid 语法
-     */
-    private fun sanitizeNodeId(id: String): String {
-        return id.replace(Regex("[^a-zA-Z0-9_]"), "_")
-    }
-
-
-    /**
      * 分析类的详细变化
      */
     private fun analyzeClassChanges(beforeClass: ClassContext, afterClass: ClassContext): ClassChanges {
@@ -442,57 +404,6 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
             addedFields = afterFields - beforeFields,
             removedFields = beforeFields - afterFields
         )
-    }
-
-    /**
-     * 生成详细的类节点，显示具体的变化
-     */
-    private fun generateDetailedClassNode(
-        builder: StringBuilder,
-        fileNodeId: String,
-        beforeClass: ClassContext,
-        afterClass: ClassContext,
-        changes: ClassChanges
-    ) {
-        val className = afterClass.name ?: return
-        val classNodeId = sanitizeNodeId("${fileNodeId}_${className}")
-
-        // 类节点本身不标记为修改，除非类名改变
-        val classPrefix = if (beforeClass.name != afterClass.name) "~" else ""
-        builder.appendLine("    $classNodeId[\"🏛️ $classPrefix$className\"]")
-        builder.appendLine("    $fileNodeId --> $classNodeId")
-
-        // 显示新增的方法
-        changes.addedMethods.forEachIndexed { index, methodSig ->
-            val methodName = methodSig.substringBefore("(")
-            val methodNodeId = sanitizeNodeId("${classNodeId}_added_method_$index")
-            builder.appendLine("    $methodNodeId[\"⚙️ +$methodName\"]")
-            builder.appendLine("    $classNodeId --> $methodNodeId")
-        }
-
-        // 显示删除的方法
-        changes.removedMethods.forEachIndexed { index, methodSig ->
-            val methodName = methodSig.substringBefore("(")
-            val methodNodeId = sanitizeNodeId("${classNodeId}_removed_method_$index")
-            builder.appendLine("    $methodNodeId[\"⚙️ -$methodName\"]")
-            builder.appendLine("    $classNodeId --> $methodNodeId")
-        }
-
-        // 显示新增的字段
-        changes.addedFields.forEachIndexed { index, fieldSig ->
-            val fieldName = fieldSig.substringAfterLast(" ").substringBefore(";").substringBefore("=")
-            val fieldNodeId = sanitizeNodeId("${classNodeId}_added_field_$index")
-            builder.appendLine("    $fieldNodeId[\"📊 +$fieldName\"]")
-            builder.appendLine("    $classNodeId --> $fieldNodeId")
-        }
-
-        // 显示删除的字段
-        changes.removedFields.forEachIndexed { index, fieldSig ->
-            val fieldName = fieldSig.substringAfterLast(" ").substringBefore(";").substringBefore("=")
-            val fieldNodeId = sanitizeNodeId("${classNodeId}_removed_field_$index")
-            builder.appendLine("    $fieldNodeId[\"📊 -$fieldName\"]")
-            builder.appendLine("    $classNodeId --> $fieldNodeId")
-        }
     }
 }
 
