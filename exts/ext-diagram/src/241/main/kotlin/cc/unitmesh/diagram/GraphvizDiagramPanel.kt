@@ -38,7 +38,6 @@ class GraphvizDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : D
         if (builder == null) {
             val project = fileEditor.getProject()
             val virtualFile = fileEditor.getFile()
-
             val rootData = GraphvizElementManager.getRootData(project, virtualFile)
 
             builder = DiagramBuilderFactory.getInstance()
@@ -63,7 +62,7 @@ class GraphvizDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : D
             .withDataReload()
             .withPresentationUpdate()
             .withRelayout()
-            .runAsync()
+            .run()
     }
 
     private fun createSimpleGraphView(builder: DiagramBuilder): JComponent {

@@ -120,7 +120,12 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
     override fun isModified(): Boolean = false
 
     override fun selectNotify() {
-        attachHtmlPanel()
+        if(myPanel == null) {
+            attachHtmlPanel()
+            return
+        }
+
+        myPanel!!.draw()
     }
 
     override fun deselectNotify() {
