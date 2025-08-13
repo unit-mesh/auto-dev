@@ -4,8 +4,8 @@ import com.intellij.diagram.AbstractDiagramNodeContentManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramCategory
 import com.intellij.util.PlatformIcons
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeField
-import cc.unitmesh.diagram.graphviz.model.GraphvizAttributeItem
+import cc.unitmesh.diagram.model.GraphvizNodeField
+import cc.unitmesh.diagram.model.GraphvizAttributeItem
 import com.intellij.icons.AllIcons
 
 /**

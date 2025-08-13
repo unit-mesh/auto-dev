@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.editor
 
-import cc.unitmesh.diagram.graphviz.MermaidFileType
+import cc.unitmesh.diagram.MermaidFileType
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider

@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram
 
-import cc.unitmesh.diagram.graphviz.model.*
+import cc.unitmesh.diagram.model.*
 import com.intellij.diagram.AbstractDiagramElementManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.openapi.actionSystem.CommonDataKeys

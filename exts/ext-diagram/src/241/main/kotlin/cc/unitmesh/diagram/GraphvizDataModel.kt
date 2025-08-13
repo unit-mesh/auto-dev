@@ -7,7 +7,7 @@ import com.intellij.diagram.DiagramProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.psi.util.PsiModificationTracker
-import cc.unitmesh.diagram.graphviz.model.*
+import cc.unitmesh.diagram.model.*
 import cc.unitmesh.diagram.parser.DotFileParser
 
 /**

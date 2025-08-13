@@ -6,24 +6,24 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Register file types -->
-        <fileType name="DOT" implementationClass="cc.unitmesh.diagram.graphviz.DotFileType"
+        <fileType name="DOT" implementationClass="cc.unitmesh.diagram.DotFileType"
                   fieldName="INSTANCE" extensions="dot;gv;graphviz"/>
-        <fileType name="Mermaid" implementationClass="cc.unitmesh.diagram.graphviz.MermaidFileType"
+        <fileType name="Mermaid" implementationClass="cc.unitmesh.diagram.MermaidFileType"
                   fieldName="INSTANCE" extensions="mmd;mermaid"/>
 
         <!-- Register Graphviz diagram provider -->
-        <diagram.Provider implementation="cc.unitmesh.diagram.graphviz.GraphvizUmlProvider"/>
+        <diagram.Provider implementation="cc.unitmesh.diagram.GraphvizUmlProvider"/>
 
         <!-- Register project service -->
-        <projectService serviceImplementation="cc.unitmesh.diagram.graphviz.GraphvizDiagramService"/>
+        <projectService serviceImplementation="cc.unitmesh.diagram.GraphvizDiagramService"/>
 
         <!-- Register file editor providers -->
-        <fileEditorProvider implementation="cc.unitmesh.diagram.graphviz.editor.GraphvizSplitEditorProvider"/>
-        <fileEditorProvider implementation="cc.unitmesh.diagram.graphviz.editor.MermaidSplitEditorProvider"/>
+        <fileEditorProvider implementation="cc.unitmesh.diagram.editor.GraphvizSplitEditorProvider"/>
+        <fileEditorProvider implementation="cc.unitmesh.diagram.editor.MermaidSplitEditorProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <!-- Register Graphviz language sketch provider -->
-        <langSketchProvider implementation="cc.unitmesh.diagram.graphviz.GraphvizSketchProvider"/>
+        <langSketchProvider implementation="cc.unitmesh.diagram.GraphvizSketchProvider"/>
     </extensions>
 </idea-plugin>

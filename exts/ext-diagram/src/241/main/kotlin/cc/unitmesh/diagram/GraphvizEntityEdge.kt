@@ -5,9 +5,9 @@ import com.intellij.diagram.DiagramNode
 import com.intellij.diagram.DiagramRelationshipInfo
 import com.intellij.diagram.DiagramRelationshipInfoAdapter
 import com.intellij.diagram.presentation.DiagramLineType
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
-import cc.unitmesh.diagram.graphviz.model.GraphvizEdgeData
-import cc.unitmesh.diagram.graphviz.model.GraphvizEdgeType
+import cc.unitmesh.diagram.model.GraphvizNodeData
+import cc.unitmesh.diagram.model.GraphvizEdgeData
+import cc.unitmesh.diagram.model.GraphvizEdgeType
 
 /**
  * Diagram edge implementation for Graphviz graphs

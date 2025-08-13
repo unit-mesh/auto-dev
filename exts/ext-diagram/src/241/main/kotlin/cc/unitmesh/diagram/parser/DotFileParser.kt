@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.parser
 
-import cc.unitmesh.diagram.graphviz.model.*
+import cc.unitmesh.diagram.model.*
 import guru.nidi.graphviz.model.MutableGraph
 import guru.nidi.graphviz.parse.Parser
 

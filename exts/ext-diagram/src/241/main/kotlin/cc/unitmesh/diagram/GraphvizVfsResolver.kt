@@ -2,7 +2,7 @@ package cc.unitmesh.diagram
 
 import com.intellij.diagram.DiagramVfsResolver
 import com.intellij.openapi.project.Project
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
+import cc.unitmesh.diagram.model.GraphvizNodeData
 
 /**
  * VFS resolver for Graphviz diagrams

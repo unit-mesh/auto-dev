@@ -861,25 +861,6 @@ project(":exts:ext-diagram") {
         testImplementation(kotlin("test"))
         testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     }
-
-    sourceSets {
-        main {
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-        test {
-            resources.srcDirs("src/$platformVersion/test/resources")
-        }
-    }
-    kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
-            }
-            test {
-                kotlin.srcDirs("src/$platformVersion/test/kotlin")
-            }
-        }
-    }
 }
 
 project(":exts:devins-lang") {

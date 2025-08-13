@@ -22,7 +22,7 @@ class DotFileType private constructor() : FileType {
 
     override fun getDefaultExtension(): String = "dot"
 
-    override fun getIcon(): Icon? = IconLoader.getIcon("/icons/graphviz.svg", DotFileType::class.java)
+    override fun getIcon(): Icon? = IconLoader.getIcon("/icons/autodev-graphviz.svg", DotFileType::class.java)
 
     override fun getCharset(file: VirtualFile, content: ByteArray): String = "UTF-8"
 
@@ -47,7 +47,7 @@ class MermaidFileType private constructor() : FileType {
 
     override fun getDefaultExtension(): String = "mmd"
 
-    override fun getIcon(): Icon? = IconLoader.getIcon("/icons/mermaid.svg", MermaidFileType::class.java)
+    override fun getIcon(): Icon? = IconLoader.getIcon("/icons/autodev-mermaid.svg", MermaidFileType::class.java)
 
     override fun getCharset(file: VirtualFile, content: ByteArray): String = "UTF-8"
 

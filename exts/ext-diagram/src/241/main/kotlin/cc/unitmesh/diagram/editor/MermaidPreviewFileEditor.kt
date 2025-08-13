@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.editor
 
-import cc.unitmesh.diagram.graphviz.GraphvizDiagramPanel
+import cc.unitmesh.diagram.GraphvizDiagramPanel
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor

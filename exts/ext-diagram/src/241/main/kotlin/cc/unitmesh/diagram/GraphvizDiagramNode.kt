@@ -2,7 +2,7 @@ package cc.unitmesh.diagram
 
 import com.intellij.diagram.DiagramNodeBase
 import com.intellij.diagram.DiagramProvider
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
+import cc.unitmesh.diagram.model.GraphvizNodeData
 import javax.swing.Icon
 
 /**

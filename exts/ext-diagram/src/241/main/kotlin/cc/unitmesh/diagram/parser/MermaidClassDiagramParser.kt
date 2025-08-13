@@ -1,7 +1,7 @@
 package cc.unitmesh.diagram.parser
 
-import cc.unitmesh.diagram.graphviz.model.*
-import cc.unitmesh.diagram.graphviz.parser.mermaid.*
+import cc.unitmesh.diagram.model.*
+import cc.unitmesh.diagram.parser.mermaid.*
 
 /**
  * Parser for Mermaid class diagrams

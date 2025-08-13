@@ -4,7 +4,7 @@ import com.intellij.diagram.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.intellij.lang.annotations.Pattern
-import cc.unitmesh.diagram.graphviz.model.GraphvizNodeData
+import cc.unitmesh.diagram.model.GraphvizNodeData
 import com.intellij.diagram.DiagramRelationshipManager.NO_RELATIONSHIP_MANAGER
 
 /**

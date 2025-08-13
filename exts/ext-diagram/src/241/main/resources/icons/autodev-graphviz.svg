@@ -12,7 +12,7 @@
             <path d="M0 0 L6 3 L0 6 z" fill="#222" />
         </marker>
     </defs>
-    <rect x="12" y="12" width="232" height="232" rx="34" ry="34" fill="url(#g1)"/>
+    <rect x="12" y="12" width="232" height="232" rx="34" ry="34" fill="#48A178"/>
     <g stroke="#222" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" marker-end="url(#arrow)" opacity="0.95">
         <path d="M72 168 C92 138, 120 120, 140 108"/>
         <path d="M150 110 C180 100, 210 130, 190 156"/>
