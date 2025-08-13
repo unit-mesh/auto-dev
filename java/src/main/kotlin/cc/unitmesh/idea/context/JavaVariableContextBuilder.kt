@@ -21,6 +21,8 @@ class JavaVariableContextBuilder : VariableContextBuilder {
         val references =
             if (gatherUsages) ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
+        val type = runReadAction { psiElement.type.presentableText }
+
         return runReadAction {  VariableContext(
             psiElement,
             psiElement.text ?: "",
@@ -29,7 +31,8 @@ class JavaVariableContextBuilder : VariableContextBuilder {
             containingClass,
             references,
             withMethodContext,
-            withClassContext
+            withClassContext,
+            type
         )}
     }
 

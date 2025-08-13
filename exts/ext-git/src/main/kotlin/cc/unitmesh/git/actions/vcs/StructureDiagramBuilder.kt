@@ -3,6 +3,8 @@ package cc.unitmesh.git.actions.vcs
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.context.FileContextProvider
+import cc.unitmesh.devti.context.MethodContextProvider
+import cc.unitmesh.devti.context.VariableContextProvider
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
@@ -80,7 +82,6 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
         beforeStructure: List<ClassContext>,
         afterStructure: List<ClassContext>
     ) {
-        // 创建类名到上下文的映射
         val beforeClasses = beforeStructure.associateBy { it.name }
         val afterClasses = afterStructure.associateBy { it.name }
 
@@ -94,22 +95,18 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
 
                 when {
                     beforeClass == null && afterClass != null -> {
-                        // 新增的类
                         generateClassDefinition(builder, afterClass, "+")
                     }
 
                     beforeClass != null && afterClass == null -> {
-                        // 删除的类
                         generateClassDefinition(builder, beforeClass, "-")
                     }
 
                     beforeClass != null && afterClass != null -> {
-                        // 检查是否有结构变化
                         val changes = analyzeClassChanges(beforeClass, afterClass)
                         if (changes.hasStructuralChanges()) {
                             generateModifiedClassDefinition(builder, beforeClass, afterClass, changes)
                         } else {
-                            // 没有结构变化，显示当前状态
                             generateClassDefinition(builder, afterClass, "")
                         }
                     }
@@ -235,156 +232,53 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
     private fun sanitizeClassName(className: String): String {
         return className.replace(Regex("[^a-zA-Z0-9_]"), "_")
     }
+
     private fun extractMethodName(methodElement: PsiElement): String {
+        val returnType = MethodContextProvider(false, false).from(methodElement).returnType
         if (methodElement is PsiNamedElement && methodElement.name != null) {
+            if (returnType != "null" &&  returnType != null) {
+                return returnType + " " + methodElement.name!!
+            }
+
             return methodElement.name!!
         }
 
-        return extractMethodSignature(methodElement)?.substringBefore("(") ?: "unknown"
-    }
-
-    /**
-     * 从 PsiElement 提取方法签名（更精确）
-     */
-    private fun extractMethodSignature(methodElement: PsiElement): String? {
-        return runReadAction {
-            try {
-                val text = methodElement.text ?: return@runReadAction null
-                val lines = text.lines().filter { it.trim().isNotEmpty() }
-
-                // 查找方法声明行（包含括号的行）
-                val methodLine = lines.find { line ->
-                    val trimmed = line.trim()
-                    // 排除注释和注解
-                    !trimmed.startsWith("//") &&
-                            !trimmed.startsWith("/*") &&
-                            !trimmed.startsWith("*") &&
-                            !trimmed.startsWith("@") &&
-                            trimmed.contains("(") &&
-                            !trimmed.startsWith("if") &&
-                            !trimmed.startsWith("while") &&
-                            !trimmed.startsWith("for")
-                } ?: return@runReadAction null
-
-                val trimmed = methodLine.trim()
-                when {
-                    trimmed.contains("fun ") -> {
-                        // Kotlin 方法
-                        val funPart = trimmed.substringAfter("fun ").substringBefore("{").trim()
-                        if (funPart.contains("(")) funPart else null
-                    }
-
-                    trimmed.contains("def ") -> {
-                        // Python 方法
-                        val defPart = trimmed.substringAfter("def ").substringBefore(":").trim()
-                        if (defPart.contains("(")) defPart else null
-                    }
-
-                    trimmed.contains("function ") -> {
-                        // JavaScript 方法
-                        val funcPart = trimmed.substringAfter("function ").substringBefore("{").trim()
-                        if (funcPart.contains("(")) funcPart else null
-                    }
-
-                    trimmed.contains("(") -> {
-                        // Java/C# 等方法
-                        val beforeBrace = trimmed.substringBefore("{").trim()
-                        val beforeParen = beforeBrace.substringBefore("(")
-                        val afterParen = beforeBrace.substringAfter("(").substringBefore(")")
-                        val methodName = beforeParen.split(" ").lastOrNull()?.trim()
-                        if (methodName != null) "$methodName($afterParen)" else null
-                    }
-
-                    else -> null
-                }
-            } catch (e: Exception) {
-                null
-            }
-        }
+        return "unknown"
     }
 
     /**
      * 从 PsiElement 提取字段名
      */
     private fun extractFieldName(fieldElement: PsiElement): String {
+        val returnType = VariableContextProvider(false, false, false).from(fieldElement).type
+        if (fieldElement is PsiNamedElement && returnType != null) {
+            return returnType + " " + fieldElement.name!!
+        }
+
         if (fieldElement is PsiNamedElement && fieldElement.name != null) {
             return fieldElement.name!!
         }
 
-        return extractFieldSignature(fieldElement)?.substringAfterLast(" ")?.substringBefore(";")?.substringBefore("=")
-            ?: "unknown"
-    }
-
-    /**
-     * 从 PsiElement 提取字段签名（更精确）
-     */
-    private fun extractFieldSignature(fieldElement: PsiElement): String? {
-        return runReadAction {
-            try {
-                val text = fieldElement.text ?: return@runReadAction null
-                val lines = text.lines().filter { it.trim().isNotEmpty() }
-
-                // 查找字段声明行
-                val fieldLine = lines.find { line ->
-                    val trimmed = line.trim()
-                    // 排除注释、注解和方法
-                    !trimmed.startsWith("//") &&
-                            !trimmed.startsWith("/*") &&
-                            !trimmed.startsWith("*") &&
-                            !trimmed.startsWith("@") &&
-                            !trimmed.contains("(") &&
-                            (trimmed.contains("private ") || trimmed.contains("public ") ||
-                                    trimmed.contains("protected ") || trimmed.contains("val ") ||
-                                    trimmed.contains("var ") || trimmed.contains("final ") ||
-                                    trimmed.contains("static "))
-                } ?: return@runReadAction null
-
-                val trimmed = fieldLine.trim().substringBefore(";").substringBefore("=")
-                when {
-                    trimmed.contains("val ") -> {
-                        // Kotlin val
-                        val valPart = trimmed.substringAfter("val ").trim()
-                        if (valPart.contains(":")) {
-                            val name = valPart.substringBefore(":").trim()
-                            val type = valPart.substringAfter(":").trim()
-                            "$type $name"
-                        } else {
-                            "val $valPart"
-                        }
-                    }
-
-                    trimmed.contains("var ") -> {
-                        // Kotlin var
-                        val varPart = trimmed.substringAfter("var ").trim()
-                        if (varPart.contains(":")) {
-                            val name = varPart.substringBefore(":").trim()
-                            val type = varPart.substringAfter(":").trim()
-                            "$type $name"
-                        } else {
-                            "var $varPart"
-                        }
-                    }
-
-                    else -> {
-                        // Java/C# 等字段
-                        trimmed
-                    }
-                }
-            } catch (e: Exception) {
-                null
-            }
-        }
+        return "unknown"
     }
 
     /**
      * 分析类的详细变化
      */
     private fun analyzeClassChanges(beforeClass: ClassContext, afterClass: ClassContext): ClassChanges {
-        val beforeMethods = beforeClass.methods.mapNotNull { extractMethodSignature(it) }.toSet()
-        val afterMethods = afterClass.methods.mapNotNull { extractMethodSignature(it) }.toSet()
+        val beforeMethods = beforeClass.methods.mapNotNull {
+            MethodContextProvider(false, gatherUsages = false).from(it)?.signature
+        }.toSet()
+        val afterMethods = afterClass.methods.mapNotNull {
+            MethodContextProvider(false, gatherUsages = false).from(it)?.signature
+        }.toSet()
 
-        val beforeFields = beforeClass.fields.mapNotNull { extractFieldSignature(it) }.toSet()
-        val afterFields = afterClass.fields.mapNotNull { extractFieldSignature(it) }.toSet()
+        val beforeFields = beforeClass.fields.mapNotNull {
+            VariableContextProvider(false, false, false).from(it)?.shortFormat()
+        }.toSet()
+        val afterFields = afterClass.fields.mapNotNull {
+            VariableContextProvider(false, false, false).from(it)?.shortFormat()
+        }.toSet()
 
         return ClassChanges(
             addedMethods = afterMethods - beforeMethods,

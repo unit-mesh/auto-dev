@@ -13,7 +13,8 @@ class VariableContext(
     val enclosingClass: PsiElement?= null,
     val usages: List<PsiReference> = emptyList(),
     val includeMethodContext: Boolean = false,
-    val includeClassContext: Boolean = false
+    val includeClassContext: Boolean = false,
+    val type: String? = null,
 ) : NamedElementContext(
     root, text, name
 ) {
