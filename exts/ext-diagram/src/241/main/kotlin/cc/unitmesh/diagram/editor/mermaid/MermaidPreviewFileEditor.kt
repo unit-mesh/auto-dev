@@ -2,6 +2,11 @@ package cc.unitmesh.diagram.editor.mermaid
 
 import cc.unitmesh.diagram.GraphvizDiagramPanel
 import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -10,9 +15,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.util.Alarm
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
@@ -53,15 +55,19 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
 
         umlPanelWrapper.addComponentListener(object : ComponentAdapter() {
             override fun componentShown(e: ComponentEvent?) {
-                if (myPanel == null) {
-                    attachHtmlPanel()
-                }
+                swingAlarm.addRequest(Runnable {
+                    if (myPanel == null) {
+                        attachHtmlPanel()
+                    }
+                }, 0, ModalityState.stateForComponent(getComponent()))
             }
 
             override fun componentHidden(e: ComponentEvent?) {
-                if (myPanel != null) {
-                    detachHtmlPanel()
-                }
+                swingAlarm.addRequest(Runnable {
+                    if (myPanel != null) {
+                        detachHtmlPanel()
+                    }
+                }, 0, ModalityState.stateForComponent(getComponent()))
             }
         })
     }
@@ -129,21 +135,15 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
     override fun getProject(): Project = project
 
     private fun updateUml() {
-        if (isDisposed) return
+        if (myPanel == null || document == null || !file.isValid() || isDisposed) {
+            return
+        }
 
         mergingUpdateQueue.queue(object : Update("update") {
             override fun run() {
-                if (isDisposed) return
-                swingAlarm.addRequest({
-                    if (isDisposed) return@addRequest
-
-                    try {
-                        myPanel!!.draw()
-                    } catch (e: Exception) {
-                        // Handle rendering errors gracefully
-                        e.printStackTrace()
-                    }
-                }, 0)
+                ApplicationManager.getApplication().invokeLater {
+                    myPanel!!.draw()
+                }
             }
         })
     }

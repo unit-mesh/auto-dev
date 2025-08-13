@@ -12,7 +12,6 @@ import com.intellij.openapi.vfs.VirtualFile
  * Similar to GraphvizPreviewFileEditorProvider but for Mermaid files
  */
 class MermaidPreviewFileEditorProvider : FileEditorProvider {
-    
     override fun getEditorTypeId(): String = "mermaid-uml-editor"
     
     override fun getPolicy(): FileEditorPolicy = FileEditorPolicy.PLACE_AFTER_DEFAULT_EDITOR

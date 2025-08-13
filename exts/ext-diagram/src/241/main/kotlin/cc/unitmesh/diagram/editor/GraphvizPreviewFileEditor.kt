@@ -1,6 +1,7 @@
 package cc.unitmesh.diagram.editor
 
 import cc.unitmesh.diagram.GraphvizDiagramPanel
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.event.DocumentEvent
@@ -122,23 +123,17 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
     override fun getProject(): Project = project
 
     private fun updateUml() {
-        if (isDisposed) return
+        if (myPanel == null || document == null || !file.isValid() || isDisposed) {
+            return
+        }
 
         mergingUpdateQueue.queue(object : Update("update") {
             override fun run() {
-                if (isDisposed) return
-
-                swingAlarm.addRequest({
-                    if (isDisposed) return@addRequest
-
-                    try {
-                        myPanel!!.draw()
-                    } catch (e: Exception) {
-                        // Handle rendering errors gracefully
-                        e.printStackTrace()
-                    }
-                }, 0)
+                ApplicationManager.getApplication().invokeLater {
+                    myPanel!!.draw()
+                }
             }
         })
+
     }
 }
