@@ -6,6 +6,10 @@
 
 ${context.frameworkContext}
 
+如下是变更的结构化表示， + means new method, - means deleted method:
+
+${context.structureContext}
+
 #if($context.stories.isNotEmpty())
 以下用户故事与这些变化相关：
     ${context.stories.joinToString("\n")}

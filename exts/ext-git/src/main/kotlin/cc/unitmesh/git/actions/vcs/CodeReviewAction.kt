@@ -73,8 +73,11 @@ open class CodeReviewAction : ChatBaseAction() {
         stories: List<String>
     ) {
         val vcsPrompting = project.service<VcsPrompting>()
+        val changes = selectList.toList()
         val fullChangeContent =
-            vcsPrompting.buildDiffPrompt(details, selectList.toList(), project)
+            vcsPrompting.buildDiffPrompt(details, changes, project)
+
+        val structureContext = StructureDiagramBuilder(project, changes).build()
 
         if (fullChangeContent == null) {
             AutoDevNotifications.notify(project, "No code to review.")
@@ -92,6 +95,7 @@ open class CodeReviewAction : ChatBaseAction() {
             frameworkContext = contextItems.joinToString("\n") { it.text },
             stories = stories.toMutableList(),
             diffContext = fullChangeContent,
+            structureContext = structureContext
         )
 
         doCodeReview(project, context)
@@ -149,4 +153,5 @@ data class CodeReviewContext(
     var frameworkContext: String = "",
     val stories: MutableList<String> = mutableListOf(),
     var diffContext: String = "",
+    var structureContext: String = "",
 ) : TemplateContext

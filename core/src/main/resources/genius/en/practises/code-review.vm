@@ -6,6 +6,10 @@ You are a seasoned software developer, and I'm seeking your expertise to review 
 
 ${context.frameworkContext}
 
+Changed summary, + means new method, - means deleted method:
+
+${context.structureContext}
+
 #if($context.stories.isNotEmpty())
 The following user stories are related to these changes:
 ${context.stories.joinToString("\n")}

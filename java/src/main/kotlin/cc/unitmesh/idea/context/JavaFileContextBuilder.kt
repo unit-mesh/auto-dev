@@ -17,7 +17,7 @@ class JavaFileContextBuilder : FileContextBuilder {
         for (it in importLists) imports.addAll(it.allImportStatements)
 
         val packageString = packageStatement?.text
-        val path = psiFile.virtualFile.path
+        val path = psiFile.virtualFile?.path ?: "temp.java"
 
         return FileContext(psiFile, psiFile.name, path, packageString, imports, classDeclarations, emptyList())
     }
