@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.editor.mermaid
 
-import cc.unitmesh.diagram.GraphvizDiagramPanel
+import cc.unitmesh.diagram.diagram.GraphvizDiagramPanel
 import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState

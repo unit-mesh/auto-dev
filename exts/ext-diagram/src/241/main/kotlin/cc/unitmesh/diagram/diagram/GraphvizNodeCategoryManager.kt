@@ -1,5 +1,6 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.diagram
 
+import cc.unitmesh.diagram.DiagramIcons
 import com.intellij.diagram.AbstractDiagramNodeContentManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramCategory

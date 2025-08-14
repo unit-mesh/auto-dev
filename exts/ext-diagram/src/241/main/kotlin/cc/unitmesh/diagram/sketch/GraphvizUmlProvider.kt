@@ -1,9 +1,9 @@
 package cc.unitmesh.diagram.sketch
 
-import cc.unitmesh.diagram.GraphvizElementManager
-import cc.unitmesh.diagram.GraphvizNodeCategoryManager
-import cc.unitmesh.diagram.GraphvizVfsResolver
-import cc.unitmesh.diagram.graph.GraphvizDataModel
+import cc.unitmesh.diagram.diagram.GraphvizElementManager
+import cc.unitmesh.diagram.diagram.GraphvizNodeCategoryManager
+import cc.unitmesh.diagram.diagram.GraphvizVfsResolver
+import cc.unitmesh.diagram.diagram.graph.GraphvizDataModel
 import cc.unitmesh.diagram.model.GraphvizNodeData
 import com.intellij.diagram.DiagramDataModel
 import com.intellij.diagram.DiagramElementManager

@@ -1,5 +1,6 @@
 package cc.unitmesh.diagram
 
+import cc.unitmesh.diagram.diagram.GraphvizNodeCategoryManager
 import cc.unitmesh.diagram.model.*
 import kotlin.test.Test
 import kotlin.test.assertTrue

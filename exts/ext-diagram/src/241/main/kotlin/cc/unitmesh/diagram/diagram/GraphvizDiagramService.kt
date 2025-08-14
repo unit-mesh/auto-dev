@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.diagram
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service

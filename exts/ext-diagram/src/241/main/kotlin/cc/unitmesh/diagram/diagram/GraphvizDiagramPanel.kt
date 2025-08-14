@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.diagram
 
 import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
 import cc.unitmesh.diagram.sketch.GraphvizUmlProvider

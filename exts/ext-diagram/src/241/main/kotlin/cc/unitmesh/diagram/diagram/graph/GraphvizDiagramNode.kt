@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram.graph
+package cc.unitmesh.diagram.diagram.graph
 
 import com.intellij.diagram.DiagramNodeBase
 import com.intellij.diagram.DiagramProvider

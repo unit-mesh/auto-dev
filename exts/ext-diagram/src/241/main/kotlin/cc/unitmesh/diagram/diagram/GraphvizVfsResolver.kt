@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.diagram
 
 import com.intellij.diagram.DiagramVfsResolver
 import com.intellij.openapi.project.Project

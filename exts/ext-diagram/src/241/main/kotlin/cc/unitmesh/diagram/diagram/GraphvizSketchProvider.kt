@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.diagram
 
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider

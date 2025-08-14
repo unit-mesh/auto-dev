@@ -1,5 +1,6 @@
 package cc.unitmesh.diagram
 
+import cc.unitmesh.diagram.diagram.GraphvizSketchProvider
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 

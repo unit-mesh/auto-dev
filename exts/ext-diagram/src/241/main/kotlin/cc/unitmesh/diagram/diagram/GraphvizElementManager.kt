@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.diagram
 
 import cc.unitmesh.diagram.model.*
 import com.intellij.diagram.AbstractDiagramElementManager
@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager
 import com.intellij.ui.SimpleColoredText
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.util.ArrayUtil
+import com.intellij.util.PlatformIcons
 import javax.swing.Icon
 
 /**
@@ -129,12 +130,12 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
         return when (nodeItem) {
             is GraphvizNodeField -> {
                 if (nodeItem.isRequired()) {
-                    com.intellij.util.PlatformIcons.FIELD_ICON // Could use a different icon for required fields
+                    PlatformIcons.FIELD_ICON // Could use a different icon for required fields
                 } else {
-                    com.intellij.util.PlatformIcons.FIELD_ICON
+                    PlatformIcons.FIELD_ICON
                 }
             }
-            is GraphvizAttributeItem -> com.intellij.util.PlatformIcons.METHOD_ICON
+            is GraphvizAttributeItem -> PlatformIcons.METHOD_ICON
             else -> null
         }
     }

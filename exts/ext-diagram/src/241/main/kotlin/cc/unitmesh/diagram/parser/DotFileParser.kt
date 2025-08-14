@@ -10,7 +10,6 @@ import guru.nidi.graphviz.parse.Parser
  * Also supports Mermaid class diagrams
  */
 class DotFileParser {
-
     private val mermaidParser = MermaidClassDiagramParser()
 
     fun parse(content: String): GraphvizDiagramData {

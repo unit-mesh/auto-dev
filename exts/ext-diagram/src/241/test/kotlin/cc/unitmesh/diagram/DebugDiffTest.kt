@@ -1,5 +1,6 @@
 package cc.unitmesh.diagram
 
+import cc.unitmesh.diagram.diagram.GraphvizNodeCategoryManager
 import cc.unitmesh.diagram.diff.DiagramDiffUtils
 import cc.unitmesh.diagram.parser.MermaidClassDiagramParser
 import kotlin.test.Test

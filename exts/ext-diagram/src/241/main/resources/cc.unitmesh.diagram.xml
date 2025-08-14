@@ -15,7 +15,7 @@
         <diagram.Provider implementation="cc.unitmesh.diagram.sketch.GraphvizUmlProvider"/>
 
         <!-- Register project service -->
-        <projectService serviceImplementation="cc.unitmesh.diagram.GraphvizDiagramService"/>
+        <projectService serviceImplementation="cc.unitmesh.diagram.diagram.GraphvizDiagramService"/>
 
         <!-- Register file editor providers -->
         <fileEditorProvider implementation="cc.unitmesh.diagram.editor.GraphvizSplitEditorProvider"/>
@@ -24,6 +24,6 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <!-- Register Graphviz language sketch provider -->
-        <langSketchProvider implementation="cc.unitmesh.diagram.GraphvizSketchProvider"/>
+        <langSketchProvider implementation="cc.unitmesh.diagram.diagram.GraphvizSketchProvider"/>
     </extensions>
 </idea-plugin>
