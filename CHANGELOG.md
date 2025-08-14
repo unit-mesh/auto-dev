@@ -1,6 +1,53 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v2.2.3...v) (2025-08-11)
+# [](https://github.com/unit-mesh/auto-dev/compare/v2.4.0...v) (2025-08-14)
 
 ## [Unreleased]
+
+## [2.4.0] - 2025-08-14
+
+### Bug Fixes
+
+* **commit:** accumulate stream result before updating editor and fixed [#437](https://github.com/unit-mesh/auto-dev/issues/437) ([ce9685f](https://github.com/unit-mesh/auto-dev/commit/ce9685f24269d4e4b04171585a12e6eda2368e29))
+* **config:** set default value for a2aServers map ([cad35c6](https://github.com/unit-mesh/auto-dev/commit/cad35c663580c4602f3632ad68159302af962fcd))
+* **diagram:** correct builder update call placement [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([f5acc6a](https://github.com/unit-mesh/auto-dev/commit/f5acc6a1b554d8fb7d395cb703b2a6a26d74dac0))
+* **diagram:** exclude constructor from method list [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([c90e4b3](https://github.com/unit-mesh/auto-dev/commit/c90e4b3fc67853b05e0cd2b712526d31d1607451))
+* **diagram:** improve Mermaid editor selection and context [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([7ed47a5](https://github.com/unit-mesh/auto-dev/commit/7ed47a51eae9ec16485c4ef79945eecbc9b1ece7))
+* **diagram:** update file content on document change [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([fe6e657](https://github.com/unit-mesh/auto-dev/commit/fe6e657f0f42e54f9bcbca5a6c15c03614bde07f))
+* **graphviz:** improve data provider for PSI file access [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([0f02ffa](https://github.com/unit-mesh/auto-dev/commit/0f02ffa9b70d35d7d823357ecc423ba334c5eebc))
+* **parser:** improve member detection after colon in Mermaid [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([2e15e07](https://github.com/unit-mesh/auto-dev/commit/2e15e076e88870b8821b381aca579389d2b84ff2))
+
+### Features
+
+* **diagram:** add diagram diff and change tracking [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([3c007b4](https://github.com/unit-mesh/auto-dev/commit/3c007b40617787f441104d9db26613ead8f53f78))
+* **diagram:** add ext-diagram module with plugin support [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([a490162](https://github.com/unit-mesh/auto-dev/commit/a490162b4cdb83e9c99ed072b64a31c72e501900))
+* **diagram:** add Graphviz DOT diagram support [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([6153dd1](https://github.com/unit-mesh/auto-dev/commit/6153dd1d0fe386826f1fd2c43b3cfd2c7f90f4d6))
+* **diagram:** add split editor and LangSketch for Graphviz [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([af5e396](https://github.com/unit-mesh/auto-dev/commit/af5e396ccf0c29cd6ce25e0b3af361fd7c3923d1))
+* **diagram:** show field and method types in structure diagram [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([367400e](https://github.com/unit-mesh/auto-dev/commit/367400e1fa6ca84ee21e3e6e9368e7f7e7652d26))
+* **diagram:** support class annotation statements [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([32075c4](https://github.com/unit-mesh/auto-dev/commit/32075c4ca57b5b3d8522b837d55b66c81977923b))
+* **diagram:** use custom icons for node categories [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([7f25083](https://github.com/unit-mesh/auto-dev/commit/7f25083d839adc385abc590a41505a3cdd0de561))
+* **git:** add Prepush Review action with AI code review [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([c2e4b88](https://github.com/unit-mesh/auto-dev/commit/c2e4b88517d3711a500afe568ca88f7d18f52597))
+* **git:** add refresh action to prepush review dialog [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([4077f13](https://github.com/unit-mesh/auto-dev/commit/4077f13e3139ff567e892acd4672a27be4edb52a))
+* **git:** add structure diagram for code changes [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([a53bd42](https://github.com/unit-mesh/auto-dev/commit/a53bd425f1f8ff075f9e5959387e143b206c06b8))
+* **git:** show class usage relationships in structure diagram [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([e09da40](https://github.com/unit-mesh/auto-dev/commit/e09da4045b4c67e10fd07c5a00af04be19ec747c))
+* **graphviz:** add support for entity nodes with fields [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([a16ed81](https://github.com/unit-mesh/auto-dev/commit/a16ed8106db3065eb9d6ed5e683582168b5fb3ce))
+* **mermaid:** add mermaid render support [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([662c873](https://github.com/unit-mesh/auto-dev/commit/662c873cdeafbcd04732fdd73ee24784c7d1c178))
+* **parser:** add Mermaid class diagram support [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([e2cf690](https://github.com/unit-mesh/auto-dev/commit/e2cf6907cc0a9b458db808089972b15677b3b8db))
+* **ui:** replace popup with dialog for diagram review [#438](https://github.com/unit-mesh/auto-dev/issues/438) ([ed568f2](https://github.com/unit-mesh/auto-dev/commit/ed568f272e4e276c946ab73827801a13cc6235c7))
+
+## [2.2.4](https://github.com/unit-mesh/auto-dev/compare/v2.2.3...v[2.2.4]) (2025-08-12)
+
+### Bug Fixes
+
+* enhance ripgrep binary search on macOS with multiple paths and improved logging [#426](https://github.com/unit-mesh/auto-dev/issues/426) ([acc75b1](https://github.com/unit-mesh/auto-dev/commit/acc75b1a1a643e9a16a768a908fd360a21c9b54e))
+* update macOS binary path for Ripgrep to include Homebrew location and fixed [#426](https://github.com/unit-mesh/auto-dev/issues/426) ([4383512](https://github.com/unit-mesh/auto-dev/commit/4383512147b3ae9d4bce1b094d5e6dc315652005))
+* update URLs for custom action and living documentation links and fixed [#247](https://github.com/unit-mesh/auto-dev/issues/247) ([d1ca93b](https://github.com/unit-mesh/auto-dev/commit/d1ca93ba24b73b7b1d5e1da5792a0d488fdb080f))
+
+### Features
+
+* **a2a:** add agent card and list panels with UI integration [#435](https://github.com/unit-mesh/auto-dev/issues/435) ([66c25ed](https://github.com/unit-mesh/auto-dev/commit/66c25edf233b659a3f9dfdbe44ac8ec2ec5bdcba))
+* **a2a:** serialize SendMessageResponse result with Jackson [#435](https://github.com/unit-mesh/auto-dev/issues/435) ([52cf1a9](https://github.com/unit-mesh/auto-dev/commit/52cf1a992aacf70e3b3a99f88922ad3097abee86))
+* add A2AClientConsumer class for A2A client connection and update dependencies [#429](https://github.com/unit-mesh/auto-dev/issues/429) ([1634bf8](https://github.com/unit-mesh/auto-dev/commit/1634bf81361265449bd5c213e5ce3b19a2beefd3))
+* enhance A2AClientConsumer with server initialization and message sending capabilities [#435](https://github.com/unit-mesh/auto-dev/issues/435) ([84e9560](https://github.com/unit-mesh/auto-dev/commit/84e9560a817e80f1c5b337f81ce22c673e89b422))
+* implement ToolAgentCard class with A2A and MCP protocol compatibility and add unit tests [#435](https://github.com/unit-mesh/auto-dev/issues/435) ([946b61d](https://github.com/unit-mesh/auto-dev/commit/946b61d5065b35d5a2756ce4c078f230e56f050c))
 
 ## [2.2.3](https://github.com/unit-mesh/auto-dev/compare/v2.2.2...v[2.2.3]) (2025-08-11)
 
@@ -2288,7 +2335,9 @@
 * update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 * use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.2.3...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/unit-mesh/auto-dev/compare/v2.2.4...v2.4.0
+[2.2.4]: https://github.com/unit-mesh/auto-dev/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/unit-mesh/auto-dev/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/unit-mesh/auto-dev/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/unit-mesh/auto-dev/compare/v2.1.3...v2.2.1
