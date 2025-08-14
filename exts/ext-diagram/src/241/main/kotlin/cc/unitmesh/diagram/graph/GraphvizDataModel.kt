@@ -1,4 +1,4 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.graph
 
 import com.intellij.diagram.DiagramDataModel
 import com.intellij.diagram.DiagramEdge

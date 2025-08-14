@@ -6,13 +6,13 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Register file types -->
-        <fileType name="DOT" implementationClass="cc.unitmesh.diagram.DotFileType"
+        <fileType name="DOT" implementationClass="cc.unitmesh.diagram.idea.DotFileType"
                   fieldName="INSTANCE" extensions="dot;gv;graphviz"/>
-        <fileType name="Mermaid" implementationClass="cc.unitmesh.diagram.MermaidFileType"
+        <fileType name="Mermaid" implementationClass="cc.unitmesh.diagram.idea.MermaidFileType"
                   fieldName="INSTANCE" extensions="mmd;mermaid"/>
 
         <!-- Register Graphviz diagram provider -->
-        <diagram.Provider implementation="cc.unitmesh.diagram.GraphvizUmlProvider"/>
+        <diagram.Provider implementation="cc.unitmesh.diagram.sketch.GraphvizUmlProvider"/>
 
         <!-- Register project service -->
         <projectService serviceImplementation="cc.unitmesh.diagram.GraphvizDiagramService"/>

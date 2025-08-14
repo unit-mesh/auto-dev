@@ -1,11 +1,22 @@
-package cc.unitmesh.diagram
+package cc.unitmesh.diagram.sketch
 
-import com.intellij.diagram.*
+import cc.unitmesh.diagram.GraphvizElementManager
+import cc.unitmesh.diagram.GraphvizNodeCategoryManager
+import cc.unitmesh.diagram.GraphvizVfsResolver
+import cc.unitmesh.diagram.graph.GraphvizDataModel
+import cc.unitmesh.diagram.model.GraphvizNodeData
+import com.intellij.diagram.DiagramDataModel
+import com.intellij.diagram.DiagramElementManager
+import com.intellij.diagram.DiagramNodeContentManager
+import com.intellij.diagram.DiagramPresentationModel
+import com.intellij.diagram.DiagramProvider
+import com.intellij.diagram.DiagramRelationshipManager
+import com.intellij.diagram.DiagramVfsResolver
+import com.intellij.diagram.DiagramVisibilityManager
+import com.intellij.diagram.EmptyDiagramVisibilityManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.intellij.lang.annotations.Pattern
-import cc.unitmesh.diagram.model.GraphvizNodeData
-import com.intellij.diagram.DiagramRelationshipManager.NO_RELATIONSHIP_MANAGER
 
 /**
  * Main provider for Graphviz diagrams
@@ -49,7 +60,7 @@ class GraphvizUmlProvider : DiagramProvider<GraphvizNodeData>() {
 
     @Suppress("UNCHECKED_CAST")
     override fun getRelationshipManager(): DiagramRelationshipManager<GraphvizNodeData> {
-        return NO_RELATIONSHIP_MANAGER as DiagramRelationshipManager<GraphvizNodeData>
+        return DiagramRelationshipManager.NO_RELATIONSHIP_MANAGER as DiagramRelationshipManager<GraphvizNodeData>
     }
 
     override fun createNodeContentManager(): DiagramNodeContentManager = GraphvizNodeCategoryManager()

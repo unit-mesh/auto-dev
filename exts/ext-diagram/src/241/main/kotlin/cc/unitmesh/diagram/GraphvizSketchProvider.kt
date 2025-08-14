@@ -3,6 +3,7 @@ package cc.unitmesh.diagram
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.preview.FileEditorPreviewSketch
+import cc.unitmesh.diagram.idea.DotFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile

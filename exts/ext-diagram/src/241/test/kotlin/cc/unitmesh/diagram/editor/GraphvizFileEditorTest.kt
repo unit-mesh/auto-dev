@@ -1,7 +1,6 @@
 package cc.unitmesh.diagram.editor
 
-import cc.unitmesh.diagram.DotFileType
-import com.intellij.testFramework.LightVirtualFile
+import cc.unitmesh.diagram.idea.DotFileType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 

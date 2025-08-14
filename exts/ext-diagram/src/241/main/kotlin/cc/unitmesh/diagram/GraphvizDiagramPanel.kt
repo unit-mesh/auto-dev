@@ -1,6 +1,7 @@
 package cc.unitmesh.diagram
 
 import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
+import cc.unitmesh.diagram.sketch.GraphvizUmlProvider
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramBuilderFactory
 import com.intellij.ide.DataManager

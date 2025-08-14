@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.editor.mermaid
 
-import cc.unitmesh.diagram.MermaidFileType
+import cc.unitmesh.diagram.idea.MermaidFileType
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
