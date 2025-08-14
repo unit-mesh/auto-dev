@@ -105,7 +105,7 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
                     beforeClass != null && afterClass != null -> {
                         val changes = analyzeClassChanges(beforeClass, afterClass)
                         if (changes.hasStructuralChanges()) {
-                            generateModifiedClassDefinition(builder, beforeClass, afterClass, changes)
+                            generateModifiedClassDefinition(builder, beforeClass, afterClass)
                         } else {
                             generateClassDefinition(builder, afterClass, "")
                         }
@@ -186,8 +186,7 @@ class StructureDiagramBuilder(val project: Project, val changes: List<Change>) {
     private fun generateModifiedClassDefinition(
         builder: StringBuilder,
         beforeClass: ClassContext,
-        afterClass: ClassContext,
-        changes: ClassChanges
+        afterClass: ClassContext
     ) {
         val className = afterClass.name ?: return
         val sanitizedClassName = sanitizeClassName(className)
