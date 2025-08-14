@@ -3,7 +3,7 @@ package cc.unitmesh.diagram.model
 /**
  * Represents an edge/connection between two nodes in a Graphviz graph
  */
-data class GraphvizEdgeData(
+data class GraphEdgeData(
     val sourceNodeId: String,
     val targetNodeId: String,
     val label: String? = null,

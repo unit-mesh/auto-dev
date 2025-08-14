@@ -9,9 +9,9 @@ import javax.swing.Icon
  * Root data for Graphviz diagram, representing a DOT file
  * Similar to JdlDiagramRootData in JHipster UML implementation
  */
-class GraphvizDiagramRootData(
+class GraphDiagramRootData(
     private val virtualFilePointer: VirtualFilePointer
-) : GraphvizNodeData {
+) : GraphNodeData {
     
     private val name: String = virtualFilePointer.fileName ?: "Unknown"
     

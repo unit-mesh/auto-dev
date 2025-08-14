@@ -5,25 +5,25 @@ import com.intellij.diagram.DiagramNode
 import com.intellij.diagram.DiagramRelationshipInfo
 import com.intellij.diagram.DiagramRelationshipInfoAdapter
 import com.intellij.diagram.presentation.DiagramLineType
-import cc.unitmesh.diagram.model.GraphvizNodeData
-import cc.unitmesh.diagram.model.GraphvizEdgeData
+import cc.unitmesh.diagram.model.GraphNodeData
+import cc.unitmesh.diagram.model.GraphEdgeData
 import cc.unitmesh.diagram.model.GraphvizEdgeType
 
 /**
  * Diagram edge implementation for Graphviz graphs
  * Similar to JdlDiagramEntityEdge in JHipster UML implementation
  */
-class GraphvizEntityEdge(
-    source: DiagramNode<GraphvizNodeData>,
-    target: DiagramNode<GraphvizNodeData>,
-    private val edgeData: GraphvizEdgeData
-) : DiagramEdgeBase<GraphvizNodeData>(source, target, createRelationshipInfo(edgeData)) {
+class CodeTopologyEntityEdge(
+    source: DiagramNode<GraphNodeData>,
+    target: DiagramNode<GraphNodeData>,
+    private val edgeData: GraphEdgeData
+) : DiagramEdgeBase<GraphNodeData>(source, target, createRelationshipInfo(edgeData)) {
     
     companion object Companion {
         /**
          * Create relationship info based on edge data
          */
-        private fun createRelationshipInfo(edgeData: GraphvizEdgeData): DiagramRelationshipInfo {
+        private fun createRelationshipInfo(edgeData: GraphEdgeData): DiagramRelationshipInfo {
             val builder = DiagramRelationshipInfoAdapter.Builder()
             
             // Set name
@@ -93,11 +93,11 @@ class GraphvizEntityEdge(
     /**
      * Get the edge data
      */
-    fun getEdgeData(): GraphvizEdgeData = edgeData
+    fun getEdgeData(): GraphEdgeData = edgeData
     
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GraphvizEntityEdge) return false
+        if (other !is CodeTopologyEntityEdge) return false
         return edgeData == other.edgeData
     }
     

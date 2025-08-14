@@ -18,8 +18,8 @@ import javax.swing.Icon
  * Element manager for Graphviz diagrams
  * Similar to JdlUmlElementManager in JHipster UML implementation
  */
-class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>() {
-    override fun findInDataContext(dataContext: DataContext): GraphvizNodeData? {
+class CodeTopologyElementManager : AbstractDiagramElementManager<GraphNodeData>() {
+    override fun findInDataContext(dataContext: DataContext): GraphNodeData? {
         val psiFile = CommonDataKeys.PSI_FILE.getData(dataContext) ?: return null
         val virtualFile = psiFile.virtualFile ?: return null
         if (!isDotFile(virtualFile)) return null
@@ -27,31 +27,31 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
     }
     
     override fun isAcceptableAsNode(element: Any?): Boolean {
-        return element is GraphvizEntityNodeData || element is GraphvizSimpleNodeData
+        return element is GraphEntityNodeData || element is GraphSimpleNodeData
     }
 
     /**
      * Get node items (fields for entities, attributes for simple nodes)
      */
-    override fun getNodeItems(nodeElement: GraphvizNodeData): Array<Any> {
+    override fun getNodeItems(nodeElement: GraphNodeData): Array<Any> {
         return when (nodeElement) {
-            is GraphvizEntityNodeData -> nodeElement.getFields().toTypedArray()
-            is GraphvizSimpleNodeData -> {
+            is GraphEntityNodeData -> nodeElement.getFields().toTypedArray()
+            is GraphSimpleNodeData -> {
                 nodeElement.getAttributes().map { (key, value) ->
-                    GraphvizAttributeItem(key, value)
+                    GraphAttributeItem(key, value)
                 }.toTypedArray()
             }
             else -> ArrayUtil.EMPTY_OBJECT_ARRAY
         }
     }
     
-    override fun getElementTitle(element: GraphvizNodeData): String? {
+    override fun getElementTitle(element: GraphNodeData): String? {
         return element.getName()
     }
     
-    override fun getNodeTooltip(element: GraphvizNodeData): String? {
+    override fun getNodeTooltip(element: GraphNodeData): String? {
         return when (element) {
-            is GraphvizEntityNodeData -> {
+            is GraphEntityNodeData -> {
                 buildString {
                     append("Entity: ${element.getName()}")
                     append("\nFields: ${element.getFields().size}")
@@ -67,7 +67,7 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
                     }
                 }
             }
-            is GraphvizSimpleNodeData -> {
+            is GraphSimpleNodeData -> {
                 buildString {
                     append("Node: ${element.getName()}")
                     if (element.getDisplayLabel() != element.getName()) {
@@ -83,16 +83,16 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
     }
 
     override fun canBeBuiltFrom(element: Any?): Boolean {
-        return element is GraphvizDiagramRootData || super.canBeBuiltFrom(element)
+        return element is GraphDiagramRootData || super.canBeBuiltFrom(element)
     }
 
     override fun getItemName(
-        nodeElement: GraphvizNodeData?,
+        nodeElement: GraphNodeData?,
         nodeItem: Any?,
         builder: DiagramBuilder
     ): SimpleColoredText? {
         return when (nodeItem) {
-            is GraphvizNodeField -> {
+            is GraphNodeField -> {
                 val displayName = nodeItem.getDisplayName()
                 val attributes = when (nodeItem.changeStatus) {
                     ChangeStatus.ADDED -> SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
@@ -101,55 +101,55 @@ class GraphvizElementManager : AbstractDiagramElementManager<GraphvizNodeData>()
                 }
                 SimpleColoredText(displayName, attributes)
             }
-            is GraphvizAttributeItem -> SimpleColoredText(nodeItem.key, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            is GraphAttributeItem -> SimpleColoredText(nodeItem.key, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             else -> null
         }
     }
 
     override fun getItemType(
-        nodeElement: GraphvizNodeData?,
+        nodeElement: GraphNodeData?,
         nodeItem: Any?,
         builder: DiagramBuilder?
     ): SimpleColoredText? {
         return when (nodeItem) {
-            is GraphvizNodeField -> {
+            is GraphNodeField -> {
                 nodeItem.type?.let {
                     SimpleColoredText(it, SimpleTextAttributes.REGULAR_ATTRIBUTES)
                 }
             }
-            is GraphvizAttributeItem -> SimpleColoredText(nodeItem.value, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            is GraphAttributeItem -> SimpleColoredText(nodeItem.value, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             else -> null
         }
     }
 
     override fun getItemIcon(
-        nodeElement: GraphvizNodeData?,
+        nodeElement: GraphNodeData?,
         nodeItem: Any?,
         builder: DiagramBuilder?
     ): Icon? {
         return when (nodeItem) {
-            is GraphvizNodeField -> {
+            is GraphNodeField -> {
                 if (nodeItem.isRequired()) {
                     PlatformIcons.FIELD_ICON // Could use a different icon for required fields
                 } else {
                     PlatformIcons.FIELD_ICON
                 }
             }
-            is GraphvizAttributeItem -> PlatformIcons.METHOD_ICON
+            is GraphAttributeItem -> PlatformIcons.METHOD_ICON
             else -> null
         }
     }
     
-    companion object {
+    companion object Companion {
         /**
          * Create root data for a DOT file
          */
-        fun getRootData(project: Project, virtualFile: VirtualFile): GraphvizDiagramRootData {
-            val disposable = project.getService(GraphvizDiagramService::class.java)
+        fun getRootData(project: Project, virtualFile: VirtualFile): GraphDiagramRootData {
+            val disposable = project.getService(CodeTopologyDiagramService::class.java)
             val filePointer = VirtualFilePointerManager.getInstance()
                 .create(virtualFile, disposable, null)
             
-            return GraphvizDiagramRootData(filePointer)
+            return GraphDiagramRootData(filePointer)
         }
         
         /**

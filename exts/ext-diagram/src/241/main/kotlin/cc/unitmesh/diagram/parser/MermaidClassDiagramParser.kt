@@ -15,7 +15,7 @@ class MermaidClassDiagramParser {
     /**
      * Parse Mermaid class diagram content from string
      */
-    fun parse(mermaidContent: String): GraphvizDiagramData {
+    fun parse(mermaidContent: String): GraphDiagramData {
         return try {
             // Use the new lexer and parser
             val lexer = MermaidLexer(mermaidContent)
@@ -44,16 +44,16 @@ class MermaidClassDiagramParser {
     /**
      * Parse Mermaid class diagram from AST
      */
-    fun parse(ast: ClassDiagramNode): GraphvizDiagramData {
+    fun parse(ast: ClassDiagramNode): GraphDiagramData {
         return convertAstToGraphvizData(ast)
     }
 
     /**
      * Convert AST to GraphvizDiagramData
      */
-    private fun convertAstToGraphvizData(ast: ClassDiagramNode): GraphvizDiagramData {
-        val entities = mutableMapOf<String, MutableList<GraphvizNodeField>>()
-        val edges = mutableListOf<GraphvizEdgeData>()
+    private fun convertAstToGraphvizData(ast: ClassDiagramNode): GraphDiagramData {
+        val entities = mutableMapOf<String, MutableList<GraphNodeField>>()
+        val edges = mutableListOf<GraphEdgeData>()
         val graphAttributes = mutableMapOf<String, String>()
 
         // Process all statements
@@ -132,22 +132,22 @@ class MermaidClassDiagramParser {
 
         // Convert entities map to list
         val entityList = entities.map { (className, fields) ->
-            GraphvizEntityNodeData(className, fields)
+            GraphEntityNodeData(className, fields)
         }
 
-        return GraphvizDiagramData(
+        return GraphDiagramData(
             nodes = emptyList(),
             entities = entityList,
             edges = edges,
             graphAttributes = graphAttributes,
-            graphType = GraphvizGraphType.DIGRAPH
+            graphType = GraphGraphType.DIGRAPH
         )
     }
     
     /**
      * Convert AST member node to GraphvizNodeField
      */
-    private fun convertMemberToField(member: MemberNode): GraphvizNodeField {
+    private fun convertMemberToField(member: MemberNode): GraphNodeField {
         val visibilitySymbol = when (member.visibility) {
             VisibilityType.PUBLIC -> "+"
             VisibilityType.PRIVATE -> "-"
@@ -177,7 +177,7 @@ class MermaidClassDiagramParser {
             cc.unitmesh.diagram.parser.mermaid.ChangeStatus.UNCHANGED -> "$visibilitySymbol$name"
         }
 
-        return GraphvizNodeField(
+        return GraphNodeField(
             name = nameWithChangeStatus,
             type = member.type ?: if (member.isMethod) "method" else "field",
             required = false,
@@ -189,7 +189,7 @@ class MermaidClassDiagramParser {
     /**
      * Convert AST relation node to GraphvizEdgeData
      */
-    private fun convertRelationToEdge(relation: RelationStatementNode): GraphvizEdgeData {
+    private fun convertRelationToEdge(relation: RelationStatementNode): GraphEdgeData {
         val attributes = mutableMapOf<String, String>()
 
         // Determine arrow style based on relation types
@@ -233,7 +233,7 @@ class MermaidClassDiagramParser {
             relation.sourceClass to relation.targetClass
         }
 
-        return GraphvizEdgeData(
+        return GraphEdgeData(
             sourceNodeId = actualSource,
             targetNodeId = actualTarget,
             label = label,
@@ -242,13 +242,13 @@ class MermaidClassDiagramParser {
         )
     }
 
-    private fun createEmptyData(): GraphvizDiagramData {
-        return GraphvizDiagramData(
+    private fun createEmptyData(): GraphDiagramData {
+        return GraphDiagramData(
             nodes = emptyList(),
             entities = emptyList(),
             edges = emptyList(),
             graphAttributes = emptyMap(),
-            graphType = GraphvizGraphType.DIGRAPH
+            graphType = GraphGraphType.DIGRAPH
         )
     }
 

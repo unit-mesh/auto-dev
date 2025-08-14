@@ -14,36 +14,36 @@ import cc.unitmesh.diagram.parser.DotFileParser
  * Data model for Graphviz diagrams
  * Similar to JdlUmlDataModel in JHipster UML implementation
  */
-class GraphvizDataModel(
+class CodeTopologyDataModel(
     project: Project,
-    provider: DiagramProvider<GraphvizNodeData>,
-    private val seedData: GraphvizNodeData?
-) : DiagramDataModel<GraphvizNodeData>(project, provider) {
+    provider: DiagramProvider<GraphNodeData>,
+    private val seedData: GraphNodeData?
+) : DiagramDataModel<GraphNodeData>(project, provider) {
 
-    private val nodes = mutableListOf<GraphvizDiagramNode>()
-    private val edges = mutableListOf<DiagramEdge<GraphvizNodeData>>()
-    private var diagramData: GraphvizDiagramData? = null
+    private val nodes = mutableListOf<CodeTopologyDiagramNode>()
+    private val edges = mutableListOf<DiagramEdge<GraphNodeData>>()
+    private var diagramData: GraphDiagramData? = null
 
     override fun getModificationTracker(): ModificationTracker {
         return PsiModificationTracker.getInstance(project)
     }
 
-    override fun getNodes(): Collection<DiagramNode<GraphvizNodeData>> {
+    override fun getNodes(): Collection<DiagramNode<GraphNodeData>> {
         return nodes
     }
 
-    override fun getNodeName(diagramNode: DiagramNode<GraphvizNodeData>): String {
+    override fun getNodeName(diagramNode: DiagramNode<GraphNodeData>): String {
         return diagramNode.identifyingElement.getName()
     }
 
-    override fun addElement(data: GraphvizNodeData?): DiagramNode<GraphvizNodeData>? {
+    override fun addElement(data: GraphNodeData?): DiagramNode<GraphNodeData>? {
         if (data == null) return null
 
-        if (data is GraphvizDiagramRootData) {
+        if (data is GraphDiagramRootData) {
             // Parse the DOT file and create nodes/edges
             this.diagramData = extractData(project, data)
 
-            val nodeMapping = mutableMapOf<String, DiagramNode<GraphvizNodeData>>()
+            val nodeMapping = mutableMapOf<String, DiagramNode<GraphNodeData>>()
 
             // Add all nodes
             diagramData?.nodes?.forEach { nodeData ->
@@ -67,19 +67,19 @@ class GraphvizDataModel(
                 val targetNode = nodeMapping[edgeData.targetNodeId]
 
                 if (sourceNode != null && targetNode != null) {
-                    edges.add(GraphvizEntityEdge(sourceNode, targetNode, edgeData))
+                    edges.add(CodeTopologyEntityEdge(sourceNode, targetNode, edgeData))
                 }
             }
 
             return null
         }
 
-        val node = GraphvizDiagramNode(data, provider)
+        val node = CodeTopologyDiagramNode(data, provider)
         nodes.add(node)
         return node
     }
 
-    override fun getEdges(): Collection<DiagramEdge<GraphvizNodeData>> {
+    override fun getEdges(): Collection<DiagramEdge<GraphNodeData>> {
         return edges
     }
 
@@ -90,7 +90,7 @@ class GraphvizDataModel(
     }
 
     override fun refreshDataModel() {
-        if (seedData is GraphvizDiagramRootData) {
+        if (seedData is GraphDiagramRootData) {
             val newDiagramData = extractData(project, seedData)
 
             if (newDiagramData == diagramData) return // nothing changed
@@ -105,14 +105,14 @@ class GraphvizDataModel(
         }
     }
 
-    companion object {
+    companion object Companion {
         /**
          * Extract diagram data from a DOT file
          */
-        fun extractData(project: Project, rootData: GraphvizDiagramRootData): GraphvizDiagramData {
+        fun extractData(project: Project, rootData: GraphDiagramRootData): GraphDiagramData {
             val virtualFile = rootData.getVirtualFile()
             if (virtualFile == null || !virtualFile.exists()) {
-                return GraphvizDiagramData(
+                return GraphDiagramData(
                     nodes = emptyList(),
                     entities = emptyList(),
                     edges = emptyList()
@@ -125,7 +125,7 @@ class GraphvizDataModel(
                 parser.parse(content)
             } catch (e: Exception) {
                 // Return empty data if parsing fails
-                GraphvizDiagramData(
+                GraphDiagramData(
                     nodes = emptyList(),
                     entities = emptyList(),
                     edges = emptyList()

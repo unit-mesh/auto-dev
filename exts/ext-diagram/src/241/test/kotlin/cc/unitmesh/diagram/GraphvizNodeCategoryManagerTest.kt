@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram
 
-import cc.unitmesh.diagram.diagram.GraphvizNodeCategoryManager
+import cc.unitmesh.diagram.diagram.CodeTopologyNodeCategoryManager
 import cc.unitmesh.diagram.model.*
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -8,11 +8,11 @@ import kotlin.test.assertFalse
 
 class GraphvizNodeCategoryManagerTest {
     
-    private val categoryManager = GraphvizNodeCategoryManager()
+    private val categoryManager = CodeTopologyNodeCategoryManager()
     
     @Test
     fun `should categorize unchanged fields correctly`() {
-        val field = GraphvizNodeField(
+        val field = GraphNodeField(
             name = "id",
             type = "String",
             required = false,
@@ -28,7 +28,7 @@ class GraphvizNodeCategoryManagerTest {
     
     @Test
     fun `should categorize unchanged methods correctly`() {
-        val method = GraphvizNodeField(
+        val method = GraphNodeField(
             name = "save()",
             type = "void",
             required = false,
@@ -44,7 +44,7 @@ class GraphvizNodeCategoryManagerTest {
     
     @Test
     fun `should categorize added fields correctly`() {
-        val field = GraphvizNodeField(
+        val field = GraphNodeField(
             name = "email",
             type = "String",
             required = false,
@@ -60,7 +60,7 @@ class GraphvizNodeCategoryManagerTest {
     
     @Test
     fun `should categorize added methods correctly`() {
-        val method = GraphvizNodeField(
+        val method = GraphNodeField(
             name = "delete()",
             type = "void",
             required = false,
@@ -76,7 +76,7 @@ class GraphvizNodeCategoryManagerTest {
     
     @Test
     fun `should categorize removed fields correctly`() {
-        val field = GraphvizNodeField(
+        val field = GraphNodeField(
             name = "oldField",
             type = "String",
             required = false,
@@ -92,7 +92,7 @@ class GraphvizNodeCategoryManagerTest {
     
     @Test
     fun `should categorize removed methods correctly`() {
-        val method = GraphvizNodeField(
+        val method = GraphNodeField(
             name = "oldMethod()",
             type = "void",
             required = false,
@@ -108,7 +108,7 @@ class GraphvizNodeCategoryManagerTest {
     
     @Test
     fun `should not categorize fields in wrong categories`() {
-        val field = GraphvizNodeField(
+        val field = GraphNodeField(
             name = "name",
             type = "String",
             required = false,
@@ -129,7 +129,7 @@ class GraphvizNodeCategoryManagerTest {
     
     @Test
     fun `should categorize attributes correctly`() {
-        val attribute = GraphvizAttributeItem("color", "red")
+        val attribute = GraphAttributeItem("color", "red")
         
         val categories = categoryManager.getContentCategories()
         val attributesCategory = categories.find { it.name == "Attributes" }!!

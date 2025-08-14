@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram
 
-import cc.unitmesh.diagram.diagram.GraphvizNodeCategoryManager
+import cc.unitmesh.diagram.diagram.CodeTopologyNodeCategoryManager
 import cc.unitmesh.diagram.diff.DiagramDiffUtils
 import cc.unitmesh.diagram.model.ChangeStatus
 import cc.unitmesh.diagram.parser.MermaidClassDiagramParser
@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 class IntegrationDiffTest {
     
     private val parser = MermaidClassDiagramParser()
-    private val categoryManager = GraphvizNodeCategoryManager()
+    private val categoryManager = CodeTopologyNodeCategoryManager()
     
     @Test
     fun `should parse and categorize mermaid diagram with changes`() {
@@ -104,21 +104,21 @@ class IntegrationDiffTest {
     
     @Test
     fun `should generate correct display names with change prefixes`() {
-        val addedField = cc.unitmesh.diagram.model.GraphvizNodeField(
+        val addedField = cc.unitmesh.diagram.model.GraphNodeField(
             name = "email",
             type = "String",
             changeStatus = ChangeStatus.ADDED,
             isMethodField = false
         )
         
-        val removedMethod = cc.unitmesh.diagram.model.GraphvizNodeField(
+        val removedMethod = cc.unitmesh.diagram.model.GraphNodeField(
             name = "delete()",
             type = "void",
             changeStatus = ChangeStatus.REMOVED,
             isMethodField = true
         )
         
-        val unchangedField = cc.unitmesh.diagram.model.GraphvizNodeField(
+        val unchangedField = cc.unitmesh.diagram.model.GraphNodeField(
             name = "id",
             type = "String",
             changeStatus = ChangeStatus.UNCHANGED,

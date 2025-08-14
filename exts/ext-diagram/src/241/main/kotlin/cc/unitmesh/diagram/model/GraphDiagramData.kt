@@ -4,28 +4,28 @@ package cc.unitmesh.diagram.model
  * Container for all diagram data extracted from a DOT file
  * Similar to JdlDiagramData in JHipster UML implementation
  */
-data class GraphvizDiagramData(
-    val nodes: Collection<GraphvizSimpleNodeData>,
-    val entities: Collection<GraphvizEntityNodeData> = emptyList(),
-    val edges: Collection<GraphvizEdgeData>,
+data class GraphDiagramData(
+    val nodes: Collection<GraphSimpleNodeData>,
+    val entities: Collection<GraphEntityNodeData> = emptyList(),
+    val edges: Collection<GraphEdgeData>,
     val graphAttributes: Map<String, String> = emptyMap(),
-    val graphType: GraphvizGraphType = GraphvizGraphType.DIGRAPH
+    val graphType: GraphGraphType = GraphGraphType.DIGRAPH
 ) {
-    fun getNodeById(id: String): GraphvizSimpleNodeData? {
+    fun getNodeById(id: String): GraphSimpleNodeData? {
         return nodes.find { it.getName() == id }
     }
 
-    fun getEdgesFromNode(nodeId: String): List<GraphvizEdgeData> {
+    fun getEdgesFromNode(nodeId: String): List<GraphEdgeData> {
         return edges.filter { it.sourceNodeId == nodeId }
     }
 
-    fun getEdgesToNode(nodeId: String): List<GraphvizEdgeData> {
+    fun getEdgesToNode(nodeId: String): List<GraphEdgeData> {
         return edges.filter { it.targetNodeId == nodeId }
     }
 
     fun getGraphAttribute(key: String): String? = graphAttributes[key]
     
-    fun getEntityByName(name: String): GraphvizEntityNodeData? {
+    fun getEntityByName(name: String): GraphEntityNodeData? {
         return entities.find { it.getName() == name }
     }
 
@@ -39,7 +39,7 @@ data class GraphvizDiagramData(
 /**
  * Types of Graphviz graphs
  */
-enum class GraphvizGraphType {
+enum class GraphGraphType {
     GRAPH,      // Undirected graph
     DIGRAPH,    // Directed graph
     SUBGRAPH    // Subgraph

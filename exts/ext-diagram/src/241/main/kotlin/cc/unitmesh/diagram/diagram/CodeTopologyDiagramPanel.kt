@@ -1,7 +1,7 @@
 package cc.unitmesh.diagram.diagram
 
 import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
-import cc.unitmesh.diagram.sketch.GraphvizUmlProvider
+import cc.unitmesh.diagram.sketch.CodeTopologyUmlProvider
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramBuilderFactory
 import com.intellij.ide.DataManager
@@ -24,10 +24,10 @@ import javax.swing.JPanel
  * Panel for displaying Graphviz diagrams
  * Similar to JdlDiagramPanel in JHipster UML implementation
  */
-class GraphvizDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : Disposable {
+class CodeTopologyDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : Disposable {
     private var builder: DiagramBuilder? = null
     private val chartPanel = MyPanel()
-    private val umlProvider = GraphvizUmlProvider()
+    private val umlProvider = CodeTopologyUmlProvider()
 
     override fun dispose() {}
 
@@ -39,7 +39,7 @@ class GraphvizDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : D
         if (builder == null) {
             val project = fileEditor.getProject()
             val virtualFile = fileEditor.getFile()
-            val rootData = GraphvizElementManager.getRootData(project, virtualFile)
+            val rootData = CodeTopologyElementManager.getRootData(project, virtualFile)
 
             builder = DiagramBuilderFactory.getInstance()
                 .create(project, umlProvider, rootData, null)

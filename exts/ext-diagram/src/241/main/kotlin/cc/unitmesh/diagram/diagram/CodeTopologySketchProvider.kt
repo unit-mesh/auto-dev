@@ -12,7 +12,7 @@ import com.intellij.testFramework.LightVirtualFile
  * Language sketch provider for Graphviz DOT files
  * Provides LangSketch support for rendering DOT files in the AutoDev tool window
  */
-class GraphvizSketchProvider : LanguageSketchProvider {
+class CodeTopologySketchProvider : LanguageSketchProvider {
     
     override fun isSupported(lang: String): Boolean {
         val normalizedLang = lang.lowercase()

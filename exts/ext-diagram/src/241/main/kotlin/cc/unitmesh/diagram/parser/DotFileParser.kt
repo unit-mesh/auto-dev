@@ -12,7 +12,7 @@ import guru.nidi.graphviz.parse.Parser
 class DotFileParser {
     private val mermaidParser = MermaidClassDiagramParser()
 
-    fun parse(content: String): GraphvizDiagramData {
+    fun parse(content: String): GraphDiagramData {
         return try {
             if (isMermaidClassDiagram(content)) {
                 mermaidParser.parse(content)
@@ -21,12 +21,12 @@ class DotFileParser {
                 convertToGraphvizData(graph)
             }
         } catch (e: Exception) {
-            GraphvizDiagramData(
+            GraphDiagramData(
                 nodes = emptyList(),
                 entities = emptyList(),
                 edges = emptyList(),
                 graphAttributes = emptyMap(),
-                graphType = GraphvizGraphType.DIGRAPH
+                graphType = GraphGraphType.DIGRAPH
             )
         }
     }
@@ -36,16 +36,16 @@ class DotFileParser {
         return content.contains("classDiagram")
     }
 
-    private fun convertToGraphvizData(graph: MutableGraph): GraphvizDiagramData {
-        val nodes = mutableListOf<GraphvizSimpleNodeData>()
-        val entities = mutableListOf<GraphvizEntityNodeData>()
-        val edges = mutableListOf<GraphvizEdgeData>()
+    private fun convertToGraphvizData(graph: MutableGraph): GraphDiagramData {
+        val nodes = mutableListOf<GraphSimpleNodeData>()
+        val entities = mutableListOf<GraphEntityNodeData>()
+        val edges = mutableListOf<GraphEdgeData>()
         
         // Extract graph type
         val graphType = if (graph.isDirected) {
-            GraphvizGraphType.DIGRAPH
+            GraphGraphType.DIGRAPH
         } else {
-            GraphvizGraphType.GRAPH
+            GraphGraphType.GRAPH
         }
         
         // Extract graph attributes
@@ -83,7 +83,7 @@ class DotFileParser {
                 val fields = parseRecordFields(label)
                 if (fields.isNotEmpty()) {
                     entities.add(
-                        GraphvizEntityNodeData(
+                        GraphEntityNodeData(
                             name = nodeId,
                             fields = fields
                         )
@@ -91,7 +91,7 @@ class DotFileParser {
                 } else {
                     // Fallback to simple node if no fields found
                     nodes.add(
-                        GraphvizSimpleNodeData(
+                        GraphSimpleNodeData(
                             id = nodeId,
                             label = if (label != nodeId) label else null,
                             attributes = nodeAttrs,
@@ -101,7 +101,7 @@ class DotFileParser {
                 }
             } else {
                 nodes.add(
-                    GraphvizSimpleNodeData(
+                    GraphSimpleNodeData(
                         id = nodeId,
                         label = if (label != nodeId) label else null,
                         attributes = nodeAttrs,
@@ -133,7 +133,7 @@ class DotFileParser {
             }
             
             edges.add(
-                GraphvizEdgeData(
+                GraphEdgeData(
                     sourceNodeId = sourceId,
                     targetNodeId = targetId,
                     label = label,
@@ -143,7 +143,7 @@ class DotFileParser {
             )
         }
         
-        return GraphvizDiagramData(
+        return GraphDiagramData(
             nodes = nodes,
             entities = entities,
             edges = edges,
@@ -159,7 +159,7 @@ class DotFileParser {
      * - "{field1:type1|field2:type2}"
      * - "{<port1>field1|<port2>field2:type2}"
      */
-    private fun parseRecordFields(label: String): List<GraphvizNodeField> {
+    private fun parseRecordFields(label: String): List<GraphNodeField> {
         if (label.isBlank()) return emptyList()
 
         // Remove outer braces if present
@@ -182,7 +182,7 @@ class DotFileParser {
      * - "fieldName:String" -> GraphvizNodeField("fieldName", "String", false)
      * - "<port>fieldName:String" -> GraphvizNodeField("fieldName", "String", false)
      */
-    private fun parseRecordField(fieldPart: String): GraphvizNodeField? {
+    private fun parseRecordField(fieldPart: String): GraphNodeField? {
         if (fieldPart.isBlank()) return null
 
         var cleanField = fieldPart
@@ -201,7 +201,7 @@ class DotFileParser {
         val fieldType = if (parts.size > 1) parts[1].trim().takeIf { it.isNotBlank() } else null
 
         return if (fieldName.isNotBlank()) {
-            GraphvizNodeField(
+            GraphNodeField(
                 name = fieldName,
                 type = fieldType,
                 required = false // Could be enhanced to detect required fields

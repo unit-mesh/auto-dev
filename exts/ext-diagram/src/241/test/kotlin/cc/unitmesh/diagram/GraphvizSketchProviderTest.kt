@@ -1,12 +1,12 @@
 package cc.unitmesh.diagram
 
-import cc.unitmesh.diagram.diagram.GraphvizSketchProvider
+import cc.unitmesh.diagram.diagram.CodeTopologySketchProvider
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
 class GraphvizSketchProviderTest {
     
-    private val provider = GraphvizSketchProvider()
+    private val provider = CodeTopologySketchProvider()
     
     @Test
     fun testSupportedLanguages() {

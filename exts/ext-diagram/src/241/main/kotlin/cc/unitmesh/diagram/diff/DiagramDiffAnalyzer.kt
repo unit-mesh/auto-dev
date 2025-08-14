@@ -11,7 +11,7 @@ class DiagramDiffAnalyzer {
     /**
      * Compare two diagram data structures and return a new diagram with change status annotations
      */
-    fun analyzeDiff(oldDiagram: GraphvizDiagramData?, newDiagram: GraphvizDiagramData): GraphvizDiagramData {
+    fun analyzeDiff(oldDiagram: GraphDiagramData?, newDiagram: GraphDiagramData): GraphDiagramData {
         if (oldDiagram == null) {
             // All elements in new diagram are additions
             return markAllAsAdded(newDiagram)
@@ -20,7 +20,7 @@ class DiagramDiffAnalyzer {
         val oldEntitiesMap = oldDiagram.entities.associateBy { it.getName() }
         val newEntitiesMap = newDiagram.entities.associateBy { it.getName() }
         
-        val resultEntities = mutableListOf<GraphvizEntityNodeData>()
+        val resultEntities = mutableListOf<GraphEntityNodeData>()
         
         // Process entities that exist in new diagram
         for (newEntity in newDiagram.entities) {
@@ -30,11 +30,11 @@ class DiagramDiffAnalyzer {
                 val addedFields = newEntity.getFields().map { field ->
                     field.copy(changeStatus = ChangeStatus.ADDED)
                 }
-                resultEntities.add(GraphvizEntityNodeData(newEntity.getName(), addedFields))
+                resultEntities.add(GraphEntityNodeData(newEntity.getName(), addedFields))
             } else {
                 // Entity exists in both - compare fields
                 val diffFields = compareFields(oldEntity.getFields(), newEntity.getFields())
-                resultEntities.add(GraphvizEntityNodeData(newEntity.getName(), diffFields))
+                resultEntities.add(GraphEntityNodeData(newEntity.getName(), diffFields))
             }
         }
         
@@ -45,7 +45,7 @@ class DiagramDiffAnalyzer {
                 val removedFields = oldEntity.getFields().map { field ->
                     field.copy(changeStatus = ChangeStatus.REMOVED)
                 }
-                resultEntities.add(GraphvizEntityNodeData(oldEntity.getName(), removedFields))
+                resultEntities.add(GraphEntityNodeData(oldEntity.getName(), removedFields))
             }
         }
         
@@ -55,12 +55,12 @@ class DiagramDiffAnalyzer {
     /**
      * Mark all elements in the diagram as added (used when there's no old diagram to compare with)
      */
-    private fun markAllAsAdded(diagram: GraphvizDiagramData): GraphvizDiagramData {
+    private fun markAllAsAdded(diagram: GraphDiagramData): GraphDiagramData {
         val addedEntities = diagram.entities.map { entity ->
             val addedFields = entity.getFields().map { field ->
                 field.copy(changeStatus = ChangeStatus.ADDED)
             }
-            GraphvizEntityNodeData(entity.getName(), addedFields)
+            GraphEntityNodeData(entity.getName(), addedFields)
         }
         
         return diagram.copy(entities = addedEntities)
@@ -69,11 +69,11 @@ class DiagramDiffAnalyzer {
     /**
      * Compare fields between old and new entity versions
      */
-    private fun compareFields(oldFields: List<GraphvizNodeField>, newFields: List<GraphvizNodeField>): List<GraphvizNodeField> {
+    private fun compareFields(oldFields: List<GraphNodeField>, newFields: List<GraphNodeField>): List<GraphNodeField> {
         val oldFieldsMap = oldFields.associateBy { getFieldKey(it) }
         val newFieldsMap = newFields.associateBy { getFieldKey(it) }
         
-        val resultFields = mutableListOf<GraphvizNodeField>()
+        val resultFields = mutableListOf<GraphNodeField>()
         
         // Process fields in new version
         for (newField in newFields) {
@@ -105,7 +105,7 @@ class DiagramDiffAnalyzer {
      * Generate a unique key for a field to enable comparison
      * Uses field name and method status to distinguish between fields and methods with same name
      */
-    private fun getFieldKey(field: GraphvizNodeField): String {
+    private fun getFieldKey(field: GraphNodeField): String {
         return "${field.name}:${field.isMethod()}"
     }
 }

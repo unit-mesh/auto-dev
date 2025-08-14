@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram
 
-import cc.unitmesh.diagram.diagram.GraphvizNodeCategoryManager
+import cc.unitmesh.diagram.diagram.CodeTopologyNodeCategoryManager
 import cc.unitmesh.diagram.diff.DiagramDiffUtils
 import cc.unitmesh.diagram.parser.MermaidClassDiagramParser
 import kotlin.test.Test
@@ -44,7 +44,7 @@ class DebugDiffTest {
         }
         
         // Test categorization
-        val categoryManager = GraphvizNodeCategoryManager()
+        val categoryManager = CodeTopologyNodeCategoryManager()
         val categories = categoryManager.getContentCategories()
         
         println("\n=== Categories ===")
@@ -109,7 +109,7 @@ class DebugDiffTest {
         }
         
         // Test categorization of diff result
-        val categoryManager = GraphvizNodeCategoryManager()
+        val categoryManager = CodeTopologyNodeCategoryManager()
         val categories = categoryManager.getContentCategories()
         
         println("\n=== Diff Categorization ===")

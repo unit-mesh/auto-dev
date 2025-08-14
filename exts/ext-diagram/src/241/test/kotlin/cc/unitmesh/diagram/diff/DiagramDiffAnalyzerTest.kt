@@ -21,25 +21,25 @@ class DiagramDiffAnalyzerTest {
     
     @Test
     fun `should detect added fields`() {
-        val oldDiagram = GraphvizDiagramData(
+        val oldDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
-                GraphvizEntityNodeData("User", listOf(
-                    GraphvizNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
+                GraphEntityNodeData("User", listOf(
+                    GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
             edges = emptyList()
         )
         
-        val newDiagram = GraphvizDiagramData(
+        val newDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
-                GraphvizEntityNodeData("User", listOf(
-                    GraphvizNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("email", "String", false, ChangeStatus.UNCHANGED, isMethodField = false), // New field
-                    GraphvizNodeField("save()", "void", false, ChangeStatus.UNCHANGED, isMethodField = true) // New method
+                GraphEntityNodeData("User", listOf(
+                    GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("email", "String", false, ChangeStatus.UNCHANGED, isMethodField = false), // New field
+                    GraphNodeField("save()", "void", false, ChangeStatus.UNCHANGED, isMethodField = true) // New method
                 ))
             ),
             edges = emptyList()
@@ -61,25 +61,25 @@ class DiagramDiffAnalyzerTest {
     
     @Test
     fun `should detect removed fields`() {
-        val oldDiagram = GraphvizDiagramData(
+        val oldDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
-                GraphvizEntityNodeData("User", listOf(
-                    GraphvizNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("email", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("delete()", "void", false, ChangeStatus.UNCHANGED, isMethodField = true)
+                GraphEntityNodeData("User", listOf(
+                    GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("email", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("delete()", "void", false, ChangeStatus.UNCHANGED, isMethodField = true)
                 ))
             ),
             edges = emptyList()
         )
         
-        val newDiagram = GraphvizDiagramData(
+        val newDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
-                GraphvizEntityNodeData("User", listOf(
-                    GraphvizNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
+                GraphEntityNodeData("User", listOf(
+                    GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
             edges = emptyList()
@@ -101,24 +101,24 @@ class DiagramDiffAnalyzerTest {
     
     @Test
     fun `should detect new entities`() {
-        val oldDiagram = GraphvizDiagramData(
+        val oldDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
-                GraphvizEntityNodeData("User", listOf(
-                    GraphvizNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
+                GraphEntityNodeData("User", listOf(
+                    GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
             edges = emptyList()
         )
         
-        val newDiagram = GraphvizDiagramData(
+        val newDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
-                GraphvizEntityNodeData("User", listOf(
-                    GraphvizNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
+                GraphEntityNodeData("User", listOf(
+                    GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 )),
-                GraphvizEntityNodeData("Product", listOf(
-                    GraphvizNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
+                GraphEntityNodeData("Product", listOf(
+                    GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
             edges = emptyList()
@@ -138,13 +138,13 @@ class DiagramDiffAnalyzerTest {
         assertEquals(ChangeStatus.ADDED, productEntity.getFields().first().changeStatus)
     }
     
-    private fun createSampleDiagram(): GraphvizDiagramData {
-        return GraphvizDiagramData(
+    private fun createSampleDiagram(): GraphDiagramData {
+        return GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
-                GraphvizEntityNodeData("User", listOf(
-                    GraphvizNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
-                    GraphvizNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
+                GraphEntityNodeData("User", listOf(
+                    GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false),
+                    GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
             edges = emptyList()

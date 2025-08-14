@@ -4,7 +4,7 @@ package cc.unitmesh.diagram.model
  * Represents a field/property of a Graphviz node
  * Similar to JdlEntityNodeField in JHipster UML implementation
  */
-data class GraphvizNodeField(
+data class GraphNodeField(
     val name: String,
     val type: String? = null,
     val required: Boolean = false,
@@ -57,7 +57,7 @@ data class GraphvizNodeField(
     
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GraphvizNodeField) return false
+        if (other !is GraphNodeField) return false
         return name == other.name && type == other.type && required == other.required &&
                changeStatus == other.changeStatus && isMethodField == other.isMethodField
     }

@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.editor.mermaid
 
-import cc.unitmesh.diagram.diagram.GraphvizDiagramPanel
+import cc.unitmesh.diagram.diagram.CodeTopologyDiagramPanel
 import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
@@ -41,7 +41,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
 
     private val umlPanelWrapper: JPanel = JPanel(BorderLayout())
 
-    private var myPanel: GraphvizDiagramPanel? = null
+    private var myPanel: CodeTopologyDiagramPanel? = null
 
     private val mergingUpdateQueue = MergingUpdateQueue("Mermaid", RENDERING_DELAY_MS, true, null, this)
     private val swingAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
@@ -90,7 +90,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
     }
 
     private fun attachHtmlPanel() {
-        myPanel = GraphvizDiagramPanel(this as DiagramPreviewFileEditor)
+        myPanel = CodeTopologyDiagramPanel(this as DiagramPreviewFileEditor)
         umlPanelWrapper.add(myPanel!!.getComponent(), BorderLayout.CENTER)
         Disposer.register(this, myPanel!!)
 

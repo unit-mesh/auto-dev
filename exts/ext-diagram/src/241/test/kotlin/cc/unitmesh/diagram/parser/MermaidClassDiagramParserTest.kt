@@ -1,11 +1,9 @@
 package cc.unitmesh.diagram.parser
 
-import cc.unitmesh.diagram.model.GraphvizGraphType
+import cc.unitmesh.diagram.model.GraphGraphType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class MermaidClassDiagramParserTest {
@@ -29,7 +27,7 @@ class MermaidClassDiagramParserTest {
         val result = parser.parse(mermaidContent)
         
         assertNotNull(result)
-        assertEquals(GraphvizGraphType.DIGRAPH, result.graphType)
+        assertEquals(GraphGraphType.DIGRAPH, result.graphType)
         assertEquals("mermaid_class_diagram", result.getGraphAttribute("type"))
         
         // Check entities

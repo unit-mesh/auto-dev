@@ -7,13 +7,13 @@ import javax.swing.Icon
  * Simple implementation of GraphvizNodeData for regular graph nodes
  * Represents a single node in the Graphviz graph
  */
-class GraphvizSimpleNodeData(
+class GraphSimpleNodeData(
     private val id: String,
     private val label: String? = null,
     private val attributes: Map<String, String> = emptyMap(),
     private val nodeType: GraphvizNodeType = GraphvizNodeType.REGULAR,
-    private val fields: List<GraphvizNodeField> = emptyList()
-) : GraphvizNodeData {
+    private val fields: List<GraphNodeField> = emptyList()
+) : GraphNodeData {
     
     override fun getName(): String = id
     
@@ -55,7 +55,7 @@ class GraphvizSimpleNodeData(
     /**
      * Get node fields/properties
      */
-    fun getFields(): List<GraphvizNodeField> = fields
+    fun getFields(): List<GraphNodeField> = fields
 
     /**
      * Check if this node has fields
@@ -72,7 +72,7 @@ class GraphvizSimpleNodeData(
     
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GraphvizSimpleNodeData) return false
+        if (other !is GraphSimpleNodeData) return false
         return id == other.id
     }
     

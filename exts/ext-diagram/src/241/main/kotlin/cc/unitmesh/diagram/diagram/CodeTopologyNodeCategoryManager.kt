@@ -4,16 +4,15 @@ import cc.unitmesh.diagram.DiagramIcons
 import com.intellij.diagram.AbstractDiagramNodeContentManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramCategory
-import cc.unitmesh.diagram.model.GraphvizNodeField
-import cc.unitmesh.diagram.model.GraphvizAttributeItem
+import cc.unitmesh.diagram.model.GraphNodeField
+import cc.unitmesh.diagram.model.GraphAttributeItem
 import com.intellij.icons.AllIcons
 
 /**
  * Node content manager for Graphviz diagrams
  * Similar to JdlUmlCategoryManager in JHipster UML implementation
  */
-class GraphvizNodeCategoryManager : AbstractDiagramNodeContentManager() {
-    
+class CodeTopologyNodeCategoryManager : AbstractDiagramNodeContentManager() {
     companion object Companion {
         private val FIELDS_CATEGORY = DiagramCategory(
             "Fields",
@@ -84,7 +83,7 @@ class GraphvizNodeCategoryManager : AbstractDiagramNodeContentManager() {
         builder: DiagramBuilder?
     ): Boolean {
         return when (item) {
-            is GraphvizNodeField -> {
+            is GraphNodeField -> {
                 when (category) {
                     FIELDS_CATEGORY -> !item.isMethod() && item.isUnchanged()
                     METHODS_CATEGORY -> item.isMethod() && item.isUnchanged()
@@ -95,7 +94,7 @@ class GraphvizNodeCategoryManager : AbstractDiagramNodeContentManager() {
                     else -> false
                 }
             }
-            is GraphvizAttributeItem -> category == ATTRIBUTES_CATEGORY
+            is GraphAttributeItem -> category == ATTRIBUTES_CATEGORY
             else -> super.isInCategory(nodeElement, item, category, builder)
         }
     }

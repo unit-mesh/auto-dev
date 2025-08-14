@@ -1,7 +1,7 @@
 package cc.unitmesh.diagram.parser
 
 import cc.unitmesh.diagram.model.GraphvizEdgeType
-import cc.unitmesh.diagram.model.GraphvizGraphType
+import cc.unitmesh.diagram.model.GraphGraphType
 import cc.unitmesh.diagram.model.GraphvizNodeType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
@@ -22,7 +22,7 @@ class DotFileParserTest {
         
         val result = parser.parse(dotContent)
         
-        assertEquals(GraphvizGraphType.DIGRAPH, result.graphType)
+        assertEquals(GraphGraphType.DIGRAPH, result.graphType)
         assertEquals(3, result.nodes.size)
         assertEquals(3, result.edges.size)
         
@@ -101,7 +101,7 @@ class DotFileParserTest {
         
         val result = parser.parse(dotContent)
         
-        assertEquals(GraphvizGraphType.GRAPH, result.graphType)
+        assertEquals(GraphGraphType.GRAPH, result.graphType)
         assertEquals(3, result.nodes.size)
         assertEquals(2, result.edges.size)
         
@@ -118,7 +118,7 @@ class DotFileParserTest {
         
         val result = parser.parse(dotContent)
         
-        assertEquals(GraphvizGraphType.DIGRAPH, result.graphType)
+        assertEquals(GraphGraphType.DIGRAPH, result.graphType)
         assertEquals(0, result.nodes.size)
         assertEquals(0, result.edges.size)
     }
@@ -146,7 +146,7 @@ class DotFileParserTest {
 
         val result = parser.parse(dotContent)
 
-        assertEquals(GraphvizGraphType.DIGRAPH, result.graphType)
+        assertEquals(GraphGraphType.DIGRAPH, result.graphType)
         assertEquals(0, result.nodes.size) // Should be entities, not simple nodes
         assertEquals(2, result.entities.size)
         assertEquals(1, result.edges.size)

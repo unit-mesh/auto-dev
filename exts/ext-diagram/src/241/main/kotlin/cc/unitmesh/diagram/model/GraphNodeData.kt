@@ -6,7 +6,7 @@ import javax.swing.Icon
  * Base interface for all Graphviz node data types
  * Similar to JdlNodeData in JHipster UML implementation
  */
-interface GraphvizNodeData {
+interface GraphNodeData {
     /**
      * Get the name/identifier of this node
      */

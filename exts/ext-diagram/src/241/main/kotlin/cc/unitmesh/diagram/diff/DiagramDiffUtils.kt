@@ -14,7 +14,7 @@ object DiagramDiffUtils {
     /**
      * Compare two Mermaid class diagram strings and return a diff result
      */
-    fun compareMermaidDiagrams(oldMermaid: String?, newMermaid: String): GraphvizDiagramData {
+    fun compareMermaidDiagrams(oldMermaid: String?, newMermaid: String): GraphDiagramData {
         val oldDiagram = if (oldMermaid != null) {
             mermaidParser.parse(oldMermaid)
         } else {
@@ -29,7 +29,7 @@ object DiagramDiffUtils {
     /**
      * Generate a summary of changes between two diagrams
      */
-    fun generateChangeSummary(diffResult: GraphvizDiagramData): ChangeSummary {
+    fun generateChangeSummary(diffResult: GraphDiagramData): ChangeSummary {
         var addedEntities = 0
         var removedEntities = 0
         var addedFields = 0
@@ -91,7 +91,7 @@ object DiagramDiffUtils {
     /**
      * Generate a human-readable change report
      */
-    fun generateChangeReport(diffResult: GraphvizDiagramData): String {
+    fun generateChangeReport(diffResult: GraphDiagramData): String {
         val summary = generateChangeSummary(diffResult)
         
         return buildString {

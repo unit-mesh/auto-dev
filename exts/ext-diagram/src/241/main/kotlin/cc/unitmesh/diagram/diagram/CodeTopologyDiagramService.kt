@@ -8,7 +8,7 @@ import com.intellij.openapi.components.Service
  * Similar to JdlDiagramService in JHipster UML implementation
  */
 @Service(Service.Level.PROJECT)
-class GraphvizDiagramService : Disposable {
+class CodeTopologyDiagramService : Disposable {
     
     override fun dispose() {
         // Clean up any resources if needed

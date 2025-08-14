@@ -34,7 +34,7 @@ class IntegrationTest {
         println("\nNodes (${result.nodes.size}):")
         result.nodes.forEach { node ->
             println("  - ID: ${node.getName()}")
-            if (node is cc.unitmesh.diagram.model.GraphvizSimpleNodeData) {
+            if (node is cc.unitmesh.diagram.model.GraphSimpleNodeData) {
                 println("    Label: ${node.getDisplayLabel()}")
                 println("    Shape: ${node.getShape()}")
                 println("    Attributes: ${node.getAttributes()}")

@@ -7,10 +7,10 @@ import javax.swing.Icon
  * Represents an entity node in a Graphviz graph with fields/properties
  * Similar to JdlEntityNodeData in JHipster UML implementation
  */
-data class GraphvizEntityNodeData(
+data class GraphEntityNodeData(
     private val name: String,
-    private val fields: List<GraphvizNodeField>
-) : GraphvizNodeData {
+    private val fields: List<GraphNodeField>
+) : GraphNodeData {
     
     override fun getName(): String = name
     
@@ -19,7 +19,7 @@ data class GraphvizEntityNodeData(
     /**
      * Get the fields/properties of this entity
      */
-    fun getFields(): List<GraphvizNodeField> = fields
+    fun getFields(): List<GraphNodeField> = fields
     
     /**
      * Check if this entity has fields
@@ -29,13 +29,13 @@ data class GraphvizEntityNodeData(
     /**
      * Get a field by name
      */
-    fun getField(fieldName: String): GraphvizNodeField? {
+    fun getField(fieldName: String): GraphNodeField? {
         return fields.find { it.name == fieldName }
     }
     
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GraphvizEntityNodeData) return false
+        if (other !is GraphEntityNodeData) return false
         return name == other.name && fields == other.fields
     }
     

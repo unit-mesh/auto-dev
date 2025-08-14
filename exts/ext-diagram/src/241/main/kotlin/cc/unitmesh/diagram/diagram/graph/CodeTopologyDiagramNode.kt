@@ -2,19 +2,19 @@ package cc.unitmesh.diagram.diagram.graph
 
 import com.intellij.diagram.DiagramNodeBase
 import com.intellij.diagram.DiagramProvider
-import cc.unitmesh.diagram.model.GraphvizNodeData
+import cc.unitmesh.diagram.model.GraphNodeData
 import javax.swing.Icon
 
 /**
  * Diagram node implementation for Graphviz graphs
  * Similar to JdlDiagramNode in JHipster UML implementation
  */
-class GraphvizDiagramNode(
-    private val data: GraphvizNodeData,
-    provider: DiagramProvider<GraphvizNodeData>
-) : DiagramNodeBase<GraphvizNodeData>(provider) {
+class CodeTopologyDiagramNode(
+    private val data: GraphNodeData,
+    provider: DiagramProvider<GraphNodeData>
+) : DiagramNodeBase<GraphNodeData>(provider) {
     
-    override fun getIdentifyingElement(): GraphvizNodeData {
+    override fun getIdentifyingElement(): GraphNodeData {
         return data
     }
     
@@ -29,7 +29,7 @@ class GraphvizDiagramNode(
     
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GraphvizDiagramNode) return false
+        if (other !is CodeTopologyDiagramNode) return false
         return data == other.data
     }
     

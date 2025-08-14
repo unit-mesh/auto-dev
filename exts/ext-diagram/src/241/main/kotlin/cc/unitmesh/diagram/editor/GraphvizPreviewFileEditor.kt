@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.editor
 
-import cc.unitmesh.diagram.diagram.GraphvizDiagramPanel
+import cc.unitmesh.diagram.diagram.CodeTopologyDiagramPanel
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.editor.Document
@@ -40,7 +40,7 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
 
     private val umlPanelWrapper: JPanel = JPanel(BorderLayout())
 
-    private var myPanel: GraphvizDiagramPanel? = null
+    private var myPanel: CodeTopologyDiagramPanel? = null
 
     private val mergingUpdateQueue = MergingUpdateQueue("Graphviz", RENDERING_DELAY_MS, true, null, this)
     private val swingAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
@@ -73,7 +73,7 @@ class GraphvizPreviewFileEditor(private val project: Project, private val file: 
     }
 
     private fun attachHtmlPanel() {
-        myPanel = GraphvizDiagramPanel(this)
+        myPanel = CodeTopologyDiagramPanel(this)
         umlPanelWrapper.add(myPanel!!.getComponent(), BorderLayout.CENTER)
         Disposer.register(this, myPanel!!)
 
