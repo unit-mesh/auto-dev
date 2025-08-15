@@ -253,4 +253,333 @@ class DotFileParserTest {
         assertEquals("+getName()", fields[2].name)
         assertEquals("String", fields[2].type)
     }
+
+    @Test
+    fun `should parse subgraphs and clusters`() {
+        val dotContent = """
+            digraph G {
+                subgraph cluster_agents {
+                    label="代理定义";
+                    TravelAgent [label="旅行代理"];
+                    FlightAgent [label="航班代理"];
+                }
+
+                subgraph cluster_parallel {
+                    label="1. 并行查询";
+                    TravelAgent -> FlightAgent [label="findFlights()"];
+                }
+
+                PaymentAgent -> TravelAgent;
+            }
+        """.trimIndent()
+
+        val result = parser.parse(dotContent)
+
+        assertEquals(GraphGraphType.DIGRAPH, result.graphType)
+        assertEquals(3, result.nodes.size) // TravelAgent, FlightAgent, PaymentAgent
+        assertEquals(2, result.subgraphs.size)
+        assertEquals(2, result.edges.size) // 1 in subgraph + 1 main edge
+
+        // Check subgraphs
+        val agentsCluster = result.subgraphs.find { it.name == "cluster_agents" }
+        assertNotNull(agentsCluster)
+        assertTrue(agentsCluster!!.isCluster)
+        assertEquals("代理定义", agentsCluster.getDisplayLabel())
+        assertEquals(2, agentsCluster.nodes.size)
+        assertTrue(agentsCluster.containsNode("TravelAgent"))
+        assertTrue(agentsCluster.containsNode("FlightAgent"))
+
+        val parallelCluster = result.subgraphs.find { it.name == "cluster_parallel" }
+        assertNotNull(parallelCluster)
+        assertTrue(parallelCluster!!.isCluster)
+        assertEquals("1. 并行查询", parallelCluster.getDisplayLabel())
+        assertEquals(1, parallelCluster.edges.size)
+    }
+
+    @Test
+    fun `should parse HTML labels correctly`() {
+        val dotContent = """
+            digraph G {
+                TravelAgent [label=<
+                    <b>旅行代理</b><br/>协调预订航班、酒店和支付
+                >];
+                FlightAgent [label=<
+                    <b>航班代理</b><br/>技能: findFlights(query: object): flightOptions
+                >];
+                TravelAgent -> FlightAgent;
+            }
+        """.trimIndent()
+
+        val result = parser.parse(dotContent)
+
+        assertEquals(2, result.nodes.size)
+        assertEquals(1, result.edges.size)
+
+        val travelAgent = result.getNodeById("TravelAgent")
+        assertNotNull(travelAgent)
+        val displayLabel = travelAgent!!.getDisplayLabel()
+        assertTrue(displayLabel.contains("旅行代理"))
+        assertTrue(displayLabel.contains("协调预订航班、酒店和支付"))
+
+        val flightAgent = result.getNodeById("FlightAgent")
+        assertNotNull(flightAgent)
+        val flightLabel = flightAgent!!.getDisplayLabel()
+        assertTrue(flightLabel.contains("航班代理"))
+        assertTrue(flightLabel.contains("findFlights"))
+    }
+
+    @Test
+    fun `should handle complex nested subgraphs`() {
+        val dotContent = """
+            digraph G {
+                rankdir=TB;
+                node [shape=box, style=rounded];
+
+                subgraph cluster_agents {
+                    label="代理定义";
+                    TravelAgent [label="旅行代理"];
+                    FlightAgent [label="航班代理"];
+
+                    subgraph cluster_inner {
+                        label="内部代理";
+                        InnerAgent [label="内部代理"];
+                    }
+                }
+
+                PaymentAgent -> TravelAgent [label="processPayment()", color=red, style=dashed];
+            }
+        """.trimIndent()
+
+        val result = parser.parse(dotContent)
+
+        assertEquals(GraphGraphType.DIGRAPH, result.graphType)
+        assertTrue(result.subgraphs.size >= 2) // At least outer and inner subgraphs
+        assertEquals(1, result.edges.size) // Main edge
+
+        // Check main cluster
+        val agentsCluster = result.subgraphs.find { it.name == "cluster_agents" }
+        assertNotNull(agentsCluster)
+        assertTrue(agentsCluster!!.isCluster)
+        assertEquals("代理定义", agentsCluster.getDisplayLabel())
+
+        // Check nested cluster
+        val innerCluster = result.subgraphs.find { it.name == "cluster_inner" }
+        assertNotNull(innerCluster)
+        assertTrue(innerCluster!!.isCluster)
+        assertEquals("内部代理", innerCluster.getDisplayLabel())
+
+        // Check edge attributes
+        val edge = result.edges.first()
+        assertEquals("PaymentAgent", edge.sourceNodeId)
+        assertEquals("TravelAgent", edge.targetNodeId)
+        assertEquals("processPayment()", edge.label)
+        assertEquals("red", edge.getColor())
+        assertEquals("dashed", edge.getStyle())
+    }
+
+    @Test
+    fun `should parse the provided travel agent example correctly`() {
+        val dotContent = """
+            digraph G {
+                rankdir=TB;
+                node [shape=box, style=rounded];
+
+                subgraph cluster_agents {
+                    label="代理定义";
+                    TravelAgent [label=<
+                        <b>旅行代理</b><br/>协调预订航班、酒店和支付
+                    >];
+                    FlightAgent [label=<
+                        <b>航班代理</b><br/>技能: findFlights(query: object): flightOptions
+                    >];
+                    HotelAgent [label=<
+                        <b>酒店代理</b><br/>技能: findHotels(query: object): hotelOptions
+                    >];
+                    PaymentAgent [label=<
+                        <b>支付代理</b><br/>技能: processPayment(amount: float): transactionID
+                    >];
+                    RefundHandler [label=<
+                        <b>退款处理代理</b><br/>技能: initiateRefund(transactionID: string): void
+                    >];
+                }
+
+                subgraph cluster_parallel {
+                    label="1. 并行查询";
+                    TravelAgent -> FlightAgent [label="findFlights()"];
+                    TravelAgent -> HotelAgent [label="findHotels()"];
+                }
+
+                subgraph cluster_conditional {
+                    label="2. 条件决策与支付";
+                    TravelAgent -> PaymentAgent [label="processPayment()"];
+                    TravelAgent -> User [label="无法满足所有预订要求"];
+                }
+
+                PaymentAgent -> RefundHandler [label="initiateRefund()", color=red, style=dashed];
+            }
+        """.trimIndent()
+
+        val result = parser.parse(dotContent)
+
+        // Verify basic structure
+        assertEquals(GraphGraphType.DIGRAPH, result.graphType)
+        assertTrue(result.nodes.size >= 6) // At least 6 nodes
+        assertEquals(3, result.subgraphs.size) // 3 subgraphs
+        assertTrue(result.edges.size >= 4) // At least 4 edges
+
+        // Verify subgraphs
+        val agentsCluster = result.subgraphs.find { it.name == "cluster_agents" }
+        assertNotNull(agentsCluster)
+        assertTrue(agentsCluster!!.isCluster)
+        assertEquals("代理定义", agentsCluster.getDisplayLabel())
+        assertEquals(5, agentsCluster.nodes.size)
+        assertTrue(agentsCluster.containsNode("TravelAgent"))
+        assertTrue(agentsCluster.containsNode("FlightAgent"))
+        assertTrue(agentsCluster.containsNode("HotelAgent"))
+        assertTrue(agentsCluster.containsNode("PaymentAgent"))
+        assertTrue(agentsCluster.containsNode("RefundHandler"))
+
+        val parallelCluster = result.subgraphs.find { it.name == "cluster_parallel" }
+        assertNotNull(parallelCluster)
+        assertTrue(parallelCluster!!.isCluster)
+        assertEquals("1. 并行查询", parallelCluster.getDisplayLabel())
+        assertEquals(2, parallelCluster.edges.size)
+
+        val conditionalCluster = result.subgraphs.find { it.name == "cluster_conditional" }
+        assertNotNull(conditionalCluster)
+        assertTrue(conditionalCluster!!.isCluster)
+        assertEquals("2. 条件决策与支付", conditionalCluster.getDisplayLabel())
+        assertEquals(2, conditionalCluster.edges.size)
+
+        // Verify HTML label parsing
+        val travelAgent = result.getNodeById("TravelAgent")
+        assertNotNull(travelAgent)
+        val displayLabel = travelAgent!!.getDisplayLabel()
+        assertTrue(displayLabel.contains("旅行代理"))
+        assertTrue(displayLabel.contains("协调预订航班、酒店和支付"))
+
+        val flightAgent = result.getNodeById("FlightAgent")
+        assertNotNull(flightAgent)
+        val flightLabel = flightAgent!!.getDisplayLabel()
+        assertTrue(flightLabel.contains("航班代理"))
+        assertTrue(flightLabel.contains("findFlights"))
+
+        // Verify main graph edge
+        val mainEdge = result.edges.find { it.sourceNodeId == "PaymentAgent" && it.targetNodeId == "RefundHandler" }
+        assertNotNull(mainEdge)
+        assertEquals("initiateRefund()", mainEdge!!.label)
+        assertEquals("red", mainEdge.getColor())
+        assertEquals("dashed", mainEdge.getStyle())
+    }
+
+    @Test
+    fun `should parse HTML labels with proper newlines`() {
+        val dotContent = """
+            digraph G {
+                PaymentAgent [label=<
+                    <b>支付代理</b><br/>技能: processPayment(amount: float): transactionID
+                >];
+                TravelAgent [label=<
+                    <b>旅行代理</b><br/>协调预订航班、酒店和支付
+                >];
+            }
+        """.trimIndent()
+
+        val result = parser.parse(dotContent)
+
+        assertEquals(2, result.nodes.size)
+
+        val paymentAgent = result.getNodeById("PaymentAgent")
+        assertNotNull(paymentAgent)
+        val paymentLabel = paymentAgent!!.getDisplayLabel()
+        assertTrue(paymentLabel.contains("支付代理"))
+        assertTrue(paymentLabel.contains("processPayment"))
+        assertTrue(paymentLabel.contains("\n"), "Should contain actual newline character")
+
+        val travelAgent = result.getNodeById("TravelAgent")
+        assertNotNull(travelAgent)
+        val travelLabel = travelAgent!!.getDisplayLabel()
+        assertTrue(travelLabel.contains("旅行代理"))
+        assertTrue(travelLabel.contains("协调预订"))
+        assertTrue(travelLabel.contains("\n"), "Should contain actual newline character")
+    }
+
+    @Test
+    fun `debug simple subgraph and HTML label parsing`() {
+        val dotContent = """
+digraph G {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+
+    subgraph cluster_agents {
+        label="代理定义";
+        TravelAgent [label=<
+            <b>旅行代理</b><br/>协调预订航班、酒店和支付
+        >];
+        FlightAgent [label=<
+            <b>航班代理</b><br/>技能: findFlights(query: object): flightOptions
+        >];
+    }
+
+    subgraph cluster_parallel {
+        label="1. 并行查询";
+        TravelAgent -> FlightAgent [label="findFlights()"];
+    }
+
+    PaymentAgent -> TravelAgent [label="processPayment()"];
+}
+        """.trimIndent()
+
+        println("=== 开始解析 ===")
+        val result = parser.parse(dotContent)
+
+        // Debug output
+        println("=== 解析结果调试 ===")
+        println("节点数量: ${result.nodes.size}")
+        println("实体数量: ${result.entities.size}")
+        println("边数量: ${result.edges.size}")
+        println("子图数量: ${result.subgraphs.size}")
+        println("图类型: ${result.graphType}")
+
+        println("\n--- 所有节点 ---")
+        result.nodes.forEach { node ->
+            println("节点: ${node.getName()}")
+            println("  显示标签: '${node.getDisplayLabel()}'")
+            println("  类型: ${node.getNodeType()}")
+            println("  属性: ${node.getAttributes()}")
+        }
+
+        println("\n--- 所有子图 ---")
+        result.subgraphs.forEach { subgraph ->
+            println("子图: ${subgraph.name}")
+            println("  显示标签: '${subgraph.getDisplayLabel()}'")
+            println("  是否为 Cluster: ${subgraph.isCluster}")
+            println("  包含节点: ${subgraph.nodes}")
+            println("  边数量: ${subgraph.edges.size}")
+            println("  属性: ${subgraph.attributes}")
+        }
+
+        println("\n--- 所有边 ---")
+        result.edges.forEach { edge ->
+            println("边: ${edge.sourceNodeId} -> ${edge.targetNodeId}")
+            println("  标签: '${edge.label}'")
+        }
+
+        // Basic assertions
+        assertTrue(result.nodes.isNotEmpty(), "Should have nodes")
+        assertTrue(result.subgraphs.isNotEmpty(), "Should have subgraphs")
+
+        // Test HTML label parsing specifically
+        val travelAgent = result.nodes.find { it.getName() == "TravelAgent" }
+        assertNotNull(travelAgent, "Should have TravelAgent node")
+        println("\n=== HTML Label 测试 ===")
+        println("TravelAgent 显示标签: '${travelAgent!!.getDisplayLabel()}'")
+
+        // Test subgraph parsing specifically
+        val clusterAgents = result.subgraphs.find { it.name == "cluster_agents" }
+        assertNotNull(clusterAgents, "Should have cluster_agents subgraph")
+        println("\n=== Subgraph 测试 ===")
+        println("cluster_agents 是否为 cluster: ${clusterAgents!!.isCluster}")
+        println("cluster_agents 标签: '${clusterAgents.getDisplayLabel()}'")
+    }
 }

@@ -8,6 +8,7 @@ data class GraphDiagramData(
     val nodes: Collection<GraphSimpleNodeData>,
     val entities: Collection<GraphEntityNodeData> = emptyList(),
     val edges: Collection<GraphEdgeData>,
+    val subgraphs: Collection<GraphSubgraphData> = emptyList(),
     val graphAttributes: Map<String, String> = emptyMap(),
     val graphType: GraphGraphType = GraphGraphType.DIGRAPH
 ) {
@@ -29,10 +30,14 @@ data class GraphDiagramData(
         return entities.find { it.getName() == name }
     }
 
-    fun isEmpty(): Boolean = nodes.isEmpty() && entities.isEmpty() && edges.isEmpty()
-    
+    fun getSubgraphByName(name: String): GraphSubgraphData? {
+        return subgraphs.find { it.name == name }
+    }
+
+    fun isEmpty(): Boolean = nodes.isEmpty() && entities.isEmpty() && edges.isEmpty() && subgraphs.isEmpty()
+
     override fun toString(): String {
-        return "GraphvizDiagramData(nodes=${nodes.size}, entities=${entities.size}, edges=${edges.size}, type=$graphType)"
+        return "GraphvizDiagramData(nodes=${nodes.size}, entities=${entities.size}, edges=${edges.size}, subgraphs=${subgraphs.size}, type=$graphType)"
     }
 }
 

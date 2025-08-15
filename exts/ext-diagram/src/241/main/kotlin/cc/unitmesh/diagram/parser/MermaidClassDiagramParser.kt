@@ -139,6 +139,7 @@ class MermaidClassDiagramParser {
             nodes = emptyList(),
             entities = entityList,
             edges = edges,
+            subgraphs = emptyList(),
             graphAttributes = graphAttributes,
             graphType = GraphGraphType.DIGRAPH
         )
@@ -247,6 +248,7 @@ class MermaidClassDiagramParser {
             nodes = emptyList(),
             entities = emptyList(),
             edges = emptyList(),
+            subgraphs = emptyList(),
             graphAttributes = emptyMap(),
             graphType = GraphGraphType.DIGRAPH
         )

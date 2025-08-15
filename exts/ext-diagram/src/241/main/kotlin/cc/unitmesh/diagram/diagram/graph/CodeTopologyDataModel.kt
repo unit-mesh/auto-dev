@@ -61,6 +61,20 @@ class CodeTopologyDataModel(
                 }
             }
 
+            // Add all subgraphs as nodes
+            diagramData?.subgraphs?.forEach { subgraphData ->
+                val subgraphNode = GraphSimpleNodeData(
+                    id = subgraphData.name,
+                    label = subgraphData.getDisplayLabel(),
+                    attributes = subgraphData.attributes,
+                    nodeType = GraphvizNodeType.CLUSTER
+                )
+                val diagramNode = addElement(subgraphNode)
+                if (diagramNode != null) {
+                    nodeMapping[subgraphData.name] = diagramNode
+                }
+            }
+
             // Add all edges
             diagramData?.edges?.forEach { edgeData ->
                 val sourceNode = nodeMapping[edgeData.sourceNodeId]
@@ -68,6 +82,18 @@ class CodeTopologyDataModel(
 
                 if (sourceNode != null && targetNode != null) {
                     edges.add(CodeTopologyEntityEdge(sourceNode, targetNode, edgeData))
+                }
+            }
+
+            // Add edges from subgraphs
+            diagramData?.subgraphs?.forEach { subgraphData ->
+                subgraphData.edges.forEach { edgeData ->
+                    val sourceNode = nodeMapping[edgeData.sourceNodeId]
+                    val targetNode = nodeMapping[edgeData.targetNodeId]
+
+                    if (sourceNode != null && targetNode != null) {
+                        edges.add(CodeTopologyEntityEdge(sourceNode, targetNode, edgeData))
+                    }
                 }
             }
 
@@ -115,7 +141,8 @@ class CodeTopologyDataModel(
                 return GraphDiagramData(
                     nodes = emptyList(),
                     entities = emptyList(),
-                    edges = emptyList()
+                    edges = emptyList(),
+                    subgraphs = emptyList()
                 )
             }
 
@@ -128,7 +155,8 @@ class CodeTopologyDataModel(
                 GraphDiagramData(
                     nodes = emptyList(),
                     entities = emptyList(),
-                    edges = emptyList()
+                    edges = emptyList(),
+                    subgraphs = emptyList()
                 )
             }
         }

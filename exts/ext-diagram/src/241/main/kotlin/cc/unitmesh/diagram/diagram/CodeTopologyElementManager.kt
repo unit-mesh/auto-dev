@@ -69,13 +69,23 @@ class CodeTopologyElementManager : AbstractDiagramElementManager<GraphNodeData>(
             }
             is GraphSimpleNodeData -> {
                 buildString {
-                    append("Node: ${element.getName()}")
+                    val nodeType = when (element.getNodeType()) {
+                        GraphvizNodeType.CLUSTER -> "Subgraph/Cluster"
+                        GraphvizNodeType.RECORD -> "Record Node"
+                        GraphvizNodeType.REGULAR -> "Node"
+                    }
+                    append("$nodeType: ${element.getName()}")
                     if (element.getDisplayLabel() != element.getName()) {
                         append("\nLabel: ${element.getDisplayLabel()}")
                     }
                     append("\nShape: ${element.getShape()}")
                     element.getColor()?.let { append("\nColor: $it") }
                     element.getStyle()?.let { append("\nStyle: $it") }
+
+                    // Show additional info for cluster nodes
+                    if (element.getNodeType() == GraphvizNodeType.CLUSTER) {
+                        element.getAttribute("bgcolor")?.let { append("\nBackground: $it") }
+                    }
                 }
             }
             else -> element.getName()
