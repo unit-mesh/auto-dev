@@ -49,7 +49,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
     init {
         document?.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
-                file.setBinaryContent(event.document.text.toByteArray())
+//                file.setBinaryContent(event.document.text.toByteArray())
                 updateUml()
             }
         }, this)
