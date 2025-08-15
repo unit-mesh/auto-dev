@@ -29,10 +29,9 @@ class DiagramDiffAnalyzerTest {
                     GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
-            edges = emptyList(),
-            subgraphs = emptyList()
+            edges = emptyList()
         )
-
+        
         val newDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
@@ -43,8 +42,7 @@ class DiagramDiffAnalyzerTest {
                     GraphNodeField("save()", "void", false, ChangeStatus.UNCHANGED, isMethodField = true) // New method
                 ))
             ),
-            edges = emptyList(),
-            subgraphs = emptyList()
+            edges = emptyList()
         )
         
         val result = analyzer.analyzeDiff(oldDiagram, newDiagram)
@@ -73,10 +71,9 @@ class DiagramDiffAnalyzerTest {
                     GraphNodeField("delete()", "void", false, ChangeStatus.UNCHANGED, isMethodField = true)
                 ))
             ),
-            edges = emptyList(),
-            subgraphs = emptyList()
+            edges = emptyList()
         )
-
+        
         val newDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
@@ -85,8 +82,7 @@ class DiagramDiffAnalyzerTest {
                     GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
-            edges = emptyList(),
-            subgraphs = emptyList()
+            edges = emptyList()
         )
         
         val result = analyzer.analyzeDiff(oldDiagram, newDiagram)
@@ -112,10 +108,9 @@ class DiagramDiffAnalyzerTest {
                     GraphNodeField("id", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
-            edges = emptyList(),
-            subgraphs = emptyList()
+            edges = emptyList()
         )
-
+        
         val newDiagram = GraphDiagramData(
             nodes = emptyList(),
             entities = listOf(
@@ -126,8 +121,7 @@ class DiagramDiffAnalyzerTest {
                     GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
-            edges = emptyList(),
-            subgraphs = emptyList()
+            edges = emptyList()
         )
         
         val result = analyzer.analyzeDiff(oldDiagram, newDiagram)
@@ -153,8 +147,7 @@ class DiagramDiffAnalyzerTest {
                     GraphNodeField("name", "String", false, ChangeStatus.UNCHANGED, isMethodField = false)
                 ))
             ),
-            edges = emptyList(),
-            subgraphs = emptyList()
+            edges = emptyList()
         )
     }
 }

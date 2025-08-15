@@ -25,7 +25,6 @@ class DotFileParser {
                 nodes = emptyList(),
                 entities = emptyList(),
                 edges = emptyList(),
-                subgraphs = emptyList(),
                 graphAttributes = emptyMap(),
                 graphType = GraphGraphType.DIGRAPH
             )
@@ -41,15 +40,14 @@ class DotFileParser {
         val nodes = mutableListOf<GraphSimpleNodeData>()
         val entities = mutableListOf<GraphEntityNodeData>()
         val edges = mutableListOf<GraphEdgeData>()
-        val subgraphs = mutableListOf<GraphSubgraphData>()
-
+        
         // Extract graph type
         val graphType = if (graph.isDirected) {
             GraphGraphType.DIGRAPH
         } else {
             GraphGraphType.GRAPH
         }
-
+        
         // Extract graph attributes
         val graphAttributes = try {
             graph.graphAttrs().associate { attr ->
@@ -58,9 +56,6 @@ class DotFileParser {
         } catch (e: Exception) {
             emptyMap()
         }
-
-        // Extract subgraphs first
-        extractSubgraphs(graph, subgraphs)
         
         // Extract nodes
         graph.nodes().forEach { node ->
@@ -74,12 +69,7 @@ class DotFileParser {
             }
             
             // Extract label from attributes or use node ID
-            val rawLabel = nodeAttrs["label"] ?: nodeId
-            val label = if (HtmlLabelParser.isHtmlLabel(rawLabel)) {
-                HtmlLabelParser.parseHtmlLabel(rawLabel)
-            } else {
-                rawLabel
-            }
+            val label = nodeAttrs["label"] ?: nodeId
             
             // Determine node type based on shape
             val nodeType = when (nodeAttrs["shape"]) {
@@ -157,92 +147,9 @@ class DotFileParser {
             nodes = nodes,
             entities = entities,
             edges = edges,
-            subgraphs = subgraphs,
             graphAttributes = graphAttributes,
             graphType = graphType
         )
-    }
-
-    /**
-     * Extract subgraphs from the main graph
-     */
-    private fun extractSubgraphs(graph: MutableGraph, subgraphs: MutableList<GraphSubgraphData>) {
-        try {
-            graph.graphs().forEach { subgraph ->
-                val subgraphName = subgraph.name()?.toString() ?: "unnamed_subgraph"
-                val isCluster = subgraphName.startsWith("cluster_")
-
-                // Extract subgraph attributes
-                val subgraphAttrs = try {
-                    subgraph.graphAttrs().associate { attr ->
-                        attr.key to attr.value.toString()
-                    }
-                } catch (e: Exception) {
-                    emptyMap()
-                }
-
-                // Extract label from subgraph attributes
-                val rawLabel = subgraphAttrs["label"]
-                val label = if (rawLabel != null && HtmlLabelParser.isHtmlLabel(rawLabel)) {
-                    HtmlLabelParser.parseHtmlLabel(rawLabel)
-                } else {
-                    rawLabel
-                }
-
-                // Extract nodes in this subgraph
-                val subgraphNodes = subgraph.nodes().map { it.name().toString() }
-
-                // Extract edges in this subgraph
-                val subgraphEdges = mutableListOf<GraphEdgeData>()
-                subgraph.edges().forEach { edge ->
-                    val sourceId = edge.from()?.name()?.toString() ?: "unknown"
-                    val targetId = edge.to()?.name()?.toString() ?: "unknown"
-
-                    val edgeAttrs = try {
-                        edge.attrs().associate { attr ->
-                            attr.key to attr.value.toString()
-                        }
-                    } catch (e: Exception) {
-                        emptyMap()
-                    }
-
-                    val edgeLabel = edgeAttrs["label"]
-
-                    val edgeType = if (graph.isDirected) {
-                        GraphvizEdgeType.DIRECTED
-                    } else {
-                        GraphvizEdgeType.UNDIRECTED
-                    }
-
-                    subgraphEdges.add(
-                        GraphEdgeData(
-                            sourceNodeId = sourceId,
-                            targetNodeId = targetId,
-                            label = edgeLabel,
-                            attributes = edgeAttrs,
-                            edgeType = edgeType
-                        )
-                    )
-                }
-
-                subgraphs.add(
-                    GraphSubgraphData(
-                        name = subgraphName,
-                        label = label,
-                        nodes = subgraphNodes,
-                        edges = subgraphEdges,
-                        attributes = subgraphAttrs,
-                        isCluster = isCluster
-                    )
-                )
-
-                // Recursively extract nested subgraphs
-                extractSubgraphs(subgraph, subgraphs)
-            }
-        } catch (e: Exception) {
-            // Handle any errors gracefully
-            println("Error extracting subgraphs: ${e.message}")
-        }
     }
 
     /**
