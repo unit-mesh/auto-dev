@@ -17,7 +17,7 @@
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
-## AutoDev 2.0 Sketch - the Cursor Composer in Intellij IDEA
+## AutoDev 2.0 - the Cursor Composer in Intellij IDEA
 
 Video demo (YouTube) — English
 
@@ -38,6 +38,7 @@ developer experience within the IDE.
 | **Mermaid Sketch`*`**       | Real-time flowchart preview/edit with bidirectional binding                                                  | ![](https://shire.run/images/shire-sketch-mermaid.png)           |
 | **PlantUML Sketch`*`**      | UML diagram editor with bidirectional code-diagram synchronization                                           | ![](https://shire.run/images/shire-sketch-plantuml.png)          |
 | **PlanSketch**              | Display AutoDev Planner planning for resolving code issues                                                   | ![](https://unitmesh.cc/auto-dev/autodev-plan-sketch.png)        |
+| **CodeTopologySketch**      | Display code topology for current file                                                                       |                                                                  |
 
 `*` means requires additional plugin installation.
 
@@ -134,20 +135,6 @@ We follow [Chapi](https://github.com/phodal/chapi) AST analysis engine for langu
 ### Extensions
 
 see in [exts](exts)
-
-## Demo
-
-DevIns Language demo (Bilibili) - 中文
-
-[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV12H4y1W7sE/)
-
-Video demo (YouTube) — English
-
-[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://youtu.be/gVBTBdFV5hA)
-
-Video demo (Bilibili) - 中文
-
-[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV1yV4y1i74c/)
 
 ## Useful Links
 
