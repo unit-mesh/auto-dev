@@ -32,11 +32,11 @@ class CodeTopologyUmlProvider : DiagramProvider<GraphNodeData>() {
 
     @Pattern("[a-zA-Z0-9_-]*")
     override fun getID(): String {
-        return "AutoDev GraphvizDOT"
+        return "AutoDev Topology"
     }
 
     override fun getPresentableName(): String {
-        return "AutoDev graphviz DOT Diagram"
+        return "AutoDev topology DOT Diagram"
     }
 
     override fun createDataModel(

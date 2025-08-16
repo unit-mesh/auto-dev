@@ -1,7 +1,9 @@
 package cc.unitmesh.diagram.parser
 
 import cc.unitmesh.diagram.model.*
+import cc.unitmesh.diagram.model.ChangeStatus.*
 import cc.unitmesh.diagram.parser.mermaid.*
+import cc.unitmesh.diagram.parser.mermaid.ChangeStatus
 
 /**
  * Parser for Mermaid class diagrams
@@ -157,10 +159,10 @@ class MermaidClassDiagramParser {
 
         // Convert change status from AST to GraphvizNodeField ChangeStatus
         val changeStatus = when (member.changeStatus) {
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.ADDED -> cc.unitmesh.diagram.model.ChangeStatus.ADDED
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.REMOVED -> cc.unitmesh.diagram.model.ChangeStatus.REMOVED
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.MODIFIED -> cc.unitmesh.diagram.model.ChangeStatus.UNCHANGED
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.UNCHANGED -> cc.unitmesh.diagram.model.ChangeStatus.UNCHANGED
+            ChangeStatus.ADDED -> ADDED
+            ChangeStatus.REMOVED -> REMOVED
+            ChangeStatus.MODIFIED -> UNCHANGED
+            ChangeStatus.UNCHANGED -> UNCHANGED
         }
 
         val name = if (member.isMethod) {
@@ -171,10 +173,10 @@ class MermaidClassDiagramParser {
 
         // Include change status prefix in the name if it's not unchanged
         val nameWithChangeStatus = when (member.changeStatus) {
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.ADDED -> "+$name"
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.REMOVED -> "-$name"
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.MODIFIED -> "~$name"
-            cc.unitmesh.diagram.parser.mermaid.ChangeStatus.UNCHANGED -> "$visibilitySymbol$name"
+            ChangeStatus.ADDED -> "+$name"
+            ChangeStatus.REMOVED -> "-$name"
+            ChangeStatus.MODIFIED -> "~$name"
+            ChangeStatus.UNCHANGED -> "$visibilitySymbol$name"
         }
 
         return GraphNodeField(
