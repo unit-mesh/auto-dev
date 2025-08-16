@@ -25,10 +25,6 @@ import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-/**
- * Preview file editor for Mermaid files
- * Similar to GraphvizPreviewFileEditor but for Mermaid diagrams
- */
 class MermaidPreviewFileEditor(private val project: Project, private val file: VirtualFile) : UserDataHolderBase(),
     FileEditor, DiagramPreviewFileEditor {
 
@@ -49,14 +45,13 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
     init {
         document?.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
-//                file.setBinaryContent(event.document.text.toByteArray())
                 updateUml()
             }
         }, this)
 
         umlPanelWrapper.addComponentListener(object : ComponentAdapter() {
             override fun componentShown(e: ComponentEvent?) {
-                swingAlarm.addRequest(Runnable {
+                swingAlarm.addRequest({
                     if (myPanel == null) {
                         attachHtmlPanel()
                     }
@@ -64,7 +59,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
             }
 
             override fun componentHidden(e: ComponentEvent?) {
-                swingAlarm.addRequest(Runnable {
+                swingAlarm.addRequest({
                     if (myPanel != null) {
                         detachHtmlPanel()
                     }
@@ -81,13 +76,9 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
 
     override fun isValid(): Boolean = !isDisposed
 
-    override fun addPropertyChangeListener(listener: PropertyChangeListener) {
-        // No properties to listen to
-    }
+    override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
 
-    override fun removePropertyChangeListener(listener: PropertyChangeListener) {
-        // No properties to listen to
-    }
+    override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
 
     private fun attachHtmlPanel() {
         myPanel = CodeTopologyDiagramPanel(this as DiagramPreviewFileEditor)
@@ -129,9 +120,7 @@ class MermaidPreviewFileEditor(private val project: Project, private val file: V
         myPanel!!.draw()
     }
 
-    override fun deselectNotify() {
-        // Keep panel attached for better performance
-    }
+    override fun deselectNotify() {}
 
     override fun getCurrentLocation(): FileEditorLocation? = null
 

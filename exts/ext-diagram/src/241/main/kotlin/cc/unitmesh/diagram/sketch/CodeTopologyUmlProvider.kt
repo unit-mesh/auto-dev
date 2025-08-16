@@ -36,7 +36,7 @@ class CodeTopologyUmlProvider : DiagramProvider<GraphNodeData>() {
     }
 
     override fun getPresentableName(): String {
-        return "AutoDev Graphviz DOT Diagram"
+        return "AutoDev graphviz DOT Diagram"
     }
 
     override fun createDataModel(
