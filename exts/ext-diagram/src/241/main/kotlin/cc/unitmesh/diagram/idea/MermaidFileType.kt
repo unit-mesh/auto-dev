@@ -19,7 +19,7 @@ class MermaidFileType private constructor() : FileType {
 
     override fun getDescription(): String = "Mermaid diagram file"
 
-    override fun getDefaultExtension(): String = "mmd"
+    override fun getDefaultExtension(): String = "mermaid"
 
     override fun getIcon(): Icon? = IconLoader.getIcon("/icons/autodev-mermaid.svg", MermaidFileType::class.java)
 

@@ -7,9 +7,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Register file types -->
         <fileType name="DOT" implementationClass="cc.unitmesh.diagram.idea.DotFileType"
-                  fieldName="INSTANCE" extensions="dot;gv;graphviz"/>
+                  fieldName="INSTANCE" extensions="graphviz"/>
         <fileType name="Mermaid" implementationClass="cc.unitmesh.diagram.idea.MermaidFileType"
-                  fieldName="INSTANCE" extensions="mmd;mermaid"/>
+                  fieldName="INSTANCE" extensions="mermaid"/>
 
         <!-- Register Graphviz diagram provider -->
         <diagram.Provider implementation="cc.unitmesh.diagram.sketch.CodeTopologyUmlProvider"/>

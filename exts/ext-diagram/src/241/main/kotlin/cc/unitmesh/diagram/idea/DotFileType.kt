@@ -20,7 +20,7 @@ class DotFileType private constructor() : FileType {
 
     override fun getDescription(): String = "Graphviz DOT file"
 
-    override fun getDefaultExtension(): String = "dot"
+    override fun getDefaultExtension(): String = "graphviz"
 
     override fun getIcon(): Icon? = IconLoader.getIcon("/icons/autodev-graphviz.svg", DotFileType::class.java)
 
