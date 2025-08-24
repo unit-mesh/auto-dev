@@ -13,7 +13,6 @@ class DiagramDiffAnalyzer {
      */
     fun analyzeDiff(oldDiagram: GraphDiagramData?, newDiagram: GraphDiagramData): GraphDiagramData {
         if (oldDiagram == null) {
-            // All elements in new diagram are additions
             return markAllAsAdded(newDiagram)
         }
         
@@ -22,26 +21,21 @@ class DiagramDiffAnalyzer {
         
         val resultEntities = mutableListOf<GraphEntityNodeData>()
         
-        // Process entities that exist in new diagram
         for (newEntity in newDiagram.entities) {
             val oldEntity = oldEntitiesMap[newEntity.getName()]
             if (oldEntity == null) {
-                // Entity is new - mark all fields as added
                 val addedFields = newEntity.getFields().map { field ->
                     field.copy(changeStatus = ChangeStatus.ADDED)
                 }
                 resultEntities.add(GraphEntityNodeData(newEntity.getName(), addedFields))
             } else {
-                // Entity exists in both - compare fields
                 val diffFields = compareFields(oldEntity.getFields(), newEntity.getFields())
                 resultEntities.add(GraphEntityNodeData(newEntity.getName(), diffFields))
             }
         }
         
-        // Process entities that were removed (exist in old but not in new)
         for (oldEntity in oldDiagram.entities) {
             if (!newEntitiesMap.containsKey(oldEntity.getName())) {
-                // Entity was removed - mark all fields as removed
                 val removedFields = oldEntity.getFields().map { field ->
                     field.copy(changeStatus = ChangeStatus.REMOVED)
                 }

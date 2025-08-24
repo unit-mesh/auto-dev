@@ -97,51 +97,60 @@ object DiagramDiffUtils {
         return buildString {
             appendLine("## Code Structure Changes")
             appendLine()
-            
-            if (summary.hasChanges()) {
-                if (summary.addedEntities > 0) {
-                    appendLine("✅ **Added ${summary.addedEntities} class(es)**")
-                }
-                if (summary.removedEntities > 0) {
-                    appendLine("❌ **Removed ${summary.removedEntities} class(es)**")
-                }
-                if (summary.addedFields > 0) {
-                    appendLine("✅ **Added ${summary.addedFields} field(s)**")
-                }
-                if (summary.removedFields > 0) {
-                    appendLine("❌ **Removed ${summary.removedFields} field(s)**")
-                }
-                if (summary.addedMethods > 0) {
-                    appendLine("✅ **Added ${summary.addedMethods} method(s)**")
-                }
-                if (summary.removedMethods > 0) {
-                    appendLine("❌ **Removed ${summary.removedMethods} method(s)**")
-                }
-                
-                appendLine()
-                appendLine("### Detailed Changes")
-                
-                for (entity in diffResult.entities) {
-                    val fields = entity.getFields()
-                    val changedFields = fields.filter { it.changeStatus != ChangeStatus.UNCHANGED }
-                    
-                    if (changedFields.isNotEmpty()) {
+
+            if (!summary.hasChanges()) {
+                appendLine("No structural changes detected.")
+            } else {
+                when {
+                    summary.addedEntities > 0 -> {
+                        appendLine("✅ **Added ${summary.addedEntities} class(es)**")
+                    }
+
+                    summary.removedEntities > 0 -> {
+                        appendLine("❌ **Removed ${summary.removedEntities} class(es)**")
+                    }
+
+                    summary.addedFields > 0 -> {
+                        appendLine("✅ **Added ${summary.addedFields} field(s)**")
+                    }
+
+                    summary.removedFields > 0 -> {
+                        appendLine("❌ **Removed ${summary.removedFields} field(s)**")
+                    }
+
+                    summary.addedMethods > 0 -> {
+                        appendLine("✅ **Added ${summary.addedMethods} method(s)**")
+                    }
+
+                    summary.removedMethods > 0 -> {
+                        appendLine("❌ **Removed ${summary.removedMethods} method(s)**")
+                    }
+
+                    else -> {
                         appendLine()
-                        appendLine("**${entity.getName()}:**")
-                        
-                        for (field in changedFields) {
-                            val prefix = when (field.changeStatus) {
-                                ChangeStatus.ADDED -> "  + "
-                                ChangeStatus.REMOVED -> "  - "
-                                ChangeStatus.UNCHANGED -> "    "
+                        appendLine("### Detailed Changes")
+
+                        for (entity in diffResult.entities) {
+                            val fields = entity.getFields()
+                            val changedFields = fields.filter { it.changeStatus != ChangeStatus.UNCHANGED }
+
+                            if (changedFields.isNotEmpty()) {
+                                appendLine()
+                                appendLine("**${entity.getName()}:**")
+
+                                for (field in changedFields) {
+                                    val prefix = when (field.changeStatus) {
+                                        ChangeStatus.ADDED -> "  + "
+                                        ChangeStatus.REMOVED -> "  - "
+                                        ChangeStatus.UNCHANGED -> "    "
+                                    }
+                                    val type = if (field.isMethod()) "method" else "field"
+                                    appendLine("$prefix${field.name} ($type)")
+                                }
                             }
-                            val type = if (field.isMethod()) "method" else "field"
-                            appendLine("$prefix${field.name} ($type)")
                         }
                     }
                 }
-            } else {
-                appendLine("No structural changes detected.")
             }
         }
     }
