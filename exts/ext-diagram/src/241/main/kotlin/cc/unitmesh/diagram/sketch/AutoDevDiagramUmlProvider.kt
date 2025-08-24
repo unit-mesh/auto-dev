@@ -22,7 +22,7 @@ import org.intellij.lang.annotations.Pattern
  * Main provider for Graphviz diagrams
  * Similar to JdlUmlProvider in JHipster UML implementation
  */
-class CodeTopologyUmlProvider : DiagramProvider<GraphNodeData>() {
+class AutoDevDiagramUmlProvider : DiagramProvider<GraphNodeData>() {
     private val vfsResolver: DiagramVfsResolver<GraphNodeData> = CodeTopologyVfsResolver()
     private val elementManager: DiagramElementManager<GraphNodeData> = CodeTopologyElementManager()
 

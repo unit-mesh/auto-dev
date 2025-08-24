@@ -1,7 +1,7 @@
 package cc.unitmesh.diagram.diagram
 
 import cc.unitmesh.diagram.editor.DiagramPreviewFileEditor
-import cc.unitmesh.diagram.sketch.CodeTopologyUmlProvider
+import cc.unitmesh.diagram.sketch.AutoDevDiagramUmlProvider
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramBuilderFactory
 import com.intellij.ide.DataManager
@@ -27,7 +27,7 @@ import javax.swing.JPanel
 class CodeTopologyDiagramPanel(private val fileEditor: DiagramPreviewFileEditor) : Disposable {
     private var builder: DiagramBuilder? = null
     private val chartPanel = MyPanel()
-    private val umlProvider = CodeTopologyUmlProvider()
+    private val umlProvider = AutoDevDiagramUmlProvider()
 
     override fun dispose() {}
 

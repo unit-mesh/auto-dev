@@ -1,6 +1,6 @@
 package cc.unitmesh.diagram.diagram
 
-import cc.unitmesh.diagram.CodeDiagramIcons
+import cc.unitmesh.diagram.DiagramIcons
 import com.intellij.diagram.AbstractDiagramNodeContentManager
 import com.intellij.diagram.DiagramBuilder
 import com.intellij.diagram.DiagramCategory
@@ -37,28 +37,28 @@ class CodeTopologyNodeCategoryManager : AbstractDiagramNodeContentManager() {
 
         private val ADDED_FIELDS_CATEGORY = DiagramCategory(
             "Added Fields",
-            CodeDiagramIcons.DIAGRAM_ADD,
+            DiagramIcons.DIAGRAM_ADD,
             true,
             false
         )
 
         private val REMOVED_FIELDS_CATEGORY = DiagramCategory(
             "Removed Fields",
-            CodeDiagramIcons.DIAGRAM_REMOVE,
+            DiagramIcons.DIAGRAM_REMOVE,
             true,
             false
         )
 
         private val ADDED_METHODS_CATEGORY = DiagramCategory(
             "Added Methods",
-            CodeDiagramIcons.DIAGRAM_ADD,
+            DiagramIcons.DIAGRAM_ADD,
             true,
             false
         )
 
         private val REMOVED_METHODS_CATEGORY = DiagramCategory(
             "Removed Methods",
-            CodeDiagramIcons.DIAGRAM_REMOVE,
+            DiagramIcons.DIAGRAM_REMOVE,
             true,
             false
         )
