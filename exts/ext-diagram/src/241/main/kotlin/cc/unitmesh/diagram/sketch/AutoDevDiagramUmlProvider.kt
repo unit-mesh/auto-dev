@@ -31,13 +31,9 @@ class AutoDevDiagramUmlProvider : DiagramProvider<GraphNodeData>() {
     }
 
     @Pattern("[a-zA-Z0-9_-]*")
-    override fun getID(): String {
-        return "AutoDev Topology"
-    }
+    override fun getID(): String = "AutoDev Topology"
 
-    override fun getPresentableName(): String {
-        return "AutoDev topology DOT Diagram"
-    }
+    override fun getPresentableName(): String = "AutoDev topology DOT Diagram"
 
     override fun createDataModel(
         project: Project,
