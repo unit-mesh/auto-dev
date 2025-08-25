@@ -10,12 +10,7 @@ import cc.unitmesh.diagram.model.GraphNodeData
  */
 class CodeTopologyVfsResolver : DiagramVfsResolver<GraphNodeData> {
     
-    override fun getQualifiedName(data: GraphNodeData?): String? {
-        if (data == null) return null
-        
-        val name = data.getName()
-        return if (name.isNotEmpty()) name else null
-    }
+    override fun getQualifiedName(data: GraphNodeData?): String? = data?.getName()
     
     override fun resolveElementByFQN(fqn: String, project: Project): GraphNodeData? {
         // For now, we don't support resolving elements by FQN

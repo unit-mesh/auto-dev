@@ -66,35 +66,8 @@ class CodeTopologyEntityEdge(
             
             return builder.create()
         }
-        
-        // Predefined relationship types for common Graphviz edge styles
-        val DIRECTED_EDGE = DiagramRelationshipInfoAdapter.Builder()
-            .setName("DIRECTED")
-            .setLineType(DiagramLineType.SOLID)
-            .setSourceArrow(DiagramRelationshipInfo.NONE)
-            .setTargetArrow(DiagramRelationshipInfo.ANGLE)
-            .create()
-            
-        val UNDIRECTED_EDGE = DiagramRelationshipInfoAdapter.Builder()
-            .setName("UNDIRECTED")
-            .setLineType(DiagramLineType.SOLID)
-            .setSourceArrow(DiagramRelationshipInfo.NONE)
-            .setTargetArrow(DiagramRelationshipInfo.NONE)
-            .create()
-            
-        val DASHED_EDGE = DiagramRelationshipInfoAdapter.Builder()
-            .setName("DASHED")
-            .setLineType(DiagramLineType.DASHED)
-            .setSourceArrow(DiagramRelationshipInfo.NONE)
-            .setTargetArrow(DiagramRelationshipInfo.ANGLE)
-            .create()
     }
-    
-    /**
-     * Get the edge data
-     */
-    fun getEdgeData(): GraphEdgeData = edgeData
-    
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is CodeTopologyEntityEdge) return false
