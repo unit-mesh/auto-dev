@@ -14,12 +14,13 @@ data class AgentTool(
     val devinScriptPath: String = "",
 ) : Tool {
     override fun toString(): String {
-        val string = if (description.isEmpty()) "" else """desc: $description"""
-        val example = if (example.isEmpty()) "" else """example:
-<devin>
-$example
-</devin>"""
-        return """<tool>name: ${name}, $string, $example
+        val descAttr = if (description.isNotEmpty()) " description=\"$description\"" else ""
+        val exampleContent = if (example.isNotEmpty()) """
+    <example>
+        <devin>$example</devin>
+    </example>""" else ""
+        
+        return """<tool name="$name"$descAttr>$exampleContent
 </tool>"""
     }
 }
