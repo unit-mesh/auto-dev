@@ -21,10 +21,6 @@ interface CmdWrapper<T> {
 
     fun parseResult(json: String): List<T>
 
-    /**
-     * 同步执行 scc 命令
-     * @param arguments scc 命令行参数
-     */
     fun runSync(vararg arguments: String): List<T> {
         val command = buildCommand(arguments)
         val handler: OSProcessHandler = ColoredProcessHandler(command)
@@ -44,11 +40,11 @@ interface CmdWrapper<T> {
         })
 
         if (!handler.waitFor(timeoutMs)) {
-            throw IOException("SCC command timed out")
+            throw IOException("Command timed out")
         }
 
         if (handler.exitCode != 0) {
-            throw IOException("SCC command failed with exit code ${handler.exitCode}: $stderr")
+            throw IOException("Command failed with exit code ${handler.exitCode}: $stderr")
         }
 
         return parseResult(stdout.toString())
@@ -60,7 +56,7 @@ interface CmdWrapper<T> {
         val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
         val binName = if (osName.contains("win")) "$name.exe" else name
 
-        // try get from /usr/local/bin/scc if macos
+        // try get from /usr/local/bin/$name if macOS
         if (osName.contains("mac")) {
             val path = Paths.get("/usr/local/bin/$name")
             if (path.toFile().exists()) {
