@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat.ui.file
 
 import cc.unitmesh.devti.util.canBeAdded
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.diagnostic.Logger
@@ -36,7 +37,7 @@ import javax.swing.*
 class WorkspaceFileSearchPopup(
     private val project: Project,
     private val onFilesSelected: (List<VirtualFile>) -> Unit
-) {
+) : Disposable {
     companion object {
         private val LOG = Logger.getInstance(WorkspaceFileSearchPopup::class.java)
         private const val MAX_RECENT_FILES = 30
@@ -62,7 +63,7 @@ class WorkspaceFileSearchPopup(
     }
 
     private val minPopupSize = Dimension(480, 320)
-    private val searchAlarm = Alarm(Alarm.ThreadToUse.POOLED_THREAD)
+    private val searchAlarm = Alarm(Alarm.ThreadToUse.POOLED_THREAD, this)
 
     // File storage
     private val recentFiles = mutableListOf<FilePresentation>()
@@ -526,6 +527,10 @@ class WorkspaceFileSearchPopup(
 
         isLoadingFiles = false
         hasLoadedAllFiles = false
+    }
+
+    override fun dispose() {
+        cleanupResources()
     }
 
     private inner class FileListCellRenderer : ListCellRenderer<FilePresentation> {
