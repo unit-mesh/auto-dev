@@ -56,19 +56,6 @@ class SccWrapper(): CmdWrapper<SccResult> {
             throw SccException("Failed to parse scc output", e)
         }
     }
-
-    // 快捷方法示例
-    fun analyzeDirectory(directory: String, excludeDirs: List<String> = emptyList()): List<SccResult> {
-        val args = mutableListOf<String>().apply {
-            add(directory)
-            if (excludeDirs.isNotEmpty()) {
-                add("--exclude-dir")
-                add(excludeDirs.joinToString(","))
-            }
-        }
-
-        return runSync(*args.toTypedArray())
-    }
 }
 
 class SccException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
