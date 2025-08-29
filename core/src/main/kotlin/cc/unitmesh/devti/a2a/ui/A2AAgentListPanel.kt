@@ -2,7 +2,6 @@ package cc.unitmesh.devti.a2a.ui
 
 import cc.unitmesh.devti.a2a.A2AClientConsumer
 import cc.unitmesh.devti.a2a.A2aServer
-import cc.unitmesh.devti.mcp.client.CustomMcpServerManager
 import cc.unitmesh.devti.mcp.client.McpServer
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
@@ -10,18 +9,22 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import io.a2a.spec.AgentCard
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import javax.swing.*
+import javax.swing.JPanel
+import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 
 class A2AAgentListPanel(
     private val project: Project
 ) : JPanel(BorderLayout()) {
     private val a2aClientConsumer = A2AClientConsumer()
-    private val mcpServerManager = CustomMcpServerManager.instance(project)
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
 
     // Helper methods to safely access AgentCard properties using reflection
@@ -55,7 +58,7 @@ class A2AAgentListPanel(
     } catch (e: Exception) {
         null
     }
-    
+
     private var loadingJob: Job? = null
     private val serverLoadingStatus = mutableMapOf<String, Boolean>()
     private val serverPanels = mutableMapOf<String, JPanel>()
@@ -125,7 +128,7 @@ class A2AAgentListPanel(
                         }
                     }
                 }
-                
+
                 jobs.forEach { it.join() }
                 onAgentsLoaded(allA2AAgents)
             } catch (e: Exception) {
