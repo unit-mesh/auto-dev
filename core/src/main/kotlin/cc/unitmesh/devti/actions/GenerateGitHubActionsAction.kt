@@ -20,13 +20,11 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
         val project = e.project ?: return
 
         try {
-            // 改进变量命名
             val buildSystem = BuildSystemProvider.guess(project)
             val templateRender = TemplateRender(GENIUS_CICD)
             templateRender.context = DevOpsContext.from(buildSystem)
             val template = templateRender.getTemplate("generate-github-action.vm")
 
-            // 安全的路径处理
             val projectDir = project.guessProjectDir()?.toNioPath()
                 ?: throw IllegalStateException("Cannot determine project directory")
 
@@ -40,9 +38,7 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
                 .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
 
         } catch (e: Exception) {
-            // 添加错误处理，可以显示错误通知给用户
             logger<GenerateGitHubActionsAction>().error("Failed to generate GitHub Actions workflow", e)
-            // 可以添加用户通知
         }
     }
 }
