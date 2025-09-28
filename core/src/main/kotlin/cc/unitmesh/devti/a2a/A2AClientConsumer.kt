@@ -75,7 +75,7 @@ class A2AClientConsumer {
 
             client.sendMessage(message, null)
 
-            responseFuture.get(30, java.util.concurrent.TimeUnit.SECONDS)
+            responseFuture.get(120, java.util.concurrent.TimeUnit.SECONDS)
         } catch (e: Exception) {
             responseMap.remove(agentName)
             logger<A2AClientConsumer>().error("Failed to send message to $agentName: ${e.message}", e)
