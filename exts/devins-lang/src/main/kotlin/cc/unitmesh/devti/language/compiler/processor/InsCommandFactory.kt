@@ -39,6 +39,10 @@ class InsCommandFactory {
         originCmdName: String,
         context: CompilerContext
     ): InsCommand = when (commandNode) {
+        BuiltinCommand.LIBRARY_VERSION_FETCH -> {
+            context.result.isLocalCommand = true
+            LibraryVersionFetchInsCommand(context.project, prop)
+        }
         BuiltinCommand.FILE -> FileInsCommand(context.project, prop)
         BuiltinCommand.REV -> RevInsCommand(context.project, prop)
         BuiltinCommand.SYMBOL -> {

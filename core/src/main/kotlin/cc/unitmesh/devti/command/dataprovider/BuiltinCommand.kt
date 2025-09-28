@@ -67,6 +67,14 @@ enum class BuiltinCommand(
         "run",
         "Execute IntelliJ IDEA's built-in build and test commands. Use for running Gradle tasks, Maven goals, npm scripts, or test suites. Essential for validating code changes and ensuring project builds correctly. Returns execution output, exit codes, and error information.",
         AllIcons.Actions.Execute,
+        LIBRARY_VERSION_FETCH(
+            "library-version-fetch",
+            "Fetch latest version of npmjs, maven or other libraries.",
+            AllIcons.Nodes.PpLib,
+            true,
+            true,
+            enableInSketch = false
+        ),
         true,
         true,
         enableInSketch = false
