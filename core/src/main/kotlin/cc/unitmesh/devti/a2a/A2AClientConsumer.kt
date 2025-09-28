@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.a2a
 
+import com.intellij.openapi.diagnostic.logger
 import io.a2a.A2A
 import io.a2a.client.*
 import io.a2a.client.config.ClientConfig
@@ -63,7 +64,8 @@ class A2AClientConsumer {
     }
 
     fun sendMessage(agentName: String, msgText: String): String {
-        val client = clientMap[agentName] ?: throw IllegalArgumentException("No client found for $agentName")
+        val client = clientMap[agentName]
+            ?: return "Failed to find A2A client for $agentName. Available clients: ${clientMap.keys}"
 
         return try {
             val message = A2A.toUserMessage(msgText)
@@ -76,7 +78,8 @@ class A2AClientConsumer {
             responseFuture.get(30, java.util.concurrent.TimeUnit.SECONDS)
         } catch (e: Exception) {
             responseMap.remove(agentName)
-            throw RuntimeException("Failed to send message to agent $agentName: ${e.message}", e)
+            logger<A2AClientConsumer>().error("Failed to send message to $agentName: ${e.message}", e)
+            return e.message ?: "Unknown error"
         }
     }
 

@@ -20,6 +20,10 @@ class A2ASketchToolchainProvider : SketchToolchainProvider {
         fun collectA2ATools(project: Project): List<AgentTool> {
             return try {
                 val a2aService = project.getService(A2AService::class.java)
+
+                // Initialize A2A service from configuration
+                a2aService.initialize()
+
                 val agentCards = a2aService.getAvailableAgents()
 
                 agentCards.map { agentCard ->

@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.a2a
 
+import cc.unitmesh.devti.mcp.client.McpServer
+import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import io.a2a.spec.AgentCard
@@ -11,17 +13,46 @@ import io.a2a.spec.AgentCard
 class A2AService(private val project: Project) {
     private var a2aClientConsumer: A2AClientConsumer? = null
     private var availableAgents: List<AgentCard> = emptyList()
-    
+    private val cached = mutableMapOf<String, List<AgentCard>>()
+
     companion object {
         fun getInstance(project: Project): A2AService {
             return project.getService(A2AService::class.java)
         }
     }
-    
+
+    /**
+     * Initialize A2A service by reading configuration from project settings
+     */
+    fun initialize() {
+        val mcpServerConfig = project.customizeSetting.mcpServerConfig
+        if (mcpServerConfig.isEmpty()) {
+            a2aClientConsumer = null
+            availableAgents = emptyList()
+            return
+        }
+
+        if (cached.containsKey(mcpServerConfig)) {
+            availableAgents = cached[mcpServerConfig] ?: emptyList()
+            return
+        }
+
+        val mcpConfig = McpServer.load(mcpServerConfig)
+        if (mcpConfig?.a2aServers.isNullOrEmpty()) {
+            a2aClientConsumer = null
+            availableAgents = emptyList()
+            return
+        }
+
+        val servers = mcpConfig.a2aServers.values.toList()
+        initialize(servers)
+        cached[mcpServerConfig] = availableAgents
+    }
+
     /**
      * Initialize A2A service with server configurations
      */
-    fun initialize(servers: List<A2aServer>) {
+    private fun initialize(servers: List<A2aServer>) {
         try {
             a2aClientConsumer = A2AClientConsumer()
             a2aClientConsumer?.init(servers)
@@ -57,7 +88,20 @@ class A2AService(private val project: Project) {
     fun isAvailable(): Boolean {
         return a2aClientConsumer != null && availableAgents.isNotEmpty()
     }
-    
+
+    /**
+     * Get enabled A2A servers from configuration content
+     */
+    fun getEnabledServers(content: String): Map<String, A2aServer>? {
+        val mcpConfig = McpServer.load(content)
+        return mcpConfig?.a2aServers?.filter { entry ->
+            // A2A servers don't have a disabled flag like MCP servers, so all are enabled
+            true
+        }?.mapValues { entry ->
+            entry.value
+        }
+    }
+
     /**
      * Refresh the list of available agents
      */

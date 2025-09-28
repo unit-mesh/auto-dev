@@ -39,6 +39,7 @@ class A2AInsCommand(
 
     override suspend fun execute(): String? {
         val a2aService = project.getService(A2AService::class.java)
+        a2aService.initialize()
 
         if (!a2aService.isAvailable()) {
             return "A2A service is not available. Please check your A2A configuration."
