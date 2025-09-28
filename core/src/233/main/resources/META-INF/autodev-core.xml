@@ -146,6 +146,10 @@
                         interface="cc.unitmesh.devti.provider.BuildSystemProvider"
                         dynamic="true"/>
 
+        <extensionPoint qualifiedName="cc.unitmesh.libraryVersionProvider"
+                        interface="cc.unitmesh.devti.provider.LibraryVersionProvider"
+                        dynamic="true"/>
+
         <extensionPoint qualifiedName="cc.unitmesh.customPromptProvider"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.CustomPromptProvider"/>
@@ -373,6 +377,10 @@
         <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver"/>
         <agentObserver implementation="cc.unitmesh.devti.observer.BuiltTaskAgentObserver"/>
         <agentObserver implementation="cc.unitmesh.devti.observer.AddDependencyAgentObserver"/>
+
+        <!-- Library Version Providers -->
+        <libraryVersionProvider implementation="cc.unitmesh.devti.provider.impl.NpmVersionProvider"/>
+        <libraryVersionProvider implementation="cc.unitmesh.devti.provider.impl.MavenVersionProvider"/>
     </extensions>
 
     <actions>

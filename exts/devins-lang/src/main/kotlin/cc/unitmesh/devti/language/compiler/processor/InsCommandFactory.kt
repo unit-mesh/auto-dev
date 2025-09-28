@@ -41,7 +41,8 @@ class InsCommandFactory {
     ): InsCommand = when (commandNode) {
         BuiltinCommand.LIBRARY_VERSION_FETCH -> {
             context.result.isLocalCommand = true
-            LibraryVersionFetchInsCommand(context.project, prop)
+            val shireCode: String? = lookupNextCode(used)?.codeText()
+            LibraryVersionFetchInsCommand(context.project, prop, shireCode ?: "")
         }
         BuiltinCommand.FILE -> FileInsCommand(context.project, prop)
         BuiltinCommand.REV -> RevInsCommand(context.project, prop)

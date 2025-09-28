@@ -1,0 +1,12 @@
+/library-version-fetch
+```json
+{
+  "name": "react",
+  "type": "npm"
+}
+```
+
+Legacy format also supported:
+/library-version-fetch:npm:react
+/library-version-fetch:maven:org.springframework:spring-core
+/library-version-fetch:react (auto-detect)
