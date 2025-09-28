@@ -24,39 +24,34 @@ class A2AAgentCardPanel(
 ) : JPanel(BorderLayout(0, 0)) {
 
     // Helper methods to safely access AgentCard properties
-    // Use reflection to access Java record fields safely
+    // Use the new AgentCard record methods
     private fun getAgentName(): String = try {
-        getFieldValue(agentCard, "name") as? String ?: "Unknown Agent"
+        agentCard.name() ?: "Unknown Agent"
     } catch (e: Exception) {
         "Unknown Agent"
     }
 
     private fun getAgentDescription(): String = try {
-        getFieldValue(agentCard, "description") as? String ?: "No description available"
+        agentCard.description() ?: "No description available"
     } catch (e: Exception) {
         "No description available"
     }
 
     private fun getAgentVersion(): String = try {
-        getFieldValue(agentCard, "version") as? String ?: "1.0.0"
+        agentCard.version() ?: "1.0.0"
     } catch (e: Exception) {
         "1.0.0"
     }
 
     private fun getProviderName(): String = try {
-        val provider = getFieldValue(agentCard, "provider")
-        if (provider != null) {
-            getFieldValue(provider, "name") as? String ?: "Unknown"
-        } else {
-            "Unknown"
-        }
+        val provider = agentCard.provider()
+        provider?.organization() ?: "Unknown"
     } catch (e: Exception) {
         "Unknown"
     }
 
     private fun getSkillsCount(): Int = try {
-        val skills = getFieldValue(agentCard, "skills") as? List<*>
-        skills?.size ?: 0
+        agentCard.skills()?.size ?: 0
     } catch (e: Exception) {
         0
     }
@@ -198,7 +193,7 @@ class A2AAgentCardPanel(
         }
 
         private fun getAgentName(): String = try {
-            getFieldValue(agentCard, "name") as? String ?: "Unknown Agent"
+            agentCard.name() ?: "Unknown Agent"
         } catch (e: Exception) {
             "Unknown Agent"
         }
@@ -228,32 +223,35 @@ class A2AAgentCardPanel(
 
             // Basic Information
             addSectionHeader(panel, "Basic Information")
-            addDetailRow(panel, "Name", getFieldValue(agentCard, "name") as? String ?: "N/A")
-            addDetailRow(panel, "Description", getFieldValue(agentCard, "description") as? String ?: "N/A")
-            addDetailRow(panel, "Version", getFieldValue(agentCard, "version") as? String ?: "N/A")
-            addDetailRow(panel, "URL", getFieldValue(agentCard, "url") as? String ?: "N/A")
-            addDetailRow(panel, "Protocol Version", getFieldValue(agentCard, "protocolVersion") as? String ?: "N/A")
+            addDetailRow(panel, "Name", agentCard.name() ?: "N/A")
+            addDetailRow(panel, "Description", agentCard.description() ?: "N/A")
+            addDetailRow(panel, "Version", agentCard.version() ?: "N/A")
+            addDetailRow(panel, "URL", agentCard.url() ?: "N/A")
+            addDetailRow(panel, "Protocol Version", agentCard.protocolVersion() ?: "N/A")
 
             // Provider Information
-            val provider = getFieldValue(agentCard, "provider")
+            val provider = agentCard.provider()
             if (provider != null) {
                 addSectionHeader(panel, "Provider")
-                addDetailRow(panel, "Name", getFieldValue(provider, "name") as? String ?: "N/A")
-                addDetailRow(panel, "Description", getFieldValue(provider, "description") as? String ?: "N/A")
-                addDetailRow(panel, "URL", getFieldValue(provider, "url") as? String ?: "N/A")
+                try {
+                    addDetailRow(panel, "Organization", provider.organization() ?: "N/A")
+                    addDetailRow(panel, "URL", provider.url() ?: "N/A")
+                } catch (e: Exception) {
+                    addDetailRow(panel, "Provider", provider.toString())
+                }
             }
 
             // Capabilities
-            val capabilities = getFieldValue(agentCard, "capabilities")
+            val capabilities = agentCard.capabilities()
             if (capabilities != null) {
                 addSectionHeader(panel, "Capabilities")
-                addDetailRow(panel, "Supports Streaming", getFieldValue(capabilities, "supportsStreaming")?.toString() ?: "N/A")
-                addDetailRow(panel, "Supports Tools", getFieldValue(capabilities, "supportsTools")?.toString() ?: "N/A")
-                addDetailRow(panel, "Supports Resources", getFieldValue(capabilities, "supportsResources")?.toString() ?: "N/A")
+                addDetailRow(panel, "Supports Streaming", capabilities.streaming()?.toString() ?: "N/A")
+                addDetailRow(panel, "Push Notifications", capabilities.pushNotifications()?.toString() ?: "N/A")
+                addDetailRow(panel, "State Transition History", capabilities.stateTransitionHistory()?.toString() ?: "N/A")
             }
 
             // Skills
-            val skills = getFieldValue(agentCard, "skills") as? List<*>
+            val skills = agentCard.skills()
             if (!skills.isNullOrEmpty()) {
                 addSectionHeader(panel, "Skills (${skills.size})")
                 skills.forEach { skill ->
@@ -265,17 +263,17 @@ class A2AAgentCardPanel(
 
             // Input/Output Modes
             addSectionHeader(panel, "Input/Output Modes")
-            val inputModes = getFieldValue(agentCard, "defaultInputModes") as? List<*>
-            val outputModes = getFieldValue(agentCard, "defaultOutputModes") as? List<*>
+            val inputModes = agentCard.defaultInputModes()
+            val outputModes = agentCard.defaultOutputModes()
             addDetailRow(panel, "Default Input Modes", inputModes?.joinToString(", ") ?: "N/A")
             addDetailRow(panel, "Default Output Modes", outputModes?.joinToString(", ") ?: "N/A")
 
             // Additional Information
             addSectionHeader(panel, "Additional Information")
-            addDetailRow(panel, "Documentation URL", getFieldValue(agentCard, "documentationUrl") as? String ?: "N/A")
-            addDetailRow(panel, "Icon URL", getFieldValue(agentCard, "iconUrl") as? String ?: "N/A")
-            addDetailRow(panel, "Preferred Transport", getFieldValue(agentCard, "preferredTransport") as? String ?: "N/A")
-            addDetailRow(panel, "Supports Auth Extended Card", getFieldValue(agentCard, "supportsAuthenticatedExtendedCard")?.toString() ?: "N/A")
+            addDetailRow(panel, "Documentation URL", agentCard.documentationUrl() ?: "N/A")
+            addDetailRow(panel, "Icon URL", agentCard.iconUrl() ?: "N/A")
+            addDetailRow(panel, "Preferred Transport", agentCard.preferredTransport() ?: "N/A")
+            addDetailRow(panel, "Supports Auth Extended Card", agentCard.supportsAuthenticatedExtendedCard()?.toString() ?: "N/A")
 
             return panel
         }
@@ -320,8 +318,32 @@ class A2AAgentCardPanel(
                 isOpaque = true
             }
 
-            val skillName = getFieldValue(skill, "name") as? String ?: "Unnamed Skill"
-            val skillDesc = getFieldValue(skill, "description") as? String ?: "No description"
+            // Try to access skill properties using the new API
+            val skillName = try {
+                when {
+                    skill.javaClass.simpleName == "AgentSkill" -> {
+                        // Use reflection for AgentSkill record methods
+                        val nameMethod = skill.javaClass.getMethod("name")
+                        nameMethod.invoke(skill) as? String ?: "Unnamed Skill"
+                    }
+                    else -> getFieldValue(skill, "name") as? String ?: "Unnamed Skill"
+                }
+            } catch (e: Exception) {
+                "Unnamed Skill"
+            }
+
+            val skillDesc = try {
+                when {
+                    skill.javaClass.simpleName == "AgentSkill" -> {
+                        // Use reflection for AgentSkill record methods
+                        val descMethod = skill.javaClass.getMethod("description")
+                        descMethod.invoke(skill) as? String ?: "No description"
+                    }
+                    else -> getFieldValue(skill, "description") as? String ?: "No description"
+                }
+            } catch (e: Exception) {
+                "No description"
+            }
 
             val nameLabel = JBLabel("• $skillName").apply {
                 font = JBUI.Fonts.label(12.0f).asBold()
@@ -358,7 +380,7 @@ class A2AAgentCardPanel(
         }
 
         private fun getAgentName(): String = try {
-            getFieldValue(agentCard, "name") as? String ?: "Unknown Agent"
+            agentCard.name() ?: "Unknown Agent"
         } catch (e: Exception) {
             "Unknown Agent"
         }

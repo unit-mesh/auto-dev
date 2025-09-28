@@ -429,6 +429,11 @@ project(":core") {
         implementation("io.ktor:ktor-server-sse:3.2.3")
 
         implementation("io.github.a2asdk:a2a-java-sdk-client:0.3.0.Beta1")
+        // A2A transport dependencies - JSON-RPC is included by default but we need to configure it
+        // Add gRPC transport if needed in the future
+        // implementation("io.github.a2asdk:a2a-java-sdk-client-transport-grpc:0.3.0.Beta1")
+        // Add REST transport if needed in the future
+        // implementation("io.github.a2asdk:a2a-java-sdk-client-transport-rest:0.3.0.Beta1")
 
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 

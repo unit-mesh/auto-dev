@@ -28,29 +28,26 @@ class A2AAgentListPanel(
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
 
     private fun getAgentName(agent: AgentCard): String = try {
-        getFieldValue(agent, "name") as? String ?: ""
+        agent.name() ?: ""
     } catch (e: Exception) {
         ""
     }
 
     private fun getAgentDescription(agent: AgentCard): String? = try {
-        getFieldValue(agent, "description") as? String
+        agent.description()
     } catch (e: Exception) {
         null
     }
 
     private fun getProviderName(agent: AgentCard): String? = try {
-        val provider = getFieldValue(agent, "provider")
-        if (provider != null) {
-            getFieldValue(provider, "name") as? String
-        } else {
-            null
-        }
+        val provider = agent.provider()
+        provider?.organization()
     } catch (e: Exception) {
         null
     }
 
     private fun getFieldValue(obj: Any, fieldName: String): Any? = try {
+        // For backward compatibility with reflection-based access
         val field = obj.javaClass.getDeclaredField(fieldName)
         field.isAccessible = true
         field.get(obj)
