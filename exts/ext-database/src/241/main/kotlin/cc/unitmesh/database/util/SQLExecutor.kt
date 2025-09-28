@@ -8,6 +8,7 @@ import com.intellij.database.console.session.DatabaseSession
 import com.intellij.database.console.session.getSessionTitle
 import com.intellij.database.datagrid.GridDataRequest
 import com.intellij.database.datagrid.GridRow
+import com.intellij.database.intentions.RunQueryInConsoleIntentionAction
 import com.intellij.database.model.RawDataSource
 import com.intellij.database.script.PersistenceConsoleProvider
 import com.intellij.database.settings.DatabaseSettings
@@ -15,6 +16,7 @@ import com.intellij.database.vfs.DbVFSUtils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -36,7 +38,7 @@ object SQLExecutor {
 
     private fun checkSqlSafety(project: Project, psiFile: com.intellij.psi.PsiFile): Pair<Boolean, String> {
         val sqlFile = psiFile as? com.intellij.sql.psi.SqlFile ?: return Pair(true, "Not a SQL file")
-        val statements = sqlFile.ddl
+        val statements = runReadAction { sqlFile.ddl }
 
         for (statement in statements) {
             val firstChild = statement.firstChild
@@ -103,11 +105,12 @@ object SQLExecutor {
                             EditorEx::class.java,
                             Any::class.java
                         )
+
                 chooseAndRunRunnersMethod.invoke(null, runners, info.editor, null)
             } catch (e: Exception) {
-                println("ShireError[Database]: Failed to run query with multiple runners")
                 throw e
             }
+
             return "ShireError[Database]: Currently not support multiple runners"
         }
     }
