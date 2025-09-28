@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## [2.4.1](https://github.com/unit-mesh/auto-dev/compare/v2.4.0...v[2.4.1]) (2025-09-28)
+
+### Bug Fixes
+
+* **A2AClientConsumer:** increase timeout for message response handling [#443](https://github.com/unit-mesh/auto-dev/issues/443) ([1025d61](https://github.com/unit-mesh/auto-dev/commit/1025d61d006721d81db83f4a110ee6a6f205d13e))
+* **diagram:** disable binary content update on document change ([88d6921](https://github.com/unit-mesh/auto-dev/commit/88d6921f7fb583a94a4c06d0fa295a82d43ee4c5))
+* **linecount:** update error messages for command execution ([649317c](https://github.com/unit-mesh/auto-dev/commit/649317c77eb70b2c4c2a249c2320b1b462fa0019))
+
+### Features
+
+* **A2AAgentCardPanel:** add error notification for failed A2A message sending ([84ed450](https://github.com/unit-mesh/auto-dev/commit/84ed450c75a6109ea5551be3ecfd6837a31b9799))
+* **a2a:** enhance A2A service initialization and error handling [#443](https://github.com/unit-mesh/auto-dev/issues/443) ([751a70a](https://github.com/unit-mesh/auto-dev/commit/751a70a6961b1904431a4a0ec25f84ffac414b42))
+* **a2a:** implement A2A command and service for agent communication [#443](https://github.com/unit-mesh/auto-dev/issues/443) ([fd331fd](https://github.com/unit-mesh/auto-dev/commit/fd331fd4727ab791e3e458712f6245bd117ff86f))
+* **a2a:** migrate to new Client.builder API ([cc7cafb](https://github.com/unit-mesh/auto-dev/commit/cc7cafb5798da9533bf0a916db9e952964fe319a))
+* **command:** add LIBRARY_VERSION_FETCH command to fetch library versions ([c6adf2b](https://github.com/unit-mesh/auto-dev/commit/c6adf2bc15ade60a658066eca6cc6052280205c5))
+* **library:** implement LibraryVersionProvider for npm and maven [#441](https://github.com/unit-mesh/auto-dev/issues/441) ([ffe2835](https://github.com/unit-mesh/auto-dev/commit/ffe2835e3332146ba4d25496b9552a9cab7f870f))
+* **test:** add unit tests for LibraryVersionFetchInsCommand functionality ([544c3e4](https://github.com/unit-mesh/auto-dev/commit/544c3e42cbd38b8351c5c32cfd5894c116fe8c45))
+
 ## [2.4.0] - 2025-08-14
 
 ### Bug Fixes
@@ -2335,7 +2353,8 @@
 * update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 * use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.4.1...HEAD
+[2.4.1]: https://github.com/unit-mesh/auto-dev/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/unit-mesh/auto-dev/compare/v2.2.4...v2.4.0
 [2.2.4]: https://github.com/unit-mesh/auto-dev/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/unit-mesh/auto-dev/compare/v2.2.2...v2.2.3
