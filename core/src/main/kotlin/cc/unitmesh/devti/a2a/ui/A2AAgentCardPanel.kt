@@ -22,9 +22,6 @@ class A2AAgentCardPanel(
     private val agentCard: AgentCard,
     private val a2aClientConsumer: A2AClientConsumer
 ) : JPanel(BorderLayout(0, 0)) {
-
-    // Helper methods to safely access AgentCard properties
-    // Use the new AgentCard record methods
     private fun getAgentName(): String = try {
         agentCard.name() ?: "Unknown Agent"
     } catch (e: Exception) {
@@ -56,13 +53,6 @@ class A2AAgentCardPanel(
         0
     }
 
-    private fun getFieldValue(obj: Any, fieldName: String): Any? = try {
-        val field = obj.javaClass.getDeclaredField(fieldName)
-        field.isAccessible = true
-        field.get(obj)
-    } catch (e: Exception) {
-        null
-    }
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
     private val mutedBackground = JBColor(0xF3F4F6, 0x2B2D30)
@@ -385,14 +375,6 @@ class A2AAgentCardPanel(
             "Unknown Agent"
         }
 
-        private fun getFieldValue(obj: Any, fieldName: String): Any? = try {
-            val field = obj.javaClass.getDeclaredField(fieldName)
-            field.isAccessible = true
-            field.get(obj)
-        } catch (e: Exception) {
-            null
-        }
-        
         override fun createCenterPanel(): JComponent {
             val panel = JPanel(BorderLayout(0, 10))
             panel.preferredSize = Dimension(600, 400)
