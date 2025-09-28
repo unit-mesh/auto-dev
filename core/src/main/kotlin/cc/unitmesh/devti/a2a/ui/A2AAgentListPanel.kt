@@ -27,7 +27,6 @@ class A2AAgentListPanel(
     private val a2aClientConsumer = A2AClientConsumer()
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
 
-    // Helper methods to safely access AgentCard properties using reflection
     private fun getAgentName(agent: AgentCard): String = try {
         getFieldValue(agent, "name") as? String ?: ""
     } catch (e: Exception) {
