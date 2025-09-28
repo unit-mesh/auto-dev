@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.a2a.ui
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.a2a.A2AClientConsumer
 import cc.unitmesh.devti.provider.local.JsonLanguageField
 import com.intellij.openapi.project.Project
@@ -356,7 +357,7 @@ class A2AAgentCardPanel(
     }
 
     private class A2AAgentTestDialog(
-        project: Project,
+        private val project: Project,
         private val agentCard: AgentCard,
         private val a2aClientConsumer: A2AClientConsumer
     ) : DialogWrapper(project) {
@@ -417,6 +418,7 @@ class A2AAgentCardPanel(
                 resultArea.text = result
             } catch (e: Exception) {
                 resultArea.text = "Error sending message: ${e.message}"
+                AutoDevNotifications.error(project, "Failed to send A2A message: ${e.message}")
             }
         }
     }
