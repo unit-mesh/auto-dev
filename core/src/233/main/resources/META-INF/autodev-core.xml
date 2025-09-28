@@ -381,6 +381,9 @@
         <!-- Library Version Providers -->
         <libraryVersionProvider implementation="cc.unitmesh.devti.provider.impl.NpmVersionProvider"/>
         <libraryVersionProvider implementation="cc.unitmesh.devti.provider.impl.MavenVersionProvider"/>
+
+        <!-- A2A Sketch Toolchain Provider -->
+        <sketchToolchainProvider implementation="cc.unitmesh.devti.a2a.A2ASketchToolchainProvider"/>
     </extensions>
 
     <actions>

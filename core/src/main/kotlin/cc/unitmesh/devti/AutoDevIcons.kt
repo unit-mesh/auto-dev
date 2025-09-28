@@ -118,4 +118,7 @@ object AutoDevIcons {
 
     @JvmField
     val GITHUB_ISSUE: Icon = IconLoader.getIcon("/icons/github-issue.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val A2A: Icon = IconLoader.getIcon("/icons/a2a.svg", AutoDevIcons::class.java)
 }

@@ -165,6 +165,11 @@ class InsCommandFactory {
             val shireCode: String? = lookupNextCode(used)?.codeText()
             WriteProcessInputInsCommand(context.project, prop, shireCode)
         }
+        BuiltinCommand.A2A -> {
+            context.result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.codeText()
+            A2AInsCommand(context.project, prop, shireCode ?: "")
+        }
         BuiltinCommand.TOOLCHAIN_COMMAND -> {
             context.result.isLocalCommand = true
             createToolchainCommand(used, prop, originCmdName, commandNode, context)

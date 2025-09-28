@@ -114,15 +114,23 @@ data class SketchRunContext(
 
 
         /**
-         * Get tool list from McpConfigService if available, otherwise fall back to SketchToolchainProvider
+         * Get tool list from McpConfigService and A2A agents if available, otherwise fall back to SketchToolchainProvider
          */
         fun getToolList(project: Project): String {
             val mcpConfigService = project.getService(McpConfigService::class.java)
             val selectedTools = mcpConfigService.convertToAgentTool()
             val defaultTools = SketchToolchainProvider.collect(project)
 
-            return if (selectedTools.isNotEmpty()) {
-                (defaultTools + selectedTools).joinToString("\n") { it.toString() }
+            // Get A2A tools
+            val a2aTools = try {
+                cc.unitmesh.devti.a2a.A2ASketchToolchainProvider.collectA2ATools(project)
+            } catch (e: Exception) {
+                emptyList()
+            }
+
+            val allTools = defaultTools + selectedTools + a2aTools
+            return if (allTools.isNotEmpty()) {
+                allTools.joinToString("\n") { it.toString() }
             } else {
                 defaultTools.joinToString("\n")
             }

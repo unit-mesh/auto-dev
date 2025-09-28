@@ -1,0 +1,12 @@
+/a2a
+```json
+{
+  "agent": "code-reviewer",
+  "message": "Please review this code for potential security vulnerabilities"
+}
+```
+
+Legacy format also supported:
+/a2a code-reviewer "Please review this code for potential issues"
+/a2a documentation-writer "Generate documentation for this module"
+/a2a test-generator "Create unit tests for the PaymentService class"

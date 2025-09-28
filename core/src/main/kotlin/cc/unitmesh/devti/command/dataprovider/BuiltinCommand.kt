@@ -221,6 +221,14 @@ enum class BuiltinCommand(
         true,
         enableInSketch = false
     ),
+    A2A(
+        "a2a",
+        "Send message to A2A (Agent-to-Agent) protocol agents. Use for delegating tasks to specialized AI agents that support A2A protocol. Specify agent name and message content. Returns agent response for further processing or analysis.",
+        AutoDevIcons.A2A,
+        true,
+        true,
+        enableInSketch = true
+    ),
     ;
 
     companion object {
