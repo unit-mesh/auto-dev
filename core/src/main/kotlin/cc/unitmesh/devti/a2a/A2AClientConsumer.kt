@@ -7,6 +7,7 @@ import io.a2a.client.config.ClientConfig
 import io.a2a.client.http.A2ACardResolver
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfig
+import io.a2a.client.transport.spi.interceptors.ClientCallContext
 import io.a2a.spec.AgentCard
 import io.a2a.spec.Message
 import io.a2a.spec.TextPart

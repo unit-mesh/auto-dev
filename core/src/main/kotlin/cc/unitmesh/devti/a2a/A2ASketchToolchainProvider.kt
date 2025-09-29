@@ -35,35 +35,11 @@ class A2ASketchToolchainProvider : SketchToolchainProvider {
         }
 
         private fun convertAgentCardToTool(agentCard: AgentCard): AgentTool {
-            val name = try {
-                agentCard.name() ?: "unknown_agent"
-            } catch (e: Exception) {
-                "unknown_agent"
-            }
+            val name = agentCard.name() ?: "unknown_agent"
 
-            val description = try {
-                agentCard.description() ?: "A2A Agent"
-            } catch (e: Exception) {
-                "A2A Agent"
-            }
+            val description = agentCard.description() ?: "A2A Agent"
 
-            val skills = try {
-                agentCard.skills()?.joinToString(", ") { skill ->
-                    try {
-                        when {
-                            skill.javaClass.simpleName == "AgentSkill" -> {
-                                val nameMethod = skill.javaClass.getMethod("name")
-                                nameMethod.invoke(skill) as? String ?: "skill"
-                            }
-                            else -> skill.toString()
-                        }
-                    } catch (e: Exception) {
-                        "skill"
-                    }
-                } ?: ""
-            } catch (e: Exception) {
-                ""
-            }
+            val skills = agentCard.skills()?.joinToString(", ") { it.name } ?: ""
 
             val fullDescription = if (skills.isNotEmpty()) {
                 "$description. Available skills: $skills"
