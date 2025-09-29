@@ -142,20 +142,6 @@ class DiffViewerService(private val project: Project) {
     }
     
     /**
-     * Show diff in a new editor tab
-     */
-    fun showDiffInNewTab(
-        leftContent: String,
-        rightContent: String,
-        leftTitle: String = "Original",
-        rightTitle: String = "Modified",
-        tabTitle: String = "Diff"
-    ) {
-        val processor = createStandaloneDiffProcessor(leftContent, rightContent, leftTitle, rightTitle)
-        processor.showInNewTab(tabTitle)
-    }
-    
-    /**
      * Get active diff processor by ID
      */
     fun getDiffProcessor(processorId: String): StandaloneDiffRequestProcessor? {

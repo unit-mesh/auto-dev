@@ -6,6 +6,7 @@ import com.intellij.diff.DiffDialogHints
 import com.intellij.diff.DiffManager
 import com.intellij.diff.FrameDiffTool
 import com.intellij.diff.contents.DiffContent
+import com.intellij.diff.editor.DiffVirtualFile
 import com.intellij.diff.requests.DiffRequest
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.diff.tools.util.DiffDataKeys
@@ -99,28 +100,6 @@ class StandaloneDiffRequestProcessor(
     }
     
     /**
-     * Show diff in a new editor tab
-     */
-    fun showInNewTab(tabTitle: String = "Diff") {
-        if (disposed) return
-        
-        runInEdt {
-            try {
-                val fileEditorManager = FileEditorManager.getInstance(project)
-                
-                // Create a virtual file for the diff
-                val diffVirtualFile = DiffVirtualFile(tabTitle, this)
-                
-                // Open the diff in a new tab
-                fileEditorManager.openFile(diffVirtualFile, true)
-            } catch (e: Exception) {
-                // Fallback to dialog if tab creation fails
-                showInDialog()
-            }
-        }
-    }
-    
-    /**
      * Create diff component for embedding
      */
     fun createDiffComponent(): JComponent? {
@@ -128,14 +107,8 @@ class StandaloneDiffRequestProcessor(
 
         return try {
             val request = diffRequest ?: return null
-            // Note: DiffContext is abstract, so we'll create a simple diff display instead
-
-            // Use DiffManager to show diff in a component
-            // This is a simplified approach - in a real implementation you might need
-            // to use more specific diff tools
             val panel = JPanel(BorderLayout())
 
-            // Create a simple text-based diff display as fallback
             val leftTextArea = javax.swing.JTextArea(leftContent).apply {
                 isEditable = false
                 font = java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12)
@@ -205,33 +178,6 @@ class StandaloneDiffRequestProcessor(
      * Get right title
      */
     fun getRightTitle(): String = rightTitle
-    
-    /**
-     * Create action group for diff operations
-     */
-    fun createActionGroup(): DefaultActionGroup {
-        val actionGroup = DefaultActionGroup()
-        
-        actionGroup.add(object : AnAction("Show in Dialog") {
-            override fun actionPerformed(e: AnActionEvent) {
-                showInDialog()
-            }
-        })
-        
-        actionGroup.add(object : AnAction("Show in New Tab") {
-            override fun actionPerformed(e: AnActionEvent) {
-                showInNewTab()
-            }
-        })
-        
-        actionGroup.add(object : AnAction("Refresh") {
-            override fun actionPerformed(e: AnActionEvent) {
-                refresh(leftContent, rightContent)
-            }
-        })
-        
-        return actionGroup
-    }
     
     override fun dispose() {
         if (disposed) return
