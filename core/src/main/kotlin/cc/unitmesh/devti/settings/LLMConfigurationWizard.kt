@@ -186,33 +186,4 @@ class LLMConfigurationWizard(private val project: Project?) : DialogWrapper(proj
             Messages.showErrorDialog("Error creating LLM configuration: ${e.message}", "Error")
         }
     }
-
-    companion object {
-        /**
-         * Show the wizard if no LLMs are configured
-         */
-        fun showIfNeeded(project: Project?): Boolean {
-            val settings = AutoDevSettingsState.getInstance()
-
-            // Check if user has any LLMs configured
-            val hasCustomLlms = settings.customLlms.isNotEmpty() && settings.customLlms != "[]"
-            @Suppress("DEPRECATION")
-            val hasLegacyConfig = settings.customEngineServer.isNotEmpty()
-
-            if (!hasCustomLlms && !hasLegacyConfig) {
-                val result = Messages.showYesNoDialog(
-                    "No LLM is configured. Would you like to run the configuration wizard to set up your first LLM?",
-                    "LLM Configuration",
-                    Messages.getQuestionIcon()
-                )
-
-                if (result == Messages.YES) {
-                    val wizard = LLMConfigurationWizard(project)
-                    return wizard.showAndGet()
-                }
-            }
-
-            return false
-        }
-    }
 }
