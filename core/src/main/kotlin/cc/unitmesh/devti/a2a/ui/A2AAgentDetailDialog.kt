@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import io.a2a.spec.AgentCard
+import io.a2a.spec.AgentSkill
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.Box
@@ -150,7 +151,10 @@ class A2AAgentDetailDialog(
         panel.add(rowPanel)
     }
 
-    private fun addSkillRow(panel: JPanel, skill: Any) {
+    /// public record AgentSkill(String id, String name, String description, List<String> tags,
+    //                         List<String> examples, List<String> inputModes, List<String> outputModes,
+    //                         List<Map<String, List<String>>> security) {
+    private fun addSkillRow(panel: JPanel, skill: AgentSkill) {
         val skillPanel = JPanel(BorderLayout()).apply {
             maximumSize = Dimension(Int.MAX_VALUE, 40)
             border = JBUI.Borders.empty(4, 16, 4, 0)
@@ -158,47 +162,24 @@ class A2AAgentDetailDialog(
             isOpaque = true
         }
 
-        // Try to access skill properties using the new API
-        val skillName = try {
-            when {
-                skill.javaClass.simpleName == "AgentSkill" -> {
-                    // Use reflection for AgentSkill record methods
-                    val nameMethod = skill.javaClass.getMethod("name")
-                    nameMethod.invoke(skill) as? String ?: "Unnamed Skill"
-                }
-
-                else -> getFieldValue(skill, "name") as? String ?: "Unnamed Skill"
-            }
-        } catch (e: Exception) {
-            "Unnamed Skill"
-        }
-
-        val skillDesc = try {
-            when {
-                skill.javaClass.simpleName == "AgentSkill" -> {
-                    // Use reflection for AgentSkill record methods
-                    val descMethod = skill.javaClass.getMethod("description")
-                    descMethod.invoke(skill) as? String ?: "No description"
-                }
-
-                else -> getFieldValue(skill, "description") as? String ?: "No description"
-            }
-        } catch (e: Exception) {
-            "No description"
-        }
-
-        val nameLabel = JBLabel("• $skillName").apply {
+        val idLabel = JBLabel("Id: ${skill.id}").apply {
             font = JBUI.Fonts.label(12.0f).asBold()
             foreground = JBColor(0x1F2937, 0xF9FAFB)
         }
 
-        val descLabel = JBLabel(skillDesc).apply {
+        val nameLabel = JBLabel("Name: ${skill.name}").apply {
+            font = JBUI.Fonts.label(12.0f).asBold()
+            foreground = JBColor(0x1F2937, 0xF9FAFB)
+        }
+
+        val descLabel = JBLabel("Desc: ${skill.description}").apply {
             font = JBUI.Fonts.label(11.0f)
             foreground = JBColor(0x6B7280, 0x9CA3AF)
         }
 
         val skillContent = JPanel()
         skillContent.layout = BoxLayout(skillContent, BoxLayout.Y_AXIS)
+        skillContent.add(idLabel)
         skillContent.add(nameLabel)
         skillContent.add(descLabel)
 
