@@ -25,7 +25,10 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
     CustomSSEProcessor(project) {
     private val url get() = llmConfig.url
     private val key get() = llmConfig.auth.token
-    override val requestFormat: String get() = llmConfig.requestFormat
+    override val requestFormat: String get() = llmConfig.requestFormat.ifEmpty {
+        llmConfig.toLegacyRequestFormat()
+    }
+
     override val responseFormat: String get() = llmConfig.responseFormat
 
     private var client = OkHttpClient()
