@@ -4,17 +4,10 @@ import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.sketch.SketchToolchainProvider
 import com.intellij.openapi.project.Project
 import io.a2a.spec.AgentCard
+import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 
-/**
- * A2A Sketch Toolchain Provider that converts A2A agents to AgentTool format
- * for use in the Sketch system.
- */
 class A2ASketchToolchainProvider : SketchToolchainProvider {
-    override fun collect(): List<AgentTool> {
-        // Since we can't get project from interface, we need to find it another way
-        // For now, return empty list as this will be called from SketchRunContext directly
-        return emptyList()
-    }
+    override fun collect(): List<AgentTool> = emptyList()
 
     companion object {
         fun collectA2ATools(project: Project): List<AgentTool> {
@@ -61,9 +54,23 @@ class A2ASketchToolchainProvider : SketchToolchainProvider {
         }
 
         private fun generateExampleUsage(agentName: String): String {
-            return """
-                /a2a $agentName "Please help me with my task"
+            // Prefer the canonical example stored at /agent/toolExamples/a2a.devin
+            val base = BuiltinCommand.example("a2a")
+            if (agentName.isBlank() || agentName == "unknown_agent") return base
+
+            val tailored = """
+                
+                Quick example for agent \"$agentName\":
+                /a2a:anyString
+                ```json
+                {
+                  "agent": "$agentName",
+                  "message": "Please help me with my task"
+                }
+                ```
             """.trimIndent()
+
+            return listOf(base.trimEnd(), tailored).joinToString("\n\n")
         }
     }
 }
