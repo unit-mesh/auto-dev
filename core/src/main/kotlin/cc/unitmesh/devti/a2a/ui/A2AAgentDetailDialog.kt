@@ -155,33 +155,88 @@ class A2AAgentDetailDialog(
     //                         List<String> examples, List<String> inputModes, List<String> outputModes,
     //                         List<Map<String, List<String>>> security) {
     private fun addSkillRow(panel: JPanel, skill: AgentSkill) {
+        fun formatList(items: List<String>?, max: Int = 5): String {
+            if (items == null || items.isEmpty()) return "N/A"
+            val head = items.take(max).joinToString(", ")
+            return if (items.size > max) "$head …(${items.size})" else head
+        }
+
         val skillPanel = JPanel(BorderLayout()).apply {
-            maximumSize = Dimension(Int.MAX_VALUE, 40)
-            border = JBUI.Borders.empty(4, 16, 4, 0)
+            maximumSize = Dimension(Int.MAX_VALUE, 240)
+            border = JBUI.Borders.empty(8, 16, 8, 0)
             background = JBColor(0xF9FAFB, 0x1F2937)
             isOpaque = true
         }
 
-        val idLabel = JBLabel("Id: ${skill.id}").apply {
-            font = JBUI.Fonts.label(12.0f).asBold()
+        val nameLabel = JBLabel(skill.name ?: "Unnamed Skill").apply {
+            font = JBUI.Fonts.label(13.0f).asBold()
             foreground = JBColor(0x1F2937, 0xF9FAFB)
         }
 
-        val nameLabel = JBLabel("Name: ${skill.name}").apply {
-            font = JBUI.Fonts.label(12.0f).asBold()
-            foreground = JBColor(0x1F2937, 0xF9FAFB)
-        }
-
-        val descLabel = JBLabel("Desc: ${skill.description}").apply {
+        val idLabel = JBLabel("ID: ${skill.id ?: "N/A"}").apply {
             font = JBUI.Fonts.label(11.0f)
             foreground = JBColor(0x6B7280, 0x9CA3AF)
         }
 
-        val skillContent = JPanel()
-        skillContent.layout = BoxLayout(skillContent, BoxLayout.Y_AXIS)
-        skillContent.add(idLabel)
+        val descLabel = JBLabel(skill.description ?: "").apply {
+            font = JBUI.Fonts.label(11.0f)
+            foreground = JBColor(0x374151, 0xD1D5DB)
+        }
+
+        val tagsText = runCatching { @Suppress("UNCHECKED_CAST") (skill.tags as? List<String>) }
+            .getOrNull()
+        val tagsLabel = JBLabel("Tags: ${formatList(tagsText)}").apply {
+            font = JBUI.Fonts.label(11.0f)
+            foreground = JBColor(0x6B7280, 0x9CA3AF)
+        }
+
+        val inputModesText = runCatching { @Suppress("UNCHECKED_CAST") (skill.inputModes as? List<String>) }
+            .getOrNull()
+        val inputModesLabel = JBLabel("Input Modes: ${formatList(inputModesText)}").apply {
+            font = JBUI.Fonts.label(11.0f)
+            foreground = JBColor(0x6B7280, 0x9CA3AF)
+        }
+
+        val outputModesText = runCatching { @Suppress("UNCHECKED_CAST") (skill.outputModes as? List<String>) }
+            .getOrNull()
+        val outputModesLabel = JBLabel("Output Modes: ${formatList(outputModesText)}").apply {
+            font = JBUI.Fonts.label(11.0f)
+            foreground = JBColor(0x6B7280, 0x9CA3AF)
+        }
+
+        val examplesText = runCatching { @Suppress("UNCHECKED_CAST") (skill.examples as? List<String>) }
+            .getOrNull()
+        val examplesLabel = JBLabel("Examples: ${formatList(examplesText, max = 3)}").apply {
+            font = JBUI.Fonts.label(11.0f)
+            foreground = JBColor(0x6B7280, 0x9CA3AF)
+        }
+
+        val securitySummary = runCatching {
+            @Suppress("UNCHECKED_CAST")
+            val sec = skill.security as? List<Map<String, List<String>>>
+            if (sec.isNullOrEmpty()) "N/A" else sec.joinToString("; ") { m ->
+                m.entries.joinToString(", ") { (k, v) -> "$k: ${v.joinToString("/")}" }
+            }
+        }.getOrElse { "N/A" }
+        val securityLabel = JBLabel("Security: $securitySummary").apply {
+            font = JBUI.Fonts.label(11.0f)
+            foreground = JBColor(0x6B7280, 0x9CA3AF)
+        }
+
+        val skillContent = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        }
+        // Header
         skillContent.add(nameLabel)
-        skillContent.add(descLabel)
+        skillContent.add(idLabel)
+        // Description
+        if (!descLabel.text.isNullOrBlank()) skillContent.add(descLabel)
+        // Details
+        skillContent.add(tagsLabel)
+        skillContent.add(inputModesLabel)
+        skillContent.add(outputModesLabel)
+        skillContent.add(examplesLabel)
+        skillContent.add(securityLabel)
 
         skillPanel.add(skillContent, BorderLayout.CENTER)
         panel.add(skillPanel)
