@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [2.4.2](https://github.com/unit-mesh/auto-dev/compare/v2.4.1...v2.4.2) (2025-09-29)
+
+
+### Bug Fixes
+
+* **a2a.devin:** update "code-reviewer" to use AgentName ([b788e6c](https://github.com/unit-mesh/auto-dev/commit/b788e6c471dfda72cea796824414ae44b8e2665e))
+* **CustomLLMProvider, OpenAIDto:** enhance request format handling and update JSON property annotations ([9ff45d7](https://github.com/unit-mesh/auto-dev/commit/9ff45d7acb3f773097da32847506112c227dd2ca))
+* **DiagramIcons:** correct icon path for DIAGRAM_REMOVE ([75e0f72](https://github.com/unit-mesh/auto-dev/commit/75e0f724b934c4a803af2dfbadba6c2fc1ad300c))
+
 ## [2.4.1](https://github.com/unit-mesh/auto-dev/compare/v2.4.0...v[2.4.1]) (2025-09-28)
 
 ### Bug Fixes
