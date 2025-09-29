@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.llm2.GithubCopilotManager
+import cc.unitmesh.devti.settings.dialog.QuickLLMSetupDialog
 import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.i18nLabel
@@ -197,8 +198,12 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
         )
 
         // Create add LLM button
-        val addLLMButton = JButton("Add New LLM")
+        val addLLMButton = JButton("Add Customs LLM")
         addLLMButton.addActionListener { modelManager.createNewLLM() }
+
+        // Create quick setup button
+        val quickSetupButton = JButton("Quick LLM Setup")
+        quickSetupButton.addActionListener { showQuickSetupDialog() }
 
         // Create refresh button for GitHub Copilot models
         val refreshButton = JButton("Refresh GitHub Copilot Models")
@@ -216,6 +221,7 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
 
         // Create button panel
         val buttonPanel = JPanel()
+        buttonPanel.add(quickSetupButton)
         buttonPanel.add(addLLMButton)
         buttonPanel.add(refreshButton)
 
@@ -314,5 +320,25 @@ class SimplifiedLLMSettingComponent(private val settings: AutoDevSettingsState) 
                 addSeparator()
             }
         }
+    }
+
+    /**
+     * Show quick setup dialog with predefined LLM configurations
+     */
+    private fun showQuickSetupDialog() {
+        val quickSetupDialog = QuickLLMSetupDialog(project, settings) {
+            // Refresh the UI after adding new LLM
+            modelManager.updateAllDropdowns(
+                defaultModelDropdown,
+                planLLMDropdown,
+                actLLMDropdown,
+                completionLLMDropdown,
+                embeddingLLMDropdown,
+                fastApplyLLMDropdown
+            )
+            modelManager.updateLLMTable(llmTableModel)
+            markAsModified()
+        }
+        quickSetupDialog.show()
     }
 }
