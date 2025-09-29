@@ -1,4 +1,4 @@
-/a2a
+/a2a:anyPlaceHolderInHere
 ```json
 {
   "agent": "code-reviewer",
@@ -6,7 +6,3 @@
 }
 ```
 
-Legacy format also supported:
-/a2a code-reviewer "Please review this code for potential issues"
-/a2a documentation-writer "Generate documentation for this module"
-/a2a test-generator "Create unit tests for the PaymentService class"

@@ -29,7 +29,6 @@ class A2AInsCommand(
     private val prop: String,
     private val codeContent: String
 ) : InsCommand {
-    
     override val commandName: BuiltinCommand = BuiltinCommand.A2A
 
     override fun isApplicable(): Boolean {

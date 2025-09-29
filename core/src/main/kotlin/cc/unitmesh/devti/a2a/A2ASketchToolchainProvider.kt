@@ -22,7 +22,7 @@ class A2ASketchToolchainProvider : SketchToolchainProvider {
                 agentCards.map { agentCard ->
                     convertAgentCardToTool(agentCard)
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 emptyList()
             }
         }
@@ -56,6 +56,8 @@ class A2ASketchToolchainProvider : SketchToolchainProvider {
         private fun generateExampleUsage(agentName: String): String {
             // Prefer the canonical example stored at /agent/toolExamples/a2a.devin
             val base = BuiltinCommand.example("a2a")
+
+            // If we know the concrete agent name, provide a quick tailored example as well.
             if (agentName.isBlank() || agentName == "unknown_agent") return base
 
             val tailored = """
