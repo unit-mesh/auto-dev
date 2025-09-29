@@ -8,5 +8,5 @@ object DiagramIcons {
     val DIAGRAM_ADD: Icon = IconLoader.getIcon("/icons/add.svg", DiagramIcons::class.java)
 
     @JvmField
-    val DIAGRAM_REMOVE: Icon = IconLoader.getIcon("/icons/remote.svg", DiagramIcons::class.java)
+    val DIAGRAM_REMOVE: Icon = IconLoader.getIcon("/icons/remove.svg", DiagramIcons::class.java)
 }
