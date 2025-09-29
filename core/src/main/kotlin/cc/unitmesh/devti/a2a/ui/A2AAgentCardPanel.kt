@@ -23,36 +23,14 @@ class A2AAgentCardPanel(
     private val agentCard: AgentCard,
     private val a2aClientConsumer: A2AClientConsumer
 ) : JPanel(BorderLayout(0, 0)) {
-    private fun getAgentName(): String = try {
-        agentCard.name() ?: "Unknown Agent"
-    } catch (e: Exception) {
-        "Unknown Agent"
-    }
+    private fun getAgentName(): String = agentCard.name() ?: "Unknown Agent"
+    private fun getAgentDescription(): String = agentCard.description() ?: "No description available"
 
-    private fun getAgentDescription(): String = try {
-        agentCard.description() ?: "No description available"
-    } catch (e: Exception) {
-        "No description available"
-    }
+    private fun getAgentVersion(): String = agentCard.version() ?: "1.0.0"
 
-    private fun getAgentVersion(): String = try {
-        agentCard.version() ?: "1.0.0"
-    } catch (e: Exception) {
-        "1.0.0"
-    }
+    private fun getProviderName(): String = agentCard.provider()?.organization() ?: "Unknown"
 
-    private fun getProviderName(): String = try {
-        val provider = agentCard.provider()
-        provider?.organization() ?: "Unknown"
-    } catch (e: Exception) {
-        "Unknown"
-    }
-
-    private fun getSkillsCount(): Int = try {
-        agentCard.skills()?.size ?: 0
-    } catch (e: Exception) {
-        0
-    }
+    private fun getSkillsCount(): Int = agentCard.skills()?.size ?: 0
 
     private val borderColor = JBColor(0xE5E7EB, 0x3C3F41)
     private val textGray = JBColor(0x6B7280, 0x9DA0A8)
@@ -173,11 +151,11 @@ class A2AAgentCardPanel(
         dialog.show()
     }
 
-    private class A2AAgentDetailDialog(
+    class A2AAgentDetailDialog(
         project: Project,
         private val agentCard: AgentCard
     ) : DialogWrapper(project) {
-        
+
         init {
             title = "Agent Details: ${getAgentName()}"
             init()
@@ -196,7 +174,7 @@ class A2AAgentCardPanel(
         } catch (e: Exception) {
             null
         }
-        
+
         override fun createCenterPanel(): JComponent {
             val panel = JPanel(BorderLayout(0, 10))
             panel.preferredSize = Dimension(600, 500)
@@ -238,7 +216,11 @@ class A2AAgentCardPanel(
                 addSectionHeader(panel, "Capabilities")
                 addDetailRow(panel, "Supports Streaming", capabilities.streaming()?.toString() ?: "N/A")
                 addDetailRow(panel, "Push Notifications", capabilities.pushNotifications()?.toString() ?: "N/A")
-                addDetailRow(panel, "State Transition History", capabilities.stateTransitionHistory()?.toString() ?: "N/A")
+                addDetailRow(
+                    panel,
+                    "State Transition History",
+                    capabilities.stateTransitionHistory()?.toString() ?: "N/A"
+                )
             }
 
             // Skills
@@ -264,7 +246,11 @@ class A2AAgentCardPanel(
             addDetailRow(panel, "Documentation URL", agentCard.documentationUrl() ?: "N/A")
             addDetailRow(panel, "Icon URL", agentCard.iconUrl() ?: "N/A")
             addDetailRow(panel, "Preferred Transport", agentCard.preferredTransport() ?: "N/A")
-            addDetailRow(panel, "Supports Auth Extended Card", agentCard.supportsAuthenticatedExtendedCard()?.toString() ?: "N/A")
+            addDetailRow(
+                panel,
+                "Supports Auth Extended Card",
+                agentCard.supportsAuthenticatedExtendedCard()?.toString() ?: "N/A"
+            )
 
             return panel
         }
@@ -317,6 +303,7 @@ class A2AAgentCardPanel(
                         val nameMethod = skill.javaClass.getMethod("name")
                         nameMethod.invoke(skill) as? String ?: "Unnamed Skill"
                     }
+
                     else -> getFieldValue(skill, "name") as? String ?: "Unnamed Skill"
                 }
             } catch (e: Exception) {
@@ -330,6 +317,7 @@ class A2AAgentCardPanel(
                         val descMethod = skill.javaClass.getMethod("description")
                         descMethod.invoke(skill) as? String ?: "No description"
                     }
+
                     else -> getFieldValue(skill, "description") as? String ?: "No description"
                 }
             } catch (e: Exception) {
@@ -361,10 +349,10 @@ class A2AAgentCardPanel(
         private val agentCard: AgentCard,
         private val a2aClientConsumer: A2AClientConsumer
     ) : DialogWrapper(project) {
-        
+
         private val messageField = JTextField("Hello, how can you help me?")
         private val resultArea = JsonLanguageField(project, "")
-        
+
         init {
             title = "Test Agent: ${getAgentName()}"
             init()
@@ -379,39 +367,39 @@ class A2AAgentCardPanel(
         override fun createCenterPanel(): JComponent {
             val panel = JPanel(BorderLayout(0, 10))
             panel.preferredSize = Dimension(600, 400)
-            
+
             val topPanel = JPanel(BorderLayout())
             topPanel.add(JLabel("Message:"), BorderLayout.NORTH)
             topPanel.add(messageField, BorderLayout.CENTER)
-            
+
             val sendButton = JButton("Send").apply {
                 addActionListener { sendTestMessage() }
             }
             topPanel.add(sendButton, BorderLayout.EAST)
-            
+
             val bottomPanel = JPanel(BorderLayout())
             bottomPanel.add(JLabel("Response:"), BorderLayout.NORTH)
-            
+
             resultArea.apply {
                 font = JBUI.Fonts.create("Monospaced", 12)
                 setPlaceholder("Click 'Send' to test the agent...")
             }
 
             bottomPanel.add(JBScrollPane(resultArea), BorderLayout.CENTER)
-            
+
             panel.add(topPanel, BorderLayout.NORTH)
             panel.add(bottomPanel, BorderLayout.CENTER)
-            
+
             return panel
         }
-        
+
         private fun sendTestMessage() {
             val message = messageField.text.trim()
             if (message.isEmpty()) {
                 resultArea.text = "Please enter a message to send."
                 return
             }
-            
+
             try {
                 resultArea.text = "Sending message..."
                 val result = a2aClientConsumer.sendMessage(getAgentName(), message)
