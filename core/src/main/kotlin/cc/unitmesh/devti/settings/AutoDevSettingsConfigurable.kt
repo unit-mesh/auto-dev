@@ -28,16 +28,7 @@ class AutoDevSettingsConfigurable : Configurable {
     @Nullable
     override fun createComponent(): JComponent? {
         val settings = AutoDevSettingsState.getInstance()
-
-        // Try to migrate legacy configuration first
-        LegacyConfigMigration.migrateIfNeeded()
-
         component = SimplifiedLLMSettingComponent(settings)
-
-        // Show configuration wizard if needed (only if no migration happened and no config exists)
-        val project = ProjectManager.getInstance().openProjects.firstOrNull()
-        LLMConfigurationWizard.showIfNeeded(project)
-
         return component?.panel
     }
 
