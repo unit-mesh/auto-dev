@@ -1,35 +1,23 @@
-package cc.unitmesh.devti.diff
+package cc.unitmesh.devti.diff.service
 
 import com.intellij.diff.DiffContentFactory
-import com.intellij.diff.DiffContext
 import com.intellij.diff.DiffManager
-import com.intellij.diff.FrameDiffTool
 import com.intellij.diff.requests.SimpleDiffRequest
-import com.intellij.diff.tools.util.DiffDataKeys
-import com.intellij.diff.util.DiffUserDataKeys
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
-import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorLocation
-import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.UserDataHolderBase
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
-import java.awt.event.ActionEvent
-import java.beans.PropertyChangeListener
 import javax.swing.*
 
 /**
@@ -121,12 +109,12 @@ class StandaloneEditorTabDiffPreview(
         
         val originalTextArea = JTextArea(originalContent).apply {
             isEditable = false
-            font = sourceEditor.colorsScheme.getFont(com.intellij.openapi.editor.colors.EditorFontType.PLAIN)
+            font = sourceEditor.colorsScheme.getFont(EditorFontType.PLAIN)
         }
         
         val modifiedTextArea = JTextArea(modifiedContent).apply {
             isEditable = false
-            font = sourceEditor.colorsScheme.getFont(com.intellij.openapi.editor.colors.EditorFontType.PLAIN)
+            font = sourceEditor.colorsScheme.getFont(EditorFontType.PLAIN)
         }
         
         splitter.firstComponent = JScrollPane(originalTextArea).apply {

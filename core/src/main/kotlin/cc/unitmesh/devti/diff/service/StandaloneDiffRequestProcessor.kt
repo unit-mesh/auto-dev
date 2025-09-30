@@ -1,39 +1,20 @@
-package cc.unitmesh.devti.diff
+package cc.unitmesh.devti.diff.service
 
-import com.intellij.diff.DiffContentFactory
-import com.intellij.diff.DiffContext
-import com.intellij.diff.DiffDialogHints
-import com.intellij.diff.DiffManager
-import com.intellij.diff.FrameDiffTool
-import com.intellij.diff.contents.DiffContent
-import com.intellij.diff.editor.DiffVirtualFile
+import com.intellij.diff.*
 import com.intellij.diff.requests.DiffRequest
 import com.intellij.diff.requests.SimpleDiffRequest
-import com.intellij.diff.tools.util.DiffDataKeys
-import com.intellij.diff.util.DiffUserDataKeys
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.content.Content
-import com.intellij.ui.content.ContentFactory
-import com.intellij.util.ui.UIUtil
+import com.intellij.ui.JBSplitter
 import java.awt.BorderLayout
+import java.awt.Font
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JTextArea
 
-/**
- * Standalone diff request processor that can handle diff operations independently
- * Similar to IntelliJ Augment's StandaloneDiffRequestProcessor
- */
 class StandaloneDiffRequestProcessor(
     private val project: Project,
     private val leftContent: String,
@@ -109,19 +90,19 @@ class StandaloneDiffRequestProcessor(
             val request = diffRequest ?: return null
             val panel = JPanel(BorderLayout())
 
-            val leftTextArea = javax.swing.JTextArea(leftContent).apply {
+            val leftTextArea = JTextArea(leftContent).apply {
                 isEditable = false
-                font = java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12)
+                font = Font(Font.MONOSPACED, Font.PLAIN, 12)
             }
 
-            val rightTextArea = javax.swing.JTextArea(rightContent).apply {
+            val rightTextArea = JTextArea(rightContent).apply {
                 isEditable = false
-                font = java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12)
+                font = Font(Font.MONOSPACED, Font.PLAIN, 12)
             }
 
-            val splitter = com.intellij.ui.JBSplitter(false, 0.5f)
-            splitter.firstComponent = javax.swing.JScrollPane(leftTextArea)
-            splitter.secondComponent = javax.swing.JScrollPane(rightTextArea)
+            val splitter = JBSplitter(false, 0.5f)
+            splitter.firstComponent = JScrollPane(leftTextArea)
+            splitter.secondComponent = JScrollPane(rightTextArea)
 
             panel.add(splitter, BorderLayout.CENTER)
             diffComponent = panel
