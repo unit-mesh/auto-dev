@@ -151,9 +151,6 @@ class A2AAgentDetailDialog(
         panel.add(rowPanel)
     }
 
-    /// public record AgentSkill(String id, String name, String description, List<String> tags,
-    //                         List<String> examples, List<String> inputModes, List<String> outputModes,
-    //                         List<Map<String, List<String>>> security) {
     private fun addSkillRow(panel: JPanel, skill: AgentSkill) {
         fun formatList(items: List<String>?, max: Int = 5): String {
             if (items == null || items.isEmpty()) return "N/A"
@@ -183,41 +180,34 @@ class A2AAgentDetailDialog(
             foreground = JBColor(0x374151, 0xD1D5DB)
         }
 
-        val tagsText = runCatching { @Suppress("UNCHECKED_CAST") (skill.tags as? List<String>) }
-            .getOrNull()
+        val tagsText = skill.tags ?: emptyList()
         val tagsLabel = JBLabel("Tags: ${formatList(tagsText)}").apply {
             font = JBUI.Fonts.label(11.0f)
             foreground = JBColor(0x6B7280, 0x9CA3AF)
         }
 
-        val inputModesText = runCatching { @Suppress("UNCHECKED_CAST") (skill.inputModes as? List<String>) }
-            .getOrNull()
+        val inputModesText = skill.inputModes ?: emptyList()
         val inputModesLabel = JBLabel("Input Modes: ${formatList(inputModesText)}").apply {
             font = JBUI.Fonts.label(11.0f)
             foreground = JBColor(0x6B7280, 0x9CA3AF)
         }
 
-        val outputModesText = runCatching { @Suppress("UNCHECKED_CAST") (skill.outputModes as? List<String>) }
-            .getOrNull()
+        val outputModesText = skill.outputModes ?: emptyList()
         val outputModesLabel = JBLabel("Output Modes: ${formatList(outputModesText)}").apply {
             font = JBUI.Fonts.label(11.0f)
             foreground = JBColor(0x6B7280, 0x9CA3AF)
         }
 
-        val examplesText = runCatching { @Suppress("UNCHECKED_CAST") (skill.examples as? List<String>) }
-            .getOrNull()
+        val examplesText = skill.examples
         val examplesLabel = JBLabel("Examples: ${formatList(examplesText, max = 3)}").apply {
             font = JBUI.Fonts.label(11.0f)
             foreground = JBColor(0x6B7280, 0x9CA3AF)
         }
 
-        val securitySummary = runCatching {
-            @Suppress("UNCHECKED_CAST")
-            val sec = skill.security as? List<Map<String, List<String>>>
-            if (sec.isNullOrEmpty()) "N/A" else sec.joinToString("; ") { m ->
-                m.entries.joinToString(", ") { (k, v) -> "$k: ${v.joinToString("/")}" }
-            }
-        }.getOrElse { "N/A" }
+        val securitySummary =  skill.security?.joinToString("; ") { m ->
+            m.entries.joinToString(", ") { (k, v) -> "$k: ${v.joinToString("/")}" }
+        } ?: "N/A"
+
         val securityLabel = JBLabel("Security: $securitySummary").apply {
             font = JBUI.Fonts.label(11.0f)
             foreground = JBColor(0x6B7280, 0x9CA3AF)
