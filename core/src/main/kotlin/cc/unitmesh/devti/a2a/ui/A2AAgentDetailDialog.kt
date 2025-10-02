@@ -21,23 +21,11 @@ class A2AAgentDetailDialog(
 ) : DialogWrapper(project) {
 
     init {
-        title = "Agent Details: ${getAgentName()}"
+        title = "Agent: ${getAgentName()}"
         init()
     }
 
-    private fun getAgentName(): String = try {
-        agentCard.name() ?: "Unknown Agent"
-    } catch (e: Exception) {
-        "Unknown Agent"
-    }
-
-    private fun getFieldValue(obj: Any, fieldName: String): Any? = try {
-        val field = obj.javaClass.getDeclaredField(fieldName)
-        field.isAccessible = true
-        field.get(obj)
-    } catch (e: Exception) {
-        null
-    }
+    private fun getAgentName(): String = agentCard.name() ?: "Unknown Agent"
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout(0, 10))
