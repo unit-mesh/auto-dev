@@ -48,7 +48,6 @@ object ShadowWorker {
         val templateRender = TemplateRender(GENIUS_CODE)
         val template = templateRender.getTemplate("sketch.vm")
         val customContext = SketchRunContext.create(project, null, "")
-        var systemPrompt = templateRender.renderTemplate(template, customContext)
-        return systemPrompt
+        return templateRender.renderTemplate(template, customContext)
     }
 }
