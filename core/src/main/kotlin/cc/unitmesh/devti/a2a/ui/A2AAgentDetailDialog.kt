@@ -75,25 +75,19 @@ class A2AAgentDetailDialog(
             )
         }
 
-        // Skills
-        val skills = agentCard.skills()
-        if (!skills.isNullOrEmpty()) {
-            addSectionHeader(panel, "Skills (${skills.size})")
-            skills.forEach { skill ->
-                if (skill != null) {
-                    addSkillRow(panel, skill)
-                }
+        addSectionHeader(panel, "Skills (${agentCard.skills().size})")
+        agentCard.skills().forEach { skill ->
+            if (skill != null) {
+                addSkillRow(panel, skill)
             }
         }
 
-        // Input/Output Modes
         addSectionHeader(panel, "Input/Output Modes")
         val inputModes = agentCard.defaultInputModes()
         val outputModes = agentCard.defaultOutputModes()
         addDetailRow(panel, "Default Input Modes", inputModes?.joinToString(", ") ?: "N/A")
         addDetailRow(panel, "Default Output Modes", outputModes?.joinToString(", ") ?: "N/A")
 
-        // Additional Information
         addSectionHeader(panel, "Additional Information")
         addDetailRow(panel, "Documentation URL", agentCard.documentationUrl() ?: "N/A")
         addDetailRow(panel, "Icon URL", agentCard.iconUrl() ?: "N/A")
@@ -101,7 +95,7 @@ class A2AAgentDetailDialog(
         addDetailRow(
             panel,
             "Supports Auth Extended Card",
-            agentCard.supportsAuthenticatedExtendedCard()?.toString() ?: "N/A"
+            agentCard.supportsAuthenticatedExtendedCard().toString()
         )
 
         return panel
@@ -192,7 +186,7 @@ class A2AAgentDetailDialog(
             foreground = JBColor(0x6B7280, 0x9CA3AF)
         }
 
-        val securitySummary =  skill.security?.joinToString("; ") { m ->
+        val securitySummary = skill.security?.joinToString("; ") { m ->
             m.entries.joinToString(", ") { (k, v) -> "$k: ${v.joinToString("/")}" }
         } ?: "N/A"
 
