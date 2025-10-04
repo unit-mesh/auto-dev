@@ -31,7 +31,7 @@ class A2ASketchToolchainProvider : SketchToolchainProvider {
             val name = agentCard.name() ?: "unknown_agent"
             val fullDescription = agentCard.description() ?: "A2A Agent"
 
-            val example = generateExampleUsage(name)
+            val example = BuiltinCommand.example("a2a")
 
             return AgentTool(
                 name = name,
@@ -43,28 +43,6 @@ class A2ASketchToolchainProvider : SketchToolchainProvider {
                 isDevIns = false,
                 devinScriptPath = ""
             )
-        }
-
-        private fun generateExampleUsage(agentName: String): String {
-            // Prefer the canonical example stored at /agent/toolExamples/a2a.devin
-            val base = BuiltinCommand.example("a2a")
-
-            // If we know the concrete agent name, provide a quick tailored example as well.
-            if (agentName.isBlank() || agentName == "unknown_agent") return base
-
-            val tailored = """
-                
-                Quick example for agent \"$agentName\":
-                /a2a:anyString
-                ```json
-                {
-                  "agent": "$agentName",
-                  "message": "Please help me with my task"
-                }
-                ```
-            """.trimIndent()
-
-            return listOf(base.trimEnd(), tailored).joinToString("\n\n")
         }
     }
 }
