@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.a2a
 
-import cc.unitmesh.devti.mcp.client.McpServer
+import cc.unitmesh.devti.mcp.model.A2aServer
+import cc.unitmesh.devti.mcp.model.McpServer
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project

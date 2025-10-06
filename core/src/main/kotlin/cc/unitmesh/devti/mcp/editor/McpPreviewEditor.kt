@@ -3,7 +3,6 @@ package cc.unitmesh.devti.mcp.editor
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.a2a.A2aServer
 import cc.unitmesh.devti.a2a.ui.A2AAgentListPanel
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
