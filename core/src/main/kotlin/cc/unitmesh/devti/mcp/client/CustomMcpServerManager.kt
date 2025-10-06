@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.mcp.client
 
-import cc.unitmesh.devti.mcp.model.McpServer
+import cc.unitmesh.devti.agent.extention.McpServer
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.components.Service

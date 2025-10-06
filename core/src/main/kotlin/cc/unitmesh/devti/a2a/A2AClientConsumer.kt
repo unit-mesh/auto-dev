@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.a2a
 
-import cc.unitmesh.devti.mcp.model.A2aServer
+import cc.unitmesh.devti.agent.extention.A2aServer
 import com.intellij.openapi.diagnostic.logger
 import io.a2a.A2A
 import io.a2a.client.*

@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.a2a.ui
 
 import cc.unitmesh.devti.a2a.A2AClientConsumer
-import cc.unitmesh.devti.mcp.model.A2aServer
-import cc.unitmesh.devti.mcp.model.McpServer
+import cc.unitmesh.devti.agent.extention.A2aServer
+import cc.unitmesh.devti.agent.extention.McpServer
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel

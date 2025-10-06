@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.mcp.client
 
-import cc.unitmesh.devti.mcp.model.McpServer
+import cc.unitmesh.devti.agent.extention.McpServer
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
