@@ -14,6 +14,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.openapi.application.runReadAction
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiFile
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.PsiShortNamesCache
+import com.intellij.psi.PsiClassOwner
+import com.intellij.psi.impl.compiled.ClsFileImpl
 
 /**
  * FileInsCommand is responsible for reading a file and returning its contents.
@@ -40,25 +47,55 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             try {
                 virtualFile = runReadAction { myProject.findFile(filename, false) }
             } catch (e: Exception) {
-                return "File not found: $prop"
+                // Ignore and continue to search
             }
         }
 
-        val content = try {
-            virtualFile?.readText()
-        } catch (e: Exception) {
-            null
+        // If still not found, try to search in dependencies (JAR files) or use Search Everywhere API
+        if (virtualFile == null) {
+            virtualFile = searchInDependencies(filepath)
         }
 
-        if (virtualFile == null || content == null) {
+        if (virtualFile == null) {
             AutoDevNotifications.warn(myProject, "File not found: $prop")
             return "File not found: $prop"
         }
 
         InsCommandListener.notify(this, InsCommandStatus.SUCCESS, virtualFile)
 
-        val lang = runReadAction {
-            PsiManager.getInstance(myProject).findFile(virtualFile)?.language?.displayName ?: ""
+        // Get content using IntelliJ's built-in decompiler API for compiled files
+        val (content, lang) = runReadAction {
+            val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
+            val language = psiFile?.language?.displayName ?: ""
+
+            // Check if this is a compiled class file that needs decompilation
+            val fileContent = when {
+                // Use IntelliJ's built-in decompiler for .class files
+                psiFile is ClsFileImpl -> {
+                    // ClsFileImpl automatically uses Vineflower/FernFlower decompiler
+                    // The decompiled source is available via psiFile.text
+                    psiFile.text
+                }
+                // For Kotlin decompiled files
+                psiFile is org.jetbrains.kotlin.analysis.decompiler.psi.file.KtClsFile -> {
+                    psiFile.text
+                }
+                // For regular source files
+                else -> {
+                    try {
+                        virtualFile.readText()
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+            }
+
+            Pair(fileContent, language)
+        }
+
+        if (content == null) {
+            AutoDevNotifications.warn(myProject, "Cannot read file: $prop")
+            return "Cannot read file: $prop"
         }
 
         val fileContent = splitLines(range, content)
@@ -71,6 +108,76 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
         output.append(fileContent)
         output.append("\n```\n")
         return output.toString()
+    }
+
+    /**
+     * Search for file in dependencies (JAR files) using various strategies:
+     * 1. Search by class name using PsiShortNamesCache
+     * 2. Search by filename using FilenameIndex with allScope
+     * 3. Try to interpret as a fully qualified class name
+     */
+    private fun searchInDependencies(filepath: String): VirtualFile? {
+        return runReadAction {
+            val filename = filepath.split("/").last()
+
+            // Strategy 1: If it looks like a class name (ends with .java, .kt, etc.), search in all scope
+            if (filename.contains(".")) {
+                val files = FilenameIndex.getVirtualFilesByName(
+                    filename,
+                    GlobalSearchScope.allScope(myProject)
+                )
+                // Try to find the best match based on path similarity
+                val matchedFile = files.firstOrNull { virtualFile ->
+                    virtualFile.path.endsWith(filepath) || virtualFile.path.contains(filepath)
+                }
+                if (matchedFile != null) {
+                    return@runReadAction matchedFile
+                }
+                // If exact match not found, return first result
+                if (files.isNotEmpty()) {
+                    return@runReadAction files.first()
+                }
+            }
+            // Strategy 2: Try to search as a class name (e.g., "String" or "java.lang.String")
+            val className = if (filename.contains(".")) {
+                // Remove file extension if present
+                filename.substringBeforeLast(".")
+            } else {
+                filename
+            }
+
+            // Search by short class name
+            val psiClasses = PsiShortNamesCache.getInstance(myProject)
+                .getClassesByName(className, GlobalSearchScope.allScope(myProject))
+
+            if (psiClasses.isNotEmpty()) {
+                // Try to match by full path if possible
+                val matchedClass = psiClasses.firstOrNull { psiClass ->
+                    val qualifiedName = psiClass.qualifiedName ?: ""
+                    qualifiedName.replace(".", "/").contains(filepath.replace(".", "/"))
+                }
+
+                return@runReadAction (matchedClass ?: psiClasses.first()).containingFile?.virtualFile
+            }
+
+            // Strategy 3: Try to interpret as fully qualified class name (e.g., "java.lang.String")
+            if (filepath.contains(".") && !filename.contains("/")) {
+                val scope = GlobalSearchScope.allScope(myProject)
+                val fullyQualifiedName = filepath.substringBeforeLast(".java")
+                    .substringBeforeLast(".kt")
+                    .replace("/", ".")
+
+                val classes = PsiShortNamesCache.getInstance(myProject)
+                    .getClassesByName(fullyQualifiedName.substringAfterLast("."), scope)
+
+                val matchedClass = classes.firstOrNull { it.qualifiedName == fullyQualifiedName }
+                if (matchedClass != null) {
+                    return@runReadAction matchedClass.containingFile?.virtualFile
+                }
+            }
+
+            null
+        }
     }
 
     private fun splitLines(range: LineInfo?, content: String): String {
@@ -94,11 +201,11 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             // 计算合理的下一块行范围建议
             val nextChunkStart = MAX_LINES + 1
             val nextChunkEnd = minOf(size, MAX_LINES * 2)
-            
+
             val suggestion = if (nextChunkEnd > nextChunkStart) {
                 "\nUse `filename#L${nextChunkStart}-L${nextChunkEnd}` to get next chunk of lines."
             } else ""
-            
+
             "File too long, only showing first $MAX_LINES lines of $size total lines.\n$code$suggestion"
         } else {
             content
