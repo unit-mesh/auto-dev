@@ -15,8 +15,8 @@ class ProjectRule(private val project: Project) {
     /**
      * Get rule content by filename
      */
-    fun getRuleContent(filename: String): String? {
-        val fullname = "$RULE_PATH/$filename.md"
+    fun getRuleContent(contextFileName: String): String? {
+        val fullname = "$RULE_PATH/$contextFileName.md"
         val file = project.lookupFile(fullname)
 
         if (file != null) {
@@ -24,7 +24,7 @@ class ProjectRule(private val project: Project) {
             return "<user-rule>\n$content\n</user-rule>"
         }
 
-        val devinFile = project.lookupFile("$RULE_PATH/$filename.devin")
+        val devinFile = project.lookupFile("$RULE_PATH/$contextFileName.devin")
         if (devinFile != null) {
             val content = devinFile.readText()
             return "<user-rule>\n$content\n</user-rule>"
