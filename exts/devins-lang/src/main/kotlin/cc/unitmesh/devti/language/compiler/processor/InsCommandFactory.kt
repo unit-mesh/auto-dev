@@ -14,6 +14,7 @@ import cc.unitmesh.devti.language.compiler.exec.idea.DatabaseInsCommand
 import cc.unitmesh.devti.language.compiler.exec.idea.LibraryVersionFetchInsCommand
 import cc.unitmesh.devti.language.compiler.exec.idea.RefactorInsCommand
 import cc.unitmesh.devti.language.compiler.exec.idea.RelatedSymbolInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.RunInsCommand
 import cc.unitmesh.devti.language.compiler.exec.idea.StructureInCommand
 import cc.unitmesh.devti.language.compiler.exec.idea.SymbolInsCommand
 import cc.unitmesh.devti.language.compiler.exec.idea.UsageInsCommand

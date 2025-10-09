@@ -4,7 +4,7 @@ import cc.unitmesh.devti.language.actions.DevInsRunFileAction
 import cc.unitmesh.devti.language.ast.action.PatternActionFuncDef
 import cc.unitmesh.devti.language.ast.action.PatternProcessor
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
-import cc.unitmesh.devti.language.compiler.exec.RunInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.RunInsCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.language.startup.ShireActionStartupActivity
