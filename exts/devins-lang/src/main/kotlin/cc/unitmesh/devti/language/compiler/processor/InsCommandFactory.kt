@@ -23,6 +23,8 @@ import cc.unitmesh.devti.language.compiler.exec.process.LaunchProcessInsCommand
 import cc.unitmesh.devti.language.compiler.exec.process.ListProcessesInsCommand
 import cc.unitmesh.devti.language.compiler.exec.process.ReadProcessOutputInsCommand
 import cc.unitmesh.devti.language.compiler.exec.process.WriteProcessInputInsCommand
+import cc.unitmesh.devti.language.compiler.exec.vcs.CommitInsCommand
+import cc.unitmesh.devti.language.compiler.exec.vcs.RevInsCommand
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
