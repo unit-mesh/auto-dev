@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.idea
 
 import cc.unitmesh.devti.bridge.utils.StructureCommandUtil
 import cc.unitmesh.devti.command.InsCommand

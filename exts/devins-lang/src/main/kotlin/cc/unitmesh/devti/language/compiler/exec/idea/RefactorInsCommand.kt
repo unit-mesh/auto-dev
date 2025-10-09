@@ -1,9 +1,10 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.idea
 
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinRefactorCommand
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.lang.Language
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -67,7 +68,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         }
 
         val language = currentEditFile?.language ?: Language.findLanguageByID("JAVA") ?: return "Language not found"
-        val refactoringTool = cc.unitmesh.devti.provider.RefactoringTool.forLanguage(language)
+        val refactoringTool = RefactoringTool.forLanguage(language)
             ?: return "Refactoring tool not found for Java"
 
         val command = BuiltinRefactorCommand.fromString(argument) ?: return "Unknown refactor command: $argument"

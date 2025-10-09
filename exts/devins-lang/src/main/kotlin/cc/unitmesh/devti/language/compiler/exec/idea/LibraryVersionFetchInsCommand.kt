@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.idea
 
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
@@ -6,6 +6,7 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.LibraryVersionProvider
 import cc.unitmesh.devti.provider.VersionRequest
+import cc.unitmesh.devti.provider.VersionResult
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.SerializationException
@@ -39,7 +40,7 @@ class LibraryVersionFetchInsCommand(val myProject: Project, val prop: String, va
         return autoDetectAndFetch(request.name)
     }
 
-    private fun formatResult(result: cc.unitmesh.devti.provider.VersionResult): String {
+    private fun formatResult(result: VersionResult): String {
         return if (result.success) {
             result.version!!
         } else {

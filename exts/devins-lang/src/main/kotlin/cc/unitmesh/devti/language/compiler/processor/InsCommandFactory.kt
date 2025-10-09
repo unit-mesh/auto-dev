@@ -10,6 +10,13 @@ import cc.unitmesh.devti.language.compiler.exec.file.EditFileInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.FileInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.OpenInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.WriteInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.DatabaseInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.LibraryVersionFetchInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.RefactorInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.RelatedSymbolInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.StructureInCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.SymbolInsCommand
+import cc.unitmesh.devti.language.compiler.exec.idea.UsageInsCommand
 import cc.unitmesh.devti.language.compiler.exec.process.KillProcessInsCommand
 import cc.unitmesh.devti.language.compiler.exec.process.LaunchProcessInsCommand
 import cc.unitmesh.devti.language.compiler.exec.process.ListProcessesInsCommand
