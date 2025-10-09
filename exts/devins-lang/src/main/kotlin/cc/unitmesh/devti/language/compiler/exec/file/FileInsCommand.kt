@@ -10,17 +10,14 @@ import cc.unitmesh.devti.language.utils.findFile
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import cc.unitmesh.devti.util.relativePath
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
-import com.intellij.openapi.application.runReadAction
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
+import com.intellij.psi.impl.compiled.ClsFileImpl
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.PsiShortNamesCache
-import com.intellij.psi.PsiClassOwner
-import com.intellij.psi.impl.compiled.ClsFileImpl
 
 /**
  * FileInsCommand is responsible for reading a file and returning its contents.
@@ -63,24 +60,17 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         InsCommandListener.notify(this, InsCommandStatus.SUCCESS, virtualFile)
 
-        // Get content using IntelliJ's built-in decompiler API for compiled files
         val (content, lang) = runReadAction {
             val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
             val language = psiFile?.language?.displayName ?: ""
 
-            // Check if this is a compiled class file that needs decompilation
             val fileContent = when {
-                // Use IntelliJ's built-in decompiler for .class files
                 psiFile is ClsFileImpl -> {
-                    // ClsFileImpl automatically uses Vineflower/FernFlower decompiler
-                    // The decompiled source is available via psiFile.text
                     psiFile.text
                 }
-                // For Kotlin decompiled files
                 psiFile is org.jetbrains.kotlin.analysis.decompiler.psi.file.KtClsFile -> {
                     psiFile.text
                 }
-                // For regular source files
                 else -> {
                     try {
                         virtualFile.readText()
@@ -126,21 +116,18 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
                     filename,
                     GlobalSearchScope.allScope(myProject)
                 )
-                // Try to find the best match based on path similarity
                 val matchedFile = files.firstOrNull { virtualFile ->
                     virtualFile.path.endsWith(filepath) || virtualFile.path.contains(filepath)
                 }
                 if (matchedFile != null) {
                     return@runReadAction matchedFile
                 }
-                // If exact match not found, return first result
                 if (files.isNotEmpty()) {
                     return@runReadAction files.first()
                 }
             }
             // Strategy 2: Try to search as a class name (e.g., "String" or "java.lang.String")
             val className = if (filename.contains(".")) {
-                // Remove file extension if present
                 filename.substringBeforeLast(".")
             } else {
                 filename
