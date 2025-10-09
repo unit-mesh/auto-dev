@@ -1,0 +1,95 @@
+# AGENTS.md - AutoDev Project Guidelines
+
+This file provides guidance for AI coding agents working on the AutoDev project.
+
+## Project Overview
+
+AutoDev is an open-source AI-powered coding assistant plugin for JetBrains IDEs. It provides intelligent code generation, refactoring, and analysis capabilities.
+
+## Technology Stack
+
+- **Language**: Kotlin
+- **Platform**: JetBrains Platform SDK
+- **Build Tool**: Gradle
+- **Testing**: JUnit 4/5
+
+## Coding Standards
+
+### Kotlin Style Guide
+
+- Follow the official Kotlin coding conventions
+- Use meaningful variable and function names
+- Prefer immutability: use `val` over `var` when possible
+- Use data classes for simple data holders
+- Leverage Kotlin's null safety features
+
+### Architecture Patterns
+
+- **Services**: Use `@Service` annotation for project-level and application-level services
+- **Extensions**: Implement extension points for pluggable functionality
+- **UI Components**: Separate UI logic from business logic
+- **Async Operations**: Use Kotlin coroutines for asynchronous tasks
+
+### File Organization
+
+- Place core functionality in `core/src/main/kotlin/cc/unitmesh/devti/`
+- Place language-specific extensions in `java/`, `kotlin/`, etc.
+- Place tests in corresponding `src/test/` directories
+- Keep files under 300 lines when possible
+
+## Common Patterns
+
+### Reading Files
+
+```kotlin
+import cc.unitmesh.devti.bridge.knowledge.lookupFile
+import cc.unitmesh.devti.mcp.host.readText
+
+val file = project.lookupFile("path/to/file")
+val content = file?.readText()
+```
+
+### Creating Services
+
+```kotlin
+@Service(Service.Level.PROJECT)
+class MyService(private val project: Project) {
+    // Service implementation
+}
+```
+
+### Using Settings
+
+```kotlin
+import cc.unitmesh.devti.settings.coder.coderSetting
+
+val teamPromptsDir = project.coderSetting.state.teamPromptsDir
+```
+
+## Testing Guidelines
+
+- Write unit tests for all new functionality
+- Use `BasePlatformTestCase` for tests requiring IntelliJ platform
+- Mock external dependencies when appropriate
+- Ensure tests are deterministic and isolated
+
+## Important Notes
+
+- Always use `runReadAction` for read operations on PSI/VFS
+- Always use `runWriteAction` for write operations on PSI/VFS
+- Use `runInEdt` for UI operations
+- Handle exceptions gracefully and provide meaningful error messages
+
+## Refactoring Preferences
+
+- Prefer incremental refactoring over large rewrites
+- Extract logic into testable components
+- Keep backward compatibility when possible
+- Update tests when refactoring
+
+## Resources
+
+- [IntelliJ Platform SDK Documentation](https://plugins.jetbrains.com/docs/intellij/)
+- [Kotlin Documentation](https://kotlinlang.org/docs/)
+- [Project Repository](https://github.com/unit-mesh/auto-dev)
+

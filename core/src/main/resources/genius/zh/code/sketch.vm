@@ -17,6 +17,7 @@ Here is basic information about the current workspace:
 - Current time is: ${context.time}
 ${context.rule}
 ${context.moduleInfo}
+${context.agentsMD}
 
 在编码之前，请确保您拥有足够的上下文信息。请遵循 DevIn <devin /> 指令编写代码，以节省用户的时间。请不要直接基于用户的问题进行编码，而是先通过
 tool calls 获取上下文信息来了解用户的代码库。

@@ -8,6 +8,7 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
+import cc.unitmesh.devti.sketch.rule.ProjectAgentsMD
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.application.runInEdt
@@ -44,6 +45,7 @@ data class BridgeRunContext(
     val frameworkContext: String = "",
     val buildTool: String = "",
     val searchTool: String = "localSearch",
+    val agentsMD: String = "",
 ) : TemplateContext {
     companion object {
         suspend fun create(project: Project, myEditor: Editor?, input: String): BridgeRunContext {
@@ -70,6 +72,10 @@ data class BridgeRunContext(
 
             val otherFiles = FileEditorManager.getInstance(project).openFiles.filter { it != currentFile }
 
+            // Load AGENTS.md content if available
+            val projectAgentsMD = ProjectAgentsMD(project)
+            val agentsMD = projectAgentsMD.getAgentsMDContent() ?: ""
+
             return BridgeRunContext(
                 currentFile = currentFile?.relativePath(project),
                 currentElement = currentElement,
@@ -83,7 +89,8 @@ data class BridgeRunContext(
                     return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
                 }.joinToString(",", transform = ChatContextItem::text),
                 buildTool = buildTool,
-                searchTool = lookupSearchTool()
+                searchTool = lookupSearchTool(),
+                agentsMD = agentsMD
             )
         }
     }

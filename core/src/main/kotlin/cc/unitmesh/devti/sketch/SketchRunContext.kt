@@ -9,6 +9,7 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
+import cc.unitmesh.devti.sketch.rule.ProjectAgentsMD
 import cc.unitmesh.devti.sketch.rule.ProjectRule
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
@@ -47,6 +48,7 @@ data class SketchRunContext(
     val searchTool: String = "localSearch",
     val rule: String = "",
     val moduleInfo: String = "",
+    val agentsMD: String = "",
 ) : TemplateContext {
     companion object {
         suspend fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
@@ -92,6 +94,10 @@ data class SketchRunContext(
 
             val moduleInfo = moduleContext(project)
 
+            // Load AGENTS.md content if available
+            val projectAgentsMD = ProjectAgentsMD(project)
+            val agentsMD = projectAgentsMD.getAgentsMDContent() ?: ""
+
             return SketchRunContext(
                 currentFile = currentFile?.relativePath(project),
                 currentElement = currentElement,
@@ -107,6 +113,7 @@ data class SketchRunContext(
                 searchTool = lookupSearchTool(),
                 rule = rule,
                 moduleInfo = moduleInfo,
+                agentsMD = agentsMD,
             )
         }
 
