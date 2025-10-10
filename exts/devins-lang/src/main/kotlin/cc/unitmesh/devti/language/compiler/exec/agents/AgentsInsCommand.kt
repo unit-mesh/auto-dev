@@ -23,11 +23,6 @@ data class AgentRequest(
 /**
  * Agents command implementation for listing and invoking AI agents.
  *
- * Usage:
- * - List all agents: /agents
- * - JSON format: /agents with JSON code block
- * - Legacy format: /agents <agent_name> "<message>"
- *
  * Example:
  * ```devin
  * /agents
@@ -42,11 +37,6 @@ data class AgentRequest(
  *   "message": "Please review this code"
  * }
  * ```
- * ```
- *
- * Or use legacy format:
- * ```devin
- * /agents code-reviewer "Please review this code"
  * ```
  */
 class AgentsInsCommand(
@@ -67,7 +57,7 @@ class AgentsInsCommand(
         // Parse request from JSON or legacy format
         val request = parseRequest(prop, codeContent)
         if (request == null) {
-            return "${DEVINS_ERROR} Invalid request format. Use JSON: {\"agent\": \"agent-name\", \"message\": \"your message\"} or legacy format: agent-name \"message\""
+            return "${DEVINS_ERROR} Invalid request format. Use JSON: {\"agent\": \"agent-name\", \"message\": \"your message\"}"
         }
 
         if (request.agent.isEmpty()) {
@@ -96,18 +86,6 @@ class AgentsInsCommand(
             emptyList()
         }
 
-        if (a2aAgents.isNotEmpty()) {
-            result.append("## A2A Agents\n")
-            a2aAgents.forEach { agent ->
-                result.append("- **${agent.name}**")
-                if (agent.description.isNotEmpty()) {
-                    result.append(": ${agent.description}")
-                }
-                result.append("\n")
-            }
-            result.append("\n")
-        }
-
         // Collect DevIns agents
         val devInsAgents = try {
             DevInsAgentToolCollector.all(project)
@@ -115,26 +93,73 @@ class AgentsInsCommand(
             emptyList()
         }
 
-        if (devInsAgents.isNotEmpty()) {
-            result.append("## DevIns Agents\n")
-            devInsAgents.forEach { agent ->
-                result.append("- **${agent.name}**")
-                if (agent.description.isNotEmpty()) {
-                    result.append(": ${agent.description}")
-                }
-                if (agent.devinScriptPath.isNotEmpty()) {
-                    result.append(" (${agent.devinScriptPath})")
-                }
-                result.append("\n")
-            }
-            result.append("\n")
-        }
-
         if (a2aAgents.isEmpty() && devInsAgents.isEmpty()) {
             result.append("No agents available. Please configure A2A agents or create DevIns agents.\n")
-        } else {
-            result.append("Total: ${a2aAgents.size + devInsAgents.size} agent(s)\n")
+            return result.toString()
         }
+
+        // Show usage examples first
+        result.append("## Usage Examples\n\n")
+        result.append("JSON format:\n")
+        result.append("<devin>\n")
+        result.append("/agents\n")
+        result.append("```json\n")
+        result.append("{\n")
+        result.append("  \"agent\": \"agent-name\",\n")
+        result.append("  \"message\": \"your message here\"\n")
+        result.append("}\n")
+        result.append("```\n")
+        result.append("</devin>\n\n")
+
+        // List A2A agents with examples
+        if (a2aAgents.isNotEmpty()) {
+            result.append("## A2A Agents\n\n")
+            a2aAgents.forEachIndexed { index, agent ->
+                result.append("### ${index + 1}. ${agent.name}\n")
+                if (agent.description.isNotEmpty()) {
+                    result.append("**Description**: ${agent.description}\n\n")
+                }
+
+                result.append("**Example**:\n")
+                result.append("<devin>")
+                result.append("/agents\n")
+                result.append("```json\n")
+                result.append("{\n")
+                result.append("  \"agent\": \"${agent.name}\",\n")
+                result.append("  \"message\": \"Please help with this task\"\n")
+                result.append("}\n")
+                result.append("```\n")
+                result.append("</devin>\n\n")
+            }
+        }
+
+        // List DevIns agents with examples
+        if (devInsAgents.isNotEmpty()) {
+            result.append("## DevIns Agents\n\n")
+            devInsAgents.forEachIndexed { index, agent ->
+                result.append("### ${index + 1}. ${agent.name}\n")
+                if (agent.description.isNotEmpty()) {
+                    result.append("**Description**: ${agent.description}\n\n")
+                }
+                if (agent.devinScriptPath.isNotEmpty()) {
+                    result.append("**Script**: ${agent.devinScriptPath}\n\n")
+                }
+
+                result.append("**Example**:\n")
+                result.append("<devin>\n")
+                result.append("/agents\n")
+                result.append("```json\n")
+                result.append("{\n")
+                result.append("  \"agent\": \"${agent.name}\",\n")
+                result.append("  \"message\": \"Please help with this task\"\n")
+                result.append("}\n")
+                result.append("```\n")
+                result.append("</devin>\n\n")
+            }
+        }
+
+        result.append("---\n")
+        result.append("Total: ${a2aAgents.size + devInsAgents.size} agent(s) available\n")
 
         return result.toString()
     }
