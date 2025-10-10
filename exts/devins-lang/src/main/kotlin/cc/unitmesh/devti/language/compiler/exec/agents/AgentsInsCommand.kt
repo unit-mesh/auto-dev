@@ -99,37 +99,13 @@ class AgentsInsCommand(
         }
 
         // Show usage examples first
-        result.append("## Usage Examples\n\n")
-        result.append("JSON format:\n")
-        result.append("<devin>\n")
-        result.append("/agents\n")
-        result.append("```json\n")
-        result.append("{\n")
-        result.append("  \"agent\": \"agent-name\",\n")
-        result.append("  \"message\": \"your message here\"\n")
-        result.append("}\n")
-        result.append("```\n")
-        result.append("</devin>\n\n")
+        appendUsageExamples(result)
 
         // List A2A agents with examples
         if (a2aAgents.isNotEmpty()) {
             result.append("## A2A Agents\n\n")
             a2aAgents.forEachIndexed { index, agent ->
-                result.append("### ${index + 1}. ${agent.name}\n")
-                if (agent.description.isNotEmpty()) {
-                    result.append("**Description**: ${agent.description}\n\n")
-                }
-
-                result.append("**Example**:\n")
-                result.append("<devin>")
-                result.append("/agents\n")
-                result.append("```json\n")
-                result.append("{\n")
-                result.append("  \"agent\": \"${agent.name}\",\n")
-                result.append("  \"message\": \"Please help with this task\"\n")
-                result.append("}\n")
-                result.append("```\n")
-                result.append("</devin>\n\n")
+                appendAgentInfo(result, index + 1, agent.name, agent.description)
             }
         }
 
@@ -137,24 +113,13 @@ class AgentsInsCommand(
         if (devInsAgents.isNotEmpty()) {
             result.append("## DevIns Agents\n\n")
             devInsAgents.forEachIndexed { index, agent ->
-                result.append("### ${index + 1}. ${agent.name}\n")
-                if (agent.description.isNotEmpty()) {
-                    result.append("**Description**: ${agent.description}\n\n")
-                }
-                if (agent.devinScriptPath.isNotEmpty()) {
-                    result.append("**Script**: ${agent.devinScriptPath}\n\n")
-                }
-
-                result.append("**Example**:\n")
-                result.append("<devin>\n")
-                result.append("/agents\n")
-                result.append("```json\n")
-                result.append("{\n")
-                result.append("  \"agent\": \"${agent.name}\",\n")
-                result.append("  \"message\": \"Please help with this task\"\n")
-                result.append("}\n")
-                result.append("```\n")
-                result.append("</devin>\n\n")
+                appendAgentInfo(
+                    result,
+                    index + 1,
+                    agent.name,
+                    agent.description,
+                    scriptPath = agent.devinScriptPath
+                )
             }
         }
 
@@ -162,6 +127,56 @@ class AgentsInsCommand(
         result.append("Total: ${a2aAgents.size + devInsAgents.size} agent(s) available\n")
 
         return result.toString()
+    }
+
+    /**
+     * Append usage examples section
+     */
+    private fun appendUsageExamples(result: StringBuilder) {
+        result.append("## Usage Examples\n\n")
+        result.append("JSON format:\n")
+        result.append(formatAgentExample("agent-name", "your message here"))
+    }
+
+    /**
+     * Append agent information with example
+     */
+    private fun appendAgentInfo(
+        result: StringBuilder,
+        index: Int,
+        name: String,
+        description: String,
+        scriptPath: String? = null
+    ) {
+        result.append("### $index. $name\n")
+
+        if (description.isNotEmpty()) {
+            result.append("**Description**: $description\n\n")
+        }
+
+        if (!scriptPath.isNullOrEmpty()) {
+            result.append("**Script**: $scriptPath\n\n")
+        }
+
+        result.append("**Example**:\n")
+        result.append(formatAgentExample(name, "Please help with this task"))
+    }
+
+    /**
+     * Format agent invocation example
+     */
+    private fun formatAgentExample(agentName: String, message: String): String {
+        return buildString {
+            append("<devin>\n")
+            append("/agents\n")
+            append("```json\n")
+            append("{\n")
+            append("  \"agent\": \"$agentName\",\n")
+            append("  \"message\": \"$message\"\n")
+            append("}\n")
+            append("```\n")
+            append("</devin>\n\n")
+        }
     }
 
     /**
@@ -276,4 +291,3 @@ class AgentsInsCommand(
         return "${DEVINS_ERROR} Agent '$agentName' not found. Use /agents to list all available agents."
     }
 }
-
