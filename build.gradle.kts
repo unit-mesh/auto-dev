@@ -871,6 +871,7 @@ project(":exts:ext-diagram") {
 project(":exts:devins-lang") {
     apply {
         plugin("org.jetbrains.grammarkit")
+        plugin("org.jetbrains.kotlin.plugin.serialization")
     }
 
     dependencies {
@@ -882,6 +883,7 @@ project(":exts:devins-lang") {
         }
 
         implementation("com.jayway.jsonpath:json-path:2.9.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
         implementation(project(":core"))
     }
 

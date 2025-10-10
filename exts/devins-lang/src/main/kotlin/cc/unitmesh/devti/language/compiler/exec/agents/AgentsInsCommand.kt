@@ -6,19 +6,9 @@ import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.provider.DevInsAgentToolCollector
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-
-/**
- * Request format for agents command
- */
-@Serializable
-data class AgentRequest(
-    val agent: String,
-    val message: String
-)
 
 /**
  * Agents command implementation for listing and invoking AI agents.
@@ -186,14 +176,11 @@ class AgentsInsCommand(
         // Try JSON format first
         if (codeContent.isNotBlank()) {
             try {
-                return Json.Default.decodeFromString<AgentRequest>(codeContent)
+                return Json.Default.decodeFromString(codeContent)
             } catch (e: Exception) {
-                // Fallback to legacy format if JSON parsing fails
+                logger<AgentsInsCommand>().warn("Failed to parse JSON request: $e")
             }
         }
-
-        // Legacy string format: "agent-name \"message\"" or "agent-name message"
-        if (prop.isBlank()) return null
 
         val (agentName, message) = parseCommand(prop)
         return if (agentName.isNotEmpty()) {
