@@ -239,16 +239,26 @@ class AgentsInsCommand(
         a2aService.initialize()
 
         if (a2aService.isAvailable()) {
-            // Check if the agent exists in A2A agents by trying to send a message
-            try {
-                val response = a2aService.sendMessage(agentName, input)
-                if (response != null) {
-                    return "A2A Agent '$agentName' response:\n$response"
-                }
-                // If response is null, continue to try DevIns agents
+            // Check if the agent exists in A2A agents by checking the available tools
+            val a2aAgents = try {
+                A2ASketchToolchainProvider.collectA2ATools(project)
             } catch (e: Exception) {
-                // If error occurs, continue to try DevIns agents
+                emptyList()
             }
+
+            val a2aAgent = a2aAgents.find { it.name == agentName }
+            if (a2aAgent != null) {
+                // Agent found in A2A, try to send message
+                try {
+                    val response = a2aService.sendMessage(agentName, input)
+                    if (response != null) {
+                        return "A2A Agent '$agentName' response:\n$response"
+                    }
+                } catch (e: Exception) {
+                    return "${DEVINS_ERROR} Error invoking A2A agent '$agentName': ${e.message}"
+                }
+            }
+            // If agent not found in A2A, continue to try DevIns agents
         }
 
         // Try to find and invoke DevIns agent
