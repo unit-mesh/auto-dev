@@ -3,6 +3,7 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.a2a.A2ARequest
 import cc.unitmesh.devti.a2a.A2AService
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.language.compiler.exec.agents.A2AInsCommand
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import kotlinx.coroutines.runBlocking
 

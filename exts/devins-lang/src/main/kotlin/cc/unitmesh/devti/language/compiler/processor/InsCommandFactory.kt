@@ -5,6 +5,7 @@ import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand.Companion.toolchainProviderName
 import cc.unitmesh.devti.language.compiler.exec.*
+import cc.unitmesh.devti.language.compiler.exec.agents.A2AInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.DirInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.EditFileInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.FileInsCommand

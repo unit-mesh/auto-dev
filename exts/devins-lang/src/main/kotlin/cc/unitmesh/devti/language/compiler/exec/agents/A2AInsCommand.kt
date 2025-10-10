@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.compiler.exec.agents
 
 import cc.unitmesh.devti.a2a.A2ARequest
 import cc.unitmesh.devti.a2a.A2AService
@@ -6,8 +6,8 @@ import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import com.intellij.openapi.project.Project
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 
 /**
  * A2A (Agent-to-Agent) command implementation for sending messages to A2A protocol agents.
@@ -47,15 +47,15 @@ class A2AInsCommand(
         // Try to parse as JSON first, fallback to legacy string format
         val request = parseRequest(prop, codeContent)
         if (request == null) {
-            return "$DEVINS_ERROR Invalid request format. Use JSON: {\"agent\": \"code-reviewer\", \"message\": \"review this\"} or legacy format: agent-name \"message\""
+            return "${DEVINS_ERROR} Invalid request format. Use JSON: {\"agent\": \"code-reviewer\", \"message\": \"review this\"} or legacy format: agent-name \"message\""
         }
 
         if (request.agent.isEmpty()) {
-            return "$DEVINS_ERROR Agent name is required."
+            return "${DEVINS_ERROR} Agent name is required."
         }
 
         if (request.message.isEmpty()) {
-            return "$DEVINS_ERROR Message is required."
+            return "${DEVINS_ERROR} Message is required."
         }
 
         return try {
@@ -63,18 +63,18 @@ class A2AInsCommand(
             if (response != null) {
                 "A2A Agent '${request.agent}' response:\n$response"
             } else {
-                "$DEVINS_ERROR Failed to get response from agent '${request.agent}'"
+                "${DEVINS_ERROR} Failed to get response from agent '${request.agent}'"
             }
         } catch (e: Exception) {
-            "$DEVINS_ERROR Error communicating with agent '${request.agent}': ${e.message}"
+            "${DEVINS_ERROR} Error communicating with agent '${request.agent}': ${e.message}"
         }
     }
-    
+
     private fun parseRequest(prop: String, codeContent: String): A2ARequest? {
         // Try JSON format first
         if (codeContent.isNotBlank()) {
             try {
-                return Json.decodeFromString<A2ARequest>(codeContent)
+                return Json.Default.decodeFromString<A2ARequest>(codeContent)
             } catch (e: SerializationException) {
                 // Fallback to legacy format
             }
