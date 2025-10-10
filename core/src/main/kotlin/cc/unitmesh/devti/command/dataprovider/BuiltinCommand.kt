@@ -229,6 +229,14 @@ enum class BuiltinCommand(
         true,
         enableInSketch = true
     ),
+    AGENTS(
+        "agents",
+        "List all available AI agents or invoke a specific agent. Without parameters, displays all available agents including A2A agents and DevIns agents. With agent name parameter, invokes the specified agent for task execution.",
+        AutoDevIcons.CLOUD_AGENT,
+        true,
+        false,
+        enableInSketch = true
+    ),
     ;
 
     companion object {

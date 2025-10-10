@@ -6,6 +6,7 @@ import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand.Companion.toolchainProviderName
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.language.compiler.exec.agents.A2AInsCommand
+import cc.unitmesh.devti.language.compiler.exec.agents.AgentsInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.DirInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.EditFileInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.FileInsCommand
@@ -180,6 +181,11 @@ class InsCommandFactory {
             context.result.isLocalCommand = true
             val shireCode: String? = lookupNextCode(used)?.codeText()
             A2AInsCommand(context.project, prop, shireCode ?: "")
+        }
+        BuiltinCommand.AGENTS -> {
+            context.result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.codeText()
+            AgentsInsCommand(context.project, prop, shireCode ?: "")
         }
         BuiltinCommand.TOOLCHAIN_COMMAND -> {
             context.result.isLocalCommand = true

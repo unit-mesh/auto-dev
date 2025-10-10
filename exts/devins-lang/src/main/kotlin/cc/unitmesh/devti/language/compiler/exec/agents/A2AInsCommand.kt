@@ -12,10 +12,6 @@ import kotlinx.serialization.json.Json
 /**
  * A2A (Agent-to-Agent) command implementation for sending messages to A2A protocol agents.
  *
- * Usage:
- * - JSON format: /a2a with JSON code block
- * - Legacy format: /a2a <agent_name> "<message>"
- *
  * Example:
  * ```json
  * {

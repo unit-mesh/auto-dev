@@ -1,0 +1,12 @@
+/agents
+
+List all available agents.
+
+Or invoke a specific agent with JSON format:
+/agents
+```json
+{
+  "agent": "code-reviewer",
+  "message": "Please review this code for potential security vulnerabilities"
+}
+```
