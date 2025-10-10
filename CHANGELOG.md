@@ -1,9 +1,25 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v2.4.0...v) (2025-08-14)
+# [](https://github.com/unit-mesh/auto-dev/compare/v2.4.3...v) (2025-10-10)
 
 ## [Unreleased]
 
-## [2.4.2](https://github.com/unit-mesh/auto-dev/compare/v2.4.1...v2.4.2) (2025-09-29)
+## [2.4.3](https://github.com/unit-mesh/auto-dev/compare/v2.4.2...v[2.4.3]) (2025-10-10)
 
+### Features
+
+* **A2AInsCommand:** implement A2A command for sending messages to agents [#451](https://github.com/unit-mesh/auto-dev/issues/451) ([2d088d0](https://github.com/unit-mesh/auto-dev/commit/2d088d0efc92504143df0931a6237eac69f989ec))
+* add RunInsCommand for executing auto commands in a project ([27acd17](https://github.com/unit-mesh/auto-dev/commit/27acd175f31220a3cb78df81aa55b0ab928eef10))
+* **AgentsInsCommand:** add AgentRequest data class for command requests and update JSON parsing [#451](https://github.com/unit-mesh/auto-dev/issues/451) ([e9d345d](https://github.com/unit-mesh/auto-dev/commit/e9d345daafcdefaadc3209d93b5511af9240463c))
+* **AgentsInsCommand:** add command for listing and invoking AI agents and closed [#451](https://github.com/unit-mesh/auto-dev/issues/451) ([873c8e7](https://github.com/unit-mesh/auto-dev/commit/873c8e70ad832feb5066f98947c50b76228db69c))
+* **AgentsInsCommand:** enhance usage examples and improve agent listing format [#451](https://github.com/unit-mesh/auto-dev/issues/451) ([79a3612](https://github.com/unit-mesh/auto-dev/commit/79a36127979b002fb4a5db3f1780704bce902a16))
+* **AgentsInsCommand:** improve A2A agent message handling and error reporting [#451](https://github.com/unit-mesh/auto-dev/issues/451) ([2ca69ac](https://github.com/unit-mesh/auto-dev/commit/2ca69aca0dbc1bb7534e6ba03fc0c5b93739400b))
+* **AgentsInsCommand:** refactor usage examples and agent info formatting [#451](https://github.com/unit-mesh/auto-dev/issues/451) ([706d80f](https://github.com/unit-mesh/auto-dev/commit/706d80f884800218a7cb7ef01fec0fc996ab00e9))
+* **CommandResolver:** add command resolution functionality for Windows and Unix systems ([cb89135](https://github.com/unit-mesh/auto-dev/commit/cb8913573a22607879ac605e1580be2020a5105c))
+* **DiffPreview:** add standalone editor tab diff preview functionality ([708cd73](https://github.com/unit-mesh/auto-dev/commit/708cd7313038b395050523f68278136b7c47875a))
+* **DiffViewerService:** implement diff viewer service with standalone diff processing and preview capabilities ([3928fc2](https://github.com/unit-mesh/auto-dev/commit/3928fc2091151a0041e147ffe1d422a291bf51da))
+* **DiffViewerService:** implement standalone diff preview functionality ([c153e9a](https://github.com/unit-mesh/auto-dev/commit/c153e9adb598f2fef790ddb434f98b9e6e75a440))
+* **ProjectAgentsMD:** implement AGENTS.md support for project context and closed [#450](https://github.com/unit-mesh/auto-dev/issues/450) ([1e7642d](https://github.com/unit-mesh/auto-dev/commit/1e7642d1b39566e4182f6be941b921bc8e5600e8))
+
+## [2.4.2](https://github.com/unit-mesh/auto-dev/compare/v2.4.1...v[2.4.2]) (2025-09-29)
 
 ### Bug Fixes
 
@@ -12,24 +28,6 @@
 * **DiagramIcons:** correct icon path for DIAGRAM_REMOVE ([75e0f72](https://github.com/unit-mesh/auto-dev/commit/75e0f724b934c4a803af2dfbadba6c2fc1ad300c))
 
 ## [2.4.1](https://github.com/unit-mesh/auto-dev/compare/v2.4.0...v[2.4.1]) (2025-09-28)
-
-### Bug Fixes
-
-* **A2AClientConsumer:** increase timeout for message response handling [#443](https://github.com/unit-mesh/auto-dev/issues/443) ([1025d61](https://github.com/unit-mesh/auto-dev/commit/1025d61d006721d81db83f4a110ee6a6f205d13e))
-* **diagram:** disable binary content update on document change ([88d6921](https://github.com/unit-mesh/auto-dev/commit/88d6921f7fb583a94a4c06d0fa295a82d43ee4c5))
-* **linecount:** update error messages for command execution ([649317c](https://github.com/unit-mesh/auto-dev/commit/649317c77eb70b2c4c2a249c2320b1b462fa0019))
-
-### Features
-
-* **A2AAgentCardPanel:** add error notification for failed A2A message sending ([84ed450](https://github.com/unit-mesh/auto-dev/commit/84ed450c75a6109ea5551be3ecfd6837a31b9799))
-* **a2a:** enhance A2A service initialization and error handling [#443](https://github.com/unit-mesh/auto-dev/issues/443) ([751a70a](https://github.com/unit-mesh/auto-dev/commit/751a70a6961b1904431a4a0ec25f84ffac414b42))
-* **a2a:** implement A2A command and service for agent communication [#443](https://github.com/unit-mesh/auto-dev/issues/443) ([fd331fd](https://github.com/unit-mesh/auto-dev/commit/fd331fd4727ab791e3e458712f6245bd117ff86f))
-* **a2a:** migrate to new Client.builder API ([cc7cafb](https://github.com/unit-mesh/auto-dev/commit/cc7cafb5798da9533bf0a916db9e952964fe319a))
-* **command:** add LIBRARY_VERSION_FETCH command to fetch library versions ([c6adf2b](https://github.com/unit-mesh/auto-dev/commit/c6adf2bc15ade60a658066eca6cc6052280205c5))
-* **library:** implement LibraryVersionProvider for npm and maven [#441](https://github.com/unit-mesh/auto-dev/issues/441) ([ffe2835](https://github.com/unit-mesh/auto-dev/commit/ffe2835e3332146ba4d25496b9552a9cab7f870f))
-* **test:** add unit tests for LibraryVersionFetchInsCommand functionality ([544c3e4](https://github.com/unit-mesh/auto-dev/commit/544c3e42cbd38b8351c5c32cfd5894c116fe8c45))
-
-## [2.4.0] - 2025-08-14
 
 ### Bug Fixes
 
@@ -2362,9 +2360,10 @@
 * update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 * use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.4.1...HEAD
-[2.4.1]: https://github.com/unit-mesh/auto-dev/compare/v2.4.0...v2.4.1
-[2.4.0]: https://github.com/unit-mesh/auto-dev/compare/v2.2.4...v2.4.0
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.4.3...HEAD
+[2.4.3]: https://github.com/unit-mesh/auto-dev/compare/v2.4.2...v2.4.3
+[2.4.2]: https://github.com/unit-mesh/auto-dev/compare/v2.4.1...v2.4.2
+[2.4.1]: https://github.com/unit-mesh/auto-dev/compare/v2.2.4...v2.4.1
 [2.2.4]: https://github.com/unit-mesh/auto-dev/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/unit-mesh/auto-dev/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/unit-mesh/auto-dev/compare/v2.2.1...v2.2.2
