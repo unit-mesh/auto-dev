@@ -55,8 +55,10 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
 
     private fun collectAdditionalFileInfo(file: VirtualFile): String? {
         val psiFile = PsiManager.getInstance(myProject).findFile(file) ?: return null
-        val from = FileContextProvider().from(psiFile) ?: return null
-        return "```plantuml\n" + from.formatClass() + "\n```"
+        val fileContext = FileContextProvider().from(psiFile) ?: return null
+        if (fileContext.classes.isEmpty()) return null
+
+        return "```plantuml\n" + fileContext.formatClass() + "\n```"
     }
 
     /**
