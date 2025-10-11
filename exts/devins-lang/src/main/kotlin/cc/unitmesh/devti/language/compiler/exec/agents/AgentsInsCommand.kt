@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
  * Agents command implementation for listing and invoking AI agents.
  *
  * Example:
+ * List all agents:
  * ```devin
  * /agents
  * ```
@@ -258,33 +259,31 @@ class AgentsInsCommand(
                     return "${DEVINS_ERROR} Error invoking A2A agent '$agentName': ${e.message}"
                 }
             }
-            // If agent not found in A2A, continue to try DevIns agents
         }
 
-        // Try to find and invoke DevIns agent
         val devInsAgents = DevInsAgentToolCollector.all(project)
         val devInsAgent = devInsAgents.find { it.name == agentName }
 
-        if (devInsAgent != null) {
-            return try {
-                val collectors = com.intellij.openapi.extensions.ExtensionPointName
-                    .create<DevInsAgentToolCollector>("cc.unitmesh.devInsAgentTool")
-                    .extensionList
-
-                for (collector in collectors) {
-                    val result = collector.execute(project, agentName, input)
-                    if (result != null) {
-                        return "DevIns Agent '$agentName' response:\n$result"
-                    }
-                }
-
-                "${DEVINS_ERROR} Failed to execute DevIns agent '$agentName'"
-            } catch (e: Exception) {
-                "${DEVINS_ERROR} Error executing DevIns agent '$agentName': ${e.message}"
-            }
+        if (devInsAgent == null) {
+            // Agent not found
+            return "${DEVINS_ERROR} Agent '$agentName' not found. Use /agents to list all available agents."
         }
 
-        // Agent not found
-        return "${DEVINS_ERROR} Agent '$agentName' not found. Use /agents to list all available agents."
+        return try {
+            val collectors = com.intellij.openapi.extensions.ExtensionPointName
+                .create<DevInsAgentToolCollector>("cc.unitmesh.devInsAgentTool")
+                .extensionList
+
+            for (collector in collectors) {
+                val result = collector.execute(project, agentName, input)
+                if (result != null) {
+                    return "DevIns Agent '$agentName' response:\n$result"
+                }
+            }
+
+            "${DEVINS_ERROR} Failed to execute DevIns agent '$agentName'"
+        } catch (e: Exception) {
+            "${DEVINS_ERROR} Error executing DevIns agent '$agentName': ${e.message}"
+        }
     }
 }
