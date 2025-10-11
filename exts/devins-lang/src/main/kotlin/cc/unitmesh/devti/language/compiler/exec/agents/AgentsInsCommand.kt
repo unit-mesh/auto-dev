@@ -8,6 +8,7 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.provider.DevInsAgentToolCollector
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
@@ -15,12 +16,12 @@ import kotlinx.serialization.json.Json
  *
  * Example:
  * List all agents:
- * ```devin
+ * <devin>
  * /agents
- * ```
+ * </devin>
  *
  * Or invoke an agent with JSON:
- * ```devin
+ * <devin>
  * /agents
  * ```json
  * {
@@ -28,7 +29,7 @@ import kotlinx.serialization.json.Json
  *   "message": "Please review this code"
  * }
  * ```
- * ```
+ * </devin>
  */
 class AgentsInsCommand(
     private val project: Project,
@@ -287,3 +288,12 @@ class AgentsInsCommand(
         }
     }
 }
+
+/**
+ * Request format for agents command
+ */
+@Serializable
+data class AgentRequest(
+    val agent: String,
+    val message: String
+)

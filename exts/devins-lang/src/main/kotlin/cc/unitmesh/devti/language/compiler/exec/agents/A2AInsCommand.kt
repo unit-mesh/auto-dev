@@ -13,12 +13,15 @@ import kotlinx.serialization.json.Json
  * A2A (Agent-to-Agent) command implementation for sending messages to A2A protocol agents.
  *
  * Example:
+ * <devin>
+ * /a2a
  * ```json
  * {
  *   "agent": "code-reviewer",
  *   "message": "Please review this code for potential issues"
  * }
  * ```
+ * <devin>
  */
 class A2AInsCommand(
     private val project: Project,
@@ -75,9 +78,6 @@ class A2AInsCommand(
                 // Fallback to legacy format
             }
         }
-
-        // Legacy string format: "agent-name \"message\"" or "agent-name message"
-        if (prop.isBlank()) return null
 
         val (agentName, message) = parseCommand(prop)
         return if (agentName.isNotEmpty()) {
