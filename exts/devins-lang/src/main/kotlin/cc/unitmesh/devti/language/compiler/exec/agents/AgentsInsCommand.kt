@@ -2,13 +2,13 @@ package cc.unitmesh.devti.language.compiler.exec.agents
 
 import cc.unitmesh.devti.a2a.A2AService
 import cc.unitmesh.devti.a2a.A2ASketchToolchainProvider
+import cc.unitmesh.devti.a2a.AgentRequest
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.provider.DevInsAgentToolCollector
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
@@ -288,12 +288,3 @@ class AgentsInsCommand(
         }
     }
 }
-
-/**
- * Request format for agents command
- */
-@Serializable
-data class AgentRequest(
-    val agent: String,
-    val message: String
-)

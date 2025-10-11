@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.a2a.A2ARequest
-import cc.unitmesh.devti.a2a.A2AService
+import cc.unitmesh.devti.a2a.AgentRequest
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.exec.agents.A2AInsCommand
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -76,7 +75,7 @@ class A2AInsCommandTest : BasePlatformTestCase() {
 
         // First test JSON parsing directly
         try {
-            val directParse = kotlinx.serialization.json.Json.decodeFromString<A2ARequest>(jsonContent)
+            val directParse = kotlinx.serialization.json.Json.decodeFromString<AgentRequest>(jsonContent)
             assertNotNull("Direct JSON parsing should work", directParse)
             assertEquals("code-reviewer", directParse.agent)
             assertEquals("Please review this code", directParse.message)
@@ -87,7 +86,7 @@ class A2AInsCommandTest : BasePlatformTestCase() {
         val parseMethod = A2AInsCommand::class.java.getDeclaredMethod("parseRequest", String::class.java, String::class.java)
         parseMethod.isAccessible = true
 
-        val result = parseMethod.invoke(command, "", jsonContent) as A2ARequest?
+        val result = parseMethod.invoke(command, "", jsonContent) as AgentRequest?
         assertNotNull("parseRequest should return a valid A2ARequest for JSON input", result)
         assertEquals("code-reviewer", result!!.agent)
         assertEquals("Please review this code", result.message)
@@ -99,7 +98,7 @@ class A2AInsCommandTest : BasePlatformTestCase() {
         val parseMethod = A2AInsCommand::class.java.getDeclaredMethod("parseRequest", String::class.java, String::class.java)
         parseMethod.isAccessible = true
 
-        val result = parseMethod.invoke(command, "test-agent \"Hello world\"", "") as A2ARequest?
+        val result = parseMethod.invoke(command, "test-agent \"Hello world\"", "") as AgentRequest?
         assertNotNull(result)
         assertEquals("test-agent", result!!.agent)
         assertEquals("Hello world", result.message)

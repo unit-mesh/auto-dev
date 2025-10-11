@@ -1,10 +1,11 @@
 package cc.unitmesh.devti.language.compiler.exec.agents
 
-import cc.unitmesh.devti.a2a.A2ARequest
 import cc.unitmesh.devti.a2a.A2AService
+import cc.unitmesh.devti.a2a.AgentRequest
 import cc.unitmesh.devti.command.InsCommand
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -69,61 +70,15 @@ class A2AInsCommand(
         }
     }
 
-    private fun parseRequest(prop: String, codeContent: String): A2ARequest? {
-        // Try JSON format first
+    private fun parseRequest(prop: String, codeContent: String): AgentRequest? {
         if (codeContent.isNotBlank()) {
             try {
-                return Json.Default.decodeFromString<A2ARequest>(codeContent)
+                return Json.Default.decodeFromString<AgentRequest>(codeContent)
             } catch (e: SerializationException) {
-                // Fallback to legacy format
+                logger<A2AInsCommand>().warn("Failed to parse JSON request: $e")
             }
         }
 
-        val (agentName, message) = parseCommand(prop)
-        return if (agentName.isNotEmpty()) {
-            A2ARequest(agentName, message)
-        } else {
-            null
-        }
-    }
-
-    /**
-     * Parse the command string to extract agent name and message.
-     * Expected format: "<agent_name> \"<message>\"" or "<agent_name> <message>"
-     */
-    private fun parseCommand(input: String): Pair<String, String> {
-        val trimmed = input.trim()
-
-        if (trimmed.isEmpty()) {
-            return Pair("", "")
-        }
-
-        // Try to parse quoted message first
-        val quotedMessageRegex = """^(\S+)\s+"(.+)"$""".toRegex()
-        val quotedMatch = quotedMessageRegex.find(trimmed)
-        if (quotedMatch != null) {
-            val agentName = quotedMatch.groupValues[1]
-            val message = quotedMatch.groupValues[2]
-            return Pair(agentName, message)
-        }
-
-        // Try to parse single quoted message
-        val singleQuotedRegex = """^(\S+)\s+'(.+)'$""".toRegex()
-        val singleQuotedMatch = singleQuotedRegex.find(trimmed)
-        if (singleQuotedMatch != null) {
-            val agentName = singleQuotedMatch.groupValues[1]
-            val message = singleQuotedMatch.groupValues[2]
-            return Pair(agentName, message)
-        }
-
-        // Fallback: split by first space
-        val parts = trimmed.split(" ", limit = 2)
-        if (parts.size >= 2) {
-            return Pair(parts[0], parts[1])
-        } else if (parts.size == 1) {
-            return Pair(parts[0], "")
-        }
-
-        return Pair("", "")
+        return null
     }
 }
