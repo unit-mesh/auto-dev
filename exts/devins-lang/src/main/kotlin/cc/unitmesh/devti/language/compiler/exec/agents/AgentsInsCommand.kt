@@ -15,12 +15,12 @@ import kotlinx.serialization.json.Json
  * Agents command implementation for listing and invoking AI agents.
  *
  * Example:
- * List all agents:
+ * List all available agents:
  * <devin>
  * /agents
  * </devin>
  *
- * Or invoke an agent with JSON:
+ * Invoke an agent with JSON:
  * <devin>
  * /agents
  * ```json

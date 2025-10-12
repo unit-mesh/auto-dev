@@ -1,8 +1,9 @@
-/agents
-
 List all available agents.
 
-Or invoke a specific agent with JSON format:
+/agents
+
+Invoke a specific agent with JSON format:
+
 /agents
 ```json
 {
