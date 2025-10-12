@@ -48,19 +48,16 @@ class AgentsInsCommand(
 
         // Parse request from JSON or legacy format
         val request = parseRequest(prop, codeContent)
-        if (request == null) {
-            return "${DEVINS_ERROR} Invalid request format. Use JSON: {\"agent\": \"agent-name\", \"message\": \"your message\"}"
-        }
+            ?: return "$DEVINS_ERROR Invalid request format. Use JSON: {\"agent\": \"agent-name\", \"message\": \"your message\"}"
 
         if (request.agent.isEmpty()) {
-            return "${DEVINS_ERROR} Agent name is required."
+            return "$DEVINS_ERROR Agent name is required."
         }
 
         if (request.message.isEmpty()) {
-            return "${DEVINS_ERROR} Message is required."
+            return "$DEVINS_ERROR Message is required."
         }
 
-        // Invoke the specific agent
         return invokeAgent(request.agent, request.message)
     }
 
@@ -236,7 +233,6 @@ class AgentsInsCommand(
      * Invoke a specific agent by name
      */
     private suspend fun invokeAgent(agentName: String, input: String): String? {
-        // Try to find and invoke A2A agent first
         val a2aService = project.getService(A2AService::class.java)
         a2aService.initialize()
 
@@ -250,14 +246,13 @@ class AgentsInsCommand(
 
             val a2aAgent = a2aAgents.find { it.name == agentName }
             if (a2aAgent != null) {
-                // Agent found in A2A, try to send message
                 try {
                     val response = a2aService.sendMessage(agentName, input)
                     if (response != null) {
                         return "A2A Agent '$agentName' response:\n$response"
                     }
                 } catch (e: Exception) {
-                    return "${DEVINS_ERROR} Error invoking A2A agent '$agentName': ${e.message}"
+                    return "$DEVINS_ERROR Error invoking A2A agent '$agentName': ${e.message}"
                 }
             }
         }
@@ -266,8 +261,7 @@ class AgentsInsCommand(
         val devInsAgent = devInsAgents.find { it.name == agentName }
 
         if (devInsAgent == null) {
-            // Agent not found
-            return "${DEVINS_ERROR} Agent '$agentName' not found. Use /agents to list all available agents."
+            return "$DEVINS_ERROR Agent '$agentName' not found. Use /agents to list all available agents."
         }
 
         return try {
@@ -282,9 +276,9 @@ class AgentsInsCommand(
                 }
             }
 
-            "${DEVINS_ERROR} Failed to execute DevIns agent '$agentName'"
+            "$DEVINS_ERROR Failed to execute DevIns agent '$agentName'"
         } catch (e: Exception) {
-            "${DEVINS_ERROR} Error executing DevIns agent '$agentName': ${e.message}"
+            "$DEVINS_ERROR Error executing DevIns agent '$agentName': ${e.message}"
         }
     }
 }
