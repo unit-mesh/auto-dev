@@ -41,12 +41,10 @@ class AgentsInsCommand(
     override fun isApplicable(): Boolean = true
 
     override suspend fun execute(): String? {
-        // If no parameter and no code content, list all agents
         if (prop.isBlank() && codeContent.isBlank()) {
             return listAllAgents()
         }
 
-        // Parse request from JSON or legacy format
         val request = parseRequest(prop, codeContent)
             ?: return "$DEVINS_ERROR Invalid request format. Use JSON: {\"agent\": \"agent-name\", \"message\": \"your message\"}"
 
@@ -61,9 +59,6 @@ class AgentsInsCommand(
         return invokeAgent(request.agent, request.message)
     }
 
-    /**
-     * List all available agents including A2A agents and DevIns agents
-     */
     private fun listAllAgents(): String {
         val result = StringBuilder()
         result.append("Available AI Agents:\n\n")
@@ -99,9 +94,6 @@ class AgentsInsCommand(
         return result.toString()
     }
 
-    /**
-     * Append usage examples section
-     */
     private fun appendUsageExamples(result: StringBuilder) {
         result.append("## Usage Examples\n\n")
         result.append("JSON format:\n")
@@ -129,9 +121,6 @@ class AgentsInsCommand(
         result.append(formatAgentExample(name, "Please help with this task"))
     }
 
-    /**
-     * Format agent invocation example
-     */
     private fun formatAgentExample(agentName: String, message: String): String {
         return buildString {
             append("<devin>\n")
@@ -146,9 +135,6 @@ class AgentsInsCommand(
         }
     }
 
-    /**
-     * Parse request from JSON or legacy format
-     */
     private fun parseRequest(prop: String, codeContent: String): AgentRequest? {
         // Try JSON format first
         if (codeContent.isNotBlank()) {
@@ -215,15 +201,9 @@ class AgentsInsCommand(
         a2aService.initialize()
 
         if (a2aService.isAvailable()) {
-            // Check if the agent exists in A2A agents by checking the available tools
-            val a2aAgents = try {
-                A2ASketchToolchainProvider.collectA2ATools(project)
-            } catch (e: Exception) {
-                emptyList()
-            }
-
-            val a2aAgent = a2aAgents.find { it.name == agentName }
-            if (a2aAgent != null) {
+            val a2aAgents = A2ASketchToolchainProvider.collectA2ATools(project)
+            val selectedAgent = a2aAgents.find { it.name == agentName }
+            if (selectedAgent != null) {
                 try {
                     val response = a2aService.sendMessage(agentName, input)
                     if (response != null) {
