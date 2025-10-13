@@ -68,29 +68,16 @@ class AgentsInsCommand(
         val result = StringBuilder()
         result.append("Available AI Agents:\n\n")
 
-        // Collect A2A agents
-        val a2aAgents = try {
-            A2ASketchToolchainProvider.collectA2ATools(project)
-        } catch (e: Exception) {
-            emptyList()
-        }
-
-        // Collect DevIns agents
-        val devInsAgents = try {
-            DevInsAgentToolCollector.all(project)
-        } catch (e: Exception) {
-            emptyList()
-        }
+        val a2aAgents = A2ASketchToolchainProvider.collectA2ATools(project)
+        val devInsAgents = DevInsAgentToolCollector.all(project)
 
         if (a2aAgents.isEmpty() && devInsAgents.isEmpty()) {
             result.append("No agents available. Please configure A2A agents or create DevIns agents.\n")
             return result.toString()
         }
 
-        // Show usage examples first
         appendUsageExamples(result)
 
-        // List A2A agents with examples
         if (a2aAgents.isNotEmpty()) {
             result.append("## A2A Agents\n\n")
             a2aAgents.forEachIndexed { index, agent ->
@@ -98,17 +85,11 @@ class AgentsInsCommand(
             }
         }
 
-        // List DevIns agents with examples
         if (devInsAgents.isNotEmpty()) {
             result.append("## DevIns Agents\n\n")
             devInsAgents.forEachIndexed { index, agent ->
-                appendAgentInfo(
-                    result,
-                    index + 1,
-                    agent.name,
-                    agent.description,
-                    scriptPath = agent.devinScriptPath
-                )
+                val scriptPath = agent.devinScriptPath
+                appendAgentInfo(result, index + 1, agent.name, agent.description, scriptPath)
             }
         }
 
@@ -127,9 +108,6 @@ class AgentsInsCommand(
         result.append(formatAgentExample("agent-name", "your message here"))
     }
 
-    /**
-     * Append agent information with example
-     */
     private fun appendAgentInfo(
         result: StringBuilder,
         index: Int,
