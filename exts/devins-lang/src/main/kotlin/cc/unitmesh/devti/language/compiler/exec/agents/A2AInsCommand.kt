@@ -70,7 +70,7 @@ class A2AInsCommand(
         }
     }
 
-    private fun parseRequest(prop: String, codeContent: String): AgentRequest? {
+    fun parseRequest(prop: String, codeContent: String): AgentRequest? {
         if (codeContent.isNotBlank()) {
             try {
                 return Json.Default.decodeFromString<AgentRequest>(codeContent)

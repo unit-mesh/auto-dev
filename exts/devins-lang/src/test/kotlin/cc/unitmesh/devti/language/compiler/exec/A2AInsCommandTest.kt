@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.a2a.AgentRequest
-import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.exec.agents.A2AInsCommand
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json.Default.decodeFromString
 
 class A2AInsCommandTest : BasePlatformTestCase() {
     fun testParseRequestWithJsonFormat() = runBlocking {
@@ -13,7 +13,7 @@ class A2AInsCommandTest : BasePlatformTestCase() {
 
         // First test JSON parsing directly
         try {
-            val directParse = kotlinx.serialization.json.Json.decodeFromString<AgentRequest>(jsonContent)
+            val directParse = decodeFromString<AgentRequest>(jsonContent)
             assertNotNull("Direct JSON parsing should work", directParse)
             assertEquals("code-reviewer", directParse.agent)
             assertEquals("Please review this code", directParse.message)
@@ -21,10 +21,7 @@ class A2AInsCommandTest : BasePlatformTestCase() {
             fail("Direct JSON parsing failed: ${e.message}")
         }
 
-        val parseMethod = A2AInsCommand::class.java.getDeclaredMethod("parseRequest", String::class.java, String::class.java)
-        parseMethod.isAccessible = true
-
-        val result = parseMethod.invoke(command, "", jsonContent) as AgentRequest?
+        val result = command.parseRequest("", jsonContent)
         assertNotNull("parseRequest should return a valid A2ARequest for JSON input", result)
         assertEquals("code-reviewer", result!!.agent)
         assertEquals("Please review this code", result.message)
