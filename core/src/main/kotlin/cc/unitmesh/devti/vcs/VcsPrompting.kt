@@ -89,4 +89,19 @@ class VcsPrompting(private val project: Project) {
         val changeListManager = ChangeListManager.getInstance(project)
         return changeListManager.changeLists.flatMap { it.changes }
     }
+
+    fun hasChanges() : Boolean {
+        val changeListManager = ChangeListManager.getInstance(project)
+        val changes = changeListManager.changeLists.flatMap { it.changes }
+        if (changes.isNotEmpty()) {
+            return true
+        }
+
+        if (changeListManager.unversionedFilesPaths.isNotEmpty()) {
+            return true
+        }
+
+        return false
+    }
 }
+

@@ -55,10 +55,9 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         }
 
         val prompting = e.project?.service<VcsPrompting>()
-        val changes: List<Change> = prompting?.getChanges() ?: listOf()
 
         e.presentation.icon = AutoDevStatus.Ready.icon
-        e.presentation.isEnabled = changes.isNotEmpty()
+        e.presentation.isEnabled = prompting?.hasChanges() == true
     }
 
     override fun executeAction(event: AnActionEvent) {
