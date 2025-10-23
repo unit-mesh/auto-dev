@@ -22,6 +22,8 @@
 
 package cc.unitmesh.devti.vcs
 
+import cc.unitmesh.devti.vcs.context.ContextWindowManager
+import cc.unitmesh.devti.vcs.context.DiffFormatter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -41,17 +43,40 @@ class VcsPrompting(private val project: Project) {
         FileSystems.getDefault().getPathMatcher("glob:$it")
     }
 
+    /**
+     * Prepare context for VCS changes with default token budget.
+     * Uses context engineering to optimize token usage.
+     */
     fun prepareContext(changes: List<Change>, ignoreFilePatterns: List<PathMatcher> = defaultIgnoreFilePatterns): String {
-        return project.service<DiffSimplifier>().simplify(changes, ignoreFilePatterns)
+        return prepareContextWithBudget(changes, ignoreFilePatterns, maxTokens = 8000)
+    }
+
+    /**
+     * Prepare context with explicit token budget control.
+     *
+     * @param changes The list of changes to prepare context for
+     * @param ignoreFilePatterns File patterns to ignore
+     * @param maxTokens Maximum tokens to use for the context
+     * @return The prepared context string
+     */
+    fun prepareContextWithBudget(
+        changes: List<Change>,
+        ignoreFilePatterns: List<PathMatcher> = defaultIgnoreFilePatterns,
+        maxTokens: Int = 8000
+    ): String {
+        return project.service<DiffSimplifier>().simplifyWithContext(changes, ignoreFilePatterns, maxTokens)
     }
 
     /**
      * Builds a diff prompt for a list of VcsFullCommitDetails.
+     * Uses context engineering to optimize token usage.
      *
      * @param details The list of VcsFullCommitDetails containing commit details.
+     * @param selectList The list of changes to include in the prompt.
      * @param project The Project object representing the current project.
-     * @param ignoreFilePatterns The list of PathMatcher objects representing file patterns to be ignored during diff generation. Default value is an empty list.
-     * @return A Pair object containing a list of commit message summaries and the generated diff prompt as a string. Returns null if the list is empty or no valid changes are found.
+     * @param ignoreFilePatterns The list of PathMatcher objects representing file patterns to be ignored during diff generation.
+     * @param maxTokens Maximum tokens to use for the diff context.
+     * @return The generated diff prompt as a string. Returns null if the list is empty or no valid changes are found.
      * @throws VcsException If an error occurs during VCS operations.
      * @throws IOException If an I/O error occurs.
      */
@@ -61,15 +86,20 @@ class VcsPrompting(private val project: Project) {
         selectList: List<Change>,
         project: Project,
         ignoreFilePatterns: List<PathMatcher> = defaultIgnoreFilePatterns,
+        maxTokens: Int = 8000
     ): String? {
-        val changeText = project.service<DiffSimplifier>().simplify(selectList, ignoreFilePatterns)
+        val changeText = project.service<DiffSimplifier>().simplifyWithContext(
+            selectList,
+            ignoreFilePatterns,
+            maxTokens
+        )
 
         if (changeText.isEmpty()) {
             return null
         }
 
         val processedText = try {
-            DiffSimplifier.postProcess(changeText)
+            DiffFormatter.postProcess(changeText)
         } catch (e: Exception) {
             changeText
         }

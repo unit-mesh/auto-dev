@@ -156,6 +156,7 @@ configure(subprojects - project(":exts")) {
 //        compileOnly(kotlin("stdlib-jdk8"))
 //        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+        implementation("com.knuddels:jtokkit:1.1.0")
 
         testOutput(sourceSets.test.get().output.classesDirs)
 

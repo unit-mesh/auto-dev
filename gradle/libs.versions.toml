@@ -7,8 +7,10 @@ qodana = "0.1.13"
 kover = "0.7.5"
 
 chapi = "2.1.2"
+jtokkit = "1.1.0"
 
 [libraries]
+jtokkit = { module = "com.knuddels:jtokkit", version.ref = "jtokkit" }
 
 
 [plugins]
