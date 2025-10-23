@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull
 import java.io.StringWriter
 import java.nio.file.Path
 import java.nio.file.PathMatcher
+import kotlin.math.max
 import kotlin.math.min
 
 @Service(Service.Level.PROJECT)
@@ -297,7 +298,15 @@ class DiffSimplifier(val project: Project) {
 
         private fun isBinaryOrTooLarge(revision: ContentRevision?): Boolean {
             val virtualFile = (revision as? CurrentContentRevision)?.virtualFile ?: return false
-            return isBinaryRevision(revision) || FileUtilRt.isTooLarge(virtualFile.length)
+            return isBinaryRevision(revision) || isTooManyLines(virtualFile)
+        }
+
+        private fun isTooManyLines(virtualFile: com.intellij.openapi.vfs.VirtualFile): Boolean {
+            return try {
+                virtualFile.inputStream.bufferedReader().useLines { it.count() > 3000 }
+            } catch (e: Exception) {
+                false
+            }
         }
 
         private fun isBinaryRevision(cr: ContentRevision?): Boolean {
