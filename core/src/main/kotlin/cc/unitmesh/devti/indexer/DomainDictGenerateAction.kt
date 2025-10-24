@@ -92,21 +92,25 @@ class DomainDictGenerateAction : AnAction() {
     private suspend fun buildPrompt(project: Project): String {
         val maxTokenLength = AutoDevSettingsState.maxTokenLength
         
-        // Collect semantic names with Level 1 + Level 2 structure
+        // Collect semantic names with Level 1 + Level 2 structure and weights
         val domainDict = LangDictProvider.allSemantic(project, maxTokenLength)
         
-        // Format as simple comma-separated list (backward compatible with template)
-        val codeContext = domainDict.toSimpleList()
+        // Use weighted list for better LLM attention
+        val codeContext = domainDict.toWeightedList()
         
         val templateRender = TemplateRender(GENIUS_CODE)
         val template = templateRender.getTemplate("indexer.vm")
         val readmeMe = PromptEnhancer.readmeFile(project)
 
-        // Log semantic extraction info for debugging
+        // Log semantic extraction info with weight analysis
+        val weightStats = domainDict.getWeightStatistics()
         logger<DomainDictGenerateAction>().info(
             "Domain Dictionary: ${domainDict.metadata["level1_count"]} files, " +
             "${domainDict.metadata["level2_count"]} classes/methods, " +
-            "Total tokens: ${domainDict.getTotalTokens()}"
+            "Total tokens: ${domainDict.getTotalTokens()}, " +
+            "Weight: Avg=${String.format("%.2f", weightStats["averageWeight"])}, " +
+            "Critical=${weightStats["criticalCount"]}, " +
+            "High=${weightStats["highCount"]}"
         )
 
         val context = DomainDictGenerateContext(codeContext, readmeMe)

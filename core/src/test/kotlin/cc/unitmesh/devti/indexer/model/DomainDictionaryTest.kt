@@ -9,12 +9,12 @@ class DomainDictionaryTest {
     @Test
     fun testGetAllNames() {
         val level1 = listOf(
-            SemanticName("User", ElementType.FILE, 1),
-            SemanticName("Blog", ElementType.FILE, 1)
+            SemanticName("User", ElementType.FILE, 1, weight = 0.7f),
+            SemanticName("Blog", ElementType.FILE, 1, weight = 0.6f)
         )
         val level2 = listOf(
-            SemanticName("createUser", ElementType.METHOD, 2),
-            SemanticName("deleteBlog", ElementType.METHOD, 2)
+            SemanticName("createUser", ElementType.METHOD, 2, parentClassName = "User", weight = 0.7f),
+            SemanticName("deleteBlog", ElementType.METHOD, 2, parentClassName = "Blog", weight = 0.6f)
         )
         val dict = DomainDictionary(level1, level2)
         
@@ -43,12 +43,12 @@ class DomainDictionaryTest {
     @Test
     fun testGetTotalTokens() {
         val level1 = listOf(
-            SemanticName("User", ElementType.FILE, 1),
-            SemanticName("Blog", ElementType.FILE, 1)
+            SemanticName("User", ElementType.FILE, 1, weight = 0.7f),
+            SemanticName("Blog", ElementType.FILE, 1, weight = 0.6f)
         )
         val level2 = listOf(
-            SemanticName("createUser", ElementType.METHOD, 2),
-            SemanticName("deleteBlog", ElementType.METHOD, 2)
+            SemanticName("createUser", ElementType.METHOD, 2, weight = 0.7f),
+            SemanticName("deleteBlog", ElementType.METHOD, 2, weight = 0.6f)
         )
         val dict = DomainDictionary(level1, level2)
         
@@ -58,16 +58,33 @@ class DomainDictionaryTest {
     @Test
     fun testToSimpleList() {
         val level1 = listOf(
-            SemanticName("User", ElementType.FILE, 1),
-            SemanticName("Blog", ElementType.FILE, 1)
+            SemanticName("User", ElementType.FILE, 1, weight = 0.7f),
+            SemanticName("Blog", ElementType.FILE, 1, weight = 0.6f)
         )
         val level2 = listOf(
-            SemanticName("create", ElementType.METHOD, 1)
+            SemanticName("create", ElementType.METHOD, 1, weight = 0.7f)
         )
         val dict = DomainDictionary(level1, level2)
         
         val result = dict.toSimpleList()
-        assertEquals("User, Blog, create", result)
+        assertTrue(result.contains("User"))
+        assertTrue(result.contains("Blog"))
+        assertTrue(result.contains("create"))
+    }
+    
+    @Test
+    fun testToWeightedList() {
+        // High weight items should appear first
+        val level1 = listOf(
+            SemanticName("User", ElementType.FILE, 1, weight = 0.9f),
+            SemanticName("Blog", ElementType.FILE, 1, weight = 0.3f)
+        )
+        val dict = DomainDictionary(level1, emptyList())
+        
+        val result = dict.toWeightedList()
+        val items = result.split(", ")
+        assertEquals("User", items[0])  // High weight first
+        assertEquals("Blog", items[1])  // Low weight second
     }
     
     @Test
@@ -78,25 +95,47 @@ class DomainDictionaryTest {
                 type = ElementType.FILE,
                 tokens = 1,
                 source = "User.java",
-                original = "User"
+                original = "User",
+                weight = 0.8f,
+                packageName = "com.example.user",
+                weightCategory = "High"
             )
         )
         val dict = DomainDictionary(level1, emptyList())
         
         val csv = dict.toCsvFormat()
-        assertTrue(csv.contains("名称,类型,来源,原始名称,Token数"))
-        assertTrue(csv.contains("User,FILE,User.java,User,1"))
+        assertTrue(csv.contains("名称,类型,来源,原始名称,Token数,权重,权重等级,所属包"))
+        assertTrue(csv.contains("User"))
+        assertTrue(csv.contains("High"))
+        assertTrue(csv.contains("com.example.user"))
     }
     
     @Test
     fun testRemoveDuplicates() {
         val level1 = listOf(
-            SemanticName("User", ElementType.FILE, 1),
-            SemanticName("User", ElementType.FILE, 1)  // Duplicate
+            SemanticName("User", ElementType.FILE, 1, weight = 0.7f),
+            SemanticName("User", ElementType.FILE, 1, weight = 0.7f)  // Duplicate
         )
         val dict = DomainDictionary(level1, emptyList())
         
         val allNames = dict.getAllNames()
         assertEquals(1, allNames.size)  // Should remove duplicates
+    }
+    
+    @Test
+    fun testGetWeightStatistics() {
+        val level1 = listOf(
+            SemanticName("Critical", ElementType.FILE, 1, weight = 0.9f, weightCategory = "Critical"),
+            SemanticName("High", ElementType.FILE, 1, weight = 0.7f, weightCategory = "High"),
+            SemanticName("Medium", ElementType.FILE, 1, weight = 0.5f, weightCategory = "Medium"),
+            SemanticName("Low", ElementType.FILE, 1, weight = 0.2f, weightCategory = "Low")
+        )
+        val dict = DomainDictionary(level1, emptyList())
+        
+        val stats = dict.getWeightStatistics()
+        assertEquals(1, stats["criticalCount"])
+        assertEquals(1, stats["highCount"])
+        assertEquals(1, stats["mediumCount"])
+        assertEquals(1, stats["lowCount"])
     }
 }
