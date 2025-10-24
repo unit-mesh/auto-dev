@@ -4,7 +4,6 @@ import cc.unitmesh.devti.indexer.model.ElementType
 import cc.unitmesh.devti.indexer.model.SemanticName
 import cc.unitmesh.devti.indexer.naming.CamelCaseSplitter
 import cc.unitmesh.devti.indexer.naming.LanguageSuffixRules
-import cc.unitmesh.devti.indexer.provider.BaseLangDictProvider
 import cc.unitmesh.devti.indexer.scoring.FileWeightCalculator
 import cc.unitmesh.idea.indexer.naming.JavaNamingRules
 import com.intellij.ide.highlighter.JavaFileType

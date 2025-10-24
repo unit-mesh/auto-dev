@@ -1,18 +1,20 @@
-package cc.unitmesh.devti.indexer.provider
+package cc.unitmesh.idea.indexer.provider
 
 import cc.unitmesh.devti.indexer.model.DomainDictionary
 import cc.unitmesh.devti.indexer.model.ElementType
 import cc.unitmesh.devti.indexer.model.SemanticName
-import cc.unitmesh.devti.indexer.naming.CamelCaseSplitter
 import cc.unitmesh.devti.indexer.naming.LanguageSuffixRules
+import cc.unitmesh.devti.indexer.provider.LangDictProvider
 import cc.unitmesh.devti.indexer.scoring.FileWeightCalculator
 import cc.unitmesh.devti.vcs.context.TokenCounter
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
@@ -117,7 +119,7 @@ abstract class BaseLangDictProvider : LangDictProvider {
             val psiClass: PsiClass,
             val className: String,
             val normalized: String,
-            val vFile: com.intellij.openapi.vfs.VirtualFile,
+            val vFile: VirtualFile,
             val packageName: String,
             val methods: List<PsiMethod>
         )
@@ -214,8 +216,8 @@ abstract class BaseLangDictProvider : LangDictProvider {
 /**
  * Helper to get PSI file from virtual file
  */
-private fun com.intellij.openapi.vfs.VirtualFile.findPsiFile(project: Project): PsiFile? {
+private fun VirtualFile.findPsiFile(project: Project): PsiFile? {
     return runReadAction {
-        com.intellij.psi.PsiManager.getInstance(project).findFile(this)
+        PsiManager.getInstance(project).findFile(this)
     }
 }
