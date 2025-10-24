@@ -1,12 +1,11 @@
 package cc.unitmesh.devti.indexer.scoring
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.vcsUtil.VcsUtil
 import git4idea.history.GitFileHistory
 
@@ -60,8 +59,8 @@ object FileWeightCalculator {
         val fileWeight = calculateWeight(project, virtualFile)
         
         // Class size: count methods and fields
-        val methodCount = psiClass.methods.size.toFloat()
-        val fieldCount = psiClass.fields.size.toFloat()
+        val methodCount = runReadAction { psiClass.methods.size.toFloat() }
+        val fieldCount = runReadAction { psiClass.fields.size.toFloat() }
         val totalMembers = (methodCount + fieldCount).coerceAtLeast(1f)
         
         // Large classes are more important

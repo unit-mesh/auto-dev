@@ -1,7 +1,10 @@
 package cc.unitmesh.devti.indexer
 
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.indexer.provider.LangDictProvider
+import cc.unitmesh.devti.indexer.usage.PromptEnhancer
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import cc.unitmesh.devti.statusbar.AutoDevStatus
@@ -12,23 +15,18 @@ import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.guessProjectDir
-import kotlinx.coroutines.launch
-import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.indexer.usage.PromptEnhancer
-import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.LocalFileSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.launch
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.editor.ScrollType
-import com.intellij.openapi.vfs.LocalFileSystem
 
 class DomainDictGenerateAction : AnAction() {
     init {
@@ -54,28 +52,24 @@ class DomainDictGenerateAction : AnAction() {
                 logger<DomainDictGenerateAction>().debug("Prompt: $prompt")
 
                 val file = promptDir.resolve("domain.csv").toFile()
-                if (!file.exists()) {
-                    file.createNewFile()
-                }
 
-                val fileEditorManager = FileEditorManager.getInstance(project)
-                ApplicationManager.getApplication().invokeAndWait {
-                    val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
-                    if (virtualFile != null) {
-                        fileEditorManager.setSelectedEditor(virtualFile, "text-editor")
-                    }
-                }
-
-                val editor = fileEditorManager.selectedTextEditor
+                // Stream LLM response and write directly to file
                 val stream: Flow<String> = LlmFactory.create(project).stream(prompt, "")
                 val result = StringBuilder()
 
                 stream.cancellable().collect { chunk ->
                     result.append(chunk)
-                    WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
-                        editor?.document?.setText(result.toString())
-                        editor?.caretModel?.moveToOffset(editor?.document?.textLength ?: 0)
-                        editor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
+                }
+
+                file.writeText(result.toString())
+
+                // After streaming is complete, open the file in editor
+                ApplicationManager.getApplication().invokeLater {
+                    val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+                    if (virtualFile != null) {
+                        FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                    } else {
+                        logger<DomainDictGenerateAction>().warn("Failed to open domain.csv after generation")
                     }
                 }
 

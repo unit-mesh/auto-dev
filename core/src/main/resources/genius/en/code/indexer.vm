@@ -1,17 +1,45 @@
-你是一个 DDD（领域驱动设计）专家，正在从代码库中构建一个业务上的中英字典作为索引。你需要从给定的代码片段中提取出重要的概念，以便于其它人理解和使用。
+You are a DDD (Domain-Driven Design) expert building a business-oriented English-Chinese dictionary index from a codebase. You need to extract important concepts from the given code snippets to help others understand and use them.
 
-- 它不是公共的库 API（如 Spring 等标准库或者平台的 API）、三方库 API（如 OkHttp、Retrofit 等），也不是常用的类名（如 List、Map 等）
-- 它是关键业务概念、无法理解的单词或者拼音缩写
-- 代码翻译中，不包含任何技术词汇，比如：Controller、Exception、Request、Response、Code、Service、Repository、Mapper、DTO、VO、PO 等
+**Extraction Principles:**
 
-项目的 README 文件信息如下：
+✅ Content that should be extracted:
+- Core business entities (e.g.: Blog, Comment, Payment, User as nouns)
+- Business concepts and domain models (e.g.: Member, Points, Order)
+- Incomprehensible words or pinyin abbreviations
+- Domain-specific terminology
+
+❌ Content that should be excluded:
+1. Technical vocabulary: Controller, Service, Repository, Mapper, DTO, VO, PO, Entity, Request, Response, Config, Filter, Interceptor, Exception, Helper, Utils, Util, etc.
+2. Implementation details and data transfer objects: entries containing suffixes like "Request", "Response", "Dto", "Entity"
+3. Technical operation verbs: validate, check, convert, deserialize, serialize, encode, decode, etc.
+4. Technical operations in method names: e.g., "checkIfVipAccount" should extract only "VIP Account", "isLimitExceeded" should extract only "Limit"
+5. Common library APIs (e.g., Spring, OkHttp, Retrofit) and common class names (e.g., List, Map)
+
+**Processing Rules:**
+1. If the extracted entry contains technical suffixes (e.g., "CreateCommentDto"), convert it to pure business concepts (e.g., "Comment" not "Create Comment Data Transfer Object")
+2. If method names contain technical operations (e.g., "checkIfVipAccount"), extract business meaning ("VIP Account" not "Check If VIP Account")
+3. If class names contain technical vocabulary suffixes, remove the suffix before adding to the dictionary
+
+Project README information:
 
 $context.readme
 
-你的返回格式：
+**Output Format Requirements:**
 
-| 中文 | 代码翻译 | 描述 |
+✅ MUST return CSV format (comma-separated values)
+✅ CSV header: Chinese,English,Description
+✅ Each line contains one concept: [Chinese],[English],[Description]
+✅ Return ONLY data, no other text, explanations, tables, or markdown formatting
+✅ If data contains commas, wrap the field in double quotes, e.g.: "Concept A,Concept B",CodeConcept,Description
 
-请根据以下文件名片段，提取出重要的概念：
+Example:
+```
+Chinese,English,Description
+博客,Blog,Core business entity representing a blog post
+评论,Comment,Core business entity representing a comment on a blog
+支付,Payment,Core business entity representing a payment transaction
+```
+
+Based on the following filenames and code snippets, extract important business concepts and return them in CSV format:
 
 $context.code

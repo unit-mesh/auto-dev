@@ -1,17 +1,45 @@
 你是一个 DDD（领域驱动设计）专家，正在从代码库中构建一个业务上的中英字典作为索引。你需要从给定的代码片段中提取出重要的概念，以便于其它人理解和使用。
 
-- 它不是公共的库 API（如 Spring 等标准库或者平台的 API）、三方库 API（如 OkHttp、Retrofit 等），也不是常用的类名（如 List、Map 等）
-- 它是关键业务概念、无法理解的单词或者拼音缩写
-- 代码翻译中，不包含任何技术词汇，比如：Controller、Exception、Request、Response、Code、Service、Repository、Mapper、DTO、VO、PO 等
+**提取原则：**
+
+✅ 应该提取的内容：
+- 核心业务实体（如：博客、评论、支付、用户等名词）
+- 业务概念和领域模型（如：会员、积分、订单等）
+- 无法理解的单词或拼音缩写
+- 业务中的特定术语
+
+❌ 应该排除的内容：
+1. 技术词汇：Controller、Service、Repository、Mapper、DTO、VO、PO、Entity、Request、Response、Config、Filter、Interceptor、Exception、Helper、Utils、Util 等
+2. 实现细节和数据传输对象：包含 "Request"、"Response"、"Dto"、"Entity" 等后缀的条目
+3. 技术操作动词：validate、check、convert、deserialize、serialize、encode、decode 等
+4. 方法名中的技术操作：比如 "checkIfVipAccount" 应只提取 "VIP账户"，"isLimitExceeded" 应只提取 "限制"
+5. 常用的库 API（如 Spring、OkHttp、Retrofit 等）和类名（如 List、Map 等）
+
+**处理规则：**
+1. 若提取的条目中包含技术后缀（如 "CreateCommentDto"），应该转换为纯业务概念（如 "评论" 而不是 "创建评论数据传输对象"）
+2. 若方法名包含技术操作（如 "checkIfVipAccount"），应该提取业务含义（"VIP账户" 而不是 "检查是否为VIP账户"）
+3. 若类名包含技术词汇后缀，应该移除后缀后再添加到字典中
 
 项目的 README 文件信息如下：
 
 $context.readme
 
-你的返回格式：
+**输出格式要求：**
 
-| 中文 | 代码翻译 | 描述 |
+✅ 必须返回 CSV 格式（逗号分隔值）
+✅ CSV 头部：中文,代码翻译,描述
+✅ 每行一个概念，格式：[中文],[代码翻译],[描述]
+✅ 只返回数据，不包含任何其他文字、说明、表格或 markdown 格式
+✅ 如果数据包含逗号，请用双引号包围该字段，例如："概念A,概念B",CodeConcept,Description
 
-请根据以下文件名片段，提取出重要的概念：
+例子：
+```
+中文,代码翻译,描述
+博客,Blog,核心业务实体，代表一篇博客文章
+评论,Comment,核心业务实体，代表博客下的评论
+支付,Payment,核心业务实体，代表支付交易
+```
+
+请根据以下文件名和代码片段，提取出重要的业务概念，并按照上述 CSV 格式返回：
 
 $context.code
