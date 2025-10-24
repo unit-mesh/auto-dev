@@ -137,5 +137,11 @@ class ContextWindowManager(
             }
         }
     }
+
+    companion object {
+        fun custom(maxTokens: Int): ContextWindowManager {
+            return ContextWindowManager(TokenBudget.custom(maxTokens))
+        }
+    }
 }
 
