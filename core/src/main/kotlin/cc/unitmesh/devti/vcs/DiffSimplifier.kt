@@ -157,45 +157,10 @@ class DiffSimplifier(val project: Project) {
     }
 
     companion object {
-        /**
-         * This method is used to process the given diff string and extract relevant information from it.
-         * Delegates to DiffFormatter for backward compatibility.
-         *
-         * @param diffString The diff string to be processed.
-         * @return The processed string containing the extracted information.
-         */
         @NotNull
         @Deprecated("Use DiffFormatter.postProcess instead", ReplaceWith("DiffFormatter.postProcess(diffString)"))
         fun postProcess(@NotNull diffString: String): String {
             return DiffFormatter.postProcess(diffString)
-        }
-
-
-
-        private fun isBinaryOrTooLarge(@NotNull change: Change): Boolean {
-            return isBinaryOrTooLarge(change.beforeRevision) || isBinaryOrTooLarge(change.afterRevision)
-        }
-
-        private fun isBinaryOrTooLarge(revision: ContentRevision?): Boolean {
-            val virtualFile = (revision as? CurrentContentRevision)?.virtualFile ?: return false
-            return isBinaryRevision(revision) || isTooManyLines(virtualFile)
-        }
-
-        private fun isTooManyLines(virtualFile: com.intellij.openapi.vfs.VirtualFile): Boolean {
-            return try {
-                virtualFile.inputStream.bufferedReader().useLines { it.count() > 3000 }
-            } catch (e: Exception) {
-                false
-            }
-        }
-
-        private fun isBinaryRevision(cr: ContentRevision?): Boolean {
-            if (cr == null) return false
-
-            return when (cr) {
-                is BinaryContentRevision -> true
-                else -> cr.file.fileType.isBinary
-            }
         }
     }
 }
