@@ -35,9 +35,9 @@ $context.readme
 Example:
 ```
 Chinese,English,Description
-博客,Blog,Core business entity representing a blog post
-评论,Comment,Core business entity representing a comment on a blog
-支付,Payment,Core business entity representing a payment transaction
+博客,Blog,a blog post
+评论,Comment,a comment on a blog
+支付,Payment,a payment transaction
 ```
 
 Based on the following filenames and code snippets, extract important business concepts and return them in CSV format:
