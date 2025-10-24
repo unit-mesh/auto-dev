@@ -1,23 +1,40 @@
 package cc.unitmesh.idea.indexer.provider
 
-import cc.unitmesh.devti.indexer.provider.LangDictProvider
-import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.project.Project
-import com.intellij.psi.search.FileTypeIndex
-import com.intellij.psi.search.ProjectScope
+import cc.unitmesh.devti.indexer.naming.LanguageSuffixRules
+import cc.unitmesh.devti.indexer.provider.BaseLangDictProvider
+import cc.unitmesh.idea.indexer.naming.JavaNamingRules
 
-class JavaLangDictProvider : LangDictProvider {
-    override suspend fun collectFileNames(project: Project, maxTokenLength: Int): List<String> {
-        val searchScope = ProjectScope.getProjectScope(project)
-        val javaFiles = runReadAction {
-            FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+/**
+ * Java language-specific implementation of semantic name collection.
+ * Extracts filenames, class names, and public method names for LLM context generation.
+ * Automatically removes technical suffixes like Controller, Service, DTO, etc.
+ */
+class JavaLangDictProvider : BaseLangDictProvider() {
+
+    override fun getSuffixRules(): LanguageSuffixRules {
+        return JavaNamingRules()
+    }
+
+    override fun shouldIncludeFile(fileName: String, filePath: String): Boolean {
+        // Only include Java source files
+        if (!fileName.endsWith(".java")) {
+            return false
         }
 
-        val filenames = javaFiles.mapNotNull {
-            it.nameWithoutExtension
+        // Exclude test files
+        if (filePath.contains("/test/") || filePath.contains("\\test\\") ||
+            fileName.endsWith("Test.java") || fileName.endsWith("Tests.java") ||
+            fileName.endsWith("TestCase.java") || fileName.endsWith("Mock.java")) {
+            return false
         }
 
-        return filenames
+        // Exclude generated code
+        if (filePath.contains("/.gradle/") || filePath.contains("\\.gradle\\") ||
+            filePath.contains("/generated/") || filePath.contains("\\generated\\") ||
+            filePath.contains("/generated-sources/") || filePath.contains("\\generated-sources\\")) {
+            return false
+        }
+
+        return true
     }
 }

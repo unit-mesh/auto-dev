@@ -91,12 +91,25 @@ class DomainDictGenerateAction : AnAction() {
 
     private suspend fun buildPrompt(project: Project): String {
         val maxTokenLength = AutoDevSettingsState.maxTokenLength
-        val names = LangDictProvider.all(project, maxTokenLength)
+        
+        // Collect semantic names with Level 1 + Level 2 structure
+        val domainDict = LangDictProvider.allSemantic(project, maxTokenLength)
+        
+        // Format as simple comma-separated list (backward compatible with template)
+        val codeContext = domainDict.toSimpleList()
+        
         val templateRender = TemplateRender(GENIUS_CODE)
         val template = templateRender.getTemplate("indexer.vm")
         val readmeMe = PromptEnhancer.readmeFile(project)
 
-        val context = DomainDictGenerateContext(names.joinToString(", "), readmeMe)
+        // Log semantic extraction info for debugging
+        logger<DomainDictGenerateAction>().info(
+            "Domain Dictionary: ${domainDict.metadata["level1_count"]} files, " +
+            "${domainDict.metadata["level2_count"]} classes/methods, " +
+            "Total tokens: ${domainDict.getTotalTokens()}"
+        )
+
+        val context = DomainDictGenerateContext(codeContext, readmeMe)
         val prompt = templateRender.renderTemplate(template, context)
         return prompt
     }
