@@ -107,6 +107,10 @@ class DomainDictGenerateAction : AnAction() {
             "High=${weightStats["highCount"]}"
         )
 
+        if (codeContext.isEmpty()) {
+            throw IllegalStateException("No code context found for domain dictionary generation")
+        }
+
         val context = DomainDictGenerateContext(codeContext, readmeMe)
         val prompt = templateRender.renderTemplate(template, context)
         return prompt

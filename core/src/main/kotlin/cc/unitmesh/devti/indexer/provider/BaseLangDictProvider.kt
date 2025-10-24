@@ -97,76 +97,7 @@ abstract class BaseLangDictProvider : LangDictProvider {
         return DomainDictionary(level1, level2, metadata)
     }
 
-    /**
-     * Collect Level 1: Filenames with weights and suffix removal
-     * Token cost: ~0.5 tokens per file
-     */
-    private suspend fun collectLevel1(project: Project): List<SemanticName> {
-        val suffixRules = getSuffixRules()
-        val names = mutableListOf<SemanticName>()
-
-        // Step 1: Collect VirtualFiles and filenames inside ReadAction
-        data class FileInfo(
-            val vFile: com.intellij.openapi.vfs.VirtualFile,
-            val fileName: String,
-            val normalized: String
-        )
-
-        val fileInfoList = mutableListOf<FileInfo>()
-
-        runReadAction {
-            val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, ProjectScope.getProjectScope(project))
-
-            for (vFile in javaFiles) {
-                if (!shouldIncludeFile(vFile.name, vFile.path)) continue
-
-                // Get filename without extension
-                val fileName = vFile.nameWithoutExtension
-
-                // Normalize: remove suffixes
-                val normalized = suffixRules.normalize(fileName)
-                if (normalized.isEmpty()) continue
-
-                fileInfoList.add(
-                    FileInfo(
-                        vFile = vFile,
-                        fileName = fileName,
-                        normalized = normalized
-                    )
-                )
-            }
-        }
-
-        // Step 2: Calculate weights OUTSIDE ReadAction (allows Git operations)
-        for (fileInfo in fileInfoList) {
-            // Calculate weight
-            val weight = FileWeightCalculator.calculateWeight(project, fileInfo.vFile)
-            val category = FileWeightCalculator.getWeightCategory(weight)
-
-            // Split into words for better LLM understanding
-            val words = CamelCaseSplitter.split(fileInfo.normalized)
-
-            // Create semantic names for each word
-            for (word in words) {
-                if (word.isNotEmpty()) {
-                    val tokenCost = tokenCounter.countTokens(word)
-                    names.add(
-                        SemanticName(
-                            name = word,
-                            type = ElementType.FILE,
-                            tokens = tokenCost,
-                            source = fileInfo.vFile.name,
-                            original = fileInfo.fileName,
-                            weight = weight,
-                            weightCategory = category
-                        )
-                    )
-                }
-            }
-        }
-
-        return names.distinctBy { it.name }  // Remove duplicates
-    }
+    abstract suspend fun collectLevel1(project: Project): List<SemanticName>
 
     /**
      * Collect Level 2: Class names and public method names with weights
