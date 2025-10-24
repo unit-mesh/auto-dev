@@ -8,7 +8,7 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
 
 class JavaLangDictProvider : LangDictProvider {
-    override suspend fun collectFileNames(project: Project): List<String> {
+    override suspend fun collectFileNames(project: Project, maxTokenLength: Int): List<String> {
         val searchScope = ProjectScope.getProjectScope(project)
         val javaFiles = runReadAction {
             FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)

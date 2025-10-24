@@ -16,6 +16,7 @@ import com.intellij.openapi.project.guessProjectDir
 import kotlinx.coroutines.launch
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.indexer.usage.PromptEnhancer
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -26,7 +27,6 @@ import kotlin.io.path.exists
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.vfs.LocalFileSystem
 
@@ -90,7 +90,8 @@ class DomainDictGenerateAction : AnAction() {
     }
 
     private suspend fun buildPrompt(project: Project): String {
-        val names = LangDictProvider.all(project)
+        val maxTokenLength = AutoDevSettingsState.maxTokenLength
+        val names = LangDictProvider.all(project, maxTokenLength)
         val templateRender = TemplateRender(GENIUS_CODE)
         val template = templateRender.getTemplate("indexer.vm")
         val readmeMe = PromptEnhancer.readmeFile(project)
