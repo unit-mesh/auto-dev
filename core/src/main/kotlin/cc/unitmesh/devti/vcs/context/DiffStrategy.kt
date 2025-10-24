@@ -15,9 +15,6 @@ interface DiffStrategy {
     fun generateDiff(change: PrioritizedChange, fullDiff: String?): String
 }
 
-/**
- * Full diff strategy - includes complete diff content
- */
 class FullDiffStrategy : DiffStrategy {
     override fun generateDiff(change: PrioritizedChange, fullDiff: String?): String {
         return fullDiff ?: generateSummary(change)
@@ -32,7 +29,6 @@ class FullDiffStrategy : DiffStrategy {
                 val beforePath = change.change.beforeRevision?.file?.path
                 "rename file from $beforePath to ${change.filePath}"
             }
-            else -> "change file ${change.filePath}"
         }
     }
 }
@@ -47,7 +43,6 @@ class SummaryDiffStrategy : DiffStrategy {
             Change.Type.DELETED -> "deleted"
             Change.Type.MODIFICATION -> "modified"
             Change.Type.MOVED -> "renamed"
-            else -> "changed"
         }
 
         val sizeInfo = if (change.fileSize > 0) {
@@ -89,7 +84,6 @@ class MetadataOnlyStrategy : DiffStrategy {
                 val beforePath = change.change.beforeRevision?.file?.path
                 "rename file from $beforePath to ${change.filePath}"
             }
-            else -> "change file ${change.filePath}"
         }
     }
 }

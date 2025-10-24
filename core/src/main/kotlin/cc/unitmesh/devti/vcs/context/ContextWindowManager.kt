@@ -137,28 +137,5 @@ class ContextWindowManager(
             }
         }
     }
-
-    companion object {
-        /**
-         * Create a context window manager with default GPT-4 budget
-         */
-        fun forGpt4(): ContextWindowManager {
-            return ContextWindowManager(TokenBudget.forGpt4())
-        }
-
-        /**
-         * Create a context window manager with GPT-3.5 budget
-         */
-        fun forGpt35Turbo(): ContextWindowManager {
-            return ContextWindowManager(TokenBudget.forGpt35Turbo())
-        }
-
-        /**
-         * Create a context window manager with custom budget
-         */
-        fun custom(maxTokens: Int): ContextWindowManager {
-            return ContextWindowManager(TokenBudget.custom(maxTokens))
-        }
-    }
 }
 
