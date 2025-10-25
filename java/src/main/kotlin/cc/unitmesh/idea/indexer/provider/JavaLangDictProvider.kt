@@ -24,10 +24,7 @@ import com.intellij.psi.search.ProjectScope
  * Automatically removes technical suffixes like Controller, Service, DTO, etc.
  */
 class JavaLangDictProvider : BaseLangDictProvider() {
-
-    override fun getSuffixRules(): LanguageSuffixRules {
-        return JavaNamingRules()
-    }
+    override fun getSuffixRules(): LanguageSuffixRules = JavaNamingRules()
 
     override fun shouldIncludeFile(fileName: String, filePath: String): Boolean {
         if (filePath.contains("src/test/") || filePath.contains("src\\test\\") ||

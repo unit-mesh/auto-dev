@@ -7,7 +7,6 @@ import cc.unitmesh.devti.indexer.naming.LanguageSuffixRules
  * Removes Spring/JPA/common framework suffixes that don't contribute to business domain understanding.
  */
 class JavaNamingRules : LanguageSuffixRules {
-    
     override val suffixMap: Map<String, String?> = linkedMapOf(
         // Framework and technical suffixes (ordered by length, longest first)
         "Controller" to null,
