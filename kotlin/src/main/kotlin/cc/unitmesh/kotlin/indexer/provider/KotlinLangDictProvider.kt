@@ -241,7 +241,6 @@ class KotlinLangDictProvider : LangDictProvider {
     }
 
     internal fun shouldIncludeFile(fileName: String, filePath: String): Boolean {
-        // Exclude test files
         if (filePath.contains("src/test/") || filePath.contains("src\\test\\") ||
             fileName.endsWith("Test.kt") || fileName.endsWith("Tests.kt") ||
             fileName.endsWith("TestCase.kt") || fileName.endsWith("Mock.kt") ||
@@ -249,7 +248,6 @@ class KotlinLangDictProvider : LangDictProvider {
             return false
         }
 
-        // Exclude generated code
         if (filePath.contains("/.gradle/") || filePath.contains("\\.gradle\\") ||
             filePath.contains("/generated/") || filePath.contains("\\generated\\") ||
             filePath.contains("/generated-sources/") || filePath.contains("\\generated-sources\\") ||
@@ -260,34 +258,18 @@ class KotlinLangDictProvider : LangDictProvider {
         return true
     }
 
-    /**
-     * Get public functions from a Kotlin class
-     * Excludes:
-     * - Test functions
-     * - Auto-generated data class methods (component1, copy, etc.)
-     * - Private/internal functions
-     */
     private fun getPublicFunctions(ktClass: KtClass): List<KtNamedFunction> {
         return ktClass.declarations
             .filterIsInstance<KtNamedFunction>()
             .filter { function ->
-                // Only include public functions
                 !function.isPrivate() && !function.name.isNullOrEmpty()
             }
             .toList()
     }
 
-    /**
-     * Check if a function should be skipped
-     * - Test functions
-     * - Data class auto-generated methods
-     * - Getter/setter-like functions
-     */
     internal fun shouldSkipFunction(functionName: String): Boolean {
-        // Skip test functions
         if (functionName.startsWith("test")) return true
 
-        // Skip data class auto-generated methods
         if (functionName.startsWith("component") ||
             functionName == "copy" ||
             functionName == "equals" ||
@@ -296,7 +278,6 @@ class KotlinLangDictProvider : LangDictProvider {
             return true
         }
 
-        // Skip getter/setter-like functions (Kotlin properties handle this)
         if (functionName.startsWith("get") || functionName.startsWith("set")) {
             return true
         }
