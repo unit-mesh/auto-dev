@@ -1,23 +1,14 @@
 package cc.unitmesh.idea.indexer.provider
 
 import cc.unitmesh.devti.indexer.model.DomainDictionary
-import cc.unitmesh.devti.indexer.model.ElementType
 import cc.unitmesh.devti.indexer.model.SemanticName
 import cc.unitmesh.devti.indexer.naming.LanguageSuffixRules
 import cc.unitmesh.devti.indexer.provider.LangDictProvider
-import cc.unitmesh.devti.indexer.scoring.FileWeightCalculator
 import cc.unitmesh.devti.vcs.context.TokenCounter
-import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
-import com.intellij.psi.search.FileTypeIndex
-import com.intellij.psi.search.ProjectScope
 
 /**
  * Base class for language-specific dictionary providers.
@@ -51,21 +42,10 @@ abstract class BaseLangDictProvider : LangDictProvider {
         return Pair(classes, methods)
     }
 
-    /**
-     * Get public methods from a class (exclude private, protected, and test methods)
-     */
-    protected open fun getPublicMethods(psiClass: PsiClass): List<PsiMethod> {
-        return psiClass.methods
-            .filter { !it.name.startsWith("test") }  // Exclude test methods
-            .toList()
-    }
+    protected open fun getPublicMethods(psiClass: PsiClass): List<PsiMethod> = psiClass.methods.toList()
 
-    /**
-     * Get package name for a Java class (if available)
-     */
-    protected open fun getPackageName(psiClass: PsiClass): String {
-        return (psiClass.containingFile as? PsiJavaFile)?.packageName ?: ""
-    }
+    protected open fun getPackageName(psiClass: PsiClass): String =
+        (psiClass.containingFile as? PsiJavaFile)?.packageName ?: ""
 
     /**
      * Collect semantic names in two levels based on token budget with weights
