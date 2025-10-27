@@ -171,7 +171,6 @@ class JavaLangDictProvider : BaseLangDictProvider() {
         for (classInfo in classInfoList) {
             if (tokenUsed > remainingTokenBudget) break
 
-            val fileWeight = FileWeightCalculator.calculateWeight(project, classInfo.vFile)
             val classWeight = FileWeightCalculator.calculateClassWeight(project, classInfo.vFile, classInfo.psiClass)
             val classWeightCategory = FileWeightCalculator.getWeightCategory(classWeight)
 
