@@ -47,4 +47,8 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
     fun testAutoRefactor() {
         doTest(true)
     }
+
+    fun testSpecKitCommand() {
+        doTest(true)
+    }
 }

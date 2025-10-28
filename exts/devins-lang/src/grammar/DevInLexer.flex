@@ -467,7 +467,7 @@ AFTER_STREAMING          =afterStreaming
 }
 
 <COMMAND_BLOCK> {
-  {IDENTIFIER}            { return IDENTIFIER; }
+  [a-zA-Z0-9][_\-a-zA-Z0-9.]*  { return IDENTIFIER; }
   {COLON}                 { yybegin(COMMAND_VALUE_BLOCK); return COLON; }
   [^]                     { yypushback(1); yybegin(YYINITIAL); }
 }

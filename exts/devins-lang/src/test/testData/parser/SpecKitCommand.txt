@@ -1,0 +1,7 @@
+DevInFile
+  DevInUsedImpl(USED)
+    DevInCommandStartImpl(COMMAND_START)
+      PsiElement(COMMAND_START)('/')
+    DevInCommandIdImpl(COMMAND_ID)
+      PsiElement(DevInTokenType.IDENTIFIER)('speckit.plan')
+  PsiElement(DevInTokenType.TEXT_SEGMENT)(' Build a photo management app')
