@@ -33,12 +33,12 @@ class SpecKitTemplateCompiler(
     
     /**
      * Compile the template with variable substitution.
-     * 
+     *
      * @return The compiled template string with all variables resolved
      */
     fun compile(): String {
         // 1. Parse frontmatter and content
-        val (frontmatter, content) = SpecKitFrontmatter.parse(template)
+        val (frontmatter, content) = SkillFrontmatter.parse(template)
         
         // 2. Set basic variables
         velocityContext.put("ARGUMENTS", arguments)

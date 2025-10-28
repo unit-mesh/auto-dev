@@ -245,6 +245,14 @@ enum class BuiltinCommand(
         true,
         enableInSketch = true
     ),
+    CLAUDE_SKILL(
+        "skill",
+        "Execute Claude Skills for specialized agent capabilities. Skills are organized folders of instructions, scripts, and resources that agents can discover and load dynamically. Supports subcommands like /skill.pdf, /skill.algorithmic-art, etc. Loads skills from project directories containing SKILL.md files or ~/.claude/skills/ directory.",
+        AutoDevIcons.IDEA,
+        true,
+        true,
+        enableInSketch = true
+    ),
     ;
 
     companion object {

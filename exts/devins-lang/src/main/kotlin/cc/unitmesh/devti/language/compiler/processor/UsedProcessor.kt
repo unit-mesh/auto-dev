@@ -3,6 +3,7 @@ package cc.unitmesh.devti.language.compiler.processor
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.command.dataprovider.ClaudeSkillCommand
 import cc.unitmesh.devti.command.dataprovider.CustomCommand
 import cc.unitmesh.devti.command.dataprovider.SpecKitCommand
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
@@ -56,11 +57,18 @@ class UsedProcessor(
     ): ProcessResult {
         val originCmdName = id?.text ?: ""
         val command = BuiltinCommand.fromString(originCmdName)
-        
+
         if (command == null) {
-            AutoDevNotifications.notify(context.project, "Cannot find command: $originCmdName")
             // Try spec kit
             SpecKitCommand.fromFullName(context.project, originCmdName)?.let { cmd ->
+                cmd.executeWithCompiler(context.project, used.text).let {
+                    context.appendOutput(it)
+                }
+                return ProcessResult(success = true)
+            }
+
+            // Try Claude Skills
+            ClaudeSkillCommand.fromFullName(context.project, originCmdName)?.let { cmd ->
                 cmd.executeWithCompiler(context.project, used.text).let {
                     context.appendOutput(it)
                 }
@@ -75,9 +83,11 @@ class UsedProcessor(
                         context.setError(it.hasError)
                     }
                 }
+
                 return ProcessResult(success = true)
             }
-            
+
+            AutoDevNotifications.notify(context.project, "Cannot find command: $originCmdName")
             context.appendOutput(usedText)
             context.logger.warn("Unknown command: $originCmdName")
             context.setError(true)

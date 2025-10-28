@@ -7,6 +7,7 @@ import cc.unitmesh.devti.command.dataprovider.BuiltinCommand.Companion.toolchain
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.language.compiler.exec.agents.A2AInsCommand
 import cc.unitmesh.devti.language.compiler.exec.agents.AgentsInsCommand
+import cc.unitmesh.devti.language.compiler.exec.claudeskill.ClaudeSkillInsCommand
 import cc.unitmesh.devti.language.compiler.exec.speckit.SpecKitInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.DirInsCommand
 import cc.unitmesh.devti.language.compiler.exec.file.EditFileInsCommand
@@ -192,6 +193,11 @@ class InsCommandFactory {
             context.result.isLocalCommand = true
             val nextTextSegment = lookupNextTextSegment(used)
             SpecKitInsCommand(context.project, prop, nextTextSegment)
+        }
+        BuiltinCommand.CLAUDE_SKILL -> {
+            context.result.isLocalCommand = true
+            val nextTextSegment = lookupNextTextSegment(used)
+            ClaudeSkillInsCommand(context.project, prop, nextTextSegment)
         }
         BuiltinCommand.TOOLCHAIN_COMMAND -> {
             context.result.isLocalCommand = true
