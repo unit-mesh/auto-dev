@@ -1,0 +1,11 @@
+# Spec-Kit Commands
+
+GitHub Spec-Kit provides a structured approach to Spec-Driven Development. These commands help you create specifications, plans, and implementations following the spec-driven methodology.
+
+### 1. Constitution - Establish Project Principles
+
+Create or update project governing principles and development guidelines:
+
+```devin
+/speckit.constitution Create principles focused on code quality, testing standards, user experience consistency, and performance requirements
+```

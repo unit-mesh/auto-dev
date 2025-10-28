@@ -25,12 +25,14 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.VARIABLE_ID), VariableCompletionProvider())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.VARIABLE_ID), AgentToolOverviewCompletion())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), BuiltinCommandCompletion())
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), SpecKitCommandCompletion())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.AGENT_ID), CustomAgentCompletion())
 
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.AGENT_START), CustomAgentCompletion())
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.VARIABLE_START), VariableCompletionProvider())
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.VARIABLE_START), AgentToolOverviewCompletion())
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.COMMAND_START), BuiltinCommandCompletion())
+        extend(CompletionType.BASIC, identifierAfter(DevInTypes.COMMAND_START), SpecKitCommandCompletion())
 
         extend(CompletionType.BASIC, hobbitHoleKey(), HobbitHoleKeyCompletion())
         extend(CompletionType.BASIC, hobbitHolePattern(), HobbitHoleValueCompletion())

@@ -237,6 +237,14 @@ enum class BuiltinCommand(
         false,
         enableInSketch = true
     ),
+    SPECKIT(
+        "speckit",
+        "Execute GitHub Spec-Kit commands for Spec-Driven Development. Supports subcommands like /speckit.clarify, /speckit.specify, /speckit.plan, /speckit.tasks, /speckit.implement, etc. Loads prompts from .github/prompts/ directory and executes spec-driven workflows.",
+        AutoDevIcons.IDEA,
+        true,
+        true,
+        enableInSketch = true
+    ),
     ;
 
     companion object {

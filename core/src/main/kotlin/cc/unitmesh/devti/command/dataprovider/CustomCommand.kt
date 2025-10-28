@@ -13,7 +13,9 @@ data class CustomCommand(
 ) {
     companion object {
         fun all(project: Project): List<CustomCommand> {
-            return TeamPromptsBuilder(project).flows().map { fromFile(it) }
+            val teamPrompts = TeamPromptsBuilder(project).flows().map { fromFile(it) }
+            val specKitCommands = SpecKitCommand.all(project).map { it.toCustomCommand() }
+            return teamPrompts + specKitCommands
         }
 
         /**
