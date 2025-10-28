@@ -30,7 +30,7 @@ class AutoSketchMode(val project: Project) {
         val commands: MutableList<BuiltinCommand> = mutableListOf()
 
         val allCode = devinCodeFence.filter {
-            !it.text.contains("<DevinsError>") && (hasReadCommand(it) || hasToolchainFunctionCommand(it))
+            !it.text.contains("<DevinsError>") && (isAutoCommand(it) || hasToolchainFunctionCommand(it))
         }
 
         val language = CodeFence.findLanguage("DevIn")
@@ -69,7 +69,7 @@ class AutoSketchMode(val project: Project) {
         listener?.manualSend(text)
     }
 
-    private fun hasReadCommand(fence: CodeFence): Boolean = buildAutoCommands().any { command ->
+    private fun isAutoCommand(fence: CodeFence): Boolean = buildAutoCommands().any { command ->
         fence.text.contains("/" + command.commandName + ":")
     }
 
@@ -86,6 +86,7 @@ class AutoSketchMode(val project: Project) {
             RULE,
             USAGE,
             BROWSE,
+            SPECKIT
         )
 
         of += setOf(
