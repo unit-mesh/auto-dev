@@ -103,7 +103,7 @@ class DevInsProcessProcessor(val project: Project) {
 
             try {
                 LlmFactory.create(project)
-                    .stream(result.output, "Shirelang", true)
+                    .stream(result.output, "", true)
                     .cancelWithConsole(consoleView)
                     .collect {
                         consoleView.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
