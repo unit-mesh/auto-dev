@@ -64,13 +64,11 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
             val language = psiFile?.language?.displayName ?: ""
 
-            val fileContent = when {
-                psiFile is ClsFileImpl -> {
+            val fileContent = when (psiFile) {
+                is ClsFileImpl -> {
                     psiFile.text
                 }
-                psiFile is org.jetbrains.kotlin.analysis.decompiler.psi.file.KtClsFile -> {
-                    psiFile.text
-                }
+
                 else -> {
                     try {
                         virtualFile.readText()
