@@ -20,18 +20,8 @@ data class SpecKitCommand(
     val template: String,
     val icon: Icon = AutoDevIcons.IDEA
 ) {
-    val fullCommandName: String
-        get() = "speckit.$subcommand"
+    val fullCommandName: String get() = "speckit.$subcommand"
 
-    /**
-     * Execute the command by replacing $ARGUMENTS placeholder with actual arguments.
-     *
-     * @deprecated Use executeWithCompiler instead for proper variable resolution
-     */
-    @Deprecated("Use executeWithCompiler for proper frontmatter and variable support")
-    fun execute(arguments: String): String {
-        return template.replace("\$ARGUMENTS", arguments)
-    }
 
     fun executeWithCompiler(project: Project, command: String, input: String): String {
         val compiler = SpecKitTemplateCompiler(project, template, command, input)
