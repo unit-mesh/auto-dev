@@ -61,7 +61,7 @@ class UsedProcessor(
         if (command == null) {
             // Try spec kit
             SpecKitCommand.fromFullName(context.project, originCmdName)?.let { cmd ->
-                cmd.executeWithCompiler(context.project, used.text).let {
+                runReadAction {  cmd.executeWithCompiler(context.project, used.text) }.let {
                     context.appendOutput(it)
                 }
                 return ProcessResult(success = true)
@@ -69,7 +69,7 @@ class UsedProcessor(
 
             // Try Claude Skills
             ClaudeSkillCommand.fromFullName(context.project, originCmdName)?.let { cmd ->
-                cmd.executeWithCompiler(context.project, used.text).let {
+                runReadAction {  cmd.executeWithCompiler(context.project, used.text) }.let {
                     context.appendOutput(it)
                 }
                 return ProcessResult(success = true)
