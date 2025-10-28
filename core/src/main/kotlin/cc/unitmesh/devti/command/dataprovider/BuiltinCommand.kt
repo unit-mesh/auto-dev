@@ -295,7 +295,18 @@ enum class BuiltinCommand(
             }
 
             val project = ProjectManager.getInstance().openProjects.first()
-            AutoDevNotifications.warn(project, "Command not found: $commandName")
+
+            var isCustomCommand = false
+            CustomCommand.all(project).forEach { customCommand ->
+                if (customCommand.commandName == commandName) {
+                    isCustomCommand = true
+                }
+            }
+
+            if (!isCustomCommand) {
+                AutoDevNotifications.warn(project, "Command not found: $commandName")
+            }
+
             return null
         }
 

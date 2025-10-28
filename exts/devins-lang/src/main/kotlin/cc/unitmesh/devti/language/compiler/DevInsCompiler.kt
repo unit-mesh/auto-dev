@@ -78,13 +78,11 @@ class DevInsCompiler(
                     return@forEach
                 }
             } else {
-                // Fallback for unknown elements
                 val text = runReadAction { psiElement.text }
                 context.appendOutput(text)
                 logger.warn("Unknown element type: ${psiElement.elementType}")
             }
 
-            // Update skipNextCode from context
             skipNextCode = context.skipNextCode
         }
 
