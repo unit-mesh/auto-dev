@@ -33,8 +33,6 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.VARIABLE_START), VariableCompletionProvider())
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.VARIABLE_START), AgentToolOverviewCompletion())
         extend(CompletionType.BASIC, identifierAfter(DevInTypes.COMMAND_START), BuiltinCommandCompletion())
-        extend(CompletionType.BASIC, identifierAfter(DevInTypes.COMMAND_START), SpecKitCommandCompletion())
-        extend(CompletionType.BASIC, identifierAfter(DevInTypes.COMMAND_START), ClaudeSkillCommandCompletion())
 
         extend(CompletionType.BASIC, hobbitHoleKey(), HobbitHoleKeyCompletion())
         extend(CompletionType.BASIC, hobbitHolePattern(), HobbitHoleValueCompletion())

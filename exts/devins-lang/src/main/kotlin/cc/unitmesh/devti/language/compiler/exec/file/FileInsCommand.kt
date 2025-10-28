@@ -70,11 +70,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
                 }
 
                 else -> {
-                    try {
-                        virtualFile.readText()
-                    } catch (e: Exception) {
-                        null
-                    }
+                    runReadAction { virtualFile.readText() }
                 }
             }
 
