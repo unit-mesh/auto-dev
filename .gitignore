@@ -149,3 +149,4 @@ src/main/gen
 .kotlin
 .specify
 .vscode
+.github/prompts
