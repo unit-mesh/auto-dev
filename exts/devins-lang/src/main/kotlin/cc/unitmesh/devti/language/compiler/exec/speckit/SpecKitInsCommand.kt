@@ -80,17 +80,14 @@ class SpecKitInsCommand(
     private fun parseSubcommand(prop: String): String {
         val trimmed = prop.trim()
         
-        // Handle "speckit.clarify" format
         if (trimmed.startsWith("speckit.")) {
             return trimmed.removePrefix("speckit.")
         }
         
-        // Handle ".clarify" format
         if (trimmed.startsWith(".")) {
             return trimmed.removePrefix(".")
         }
         
-        // Handle "clarify" format directly
         return trimmed
     }
 }
