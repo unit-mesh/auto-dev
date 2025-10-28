@@ -1,6 +1,47 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v2.4.3...v) (2025-10-10)
+# [](https://github.com/unit-mesh/auto-dev/compare/v2.4.6...v) (2025-10-28)
 
 ## [Unreleased]
+
+## [2.4.6](https://github.com/unit-mesh/auto-dev/compare/v2.4.5...v[2.4.6]) (2025-10-28)
+
+### Bug Fixes
+
+* **DevInsProcessProcessor:** update stream output to use empty string for better compatibility ([910ac29](https://github.com/unit-mesh/auto-dev/commit/910ac29e28329482896186409b87eab9be5281fa))
+* **usedprocessor:** wrap command execution in runReadAction for thread safety ([76e8776](https://github.com/unit-mesh/auto-dev/commit/76e87769b55d188807e45dad78ec7f5cfe921c1f))
+
+### Features
+
+* **builtincommand:** check for custom commands before warning on not found ([b6c889b](https://github.com/unit-mesh/auto-dev/commit/b6c889b1da681ad97108bbf7e1ed89eaa25ac640))
+* **ClaudeSkillCommand:** enhance template compilation by adding input parameter ([df10651](https://github.com/unit-mesh/auto-dev/commit/df106519e83e17aa58d3a6d814988618386e4b40))
+* **template:** add fallback for Velocity engine in test mode ([ff0cafe](https://github.com/unit-mesh/auto-dev/commit/ff0cafe0b593602e1cfd6a4196fc6e6e571a2de5))
+
+## [2.4.5](https://github.com/unit-mesh/auto-dev/compare/v2.4.3...v[2.4.5]) (2025-10-28)
+
+### Bug Fixes
+
+* **AgentsInsCommand:** streamline error messages and improve request validation ([245b34e](https://github.com/unit-mesh/auto-dev/commit/245b34e976ce14ab2a8368cdc9818bd6da7c5559))
+
+### Features
+
+* **A2AInsCommand:** update command examples for clarity and add AgentRequest data class ([3c0fd0e](https://github.com/unit-mesh/auto-dev/commit/3c0fd0e7a5e33b59518676ae6d18baea26dce9c0))
+* **AgentsInsCommand:** enhance error handling for agent invocation and improve not found message ([467a3c6](https://github.com/unit-mesh/auto-dev/commit/467a3c64d5e4456f45dea7083c7150a5aba912fa))
+* **BaseLangDictProvider:** optimize file and class weight calculations with separate ReadAction handling ([a646674](https://github.com/unit-mesh/auto-dev/commit/a6466746581629e00ad7fc94a45ac389dbe0a71f))
+* **claudeskill:** add Claude Skill command support [#452](https://github.com/unit-mesh/auto-dev/issues/452) ([8e9742e](https://github.com/unit-mesh/auto-dev/commit/8e9742ef62510d0ddd8c0e62dc15dffc54293b9d))
+* **ContextManagement:** implement context window management and token budget allocation for VCS changes ([45e1eaa](https://github.com/unit-mesh/auto-dev/commit/45e1eaa4ea410a03e8e7437da4adb28f976e4920))
+* **ContextWindowManager:** add custom factory method for token budget initialization ([429b446](https://github.com/unit-mesh/auto-dev/commit/429b446b70427df4678c31c87f71bbfe9dad2776))
+* **dataprovider:** add ClaudeSkillCommand to all() results ([97b61b5](https://github.com/unit-mesh/auto-dev/commit/97b61b5a9dcea07e10aef8fbc65ac8f93d78b00d)), closes [#452](https://github.com/unit-mesh/auto-dev/issues/452)
+* **DiffSimplifier:** add check for excessive lines in file revisions ([a32f44c](https://github.com/unit-mesh/auto-dev/commit/a32f44cbf648ed5d9ec1e9ba8f20892121851bad))
+* **DomainDictGenerateAction:** enhance CSV output cleaning and README inclusion logic based on token budget ([134aa3d](https://github.com/unit-mesh/auto-dev/commit/134aa3da02247969bd0eeab308a81fb863cb0c13))
+* **indexer:** improve domain dictionary extraction rules ([21e1dd0](https://github.com/unit-mesh/auto-dev/commit/21e1dd05205e46c38dc3e055375cc50f17f233d5))
+* **JavaLangDictProvider:** extract Level 1 file semantic names ([48e726d](https://github.com/unit-mesh/auto-dev/commit/48e726d22b1e4cfba0c201dee1f117ee53ec3dba))
+* **JavaLangDictProvider:** implement collectLevel2 method for class and method name extraction ([f784279](https://github.com/unit-mesh/auto-dev/commit/f78427961ff2af046749f0535f16050c1b97eb58))
+* **KotlinLangDictProvider:** add semantic name extraction and tests ([2e00b2a](https://github.com/unit-mesh/auto-dev/commit/2e00b2a36bafee846d6498a43c30a67f685625bc))
+* **LangDictProvider:** add maxTokenLength parameter to collectFileNames method ([250f602](https://github.com/unit-mesh/auto-dev/commit/250f602abdd8a084d932bbc347fb3e44152224d7))
+* **LangDictProvider:** implement two-level semantic name collection for improved LLM context ([4ec3431](https://github.com/unit-mesh/auto-dev/commit/4ec3431d4f74db8ba4e51d5d1ae59be3732534a2))
+* **speckit:** add frontmatter parsing and template compiler [#452](https://github.com/unit-mesh/auto-dev/issues/452) ([1b9ec3c](https://github.com/unit-mesh/auto-dev/commit/1b9ec3ca149920cf69a17a6f48c8b5e5cb9ebcdb))
+* **speckit:** add load SpecKit command support and completion [#452](https://github.com/unit-mesh/auto-dev/issues/452) ([56542e6](https://github.com/unit-mesh/auto-dev/commit/56542e696c7694979e1b5450931c646d92e2a188))
+* **VcsPrompting:** add hasChanges method to check for modifications ([830e654](https://github.com/unit-mesh/auto-dev/commit/830e654e41437eb80c1b77bc37eda890fb9988e4))
+* **weighting:** add file and class weight calculation for LLM ([2483d3c](https://github.com/unit-mesh/auto-dev/commit/2483d3ce9a2fe302c8a0c7a9831c77fd67c483fa))
 
 ## [2.4.3](https://github.com/unit-mesh/auto-dev/compare/v2.4.2...v[2.4.3]) (2025-10-10)
 
@@ -2360,7 +2401,9 @@
 * update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 * use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.4.3...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v2.4.6...HEAD
+[2.4.6]: https://github.com/unit-mesh/auto-dev/compare/v2.4.5...v2.4.6
+[2.4.5]: https://github.com/unit-mesh/auto-dev/compare/v2.4.3...v2.4.5
 [2.4.3]: https://github.com/unit-mesh/auto-dev/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/unit-mesh/auto-dev/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/unit-mesh/auto-dev/compare/v2.2.4...v2.4.1
