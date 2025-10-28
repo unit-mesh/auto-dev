@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.command.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.command.dataprovider.CustomCommand
+import cc.unitmesh.devti.command.dataprovider.SpecKitCommand
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
@@ -58,7 +59,14 @@ class UsedProcessor(
         
         if (command == null) {
             AutoDevNotifications.notify(context.project, "Cannot find command: $originCmdName")
-            
+            // Try spec kit
+            SpecKitCommand.fromFullName(context.project, originCmdName)?.let { cmd ->
+                cmd.executeWithCompiler(context.project, used.text).let {
+                    context.appendOutput(it)
+                }
+                return ProcessResult(success = true)
+            }
+
             // Try custom command
             CustomCommand.fromString(context.project, originCmdName)?.let { cmd ->
                 DevInFile.fromString(context.project, cmd.content).let { file ->

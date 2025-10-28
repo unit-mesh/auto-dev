@@ -60,8 +60,8 @@ class SpecKitInsCommand(
         }
 
         try {
-            // Execute the command with arguments
-            val result = specKitCommand.execute(arguments)
+            // Execute the command with the new compiler for proper variable resolution
+            val result = specKitCommand.executeWithCompiler(project, arguments)
 
             // Refresh VFS to ensure file changes are visible
             VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)

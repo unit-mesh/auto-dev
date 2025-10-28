@@ -6,7 +6,6 @@ import java.nio.file.Path
 import javax.swing.Icon
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.readText
 
 /**
@@ -25,10 +24,29 @@ data class SpecKitCommand(
         get() = "speckit.$subcommand"
 
     /**
-     * Execute the command by replacing $ARGUMENTS placeholder with actual arguments
+     * Execute the command by replacing $ARGUMENTS placeholder with actual arguments.
+     *
+     * @deprecated Use executeWithCompiler instead for proper variable resolution
      */
+    @Deprecated("Use executeWithCompiler for proper frontmatter and variable support")
     fun execute(arguments: String): String {
         return template.replace("\$ARGUMENTS", arguments)
+    }
+
+    /**
+     * Execute the command using SpecKitTemplateCompiler for proper variable resolution.
+     * This method:
+     * 1. Parses frontmatter to extract variable definitions
+     * 2. Resolves variables (e.g., loading file contents)
+     * 3. Uses Velocity template engine for compilation
+     *
+     * @param project The current project
+     * @param arguments User-provided arguments
+     * @return Compiled template with all variables resolved
+     */
+    fun executeWithCompiler(project: Project, arguments: String): String {
+        val compiler = SpecKitTemplateCompiler(project, template, arguments)
+        return compiler.compile()
     }
 
     /**
@@ -92,6 +110,10 @@ data class SpecKitCommand(
          */
         fun fromSubcommand(project: Project, subcommand: String): SpecKitCommand? {
             return all(project).find { it.subcommand == subcommand }
+        }
+
+        fun fromFullName(project: Project, commandName: String): SpecKitCommand? {
+            return all(project).find { it.fullCommandName == commandName }
         }
 
         /**
