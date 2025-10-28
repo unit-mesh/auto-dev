@@ -29,9 +29,9 @@ class SpecKitCommandCompletion : CompletionProvider<CompletionParameters>() {
         result: CompletionResultSet
     ) {
         val project = parameters.originalFile.project ?: return
-        
-        // Load all SpecKit commands from .github/prompts/
-        SpecKitCommand.all(project).forEach { specKitCommand ->
+        SpecKitCommand.all(project)
+            .distinct()
+            .forEach { specKitCommand ->
             val lookupElement = createSpecKitCompletionCandidate(specKitCommand)
             result.addElement(lookupElement)
         }
