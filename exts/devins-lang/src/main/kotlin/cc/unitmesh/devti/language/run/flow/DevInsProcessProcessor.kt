@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.language.run.flow
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
@@ -12,11 +10,9 @@ import cc.unitmesh.devti.language.psi.DevInVisitor
 import cc.unitmesh.devti.language.run.runner.ShireConsoleView
 import cc.unitmesh.devti.language.run.runner.cancelWithConsole
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -26,8 +22,6 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 
 @Service(Service.Level.PROJECT)
@@ -107,15 +101,15 @@ class DevInsProcessProcessor(val project: Project) {
         if (result.hasError) {
             if (consoleView == null) return
 
-            runBlocking {
-                try {
-                    LlmFactory.create(project)?.stream(result.output, "Shirelang", true)?.cancelWithConsole(consoleView)
-                        ?.collect {
-                            consoleView.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
-                        }
-                } catch (e: Exception) {
-                    consoleView.print(e.message ?: "Error", ConsoleViewContentType.ERROR_OUTPUT)
-                }
+            try {
+                LlmFactory.create(project)
+                    .stream(result.output, "Shirelang", true)
+                    .cancelWithConsole(consoleView)
+                    .collect {
+                        consoleView.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
+                    }
+            } catch (e: Exception) {
+                consoleView.print(e.message ?: "Error", ConsoleViewContentType.ERROR_OUTPUT)
             }
         } else {
             if (result.nextJob == null) return
@@ -132,21 +126,6 @@ class DevInsProcessProcessor(val project: Project) {
         val devInsCompiler = createCompiler(project, newScript)
         val result = devInsCompiler.compile()
         return result
-    }
-
-    /**
-     * Creates a new instance of `DevInsCompiler`.
-     *
-     * @param project The current project.
-     * @param text The source code text.
-     * @return A new instance of `DevInsCompiler`.
-     */
-    private fun createCompiler(
-        project: Project,
-        text: String
-    ): DevInsCompiler {
-        val devInFile = DevInFile.fromString(project, text)
-        return createCompiler(project, devInFile)
     }
 
     private fun createCompiler(
@@ -170,13 +149,5 @@ class DevInsProcessProcessor(val project: Project) {
         }
 
         return element
-    }
-
-    /**
-     * 1. We need to call LLM to get the task list
-     * 2. According to the input and output to decide the next step
-     */
-    fun createAgentTasks(): List<DevInFile> {
-        TODO()
     }
 }
