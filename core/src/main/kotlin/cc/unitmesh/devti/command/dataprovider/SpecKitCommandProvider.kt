@@ -41,11 +41,12 @@ data class SpecKitCommand(
      * 3. Uses Velocity template engine for compilation
      *
      * @param project The current project
-     * @param arguments User-provided arguments
+     * @param command User-provided arguments
+     * @param input User-provided input
      * @return Compiled template with all variables resolved
      */
-    fun executeWithCompiler(project: Project, arguments: String): String {
-        val compiler = SpecKitTemplateCompiler(project, template, arguments)
+    fun executeWithCompiler(project: Project, command: String, input: String): String {
+        val compiler = SpecKitTemplateCompiler(project, template, command, input)
         return compiler.compile()
     }
 

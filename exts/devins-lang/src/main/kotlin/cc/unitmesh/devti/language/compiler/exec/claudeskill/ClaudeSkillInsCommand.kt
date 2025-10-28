@@ -59,7 +59,7 @@ class ClaudeSkillInsCommand(
 
         try {
             // Execute the command with the compiler for proper variable resolution
-            val result = claudeSkill.executeWithCompiler(project, arguments)
+            val result = claudeSkill.executeWithCompiler(project, arguments, prop)
 
             // Refresh VFS to ensure file changes are visible
             VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)

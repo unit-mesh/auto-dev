@@ -46,8 +46,8 @@ data class ClaudeSkillCommand(
      * @param arguments User-provided arguments
      * @return Compiled template with all variables resolved
      */
-    fun executeWithCompiler(project: Project, arguments: String): String {
-        val compiler = SpecKitTemplateCompiler(project, template, arguments)
+    fun executeWithCompiler(project: Project, arguments: String, input: String): String {
+        val compiler = SpecKitTemplateCompiler(project, template, arguments, input)
         return compiler.compile()
     }
 
@@ -55,11 +55,7 @@ data class ClaudeSkillCommand(
      * Convert to CustomCommand for compatibility with existing DevIns infrastructure
      */
     fun toCustomCommand(): CustomCommand {
-        return CustomCommand(
-            commandName = fullCommandName,
-            content = description,
-            icon = icon
-        )
+        return CustomCommand(commandName = fullCommandName, content = description, icon = icon)
     }
 
     companion object {

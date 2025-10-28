@@ -57,11 +57,12 @@ class UsedProcessor(
     ): ProcessResult {
         val originCmdName = id?.text ?: ""
         val command = BuiltinCommand.fromString(originCmdName)
+        val prop = used.nextSibling?.text ?: ""
 
         if (command == null) {
             // Try spec kit
             SpecKitCommand.fromFullName(context.project, originCmdName)?.let { cmd ->
-                runReadAction {  cmd.executeWithCompiler(context.project, used.text) }.let {
+                runReadAction {  cmd.executeWithCompiler(context.project, used.text, prop) }.let {
                     context.appendOutput(it)
                 }
                 return ProcessResult(success = true)
@@ -69,7 +70,7 @@ class UsedProcessor(
 
             // Try Claude Skills
             ClaudeSkillCommand.fromFullName(context.project, originCmdName)?.let { cmd ->
-                runReadAction {  cmd.executeWithCompiler(context.project, used.text) }.let {
+                runReadAction {  cmd.executeWithCompiler(context.project, used.text, prop) }.let {
                     context.appendOutput(it)
                 }
                 return ProcessResult(success = true)

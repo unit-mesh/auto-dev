@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.command.dataprovider
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.apache.velocity.VelocityContext
@@ -25,36 +24,16 @@ import kotlin.io.path.readText
 class SpecKitTemplateCompiler(
     private val project: Project,
     private val template: String,
-    private val arguments: String
+    private val arguments: String,
+    val input: String
 ) {
     private val logger = logger<SpecKitTemplateCompiler>()
     private val velocityContext = VelocityContext()
 
-    companion object {
-        /**
-         * Check if Velocity engine should be used.
-         * In test mode, always use simple replacement to avoid Velocity initialization issues.
-         */
-        private fun shouldUseVelocity(): Boolean {
-            // In unit test mode, always use simple replacement
-            if (ApplicationManager.getApplication()?.isUnitTestMode == true) {
-                return false
-            }
-
-            // In production, use Velocity
-            return true
-        }
-    }
-    
-    /**
-     * Compile the template with variable substitution.
-     *
-     * @return The compiled template string with all variables resolved
-     */
     fun compile(): String {
         val (frontmatter, content) = SkillFrontmatter.parse(template)
         
-        velocityContext.put("ARGUMENTS", arguments)
+        velocityContext.put("ARGUMENTS", arguments + " " + input)
         
         // 3. Load and resolve variables from frontmatter
         frontmatter?.variables?.forEach { (key, value) ->
