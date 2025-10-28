@@ -15,7 +15,8 @@ data class CustomCommand(
         fun all(project: Project): List<CustomCommand> {
             val teamPrompts = TeamPromptsBuilder(project).flows().map { fromFile(it) }
             val specKitCommands = SpecKitCommand.all(project).map { it.toCustomCommand() }
-            return teamPrompts + specKitCommands
+            val claudeSkills = ClaudeSkillCommand.all(project).map { it.toCustomCommand() }
+            return teamPrompts + specKitCommands + claudeSkills
         }
 
         /**
