@@ -2,7 +2,7 @@ package cc.unitmesh.devti.command.dataprovider
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.agent.Tool
+import cc.unitmesh.agent.Tool
 import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.icons.AllIcons

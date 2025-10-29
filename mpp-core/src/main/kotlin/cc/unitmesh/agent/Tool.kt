@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.agent
+package cc.unitmesh.agent
 
-interface Tool {
+public interface Tool {
     val name: String
     val description: String
 }

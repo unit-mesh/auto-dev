@@ -2,7 +2,8 @@ rootProject.name = "AutoDev-Intellij"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-include("core");
+include("mpp-core")
+include("core")
 
 include(
     "pycharm",

@@ -73,7 +73,34 @@ repositories {
     }
 }
 
-configure(subprojects - project(":exts")) {
+project(":mpp-core") {
+    apply {
+        plugin("idea")
+        plugin("kotlin")
+        plugin("org.jetbrains.kotlin.plugin.serialization")
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    configure<JavaPluginExtension> {
+        sourceCompatibility = VERSION_17
+        targetCompatibility = VERSION_17
+    }
+
+    tasks.withType<KotlinCompile> {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+
+    dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    }
+}
+
+configure(subprojects - project(":exts") - project(":mpp-core")) {
     apply {
         plugin("idea")
         plugin("kotlin")
@@ -109,8 +136,8 @@ configure(subprojects - project(":exts")) {
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "17"
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 
@@ -257,6 +284,7 @@ project(":") {
             }
             intellijPlugins(pluginList)
 
+            pluginModule(implementation(project(":mpp-core")))
             pluginModule(implementation(project(":core")))
             pluginModule(implementation(project(":java")))
             pluginModule(implementation(project(":kotlin")))
@@ -282,6 +310,7 @@ project(":") {
             testFramework(TestFrameworkType.Platform)
         }
 
+        implementation(project(":mpp-core"))
         implementation(project(":core"))
         implementation(project(":java"))
         implementation(project(":kotlin"))
@@ -412,6 +441,8 @@ project(":core") {
     }
 
     dependencies {
+        implementation(project(":mpp-core"))
+
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
@@ -464,7 +495,6 @@ project(":core") {
 
         implementation("org.yaml:snakeyaml:2.4")
 
-//        implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
         implementation("com.jayway.jsonpath:json-path:2.9.0")
         implementation("com.jsoizo:kotlin-csv-jvm:1.10.0") {
             excludeKotlinDeps()
@@ -603,6 +633,7 @@ project(":exts:ext-database") {
             intellijPlugins(ideaPlugins + "com.intellij.database")
         }
 
+        implementation(project(":mpp-core"))
         implementation(project(":core"))
         implementation(project(":exts:devins-lang"))
     }
@@ -634,6 +665,7 @@ project(":exts:ext-git") {
             intellijPlugins(ideaPlugins + "Git4Idea")
         }
 
+        implementation(project(":mpp-core"))
         implementation(project(":core"))
         implementation(project(":exts:devins-lang"))
 
@@ -884,7 +916,8 @@ project(":exts:devins-lang") {
         }
 
         implementation("com.jayway.jsonpath:json-path:2.9.0")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+        implementation(project(":mpp-core"))
         implementation(project(":core"))
     }
 

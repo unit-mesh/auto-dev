@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.agent.a2a
 
+import cc.unitmesh.agent.Tool
 import cc.unitmesh.devti.a2a.AgentCapabilities
 import cc.unitmesh.devti.a2a.AgentProvider
 import cc.unitmesh.devti.a2a.AgentSkill
@@ -41,7 +42,7 @@ class ToolAgentCardTest {
         )
 
         // Verify it implements Tool interface
-        assertTrue(card is cc.unitmesh.devti.agent.Tool)
+        assertTrue(card is Tool)
         assertEquals("TestAgent", card.name)
         assertEquals("A test agent", card.description)
     }
