@@ -1,261 +1,145 @@
 # MPP-Core: Kotlin Multiplatform 核心模块
 
-## 概述
+## 📋 概述
 
-`mpp-core` 是一个 Kotlin Multiplatform 模块，将 `core` 模块中与 IntelliJ IDEA 平台无关的代码重构到此处，支持 JVM、JavaScript 和 WebAssembly 三个目标平台。
+`mpp-core` 是一个 Kotlin Multiplatform 模块，提供跨平台的核心功能，支持 JVM、JavaScript 和 WebAssembly 平台。该模块将原本依赖 IntelliJ IDEA 平台的代码重构为平台无关的实现，为项目的跨平台扩展奠定基础。
 
-## 🎯 当前状态
+## ✅ 当前成果
 
-✅ **已实现多平台支持**
-- JVM 目标 (Java 17)
-- JavaScript 目标 (Browser + Node.js)
-- WebAssembly 目标 (实验性)
+### 多平台支持
+- **JVM**: Java 17，用于 IntelliJ IDEA 插件和服务器端
+- **JavaScript**: Browser + Node.js，用于 Web 应用
+- **WebAssembly**: 高性能 Web 应用支持
 
-✅ **基础设施完成**
-- 独立的多平台构建配置
-- 平台检测和抽象机制
-- 序列化和协程支持
-- 完整的测试覆盖
+### 核心功能
+- **工具接口**: 统一的 Tool 抽象接口
+- **平台抽象**: expect/actual 机制处理平台差异
+- **YAML 支持**: 基于 kaml 的多平台 YAML 处理
+- **序列化**: kotlinx.serialization 支持
+- **协程**: kotlinx.coroutines 支持
+- **完整测试**: 所有平台的单元测试覆盖
 
 ## 🏗️ 项目结构
 
 ```
 mpp-core/
-├── build.gradle.kts                    # 独立的多平台构建配置
+├── build.gradle.kts                    # 多平台构建配置
 └── src/
-    ├── commonMain/kotlin/               # 平台无关代码
-    │   └── cc/unitmesh/agent/
-    │       ├── Tool.kt                  # 核心接口 ✅
-    │       ├── Platform.kt              # 平台抽象 ✅
-    │       └── Example.kt               # 示例实现 ✅
+    ├── commonMain/kotlin/cc/unitmesh/   # 平台无关代码
+    │   ├── agent/                       # 工具接口 ✅
+    │   │   ├── Tool.kt                  # 核心抽象接口
+    │   │   ├── Platform.kt              # 平台检测
+    │   │   └── Example.kt               # 示例实现
+    │   └── yaml/                        # YAML 工具 ✅
+    │       └── YamlUtils.kt             # 多平台 YAML 处理
     ├── commonTest/kotlin/               # 平台无关测试
-    │   └── cc/unitmesh/agent/
-    │       └── ToolTest.kt              # 多平台测试 ✅
+    │   ├── cc/unitmesh/agent/ToolTest.kt
+    │   └── cc/unitmesh/yaml/YamlUtilsTest.kt
     ├── jvmMain/kotlin/                  # JVM 特定实现
-    │   └── cc/unitmesh/agent/
-    │       └── Platform.jvm.kt          # ✅
+    │   └── cc/unitmesh/agent/Platform.jvm.kt
     ├── jsMain/kotlin/                   # JS 特定实现
-    │   └── cc/unitmesh/agent/
-    │       └── Platform.js.kt           # ✅
+    │   └── cc/unitmesh/agent/Platform.js.kt
     └── wasmJsMain/kotlin/               # WASM 特定实现
-        └── cc/unitmesh/agent/
-            └── Platform.wasmJs.kt       # ✅
+        └── cc/unitmesh/agent/Platform.wasmJs.kt
 ```
 
 ## 🚀 快速开始
 
-### 构建所有平台
+### 构建和测试
 ```bash
+# 构建所有平台
 ./gradlew :mpp-core:build
-```
 
-### 运行测试
-```bash
+# 运行所有平台测试
 ./gradlew :mpp-core:allTests
+
+# 平台特定构建
+./gradlew :mpp-core:jvmJar        # JVM 平台
+./gradlew :mpp-core:jsJar         # JavaScript 平台
+./gradlew :mpp-core:wasmJsJar     # WebAssembly 平台
 ```
 
-### 生成特定平台构建产物
-```bash
-./gradlew :mpp-core:jvmJar      # JVM 平台
-./gradlew :mpp-core:jsJar       # JavaScript 平台
-./gradlew :mpp-core:wasmJsJar   # WebAssembly 平台
-```
-
-## 💡 核心原则
-
-- **平台无关性**: 只迁移不依赖 IntelliJ IDEA APIs 的代码
-- **序列化支持**: 优先迁移带有 `@Serializable` 注解的数据类
-- **业务逻辑**: 迁移纯 Kotlin 业务逻辑和算法
-- **接口定义**: 迁移平台无关的接口定义
-
-## 📋 迁移规划
-
-### 第一阶段：数据模型和配置类 ⏳
-
-#### 1. Agent 配置模型
+### 依赖配置
 ```kotlin
-// ✅ 已迁移: cc.unitmesh.agent.Tool
-
-// 📋 待迁移:
-cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
-cc.unitmesh.devti.agent.custom.model.CustomAgentResponseAction
-cc.unitmesh.devti.agent.custom.model.CustomAgentState
-cc.unitmesh.devti.agent.custom.model.CustomAgentAuth
-cc.unitmesh.devti.agent.custom.model.AuthType
-cc.unitmesh.devti.agent.custom.model.CustomFlowTransition
-cc.unitmesh.devti.agent.custom.model.ConnectorConfig
+// 在其他模块中使用 mpp-core
+dependencies {
+    implementation(project(":mpp-core"))
+}
 ```
 
-#### 2. A2A 协议模型
-```kotlin
-// 📋 待迁移:
-cc.unitmesh.devti.a2a.AutodevToolAgentCard
-cc.unitmesh.devti.a2a.AgentProvider
-cc.unitmesh.devti.a2a.AgentInterface
-cc.unitmesh.devti.a2a.AgentCapabilities
-cc.unitmesh.devti.a2a.SecurityScheme
-cc.unitmesh.devti.a2a.ToolInput
-cc.unitmesh.devti.a2a.ToolOutput
-cc.unitmesh.devti.a2a.ToolAnnotations
-cc.unitmesh.devti.a2a.MCPTool
-```
+## 💡 设计原则
 
-#### 3. 交互类型和枚举
-```kotlin
-// 📋 待迁移:
-cc.unitmesh.devti.custom.team.InteractionType
-cc.unitmesh.devti.custom.team.CustomActionType
-cc.unitmesh.devti.custom.compile.CustomVariable
-cc.unitmesh.devti.devins.post.PostProcessorType
-```
+- **平台无关性**: 只包含不依赖特定平台 API 的代码
+- **向后兼容**: 保持与现有模块的兼容性
+- **渐进式迁移**: 分阶段迁移，确保稳定性
+- **类型安全**: 利用 Kotlin 类型系统确保跨平台一致性
 
-### 第二阶段：工具和命令系统 ⏳
+## 📋 后续迁移计划
 
-#### 1. 命令数据提供者
-```kotlin
-// 📋 需要重构以移除 IntelliJ 依赖:
-cc.unitmesh.devti.command.dataprovider.BuiltinCommand (移除 Icon 依赖)
-cc.unitmesh.devti.command.dataprovider.ToolHubVariable
-```
+### 优先级 1: 数据模型 (下一步)
+**目标**: 迁移核心数据结构，为业务逻辑奠定基础
 
-#### 2. MCP 工具基础
-```kotlin
-// 📋 待迁移:
-cc.unitmesh.devti.mcp.host.McpTool
-cc.unitmesh.devti.mcp.host.AbstractMcpTool
-cc.unitmesh.devti.mcp.host.NoArgs
-cc.unitmesh.devti.mcp.host.Response
-cc.unitmesh.devti.mcp.host.ToolInfo
-cc.unitmesh.devti.mcp.ui.model.McpChatConfig
-```
+**候选模块**:
+- Agent 配置模型 (`CustomAgentConfig`, `CustomAgentState`)
+- 交互类型 (`ChatActionType`, `ChatRole`)
+- 基础工具模型 (`McpTool`, `McpToolCall`)
 
-### 第三阶段：文本处理和解析工具 ⏳
+**预期收益**: 统一数据模型，支持跨平台序列化
 
-#### 1. 代码解析器
-```kotlin
-// 📋 待迁移:
-cc.unitmesh.devti.util.parser.CodeFence
-cc.unitmesh.devti.util.parser.PostCodeProcessor
-cc.unitmesh.devti.util.parser.MarkdownCodeHelper (部分功能)
-```
+### 优先级 2: 命令系统 (中期)
+**目标**: 迁移命令处理逻辑
 
-#### 2. 编辑和应用逻辑
-```kotlin
-// 📋 待迁移:
-cc.unitmesh.devti.command.EditApply
-cc.unitmesh.devti.command.EditRequestParser
-cc.unitmesh.devti.command.ParseException
-```
+**候选模块**:
+- 命令数据提供者 (`BuiltinCommand`, `CustomCommand`)
+- 文本处理工具 (`PostCodeProcessor`)
+- 上下文数据结构 (`SimpleClassStructure`)
 
-#### 3. 上下文数据结构
-```kotlin
-// 📋 待迁移:
-cc.unitmesh.devti.context.SimpleClassStructure
-cc.unitmesh.devti.provider.devins.CustomAgentContext (移除 VirtualFile 依赖)
-```
+**技术挑战**: 需要抽象化文件系统依赖
 
-### 第四阶段：业务逻辑接口 ⏳
+### 优先级 3: 处理器接口 (长期)
+**目标**: 抽象化业务逻辑接口
 
-#### 1. 处理器接口
-```kotlin
-// 📋 需要抽象化以移除平台依赖:
-cc.unitmesh.devti.provider.devins.LanguageProcessor (抽象接口)
-```
+**候选模块**:
+- 语言处理器接口 (`LanguageProcessor`)
+- 配置管理 (`McpChatConfig`)
 
-#### 2. 配置和状态管理
-```kotlin
-// 📋 待迁移:
-cc.unitmesh.devti.mcp.ui.model.McpChatConfig
-```
+**技术挑战**: 需要设计平台抽象层
 
 ## 🔧 技术实现
 
-### 支持的平台
-
-#### JVM (Java Virtual Machine) ✅
-- **目标**: JVM 17
-- **用途**: IntelliJ IDEA 插件和服务器端应用
-- **构建产物**: `mpp-core-jvm.jar`
-
-#### JavaScript (JS) ✅
-- **目标**: Browser + Node.js
-- **用途**: Web 应用和 Node.js 服务
-- **构建产物**: `mpp-core-js.klib`
-
-#### WebAssembly (WASM) ✅
-- **目标**: Browser + Node.js
-- **用途**: 高性能 Web 应用
-- **构建产物**: `mpp-core-wasm-js.klib`
-
-### 规划的目录结构
-```
-mpp-core/src/
-├── commonMain/kotlin/cc/unitmesh/
-│   ├── agent/                    # ✅ Tool 接口
-│   ├── model/                    # 📋 数据模型
-│   │   ├── agent/               # Agent 配置模型
-│   │   ├── a2a/                 # A2A 协议模型
-│   │   ├── mcp/                 # MCP 工具模型
-│   │   └── interaction/         # 交互类型
-│   ├── command/                 # 📋 命令系统
-│   │   ├── dataprovider/        # 命令数据提供者
-│   │   └── processor/           # 命令处理器
-│   ├── util/                    # 📋 工具类
-│   │   ├── parser/              # 解析工具
-│   │   └── text/                # 文本处理
-│   └── context/                 # 📋 上下文数据结构
-├── jvmMain/kotlin/              # ✅ JVM 特定实现
-├── jsMain/kotlin/               # ✅ JS 特定实现
-├── wasmJsMain/kotlin/           # ✅ WASM 特定实现
-└── nativeMain/kotlin/           # 📋 Native 特定实现 (未来)
-```
-
-### 构建配置 ✅
+### 构建配置
 ```kotlin
 // mpp-core/build.gradle.kts
-plugins {
-    kotlin("multiplatform") version "2.1.20"
-    kotlin("plugin.serialization") version "2.1.20"
-}
-
 kotlin {
-    jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
-        }
-    }
-
-    js(IR) {
-        browser()
-        nodejs()
-    }
-
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        nodejs()
-    }
+    jvm { jvmTarget = "17" }
+    js(IR) { browser(); nodejs() }
+    wasmJs { browser(); nodejs() }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-            }
+        commonMain.dependencies {
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+            implementation("com.charleskorn.kaml:kaml:0.61.0")
         }
-
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-            }
-        }
-
-        // 平台特定依赖配置...
     }
 }
 ```
+
+### 平台抽象机制
+```kotlin
+// commonMain/kotlin
+expect object Platform {
+    val name: String
+    val isJvm: Boolean
+    val isJs: Boolean
+    val isWasm: Boolean
+}
+
+// 平台特定实现
+// jvmMain/kotlin, jsMain/kotlin, wasmJsMain/kotlin
+actual object Platform { /* 平台特定实现 */ }
+```
+
 
 ## 📖 使用示例
 
@@ -271,11 +155,6 @@ val config = tool.createConfig()
 val json = tool.serializeConfig(config)
 
 // 平台检测
-val platformInfo = demonstratePlatformCapabilities()
-```
-
-### 平台特定功能
-```kotlin
 when {
     Platform.isJvm -> println("Running on JVM")
     Platform.isJs -> println("Running on JavaScript")
@@ -283,24 +162,31 @@ when {
 }
 ```
 
-### 平台抽象机制 ✅
+### YAML 处理
 ```kotlin
-// commonMain/kotlin
-expect object Platform {
-    val name: String
-    val isJvm: Boolean
-    val isJs: Boolean
-    val isWasm: Boolean
-}
+// 解析 YAML
+val data = YamlUtils.load(yamlContent)
 
-// jvmMain/kotlin
-actual object Platform {
-    actual val name: String = "JVM"
-    actual val isJvm: Boolean = true
-    actual val isJs: Boolean = false
-    actual val isWasm: Boolean = false
-}
+// 序列化为 YAML
+val yamlString = YamlUtils.dump(config, ConfigSerializer)
 ```
+
+## 🧪 平台特定测试
+
+### JavaScript 平台测试
+- **文件**: `src/jsTest/kotlin/cc/unitmesh/yaml/JsYamlTest.kt`
+- **覆盖**: 浏览器和 Node.js 环境的 YAML 处理
+- **特性**: 性能测试、错误处理、JavaScript 特定场景
+
+### WebAssembly 平台测试
+- **文件**: `src/wasmJsTest/kotlin/cc/unitmesh/yaml/WasmYamlTest.kt`
+- **覆盖**: WebAssembly 环境的 YAML 处理
+- **特性**: 内存效率、高性能处理、WASM 特定优化
+
+### 跨平台兼容性测试
+- **文件**: `src/commonTest/kotlin/cc/unitmesh/yaml/CrossPlatformYamlTest.kt`
+- **覆盖**: 所有平台的一致性验证
+- **特性**: 平台检测、数据类型兼容性、复杂结构处理
 
 ## 🔄 迁移策略
 
@@ -371,15 +257,3 @@ mpp-core (多平台) ✅
 ├── exts:ext-database (JVM) - 依赖 mpp-core + core ✅
 └── exts:ext-git (JVM) - 依赖 mpp-core + core ✅
 ```
-
-## 📝 总结
-
-`mpp-core` 模块已成功转换为 Kotlin Multiplatform 项目，实现了：
-
-- ✅ **多平台支持**: JVM、JavaScript、WebAssembly
-- ✅ **完整测试**: 所有平台测试通过
-- ✅ **向后兼容**: 现有模块正常工作
-- ✅ **基础设施**: 平台抽象、序列化、协程支持
-- 📋 **迁移规划**: 清晰的后续迁移路径
-
-为项目的跨平台扩展奠定了坚实基础，可以在保持现有 IntelliJ IDEA 插件功能的同时，扩展到 Web 和其他平台。

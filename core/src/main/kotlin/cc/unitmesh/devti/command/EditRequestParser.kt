@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.command
 
-import org.yaml.snakeyaml.LoaderOptions
-import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.SafeConstructor
+import cc.unitmesh.yaml.YamlUtils
 
 /**
  * Parser for EditRequest objects from various text formats
@@ -54,15 +52,14 @@ class  EditRequestParser {
      */
     fun parseAsYaml(content: String): EditRequest? {
         return try {
-            val yaml = Yaml(SafeConstructor(LoaderOptions()))
-            val data = yaml.load<Map<String, Any>>(content) 
+            val data = YamlUtils.load(content)
                 ?: throw ParseException.YamlParseException("YAML content is null or empty")
 
-            val targetFile = data["target_file"] as? String 
+            val targetFile = data["target_file"] as? String
                 ?: throw ParseException.MissingFieldException("target_file")
-            
+
             val instructions = data["instructions"] as? String ?: ""
-            
+
             val codeEdit = data["code_edit"] as? String
                 ?: throw ParseException.MissingFieldException("code_edit")
 

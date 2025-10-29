@@ -69,16 +69,13 @@ data class SkillFrontmatter(
          * Parse YAML content into SkillFrontmatter
          */
         private fun parseYaml(yamlContent: String): SkillFrontmatter {
-            val yaml = org.yaml.snakeyaml.Yaml()
-            val data = yaml.load<Map<String, Any>>(yamlContent) ?: emptyMap()
-
+            val data = cc.unitmesh.yaml.YamlUtils.load(yamlContent) ?: emptyMap()
             val name = data["name"]?.toString() ?: ""
             val description = data["description"]?.toString() ?: ""
 
             @Suppress("UNCHECKED_CAST")
             val variables = (data["variables"] as? Map<String, Any>) ?: emptyMap()
 
-            // Collect any additional fields
             val additionalFields = data.filterKeys { it !in listOf("name", "description", "variables") }
 
             return SkillFrontmatter(

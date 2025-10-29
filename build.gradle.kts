@@ -469,7 +469,7 @@ project(":core") {
         implementation("org.commonmark:commonmark:0.21.0")
         implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
 
-        implementation("org.yaml:snakeyaml:2.4")
+
 
         implementation("com.jayway.jsonpath:json-path:2.9.0")
         implementation("com.jsoizo:kotlin-csv-jvm:1.10.0") {
@@ -496,8 +496,7 @@ project(":core") {
         // token count
         implementation("com.knuddels:jtokkit:1.1.0")
 
-        // YAML parsing for edit_file command
-        implementation("org.yaml:snakeyaml:2.2")
+        // YAML parsing for edit_file command - now using kaml from mpp-core
 
         // gitignore parsing library for fallback engine
         implementation("nl.basjes.gitignore:gitignore-reader:1.6.0")

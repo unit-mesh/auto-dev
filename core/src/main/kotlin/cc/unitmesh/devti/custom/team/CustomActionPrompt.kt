@@ -6,7 +6,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
-import org.yaml.snakeyaml.Yaml
+import cc.unitmesh.yaml.YamlUtils
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.PathMatcher
@@ -118,8 +118,7 @@ data class CustomActionPrompt(
             val prompt = CustomActionPrompt()
             if (matchResult != null) {
                 val frontMatter = matchResult.groupValues[1]
-                val yaml = Yaml()
-                val frontMatterMap = yaml.load<Map<String, Any>>(frontMatter)
+                val frontMatterMap = YamlUtils.load(frontMatter) ?: emptyMap()
                 prompt.interaction = try {
                     InteractionType.valueOf(frontMatterMap["interaction"] as String)
                 } catch (e: Exception) {
