@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform") version "2.1.20"
-    kotlin("plugin.serialization") version "2.1.20"
+    kotlin("multiplatform") version "2.2.21"
+    kotlin("plugin.serialization") version "2.2.21"
 }
 
 repositories {
@@ -8,11 +8,15 @@ repositories {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xdata-flow-based-exhaustiveness")
+    }
+
     jvm {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
+//            kotlinOptions {
+//                jvmTarget = "17"
+//            }
         }
     }
     

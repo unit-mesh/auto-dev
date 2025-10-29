@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom.team;
 
-import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.llms.LlmMsg
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 

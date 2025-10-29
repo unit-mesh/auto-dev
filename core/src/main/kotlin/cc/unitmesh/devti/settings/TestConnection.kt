@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.settings
 
-import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.llms.LlmMsg
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.llm2.LLMProvider2
 import cc.unitmesh.devti.llms.custom.Message

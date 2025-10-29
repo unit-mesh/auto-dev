@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.custom.team
 
-import cc.unitmesh.cf.core.llms.LlmMsg
-import cc.unitmesh.template.TemplateRoleSplitter
+import cc.unitmesh.devti.llms.LlmMsg
+import cc.unitmesh.devti.template.TemplateRoleSplitter
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir

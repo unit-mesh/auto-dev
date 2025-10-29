@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.alignRight

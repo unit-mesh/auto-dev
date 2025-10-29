@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom
 
-import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptExecTask
