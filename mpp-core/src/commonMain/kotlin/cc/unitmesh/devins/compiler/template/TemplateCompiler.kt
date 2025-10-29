@@ -107,7 +107,8 @@ class TemplateCompiler(
         var result = template
         
         // 简单的 #if...#end 处理
-        val ifPattern = Regex("""#if\s*\(([^)]+)\)(.*?)#end""", RegexOption.DOT_MATCHES_ALL)
+        // 使用 [\s\S] 代替 . 来匹配包括换行符的所有字符（跨平台兼容）
+        val ifPattern = Regex("""#if\s*\(([^)]+)\)([\s\S]*?)#end""")
         result = ifPattern.replace(result) { matchResult ->
             val condition = matchResult.groupValues[1]
             val content = matchResult.groupValues[2]
@@ -129,7 +130,8 @@ class TemplateCompiler(
         var result = template
         
         // 简单的 #foreach...#end 处理
-        val foreachPattern = Regex("""#foreach\s*\(\s*\$(\w+)\s+in\s+\$(\w+)\s*\)(.*?)#end""", RegexOption.DOT_MATCHES_ALL)
+        // 使用 [\s\S] 代替 . 来匹配包括换行符的所有字符（跨平台兼容）
+        val foreachPattern = Regex("""#foreach\s*\(\s*\$(\w+)\s+in\s+\$(\w+)\s*\)([\s\S]*?)#end""")
         result = foreachPattern.replace(result) { matchResult ->
             val itemVar = matchResult.groupValues[1]
             val collectionVar = matchResult.groupValues[2]

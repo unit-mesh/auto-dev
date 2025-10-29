@@ -3,6 +3,7 @@ package cc.unitmesh.devins.compiler.context
 import cc.unitmesh.devins.compiler.result.DevInsCompiledResult
 import cc.unitmesh.devins.compiler.variable.VariableTable
 import cc.unitmesh.devins.compiler.variable.VariableScope
+import kotlin.time.Clock
 
 /**
  * 编译器上下文
@@ -157,7 +158,7 @@ data class LogEntry(
     val level: LogLevel,
     val message: String,
     val throwable: Throwable? = null,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = getCurrentTimeMillis()
 )
 
 /**
@@ -166,3 +167,9 @@ data class LogEntry(
 enum class LogLevel {
     INFO, WARN, ERROR
 }
+
+/**
+ * 获取当前时间戳（毫秒）
+ */
+@OptIn(kotlin.time.ExperimentalTime::class)
+internal fun getCurrentTimeMillis(): Long = Clock.System.now().toEpochMilliseconds()

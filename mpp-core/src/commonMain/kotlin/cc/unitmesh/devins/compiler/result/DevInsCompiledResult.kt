@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.compiler.result
 
 import cc.unitmesh.devins.compiler.variable.VariableTable
+import kotlin.time.Clock
 
 /**
  * DevIns 编译结果
@@ -142,14 +143,16 @@ data class CompilationStatistics(
     /**
      * 开始计时
      */
+    @OptIn(kotlin.time.ExperimentalTime::class)
     fun start() {
-        startTime = System.currentTimeMillis()
+        startTime = Clock.System.now().toEpochMilliseconds()
     }
     
     /**
      * 结束计时
      */
+    @OptIn(kotlin.time.ExperimentalTime::class)
     fun end() {
-        endTime = System.currentTimeMillis()
+        endTime = Clock.System.now().toEpochMilliseconds()
     }
 }

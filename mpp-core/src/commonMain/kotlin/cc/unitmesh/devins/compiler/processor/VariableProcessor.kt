@@ -4,6 +4,10 @@ import cc.unitmesh.devins.ast.*
 import cc.unitmesh.devins.compiler.context.CompilerContext
 import cc.unitmesh.devins.compiler.variable.VariableType
 import cc.unitmesh.devins.compiler.variable.VariableScope
+import kotlin.time.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 /**
  * 变量处理器
@@ -147,11 +151,12 @@ class VariableProcessor : BaseDevInsNodeProcessor() {
     /**
      * 获取内置变量的值
      */
+    @OptIn(kotlin.time.ExperimentalTime::class)
     private fun getBuiltinVariable(name: String): Any? {
         return when (name.lowercase()) {
-            "timestamp" -> System.currentTimeMillis()
-            "date" -> java.util.Date().toString()
-            "time" -> System.currentTimeMillis().toString()
+            "timestamp" -> Clock.System.now().toEpochMilliseconds()
+            "date" -> Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toString()
+            "time" -> Clock.System.now().toEpochMilliseconds().toString()
             "random" -> kotlin.random.Random.nextInt(1000, 9999)
             "uuid" -> generateSimpleUuid()
             
