@@ -9,7 +9,7 @@ repositories {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xdata-flow-based-exhaustiveness")
+//        freeCompilerArgs.add("-Xdata-flow-based-exhaustiveness")
     }
 
     jvm {
@@ -19,7 +19,7 @@ kotlin {
 //            }
         }
     }
-    
+
     js(IR) {
         browser()
         nodejs()
@@ -35,37 +35,37 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
             }
         }
-        
+
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
             }
         }
-        
+
         val jvmMain by getting {
             dependencies {
                 // JVM specific dependencies if needed
             }
         }
-        
+
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
             }
         }
-        
+
         val jsMain by getting {
             dependencies {
                 // JS specific dependencies if needed
             }
         }
-        
+
         val jsTest by getting {
             dependencies {
                 implementation(kotlin("test-js"))
@@ -91,6 +91,6 @@ tasks.register<JavaExec>("runDemo") {
     group = "application"
     description = "Run the DevIns Compiler Demo"
     classpath = kotlin.targets["jvm"].compilations["main"].output.allOutputs +
-                kotlin.targets["jvm"].compilations["main"].runtimeDependencyFiles
+            kotlin.targets["jvm"].compilations["main"].runtimeDependencyFiles
     mainClass.set("cc.unitmesh.devins.compiler.demo.SimpleDemo")
 }
