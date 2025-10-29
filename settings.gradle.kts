@@ -3,6 +3,7 @@ rootProject.name = "AutoDev-Intellij"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include("mpp-core")
+include("mpp-ui")
 include("core")
 
 include(

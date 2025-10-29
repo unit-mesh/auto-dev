@@ -78,7 +78,7 @@ repositories {
 
 configure(subprojects - project(":exts")
         - project(":mpp-core")
-//        - project(":mpp-ui")
+        - project(":mpp-ui")
 ) {
     apply {
         plugin("idea")
