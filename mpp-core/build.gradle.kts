@@ -39,6 +39,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
             }
         }
         
@@ -78,4 +79,13 @@ kotlin {
             }
         }
     }
+}
+
+// 添加运行演示的任务
+tasks.register<JavaExec>("runDemo") {
+    group = "application"
+    description = "Run the DevIns Compiler Demo"
+    classpath = kotlin.targets["jvm"].compilations["main"].output.allOutputs +
+                kotlin.targets["jvm"].compilations["main"].runtimeDependencyFiles
+    mainClass.set("cc.unitmesh.devins.compiler.demo.SimpleDemo")
 }

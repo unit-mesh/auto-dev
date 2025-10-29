@@ -868,6 +868,8 @@ class DevInsLexer(
             // IDENTIFIER
             isIdentifierStart(peek()) -> {
                 val identifier = consumeIdentifier()
+                // 变量名处理完成后，切换回 INITIAL 状态
+                context.switchTo(LexerState.INITIAL)
                 return createToken(DevInsTokenType.IDENTIFIER, identifier, startPos, startLine, startColumn)
             }
             // {
@@ -882,8 +884,9 @@ class DevInsLexer(
             }
             // .
             peek() == '.' -> {
-                advance()
-                return createToken(DevInsTokenType.DOT, ".", startPos, startLine, startColumn)
+                // 在变量上下文中，. 应该被当作文本处理，而不是特殊的 DOT token
+                context.switchTo(LexerState.INITIAL)
+                return consumeTextSegment(position, line, column)
             }
             // (
             peek() == '(' -> {
@@ -895,10 +898,12 @@ class DevInsLexer(
                 advance()
                 return createToken(DevInsTokenType.RPAREN, ")", startPos, startLine, startColumn)
             }
-            // 其他字符：不消费，切换回 INITIAL 状态
+            // 其他字符：切换回 INITIAL 状态并继续处理文本
             else -> {
                 context.switchTo(LexerState.INITIAL)
-                return tokenizeInitial()
+                // 不消费当前字符，让 tokenizeInitial 处理它
+                // 但是我们需要确保它被当作文本处理
+                return consumeTextSegment(position, line, column)
             }
         }
     }
