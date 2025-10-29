@@ -76,7 +76,10 @@ repositories {
 
 // mpp-core is configured in its own build.gradle.kts file
 
-configure(subprojects - project(":exts") - project(":mpp-core")) {
+configure(subprojects - project(":exts")
+        - project(":mpp-core")
+//        - project(":mpp-ui")
+) {
     apply {
         plugin("idea")
         plugin("kotlin")
@@ -158,7 +161,7 @@ configure(subprojects - project(":exts") - project(":mpp-core")) {
     dependencies {
 //        compileOnly(kotlin("stdlib-jdk8"))
 //        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
         implementation("com.knuddels:jtokkit:1.1.0")
 
         testOutput(sourceSets.test.get().output.classesDirs)
@@ -496,7 +499,7 @@ project(":core") {
         // gitignore parsing library for fallback engine
         implementation("nl.basjes.gitignore:gitignore-reader:1.6.0")
 
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     }
 
     task("resolveDependencies") {
@@ -886,7 +889,7 @@ project(":exts:devins-lang") {
         }
 
         implementation("com.jayway.jsonpath:json-path:2.9.0")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
         implementation(project(":mpp-core"))
         implementation(project(":core"))
     }
