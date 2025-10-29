@@ -56,7 +56,9 @@ kotlin {
         
         val jsMain by getting {
             dependencies {
-                // JS specific dependencies if needed
+                // JS specific dependencies for DevIn language parsing
+                implementation(npm("moo", "0.5.2"))
+                implementation(npm("chevrotain", "11.0.3"))
             }
         }
         
