@@ -27,7 +27,8 @@ plugins {
 
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
 
-    kotlin("jvm") version "1.8.22"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlinMultiplatform) apply false
     id("net.saliman.properties") version "1.5.2"
 }
 
@@ -73,32 +74,7 @@ repositories {
     }
 }
 
-project(":mpp-core") {
-    apply {
-        plugin("idea")
-        plugin("kotlin")
-        plugin("org.jetbrains.kotlin.plugin.serialization")
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    configure<JavaPluginExtension> {
-        sourceCompatibility = VERSION_17
-        targetCompatibility = VERSION_17
-    }
-
-    tasks.withType<KotlinCompile> {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
-
-    dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    }
-}
+// mpp-core is configured in its own build.gradle.kts file
 
 configure(subprojects - project(":exts") - project(":mpp-core")) {
     apply {
