@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.custom.tasks
 
 import cc.unitmesh.devti.llms.LlmMsg
-import cc.unitmesh.devti.util.parser.MarkdownCode
+import cc.unitmesh.utils.MarkdownCode
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.AutoDevCoroutineScope

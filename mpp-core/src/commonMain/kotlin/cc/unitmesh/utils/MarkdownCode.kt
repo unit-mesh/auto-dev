@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.util.parser
+package cc.unitmesh.utils
 
 class MarkdownCode(val language: String, val text: String, val isComplete: Boolean = true) {
     companion object {
