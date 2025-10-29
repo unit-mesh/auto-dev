@@ -14,6 +14,10 @@ dependencies {
     // 用于代码编辑器功能
     implementation("com.fifesoft:rsyntaxtextarea:3.3.4")
 
+    // 现代化 UI 主题
+    implementation("com.formdev:flatlaf:3.2.5")
+    implementation("com.formdev:flatlaf-extras:3.2.5")
+
     // JSON 处理
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
