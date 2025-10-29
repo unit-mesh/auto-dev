@@ -150,3 +150,4 @@ src/main/gen
 .specify
 .vscode
 .github/prompts
+kotlin-js-store/*
