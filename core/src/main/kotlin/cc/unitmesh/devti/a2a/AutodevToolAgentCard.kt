@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.a2a
 
-import cc.unitmesh.agent.Tool
+import cc.unitmesh.devti.agent.tool.Tool
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 

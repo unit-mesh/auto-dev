@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.agent.tool
 
-import cc.unitmesh.agent.Tool
+import cc.unitmesh.devti.agent.tool.Tool
 import kotlinx.serialization.Serializable
 
 @Serializable

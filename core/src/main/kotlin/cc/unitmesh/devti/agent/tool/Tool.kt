@@ -1,4 +1,4 @@
-package cc.unitmesh.agent
+package cc.unitmesh.devti.agent.tool
 
 public interface Tool {
     val name: String

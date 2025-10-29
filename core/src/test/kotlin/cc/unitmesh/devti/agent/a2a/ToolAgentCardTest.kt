@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.agent.a2a
 
-import cc.unitmesh.agent.Tool
+import cc.unitmesh.devti.agent.tool.Tool
 import cc.unitmesh.devti.a2a.AgentCapabilities
 import cc.unitmesh.devti.a2a.AgentProvider
 import cc.unitmesh.devti.a2a.AgentSkill
