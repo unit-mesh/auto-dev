@@ -76,15 +76,12 @@ dependencies {
 
 ## 📋 后续迁移计划
 
-### 优先级 1: 数据模型 (下一步)
+### ✅ 优先级 1: 数据模型
 **目标**: 迁移核心数据结构，为业务逻辑奠定基础
 
-**候选模块**:
-- Agent 配置模型 (`CustomAgentConfig`, `CustomAgentState`)
-- 交互类型 (`ChatActionType`, `ChatRole`)
-- 基础工具模型 (`McpTool`, `McpToolCall`)
-
-**预期收益**: 统一数据模型，支持跨平台序列化
+- ✅ Agent 配置模型 (`CustomAgentConfig`, `CustomAgentState`) → `cc.unitmesh.model.agent`
+- ✅ 交互类型 (`ChatActionType`, `ChatRole`, `InteractionType`) → `cc.unitmesh.model.interaction`
+- ✅ 基础工具模型 (`McpTool`, `McpToolCall`) → `cc.unitmesh.model.mcp`
 
 ### 优先级 2: 命令系统 (中期)
 **目标**: 迁移命令处理逻辑
@@ -209,38 +206,6 @@ val yamlString = YamlUtils.dump(config, ConfigSerializer)
 - ✅ 为 `mpp-core` 编写平台无关的单元测试
 - ✅ 确保迁移后功能完整性
 - ✅ 验证序列化/反序列化正确性
-
-## ✅ 验证结果
-
-### 构建验证
-- ✅ 所有平台构建成功
-- ✅ 生成正确的构建产物
-  - `mpp-core-jvm.jar` - JVM 平台库
-  - `mpp-core-js.klib` - JavaScript 平台库
-  - `mpp-core-wasm-js.klib` - WebAssembly 平台库
-  - `mpp-core-metadata.jar` - 元数据库
-
-### 测试验证
-- ✅ 所有平台的单元测试通过
-- ✅ 序列化/反序列化功能验证
-- ✅ 平台检测功能验证
-- ✅ 跨平台兼容性验证
-
-### 集成验证
-- ✅ `core` 模块正常依赖 `mpp-core`
-- ✅ `exts:devins-lang` 模块正常编译
-- ✅ `exts:ext-database` 模块正常编译
-- ✅ `exts:ext-git` 模块正常编译
-
-## 🎯 技术优势
-
-1. **✅ 平台扩展性**: 支持 Kotlin Multiplatform，已扩展到 Web 平台
-2. **✅ 代码复用**: 核心业务逻辑在所有平台间共享
-3. **✅ 架构清晰**: 明确分离平台相关和平台无关代码
-4. **✅ 测试改进**: 核心逻辑可独立测试，提高测试覆盖率
-5. **✅ 维护性**: 减少平台耦合，提高代码可维护性
-6. **✅ 类型安全**: 编译时保证跨平台类型一致性
-7. **✅ 性能优化**: 各平台使用最优的运行时
 
 ## 🚀 未来扩展
 
