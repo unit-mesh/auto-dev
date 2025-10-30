@@ -8,6 +8,7 @@ import cc.unitmesh.devins.compiler.result.DevInsCompiledResult
 import cc.unitmesh.devins.compiler.template.TemplateCompiler
 import cc.unitmesh.devins.parser.DevInsParser
 import cc.unitmesh.devins.parser.ParseResult
+import cc.unitmesh.devins.workspace.WorkspaceManager
 
 /**
  * DevIns 编译器
@@ -20,14 +21,22 @@ class DevInsCompiler(
     private val context: CompilerContext = CompilerContext()
 ) {
     
+    // 初始化子处理器
+    private val commandProcessor = CommandProcessor()
+    private val variableProcessor = VariableProcessor()
+    private val agentProcessor = AgentProcessor()
+    
     // 初始化处理器列表
+    // 包含 UsedProcessor（用于处理 DevInsUsedNode）
+    // 以及独立的处理器（作为后备，处理直接生成的节点）
     private val processors: List<DevInsNodeProcessor> = listOf(
         TextSegmentProcessor(),
         CodeBlockProcessor(),
         FrontMatterProcessor(),
-        CommandProcessor(),
-        VariableProcessor(),
-        AgentProcessor(),
+        UsedProcessor(commandProcessor, variableProcessor, agentProcessor),
+        commandProcessor,  // 后备：直接处理 DevInsCommandNode
+        variableProcessor, // 后备：直接处理 DevInsVariableNode
+        agentProcessor,    // 后备：直接处理 DevInsAgentNode
         VelocityExpressionProcessor()
     )
     
@@ -65,7 +74,7 @@ class DevInsCompiler(
 
             // 如果需要，进行模板编译
             if (context.options.enableTemplateCompilation) {
-                val templateCompiler = TemplateCompiler(context.variableTable)
+                val templateCompiler = TemplateCompiler(context.variableTable, context.fileSystem)
                 context.result.output = templateCompiler.compile(rawOutput)
             }
 
@@ -126,7 +135,11 @@ class DevInsCompiler(
          * 创建默认编译器
          */
         fun create(): DevInsCompiler {
-            return DevInsCompiler()
+            val context = CompilerContext()
+            // 从 WorkspaceManager 获取当前工作空间的文件系统
+            val workspace = WorkspaceManager.getCurrentOrEmpty()
+            context.fileSystem = workspace.fileSystem
+            return DevInsCompiler(context)
         }
 
         /**

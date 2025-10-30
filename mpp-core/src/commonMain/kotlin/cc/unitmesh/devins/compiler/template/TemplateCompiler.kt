@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.compiler.template
 
 import cc.unitmesh.devins.compiler.variable.VariableTable
+import cc.unitmesh.devins.filesystem.ProjectFileSystem
 
 /**
  * 模板编译器
@@ -8,7 +9,8 @@ import cc.unitmesh.devins.compiler.variable.VariableTable
  * 参考 @core/src/main/kotlin/cc/unitmesh/devti/custom/compile/VariableTemplateCompiler.kt
  */
 class TemplateCompiler(
-    private val variableTable: VariableTable = VariableTable()
+    private val variableTable: VariableTable = VariableTable(),
+    private val fileSystem: ProjectFileSystem? = null
 ) {
     
     /**
@@ -175,7 +177,22 @@ class TemplateCompiler(
     }
     
     // 模板函数实现
-    private fun processFileContent(path: String): String = "<!-- File content: $path -->"
+    private fun processFileContent(path: String): String {
+        // 尝试从文件系统读取文件内容
+        if (fileSystem != null) {
+            val content = fileSystem.readFile(path)
+            if (content != null) {
+                // 返回 Markdown 格式的文件内容
+                return """## file: $path
+```
+$content
+```"""
+            }
+        }
+        
+        // 如果没有文件系统或文件不存在，返回占位符
+        return "<!-- File content: $path -->"
+    }
     private fun processSymbolInfo(symbol: String): String = "<!-- Symbol info: $symbol -->"
     private fun processWriteFile(target: String): String = "<!-- Write to: $target -->"
     private fun processRunCommand(command: String): String = "<!-- Run: $command -->"

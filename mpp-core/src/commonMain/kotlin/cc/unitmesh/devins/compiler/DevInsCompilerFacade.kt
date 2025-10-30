@@ -6,6 +6,7 @@ import cc.unitmesh.devins.compiler.result.DevInsCompiledResult
 import cc.unitmesh.devins.compiler.variable.VariableTable
 import cc.unitmesh.devins.compiler.variable.VariableType
 import cc.unitmesh.devins.compiler.variable.VariableScope
+import cc.unitmesh.devins.workspace.WorkspaceManager
 
 /**
  * DevIns 编译器门面
@@ -26,6 +27,10 @@ object DevInsCompilerFacade {
      */
     suspend fun compile(source: String, variables: Map<String, Any>): DevInsCompiledResult {
         val context = CompilerContext()
+        
+        // 从 WorkspaceManager 获取文件系统
+        val workspace = WorkspaceManager.getCurrentOrEmpty()
+        context.fileSystem = workspace.fileSystem
         
         // 添加自定义变量
         variables.forEach { (name, value) ->
@@ -50,6 +55,11 @@ object DevInsCompilerFacade {
         variables: Map<String, Any> = emptyMap()
     ): DevInsCompiledResult {
         val context = CompilerContext()
+        
+        // 从 WorkspaceManager 获取文件系统
+        val workspace = WorkspaceManager.getCurrentOrEmpty()
+        context.fileSystem = workspace.fileSystem
+        
         // 更新编译器选项
         context.options = options
         
