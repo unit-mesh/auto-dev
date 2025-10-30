@@ -2,7 +2,9 @@ package cc.unitmesh.devins.ui.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.*
@@ -18,6 +20,7 @@ import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionManager
 import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
+import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
 import cc.unitmesh.devins.llm.KoogLLMService
 import cc.unitmesh.devins.llm.ModelConfig
 import kotlinx.coroutines.CoroutineScope
@@ -46,6 +49,7 @@ fun SimpleAIChat() {
     // LLM 配置状态
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
+    var showConfigWarning by remember { mutableStateOf(false) }
     
     // 项目路径状态（默认路径）
     var projectPath by remember { mutableStateOf<String?>("/Users/phodal/IdeaProjects/untitled") }
@@ -58,6 +62,12 @@ fun SimpleAIChat() {
     
     val callbacks = object : EditorCallbacks {
         override fun onSubmit(text: String) {
+            // 检查是否配置了有效的 LLM 模型
+            if (currentModelConfig == null || !currentModelConfig!!.isValid()) {
+                showConfigWarning = true
+                return
+            }
+            
             println("✅ 提交内容:")
             println(text)
             println("\n📝 解析结果:")
@@ -69,8 +79,8 @@ fun SimpleAIChat() {
                 isCompiling = false
             }
             
-            // 如果配置了 LLM，也发送到 LLM
-            if (llmService != null && currentModelConfig?.isValid() == true) {
+            // 发送到 LLM
+            if (llmService != null) {
                 isLLMProcessing = true
                 llmOutput = ""
                 
@@ -174,7 +184,7 @@ fun SimpleAIChat() {
                 .fillMaxWidth(0.9f) // 90% 宽度，更居中
         )
         
-        // 显示 LLM 输出（优先显示）
+        // 显示 LLM 输出（优先显示）- 使用 Sketch 渲染器
         if (llmOutput.isNotEmpty() || isLLMProcessing) {
             Spacer(modifier = Modifier.height(16.dp))
             
@@ -201,29 +211,46 @@ fun SimpleAIChat() {
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    SelectionContainer {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // 使用 SketchRenderer 渲染内容
+                    if (llmOutput.isEmpty()) {
                         Text(
-                            text = if (llmOutput.isEmpty()) "Thinking..." else llmOutput,
+                            text = "Thinking...",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    } else {
+                        SketchRenderer.RenderResponse(
+                            content = llmOutput,
+                            isComplete = !isLLMProcessing,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
             }
         }
         
-        // 显示编译输出
+        // 显示编译输出 - 添加滚动支持
         if (compilerOutput.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             
             Card(
-                modifier = Modifier.fillMaxWidth(0.9f),
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .heightIn(max = 400.dp),  // 限制最大高度
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                val scrollState = rememberScrollState()
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .padding(16.dp)
+                ) {
                     Text(
                         text = "📦 DevIns 输出:",
                         style = MaterialTheme.typography.titleMedium,
@@ -270,6 +297,32 @@ fun SimpleAIChat() {
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                 )
             }
+        }
+        
+        // 配置警告弹窗
+        if (showConfigWarning) {
+            AlertDialog(
+                onDismissRequest = { showConfigWarning = false },
+                title = {
+                    Text("⚠️ 未配置 LLM 模型")
+                },
+                text = {
+                    Column {
+                        Text("请先配置 LLM 模型才能使用 AI 功能。")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "点击右下角的模型选择器进行配置。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showConfigWarning = false }) {
+                        Text("知道了")
+                    }
+                }
+            )
         }
     }
 }

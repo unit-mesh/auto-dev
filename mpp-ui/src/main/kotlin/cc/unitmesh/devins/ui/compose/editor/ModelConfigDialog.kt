@@ -257,7 +257,7 @@ fun ModelConfigDialog(
                                 provider = provider,
                                 modelName = modelName.trim(),
                                 apiKey = apiKey.trim(),
-                                temperature = temperature.toDoubleOrNull() ?: 0.7,
+                                temperature = temperature.toDoubleOrNull() ?: 0.0,
                                 maxTokens = maxTokens.toIntOrNull() ?: 2000,
                                 topP = topP.toDoubleOrNull() ?: 1.0,
                                 baseUrl = baseUrl.trim()

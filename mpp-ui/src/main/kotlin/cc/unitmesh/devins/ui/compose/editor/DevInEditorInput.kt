@@ -227,11 +227,11 @@ fun DevInEditorInput(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // 编辑器区域
+                // 编辑器区域 - 优化为3行左右的高度
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 120.dp, max = 400.dp)
+                        .heightIn(min = 72.dp, max = 120.dp)  // 约3行高度
                         .padding(16.dp)
                 ) {
                     BasicTextField(
