@@ -29,6 +29,8 @@ plugins {
 
     alias(libs.plugins.kotlin)
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.compose) apply false
+    alias(libs.plugins.composeCompiler) apply false
     id("net.saliman.properties") version "1.5.2"
 }
 

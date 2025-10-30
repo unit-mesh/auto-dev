@@ -1,27 +1,22 @@
 package cc.unitmesh.devins.ui
 
-import cc.unitmesh.devins.ui.swing.DevInsEditorFrame
-import com.formdev.flatlaf.FlatDarkLaf
-import com.formdev.flatlaf.extras.FlatSVGIcon
-import javax.swing.SwingUtilities
-import javax.swing.UIManager
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.ui.compose.DevInsApp
 
-fun main() {
-    // 设置 FlatLaf 暗色主题
-    try {
-        FlatDarkLaf.setup()
+fun main() = application {
+    val windowState = rememberWindowState(
+        width = 1400.dp,
+        height = 900.dp
+    )
 
-        // 设置一些自定义属性
-        UIManager.put("Tree.showDefaultIcons", true)
-        UIManager.put("Component.focusWidth", 1)
-        UIManager.put("ScrollBar.showButtons", false)
-        UIManager.put("ScrollBar.width", 12)
-
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-
-    SwingUtilities.invokeLater {
-        DevInsEditorFrame().isVisible = true
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "AutoDev Desktop",
+        state = windowState
+    ) {
+        DevInsApp()
     }
 }
