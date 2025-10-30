@@ -121,10 +121,10 @@ jobs:
 
       # Set up Java environment for the next steps
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
-          distribution: jetbrains
-          java-version: 17
+          distribution: zulu
+          java-version: 21
 
       # Setup Gradle
       - name: Setup Gradle
