@@ -21,7 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import cc.unitmesh.devins.ui.compose.editor.model.CompletionItem
+import cc.unitmesh.devins.completion.CompletionItem
+import cc.unitmesh.devins.completion.CompletionContext
+import cc.unitmesh.devins.completion.CompletionTriggerType
 import kotlinx.coroutines.launch
 
 /**
@@ -120,9 +122,9 @@ private fun CompletionItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 图标（emoji）
-        if (item.icon != null) {
+        item.icon?.let { icon ->
             Text(
-                text = item.icon,
+                text = icon,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(end = 8.dp)
             )
@@ -141,9 +143,9 @@ private fun CompletionItemRow(
             )
             
             // 描述文本
-            if (item.description != null) {
+            item.description?.let { description ->
                 Text(
-                    text = item.description,
+                    text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
@@ -162,28 +164,28 @@ object CompletionTrigger {
         return char in setOf('@', '/', '$', ':', '`')
     }
     
-    fun getTriggerType(char: Char): cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType {
+    fun getTriggerType(char: Char): CompletionTriggerType {
         return when (char) {
-            '@' -> cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.AGENT
-            '/' -> cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND
-            '$' -> cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.VARIABLE
-            ':' -> cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND_VALUE
-            '`' -> cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.CODE_FENCE
-            else -> cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.NONE
+            '@' -> CompletionTriggerType.AGENT
+            '/' -> CompletionTriggerType.COMMAND
+            '$' -> CompletionTriggerType.VARIABLE
+            ':' -> CompletionTriggerType.COMMAND_VALUE
+            '`' -> CompletionTriggerType.CODE_FENCE
+            else -> CompletionTriggerType.NONE
         }
     }
     
     fun buildContext(
         fullText: String,
         cursorPosition: Int,
-        triggerType: cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType
-    ): cc.unitmesh.devins.ui.compose.editor.model.CompletionContext? {
+        triggerType: CompletionTriggerType
+    ): CompletionContext? {
         // 找到最近的触发字符
         val triggerChar = when (triggerType) {
-            cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.AGENT -> '@'
-            cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND -> '/'
-            cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.VARIABLE -> '$'
-            cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND_VALUE -> ':'
+            CompletionTriggerType.AGENT -> '@'
+            CompletionTriggerType.COMMAND -> '/'
+            CompletionTriggerType.VARIABLE -> '$'
+            CompletionTriggerType.COMMAND_VALUE -> ':'
             else -> return null
         }
         
@@ -198,7 +200,7 @@ object CompletionTrigger {
             return null
         }
         
-        return cc.unitmesh.devins.ui.compose.editor.model.CompletionContext(
+        return CompletionContext(
             fullText = fullText,
             cursorPosition = cursorPosition,
             triggerType = triggerType,

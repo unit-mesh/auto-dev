@@ -5,9 +5,6 @@ import cc.unitmesh.devins.compiler.context.CompilerContext
 import cc.unitmesh.devins.compiler.variable.VariableType
 import cc.unitmesh.devins.compiler.variable.VariableScope
 import kotlin.time.Clock
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 
 /**
  * 变量处理器
@@ -155,7 +152,7 @@ class VariableProcessor : BaseDevInsNodeProcessor() {
     private fun getBuiltinVariable(name: String): Any? {
         return when (name.lowercase()) {
             "timestamp" -> Clock.System.now().toEpochMilliseconds()
-            "date" -> Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toString()
+            "date" -> formatEpochMillisToDate(Clock.System.now().toEpochMilliseconds())
             "time" -> Clock.System.now().toEpochMilliseconds().toString()
             "random" -> kotlin.random.Random.nextInt(1000, 9999)
             "uuid" -> generateSimpleUuid()
@@ -195,6 +192,55 @@ class VariableProcessor : BaseDevInsNodeProcessor() {
     private fun generateSimpleUuid(): String {
         val chars = "abcdefghijklmnopqrstuvwxyz0123456789"
         return (1..8).map { chars.random() }.joinToString("")
+    }
+    
+    /**
+     * 将时间戳（毫秒）格式化为日期字符串
+     * 使用简单的 ISO 8601 格式: YYYY-MM-DD
+     */
+    private fun formatEpochMillisToDate(epochMillis: Long): String {
+        // 转换为秒
+        val epochSeconds = epochMillis / 1000
+        
+        // 计算天数（从 1970-01-01 开始）
+        val daysSinceEpoch = epochSeconds / 86400
+        
+        // 计算年份（粗略算法，足够用于简单日期显示）
+        var year = 1970
+        var remainingDays = daysSinceEpoch
+        
+        while (true) {
+            val daysInYear = if (isLeapYear(year)) 366 else 365
+            if (remainingDays < daysInYear) break
+            remainingDays -= daysInYear
+            year++
+        }
+        
+        // 计算月份和日期
+        val daysInMonths = if (isLeapYear(year)) {
+            listOf(31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+        } else {
+            listOf(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+        }
+        
+        var month = 1
+        var day = remainingDays.toInt() + 1
+        
+        for (daysInMonth in daysInMonths) {
+            if (day <= daysInMonth) break
+            day -= daysInMonth
+            month++
+        }
+        
+        // 格式化为 YYYY-MM-DD（跨平台实现）
+        return "${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
+    }
+    
+    /**
+     * 判断是否为闰年
+     */
+    private fun isLeapYear(year: Int): Boolean {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
     
     override fun canProcess(node: DevInsNode): Boolean {

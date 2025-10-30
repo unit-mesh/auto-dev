@@ -26,9 +26,9 @@ import cc.unitmesh.devins.ui.compose.editor.completion.CompletionManager
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
-import cc.unitmesh.devins.ui.compose.editor.model.CompletionItem
-import cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType
-import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
+import cc.unitmesh.devins.completion.CompletionItem
+import cc.unitmesh.devins.completion.CompletionTriggerType
+import cc.unitmesh.devins.editor.EditorCallbacks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

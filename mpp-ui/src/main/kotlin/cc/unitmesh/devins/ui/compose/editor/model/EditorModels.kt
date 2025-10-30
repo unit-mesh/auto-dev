@@ -5,74 +5,25 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.TextFieldValue
 
-/**
- * 补全项
- */
-data class CompletionItem(
-    val text: String,
-    val displayText: String = text,
-    val description: String? = null,
-    val icon: String? = null, // 使用 emoji 作为图标
-    val insertHandler: ((String, Int) -> InsertResult)? = null
-) {
-    /**
-     * 计算匹配分数（用于排序）
-     */
-    fun matchScore(query: String): Int {
-        if (text.equals(query, ignoreCase = true)) return 1000
-        if (text.startsWith(query, ignoreCase = true)) return 500
-        if (text.contains(query, ignoreCase = true)) return 100
-        return fuzzyMatchScore(query)
-    }
-    
-    private fun fuzzyMatchScore(query: String): Int {
-        var score = 0
-        var queryIndex = 0
-        for (i in text.indices) {
-            if (queryIndex < query.length && 
-                text[i].equals(query[queryIndex], ignoreCase = true)) {
-                score += 10
-                queryIndex++
-            }
-        }
-        return if (queryIndex == query.length) score else 0
-    }
-}
+// 导入 mpp-core 中的跨平台类型
+import cc.unitmesh.devins.completion.CompletionItem
+import cc.unitmesh.devins.completion.CompletionContext
+import cc.unitmesh.devins.completion.CompletionTriggerType
+import cc.unitmesh.devins.completion.InsertResult
+import cc.unitmesh.devins.editor.EditorEvent
+import cc.unitmesh.devins.editor.EditorCallbacks
 
-/**
- * 插入结果
- */
-data class InsertResult(
-    val newText: String,
-    val newCursorPosition: Int,
-    val shouldTriggerNextCompletion: Boolean = false
-)
-
-/**
- * 补全触发类型
- */
-enum class CompletionTriggerType {
-    NONE,
-    AGENT,      // @
-    COMMAND,    // /
-    VARIABLE,   // $
-    COMMAND_VALUE,  // :
-    CODE_FENCE  // `
-}
-
-/**
- * 补全上下文
- */
-data class CompletionContext(
-    val fullText: String,
-    val cursorPosition: Int,
-    val triggerType: CompletionTriggerType,
-    val triggerOffset: Int,  // 触发字符的位置
-    val queryText: String    // 触发字符后到光标的文本
-)
+// 为了向后兼容，重新导出这些类型
+typealias CompletionItem = cc.unitmesh.devins.completion.CompletionItem
+typealias CompletionContext = cc.unitmesh.devins.completion.CompletionContext
+typealias CompletionTriggerType = cc.unitmesh.devins.completion.CompletionTriggerType
+typealias InsertResult = cc.unitmesh.devins.completion.InsertResult
+typealias EditorEvent = cc.unitmesh.devins.editor.EditorEvent
+typealias EditorCallbacks = cc.unitmesh.devins.editor.EditorCallbacks
 
 /**
  * 语法高亮样式
+ * 这是 UI 层特定的类型，保留在此处
  */
 data class HighlightStyle(
     val color: Color,
@@ -84,23 +35,5 @@ data class HighlightStyle(
         fontWeight = if (bold) androidx.compose.ui.text.font.FontWeight.Bold else null,
         fontStyle = if (italic) androidx.compose.ui.text.font.FontStyle.Italic else null
     )
-}
-
-/**
- * 编辑器事件
- */
-sealed class EditorEvent {
-    data class Submit(val text: String) : EditorEvent()
-    data class TextChanged(val text: String) : EditorEvent()
-    data class CursorMoved(val position: Int) : EditorEvent()
-}
-
-/**
- * 编辑器回调
- */
-interface EditorCallbacks {
-    fun onSubmit(text: String) {}
-    fun onTextChanged(text: String) {}
-    fun onCursorMoved(position: Int) {}
 }
 

@@ -2,9 +2,10 @@ package cc.unitmesh.devins.ui.compose.editor.completion
 
 import cc.unitmesh.devins.command.SpecKitCommand
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
-import cc.unitmesh.devins.ui.compose.editor.model.CompletionContext
-import cc.unitmesh.devins.ui.compose.editor.model.CompletionItem
-import cc.unitmesh.devins.ui.compose.editor.model.InsertResult
+import cc.unitmesh.devins.completion.CompletionContext
+import cc.unitmesh.devins.completion.CompletionItem
+import cc.unitmesh.devins.completion.CompletionTriggerType
+import cc.unitmesh.devins.completion.InsertResult
 
 /**
  * 补全提供者接口
@@ -340,20 +341,20 @@ class SpecKitCommandCompletionProvider(
  */
 class CompletionManager(fileSystem: ProjectFileSystem? = null) {
     private val specKitProvider = SpecKitCommandCompletionProvider(fileSystem)
-    
+
     private val providers = mapOf(
-        cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.AGENT to AgentCompletionProvider(),
-        cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND to CommandCompletionProvider(),
-        cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.VARIABLE to VariableCompletionProvider(),
-        cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND_VALUE to FilePathCompletionProvider()
+        CompletionTriggerType.AGENT to AgentCompletionProvider(),
+        CompletionTriggerType.COMMAND to CommandCompletionProvider(),
+        CompletionTriggerType.VARIABLE to VariableCompletionProvider(),
+        CompletionTriggerType.COMMAND_VALUE to FilePathCompletionProvider()
     )
-    
+
     fun getCompletions(context: CompletionContext): List<CompletionItem> {
         val provider = providers[context.triggerType] ?: return emptyList()
         val baseCompletions = provider.getCompletions(context)
-        
+
         // 对于 COMMAND 类型，同时包含 SpecKit 命令
-        return if (context.triggerType == cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND) {
+        return if (context.triggerType == CompletionTriggerType.COMMAND) {
             baseCompletions + specKitProvider.getCompletions(context)
         } else {
             baseCompletions
