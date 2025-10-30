@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.llm
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.clients.anthropic.AnthropicModels
 import ai.koog.prompt.executor.clients.deepseek.DeepSeekLLMClient
 import ai.koog.prompt.executor.clients.deepseek.DeepSeekModels
@@ -12,8 +13,13 @@ import ai.koog.prompt.executor.llms.all.*
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLMCapability
+import ai.koog.prompt.message.Message
+import ai.koog.prompt.params.LLMParams
+import ai.koog.prompt.streaming.StreamFrame
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import okhttp3.OkHttpClient
+import java.time.Duration
 
 /**
  * Service for interacting with LLMs using the Koog framework
@@ -21,20 +27,41 @@ import kotlinx.coroutines.flow.flow
 class KoogLLMService(private val config: ModelConfig) {
     
     /**
-     * Send a prompt to the LLM and get streaming response
+     * Send a prompt to the LLM and get TRUE streaming response
+     * Uses Koog's executeStreaming API for real-time streaming
      */
-    fun streamPrompt(prompt: String): Flow<String> = flow {
+    fun streamPrompt(userPrompt: String): Flow<String> = flow {
         try {
-            // Get response from agent
-            val response = sendPrompt(prompt)
+            val executor = createExecutor()
+            val model = getModelForProvider()
             
-            // Emit the response in chunks to simulate streaming
-            val chunkSize = 5
-            for (i in response.indices step chunkSize) {
-                val chunk = response.substring(i, minOf(i + chunkSize, response.length))
-                emit(chunk)
-                kotlinx.coroutines.delay(10) // Small delay to simulate streaming
+            // Create prompt using Koog DSL
+            val prompt = prompt(
+                id = "chat",
+                params = LLMParams(temperature = config.temperature.toDouble())
+            ) {
+                // Add system prompt
+                system("You are a helpful AI assistant for code development and analysis.")
+                // Add user message
+                user(userPrompt)
             }
+            
+            // Use real streaming API
+            executor.executeStreaming(prompt, model)
+                .collect { frame ->
+                    when (frame) {
+                        is StreamFrame.Append -> {
+                            // Emit text chunks as they arrive in real-time
+                            emit(frame.text)
+                        }
+                        is StreamFrame.End -> {
+                            // Stream ended successfully
+                        }
+                        is StreamFrame.ToolCall -> {
+                            // Tool calls (可以后续扩展)
+                        }
+                    }
+                }
         } catch (e: Exception) {
             emit("\n\n[Error: ${e.message}]")
             throw e

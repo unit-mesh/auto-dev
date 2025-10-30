@@ -7,6 +7,9 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +53,9 @@ fun SimpleAIChat() {
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var showConfigWarning by remember { mutableStateOf(false) }
+    var showDebugPanel by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     
     // 项目路径状态（默认路径）
     var projectPath by remember { mutableStateOf<String?>("/Users/phodal/IdeaProjects/untitled") }
@@ -88,7 +94,10 @@ fun SimpleAIChat() {
                     try {
                         llmService?.streamPrompt(text)
                             ?.catch { e ->
-                                llmOutput += "\n\n[Error: ${e.message}]"
+                                // 捕获流式错误
+                                val errorMsg = extractErrorMessage(e)
+                                errorMessage = errorMsg
+                                showErrorDialog = true
                                 isLLMProcessing = false
                             }
                             ?.collect { chunk ->
@@ -96,7 +105,11 @@ fun SimpleAIChat() {
                             }
                         isLLMProcessing = false
                     } catch (e: Exception) {
-                        llmOutput = "[Error: ${e.message}]"
+                        // 捕获其他错误
+                        val errorMsg = extractErrorMessage(e)
+                        errorMessage = errorMsg
+                        showErrorDialog = true
+                        llmOutput = ""
                         isLLMProcessing = false
                     }
                 }
@@ -231,38 +244,62 @@ fun SimpleAIChat() {
             }
         }
         
-        // 显示编译输出 - 添加滚动支持
+        // Debug 面板 - 可折叠显示 DevIns 编译输出
         if (compilerOutput.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .heightIn(max = 400.dp),  // 限制最大高度
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                val scrollState = rememberScrollState()
-                
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(scrollState)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "📦 DevIns 输出:",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            Column(modifier = Modifier.fillMaxWidth(0.9f)) {
+                // Debug 按钮
+                OutlinedButton(
+                    onClick = { showDebugPanel = !showDebugPanel },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondary
                     )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BugReport,
+                        contentDescription = "Debug",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("DevIns 调试输出")
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        imageVector = if (showDebugPanel) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (showDebugPanel) "收起" else "展开"
+                    )
+                }
+                
+                // 可折叠的调试内容
+                if (showDebugPanel) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    SelectionContainer {
-                        Text(
-                            text = compilerOutput,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         )
+                    ) {
+                        val scrollState = rememberScrollState()
+                        
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(scrollState)
+                                .padding(16.dp)
+                        ) {
+                            SelectionContainer {
+                                Text(
+                                    text = compilerOutput,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -323,6 +360,156 @@ fun SimpleAIChat() {
                     }
                 }
             )
+        }
+        
+        // 错误提示弹窗
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                title = {
+                    Text("❌ LLM API 错误")
+                },
+                text = {
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        Text(
+                            "调用 LLM API 时发生错误：",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // 错误信息卡片
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            SelectionContainer {
+                                Text(
+                                    text = errorMessage,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    ),
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(12.dp)
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // 常见问题提示
+                        Text(
+                            "常见解决方法：",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "• 检查 API Key 是否正确\n" +
+                            "• 确认账户余额充足\n" +
+                            "• 检查网络连接\n" +
+                            "• 验证模型名称是否正确",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showErrorDialog = false }) {
+                        Text("关闭")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showErrorDialog = false
+                            // 打开模型配置
+                        }
+                    ) {
+                        Text("重新配置")
+                    }
+                }
+            )
+        }
+    }
+}
+
+/**
+ * 提取错误信息
+ */
+private fun extractErrorMessage(e: Throwable): String {
+    val message = e.message ?: "Unknown error"
+    
+    // 提取 API 错误信息
+    return when {
+        // DeepSeek API 错误
+        message.contains("DeepSeekLLMClient API") -> {
+            val parts = message.split("API: ")
+            if (parts.size > 1) {
+                "DeepSeek API 错误：${parts[1]}\n\n" +
+                "可能的原因：\n" +
+                "- API Key 无效或已过期\n" +
+                "- 账户余额不足\n" +
+                "- 请求格式不正确"
+            } else {
+                message
+            }
+        }
+        
+        // OpenAI API 错误
+        message.contains("OpenAI") -> {
+            "OpenAI API 错误：$message\n\n" +
+            "请检查 API Key 和网络连接"
+        }
+        
+        // Anthropic API 错误
+        message.contains("Anthropic") -> {
+            "Anthropic API 错误：$message\n\n" +
+            "请检查 API Key 和账户状态"
+        }
+        
+        // 网络错误
+        message.contains("Connection") || message.contains("timeout") -> {
+            "网络连接错误：$message\n\n" +
+            "请检查网络连接和防火墙设置"
+        }
+        
+        // 认证错误
+        message.contains("401") || message.contains("Unauthorized") -> {
+            "认证失败：API Key 无效\n\n" +
+            "原始错误：$message"
+        }
+        
+        // 400 错误
+        message.contains("400") || message.contains("Bad Request") -> {
+            "请求格式错误（400 Bad Request）\n\n" +
+            "原始错误：$message\n\n" +
+            "可能的原因：\n" +
+            "- 模型名称不正确\n" +
+            "- 请求参数不符合 API 规范\n" +
+            "- API Key 对应的模型权限不足"
+        }
+        
+        // 429 错误（限流）
+        message.contains("429") || message.contains("rate limit") -> {
+            "请求过于频繁（429 Too Many Requests）\n\n" +
+            "原始错误：$message\n\n" +
+            "请稍后再试"
+        }
+        
+        // 500 错误
+        message.contains("500") || message.contains("Internal Server Error") -> {
+            "服务器错误（500）\n\n" +
+            "原始错误：$message\n\n" +
+            "这是服务端的问题，请稍后重试"
+        }
+        
+        // 其他错误
+        else -> {
+            "发生错误：$message\n\n" +
+            "错误类型：${e::class.simpleName}"
         }
     }
 }
