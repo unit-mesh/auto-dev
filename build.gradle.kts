@@ -890,6 +890,7 @@ project(":exts:devins-lang") {
 
         implementation("com.jayway.jsonpath:json-path:2.9.0")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
         implementation(project(":mpp-core"))
         implementation(project(":core"))
     }
