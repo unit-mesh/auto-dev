@@ -1,10 +1,20 @@
 plugins {
     kotlin("multiplatform") version "2.2.0"
     kotlin("plugin.serialization") version "2.2.0"
+    id("app.cash.sqldelight") version "2.1.0"
 }
 
 repositories {
+    google()
     mavenCentral()
+}
+
+sqldelight {
+    databases {
+        create("DevInsDatabase") {
+            packageName.set("cc.unitmesh.devins.db")
+        }
+    }
 }
 
 kotlin {
@@ -55,6 +65,9 @@ kotlin {
                 // Koog needs these executors
                 implementation("ai.koog:prompt-executor-llms-all:0.5.1")
                 implementation("com.squareup.okhttp3:okhttp:4.12.0")
+                
+                // SQLDelight - JVM SQLite driver
+                implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
             }
         }
 

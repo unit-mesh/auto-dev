@@ -26,11 +26,11 @@ enum class LLMProviderType(val displayName: String) {
  */
 @Serializable
 data class ModelConfig(
-    val provider: LLMProviderType = LLMProviderType.DEEPSEEK,
-    val modelName: String = "deepseek-chat",
+    val provider: LLMProviderType = LLMProviderType.OPENAI,
+    val modelName: String = "",
     val apiKey: String = "",
-    val temperature: Double = 0.7,
-    val maxTokens: Int = 2000,
+    val temperature: Double = 0.0,
+    val maxTokens: Int = 128000,
     val topP: Double = 1.0,
     val baseUrl: String = "" // For custom endpoints like Ollama
 ) {

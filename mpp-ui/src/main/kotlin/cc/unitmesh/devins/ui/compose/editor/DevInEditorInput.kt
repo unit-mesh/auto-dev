@@ -161,7 +161,31 @@ fun DevInEditorInput(
         if (event.type != KeyEventType.KeyDown) return false
         
         return when {
-            // 补全弹窗打开时的按键处理
+            // Enter 键处理 - 未按 Shift 时发送，按 Shift 时换行
+            event.key == Key.Enter && !event.isShiftPressed -> {
+                if (showCompletion) {
+                    // 补全窗口打开时，Enter 选择补全项
+                    if (completionItems.isNotEmpty()) {
+                        applyCompletion(completionItems[selectedCompletionIndex])
+                    }
+                    true
+                } else {
+                    // 补全窗口关闭时，Enter 触发发送
+                    if (textFieldValue.text.isNotBlank()) {
+                        callbacks?.onSubmit(textFieldValue.text)
+                        textFieldValue = TextFieldValue("")
+                        showCompletion = false
+                    }
+                    true
+                }
+            }
+            
+            // Shift+Enter - 换行（让系统默认处理）
+            event.key == Key.Enter && event.isShiftPressed -> {
+                false // 返回 false 让系统插入换行符
+            }
+            
+            // 补全弹窗打开时的其他按键处理
             showCompletion -> {
                 when (event.key) {
                     Key.DirectionDown -> {
@@ -176,7 +200,7 @@ fun DevInEditorInput(
                         }
                         true
                     }
-                    Key.Enter, Key.Tab -> {
+                    Key.Tab -> {
                         if (completionItems.isNotEmpty()) {
                             applyCompletion(completionItems[selectedCompletionIndex])
                         }
@@ -189,28 +213,7 @@ fun DevInEditorInput(
                     else -> false
                 }
             }
-            // 常规快捷键处理
-            event.key == Key.Enter -> {
-                when {
-                    event.isShiftPressed || event.isCtrlPressed || event.isMetaPressed -> {
-                        // Shift+Enter, Ctrl+Enter, Cmd+Enter: 插入换行
-                        val current = textFieldValue
-                        val newText = current.text.substring(0, current.selection.start) + 
-                                "\n" + 
-                                current.text.substring(current.selection.end)
-                        textFieldValue = TextFieldValue(
-                            text = newText,
-                            selection = androidx.compose.ui.text.TextRange(current.selection.start + 1)
-                        )
-                        true
-                    }
-                    else -> {
-                        // 普通 Enter: 提交
-                        callbacks?.onSubmit(textFieldValue.text)
-                        false // 让默认行为处理
-                    }
-                }
-            }
+            // 其他键不处理
             else -> false
         }
     }

@@ -1,0 +1,61 @@
+-- ModelConfig 表用于持久化 LLM 配置
+CREATE TABLE IF NOT EXISTS ModelConfig (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    provider TEXT NOT NULL,
+    modelName TEXT NOT NULL,
+    apiKey TEXT NOT NULL,
+    baseUrl TEXT NOT NULL DEFAULT '',
+    temperature REAL NOT NULL DEFAULT 0.7,
+    maxTokens INTEGER NOT NULL DEFAULT 2048,
+    topP REAL NOT NULL DEFAULT 1.0,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    isDefault INTEGER NOT NULL DEFAULT 0
+);
+
+-- 查询所有配置
+selectAll:
+SELECT * FROM ModelConfig ORDER BY updatedAt DESC;
+
+-- 查询默认配置
+selectDefault:
+SELECT * FROM ModelConfig WHERE isDefault = 1 LIMIT 1;
+
+-- 根据 ID 查询
+selectById:
+SELECT * FROM ModelConfig WHERE id = ?;
+
+-- 插入配置
+insert:
+INSERT INTO ModelConfig(provider, modelName, apiKey, baseUrl, temperature, maxTokens, topP, createdAt, updatedAt, isDefault)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- 更新配置
+update:
+UPDATE ModelConfig 
+SET provider = ?, 
+    modelName = ?, 
+    apiKey = ?, 
+    baseUrl = ?,
+    temperature = ?,
+    maxTokens = ?,
+    topP = ?,
+    updatedAt = ?
+WHERE id = ?;
+
+-- 设置默认配置（先清除所有默认标记）
+clearDefault:
+UPDATE ModelConfig SET isDefault = 0;
+
+-- 设置指定配置为默认
+setDefault:
+UPDATE ModelConfig SET isDefault = 1, updatedAt = ? WHERE id = ?;
+
+-- 删除配置
+delete:
+DELETE FROM ModelConfig WHERE id = ?;
+
+-- 清空所有配置
+deleteAll:
+DELETE FROM ModelConfig;
+

@@ -31,41 +31,33 @@ class KoogLLMService(private val config: ModelConfig) {
      * Uses Koog's executeStreaming API for real-time streaming
      */
     fun streamPrompt(userPrompt: String): Flow<String> = flow {
-        try {
-            val executor = createExecutor()
-            val model = getModelForProvider()
-            
-            // Create prompt using Koog DSL
-            val prompt = prompt(
-                id = "chat",
-                params = LLMParams(temperature = config.temperature.toDouble())
-            ) {
-                // Add system prompt
-                system("You are a helpful AI assistant for code development and analysis.")
-                // Add user message
-                user(userPrompt)
-            }
-            
-            // Use real streaming API
-            executor.executeStreaming(prompt, model)
-                .collect { frame ->
-                    when (frame) {
-                        is StreamFrame.Append -> {
-                            // Emit text chunks as they arrive in real-time
-                            emit(frame.text)
-                        }
-                        is StreamFrame.End -> {
-                            // Stream ended successfully
-                        }
-                        is StreamFrame.ToolCall -> {
-                            // Tool calls (可以后续扩展)
-                        }
+        val executor = createExecutor()
+        val model = getModelForProvider()
+        
+        // Create prompt using Koog DSL
+        val prompt = prompt(
+            id = "chat",
+            params = LLMParams(temperature = config.temperature.toDouble())
+        ) {
+            user(userPrompt)
+        }
+        
+        // Use real streaming API - 让异常自然传播，不要在这里捕获
+        executor.executeStreaming(prompt, model)
+            .collect { frame ->
+                when (frame) {
+                    is StreamFrame.Append -> {
+                        // Emit text chunks as they arrive in real-time
+                        emit(frame.text)
+                    }
+                    is StreamFrame.End -> {
+                        // Stream ended successfully
+                    }
+                    is StreamFrame.ToolCall -> {
+                        // Tool calls (可以后续扩展)
                     }
                 }
-        } catch (e: Exception) {
-            emit("\n\n[Error: ${e.message}]")
-            throw e
-        }
+            }
     }
 
     /**
@@ -91,15 +83,27 @@ class KoogLLMService(private val config: ModelConfig) {
     }
 
     /**
-     * Get the appropriate LLModel based on provider and model name
+     * Get the appropriate LLModel from Koog's predefined models
+     * 直接从 ai.koog.prompt.executor.clients 包中获取模型定义
      */
     private fun getModelForProvider(): LLModel {
         return when (config.provider) {
             LLMProviderType.OPENAI -> {
-                // Use predefined models when available
+                // 从 OpenAIModels 获取预定义模型
                 when (config.modelName) {
                     "gpt-4o" -> OpenAIModels.Chat.GPT4o
+                    "gpt-4.1" -> OpenAIModels.Chat.GPT4_1
+                    "gpt-5" -> OpenAIModels.Chat.GPT5
+                    "gpt-5-mini" -> OpenAIModels.Chat.GPT5Mini
+                    "gpt-5-nano" -> OpenAIModels.Chat.GPT5Nano
+                    "gpt-5-codex" -> OpenAIModels.Chat.GPT5Codex
                     "gpt-4o-mini" -> OpenAIModels.CostOptimized.GPT4oMini
+                    "gpt-4.1-mini" -> OpenAIModels.CostOptimized.GPT4_1Mini
+                    "gpt-4.1-nano" -> OpenAIModels.CostOptimized.GPT4_1Nano
+                    "o4-mini" -> OpenAIModels.Reasoning.O4Mini
+                    "o3-mini" -> OpenAIModels.Reasoning.O3Mini
+                    "o3" -> OpenAIModels.Reasoning.O3
+                    "o1" -> OpenAIModels.Reasoning.O1
                     else -> LLModel(
                         provider = LLMProvider.OpenAI,
                         id = config.modelName,
@@ -109,6 +113,7 @@ class KoogLLMService(private val config: ModelConfig) {
                 }
             }
             LLMProviderType.DEEPSEEK -> {
+                // 从 DeepSeekModels 获取预定义模型
                 when (config.modelName) {
                     "deepseek-chat" -> DeepSeekModels.DeepSeekChat
                     "deepseek-reasoner" -> DeepSeekModels.DeepSeekReasoner
@@ -120,10 +125,55 @@ class KoogLLMService(private val config: ModelConfig) {
                     )
                 }
             }
-            // For other providers, create generic models
-            else -> {
+            LLMProviderType.ANTHROPIC -> {
+                // 从 AnthropicModels 获取预定义模型
+                when (config.modelName) {
+                    "claude-3-opus" -> AnthropicModels.Opus_3
+                    "claude-3-haiku" -> AnthropicModels.Haiku_3
+                    "claude-3-5-haiku" -> AnthropicModels.Haiku_3_5
+                    "claude-3-5-sonnet" -> AnthropicModels.Sonnet_3_5
+                    "claude-3-7-sonnet" -> AnthropicModels.Sonnet_3_7
+                    "claude-4-sonnet" -> AnthropicModels.Sonnet_4
+                    "claude-4-opus" -> AnthropicModels.Opus_4
+                    "claude-4-1-opus" -> AnthropicModels.Opus_4_1
+                    "claude-4-5-sonnet" -> AnthropicModels.Sonnet_4_5
+                    else -> LLModel(
+                        provider = LLMProvider.Anthropic,
+                        id = config.modelName,
+                        capabilities = listOf(LLMCapability.Completion, LLMCapability.Tools),
+                        contextLength = 200000
+                    )
+                }
+            }
+            LLMProviderType.GOOGLE -> {
+                // 从 GoogleModels 获取预定义模型（需要查看 GoogleModels.kt 具体定义）
                 LLModel(
-                    provider = getProviderForType(config.provider),
+                    provider = LLMProvider.Google,
+                    id = config.modelName,
+                    capabilities = listOf(LLMCapability.Completion, LLMCapability.Tools),
+                    contextLength = 128000
+                )
+            }
+            LLMProviderType.OPENROUTER -> {
+                // 从 OpenRouterModels 获取预定义模型
+                LLModel(
+                    provider = LLMProvider.OpenRouter,
+                    id = config.modelName,
+                    capabilities = listOf(LLMCapability.Completion, LLMCapability.Tools),
+                    contextLength = 128000
+                )
+            }
+            LLMProviderType.OLLAMA -> {
+                LLModel(
+                    provider = LLMProvider.Ollama,
+                    id = config.modelName,
+                    capabilities = listOf(LLMCapability.Completion, LLMCapability.Tools),
+                    contextLength = 128000
+                )
+            }
+            LLMProviderType.BEDROCK -> {
+                LLModel(
+                    provider = LLMProvider.Bedrock,
                     id = config.modelName,
                     capabilities = listOf(LLMCapability.Completion, LLMCapability.Tools),
                     contextLength = 128000
