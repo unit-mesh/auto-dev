@@ -27,7 +27,7 @@ class KoogLLMService(private val config: ModelConfig) {
 
         val prompt = prompt(
             id = "chat",
-            params = LLMParams(temperature = config.temperature)
+            params = LLMParams(temperature = config.temperature, toolChoice = LLMParams.ToolChoice.None)
         ) {
             user(userPrompt)
         }
@@ -49,22 +49,15 @@ class KoogLLMService(private val config: ModelConfig) {
             }
     }
 
-    /**
-     * Send a prompt and get the complete response (non-streaming)
-     */
     suspend fun sendPrompt(prompt: String): String {
         return try {
-            // Create executor based on provider
             val executor = createExecutor()
             
-            // Create agent with Koog's SimpleAPI
             val agent = AIAgent(
                 promptExecutor = executor,
-                llmModel = getModelForProvider(),
-                systemPrompt = "You are a helpful AI assistant for code development and analysis."
+                llmModel = getModelForProvider()
             )
             
-            // Execute and return result
             agent.run(prompt)
         } catch (e: Exception) {
             "[Error: ${e.message}]"
@@ -112,14 +105,11 @@ class KoogLLMService(private val config: ModelConfig) {
         }
     }
 
-    /**
-     * Create a default LLModel when no predefined model is found
-     */
     private fun createDefaultModel(provider: LLMProvider, contextLength: Long): LLModel {
         return LLModel(
             provider = provider,
             id = config.modelName,
-            capabilities = listOf(LLMCapability.Completion, LLMCapability.Tools),
+            capabilities = listOf(),
             contextLength = contextLength,
         )
     }
