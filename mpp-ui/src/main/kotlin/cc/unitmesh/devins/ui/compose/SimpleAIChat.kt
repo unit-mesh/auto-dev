@@ -18,8 +18,11 @@ import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionManager
 import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
+import cc.unitmesh.devins.llm.KoogLLMService
+import cc.unitmesh.devins.llm.ModelConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -30,12 +33,19 @@ import javax.swing.JFileChooser
  * 顶部输入框 + 底部工具栏
  * 
  * 支持 SpecKit 命令，可以打开目录选择项目
+ * 支持 LLM 交互（通过 Koog 框架）
  */
 @Composable
 fun SimpleAIChat() {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
+    var llmOutput by remember { mutableStateOf("") }
     var isCompiling by remember { mutableStateOf(false) }
+    var isLLMProcessing by remember { mutableStateOf(false) }
+    
+    // LLM 配置状态
+    var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
+    var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     
     // 项目路径状态（默认路径）
     var projectPath by remember { mutableStateOf<String?>("/Users/phodal/IdeaProjects/untitled") }
@@ -53,10 +63,33 @@ fun SimpleAIChat() {
             println("\n📝 解析结果:")
             println(analyzeDevInInput(text))
             
-            // 编译并执行
+            // 编译并执行 DevIns
             compileDevInsWithSpecKit(text, fileSystem, scope) { result ->
                 compilerOutput = result
                 isCompiling = false
+            }
+            
+            // 如果配置了 LLM，也发送到 LLM
+            if (llmService != null && currentModelConfig?.isValid() == true) {
+                isLLMProcessing = true
+                llmOutput = ""
+                
+                scope.launch {
+                    try {
+                        llmService?.streamPrompt(text)
+                            ?.catch { e ->
+                                llmOutput += "\n\n[Error: ${e.message}]"
+                                isLLMProcessing = false
+                            }
+                            ?.collect { chunk ->
+                                llmOutput += chunk
+                            }
+                        isLLMProcessing = false
+                    } catch (e: Exception) {
+                        llmOutput = "[Error: ${e.message}]"
+                        isLLMProcessing = false
+                    }
+                }
             }
         }
     }
@@ -123,9 +156,62 @@ fun SimpleAIChat() {
             placeholder = "Plan, @ for context, / for commands (try /speckit.*)",
             callbacks = callbacks,
             completionManager = completionManager,
+            onModelConfigChange = { config ->
+                currentModelConfig = config
+                if (config.isValid()) {
+                    try {
+                        llmService = KoogLLMService.create(config)
+                        println("✅ LLM 服务已配置: ${config.provider.displayName} / ${config.modelName}")
+                    } catch (e: Exception) {
+                        println("❌ 配置 LLM 服务失败: ${e.message}")
+                        llmService = null
+                    }
+                } else {
+                    llmService = null
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth(0.9f) // 90% 宽度，更居中
         )
+        
+        // 显示 LLM 输出（优先显示）
+        if (llmOutput.isNotEmpty() || isLLMProcessing) {
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Card(
+                modifier = Modifier.fillMaxWidth(0.9f),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "🤖 AI Response:",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        if (isLLMProcessing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SelectionContainer {
+                        Text(
+                            text = if (llmOutput.isEmpty()) "Thinking..." else llmOutput,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+        }
         
         // 显示编译输出
         if (compilerOutput.isNotEmpty()) {
@@ -139,7 +225,7 @@ fun SimpleAIChat() {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "输出:",
+                        text = "📦 DevIns 输出:",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

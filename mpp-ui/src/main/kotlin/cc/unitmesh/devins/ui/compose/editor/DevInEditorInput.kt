@@ -42,6 +42,7 @@ fun DevInEditorInput(
     placeholder: String = "Plan, @ for context, / for commands",
     callbacks: EditorCallbacks? = null,
     completionManager: CompletionManager? = null,
+    onModelConfigChange: (cc.unitmesh.devins.llm.ModelConfig) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
@@ -303,7 +304,8 @@ fun DevInEditorInput(
                             selection = androidx.compose.ui.text.TextRange(current.text.length + 1)
                         )
                     },
-                    sendEnabled = textFieldValue.text.isNotBlank()
+                    sendEnabled = textFieldValue.text.isNotBlank(),
+                    onModelConfigChange = onModelConfigChange
                 )
             }
         }

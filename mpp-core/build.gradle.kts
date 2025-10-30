@@ -38,8 +38,6 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
                 // kotlinx-datetime 已移除，使用 Kotlin 标准库的 kotlin.time API
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
-
-                implementation("ai.koog:koog-agents:0.5.0")
             }
         }
 
@@ -52,7 +50,11 @@ kotlin {
 
         jvmMain {
             dependencies {
-                // JVM specific dependencies if needed
+                // Koog AI Framework - JVM only for now
+                implementation("ai.koog:koog-agents:0.5.1")
+                // Koog needs these executors
+                implementation("ai.koog:prompt-executor-llms-all:0.5.1")
+                implementation("com.squareup.okhttp3:okhttp:4.12.0")
             }
         }
 

@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.llm.ModelConfig
 
 /**
  * 底部工具栏
@@ -20,6 +21,7 @@ fun BottomToolbar(
     onAtClick: () -> Unit,
     onSlashClick: () -> Unit,
     sendEnabled: Boolean,
+    onModelConfigChange: (ModelConfig) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -35,7 +37,7 @@ fun BottomToolbar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AgentSelector()
-            ModelSelector()
+            ModelSelector(onConfigChange = onModelConfigChange)
         }
         
         // 右侧：操作按钮
@@ -146,50 +148,3 @@ private fun AgentSelector() {
         }
     }
 }
-
-/**
- * 模型选择器
- */
-@Composable
-private fun ModelSelector() {
-    var expanded by remember { mutableStateOf(false) }
-    var selectedModel by remember { mutableStateOf("claude-4.5-sonnet") }
-    
-    val models = listOf(
-        "claude-4.5-sonnet",
-        "gpt-4",
-        "gpt-3.5-turbo",
-        "gemini-pro"
-    )
-    
-    TextButton(
-        onClick = { expanded = true },
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = selectedModel,
-            style = MaterialTheme.typography.bodySmall
-        )
-        Icon(
-            imageVector = Icons.Default.ArrowDropDown,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp)
-        )
-    }
-    
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        models.forEach { model ->
-            DropdownMenuItem(
-                text = { Text(model) },
-                onClick = {
-                    selectedModel = model
-                    expanded = false
-                }
-            )
-        }
-    }
-}
-
