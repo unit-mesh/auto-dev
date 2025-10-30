@@ -112,52 +112,67 @@ private fun CompletionItemRow(
             .fillMaxWidth()
             .background(
                 if (isSelected) {
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                 } else {
                     Color.Transparent
                 }
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 图标（emoji）
         item.icon?.let { icon ->
             Text(
                 text = icon,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(end = 6.dp)
+                fontSize = 16.sp,
+                modifier = Modifier.padding(end = 8.dp)
             )
         }
-        
-        // 主要内容 - 更紧凑的布局
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+
+        // 主要内容
+        Column(modifier = Modifier.weight(1f)) {
             // 显示文本
             Text(
                 text = item.displayText,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 13.sp,
+                    fontFamily = FontFamily.Monospace
+                ),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontFamily = FontFamily.Monospace,
                 maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false)
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
-            
-            // 描述文本 - 放在同一行右侧
+
+            // 描述文本
             item.description?.let { description ->
-                Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    modifier = Modifier.widthIn(max = 180.dp)
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+        }
+
+        // 右侧信息（如文件扩展名）
+        if (item.description != "Directory") {
+            val fileExtension = item.text.substringAfterLast('.', "")
+            if (fileExtension.isNotEmpty() && fileExtension.length <= 4) {
+                Text(
+                    text = fileExtension.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    fontSize = 9.sp,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
                 )
             }
         }

@@ -101,7 +101,7 @@ class DefaultWorkspace private constructor(
         try {
             // 刷新补全管理器
             completionManager.refreshSpecKitCommands()
-            
+
             _stateFlow.value = _stateFlow.value.copy(
                 isLoading = false,
                 error = null,

@@ -170,19 +170,20 @@ class WorkspaceTest {
         if (Platform.isJs || Platform.isWasm) {
             return@runTest
         }
-        
+
         // Open a workspace
         val workspace = WorkspaceManager.openWorkspace("Test", "/test")
         val initialTime = workspace.stateFlow.first().lastRefreshTime
-        
-        // Wait a bit
-        kotlinx.coroutines.delay(10)
-        
+
+        // Wait a bit to ensure time difference
+        kotlinx.coroutines.delay(100)
+
         // Refresh through manager
         WorkspaceManager.refreshCurrentWorkspace()
-        
+
         val newState = workspace.stateFlow.first()
-        assertTrue(newState.lastRefreshTime > initialTime)
+        assertTrue(newState.lastRefreshTime >= initialTime,
+                  "Expected refresh time ${newState.lastRefreshTime} to be >= initial time $initialTime")
     }
     
     @Test

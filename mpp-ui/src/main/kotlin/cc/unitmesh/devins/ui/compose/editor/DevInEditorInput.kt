@@ -50,7 +50,7 @@ fun DevInEditorInput(
     var completionItems by remember { mutableStateOf<List<CompletionItem>>(emptyList()) }
     var selectedCompletionIndex by remember { mutableStateOf(0) }
     var currentTriggerType by remember { mutableStateOf(CompletionTriggerType.NONE) }
-    
+
     val highlighter = remember { DevInSyntaxHighlighter() }
     val manager = completionManager ?: remember { CompletionManager() }
     val focusRequester = remember { FocusRequester() }
@@ -81,7 +81,10 @@ fun DevInEditorInput(
                 
                 if (context != null) {
                     currentTriggerType = triggerType
-                    completionItems = manager.getCompletions(context)
+
+                    // 使用增强的过滤补全功能
+                    completionItems = manager.getFilteredCompletions(context)
+
                     selectedCompletionIndex = 0
                     showCompletion = completionItems.isNotEmpty()
                     println("🔍 补全触发: char='$addedChar', type=$triggerType, items=${completionItems.size}")
@@ -94,7 +97,8 @@ fun DevInEditorInput(
                     currentTriggerType
                 )
                 if (context != null) {
-                    completionItems = manager.getCompletions(context)
+                    // 使用增强的过滤补全功能，支持边输入边补全
+                    completionItems = manager.getFilteredCompletions(context)
                     selectedCompletionIndex = 0
                     if (completionItems.isEmpty()) {
                         showCompletion = false
@@ -117,7 +121,9 @@ fun DevInEditorInput(
             }
         }
     }
-    
+
+
+
     // 应用补全
     fun applyCompletion(item: CompletionItem) {
         val insertHandler = item.insertHandler
@@ -314,7 +320,7 @@ fun DevInEditorInput(
             CompletionPopup(
                 items = completionItems,
                 selectedIndex = selectedCompletionIndex,
-                offset = IntOffset(12, 120), // 简化的偏移计算
+                offset = IntOffset(12, if (isCompactMode) 60 else 120),
                 onItemSelected = { item ->
                     applyCompletion(item)
                 },
