@@ -26,6 +26,7 @@ import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
 import cc.unitmesh.devins.llm.KoogLLMService
 import cc.unitmesh.devins.llm.ModelConfig
+import cc.unitmesh.devins.db.ModelConfigRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
@@ -65,6 +66,31 @@ fun SimpleAIChat() {
     
     // CompletionManager 状态
     var completionManager by remember { mutableStateOf(CompletionManager(fileSystem)) }
+    
+    // 初始化数据库和仓库
+    val repository = remember {
+        ModelConfigRepository.getInstance()
+    }
+    
+    // 启动时加载已保存的配置
+    LaunchedEffect(Unit) {
+        try {
+            val savedConfigs = withContext(Dispatchers.IO) {
+                repository.getAllConfigs()
+            }
+            if (savedConfigs.isNotEmpty()) {
+                // 使用第一个保存的配置
+                val savedConfig = savedConfigs.first()
+                currentModelConfig = savedConfig
+                if (savedConfig.isValid()) {
+                    llmService = KoogLLMService.create(savedConfig)
+                    println("✅ 从数据库加载配置: ${savedConfig.provider.displayName} / ${savedConfig.modelName}")
+                }
+            }
+        } catch (e: Exception) {
+            println("⚠️ 加载配置失败: ${e.message}")
+        }
+    }
     
     val callbacks = object : EditorCallbacks {
         override fun onSubmit(text: String) {
@@ -185,6 +211,19 @@ fun SimpleAIChat() {
                     try {
                         llmService = KoogLLMService.create(config)
                         println("✅ LLM 服务已配置: ${config.provider.displayName} / ${config.modelName}")
+                        
+                        // 保存配置到数据库
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                // 先清理旧配置
+                                repository.deleteAllConfigs()
+                                // 保存新配置
+                                repository.saveConfig(config)
+                                println("✅ 配置已保存到数据库")
+                            } catch (e: Exception) {
+                                println("⚠️ 保存配置失败: ${e.message}")
+                            }
+                        }
                     } catch (e: Exception) {
                         println("❌ 配置 LLM 服务失败: ${e.message}")
                         llmService = null
@@ -441,75 +480,62 @@ fun SimpleAIChat() {
  */
 private fun extractErrorMessage(e: Throwable): String {
     val message = e.message ?: "Unknown error"
+    val stackTrace = e.stackTraceToString()
     
-    // 提取 API 错误信息
+    // 提取 API 错误信息 - 直接返回完整的错误信息
     return when {
-        // DeepSeek API 错误
+        // DeepSeek API 错误 - 直接显示 API 返回内容
         message.contains("DeepSeekLLMClient API") -> {
             val parts = message.split("API: ")
             if (parts.size > 1) {
-                "DeepSeek API 错误：${parts[1]}\n\n" +
-                "可能的原因：\n" +
-                "- API Key 无效或已过期\n" +
-                "- 账户余额不足\n" +
-                "- 请求格式不正确"
+                "=== DeepSeek API 错误 ===\n\n" +
+                "API 返回：\n${parts[1]}\n\n" +
+                "完整错误信息：\n$message"
             } else {
-                message
+                "=== DeepSeek API 错误 ===\n\n$message"
             }
         }
         
-        // OpenAI API 错误
+        // OpenAI API 错误 - 直接显示完整信息
         message.contains("OpenAI") -> {
-            "OpenAI API 错误：$message\n\n" +
-            "请检查 API Key 和网络连接"
+            "=== OpenAI API 错误 ===\n\n$message"
         }
         
-        // Anthropic API 错误
+        // Anthropic API 错误 - 直接显示完整信息
         message.contains("Anthropic") -> {
-            "Anthropic API 错误：$message\n\n" +
-            "请检查 API Key 和账户状态"
+            "=== Anthropic API 错误 ===\n\n$message"
         }
         
-        // 网络错误
+        // 网络错误 - 直接显示完整信息
         message.contains("Connection") || message.contains("timeout") -> {
-            "网络连接错误：$message\n\n" +
-            "请检查网络连接和防火墙设置"
+            "=== 网络连接错误 ===\n\n$message"
         }
         
-        // 认证错误
+        // 认证错误 (401) - 直接显示完整信息
         message.contains("401") || message.contains("Unauthorized") -> {
-            "认证失败：API Key 无效\n\n" +
-            "原始错误：$message"
+            "=== 认证失败 (401 Unauthorized) ===\n\n$message"
         }
         
-        // 400 错误
+        // 400 错误 - 直接显示 API 返回的完整信息
         message.contains("400") || message.contains("Bad Request") -> {
-            "请求格式错误（400 Bad Request）\n\n" +
-            "原始错误：$message\n\n" +
-            "可能的原因：\n" +
-            "- 模型名称不正确\n" +
-            "- 请求参数不符合 API 规范\n" +
-            "- API Key 对应的模型权限不足"
+            "=== 请求错误 (400 Bad Request) ===\n\n$message"
         }
         
-        // 429 错误（限流）
+        // 429 错误（限流）- 直接显示完整信息
         message.contains("429") || message.contains("rate limit") -> {
-            "请求过于频繁（429 Too Many Requests）\n\n" +
-            "原始错误：$message\n\n" +
-            "请稍后再试"
+            "=== 请求限流 (429 Too Many Requests) ===\n\n$message"
         }
         
-        // 500 错误
+        // 500 错误 - 直接显示完整信息
         message.contains("500") || message.contains("Internal Server Error") -> {
-            "服务器错误（500）\n\n" +
-            "原始错误：$message\n\n" +
-            "这是服务端的问题，请稍后重试"
+            "=== 服务器错误 (500) ===\n\n$message"
         }
         
-        // 其他错误
+        // 其他错误 - 显示完整的错误信息和堆栈
         else -> {
-            "发生错误：$message\n\n" +
-            "错误类型：${e::class.simpleName}"
+            "=== 错误详情 ===\n\n" +
+            "错误类型：${e::class.simpleName}\n\n" +
+            "错误消息：\n$message"
         }
     }
 }
