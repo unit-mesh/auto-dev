@@ -48,6 +48,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
                 // kotlinx-datetime 已移除，使用 Kotlin 标准库的 kotlin.time API
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
+                // kotlinx-io for cross-platform file system operations
+                implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.8.0")
             }
         }
 
