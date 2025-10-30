@@ -1,13 +1,18 @@
 package cc.unitmesh.devti.language.ast.shireql
 
-import kotlinx.datetime.*
-import kotlinx.datetime.TimeZone
+import java.time.ZoneId
 import java.util.*
 import java.time.format.DateTimeFormatter
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 class ShireDateSchema : ShireQLSchema {
+    @OptIn(ExperimentalTime::class)
     private val date: Instant = Clock.System.now()
 
+    @OptIn(ExperimentalTime::class)
     fun now(): Long {
         return date.toEpochMilliseconds()
     }
@@ -35,13 +40,13 @@ class ShireDateSchema : ShireQLSchema {
      * format("yyyy-MM-dd HH:mm:ss")
      * ```
      */
+    @OptIn(ExperimentalTime::class)
     fun format(outputFormat: String) : String {
-        val localDateTime = date.toLocalDateTime(TimeZone.currentSystemDefault())
+        val localDateTime: java.time.Instant = date.toJavaInstant()
         val formatter = DateTimeFormatter.ofPattern(outputFormat)
-        return localDateTime.toJavaLocalDateTime().format(formatter)
+        return localDateTime.atZone(ZoneId.systemDefault()).format(formatter)
     }
 
-    override fun toString(): String {
-        return "ShireDate(date=$date)"
-    }
+    @OptIn(ExperimentalTime::class)
+    override fun toString(): String = "ShireDate(date=$date)"
 }
