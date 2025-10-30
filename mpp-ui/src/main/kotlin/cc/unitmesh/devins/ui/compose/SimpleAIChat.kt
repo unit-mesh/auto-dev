@@ -20,6 +20,7 @@ import cc.unitmesh.devins.ui.compose.chat.*
 import cc.unitmesh.devins.llm.KoogLLMService
 import cc.unitmesh.devins.llm.ModelConfig
 import cc.unitmesh.devins.llm.ChatHistoryManager
+import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.db.ModelConfigRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,12 +39,20 @@ import javax.swing.JFileChooser
 fun AutoDevInput() {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
-    var llmOutput by remember { mutableStateOf("") }
     var isCompiling by remember { mutableStateOf(false) }
+    
+    // 消息状态管理 - 使用本地状态
+    var messages by remember { mutableStateOf<List<Message>>(emptyList()) }
+    var currentStreamingOutput by remember { mutableStateOf("") }
     var isLLMProcessing by remember { mutableStateOf(false) }
     
-    // 聊天历史管理
+    // 聊天历史管理器（用于持久化）
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
+    
+    // 初始化时加载历史消息
+    LaunchedEffect(Unit) {
+        messages = chatHistoryManager.getMessages()
+    }
     
     // LLM 配置状态
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
@@ -101,11 +110,23 @@ fun AutoDevInput() {
         chatHistoryManager = chatHistoryManager,
         scope = scope,
         onCompilerOutput = { compilerOutput = it },
-        onLLMOutput = { llmOutput = it },
+        onUserMessage = { userMsg ->
+            // 添加用户消息到本地状态
+            messages = messages + userMsg
+        },
+        onStreamingOutput = { output ->
+            // 更新流式输出
+            currentStreamingOutput = output
+        },
+        onAssistantMessage = { assistantMsg ->
+            // AI 响应完成，添加到本地状态
+            messages = messages + assistantMsg
+            currentStreamingOutput = ""  // 清空流式输出
+        },
         onProcessingChange = { isLLMProcessing = it },
         onError = { 
             errorMessage = it
-                                showErrorDialog = true
+            showErrorDialog = true
         },
         onConfigWarning = { showConfigWarning = true }
     )
@@ -141,25 +162,27 @@ fun AutoDevInput() {
         ) {
             // 顶部工具栏
             ChatTopBar(
-                hasHistory = chatHistoryManager.getMessages().isNotEmpty(),
+                hasHistory = messages.isNotEmpty(),
                 hasDebugInfo = compilerOutput.isNotEmpty(),
                 onOpenDirectory = { openDirectoryChooser() },
                 onClearHistory = { 
                     chatHistoryManager.clearCurrentSession()
-                    llmOutput = ""
+                    messages = emptyList()
+                    currentStreamingOutput = ""
                     println("🗑️ [SimpleAIChat] 聊天历史已清空")
                 },
                 onShowDebug = { showDebugDialog = true }
             )
             
-            // 判断是否应该显示紧凑布局（AI 正在处理或有输出）
-            val isCompactMode = isLLMProcessing || llmOutput.isNotEmpty()
+            // 判断是否应该显示紧凑布局（有消息历史或正在处理）
+            val isCompactMode = messages.isNotEmpty() || isLLMProcessing
             
             if (isCompactMode) {
-                // 紧凑模式：先显示 AI 输出，输入框在底部
-                ChatOutputSection(
-                    llmOutput = llmOutput,
+                // 紧凑模式：显示消息列表，输入框在底部
+                MessageList(
+                    messages = messages,
                     isLLMProcessing = isLLMProcessing,
+                    currentOutput = currentStreamingOutput,
                     projectPath = projectPath,
                     fileSystem = fileSystem,
                     modifier = Modifier

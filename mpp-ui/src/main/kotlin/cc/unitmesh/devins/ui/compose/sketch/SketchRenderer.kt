@@ -43,9 +43,6 @@ object SketchRenderer {
         
         Column(
             modifier = modifier
-                .heightIn(max = 600.dp)  // 最大高度限制
-                .verticalScroll(scrollState)
-                .padding(16.dp)
         ) {
             // 使用 CodeFence 解析内容
             val codeFences = CodeFence.parseAll(content)
