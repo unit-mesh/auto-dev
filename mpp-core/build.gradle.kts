@@ -32,65 +32,58 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
+
+                implementation("ai.koog:koog-agents:0.5.0")
             }
         }
 
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
             }
         }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 // JVM specific dependencies if needed
             }
         }
 
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
                 implementation(kotlin("test-junit"))
             }
         }
 
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 // JS specific dependencies if needed
             }
         }
 
-        val jsTest by getting {
+        jsTest {
             dependencies {
                 implementation(kotlin("test-js"))
             }
         }
 
-        val wasmJsMain by getting {
-            dependencies {
-                // WASM specific dependencies if needed
-            }
-        }
-
-        val wasmJsTest by getting {
-            dependencies {
-                implementation(kotlin("test-wasm-js"))
-            }
-        }
+//        val wasmJsMain by getting {
+//            dependencies {
+//                // WASM specific dependencies if needed
+//            }
+//        }
+//
+//        val wasmJsTest by getting {
+//            dependencies {
+//                implementation(kotlin("test-wasm-js"))
+//            }
+//        }
     }
-}
-
-// 添加运行演示的任务
-tasks.register<JavaExec>("runDemo") {
-    group = "application"
-    description = "Run the DevIns Compiler Demo"
-    classpath = kotlin.targets["jvm"].compilations["main"].output.allOutputs +
-            kotlin.targets["jvm"].compilations["main"].runtimeDependencyFiles
-    mainClass.set("cc.unitmesh.devins.compiler.demo.SimpleDemo")
 }
