@@ -9,6 +9,7 @@ import cc.unitmesh.devins.filesystem.ProjectFileSystem
 
 /**
  * 补全管理器 - 根据上下文选择合适的 Provider
+ * 现在通过 Workspace 系统进行管理，但保持向后兼容性
  */
 class CompletionManager(fileSystem: ProjectFileSystem? = null) {
     private val specKitProvider = SpecKitCommandCompletionProvider(fileSystem)
@@ -37,5 +38,19 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
      */
     fun refreshSpecKitCommands() {
         specKitProvider.refresh()
+    }
+
+    /**
+     * 获取所有支持的触发类型
+     */
+    fun getSupportedTriggerTypes(): Set<CompletionTriggerType> {
+        return providers.keys
+    }
+
+    /**
+     * 检查是否支持指定的触发类型
+     */
+    fun supports(triggerType: CompletionTriggerType): Boolean {
+        return triggerType in providers.keys
     }
 }

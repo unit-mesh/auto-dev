@@ -11,11 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.filesystem.DefaultFileSystem
-import cc.unitmesh.devins.filesystem.EmptyFileSystem
-import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
-import cc.unitmesh.devins.completion.CompletionManager
+import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.devins.ui.compose.chat.*
 import cc.unitmesh.devins.llm.KoogLLMService
 import cc.unitmesh.devins.llm.ModelConfig
@@ -39,46 +36,50 @@ import javax.swing.JFileChooser
 fun AutoDevInput() {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
-    var isCompiling by remember { mutableStateOf(false) }
-    
-    // 消息状态管理 - 使用本地状态
+
     var messages by remember { mutableStateOf<List<Message>>(emptyList()) }
     var currentStreamingOutput by remember { mutableStateOf("") }
     var isLLMProcessing by remember { mutableStateOf(false) }
     
-    // 聊天历史管理器（用于持久化）
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
     
-    // 初始化时加载历史消息
     LaunchedEffect(Unit) {
         messages = chatHistoryManager.getMessages()
     }
     
-    // LLM 配置状态
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     var allModelConfigs by remember { mutableStateOf<List<ModelConfig>>(emptyList()) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var showConfigWarning by remember { mutableStateOf(false) }
-    var showDebugPanel by remember { mutableStateOf(false) }
     var showDebugDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     
-    // 项目路径状态（默认路径）
-    var projectPath by remember { mutableStateOf<String?>("/Users/phodal/IdeaProjects/untitled") }
-    var fileSystem by remember { mutableStateOf<ProjectFileSystem>(
-        projectPath?.let { DefaultFileSystem(it) } ?: EmptyFileSystem()
-    ) }
+    var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
+
+    val workspaceState by WorkspaceManager.workspaceFlow.collectAsState()
+
+    LaunchedEffect(workspaceState) {
+        workspaceState?.let { workspace ->
+            currentWorkspace = workspace
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (!WorkspaceManager.hasActiveWorkspace()) {
+            val defaultPath = "/Users/phodal/IdeaProjects/untitled"
+            if (File(defaultPath).exists()) {
+                WorkspaceManager.openWorkspace("Default Project", defaultPath)
+            } else {
+                WorkspaceManager.openEmptyWorkspace("Empty Workspace")
+            }
+        }
+    }
     
-    // CompletionManager 状态
-    var completionManager by remember { mutableStateOf(CompletionManager(fileSystem)) }
-    
-    // 初始化数据库和仓库
     val repository = remember {
         ModelConfigRepository.getInstance()
     }
     
-    // 启动时加载已保存的配置
     LaunchedEffect(Unit) {
         try {
             val savedConfigs = withContext(Dispatchers.IO) {
@@ -105,7 +106,7 @@ fun AutoDevInput() {
     }
     
     val callbacks = createChatCallbacks(
-        fileSystem = fileSystem,
+        fileSystem = currentWorkspace.fileSystem,
         llmService = llmService,
         chatHistoryManager = chatHistoryManager,
         scope = scope,
@@ -136,18 +137,23 @@ fun AutoDevInput() {
         val fileChooser = JFileChooser().apply {
             fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
             dialogTitle = "Select Project Directory"
-            currentDirectory = projectPath?.let { File(it) } ?: File(System.getProperty("user.home"))
+            currentDirectory = currentWorkspace.rootPath?.let { File(it) } ?: File(System.getProperty("user.home"))
         }
-        
+
         if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             val selectedPath = fileChooser.selectedFile.absolutePath
-            projectPath = selectedPath
-            fileSystem = DefaultFileSystem(selectedPath)
-            
-            // 刷新 CompletionManager
-            completionManager = CompletionManager(fileSystem)
-            
-            println("📁 已切换项目路径: $selectedPath")
+            val projectName = File(selectedPath).name
+
+            // 使用 WorkspaceManager 打开新工作空间
+            scope.launch {
+                try {
+                    WorkspaceManager.openWorkspace(projectName, selectedPath)
+                    println("📁 已切换项目路径: $selectedPath")
+                } catch (e: Exception) {
+                    errorMessage = "切换工作空间失败: ${e.message}"
+                    showErrorDialog = true
+                }
+            }
         }
     }
     
@@ -183,8 +189,8 @@ fun AutoDevInput() {
                     messages = messages,
                     isLLMProcessing = isLLMProcessing,
                     currentOutput = currentStreamingOutput,
-                    projectPath = projectPath,
-                    fileSystem = fileSystem,
+                    projectPath = currentWorkspace.rootPath,
+                    fileSystem = currentWorkspace.fileSystem,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -200,7 +206,7 @@ fun AutoDevInput() {
                         initialText = "",
                         placeholder = "Continue conversation...",
                         callbacks = callbacks,
-                        completionManager = completionManager,
+                        completionManager = currentWorkspace.completionManager,
                         initialModelConfig = currentModelConfig,
                         availableConfigs = allModelConfigs,
                         isCompactMode = true,
@@ -222,7 +228,6 @@ fun AutoDevInput() {
                                             
                                             if (existingConfig == null) {
                                                 repository.saveConfig(config, setAsDefault = true)
-                                                println("✅ 新配置已保存到数据库")
                                                 allModelConfigs = repository.getAllConfigs()
                                             } else {
                                                 println("✅ 切换到已有配置")
@@ -258,7 +263,7 @@ fun AutoDevInput() {
             initialText = "",
             placeholder = "Plan, @ for context, / for commands (try /speckit.*)",
             callbacks = callbacks,
-            completionManager = completionManager,
+            completionManager = currentWorkspace.completionManager,
             initialModelConfig = currentModelConfig,
             availableConfigs = allModelConfigs,
             onModelConfigChange = { config ->
@@ -266,29 +271,19 @@ fun AutoDevInput() {
                 if (config.isValid()) {
                     try {
                         llmService = KoogLLMService.create(config)
-                        println("✅ LLM 服务已配置: ${config.provider.displayName} / ${config.modelName}")
-                        
-                        // 保存配置到数据库
                         scope.launch(Dispatchers.IO) {
                             try {
                                 // 检查配置是否已存在
                                 val existingConfigs = repository.getAllConfigs()
-                                val existingConfig = existingConfigs.find { 
-                                    it.provider == config.provider && 
+                                val existingConfig = existingConfigs.find {
+                                    it.provider == config.provider &&
                                     it.modelName == config.modelName &&
-                                    it.apiKey == config.apiKey 
+                                    it.apiKey == config.apiKey
                                 }
-                                
+
                                 if (existingConfig == null) {
-                                    // 新配置，保存并设为默认
                                     repository.saveConfig(config, setAsDefault = true)
-                                    println("✅ 新配置已保存到数据库")
-                                    
-                                    // 重新加载所有配置
                                     allModelConfigs = repository.getAllConfigs()
-                                } else {
-                                    // 已存在的配置，设为默认
-                                    println("✅ 切换到已有配置")
                                 }
                             } catch (e: Exception) {
                                 println("⚠️ 保存配置失败: ${e.message}")
@@ -302,10 +297,8 @@ fun AutoDevInput() {
                     llmService = null
                 }
             },
-            modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                    )
-        
+            modifier = Modifier.fillMaxWidth(0.9f))
+
                 }
             }
         }
