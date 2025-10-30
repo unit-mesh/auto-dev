@@ -67,11 +67,21 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         arguments: String,
         context: CompilerContext
     ): ProcessResult {
+        println("🔍 [CommandProcessor] Processing SpecKit command: $commandName")
+        println("🔍 [CommandProcessor] Arguments: $arguments")
+        println("🔍 [CommandProcessor] FileSystem: ${context.fileSystem.javaClass.simpleName}")
+        println("🔍 [CommandProcessor] Project path: ${context.fileSystem.getProjectPath()}")
+        
         context.logger.info("[$name] Processing SpecKit command: $commandName")
         
         // 延迟加载 SpecKit 命令列表
         if (specKitCommands == null) {
+            println("🔍 [CommandProcessor] Loading SpecKit commands from filesystem...")
             specKitCommands = SpecKitCommand.loadAll(context.fileSystem)
+            println("🔍 [CommandProcessor] Loaded ${specKitCommands?.size ?: 0} SpecKit commands")
+            specKitCommands?.forEach { cmd ->
+                println("   - ${cmd.fullCommandName}: ${cmd.description}")
+            }
             context.logger.info("[$name] Loaded ${specKitCommands?.size ?: 0} SpecKit commands")
         }
         
@@ -79,9 +89,14 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         val command = SpecKitCommand.findByFullName(specKitCommands ?: emptyList(), commandName)
         
         if (command == null) {
+            println("⚠️ [CommandProcessor] SpecKit command not found: $commandName")
+            println("⚠️ [CommandProcessor] Available commands: ${specKitCommands?.map { it.fullCommandName }}")
             context.logger.warn("[$name] SpecKit command not found: $commandName")
             return ProcessResult.failure("SpecKit command not found: $commandName")
         }
+        
+        println("✅ [CommandProcessor] Found SpecKit command: ${command.fullCommandName}")
+        println("🔍 [CommandProcessor] Template preview: ${command.template.take(100)}...")
         
         // 编译命令模板
         val compiler = SpecKitTemplateCompiler(
@@ -92,6 +107,9 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         )
         
         val output = compiler.compile()
+        println("✅ [CommandProcessor] Compiled output length: ${output.length}")
+        println("🔍 [CommandProcessor] Output preview: ${output.take(200)}...")
+        
         context.appendOutput(output)
         
         return ProcessResult.success(

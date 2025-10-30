@@ -397,34 +397,63 @@ class DevInsParser(
         val children = mutableListOf<DevInsNode>(DevInsTokenNode(startToken))
 
         // 尝试解析标识符（如果存在）
+        // 支持带点号的命令名（如 speckit.clarify）
         var name = ""
         if (check(DevInsTokenType.IDENTIFIER)) {
             val identifierToken = advance()
             name = identifierToken.text
             children.add(DevInsTokenNode(identifierToken))
+            
+            // 如果后面跟着 DOT 和 IDENTIFIER，继续拼接
+            while (check(DevInsTokenType.DOT)) {
+                val dotToken = advance()
+                children.add(DevInsTokenNode(dotToken))
+                
+                if (check(DevInsTokenType.IDENTIFIER)) {
+                    val nextIdentifier = advance()
+                    name += "." + nextIdentifier.text
+                    children.add(DevInsTokenNode(nextIdentifier))
+                } else {
+                    break
+                }
+            }
         }
 
         // 对于命令，还需要处理冒号和命令属性
         val arguments = mutableListOf<DevInsNode>()
-        if (startToken.type == DevInsTokenType.COMMAND_START && check(DevInsTokenType.COLON)) {
-            val colonToken = advance()
-            children.add(DevInsTokenNode(colonToken))
+        if (startToken.type == DevInsTokenType.COMMAND_START) {
+            if (check(DevInsTokenType.COLON)) {
+                val colonToken = advance()
+                children.add(DevInsTokenNode(colonToken))
 
-            // 消费命令属性
-            if (check(DevInsTokenType.COMMAND_PROP)) {
-                val propToken = advance()
-                children.add(DevInsTokenNode(propToken))
-                arguments.add(DevInsTokenNode(propToken))
+                // 消费命令属性
+                if (check(DevInsTokenType.COMMAND_PROP)) {
+                    val propToken = advance()
+                    children.add(DevInsTokenNode(propToken))
+                    arguments.add(DevInsTokenNode(propToken))
+                }
+            } else {
+                // 没有冒号，消费所有后续的 IDENTIFIER 作为参数，直到换行或其他token
+                while (check(DevInsTokenType.IDENTIFIER)) {
+                    val argToken = advance()
+                    children.add(DevInsTokenNode(argToken))
+                    arguments.add(DevInsTokenNode(argToken))
+                }
             }
         }
 
         // 返回对应类型的节点
-        return when (startToken.type) {
+        val result = when (startToken.type) {
             DevInsTokenType.AGENT_START -> DevInsAgentNode(name, children)
-            DevInsTokenType.COMMAND_START -> DevInsCommandNode(name, arguments, children)
+            DevInsTokenType.COMMAND_START -> {
+                println("🔍 [DevInsParser] Parsed command: name='$name', args=${arguments.size}")
+                DevInsCommandNode(name, arguments, children)
+            }
             DevInsTokenType.VARIABLE_START -> DevInsVariableNode(name, children)
             else -> null
         }
+        
+        return result
     }
 
     /**

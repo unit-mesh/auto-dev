@@ -17,16 +17,45 @@ import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.params.LLMParams
 import ai.koog.prompt.streaming.StreamFrame
 import cc.unitmesh.devins.compiler.DevInsCompilerFacade
+import cc.unitmesh.devins.compiler.context.CompilerContext
+import cc.unitmesh.devins.filesystem.EmptyFileSystem
+import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flow
 
 class KoogLLMService(private val config: ModelConfig) {
-    fun streamPrompt(userPrompt: String): Flow<String> = flow {
+    /**
+     * 流式发送提示，支持 DevIns 编译和 SpecKit 命令
+     * @param userPrompt 用户输入的提示文本（可以包含 DevIns 语法和命令）
+     * @param fileSystem 项目文件系统，用于支持 SpecKit 等命令（可选）
+     */
+    fun streamPrompt(userPrompt: String, fileSystem: ProjectFileSystem = EmptyFileSystem()): Flow<String> = flow {
         val executor = createExecutor()
         val model = getModelForProvider()
 
-        val finalPrompt = DevInsCompilerFacade.compile(userPrompt).output
+        // 创建带有文件系统的编译上下文
+        val context = CompilerContext().apply {
+            this.fileSystem = fileSystem
+        }
+        
+        // 编译 DevIns 代码，支持 SpecKit 命令
+        println("🔍 [KoogLLMService] 开始编译 DevIns 代码...")
+        println("🔍 [KoogLLMService] 用户输入: $userPrompt")
+        println("🔍 [KoogLLMService] 文件系统: ${fileSystem.javaClass.simpleName}")
+        println("🔍 [KoogLLMService] 项目路径: ${fileSystem.getProjectPath()}")
+        
+        val compiledResult = DevInsCompilerFacade.compile(userPrompt, context)
+        val finalPrompt = compiledResult.output
+        
+        println("🔍 [KoogLLMService] 编译完成!")
+        println("🔍 [KoogLLMService] 编译结果: ${if (compiledResult.isSuccess()) "成功" else "失败"}")
+        println("🔍 [KoogLLMService] 命令数量: ${compiledResult.statistics.commandCount}")
+        println("🔍 [KoogLLMService] 编译输出: $finalPrompt")
+        if (compiledResult.hasError) {
+            println("⚠️ [KoogLLMService] 编译错误: ${compiledResult.errorMessage}")
+        }
+        
         val prompt = prompt(
             id = "chat",
             params = LLMParams(temperature = config.temperature, toolChoice = LLMParams.ToolChoice.None)

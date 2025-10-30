@@ -827,6 +827,12 @@ class DevInsLexer(
                 // 不切换状态，继续在 COMMAND_BLOCK 中
                 return createToken(DevInsTokenType.IDENTIFIER, identifier, startPos, startLine, startColumn)
             }
+            // DOT - 支持带点号的命令名 (如 speckit.clarify)
+            peek() == '.' -> {
+                advance()
+                // 保持在 COMMAND_BLOCK 状态
+                return createToken(DevInsTokenType.DOT, ".", startPos, startLine, startColumn)
+            }
             // COLON
             peek() == ':' -> {
                 advance()

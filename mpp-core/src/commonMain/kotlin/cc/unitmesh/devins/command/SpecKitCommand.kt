@@ -25,33 +25,67 @@ data class SpecKitCommand(
          * 从文件系统加载所有 SpecKit 命令
          */
         fun loadAll(fileSystem: ProjectFileSystem): List<SpecKitCommand> {
-            val projectPath = fileSystem.getProjectPath() ?: return emptyList()
-            val promptsDir = "$PROMPTS_DIR"
+            println("🔍 [SpecKitCommand] Loading SpecKit commands...")
+            val projectPath = fileSystem.getProjectPath()
+            println("🔍 [SpecKitCommand] Project path: $projectPath")
             
-            if (!fileSystem.exists(promptsDir)) {
+            if (projectPath == null) {
+                println("⚠️ [SpecKitCommand] Project path is null, returning empty list")
                 return emptyList()
             }
+            
+            val promptsDir = "$PROMPTS_DIR"
+            println("🔍 [SpecKitCommand] Looking for prompts in: $promptsDir")
+            
+            if (!fileSystem.exists(promptsDir)) {
+                println("⚠️ [SpecKitCommand] Prompts directory does not exist: $promptsDir")
+                return emptyList()
+            }
+            
+            println("✅ [SpecKitCommand] Prompts directory exists!")
 
             return try {
-                fileSystem.listFiles(promptsDir, "$SPECKIT_PREFIX*$PROMPT_SUFFIX")
-                    .mapNotNull { fileName ->
+                val pattern = "$SPECKIT_PREFIX*$PROMPT_SUFFIX"
+                println("🔍 [SpecKitCommand] Looking for files matching: $pattern")
+                val files = fileSystem.listFiles(promptsDir, pattern)
+                println("🔍 [SpecKitCommand] Found ${files.size} matching files: $files")
+                
+                files.mapNotNull { fileName ->
                         try {
+                            println("🔍 [SpecKitCommand] Processing file: $fileName")
                             val subcommand = fileName
                                 .removePrefix(SPECKIT_PREFIX)
                                 .removeSuffix(PROMPT_SUFFIX)
+                            
+                            println("🔍 [SpecKitCommand] Extracted subcommand: $subcommand")
 
-                            if (subcommand.isEmpty()) return@mapNotNull null
+                            if (subcommand.isEmpty()) {
+                                println("⚠️ [SpecKitCommand] Subcommand is empty, skipping")
+                                return@mapNotNull null
+                            }
 
                             val filePath = "$promptsDir/$fileName"
-                            val template = fileSystem.readFile(filePath) ?: return@mapNotNull null
+                            println("🔍 [SpecKitCommand] Reading file: $filePath")
+                            val template = fileSystem.readFile(filePath)
+                            
+                            if (template == null) {
+                                println("⚠️ [SpecKitCommand] Failed to read file: $filePath")
+                                return@mapNotNull null
+                            }
+                            
+                            println("✅ [SpecKitCommand] Successfully read file (${template.length} chars)")
                             val description = extractDescription(template, subcommand)
 
-                            SpecKitCommand(
+                            val cmd = SpecKitCommand(
                                 subcommand = subcommand,
                                 description = description,
                                 template = template
                             )
+                            println("✅ [SpecKitCommand] Created command: ${cmd.fullCommandName}")
+                            cmd
                         } catch (e: Exception) {
+                            println("❌ [SpecKitCommand] Error processing file $fileName: ${e.message}")
+                            e.printStackTrace()
                             null
                         }
                     }

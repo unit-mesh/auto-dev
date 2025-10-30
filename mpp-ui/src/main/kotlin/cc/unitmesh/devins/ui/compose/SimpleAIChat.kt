@@ -111,14 +111,15 @@ fun AutoDevInput() {
                 isCompiling = false
             }
             
-            // 发送到 LLM
+            // 发送到 LLM（带 DevIns 编译和 SpecKit 支持）
             if (llmService != null) {
                 isLLMProcessing = true
                 llmOutput = ""
                 
                 scope.launch {
                     try {
-                        llmService?.streamPrompt(text)
+                        // 传递 fileSystem 以支持 SpecKit 命令编译
+                        llmService?.streamPrompt(text, fileSystem)
                             ?.catch { e ->
                                 val errorMsg = extractErrorMessage(e)
                                 errorMessage = errorMsg
