@@ -16,11 +16,7 @@ class FilePathCompletionProvider : CompletionProvider {
         val query = context.queryText
         val workspace = WorkspaceManager.getCurrentOrEmpty()
 
-        // 合并静态路径和动态文件系统补全
-        val staticCompletions = getStaticCompletions(query)
-        val dynamicCompletions = getDynamicCompletions(query, workspace)
-
-        val allCompletions = (staticCompletions + dynamicCompletions)
+        val allCompletions = getDynamicCompletions(query, workspace)
             .distinctBy { it.text }
             .filter { it.matchScore(query) > 0 }
             .sortedByDescending { it.matchScore(query) }
@@ -28,75 +24,6 @@ class FilePathCompletionProvider : CompletionProvider {
         return allCompletions.take(20) // 限制结果数量
     }
 
-    /**
-     * 获取静态的常用路径补全
-     */
-    private fun getStaticCompletions(query: String): List<CompletionItem> {
-        val commonPaths = listOf(
-            CompletionItem(
-                text = "src/main/kotlin/",
-                displayText = "src/main/kotlin/",
-                description = "Kotlin source directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/main/kotlin/")
-            ),
-            CompletionItem(
-                text = "src/main/java/",
-                displayText = "src/main/java/",
-                description = "Java source directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/main/java/")
-            ),
-            CompletionItem(
-                text = "src/test/kotlin/",
-                displayText = "src/test/kotlin/",
-                description = "Kotlin test directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/test/kotlin/")
-            ),
-            CompletionItem(
-                text = "src/test/java/",
-                displayText = "src/test/java/",
-                description = "Java test directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/test/java/")
-            ),
-            CompletionItem(
-                text = "README.md",
-                displayText = "README.md",
-                description = "Project README",
-                icon = "📝",
-                insertHandler = defaultInsertHandler("README.md")
-            ),
-            CompletionItem(
-                text = "build.gradle.kts",
-                displayText = "build.gradle.kts",
-                description = "Gradle build file",
-                icon = "🔨",
-                insertHandler = defaultInsertHandler("build.gradle.kts")
-            ),
-            CompletionItem(
-                text = "settings.gradle.kts",
-                displayText = "settings.gradle.kts",
-                description = "Gradle settings file",
-                icon = "🔨",
-                insertHandler = defaultInsertHandler("settings.gradle.kts")
-            ),
-            CompletionItem(
-                text = "gradle.properties",
-                displayText = "gradle.properties",
-                description = "Gradle properties file",
-                icon = "⚙️",
-                insertHandler = defaultInsertHandler("gradle.properties")
-            )
-        )
-
-        return commonPaths
-    }
-
-    /**
-     * 获取基于文件系统的动态补全
-     */
     private fun getDynamicCompletions(query: String, workspace: cc.unitmesh.devins.workspace.Workspace): List<CompletionItem> {
         if (workspace.rootPath == null || query.length < 2) {
             return emptyList()
