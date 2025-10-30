@@ -68,6 +68,18 @@ object DevInsCompilerFacade {
     }
     
     /**
+     * 编译 DevIns 源代码为模板，使用提供的上下文
+     * 这对于需要自定义文件系统或其他上下文配置的场景非常有用（如 SpecKit 支持）
+     */
+    suspend fun compile(
+        source: String,
+        context: CompilerContext
+    ): DevInsCompiledResult {
+        val compiler = DevInsCompiler(context)
+        return compiler.compileFromSource(source)
+    }
+    
+    /**
      * 编译 DevIns 源代码为原始输出（不进行模板处理）
      */
     suspend fun compileRaw(source: String): DevInsCompiledResult {

@@ -41,6 +41,7 @@ fun DevInEditorInput(
     initialText: String = "",
     placeholder: String = "Plan, @ for context, / for commands",
     callbacks: EditorCallbacks? = null,
+    completionManager: CompletionManager? = null,
     modifier: Modifier = Modifier
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
@@ -53,7 +54,7 @@ fun DevInEditorInput(
     var currentTriggerType by remember { mutableStateOf(CompletionTriggerType.NONE) }
     
     val highlighter = remember { DevInSyntaxHighlighter() }
-    val completionManager = remember { CompletionManager() }
+    val manager = completionManager ?: remember { CompletionManager() }
     val focusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     
@@ -66,10 +67,11 @@ fun DevInEditorInput(
     
     // 处理文本变化和补全触发
     fun handleTextChange(newValue: TextFieldValue) {
+        val oldText = textFieldValue.text
         textFieldValue = newValue
         
         // 检查是否应该触发补全
-        if (newValue.text.length > textFieldValue.text.length) {
+        if (newValue.text.length > oldText.length) {
             val addedChar = newValue.text.getOrNull(newValue.selection.start - 1)
             if (addedChar != null && CompletionTrigger.shouldTrigger(addedChar)) {
                 val triggerType = CompletionTrigger.getTriggerType(addedChar)
@@ -81,9 +83,10 @@ fun DevInEditorInput(
                 
                 if (context != null) {
                     currentTriggerType = triggerType
-                    completionItems = completionManager.getCompletions(context)
+                    completionItems = manager.getCompletions(context)
                     selectedCompletionIndex = 0
                     showCompletion = completionItems.isNotEmpty()
+                    println("🔍 补全触发: char='$addedChar', type=$triggerType, items=${completionItems.size}")
                 }
             } else if (showCompletion) {
                 // 更新补全列表
@@ -93,7 +96,7 @@ fun DevInEditorInput(
                     currentTriggerType
                 )
                 if (context != null) {
-                    completionItems = completionManager.getCompletions(context)
+                    completionItems = manager.getCompletions(context)
                     selectedCompletionIndex = 0
                     if (completionItems.isEmpty()) {
                         showCompletion = false
@@ -141,7 +144,7 @@ fun DevInEditorInput(
                         )
                         if (context != null) {
                             currentTriggerType = triggerType
-                            completionItems = completionManager.getCompletions(context)
+                            completionItems = manager.getCompletions(context)
                             selectedCompletionIndex = 0
                             showCompletion = completionItems.isNotEmpty()
                         }

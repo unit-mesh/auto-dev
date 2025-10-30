@@ -1,0 +1,64 @@
+package cc.unitmesh.devins.filesystem
+
+/**
+ * 跨平台文件系统抽象接口
+ * 提供项目文件读写和路径操作能力
+ */
+interface ProjectFileSystem {
+    /**
+     * 获取项目根路径
+     */
+    fun getProjectPath(): String?
+    
+    /**
+     * 读取文件内容
+     * @param path 文件路径（相对于项目根目录或绝对路径）
+     * @return 文件内容，如果文件不存在返回 null
+     */
+    fun readFile(path: String): String?
+    
+    /**
+     * 检查文件或目录是否存在
+     * @param path 文件或目录路径
+     */
+    fun exists(path: String): Boolean
+    
+    /**
+     * 列出目录下的文件
+     * @param path 目录路径
+     * @param pattern 文件名模式（支持通配符，如 "*.md"）
+     * @return 匹配的文件路径列表
+     */
+    fun listFiles(path: String, pattern: String? = null): List<String>
+    
+    /**
+     * 解析相对路径为绝对路径
+     * @param relativePath 相对于项目根目录的路径
+     * @return 绝对路径
+     */
+    fun resolvePath(relativePath: String): String
+}
+
+/**
+ * 空实现，用于测试或没有文件系统的场景
+ */
+class EmptyFileSystem : ProjectFileSystem {
+    override fun getProjectPath(): String? = null
+    override fun readFile(path: String): String? = null
+    override fun exists(path: String): Boolean = false
+    override fun listFiles(path: String, pattern: String?): List<String> = emptyList()
+    override fun resolvePath(relativePath: String): String = relativePath
+}
+
+/**
+ * 基于路径的简单文件系统实现
+ * 使用 expect/actual 实现跨平台文件操作
+ */
+expect class DefaultFileSystem(projectPath: String) : ProjectFileSystem {
+    override fun getProjectPath(): String?
+    override fun readFile(path: String): String?
+    override fun exists(path: String): Boolean
+    override fun listFiles(path: String, pattern: String?): List<String>
+    override fun resolvePath(relativePath: String): String
+}
+

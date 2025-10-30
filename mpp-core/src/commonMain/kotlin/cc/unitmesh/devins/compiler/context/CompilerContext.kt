@@ -3,6 +3,8 @@ package cc.unitmesh.devins.compiler.context
 import cc.unitmesh.devins.compiler.result.DevInsCompiledResult
 import cc.unitmesh.devins.compiler.variable.VariableTable
 import cc.unitmesh.devins.compiler.variable.VariableScope
+import cc.unitmesh.devins.filesystem.EmptyFileSystem
+import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import kotlin.time.Clock
 
 /**
@@ -40,6 +42,12 @@ class CompilerContext {
      * 编译选项
      */
     var options: CompilerOptions = CompilerOptions()
+    
+    /**
+     * 项目文件系统
+     * 用于访问项目文件，支持 SpecKit 等功能
+     */
+    var fileSystem: ProjectFileSystem = EmptyFileSystem()
     
     /**
      * 添加输出内容

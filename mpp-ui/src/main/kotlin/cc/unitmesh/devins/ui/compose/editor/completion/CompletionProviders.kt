@@ -1,5 +1,7 @@
 package cc.unitmesh.devins.ui.compose.editor.completion
 
+import cc.unitmesh.devins.command.SpecKitCommand
+import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.ui.compose.editor.model.CompletionContext
 import cc.unitmesh.devins.ui.compose.editor.model.CompletionItem
 import cc.unitmesh.devins.ui.compose.editor.model.InsertResult
@@ -273,9 +275,72 @@ private fun defaultInsertHandler(insertText: String): (String, Int) -> InsertRes
 }
 
 /**
+ * SpecKit 命令补全提供者
+ * 从项目文件系统动态加载 SpecKit 命令
+ */
+class SpecKitCommandCompletionProvider(
+    private val fileSystem: ProjectFileSystem?
+) : CompletionProvider {
+    private var cachedCommands: List<CompletionItem>? = null
+    
+    override fun getCompletions(context: CompletionContext): List<CompletionItem> {
+        val query = context.queryText
+        
+        // 延迟加载 SpecKit 命令
+        if (cachedCommands == null && fileSystem != null) {
+            cachedCommands = loadSpecKitCommands()
+        }
+        
+        val commands = cachedCommands ?: emptyList()
+        
+        return commands
+            .filter { it.matchScore(query) > 0 }
+            .sortedByDescending { it.matchScore(query) }
+    }
+    
+    private fun loadSpecKitCommands(): List<CompletionItem> {
+        if (fileSystem == null) return emptyList()
+        
+        return try {
+            val commands = SpecKitCommand.loadAll(fileSystem)
+            commands.map { cmd ->
+                CompletionItem(
+                    text = cmd.fullCommandName,
+                    displayText = cmd.fullCommandName,
+                    description = cmd.description,
+                    icon = "✨",
+                    insertHandler = { fullText, cursorPos ->
+                        val slashPos = fullText.lastIndexOf('/', cursorPos - 1)
+                        if (slashPos >= 0) {
+                            val before = fullText.substring(0, slashPos)
+                            val after = fullText.substring(cursorPos)
+                            val newText = before + "/${cmd.fullCommandName} " + after
+                            InsertResult(newText, before.length + cmd.fullCommandName.length + 2)
+                        } else {
+                            InsertResult(fullText, cursorPos)
+                        }
+                    }
+                )
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+    
+    /**
+     * 刷新命令缓存（当项目路径改变时）
+     */
+    fun refresh() {
+        cachedCommands = null
+    }
+}
+
+/**
  * 补全管理器 - 根据上下文选择合适的 Provider
  */
-class CompletionManager {
+class CompletionManager(fileSystem: ProjectFileSystem? = null) {
+    private val specKitProvider = SpecKitCommandCompletionProvider(fileSystem)
+    
     private val providers = mapOf(
         cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.AGENT to AgentCompletionProvider(),
         cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND to CommandCompletionProvider(),
@@ -285,7 +350,21 @@ class CompletionManager {
     
     fun getCompletions(context: CompletionContext): List<CompletionItem> {
         val provider = providers[context.triggerType] ?: return emptyList()
-        return provider.getCompletions(context)
+        val baseCompletions = provider.getCompletions(context)
+        
+        // 对于 COMMAND 类型，同时包含 SpecKit 命令
+        return if (context.triggerType == cc.unitmesh.devins.ui.compose.editor.model.CompletionTriggerType.COMMAND) {
+            baseCompletions + specKitProvider.getCompletions(context)
+        } else {
+            baseCompletions
+        }
+    }
+    
+    /**
+     * 刷新 SpecKit 命令（当项目路径改变时调用）
+     */
+    fun refreshSpecKitCommands() {
+        specKitProvider.refresh()
     }
 }
 
