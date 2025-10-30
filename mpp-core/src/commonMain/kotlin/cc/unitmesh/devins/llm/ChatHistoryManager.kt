@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.llm
 
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * 聊天历史管理器
@@ -13,8 +14,9 @@ class ChatHistoryManager {
     /**
      * 创建新会话
      */
+    @OptIn(ExperimentalUuidApi::class)
     fun createSession(): ChatSession {
-        val sessionId = UUID.randomUUID().toString()
+        val sessionId = Uuid.random().toString()
         val session = ChatSession(id = sessionId)
         sessions[sessionId] = session
         currentSessionId = sessionId
@@ -92,13 +94,15 @@ class ChatHistoryManager {
     
     companion object {
         private var instance: ChatHistoryManager? = null
-        
+
         /**
          * 获取全局单例
          */
         fun getInstance(): ChatHistoryManager {
-            return instance ?: synchronized(this) {
-                instance ?: ChatHistoryManager().also { instance = it }
+            return instance ?: run {
+                val newInstance = ChatHistoryManager()
+                instance = newInstance
+                newInstance
             }
         }
     }

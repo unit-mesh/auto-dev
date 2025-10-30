@@ -5,10 +5,10 @@ import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.impl.ReadFileParams
 import cc.unitmesh.agent.tool.impl.ReadFileTool
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 class ReadFileToolTest {
     
@@ -40,7 +40,7 @@ class ReadFileToolTest {
                 path = path,
                 isDirectory = false,
                 size = content.length.toLong(),
-                lastModified = System.currentTimeMillis()
+                lastModified = Clock.System.now().toEpochMilliseconds()
             )
         }
         

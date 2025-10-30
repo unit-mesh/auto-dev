@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.llm
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 
 /**
@@ -18,7 +19,7 @@ enum class MessageRole {
 data class Message(
     val role: MessageRole,
     val content: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = Clock.System.now().toEpochMilliseconds()
 )
 
 /**
@@ -28,31 +29,31 @@ data class Message(
 data class ChatSession(
     val id: String,
     val messages: MutableList<Message> = mutableListOf(),
-    val createdAt: Long = System.currentTimeMillis(),
-    var updatedAt: Long = System.currentTimeMillis()
+    val createdAt: Long = Clock.System.now().toEpochMilliseconds(),
+    var updatedAt: Long = Clock.System.now().toEpochMilliseconds()
 ) {
     /**
      * 添加用户消息
      */
     fun addUserMessage(content: String) {
         messages.add(Message(MessageRole.USER, content))
-        updatedAt = System.currentTimeMillis()
+        updatedAt = Clock.System.now().toEpochMilliseconds()
     }
-    
+
     /**
      * 添加助手消息
      */
     fun addAssistantMessage(content: String) {
         messages.add(Message(MessageRole.ASSISTANT, content))
-        updatedAt = System.currentTimeMillis()
+        updatedAt = Clock.System.now().toEpochMilliseconds()
     }
-    
+
     /**
      * 添加系统消息
      */
     fun addSystemMessage(content: String) {
         messages.add(Message(MessageRole.SYSTEM, content))
-        updatedAt = System.currentTimeMillis()
+        updatedAt = Clock.System.now().toEpochMilliseconds()
     }
     
     /**
@@ -67,7 +68,7 @@ data class ChatSession(
      */
     fun clear() {
         messages.clear()
-        updatedAt = System.currentTimeMillis()
+        updatedAt = Clock.System.now().toEpochMilliseconds()
     }
 }
 

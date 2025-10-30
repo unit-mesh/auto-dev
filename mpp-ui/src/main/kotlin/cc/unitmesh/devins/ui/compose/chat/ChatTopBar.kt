@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.compose.chat
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.PlusOne
 import androidx.compose.material.icons.outlined.BugReport
@@ -58,7 +59,7 @@ fun ChatTopBar(
             if (hasHistory) {
                 IconButton(onClick = onClearHistory) {
                     Icon(
-                        imageVector = Icons.Default.PlusOne,
+                        imageVector = Icons.Default.Add,
                         contentDescription = "New Chat",
                         tint = MaterialTheme.colorScheme.secondary
                     )
