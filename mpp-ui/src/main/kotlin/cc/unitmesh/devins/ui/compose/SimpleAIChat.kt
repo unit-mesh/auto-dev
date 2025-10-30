@@ -15,7 +15,7 @@ import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
-import cc.unitmesh.devins.ui.compose.editor.completion.CompletionManager
+import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.ui.compose.chat.*
 import cc.unitmesh.devins.llm.KoogLLMService
 import cc.unitmesh.devins.llm.ModelConfig

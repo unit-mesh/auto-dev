@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.editor.EditorCallbacks
-import cc.unitmesh.devins.ui.compose.editor.completion.CompletionManager
+import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
