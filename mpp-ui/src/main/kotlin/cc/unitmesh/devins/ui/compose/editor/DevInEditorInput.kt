@@ -42,6 +42,7 @@ fun DevInEditorInput(
     placeholder: String = "Plan, @ for context, / for commands",
     callbacks: EditorCallbacks? = null,
     completionManager: CompletionManager? = null,
+    initialModelConfig: cc.unitmesh.devins.llm.ModelConfig? = null,
     onModelConfigChange: (cc.unitmesh.devins.llm.ModelConfig) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -308,6 +309,7 @@ fun DevInEditorInput(
                         )
                     },
                     sendEnabled = textFieldValue.text.isNotBlank(),
+                    initialModelConfig = initialModelConfig,
                     onModelConfigChange = onModelConfigChange
                 )
             }

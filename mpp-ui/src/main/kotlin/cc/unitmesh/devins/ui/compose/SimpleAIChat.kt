@@ -199,6 +199,7 @@ fun AutoDevInput() {
             placeholder = "Plan, @ for context, / for commands (try /speckit.*)",
             callbacks = callbacks,
             completionManager = completionManager,
+            initialModelConfig = currentModelConfig,
             onModelConfigChange = { config ->
                 currentModelConfig = config
                 if (config.isValid()) {

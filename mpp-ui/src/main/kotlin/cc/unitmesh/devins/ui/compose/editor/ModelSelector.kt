@@ -29,7 +29,6 @@ fun ModelSelector(
         mutableStateOf(initialConfig ?: ModelConfig.default()) 
     }
 
-    // Display text showing provider and model
     val displayText = remember(currentConfig) {
         "${currentConfig.provider.displayName} / ${currentConfig.modelName}"
     }
@@ -93,7 +92,7 @@ fun ModelSelector(
             )
         }
 
-        Divider()
+        HorizontalDivider()
 
         // Configure button
         DropdownMenuItem(
@@ -112,7 +111,6 @@ fun ModelSelector(
         )
     }
 
-    // Configuration Dialog
     if (showConfigDialog) {
         ModelConfigDialog(
             currentConfig = currentConfig,
@@ -120,8 +118,7 @@ fun ModelSelector(
             onSave = { newConfig ->
                 currentConfig = newConfig
                 
-                // Update or add to recent configs
-                val existingIndex = recentConfigs.indexOfFirst { 
+                val existingIndex = recentConfigs.indexOfFirst {
                     it.provider == newConfig.provider && it.modelName == newConfig.modelName 
                 }
                 if (existingIndex >= 0) {

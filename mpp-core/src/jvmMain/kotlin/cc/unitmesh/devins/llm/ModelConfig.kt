@@ -57,25 +57,19 @@ data class ModelConfig(
         fun getDefaultModelsForProvider(provider: LLMProviderType): List<String> {
             return when (provider) {
                 LLMProviderType.OPENAI -> {
-                    // 从 Koog 获取所有 OpenAI 模型的 ID
                     OpenAIModels.list().map { it.id }
                 }
                 LLMProviderType.ANTHROPIC -> {
-                    // 从 Koog 获取所有 Anthropic 模型的 ID
                     AnthropicModels.list().map { it.id }
                 }
                 LLMProviderType.GOOGLE -> {
-                    // 从 Koog 获取所有 Google 模型的 ID
                     GoogleModels.list().map { it.id }
                 }
                 LLMProviderType.DEEPSEEK -> {
-                    // 从 Koog 获取所有 DeepSeek 模型的 ID
                     DeepSeekModels.list().map { it.id }
                 }
                 LLMProviderType.OPENROUTER -> {
-                    // 从 Koog 获取所有 OpenRouter 模型的 ID
                     OpenRouterModels.list().map { it.id }.ifEmpty {
-                        // 如果没有预定义，提供一些常见的
                         listOf("openai/gpt-4o", "anthropic/claude-4.5-sonnet", "google/gemini-pro")
                     }
                 }

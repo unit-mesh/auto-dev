@@ -21,6 +21,7 @@ fun BottomToolbar(
     onAtClick: () -> Unit,
     onSlashClick: () -> Unit,
     sendEnabled: Boolean,
+    initialModelConfig: ModelConfig? = null,
     onModelConfigChange: (ModelConfig) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -37,7 +38,10 @@ fun BottomToolbar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AgentSelector()
-            ModelSelector(onConfigChange = onModelConfigChange)
+            ModelSelector(
+                initialConfig = initialModelConfig,
+                onConfigChange = onModelConfigChange
+            )
         }
         
         // 右侧：操作按钮
