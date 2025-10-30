@@ -39,6 +39,7 @@ fun DevInEditorInput(
     initialModelConfig: cc.unitmesh.devins.llm.ModelConfig? = null,
     availableConfigs: List<cc.unitmesh.devins.llm.ModelConfig> = emptyList(),
     onModelConfigChange: (cc.unitmesh.devins.llm.ModelConfig) -> Unit = {},
+    isCompactMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
@@ -220,12 +221,15 @@ fun DevInEditorInput(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // 编辑器区域 - 优化为3行左右的高度
+                // 编辑器区域 - 根据模式调整高度
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 72.dp, max = 120.dp)  // 约3行高度
-                        .padding(16.dp)
+                        .heightIn(
+                            min = if (isCompactMode) 48.dp else 72.dp,
+                            max = if (isCompactMode) 48.dp else 120.dp
+                        )
+                        .padding(if (isCompactMode) 8.dp else 16.dp)
                 ) {
                     BasicTextField(
                         value = textFieldValue,

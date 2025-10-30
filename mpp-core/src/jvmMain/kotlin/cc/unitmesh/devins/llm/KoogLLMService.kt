@@ -26,11 +26,16 @@ import kotlinx.coroutines.flow.flow
 
 class KoogLLMService(private val config: ModelConfig) {
     /**
-     * 流式发送提示，支持 DevIns 编译和 SpecKit 命令
+     * 流式发送提示，支持 DevIns 编译、SpecKit 命令和多轮对话
      * @param userPrompt 用户输入的提示文本（可以包含 DevIns 语法和命令）
      * @param fileSystem 项目文件系统，用于支持 SpecKit 等命令（可选）
+     * @param historyMessages 历史消息列表，用于多轮对话（可选）
      */
-    fun streamPrompt(userPrompt: String, fileSystem: ProjectFileSystem = EmptyFileSystem()): Flow<String> = flow {
+    fun streamPrompt(
+        userPrompt: String, 
+        fileSystem: ProjectFileSystem = EmptyFileSystem(),
+        historyMessages: List<Message> = emptyList()
+    ): Flow<String> = flow {
         val executor = createExecutor()
         val model = getModelForProvider()
 
@@ -39,9 +44,10 @@ class KoogLLMService(private val config: ModelConfig) {
             this.fileSystem = fileSystem
         }
         
-        // 编译 DevIns 代码，支持 SpecKit 命令
+        // 编译 DevIns 代码，支持 SpecKit 命令（只编译最新的用户输入）
         println("🔍 [KoogLLMService] 开始编译 DevIns 代码...")
         println("🔍 [KoogLLMService] 用户输入: $userPrompt")
+        println("🔍 [KoogLLMService] 历史消息数: ${historyMessages.size}")
         println("🔍 [KoogLLMService] 文件系统: ${fileSystem.javaClass.simpleName}")
         println("🔍 [KoogLLMService] 项目路径: ${fileSystem.getProjectPath()}")
         
@@ -56,10 +62,21 @@ class KoogLLMService(private val config: ModelConfig) {
             println("⚠️ [KoogLLMService] 编译错误: ${compiledResult.errorMessage}")
         }
         
+        // 构建包含历史的 prompt
         val prompt = prompt(
             id = "chat",
             params = LLMParams(temperature = config.temperature, toolChoice = LLMParams.ToolChoice.None)
         ) {
+            // 添加历史消息
+            historyMessages.forEach { message ->
+                when (message.role) {
+                    MessageRole.USER -> user(message.content)
+                    MessageRole.ASSISTANT -> assistant(message.content)
+                    MessageRole.SYSTEM -> system(message.content)
+                }
+            }
+            
+            // 添加当前用户消息（编译后的）
             user(finalPrompt)
         }
 

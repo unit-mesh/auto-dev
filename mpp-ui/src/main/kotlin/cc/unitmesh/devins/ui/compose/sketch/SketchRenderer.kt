@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -32,6 +33,13 @@ object SketchRenderer {
         modifier: Modifier = Modifier
     ) {
         val scrollState = rememberScrollState()
+        
+        // 自动滚动到底部
+        LaunchedEffect(content) {
+            if (content.isNotEmpty()) {
+                scrollState.animateScrollTo(scrollState.maxValue)
+            }
+        }
         
         Column(
             modifier = modifier

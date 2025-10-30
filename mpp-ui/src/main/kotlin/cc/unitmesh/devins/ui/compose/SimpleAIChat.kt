@@ -5,31 +5,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.compiler.DevInsCompilerFacade
-import cc.unitmesh.devins.compiler.context.CompilerContext
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionManager
-import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
-import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
+import cc.unitmesh.devins.ui.compose.chat.*
 import cc.unitmesh.devins.llm.KoogLLMService
 import cc.unitmesh.devins.llm.ModelConfig
+import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.db.ModelConfigRepository
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -50,12 +42,16 @@ fun AutoDevInput() {
     var isCompiling by remember { mutableStateOf(false) }
     var isLLMProcessing by remember { mutableStateOf(false) }
     
+    // 聊天历史管理
+    val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
+    
     // LLM 配置状态
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     var allModelConfigs by remember { mutableStateOf<List<ModelConfig>>(emptyList()) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var showConfigWarning by remember { mutableStateOf(false) }
     var showDebugPanel by remember { mutableStateOf(false) }
+    var showDebugDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     
@@ -99,49 +95,20 @@ fun AutoDevInput() {
         }
     }
     
-    val callbacks = object : EditorCallbacks {
-        override fun onSubmit(text: String) {
-            if (currentModelConfig == null || !currentModelConfig!!.isValid()) {
-                showConfigWarning = true
-                return
-            }
-            
-            compileDevInsWithSpecKit(text, fileSystem, scope) { result ->
-                compilerOutput = result
-                isCompiling = false
-            }
-            
-            // 发送到 LLM（带 DevIns 编译和 SpecKit 支持）
-            if (llmService != null) {
-                isLLMProcessing = true
-                llmOutput = ""
-                
-                scope.launch {
-                    try {
-                        // 传递 fileSystem 以支持 SpecKit 命令编译
-                        llmService?.streamPrompt(text, fileSystem)
-                            ?.catch { e ->
-                                val errorMsg = extractErrorMessage(e)
-                                errorMessage = errorMsg
+    val callbacks = createChatCallbacks(
+        fileSystem = fileSystem,
+        llmService = llmService,
+        chatHistoryManager = chatHistoryManager,
+        scope = scope,
+        onCompilerOutput = { compilerOutput = it },
+        onLLMOutput = { llmOutput = it },
+        onProcessingChange = { isLLMProcessing = it },
+        onError = { 
+            errorMessage = it
                                 showErrorDialog = true
-                                isLLMProcessing = false
-                            }
-                            ?.collect { chunk ->
-                                llmOutput += chunk
-                            }
-                        isLLMProcessing = false
-                    } catch (e: Exception) {
-                        // 捕获其他错误
-                        val errorMsg = extractErrorMessage(e)
-                        errorMessage = errorMsg
-                        showErrorDialog = true
-                        llmOutput = ""
-                        isLLMProcessing = false
-                    }
-                }
-            }
-        }
-    }
+        },
+        onConfigWarning = { showConfigWarning = true }
+    )
     
     // 打开目录选择器
     fun openDirectoryChooser() {
@@ -163,42 +130,106 @@ fun AutoDevInput() {
         }
     }
     
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 顶部工具栏（打开目录按钮）
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "AutoDev - DevIn AI",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground
+            // 顶部工具栏
+            ChatTopBar(
+                hasHistory = chatHistoryManager.getMessages().isNotEmpty(),
+                hasDebugInfo = compilerOutput.isNotEmpty(),
+                onOpenDirectory = { openDirectoryChooser() },
+                onClearHistory = { 
+                    chatHistoryManager.clearCurrentSession()
+                    llmOutput = ""
+                    println("🗑️ [SimpleAIChat] 聊天历史已清空")
+                },
+                onShowDebug = { showDebugDialog = true }
             )
             
-            Button(
-                onClick = { openDirectoryChooser() },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+            // 判断是否应该显示紧凑布局（AI 正在处理或有输出）
+            val isCompactMode = isLLMProcessing || llmOutput.isNotEmpty()
+            
+            if (isCompactMode) {
+                // 紧凑模式：先显示 AI 输出，输入框在底部
+                ChatOutputSection(
+                    llmOutput = llmOutput,
+                    isLLMProcessing = isLLMProcessing,
+                    projectPath = projectPath,
+                    fileSystem = fileSystem,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Folder,
-                    contentDescription = "Open Directory"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Open Directory")
-            }
-        }
-        
+                
+                // 底部输入框 - 紧凑模式（一行）
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowElevation = 8.dp,
+                    tonalElevation = 2.dp
+                ) {
+                    DevInEditorInput(
+                        initialText = "",
+                        placeholder = "Continue conversation...",
+                        callbacks = callbacks,
+                        completionManager = completionManager,
+                        initialModelConfig = currentModelConfig,
+                        availableConfigs = allModelConfigs,
+                        isCompactMode = true,
+                        onModelConfigChange = { config ->
+                            currentModelConfig = config
+                            if (config.isValid()) {
+                                try {
+                                    llmService = KoogLLMService.create(config)
+                                    println("✅ LLM 服务已配置: ${config.provider.displayName} / ${config.modelName}")
+                                    
+                                    scope.launch(Dispatchers.IO) {
+                                        try {
+                                            val existingConfigs = repository.getAllConfigs()
+                                            val existingConfig = existingConfigs.find { 
+                                                it.provider == config.provider && 
+                                                it.modelName == config.modelName &&
+                                                it.apiKey == config.apiKey 
+                                            }
+                                            
+                                            if (existingConfig == null) {
+                                                repository.saveConfig(config, setAsDefault = true)
+                                                println("✅ 新配置已保存到数据库")
+                                                allModelConfigs = repository.getAllConfigs()
+                                            } else {
+                                                println("✅ 切换到已有配置")
+                                            }
+                                        } catch (e: Exception) {
+                                            println("⚠️ 保存配置失败: ${e.message}")
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    println("❌ 配置 LLM 服务失败: ${e.message}")
+                                    llmService = null
+                                }
+                            } else {
+                                llmService = null
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
+            } else {
+                // 默认模式：输入框居中显示
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
         // 完整的输入组件（包含底部工具栏）
         DevInEditorInput(
             initialText = "",
@@ -249,146 +280,19 @@ fun AutoDevInput() {
                 }
             },
             modifier = Modifier
-                .fillMaxWidth(0.9f) // 90% 宽度，更居中
-        )
+                            .fillMaxWidth(0.9f)
+                    )
         
-        // 显示 LLM 输出（优先显示）- 使用 Sketch 渲染器
-        if (llmOutput.isNotEmpty() || isLLMProcessing) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Card(
-                modifier = Modifier.fillMaxWidth(0.9f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "🤖 AI Response:",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        if (isLLMProcessing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // 使用 SketchRenderer 渲染内容
-                    if (llmOutput.isEmpty()) {
-                        Text(
-                            text = "Thinking...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                        )
-                    } else {
-                        SketchRenderer.RenderResponse(
-                            content = llmOutput,
-                            isComplete = !isLLMProcessing,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
                 }
             }
         }
         
-        // Debug 面板 - 可折叠显示 DevIns 编译输出
-        if (compilerOutput.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Column(modifier = Modifier.fillMaxWidth(0.9f)) {
-                // Debug 按钮
-                OutlinedButton(
-                    onClick = { showDebugPanel = !showDebugPanel },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.secondary
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.BugReport,
-                        contentDescription = "Debug",
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("DevIns 调试输出")
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        imageVector = if (showDebugPanel) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (showDebugPanel) "收起" else "展开"
-                    )
-                }
-                
-                // 可折叠的调试内容
-                if (showDebugPanel) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 400.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        )
-                    ) {
-                        val scrollState = rememberScrollState()
-                        
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(scrollState)
-                                .padding(16.dp)
-                        ) {
-                            SelectionContainer {
-                                Text(
-                                    text = compilerOutput,
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // 显示项目路径提示
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = if (projectPath != null) "📁 Project: $projectPath" else "⚠️ No project selected",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+        // Debug Dialog
+        if (showDebugDialog) {
+            DebugDialog(
+                compilerOutput = compilerOutput,
+                onDismiss = { showDebugDialog = false }
             )
-            
-            if (projectPath != null) {
-                // 显示 SpecKit 命令数量
-                val commandCount = remember(fileSystem) {
-                    try {
-                        cc.unitmesh.devins.command.SpecKitCommand.loadAll(fileSystem).size
-                    } catch (e: Exception) {
-                        0
-                    }
-                }
-                
-                Text(
-                    text = "✨ $commandCount SpecKit commands",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                )
-            }
         }
         
         // 配置警告弹窗
@@ -491,143 +395,3 @@ fun AutoDevInput() {
     }
 }
 
-/**
- * 提取错误信息
- */
-private fun extractErrorMessage(e: Throwable): String {
-    val message = e.message ?: "Unknown error"
-
-    return when {
-        message.contains("DeepSeekLLMClient API") -> {
-            val parts = message.split("API: ")
-            if (parts.size > 1) {
-                "=== DeepSeek API 错误 ===\n\n" +
-                "API 返回：\n${parts[1]}\n\n" +
-                "完整错误信息：\n$message"
-            } else {
-                "=== DeepSeek API 错误 ===\n\n$message"
-            }
-        }
-        
-        message.contains("OpenAI") -> {
-            "=== OpenAI API 错误 ===\n\n$message"
-        }
-        
-        message.contains("Anthropic") -> {
-            "=== Anthropic API 错误 ===\n\n$message"
-        }
-        
-        message.contains("Connection") || message.contains("timeout") -> {
-            "=== 网络连接错误 ===\n\n$message"
-        }
-        
-        message.contains("401") || message.contains("Unauthorized") -> {
-            "=== 认证失败 (401 Unauthorized) ===\n\n$message"
-        }
-        
-        message.contains("400") || message.contains("Bad Request") -> {
-            "=== 请求错误 (400 Bad Request) ===\n\n$message"
-        }
-        
-        message.contains("429") || message.contains("rate limit") -> {
-            "=== 请求限流 (429 Too Many Requests) ===\n\n$message"
-        }
-        
-        message.contains("500") || message.contains("Internal Server Error") -> {
-            "=== 服务器错误 (500) ===\n\n$message"
-        }
-        
-        else -> {
-            "=== 错误详情 ===\n\n" +
-            "错误类型：${e::class.simpleName}\n\n" +
-            "错误消息：\n$message"
-        }
-    }
-}
-
-/**
- * 分析 DevIn 输入
- */
-private fun analyzeDevInInput(text: String): String {
-    val analysis = mutableListOf<String>()
-    
-    // 检测 Agent
-    val agents = Regex("@(\\w+)").findAll(text).map { it.groupValues[1] }.toList()
-    if (agents.isNotEmpty()) {
-        analysis.add("检测到 Agents: ${agents.joinToString(", ")}")
-    }
-    
-    // 检测 Command
-    val commands = Regex("/(\\w+):").findAll(text).map { it.groupValues[1] }.toList()
-    if (commands.isNotEmpty()) {
-        analysis.add("检测到 Commands: ${commands.joinToString(", ")}")
-    }
-    
-    // 检测 Variable
-    val variables = Regex("\\$(\\w+)").findAll(text).map { it.groupValues[1] }.toList()
-    if (variables.isNotEmpty()) {
-        analysis.add("检测到 Variables: ${variables.joinToString(", ")}")
-    }
-    
-    // 检测 FrontMatter
-    if (text.contains("---")) {
-        analysis.add("包含 FrontMatter 配置")
-    }
-    
-    // 检测代码块
-    val codeBlocks = Regex("```(\\w*)").findAll(text).map { it.groupValues[1].ifEmpty { "plain" } }.toList()
-    if (codeBlocks.isNotEmpty()) {
-        analysis.add("包含代码块: ${codeBlocks.joinToString(", ")}")
-    }
-    
-    return if (analysis.isNotEmpty()) {
-        analysis.joinToString("\n• ", "• ")
-    } else {
-        "纯文本输入"
-    }
-}
-
-/**
- * 编译 DevIns 代码并支持 SpecKit 命令
- */
-private fun compileDevInsWithSpecKit(
-    text: String,
-    fileSystem: ProjectFileSystem,
-    scope: CoroutineScope,
-    onResult: (String) -> Unit
-) {
-    scope.launch {
-        try {
-            val result = withContext(Dispatchers.IO) {
-                val context = CompilerContext().apply {
-                    this.fileSystem = fileSystem
-                }
-                
-                // 使用 DevInsCompilerFacade 编译
-                DevInsCompilerFacade.compile(text, context)
-            }
-            
-            withContext(Dispatchers.Main) {
-                if (result.isSuccess()) {
-                    onResult(buildString {
-                        appendLine("✅ 编译成功!")
-                        appendLine()
-                        appendLine("输出:")
-                        appendLine(result.output)
-                        appendLine()
-                        appendLine("统计:")
-                        appendLine("- 变量: ${result.statistics.variableCount}")
-                        appendLine("- 命令: ${result.statistics.commandCount}")
-                        appendLine("- Agent: ${result.statistics.agentCount}")
-                    })
-                } else {
-                    onResult("❌ 编译失败: ${result.errorMessage}")
-                }
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                onResult("❌ 异常: ${e.message}\n${e.stackTraceToString()}")
-            }
-        }
-    }
-}
