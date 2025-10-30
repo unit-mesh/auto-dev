@@ -1,5 +1,10 @@
 package cc.unitmesh.devins.completion
 
+import cc.unitmesh.devins.completion.providers.AgentCompletionProvider
+import cc.unitmesh.devins.completion.providers.FilePathCompletionProvider
+import cc.unitmesh.devins.completion.providers.SpecKitCommandCompletionProvider
+import cc.unitmesh.devins.completion.providers.ToolBasedCommandCompletionProvider
+import cc.unitmesh.devins.completion.providers.VariableCompletionProvider
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 
 /**

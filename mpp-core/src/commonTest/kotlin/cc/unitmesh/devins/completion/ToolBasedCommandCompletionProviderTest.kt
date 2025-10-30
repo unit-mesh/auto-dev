@@ -8,6 +8,7 @@ import cc.unitmesh.agent.tool.shell.ShellResult
 import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.ToolException
+import cc.unitmesh.devins.completion.providers.ToolBasedCommandCompletionProvider
 import kotlinx.datetime.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals

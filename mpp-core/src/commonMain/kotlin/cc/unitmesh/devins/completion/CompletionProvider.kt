@@ -67,3 +67,26 @@ abstract class BaseCompletionProvider(
 }
 
 
+/**
+ * 默认的插入处理器
+ */
+fun defaultInsertHandler(insertText: String): (String, Int) -> InsertResult {
+    return { fullText, cursorPos ->
+        // 找到触发字符的位置
+        val triggerPos = when {
+            insertText.startsWith("@") -> fullText.lastIndexOf('@', cursorPos - 1)
+            insertText.startsWith("/") -> fullText.lastIndexOf('/', cursorPos - 1)
+            insertText.startsWith("$") -> fullText.lastIndexOf('$', cursorPos - 1)
+            else -> -1
+        }
+
+        if (triggerPos >= 0) {
+            val before = fullText.substring(0, triggerPos)
+            val after = fullText.substring(cursorPos)
+            val newText = before + insertText + after
+            InsertResult(newText, before.length + insertText.length)
+        } else {
+            InsertResult(fullText, cursorPos)
+        }
+    }
+}
