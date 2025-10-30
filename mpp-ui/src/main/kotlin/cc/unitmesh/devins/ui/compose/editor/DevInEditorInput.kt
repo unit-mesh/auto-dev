@@ -1,15 +1,10 @@
 package cc.unitmesh.devins.ui.compose.editor
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -17,18 +12,17 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.completion.CompletionItem
+import cc.unitmesh.devins.completion.CompletionTriggerType
+import cc.unitmesh.devins.editor.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionManager
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
-import cc.unitmesh.devins.completion.CompletionItem
-import cc.unitmesh.devins.completion.CompletionTriggerType
-import cc.unitmesh.devins.editor.EditorCallbacks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -158,21 +152,17 @@ fun DevInEditorInput(
         showCompletion = false
     }
     
-    // 处理快捷键
     fun handleKeyEvent(event: KeyEvent): Boolean {
         if (event.type != KeyEventType.KeyDown) return false
         
         return when {
-            // Enter 键处理 - 未按 Shift 时发送，按 Shift 时换行
             event.key == Key.Enter && !event.isShiftPressed -> {
                 if (showCompletion) {
-                    // 补全窗口打开时，Enter 选择补全项
                     if (completionItems.isNotEmpty()) {
                         applyCompletion(completionItems[selectedCompletionIndex])
                     }
                     true
                 } else {
-                    // 补全窗口关闭时，Enter 触发发送
                     if (textFieldValue.text.isNotBlank()) {
                         callbacks?.onSubmit(textFieldValue.text)
                         textFieldValue = TextFieldValue("")
@@ -182,12 +172,10 @@ fun DevInEditorInput(
                 }
             }
             
-            // Shift+Enter - 换行（让系统默认处理）
             event.key == Key.Enter && event.isShiftPressed -> {
-                false // 返回 false 让系统插入换行符
+                false
             }
             
-            // 补全弹窗打开时的其他按键处理
             showCompletion -> {
                 when (event.key) {
                     Key.DirectionDown -> {
@@ -245,7 +233,7 @@ fun DevInEditorInput(
                         modifier = Modifier
                             .fillMaxSize()
                             .focusRequester(focusRequester)
-                            .onKeyEvent { handleKeyEvent(it) },
+                            .onPreviewKeyEvent { handleKeyEvent(it) },
                         textStyle = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 14.sp,

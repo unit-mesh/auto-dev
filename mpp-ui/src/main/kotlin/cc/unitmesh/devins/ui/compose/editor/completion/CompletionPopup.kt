@@ -68,16 +68,16 @@ fun CompletionPopup(
     ) {
         Surface(
             modifier = modifier
-                .width(350.dp)
-                .heightIn(max = 300.dp)
+                .width(450.dp)
+                .heightIn(max = 280.dp)
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(8.dp)
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(6.dp)
                 ),
-            shape = RoundedCornerShape(8.dp),
-            shadowElevation = 8.dp,
-            tonalElevation = 2.dp
+            shape = RoundedCornerShape(6.dp),
+            shadowElevation = 4.dp,
+            tonalElevation = 1.dp
         ) {
             LazyColumn(
                 state = listState,
@@ -112,44 +112,52 @@ private fun CompletionItemRow(
             .fillMaxWidth()
             .background(
                 if (isSelected) {
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
                 } else {
                     Color.Transparent
                 }
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 10.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 图标（emoji）
         item.icon?.let { icon ->
             Text(
                 text = icon,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(end = 8.dp)
+                fontSize = 14.sp,
+                modifier = Modifier.padding(end = 6.dp)
             )
         }
         
-        // 主要内容
-        Column(
-            modifier = Modifier.weight(1f)
+        // 主要内容 - 更紧凑的布局
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // 显示文本
             Text(
                 text = item.displayText,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontFamily = FontFamily.Monospace
+                fontFamily = FontFamily.Monospace,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false)
             )
             
-            // 描述文本
+            // 描述文本 - 放在同一行右侧
             item.description?.let { description ->
+                Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(top = 2.dp)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 180.dp)
                 )
             }
         }

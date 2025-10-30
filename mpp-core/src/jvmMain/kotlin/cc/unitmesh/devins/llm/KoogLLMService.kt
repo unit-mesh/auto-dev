@@ -16,6 +16,7 @@ import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.params.LLMParams
 import ai.koog.prompt.streaming.StreamFrame
+import cc.unitmesh.devins.compiler.DevInsCompilerFacade
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flow
@@ -25,11 +26,12 @@ class KoogLLMService(private val config: ModelConfig) {
         val executor = createExecutor()
         val model = getModelForProvider()
 
+        val finalPrompt = DevInsCompilerFacade.compile(userPrompt).output
         val prompt = prompt(
             id = "chat",
             params = LLMParams(temperature = config.temperature, toolChoice = LLMParams.ToolChoice.None)
         ) {
-            user(userPrompt)
+            user(finalPrompt)
         }
 
         executor.executeStreaming(prompt, model)

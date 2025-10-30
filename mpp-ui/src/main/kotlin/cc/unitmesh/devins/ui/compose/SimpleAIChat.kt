@@ -101,7 +101,6 @@ fun AutoDevInput() {
     
     val callbacks = object : EditorCallbacks {
         override fun onSubmit(text: String) {
-            // 检查是否配置了有效的 LLM 模型
             if (currentModelConfig == null || !currentModelConfig!!.isValid()) {
                 showConfigWarning = true
                 return
@@ -496,11 +495,8 @@ fun AutoDevInput() {
  */
 private fun extractErrorMessage(e: Throwable): String {
     val message = e.message ?: "Unknown error"
-    val stackTrace = e.stackTraceToString()
-    
-    // 提取 API 错误信息 - 直接返回完整的错误信息
+
     return when {
-        // DeepSeek API 错误 - 直接显示 API 返回内容
         message.contains("DeepSeekLLMClient API") -> {
             val parts = message.split("API: ")
             if (parts.size > 1) {
@@ -512,42 +508,34 @@ private fun extractErrorMessage(e: Throwable): String {
             }
         }
         
-        // OpenAI API 错误 - 直接显示完整信息
         message.contains("OpenAI") -> {
             "=== OpenAI API 错误 ===\n\n$message"
         }
         
-        // Anthropic API 错误 - 直接显示完整信息
         message.contains("Anthropic") -> {
             "=== Anthropic API 错误 ===\n\n$message"
         }
         
-        // 网络错误 - 直接显示完整信息
         message.contains("Connection") || message.contains("timeout") -> {
             "=== 网络连接错误 ===\n\n$message"
         }
         
-        // 认证错误 (401) - 直接显示完整信息
         message.contains("401") || message.contains("Unauthorized") -> {
             "=== 认证失败 (401 Unauthorized) ===\n\n$message"
         }
         
-        // 400 错误 - 直接显示 API 返回的完整信息
         message.contains("400") || message.contains("Bad Request") -> {
             "=== 请求错误 (400 Bad Request) ===\n\n$message"
         }
         
-        // 429 错误（限流）- 直接显示完整信息
         message.contains("429") || message.contains("rate limit") -> {
             "=== 请求限流 (429 Too Many Requests) ===\n\n$message"
         }
         
-        // 500 错误 - 直接显示完整信息
         message.contains("500") || message.contains("Internal Server Error") -> {
             "=== 服务器错误 (500) ===\n\n$message"
         }
         
-        // 其他错误 - 显示完整的错误信息和堆栈
         else -> {
             "=== 错误详情 ===\n\n" +
             "错误类型：${e::class.simpleName}\n\n" +
