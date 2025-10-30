@@ -5,7 +5,7 @@ changelog = "2.2.1"
 gradleIntelliJPlugin = "2.1.0"
 qodana = "0.1.13"
 kover = "0.7.5"
-compose = "1.7.3"
+compose = "1.8.0"
 
 chapi = "2.1.2"
 jtokkit = "1.1.0"

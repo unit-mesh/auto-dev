@@ -32,7 +32,7 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "cc.unitmesh.devins.ui.MainKt"
+        mainClass = "cc.unitmesh.devins.ui.EditorDemoMainKt"
 
         nativeDistributions {
             targetFormats(
