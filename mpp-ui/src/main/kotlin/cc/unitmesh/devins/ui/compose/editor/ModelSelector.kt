@@ -15,35 +15,28 @@ import cc.unitmesh.devins.llm.ModelConfig
  * 模型选择器
  * Provides a UI for selecting and configuring LLM models
  * 
+ * @param initialConfig Initial model configuration (from database or previous session)
  * @param onConfigChange Callback when model configuration changes
  */
 @Composable
 fun ModelSelector(
+    initialConfig: ModelConfig? = null,
     onConfigChange: (ModelConfig) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showConfigDialog by remember { mutableStateOf(false) }
-    var currentConfig by remember { mutableStateOf(ModelConfig.default()) }
+    var currentConfig by remember(initialConfig) { 
+        mutableStateOf(initialConfig ?: ModelConfig.default()) 
+    }
 
     // Display text showing provider and model
     val displayText = remember(currentConfig) {
         "${currentConfig.provider.displayName} / ${currentConfig.modelName}"
     }
 
-    // Recent configurations (quick switch)
     val recentConfigs = remember {
         mutableStateListOf(
-            ModelConfig.default(), // DeepSeek
-            ModelConfig(
-                provider = cc.unitmesh.devins.llm.LLMProviderType.OPENAI,
-                modelName = "gpt-4o",
-                apiKey = ""
-            ),
-            ModelConfig(
-                provider = cc.unitmesh.devins.llm.LLMProviderType.ANTHROPIC,
-                modelName = "claude-3-5-sonnet-20241022",
-                apiKey = ""
-            )
+            ModelConfig.default(),
         )
     }
 
