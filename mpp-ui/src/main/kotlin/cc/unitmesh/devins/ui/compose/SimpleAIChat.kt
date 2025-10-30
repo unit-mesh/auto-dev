@@ -43,7 +43,7 @@ import javax.swing.JFileChooser
  * 支持 LLM 交互（通过 Koog 框架）
  */
 @Composable
-fun SimpleAIChat() {
+fun AutoDevInput() {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
     var llmOutput by remember { mutableStateOf("") }
@@ -100,12 +100,6 @@ fun SimpleAIChat() {
                 return
             }
             
-            println("✅ 提交内容:")
-            println(text)
-            println("\n📝 解析结果:")
-            println(analyzeDevInInput(text))
-            
-            // 编译并执行 DevIns
             compileDevInsWithSpecKit(text, fileSystem, scope) { result ->
                 compilerOutput = result
                 isCompiling = false
@@ -594,7 +588,6 @@ private fun compileDevInsWithSpecKit(
     scope.launch {
         try {
             val result = withContext(Dispatchers.IO) {
-                // 创建编译器上下文并设置文件系统
                 val context = CompilerContext().apply {
                     this.fileSystem = fileSystem
                 }
@@ -627,6 +620,3 @@ private fun compileDevInsWithSpecKit(
         }
     }
 }
-
-private fun getExamplePrompt(): String = ""
-
