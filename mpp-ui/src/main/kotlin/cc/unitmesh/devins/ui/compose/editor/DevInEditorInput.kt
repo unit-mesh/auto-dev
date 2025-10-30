@@ -127,36 +127,49 @@ fun DevInEditorInput(
     // 应用补全
     fun applyCompletion(item: CompletionItem) {
         val insertHandler = item.insertHandler
-        if (insertHandler != null) {
-            val result = insertHandler(textFieldValue.text, textFieldValue.selection.start)
-            textFieldValue = TextFieldValue(
-                text = result.newText,
-                selection = androidx.compose.ui.text.TextRange(result.newCursorPosition)
-            )
-            
-            if (result.shouldTriggerNextCompletion) {
-                // 延迟触发下一个补全
-                scope.launch {
-                    delay(50)
-                    val lastChar = result.newText.getOrNull(result.newCursorPosition - 1)
-                    if (lastChar == ':') {
-                        val triggerType = CompletionTriggerType.COMMAND_VALUE
-                        val context = CompletionTrigger.buildContext(
-                            result.newText,
-                            result.newCursorPosition,
-                            triggerType
-                        )
-                        if (context != null) {
-                            currentTriggerType = triggerType
-                            completionItems = manager.getCompletions(context)
-                            selectedCompletionIndex = 0
-                            showCompletion = completionItems.isNotEmpty()
-                        }
+        val result = if (insertHandler != null) {
+            insertHandler(textFieldValue.text, textFieldValue.selection.start)
+        } else {
+            item.defaultInsert(textFieldValue.text, textFieldValue.selection.start)
+        }
+
+        textFieldValue = TextFieldValue(
+            text = result.newText,
+            selection = androidx.compose.ui.text.TextRange(result.newCursorPosition)
+        )
+
+        if (result.shouldTriggerNextCompletion) {
+            // 延迟触发下一个补全
+            scope.launch {
+                kotlinx.coroutines.delay(50)
+                val lastChar = result.newText.getOrNull(result.newCursorPosition - 1)
+                val triggerType = when (lastChar) {
+                    ':' -> CompletionTriggerType.COMMAND_VALUE
+                    '/' -> CompletionTriggerType.COMMAND
+                    else -> null
+                }
+
+                if (triggerType != null) {
+                    val context = CompletionTrigger.buildContext(
+                        result.newText,
+                        result.newCursorPosition,
+                        triggerType
+                    )
+                    if (context != null) {
+                        currentTriggerType = triggerType
+                        completionItems = manager.getFilteredCompletions(context)
+                        selectedCompletionIndex = 0
+                        showCompletion = completionItems.isNotEmpty()
                     }
+                } else {
+                    showCompletion = false
                 }
             }
+        } else {
+            showCompletion = false
         }
-        showCompletion = false
+
+        focusRequester.requestFocus()
     }
     
     fun handleKeyEvent(event: KeyEvent): Boolean {

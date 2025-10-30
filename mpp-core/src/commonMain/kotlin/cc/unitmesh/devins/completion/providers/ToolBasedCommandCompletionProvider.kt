@@ -22,21 +22,7 @@ class ToolBasedCommandCompletionProvider(
                 displayText = tool.name,
                 description = tool.description,
                 icon = getToolIcon(tool.name),
-                insertHandler = { fullText, cursorPos ->
-                    val slashPos = fullText.lastIndexOf('/', cursorPos - 1)
-                    if (slashPos >= 0) {
-                        val before = fullText.substring(0, slashPos)
-                        val after = fullText.substring(cursorPos)
-                        val newText = before + "/${tool.name} " + after
-                        InsertResult(
-                            newText = newText,
-                            newCursorPosition = before.length + tool.name.length + 2,
-                            shouldTriggerNextCompletion = false
-                        )
-                    } else {
-                        InsertResult(fullText, cursorPos)
-                    }
-                }
+                insertHandler = createCommandInsertHandler(tool.name)
             )
         }
 
@@ -54,6 +40,37 @@ class ToolBasedCommandCompletionProvider(
             "glob" -> "🌐"
             "shell" -> "💻"
             else -> "🔧"
+        }
+    }
+
+    /**
+     * 创建命令插入处理器
+     * 根据命令类型决定插入空格还是冒号
+     */
+    private fun createCommandInsertHandler(commandName: String): (String, Int) -> InsertResult {
+        return { fullText, cursorPos ->
+            val slashPos = fullText.lastIndexOf('/', cursorPos - 1)
+            if (slashPos >= 0) {
+                val before = fullText.substring(0, slashPos)
+                val after = fullText.substring(cursorPos)
+
+                // 根据命令类型决定后缀
+                val suffix = when {
+                    // 需要参数的命令使用冒号
+                    commandName in listOf("read-file", "write-file", "file", "write", "read") -> ":"
+                    // 其他命令使用空格
+                    else -> " "
+                }
+
+                val newText = before + "/$commandName$suffix" + after
+                InsertResult(
+                    newText = newText,
+                    newCursorPosition = before.length + commandName.length + 2,
+                    shouldTriggerNextCompletion = suffix == ":" // 如果是冒号，触发下一级补全
+                )
+            } else {
+                InsertResult(fullText, cursorPos)
+            }
         }
     }
 }

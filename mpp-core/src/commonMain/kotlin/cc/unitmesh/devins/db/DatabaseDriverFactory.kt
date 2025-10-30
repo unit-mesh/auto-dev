@@ -18,3 +18,4 @@ fun createDatabase(driverFactory: DatabaseDriverFactory): DevInsDatabase {
     return DevInsDatabase(driver)
 }
 
+

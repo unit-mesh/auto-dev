@@ -22,6 +22,13 @@ interface ProjectFileSystem {
      * @param path 文件或目录路径
      */
     fun exists(path: String): Boolean
+
+    /**
+     * 检查路径是否为目录
+     * @param path 路径
+     * @return 如果是目录返回 true，否则返回 false
+     */
+    fun isDirectory(path: String): Boolean
     
     /**
      * 列出目录下的文件
@@ -30,6 +37,15 @@ interface ProjectFileSystem {
      * @return 匹配的文件路径列表
      */
     fun listFiles(path: String, pattern: String? = null): List<String>
+    
+    /**
+     * 递归搜索项目中的文件
+     * @param pattern 文件名模式（支持通配符，如 "*controller*"）
+     * @param maxDepth 最大搜索深度，默认为 10
+     * @param maxResults 最大结果数量，默认为 100
+     * @return 匹配的文件相对路径列表
+     */
+    fun searchFiles(pattern: String, maxDepth: Int = 10, maxResults: Int = 100): List<String>
     
     /**
      * 解析相对路径为绝对路径
@@ -46,7 +62,9 @@ class EmptyFileSystem : ProjectFileSystem {
     override fun getProjectPath(): String? = null
     override fun readFile(path: String): String? = null
     override fun exists(path: String): Boolean = false
+    override fun isDirectory(path: String): Boolean = false
     override fun listFiles(path: String, pattern: String?): List<String> = emptyList()
+    override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> = emptyList()
     override fun resolvePath(relativePath: String): String = relativePath
 }
 
@@ -58,7 +76,9 @@ expect class DefaultFileSystem(projectPath: String) : ProjectFileSystem {
     override fun getProjectPath(): String?
     override fun readFile(path: String): String?
     override fun exists(path: String): Boolean
+    override fun isDirectory(path: String): Boolean
     override fun listFiles(path: String, pattern: String?): List<String>
+    override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String>
     override fun resolvePath(relativePath: String): String
 }
 

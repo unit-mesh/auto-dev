@@ -159,9 +159,9 @@ class ToolBasedCommandCompletionProviderTest {
         assertTrue(insertHandler != null, "Should have insert handler")
         
         val result = insertHandler.invoke("/read", 5)
-        assertEquals("/read-file ", result.newText)
-        assertEquals(11, result.newCursorPosition) // Position after "/read-file "
-        assertEquals(false, result.shouldTriggerNextCompletion)
+        assertEquals("/read-file:", result.newText)
+        assertEquals(11, result.newCursorPosition) // Position after "/read-file:"
+        assertEquals(true, result.shouldTriggerNextCompletion) // read-file 需要参数，应该触发下一级补全
     }
     
     @Test

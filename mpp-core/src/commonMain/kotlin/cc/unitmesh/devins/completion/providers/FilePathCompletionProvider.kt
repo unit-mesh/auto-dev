@@ -3,12 +3,13 @@ package cc.unitmesh.devins.completion.providers
 import cc.unitmesh.devins.completion.CompletionContext
 import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionProvider
+import cc.unitmesh.devins.completion.InsertResult
 import cc.unitmesh.devins.completion.defaultInsertHandler
 import cc.unitmesh.devins.workspace.WorkspaceManager
 
 /**
  * 文件路径补全提供者（用于 /file:, /write: 等命令之后）
- * 支持静态常用路径、动态文件系统补全和智能搜索
+ * 支持静态常用路径和全局文件搜索（文件级粒度，无需逐级选择目录）
  */
 class FilePathCompletionProvider : CompletionProvider {
 
@@ -19,185 +20,129 @@ class FilePathCompletionProvider : CompletionProvider {
         // 合并不同类型的补全
         val completions = mutableListOf<CompletionItem>()
 
-        // 1. 静态常用路径
+        // 1. 静态常用文件（总是显示，作为快捷选项）
         completions.addAll(getStaticCompletions(query))
 
-        // 2. 动态文件补全
+        // 2. 全局文件搜索（递归搜索所有匹配的文件，包括深层目录）
         if (workspace.rootPath != null) {
-            completions.addAll(getDynamicCompletions(query, workspace))
+            completions.addAll(searchFiles(query, workspace))
         }
 
         return completions
             .distinctBy { it.text }
             .filter { it.matchScore(query) > 0 }
             .sortedWith(createCompletionComparator(query))
-            .take(50) // 增加结果数量限制
+            .take(50)
     }
 
     /**
-     * 获取静态常用路径补全
+     * 获取静态常用文件补全（只包含文件，不包含目录）
      */
     private fun getStaticCompletions(query: String): List<CompletionItem> {
-        val commonPaths = listOf(
-            // 源码目录
-            CompletionItem(
-                text = "src/main/kotlin/",
-                displayText = "src/main/kotlin/",
-                description = "Kotlin source directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/main/kotlin/")
-            ),
-            CompletionItem(
-                text = "src/main/java/",
-                displayText = "src/main/java/",
-                description = "Java source directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/main/java/")
-            ),
-            CompletionItem(
-                text = "src/test/kotlin/",
-                displayText = "src/test/kotlin/",
-                description = "Kotlin test directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/test/kotlin/")
-            ),
-            CompletionItem(
-                text = "src/test/java/",
-                displayText = "src/test/java/",
-                description = "Java test directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/test/java/")
-            ),
-
-            // 资源目录
-            CompletionItem(
-                text = "src/main/resources/",
-                displayText = "src/main/resources/",
-                description = "Main resources directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/main/resources/")
-            ),
-            CompletionItem(
-                text = "src/test/resources/",
-                displayText = "src/test/resources/",
-                description = "Test resources directory",
-                icon = "📁",
-                insertHandler = defaultInsertHandler("src/test/resources/")
-            ),
-
-            // 配置文件
+        val commonFiles = listOf(
+            // 项目配置文件
             CompletionItem(
                 text = "README.md",
                 displayText = "README.md",
-                description = "Project README",
+                description = "File: README.md",
                 icon = "📝",
                 insertHandler = defaultInsertHandler("README.md")
             ),
             CompletionItem(
                 text = "build.gradle.kts",
                 displayText = "build.gradle.kts",
-                description = "Gradle build file",
+                description = "File: build.gradle.kts",
                 icon = "🔨",
                 insertHandler = defaultInsertHandler("build.gradle.kts")
             ),
             CompletionItem(
+                text = "build.gradle",
+                displayText = "build.gradle",
+                description = "File: build.gradle",
+                icon = "🔨",
+                insertHandler = defaultInsertHandler("build.gradle")
+            ),
+            CompletionItem(
                 text = "settings.gradle.kts",
                 displayText = "settings.gradle.kts",
-                description = "Gradle settings file",
+                description = "File: settings.gradle.kts",
                 icon = "🔨",
                 insertHandler = defaultInsertHandler("settings.gradle.kts")
             ),
             CompletionItem(
+                text = "settings.gradle",
+                displayText = "settings.gradle",
+                description = "File: settings.gradle",
+                icon = "🔨",
+                insertHandler = defaultInsertHandler("settings.gradle")
+            ),
+            CompletionItem(
                 text = "gradle.properties",
                 displayText = "gradle.properties",
-                description = "Gradle properties file",
+                description = "File: gradle.properties",
                 icon = "⚙️",
                 insertHandler = defaultInsertHandler("gradle.properties")
             ),
-
-            // 其他常用文件
             CompletionItem(
-                text = ".gitignore",
-                displayText = ".gitignore",
-                description = "Git ignore file",
-                icon = "🚫",
-                insertHandler = defaultInsertHandler(".gitignore")
+                text = "pom.xml",
+                displayText = "pom.xml",
+                description = "File: pom.xml",
+                icon = "📋",
+                insertHandler = defaultInsertHandler("pom.xml")
             ),
             CompletionItem(
                 text = "package.json",
                 displayText = "package.json",
-                description = "NPM package file",
+                description = "File: package.json",
                 icon = "📦",
                 insertHandler = defaultInsertHandler("package.json")
+            ),
+            CompletionItem(
+                text = ".gitignore",
+                displayText = ".gitignore",
+                description = "File: .gitignore",
+                icon = "🚫",
+                insertHandler = defaultInsertHandler(".gitignore")
+            ),
+            CompletionItem(
+                text = "Dockerfile",
+                displayText = "Dockerfile",
+                description = "File: Dockerfile",
+                icon = "🐳",
+                insertHandler = defaultInsertHandler("Dockerfile")
+            ),
+            CompletionItem(
+                text = ".dockerignore",
+                displayText = ".dockerignore",
+                description = "File: .dockerignore",
+                icon = "🐳",
+                insertHandler = defaultInsertHandler(".dockerignore")
             )
         )
 
-        return commonPaths.filter { it.matchScore(query) > 0 }
+        return commonFiles.filter { it.matchScore(query) > 0 }
     }
 
-    private fun getDynamicCompletions(query: String, workspace: cc.unitmesh.devins.workspace.Workspace): List<CompletionItem> {
+    /**
+     * 全局文件搜索（递归搜索所有匹配的文件）
+     */
+    private fun searchFiles(query: String, workspace: cc.unitmesh.devins.workspace.Workspace): List<CompletionItem> {
         return try {
             val fileSystem = workspace.fileSystem
-
-            // 如果查询为空或很短，只显示根目录内容
-            if (query.isEmpty()) {
-                return getRootDirectoryCompletions(fileSystem)
-            }
-
-            // 合并目录浏览和文件搜索结果
-            val completions = mutableListOf<CompletionItem>()
-
-            // 1. 目录浏览补全
-            completions.addAll(getDirectoryCompletions(query, fileSystem))
-
-            // 2. 文件搜索补全（当查询长度 >= 2 时）
-            if (query.length >= 2) {
-                completions.addAll(getSearchCompletions(query, fileSystem))
-            }
-
-            completions
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    /**
-     * 获取根目录内容
-     */
-    private fun getRootDirectoryCompletions(fileSystem: cc.unitmesh.devins.filesystem.ProjectFileSystem): List<CompletionItem> {
-        return try {
-            val files = fileSystem.listFiles("", null)
-            files.take(20).map { filePath ->
-                createCompletionItem(filePath, fileSystem)
-            }
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    /**
-     * 获取目录浏览补全
-     */
-    private fun getDirectoryCompletions(query: String, fileSystem: cc.unitmesh.devins.filesystem.ProjectFileSystem): List<CompletionItem> {
-        return try {
-            // 确定要浏览的目录
-            val targetDir = if (query.contains("/")) {
-                query.substringBeforeLast("/")
+            
+            // 根据查询长度调整搜索参数
+            val (searchPattern, maxResults) = if (query.isEmpty()) {
+                // 空查询：返回所有文件，但限制数量
+                "*" to 30
             } else {
-                "" // 根目录
+                // 有查询：搜索匹配的文件
+                "*$query*" to 100
             }
-
-            val nameFilter = if (query.contains("/")) {
-                query.substringAfterLast("/")
-            } else {
-                query
-            }
-
-            // 列出目录内容
-            val files = fileSystem.listFiles(targetDir, "*$nameFilter*")
-
-            files.map { filePath ->
-                createCompletionItem(filePath, fileSystem)
+            
+            val filePaths = fileSystem.searchFiles(searchPattern, maxDepth = 10, maxResults = maxResults)
+            
+            filePaths.map { filePath ->
+                createFileCompletionItem(filePath)
             }
         } catch (e: Exception) {
             emptyList()
@@ -205,38 +150,49 @@ class FilePathCompletionProvider : CompletionProvider {
     }
 
     /**
-     * 获取文件搜索补全
+     * 创建文件补全项（只处理文件，不处理目录）
      */
-    private fun getSearchCompletions(query: String, fileSystem: cc.unitmesh.devins.filesystem.ProjectFileSystem): List<CompletionItem> {
-        return try {
-            // 在整个项目中搜索匹配的文件
-            val searchPattern = "*$query*"
-            val files = fileSystem.listFiles("", searchPattern)
-
-            files.map { filePath ->
-                createCompletionItem(filePath, fileSystem)
-            }
-        } catch (e: Exception) {
-            emptyList()
+    private fun createFileCompletionItem(filePath: String): CompletionItem {
+        // 提取文件名用于显示
+        val fileName = filePath.substringAfterLast("/")
+        val directoryPath = filePath.substringBeforeLast("/", "")
+        
+        // 显示文本包含路径信息，方便识别
+        val displayText = if (directoryPath.isNotEmpty()) {
+            "$fileName • $directoryPath"
+        } else {
+            fileName
         }
-    }
-
-    /**
-     * 创建补全项
-     */
-    private fun createCompletionItem(filePath: String, fileSystem: cc.unitmesh.devins.filesystem.ProjectFileSystem): CompletionItem {
-        // 简单的目录检测：检查路径是否以 / 结尾或者通过文件系统检测
-        val isDirectory = filePath.endsWith("/") ||
-                         (!filePath.contains(".") && fileSystem.exists("$filePath/"))
-        val displayPath = if (isDirectory && !filePath.endsWith("/")) "$filePath/" else filePath
 
         return CompletionItem(
-            text = displayPath,
-            displayText = displayPath,
-            description = if (isDirectory) "Directory" else "File",
-            icon = if (isDirectory) "📁" else getFileIcon(filePath),
-            insertHandler = defaultInsertHandler(displayPath)
+            text = filePath,
+            displayText = displayText,
+            description = "File: $filePath",
+            icon = getFileIcon(filePath),
+            insertHandler = createFilePathInsertHandler(filePath)
         )
+    }
+
+    /**
+     * 创建文件路径插入处理器
+     */
+    private fun createFilePathInsertHandler(filePath: String): (String, Int) -> InsertResult {
+        return { fullText, cursorPos ->
+            // 找到触发字符的位置（通常是冒号）
+            val colonPos = fullText.lastIndexOf(':', cursorPos - 1)
+            if (colonPos >= 0) {
+                val before = fullText.substring(0, colonPos + 1)
+                val after = fullText.substring(cursorPos)
+                val newText = before + filePath + after
+                InsertResult(
+                    newText = newText,
+                    newCursorPosition = before.length + filePath.length,
+                    shouldTriggerNextCompletion = false
+                )
+            } else {
+                InsertResult(fullText, cursorPos)
+            }
+        }
     }
 
     /**
@@ -244,19 +200,22 @@ class FilePathCompletionProvider : CompletionProvider {
      */
     private fun createCompletionComparator(query: String): Comparator<CompletionItem> {
         return compareBy<CompletionItem> { item ->
-            // 1. 优先级：目录 > 文件
-            if (item.description?.contains("Directory") == true) 0 else 1
-        }.thenBy { item ->
-            // 2. 匹配度：完全匹配 > 前缀匹配 > 包含匹配
+            // 1. 文件名匹配度：完全匹配 > 前缀匹配 > 包含匹配
+            val fileName = item.text.substringAfterLast("/")
             when {
-                item.text.equals(query, ignoreCase = true) -> 0
-                item.text.startsWith(query, ignoreCase = true) -> 1
-                item.text.contains(query, ignoreCase = true) -> 2
-                else -> 3
+                fileName.equals(query, ignoreCase = true) -> 0
+                fileName.startsWith(query, ignoreCase = true) -> 1
+                fileName.contains(query, ignoreCase = true) -> 2
+                item.text.contains(query, ignoreCase = true) -> 3
+                else -> 4
             }
         }.thenBy { item ->
+            // 2. 路径深度：浅的优先（文件在根目录附近的优先）
+            item.text.count { it == '/' }
+        }.thenBy { item ->
             // 3. 文件名长度：短的优先
-            item.text.length
+            val fileName = item.text.substringAfterLast("/")
+            fileName.length
         }.thenBy { item ->
             // 4. 字母顺序
             item.text.lowercase()

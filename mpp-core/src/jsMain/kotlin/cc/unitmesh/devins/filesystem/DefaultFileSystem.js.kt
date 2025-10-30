@@ -18,9 +18,19 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
         // TODO: 使用 Node.js fs.existsSync 实现
         return false
     }
+
+    actual override fun isDirectory(path: String): Boolean {
+        // TODO: 使用 Node.js fs.statSync 实现
+        return false
+    }
     
     actual override fun listFiles(path: String, pattern: String?): List<String> {
         // TODO: 使用 Node.js fs.readdirSync 实现
+        return emptyList()
+    }
+    
+    actual override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {
+        // TODO: 使用 Node.js 递归搜索实现
         return emptyList()
     }
     

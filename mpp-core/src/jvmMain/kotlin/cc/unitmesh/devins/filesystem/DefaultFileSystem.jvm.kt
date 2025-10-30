@@ -32,6 +32,15 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             false
         }
     }
+
+    actual override fun isDirectory(path: String): Boolean {
+        return try {
+            val resolvedPath = resolvePathInternal(path)
+            resolvedPath.exists() && resolvedPath.isDirectory()
+        } catch (e: Exception) {
+            false
+        }
+    }
     
     actual override fun listFiles(path: String, pattern: String?): List<String> {
         return try {
@@ -52,6 +61,47 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             } else {
                 files
             }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+    
+    actual override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {
+        return try {
+            val projectRoot = Path.of(projectPath)
+            if (!projectRoot.exists() || !projectRoot.isDirectory()) {
+                return emptyList()
+            }
+            
+            val regex = pattern.replace("*", ".*").replace("?", ".").toRegex(RegexOption.IGNORE_CASE)
+            val results = mutableListOf<String>()
+            
+            // 常见的排除目录
+            val excludeDirs = setOf(
+                "node_modules", ".git", ".idea", "build", "out", "target", 
+                "dist", ".gradle", "venv", "__pycache__", "bin"
+            )
+            
+            Files.walk(projectRoot, maxDepth).use { stream ->
+                stream.filter { path ->
+                    // 只保留普通文件
+                    path.isRegularFile() &&
+                    // 排除在排除目录中的文件
+                    !path.any { it.fileName.toString() in excludeDirs }
+                }
+                .limit(maxResults.toLong())
+                .forEach { path ->
+                    val relativePath = projectRoot.relativize(path).toString()
+                    val fileName = path.fileName.toString()
+                    
+                    // 匹配文件名或完整路径
+                    if (regex.matches(fileName) || regex.containsMatchIn(relativePath)) {
+                        results.add(relativePath)
+                    }
+                }
+            }
+            
+            results
         } catch (e: Exception) {
             emptyList()
         }

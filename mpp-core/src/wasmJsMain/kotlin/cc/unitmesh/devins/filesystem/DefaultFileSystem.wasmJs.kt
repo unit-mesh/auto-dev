@@ -17,8 +17,16 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     actual override fun exists(path: String): Boolean {
         return false
     }
+
+    actual override fun isDirectory(path: String): Boolean {
+        return false
+    }
     
     actual override fun listFiles(path: String, pattern: String?): List<String> {
+        return emptyList()
+    }
+    
+    actual override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {
         return emptyList()
     }
     
