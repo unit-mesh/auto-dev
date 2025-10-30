@@ -21,7 +21,7 @@ interface CompletionProvider {
      * @param triggerType 触发类型
      * @return 如果支持返回 true，否则返回 false
      */
-    fun supports(triggerType: CompletionTriggerType): Boolean
+    fun supports(triggerType: CompletionTriggerType): Boolean = true
 }
 
 /**

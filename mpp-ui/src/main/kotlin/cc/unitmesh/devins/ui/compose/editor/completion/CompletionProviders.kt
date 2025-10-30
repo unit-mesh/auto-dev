@@ -4,15 +4,9 @@ import cc.unitmesh.devins.command.SpecKitCommand
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.completion.CompletionContext
 import cc.unitmesh.devins.completion.CompletionItem
+import cc.unitmesh.devins.completion.CompletionProvider
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.completion.InsertResult
-
-/**
- * 补全提供者接口
- */
-interface CompletionProvider {
-    fun getCompletions(context: CompletionContext): List<CompletionItem>
-}
 
 /**
  * Agent 补全提供者（@符号）
