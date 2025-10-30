@@ -34,12 +34,12 @@ import kotlinx.coroutines.launch
 
 /**
  * DevIn 编辑器输入组件
- * 支持语法高亮、代码补全、快捷键等功能
+ * 完整的输入界面，包含底部工具栏
  */
 @Composable
 fun DevInEditorInput(
     initialText: String = "",
-    placeholder: String = "Type @ for agents, / for commands, \$ for variables...",
+    placeholder: String = "Plan, @ for context, / for commands",
     callbacks: EditorCallbacks? = null,
     modifier: Modifier = Modifier
 ) {
@@ -214,20 +214,21 @@ fun DevInEditorInput(
     Box(modifier = modifier) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 // 编辑器区域
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 100.dp, max = 400.dp)
-                        .padding(12.dp)
+                        .heightIn(min = 120.dp, max = 400.dp)
+                        .padding(16.dp)
                 ) {
                     BasicTextField(
                         value = textFieldValue,
@@ -277,29 +278,30 @@ fun DevInEditorInput(
                     )
                 }
                 
-                // 提示文本
-                Divider()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "@ agents · / commands · \$ variables",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
-                    )
-                    
-                    Text(
-                        text = "↵ Submit · ⇧↵ New line",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
-                    )
-                }
+                // 底部工具栏
+                HorizontalDivider()
+                BottomToolbar(
+                    onSendClick = {
+                        callbacks?.onSubmit(textFieldValue.text)
+                    },
+                    onAtClick = {
+                        // 插入 @ 并触发补全
+                        val current = textFieldValue
+                        textFieldValue = TextFieldValue(
+                            text = current.text + "@",
+                            selection = androidx.compose.ui.text.TextRange(current.text.length + 1)
+                        )
+                    },
+                    onSlashClick = {
+                        // 插入 / 并触发补全
+                        val current = textFieldValue
+                        textFieldValue = TextFieldValue(
+                            text = current.text + "/",
+                            selection = androidx.compose.ui.text.TextRange(current.text.length + 1)
+                        )
+                    },
+                    sendEnabled = textFieldValue.text.isNotBlank()
+                )
             }
         }
         

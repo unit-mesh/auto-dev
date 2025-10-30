@@ -4,29 +4,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import cc.unitmesh.devins.ui.compose.components.DevInEditorDemo
+import cc.unitmesh.devins.ui.compose.SimpleAIChat
 import cc.unitmesh.devins.ui.compose.theme.DevInsTheme
 
 /**
- * DevIn 编辑器演示应用入口
- * 独立运行编辑器组件进行测试
- * 
- * 运行方式：
- * ./gradlew :mpp-ui:runEditorDemo
+ * DevIn AI Assistant 主应用入口
+ * 简洁的 AI 对话界面，重点测试语法高亮功能
  */
 fun main() = application {
     val windowState = rememberWindowState(
-        width = 1600.dp,
-        height = 1000.dp
+        width = 1200.dp,
+        height = 800.dp
     )
     
     Window(
         onCloseRequest = ::exitApplication,
-        title = "DevIn Editor Demo - Testing & Development",
+        title = "AutoDev - DevIn AI Assistant",
         state = windowState
     ) {
         DevInsTheme {
-            DevInEditorDemo()
+            SimpleAIChat()
         }
     }
 }

@@ -50,27 +50,28 @@ class DevInSyntaxHighlighter {
     
     /**
      * 获取 Token 类型对应的样式
+     * 采用高对比度、易区分的现代配色方案
      */
     private fun getStyleForTokenType(type: DevInsTokenType): HighlightStyle? {
         return when (type) {
-            // Agent 相关
+            // Agent 相关 - 使用醒目的青色（类似 Slack 提及）
             DevInsTokenType.AGENT_START -> HighlightStyle(
-                color = Color(0xFF9876AA), // 紫色
+                color = Color(0xFF00D9FF), // 亮青色 #00D9FF
                 bold = true
             )
             
-            // Command 相关
+            // Command 相关 - 使用鲜艳的绿色（类似终端命令）
             DevInsTokenType.COMMAND_START -> HighlightStyle(
-                color = Color(0xFF9876AA), // 紫色
+                color = Color(0xFF00FF88), // 亮绿色 #00FF88
                 bold = true
             )
             DevInsTokenType.COMMAND_PROP -> HighlightStyle(
-                color = Color(0xFF6A8759) // 绿色
+                color = Color(0xFF88DD88) // 柔和绿色
             )
             
-            // Variable 相关
+            // Variable 相关 - 使用洋红色/粉紫色（区别于其他）
             DevInsTokenType.VARIABLE_START -> HighlightStyle(
-                color = Color(0xFF9876AA), // 紫色
+                color = Color(0xFFFF6EC7), // 洋红色 #FF6EC7
                 bold = true
             )
             
@@ -138,7 +139,26 @@ class DevInSyntaxHighlighter {
     
     companion object {
         /**
-         * 深色主题颜色方案 (类似 IntelliJ Darcula)
+         * 现代化高对比度配色方案
+         * 参考：GitHub、Slack、VSCode 等现代应用
+         */
+        object ModernColors {
+            // 特殊符号 - 高对比度、易区分
+            val AGENT = Color(0xFF00D9FF)      // 青色 - Agent 提及（@）
+            val COMMAND = Color(0xFF00FF88)    // 绿色 - 命令（/）
+            val VARIABLE = Color(0xFFFF6EC7)   // 洋红 - 变量（$）
+            
+            // 代码元素
+            val KEYWORD = Color(0xFFFF7F50)    // 珊瑚橙 - 关键字
+            val STRING = Color(0xFF98C379)     // 柔和绿 - 字符串
+            val NUMBER = Color(0xFFD19A66)     // 橙黄色 - 数字
+            val COMMENT = Color(0xFF5C6370)    // 灰色 - 注释
+            val IDENTIFIER = Color(0xFFABB2BF) // 浅灰 - 标识符
+            val CONSTANT = Color(0xFFE5C07B)   // 金黄色 - 常量
+        }
+        
+        /**
+         * 深色主题颜色方案 (保留向后兼容)
          */
         object DarculaColors {
             val KEYWORD = Color(0xFFCC7832)
@@ -148,19 +168,6 @@ class DevInSyntaxHighlighter {
             val IDENTIFIER = Color(0xFFA9B7C6)
             val CONSTANT = Color(0xFF9876AA)
             val TEXT = Color(0xFFA9B7C6)
-        }
-        
-        /**
-         * 浅色主题颜色方案
-         */
-        object LightColors {
-            val KEYWORD = Color(0xFF0000FF)
-            val STRING = Color(0xFF008000)
-            val NUMBER = Color(0xFF1750EB)
-            val COMMENT = Color(0xFF808080)
-            val IDENTIFIER = Color(0xFF000000)
-            val CONSTANT = Color(0xFF871094)
-            val TEXT = Color(0xFF000000)
         }
     }
 }
