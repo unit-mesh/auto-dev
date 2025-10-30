@@ -64,8 +64,7 @@ kotlin {
                 implementation("ai.koog:koog-agents:0.5.1")
                 // Koog needs these executors
                 implementation("ai.koog:prompt-executor-llms-all:0.5.1")
-                implementation("com.squareup.okhttp3:okhttp:4.12.0")
-                
+
                 // SQLDelight - JVM SQLite driver
                 implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
             }
