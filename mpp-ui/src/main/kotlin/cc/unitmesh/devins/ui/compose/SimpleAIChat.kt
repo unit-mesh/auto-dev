@@ -52,6 +52,7 @@ fun AutoDevInput() {
     
     // LLM 配置状态
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
+    var allModelConfigs by remember { mutableStateOf<List<ModelConfig>>(emptyList()) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var showConfigWarning by remember { mutableStateOf(false) }
     var showDebugPanel by remember { mutableStateOf(false) }
@@ -78,13 +79,19 @@ fun AutoDevInput() {
             val savedConfigs = withContext(Dispatchers.IO) {
                 repository.getAllConfigs()
             }
+            
+            // 保存所有配置到状态
+            allModelConfigs = savedConfigs
+            
             if (savedConfigs.isNotEmpty()) {
-                // 使用第一个保存的配置
-                val savedConfig = savedConfigs.first()
-                currentModelConfig = savedConfig
-                if (savedConfig.isValid()) {
-                    llmService = KoogLLMService.create(savedConfig)
-                    println("✅ 从数据库加载配置: ${savedConfig.provider.displayName} / ${savedConfig.modelName}")
+                val defaultConfig = withContext(Dispatchers.IO) {
+                    repository.getDefaultConfig()
+                }
+                val configToUse = defaultConfig ?: savedConfigs.first()
+                
+                currentModelConfig = configToUse
+                if (configToUse.isValid()) {
+                    llmService = KoogLLMService.create(configToUse)
                 }
             }
         } catch (e: Exception) {
@@ -114,7 +121,6 @@ fun AutoDevInput() {
                     try {
                         llmService?.streamPrompt(text)
                             ?.catch { e ->
-                                // 捕获流式错误
                                 val errorMsg = extractErrorMessage(e)
                                 errorMessage = errorMsg
                                 showErrorDialog = true
@@ -200,6 +206,7 @@ fun AutoDevInput() {
             callbacks = callbacks,
             completionManager = completionManager,
             initialModelConfig = currentModelConfig,
+            availableConfigs = allModelConfigs,
             onModelConfigChange = { config ->
                 currentModelConfig = config
                 if (config.isValid()) {
@@ -210,11 +217,25 @@ fun AutoDevInput() {
                         // 保存配置到数据库
                         scope.launch(Dispatchers.IO) {
                             try {
-                                // 先清理旧配置
-                                repository.deleteAllConfigs()
-                                // 保存新配置
-                                repository.saveConfig(config)
-                                println("✅ 配置已保存到数据库")
+                                // 检查配置是否已存在
+                                val existingConfigs = repository.getAllConfigs()
+                                val existingConfig = existingConfigs.find { 
+                                    it.provider == config.provider && 
+                                    it.modelName == config.modelName &&
+                                    it.apiKey == config.apiKey 
+                                }
+                                
+                                if (existingConfig == null) {
+                                    // 新配置，保存并设为默认
+                                    repository.saveConfig(config, setAsDefault = true)
+                                    println("✅ 新配置已保存到数据库")
+                                    
+                                    // 重新加载所有配置
+                                    allModelConfigs = repository.getAllConfigs()
+                                } else {
+                                    // 已存在的配置，设为默认
+                                    println("✅ 切换到已有配置")
+                                }
                             } catch (e: Exception) {
                                 println("⚠️ 保存配置失败: ${e.message}")
                             }

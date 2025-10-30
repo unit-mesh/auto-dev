@@ -35,7 +35,6 @@ fun ModelConfigDialog(
     var apiKey by remember { mutableStateOf(currentConfig.apiKey) }
     var temperature by remember { mutableStateOf(currentConfig.temperature.toString()) }
     var maxTokens by remember { mutableStateOf(currentConfig.maxTokens.toString()) }
-    var topP by remember { mutableStateOf(currentConfig.topP.toString()) }
     var baseUrl by remember { mutableStateOf(currentConfig.baseUrl) }
     var showApiKey by remember { mutableStateOf(false) }
     var expandedProvider by remember { mutableStateOf(false) }
@@ -215,16 +214,6 @@ fun ModelConfigDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         supportingText = { Text("0.0 - 2.0", style = MaterialTheme.typography.bodySmall) }
                     )
-
-                    // Top P
-                    OutlinedTextField(
-                        value = topP,
-                        onValueChange = { topP = it },
-                        label = { Text("Top P") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        supportingText = { Text("0.0 - 1.0", style = MaterialTheme.typography.bodySmall) }
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -259,7 +248,6 @@ fun ModelConfigDialog(
                                 apiKey = apiKey.trim(),
                                 temperature = temperature.toDoubleOrNull() ?: 0.0,
                                 maxTokens = maxTokens.toIntOrNull() ?: 2000,
-                                topP = topP.toDoubleOrNull() ?: 1.0,
                                 baseUrl = baseUrl.trim()
                             )
                             onSave(config)

@@ -18,30 +18,25 @@ import ai.koog.prompt.params.LLMParams
 import ai.koog.prompt.streaming.StreamFrame
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 
 class KoogLLMService(private val config: ModelConfig) {
     fun streamPrompt(userPrompt: String): Flow<String> = flow {
         val executor = createExecutor()
         val model = getModelForProvider()
-        
+
         val prompt = prompt(
             id = "chat",
-            params = LLMParams(temperature = config.temperature.toDouble())
+            params = LLMParams(temperature = config.temperature)
         ) {
             user(userPrompt)
         }
-        
+
         executor.executeStreaming(prompt, model)
             .cancellable()
-            .catch {
-                throw it
-            }
             .collect { frame ->
                 when (frame) {
                     is StreamFrame.Append -> {
-                        // Emit text chunks as they arrive in real-time
                         emit(frame.text)
                     }
                     is StreamFrame.End -> {
@@ -125,7 +120,7 @@ class KoogLLMService(private val config: ModelConfig) {
             provider = provider,
             id = config.modelName,
             capabilities = listOf(LLMCapability.Completion, LLMCapability.Tools),
-            contextLength = contextLength
+            contextLength = contextLength,
         )
     }
 

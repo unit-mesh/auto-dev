@@ -42,9 +42,8 @@ class ModelConfigRepository(private val database: DevInsDatabase) {
             modelName = config.modelName,
             apiKey = config.apiKey,
             baseUrl = config.baseUrl,
-            temperature = config.temperature.toDouble(),
+            temperature = config.temperature,
             maxTokens = config.maxTokens.toLong(),
-            topP = config.topP.toDouble(),
             createdAt = now,
             updatedAt = now,
             isDefault = if (setAsDefault) 1 else 0
@@ -72,7 +71,6 @@ class ModelConfigRepository(private val database: DevInsDatabase) {
             baseUrl = config.baseUrl,
             temperature = config.temperature.toDouble(),
             maxTokens = config.maxTokens.toLong(),
-            topP = config.topP.toDouble(),
             updatedAt = now,
             id = id
         )
@@ -110,8 +108,7 @@ class ModelConfigRepository(private val database: DevInsDatabase) {
             apiKey = this.apiKey,
             baseUrl = this.baseUrl,
             temperature = this.temperature,
-            maxTokens = this.maxTokens.toInt(),
-            topP = this.topP
+            maxTokens = this.maxTokens.toInt()
         )
     }
     

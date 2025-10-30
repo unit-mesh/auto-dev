@@ -22,6 +22,7 @@ fun BottomToolbar(
     onSlashClick: () -> Unit,
     sendEnabled: Boolean,
     initialModelConfig: ModelConfig? = null,
+    availableConfigs: List<ModelConfig> = emptyList(),
     onModelConfigChange: (ModelConfig) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -40,6 +41,7 @@ fun BottomToolbar(
             AgentSelector()
             ModelSelector(
                 initialConfig = initialModelConfig,
+                availableConfigs = availableConfigs,
                 onConfigChange = onModelConfigChange
             )
         }

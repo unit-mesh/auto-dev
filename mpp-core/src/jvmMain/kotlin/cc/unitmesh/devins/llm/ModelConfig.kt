@@ -37,7 +37,6 @@ data class ModelConfig(
     val apiKey: String = "",
     val temperature: Double = 0.0,
     val maxTokens: Int = 128000,
-    val topP: Double = 1.0,
     val baseUrl: String = "" // For custom endpoints like Ollama
 ) {
     fun isValid(): Boolean {

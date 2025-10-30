@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS ModelConfig (
     baseUrl TEXT NOT NULL DEFAULT '',
     temperature REAL NOT NULL DEFAULT 0.7,
     maxTokens INTEGER NOT NULL DEFAULT 2048,
-    topP REAL NOT NULL DEFAULT 1.0,
     createdAt INTEGER NOT NULL,
     updatedAt INTEGER NOT NULL,
     isDefault INTEGER NOT NULL DEFAULT 0
@@ -27,8 +26,8 @@ SELECT * FROM ModelConfig WHERE id = ?;
 
 -- 插入配置
 insert:
-INSERT INTO ModelConfig(provider, modelName, apiKey, baseUrl, temperature, maxTokens, topP, createdAt, updatedAt, isDefault)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ModelConfig(provider, modelName, apiKey, baseUrl, temperature, maxTokens,createdAt, updatedAt, isDefault)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- 更新配置
 update:
@@ -39,7 +38,6 @@ SET provider = ?,
     baseUrl = ?,
     temperature = ?,
     maxTokens = ?,
-    topP = ?,
     updatedAt = ?
 WHERE id = ?;
 
