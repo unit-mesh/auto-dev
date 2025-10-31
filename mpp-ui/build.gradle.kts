@@ -33,6 +33,9 @@ kotlin {
                 outputFileName = "mpp-ui.js"
             }
         }
+        nodejs {
+            // Configure Node.js target for CLI
+        }
         binaries.executable()
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
