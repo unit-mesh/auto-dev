@@ -5,15 +5,14 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
-        android:label="AutoDev UI"
+        android:label="AutoDev Mobile"
         android:icon="@drawable/ic_launcher"
         android:allowBackup="true"
         android:supportsRtl="true">
         <activity
             android:name="cc.unitmesh.devins.ui.MainActivity"
             android:exported="true"
-            android:label="AutoDev UI"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

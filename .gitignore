@@ -152,3 +152,4 @@ src/main/gen
 .github/prompts
 kotlin-js-store/*
 Samples
+.playwright-mcp
