@@ -51,13 +51,11 @@ class DiagnosticTest {
                 println("   - 节点类型: ${child::class.simpleName}")
                 println("     内容: ${child.getText()}")
                 
-                // 如果是 CommandNode，显示详细信息
-                if (child is cc.unitmesh.devins.ast.DevInsCommandNode) {
-                    println("     ↳ 命令名: ${child.name}")
-                    println("     ↳ 参数数量: ${child.arguments.size}")
-                    child.arguments.forEach { arg ->
-                        println("       - 参数: ${arg.getText()}")
-                    }
+                // 如果是 UsedNode，显示详细信息
+                if (child is cc.unitmesh.devins.ast.DevInsUsedNode) {
+                    println("     ↳ Used类型: ${child.type}")
+                    println("     ↳ 标识符: ${child.identifier.getText()}")
+                    println("     ↳ 子节点数量: ${child.children.size}")
                 }
             }
         } else {

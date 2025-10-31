@@ -27,16 +27,13 @@ class DevInsCompiler(
     private val agentProcessor = AgentProcessor()
     
     // 初始化处理器列表
-    // 包含 UsedProcessor（用于处理 DevInsUsedNode）
-    // 以及独立的处理器（作为后备，处理直接生成的节点）
+    // UsedProcessor 作为统一入口点，与 IDEA 版本保持一致
+    // Parser 现在生成 DevInsUsedNode 而不是具体的命令/变量/代理节点
     private val processors: List<DevInsNodeProcessor> = listOf(
         TextSegmentProcessor(),
         CodeBlockProcessor(),
         FrontMatterProcessor(),
         UsedProcessor(commandProcessor, variableProcessor, agentProcessor),
-        commandProcessor,  // 后备：直接处理 DevInsCommandNode
-        variableProcessor, // 后备：直接处理 DevInsVariableNode
-        agentProcessor,    // 后备：直接处理 DevInsAgentNode
         VelocityExpressionProcessor()
     )
     

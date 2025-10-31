@@ -2,6 +2,7 @@ package cc.unitmesh.devins.compiler.processor
 
 import cc.unitmesh.devins.ast.*
 import cc.unitmesh.devins.compiler.context.CompilerContext
+import cc.unitmesh.devins.token.DevInsTokenType
 
 /**
  * Used 节点处理器
@@ -69,8 +70,17 @@ class UsedProcessor(
         context.logger.info("[$name] Routing command to CommandProcessor: $commandName")
         
         // 创建 DevInsCommandNode 并委托给 CommandProcessor
-        // 从 Used 节点提取参数
-        val arguments = node.children.filter { it != identifier }
+        // 从 Used 节点的 children 中提取参数
+        // 只提取 COMMAND_PROP 类型的 token（即冒号后面的内容）
+        val arguments = node.children.filter { child ->
+            if (child is DevInsTokenNode) {
+                // 只保留 COMMAND_PROP 类型的 token（命令参数）
+                child.token.type == DevInsTokenType.COMMAND_PROP
+            } else {
+                // 保留非 token 节点（如标识符节点等）
+                child !is DevInsTokenNode
+            }
+        }
         
         val commandNode = DevInsCommandNode(
             name = commandName,
