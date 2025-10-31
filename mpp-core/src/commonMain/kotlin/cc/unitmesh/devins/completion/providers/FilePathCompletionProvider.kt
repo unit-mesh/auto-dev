@@ -39,17 +39,49 @@ class FilePathCompletionProvider : CompletionProvider {
         completions.addAll(getStaticCompletions(query))
         
         // 2. 动态文件搜索（异步触发 + 使用缓存返回）
-        val searchResults = cachedResults[query].orEmpty()
-        triggerBackgroundSearch(query)
-        
-        completions.addAll(searchResults.map { filePath ->
-            createFileCompletionItem(filePath)
-        })
+        // 如果查询为空，返回根目录下的常见文件
+        if (query.isBlank()) {
+            completions.addAll(getCommonRootFiles(workspacePath))
+        } else {
+            val searchResults = cachedResults[query].orEmpty()
+            triggerBackgroundSearch(query)
+            
+            completions.addAll(searchResults.map { filePath ->
+                createFileCompletionItem(filePath)
+            })
+        }
         
         return completions
             .distinctBy { it.text }
             .filter { it.matchScore(query) > 0 }
             .take(50)
+    }
+    
+    /**
+     * 获取工作区根目录下的常见文件
+     */
+    private fun getCommonRootFiles(workspacePath: String): List<CompletionItem> {
+        val fileSystem = WorkspaceManager.getCurrentOrEmpty().fileSystem
+        val commonFiles = mutableListOf<CompletionItem>()
+        
+        try {
+            // 获取根目录下的文件
+            val rootFiles = fileSystem.listFiles(workspacePath)
+                .filter { !it.startsWith(".") } // 过滤隐藏文件
+                .sortedBy { it.lowercase() }
+                .take(20) // 只返回前20个
+            
+            rootFiles.forEach { fileName ->
+                val filePath = "$workspacePath/$fileName"
+                if (!fileSystem.isDirectory(filePath)) {
+                    commonFiles.add(createFileCompletionItem(fileName))
+                }
+            }
+        } catch (e: Exception) {
+            // 如果读取失败，返回空列表
+        }
+        
+        return commonFiles
     }
     
     /**
@@ -110,7 +142,35 @@ class FilePathCompletionProvider : CompletionProvider {
     }
 
     private fun getStaticCompletions(query: String): List<CompletionItem> {
-        return listOf()
+        val workspace = WorkspaceManager.getCurrentOrEmpty()
+        val rootPath = workspace.rootPath ?: return emptyList()
+        
+        // If query is empty, return common files from the workspace root
+//        if (query.isEmpty()) {
+//            val commonFiles = listOf(
+//                "README.md",
+//                "package.json",
+//                "build.gradle.kts",
+//                "settings.gradle.kts",
+//                "pom.xml",
+//                ".gitignore",
+//                "tsconfig.json",
+//                "Cargo.toml",
+//                "go.mod",
+//                "Makefile"
+//            )
+//
+//            return commonFiles.mapNotNull { fileName ->
+//                val fileSystem = workspace.fileSystem
+//                if (fileSystem.exists("$rootPath/$fileName")) {
+//                    createFileCompletionItem(fileName)
+//                } else {
+//                    null
+//                }
+//            }
+//        }
+
+        return emptyList()
     }
 
     private fun createFileCompletionItem(filePath: String): CompletionItem {

@@ -31,8 +31,13 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     }
     
     actual override fun listFiles(path: String, pattern: String?): List<String> {
-        // TODO: 使用 Node.js fs.readdirSync 实现
-        return emptyList()
+        return try {
+            val fs = js("require('fs')")
+            val files = fs.readdirSync(path) as Array<String>
+            files.toList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
     
     actual override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {

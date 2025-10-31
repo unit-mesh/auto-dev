@@ -1,9 +1,3 @@
-/**
- * ChatInterface - Main chat UI component
- * 
- * Displays the chat history and input prompt with command auto-completion from Kotlin.
- */
-
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
@@ -14,6 +8,7 @@ import { CommandSuggestions } from './CommandSuggestions.js';
 import { 
   getCompletionSuggestions,
   shouldTriggerCompletion,
+  applyCompletionItem,
   extractCommand
 } from '../utils/commandUtils.js';
 import { HELP_TEXT, GOODBYE_MESSAGE } from '../constants/asciiArt.js';
@@ -24,6 +19,7 @@ type CompletionItem = {
   description: string | null;
   icon: string | null;
   triggerType: string;
+  index: number;
 };
 
 interface ChatInterfaceProps {
@@ -89,20 +85,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
     }
   };
 
-  const applyCompletion = (item: CompletionItem) => {
-    // Find the trigger character position
-    const lastTrigger = Math.max(
-      input.lastIndexOf('@'),
-      input.lastIndexOf('/'),
-      input.lastIndexOf('$'),
-      input.lastIndexOf(':')
-    );
+  const applyCompletion = async (item: CompletionItem) => {
+    // Use the Kotlin insert handler which properly handles special cases
+    const result = await applyCompletionItem(input, input.length, item.index);
     
-    if (lastTrigger >= 0) {
-      const before = input.substring(0, lastTrigger + 1);
-      const newInput = before + item.text;
-      setInput(newInput);
-      setCompletionItems([]);
+    if (result) {
+      // Update the input text
+      setInput(result.newText);
+      
+      // If the completion indicates we should trigger next completion (e.g., ":" was added)
+      // fetch new completions at the new cursor position immediately
+      if (result.shouldTriggerNextCompletion) {
+        // Trigger completion immediately - the cursor is at the end of the new text
+        // which is exactly where newCursorPosition points
+        const items = await getCompletionSuggestions(result.newText, result.newCursorPosition);
+        if (items.length > 0) {
+          setCompletionItems(items);
+          setSelectedIndex(0);
+        } else {
+          setCompletionItems([]);
+        }
+      } else {
+        setCompletionItems([]);
+      }
     }
   };
 

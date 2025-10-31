@@ -38,6 +38,9 @@ data class CompletionItem(
      * 分数越高，匹配度越好
      */
     fun matchScore(query: String): Int {
+        // 空查询匹配所有项
+        if (query.isEmpty()) return 50
+        
         // 完全匹配（忽略大小写）
         if (text.equals(query, ignoreCase = true)) return 1000
         

@@ -14,6 +14,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.promise
 import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.js.Promise
@@ -201,6 +202,31 @@ object JsModelRegistry {
 class JsCompletionManager {
     private val manager = CompletionManager()
     
+    // Cache completions for insert operation
+    private var cachedCompletions: List<CompletionItem> = emptyList()
+    private var cachedContext: CompletionContext? = null
+    
+    /**
+     * Initialize workspace for file path completion
+     * @param workspacePath The root path of the workspace
+     * @return Promise that resolves when workspace is initialized
+     */
+    @JsName("initWorkspace")
+    fun initWorkspace(workspacePath: String): Promise<Boolean> {
+        return GlobalScope.promise {
+            try {
+                cc.unitmesh.devins.workspace.WorkspaceManager.openWorkspace(
+                    name = "CLI Workspace",
+                    rootPath = workspacePath
+                )
+                true
+            } catch (e: Exception) {
+                console.error("Failed to initialize workspace: ${e.message}")
+                false
+            }
+        }
+    }
+    
     /**
      * Get completion suggestions based on text and cursor position
      * @param text Full input text
@@ -214,9 +240,14 @@ class JsCompletionManager {
         var triggerType: CompletionTriggerType? = null
         
         // Search backwards from cursor for a trigger character
+        // Stop at whitespace or newline
         for (i in (cursorPosition - 1) downTo 0) {
             val char = text[i]
             when (char) {
+                ' ', '\n' -> {
+                    // Stop if we hit whitespace - no trigger found
+                    break
+                }
                 '@' -> {
                     triggerOffset = i
                     triggerType = CompletionTriggerType.AGENT
@@ -233,26 +264,26 @@ class JsCompletionManager {
                     break
                 }
                 ':' -> {
+                    // ':' is COMMAND_VALUE trigger, but only if not preceded by space
+                    // Check if this is after a command (like "/read-file:")
                     triggerOffset = i
                     triggerType = CompletionTriggerType.COMMAND_VALUE
                     break
                 }
-                ' ', '\n' -> {
-                    // Stop if we hit whitespace before finding a trigger
-                    return emptyArray()
-                }
             }
         }
-        
         // No trigger found
         if (triggerOffset < 0 || triggerType == null) return emptyArray()
         
         // Extract query text (text after trigger up to cursor)
         val queryText = text.substring(triggerOffset + 1, cursorPosition)
         
-        // Check if query is valid (no whitespace or newlines)
-        if (queryText.contains('\n') || queryText.contains(' ')) {
-            return emptyArray()
+        // Check if query is valid (no whitespace or newlines in the middle)
+        // Exception: COMMAND_VALUE can have empty query (e.g., "/read-file:")
+        if (triggerType != CompletionTriggerType.COMMAND_VALUE) {
+            if (queryText.contains('\n') || queryText.contains(' ')) {
+                return emptyArray()
+            }
         }
         
         val context = CompletionContext(
@@ -264,7 +295,36 @@ class JsCompletionManager {
         )
         
         val items = manager.getFilteredCompletions(context)
-        return items.map { it.toJsItem(triggerType) }.toTypedArray()
+        
+        // Cache for later use in applyCompletion
+        cachedCompletions = items
+        cachedContext = context
+        
+        return items.mapIndexed { index, item -> item.toJsItem(triggerType, index) }.toTypedArray()
+    }
+    
+    /**
+     * Apply a completion by index (from the last getCompletions call)
+     * This properly handles insert handlers and triggers next completion if needed
+     * 
+     * @param text Current full text
+     * @param cursorPosition Current cursor position
+     * @param completionIndex Index of the completion item to apply
+     * @return Insert result with new text, cursor position, and trigger flag
+     */
+    @JsName("applyCompletion")
+    fun applyCompletion(text: String, cursorPosition: Int, completionIndex: Int): JsInsertResult? {
+        val context = cachedContext ?: return null
+        if (completionIndex < 0 || completionIndex >= cachedCompletions.size) return null
+        
+        val item = cachedCompletions[completionIndex]
+        val result = item.defaultInsert(text, cursorPosition)
+        
+        return JsInsertResult(
+            newText = result.newText,
+            newCursorPosition = result.newCursorPosition,
+            shouldTriggerNextCompletion = result.shouldTriggerNextCompletion
+        )
     }
     
     /**
@@ -295,13 +355,24 @@ data class JsCompletionItem(
     val displayText: String,
     val description: String?,
     val icon: String?,
-    val triggerType: String  // "AGENT", "COMMAND", "VARIABLE", "COMMAND_VALUE"
+    val triggerType: String,  // "AGENT", "COMMAND", "VARIABLE", "COMMAND_VALUE"
+    val index: Int  // Index for applyCompletion
+)
+
+/**
+ * JavaScript-friendly insert result
+ */
+@JsExport
+data class JsInsertResult(
+    val newText: String,
+    val newCursorPosition: Int,
+    val shouldTriggerNextCompletion: Boolean
 )
 
 /**
  * Extension to convert CompletionItem to JsCompletionItem
  */
-private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType): JsCompletionItem {
+private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType, index: Int): JsCompletionItem {
     val triggerTypeStr = when (triggerType) {
         CompletionTriggerType.AGENT -> "AGENT"
         CompletionTriggerType.COMMAND -> "COMMAND"
@@ -316,7 +387,8 @@ private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType): JsCompl
         displayText = this.displayText,
         description = this.description,
         icon = this.icon,
-        triggerType = triggerTypeStr
+        triggerType = triggerTypeStr,
+        index = index
     )
 }
 

@@ -1,11 +1,18 @@
 // Kotlin exports will be available after build
 // Import types from Kotlin/JS output
-type JsCompletionItem = {
+export type JsCompletionItem = {
   text: string;
   displayText: string;
   description: string | null;
   icon: string | null;
   triggerType: string;
+  index: number;
+};
+
+export type JsInsertResult = {
+  newText: string;
+  newCursorPosition: number;
+  shouldTriggerNextCompletion: boolean;
 };
 
 /**
@@ -27,6 +34,19 @@ export async function initCompletionManager() {
       if (exports?.cc?.unitmesh?.llm?.JsCompletionManager) {
         completionManager = new exports.cc.unitmesh.llm.JsCompletionManager();
         console.log('✅ CompletionManager initialized');
+        
+        // Initialize workspace with current directory
+        try {
+          const workspacePath = process.cwd();
+          const success = await completionManager.initWorkspace(workspacePath);
+          if (success) {
+            console.log(`✅ Workspace initialized: ${workspacePath}`);
+          } else {
+            console.warn('⚠️  Workspace initialization failed');
+          }
+        } catch (error) {
+          console.warn('⚠️  Failed to initialize workspace:', error);
+        }
       } else {
         console.error('❌ JsCompletionManager not found in exports');
       }
@@ -51,6 +71,27 @@ export async function getCompletionSuggestions(text: string, cursorPosition: num
   } catch (error) {
     console.error('❌ Error getting completions:', error);
     return [];
+  }
+}
+
+/**
+ * Apply a completion item using the Kotlin insert handler
+ * This properly handles special cases like adding ":" after commands
+ */
+export async function applyCompletionItem(
+  text: string, 
+  cursorPosition: number, 
+  completionIndex: number
+): Promise<JsInsertResult | null> {
+  const manager = await initCompletionManager();
+  if (!manager) return null;
+  
+  try {
+    const result = manager.applyCompletion(text, cursorPosition, completionIndex);
+    return result || null;
+  } catch (error) {
+    console.error('❌ Error applying completion:', error);
+    return null;
   }
 }
 
