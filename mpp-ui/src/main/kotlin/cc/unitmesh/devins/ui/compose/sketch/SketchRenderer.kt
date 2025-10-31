@@ -56,6 +56,14 @@ object SketchRenderer {
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
+                    "diff", "patch" -> {
+                        // Diff 块 - 使用专门的 DiffSketchRenderer
+                        DiffSketchRenderer.RenderDiff(
+                            diffContent = fence.text,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                     else -> {
                         // 代码块
                         CodeBlockRenderer(
