@@ -121,14 +121,14 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
      * 获取所有支持的触发类型
      */
     fun getSupportedTriggerTypes(): Set<CompletionTriggerType> {
-        return providers.keys
+        return providers.keys.toSet()
     }
 
     /**
      * 检查是否支持指定的触发类型
      */
     fun supports(triggerType: CompletionTriggerType): Boolean {
-        return triggerType in providers.keys
+        return triggerType in providers
     }
 
     /**

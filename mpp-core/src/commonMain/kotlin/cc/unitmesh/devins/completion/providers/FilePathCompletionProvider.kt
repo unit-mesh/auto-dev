@@ -2,7 +2,11 @@ package cc.unitmesh.devins.completion.providers
 
 import cc.unitmesh.devins.completion.*
 import cc.unitmesh.devins.workspace.WorkspaceManager
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * 文件路径补全提供者（用于 /file:, /write: 等命令之后）
@@ -13,6 +17,10 @@ class FilePathCompletionProvider : CompletionProvider {
     
     private var fileSearch: FileSearch? = null
     private var lastWorkspacePath: String? = null
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val cachedResults: MutableMap<String, List<String>> = mutableMapOf()
+    private val pendingJobs: MutableMap<String, Job> = mutableMapOf()
+    private var initJob: Job? = null
     
     override fun getCompletions(context: CompletionContext): List<CompletionItem> {
         val query = context.queryText
@@ -33,14 +41,9 @@ class FilePathCompletionProvider : CompletionProvider {
         // 1. 静态常用文件（快捷访问）
         completions.addAll(getStaticCompletions(query))
         
-        // 2. 动态文件搜索
-        val searchResults = runBlocking {
-            try {
-                fileSearch?.search(query, maxResults = 50) ?: emptyList()
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }
+        // 2. 动态文件搜索（异步触发 + 使用缓存返回）
+        val searchResults = cachedResults[query].orEmpty()
+        triggerBackgroundSearch(query)
         
         completions.addAll(searchResults.map { filePath ->
             createFileCompletionItem(filePath)
@@ -70,16 +73,42 @@ class FilePathCompletionProvider : CompletionProvider {
                 options = options
             )
             
-            // 异步初始化
-            runBlocking {
+            // 异步初始化（跨平台安全，不阻塞）
+            initJob?.cancel()
+            initJob = scope.launch {
                 try {
                     fileSearch?.initialize()
-                } catch (e: Exception) {
-                    // 初始化失败，使用降级方案
+                } catch (_: Exception) {
+                    // 初始化失败，忽略，保持降级为静态补全
                 }
             }
             
             lastWorkspacePath = workspacePath
+        }
+    }
+
+    /**
+     * 触发后台搜索并更新缓存（避免并发重复查询）
+     */
+    private fun triggerBackgroundSearch(query: String) {
+        if (query.isBlank()) return
+        val search = fileSearch ?: return
+        if (pendingJobs[query]?.isActive == true) return
+        pendingJobs[query] = scope.launch {
+            try {
+                // 等待初始化尽量完成（若已完成则立即继续）
+                initJob?.join()
+            } catch (_: Exception) {
+                // ignore
+            }
+            try {
+                val results = search.search(query, maxResults = 50)
+                cachedResults[query] = results
+            } catch (_: Exception) {
+                // ignore errors during async search
+            } finally {
+                pendingJobs.remove(query)
+            }
         }
     }
     

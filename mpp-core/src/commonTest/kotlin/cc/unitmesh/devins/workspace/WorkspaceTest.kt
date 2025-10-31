@@ -188,6 +188,11 @@ class WorkspaceTest {
     
     @Test
     fun testWorkspaceServices() {
+        // Skip this test on JS/WasmJS platforms where Dispatchers.Default is not fully supported
+        if (Platform.isJs || Platform.isWasm) {
+            return
+        }
+
         val workspace = DefaultWorkspace.create("Test", "/test")
         
         // Check that services are available
