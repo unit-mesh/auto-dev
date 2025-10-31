@@ -15,5 +15,5 @@
   targets. Use `CoroutineScope` with background launch + cached results for async operations that need synchronous APIs.
 - **Platform-specific implementations**: Use `expect`/`actual` declarations for platform-dependent code. For example,
   file system operations should be actual implementations per platform (JVM, JS, Wasm).
-- Test for CLI: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:jsProductionLibraryCompileSyn
-c && cd mpp-ui && npm install && node test-deepseek.js`
+- **JS Exports**: Use `String` not `Char`, convert enums to strings, avoid `Flow` (use Promise + callbacks)
+- Test for CLI: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:jsProductionLibraryCompileSync && cd mpp-ui && npm install && node test-completion.js`
