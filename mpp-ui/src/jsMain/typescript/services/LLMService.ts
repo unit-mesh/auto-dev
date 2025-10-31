@@ -64,31 +64,23 @@ export class LLMService {
         new JsMessage(msg.role, msg.content)
       );
 
-      // Call streamPrompt - returns a Kotlin Flow
-      const flow = this.koogService.streamPrompt(message, historyMessages);
-
-      // Collect the flow
       let fullResponse = '';
 
-      // Kotlin Flow has a collect method
-      await new Promise<void>((resolve, reject) => {
-        try {
-          flow.collect(
-            (chunk: string) => {
-              fullResponse += chunk;
-              onChunk(chunk);
-            },
-            (error: any) => {
-              reject(error);
-            },
-            () => {
-              resolve();
-            }
-          );
-        } catch (error) {
-          reject(error);
+      // Call streamPrompt with callbacks - it now returns a Promise
+      await this.koogService.streamPrompt(
+        message,
+        historyMessages,
+        (chunk: string) => {
+          fullResponse += chunk;
+          onChunk(chunk);
+        },
+        (error: any) => {
+          throw error;
+        },
+        () => {
+          // Streaming completed
         }
-      });
+      );
 
       // Add assistant response to history
       this.chatHistory.push({ role: 'assistant', content: fullResponse });

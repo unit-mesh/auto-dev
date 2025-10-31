@@ -69,6 +69,8 @@ kotlin {
         compilations["main"].packageJson {
             customField("name", "@autodev/mpp-core")
             customField("version", "0.1.0")
+            customField("main", "autodev-mpp-core.js")  // Use .js instead of .mjs
+            customField("types", "autodev-mpp-core.d.ts")
             customField("description", "AutoDev Multiplatform Core - AI Agent and DevIns Compiler")
             customField("author", "Unit Mesh")
             customField("license", "MIT")
