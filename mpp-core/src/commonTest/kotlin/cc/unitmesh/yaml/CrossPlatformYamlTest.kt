@@ -54,8 +54,6 @@ class CrossPlatformYamlTest {
         assertEquals(true, features["yaml_support"])
         assertEquals(true, features["multiplatform"])
         assertEquals(true, features["serialization"])
-        
-        println("✅ YAML parsing test passed on ${Platform.name}")
     }
     
     @Test
@@ -82,8 +80,6 @@ class CrossPlatformYamlTest {
         assertEquals(config.version, deserializedConfig.version)
         assertEquals(config.platforms, deserializedConfig.platforms)
         assertEquals(config.features, deserializedConfig.features)
-        
-        println("✅ YAML serialization/deserialization test passed on ${Platform.name}")
     }
     
     @Test
@@ -139,8 +135,6 @@ class CrossPlatformYamlTest {
         // Handle both string and number types for version
         val version = jvmTarget["version"]
         assertTrue(version == "17" || version == 17, "Version should be '17' or 17, but was: $version")
-        
-        println("✅ Complex YAML structure test passed on ${Platform.name}")
     }
     
     @Test
@@ -164,9 +158,5 @@ class CrossPlatformYamlTest {
         assertEquals(Platform.isJvm, platformTest["is_jvm"])
         assertEquals(Platform.isJs, platformTest["is_js"])
         assertEquals(Platform.isWasm, platformTest["is_wasm"])
-        
-        println("✅ Platform compatibility test passed on ${Platform.name}")
-        println("   Platform: ${Platform.name}")
-        println("   JVM: ${Platform.isJvm}, JS: ${Platform.isJs}, WASM: ${Platform.isWasm}")
     }
 }

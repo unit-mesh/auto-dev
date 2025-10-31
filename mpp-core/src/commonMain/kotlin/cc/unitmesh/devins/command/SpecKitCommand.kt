@@ -25,18 +25,15 @@ data class SpecKitCommand(
          * 从文件系统加载所有 SpecKit 命令
          */
         fun loadAll(fileSystem: ProjectFileSystem): List<SpecKitCommand> {
-            println("🔍 [SpecKitCommand] Loading SpecKit commands...")
             val projectPath = fileSystem.getProjectPath()
-            println("🔍 [SpecKitCommand] Project path: $projectPath")
-            
+
             if (projectPath == null) {
-                println("⚠️ [SpecKitCommand] Project path is null, returning empty list")
                 return emptyList()
             }
             
             val promptsDir = "$PROMPTS_DIR"
             println("🔍 [SpecKitCommand] Looking for prompts in: $promptsDir")
-            
+
             if (!fileSystem.exists(promptsDir)) {
                 println("⚠️ [SpecKitCommand] Prompts directory does not exist: $promptsDir")
                 return emptyList()
@@ -49,7 +46,7 @@ data class SpecKitCommand(
                 println("🔍 [SpecKitCommand] Looking for files matching: $pattern")
                 val files = fileSystem.listFiles(promptsDir, pattern)
                 println("🔍 [SpecKitCommand] Found ${files.size} matching files: $files")
-                
+
                 files.mapNotNull { fileName ->
                         try {
                             println("🔍 [SpecKitCommand] Processing file: $fileName")

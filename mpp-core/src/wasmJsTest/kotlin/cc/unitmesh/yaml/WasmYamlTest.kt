@@ -25,7 +25,6 @@ class WasmYamlTest {
     fun testWasmPlatformDetection() {
         assertTrue(Platform.isWasm, "Should be running on WebAssembly platform")
         assertEquals("WebAssembly", Platform.name)
-        println("✅ Running on WebAssembly platform: ${Platform.name}")
     }
     
     @Test
@@ -65,8 +64,6 @@ class WasmYamlTest {
         assertTrue(exports.contains("process_yaml"))
         assertTrue(exports.contains("parse_config"))
         assertTrue(exports.contains("serialize_data"))
-        
-        println("✅ WebAssembly YAML basic parsing test passed")
     }
     
     @Test
@@ -95,8 +92,6 @@ class WasmYamlTest {
         assertEquals(config.memoryPages, deserializedConfig.memoryPages)
         assertEquals(config.exports, deserializedConfig.exports)
         assertEquals(config.imports, deserializedConfig.imports)
-        
-        println("✅ WebAssembly YAML serialization/deserialization test passed")
     }
     
     @Test
@@ -141,8 +136,6 @@ class WasmYamlTest {
         assertTrue(features.contains("reference_types"))
         assertTrue(features.contains("multi_value"))
         assertTrue(features.contains("tail_call"))
-        
-        println("✅ WebAssembly memory-efficient YAML test passed")
     }
     
     @Test
@@ -180,9 +173,6 @@ class WasmYamlTest {
         assertEquals(0, dataset0["id"])
         assertEquals(0, dataset0["size"])
         assertEquals("benchmark", dataset0["type"])
-        
-        println("✅ WebAssembly YAML performance test passed")
-        println("   Successfully processed 50 datasets in WASM environment")
     }
     
     @Test
@@ -199,8 +189,7 @@ class WasmYamlTest {
             YamlUtils.load(invalidYaml)
             throw AssertionError("Should have thrown YamlParseException in WASM")
         } catch (e: YamlParseException) {
-            assertTrue(e.message?.contains("Failed to parse YAML") == true)
-            println("✅ WebAssembly YAML error handling test passed")
+            assertEquals(e.message?.contains("Failed to parse YAML"), true)
         }
     }
     
@@ -259,7 +248,5 @@ class WasmYamlTest {
         val instantiation = runtime["instantiation"] as Map<String, Any>
         assertEquals(true, instantiation["async"])
         assertEquals(true, instantiation["streaming"])
-        
-        println("✅ WebAssembly complex YAML structures test passed")
     }
 }

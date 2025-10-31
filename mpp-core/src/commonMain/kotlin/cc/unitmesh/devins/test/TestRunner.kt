@@ -25,8 +25,7 @@ class TestRunner {
             try {
                 val result = testCase.runTest()
                 results.add(result)
-                println("Running ${testCase.testName}: ${if (result.passed) "PASSED" else "FAILED"}")
-                
+
                 if (!result.passed) {
                     // 打印失败的详细信息
                     result.results.filter { !it.passed }.forEach { singleResult ->
@@ -43,7 +42,6 @@ class TestRunner {
                     results = listOf(SingleTestResult(testCase.testName, false, "Exception: ${e.message}"))
                 )
                 results.add(errorResult)
-                println("Running ${testCase.testName}: ERROR - ${e.message}")
             }
         }
         

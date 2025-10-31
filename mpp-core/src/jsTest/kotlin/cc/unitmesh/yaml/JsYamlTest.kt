@@ -25,7 +25,6 @@ class JsYamlTest {
     fun testJsPlatformDetection() {
         assertTrue(Platform.isJs, "Should be running on JavaScript platform")
         assertEquals("JavaScript", Platform.name)
-        println("✅ Running on JavaScript platform: ${Platform.name}")
     }
     
     @Test
@@ -61,8 +60,6 @@ class JsYamlTest {
         val api = data["api"] as Map<String, Any>
         assertEquals("https://api.example.com", api["base_url"])
         assertEquals(5000, api["timeout"])
-        
-        println("✅ JavaScript YAML basic parsing test passed")
     }
     
     @Test
@@ -91,8 +88,6 @@ class JsYamlTest {
         assertEquals(config.environment, deserializedConfig.environment)
         assertEquals(config.features, deserializedConfig.features)
         assertEquals(config.apiEndpoints, deserializedConfig.apiEndpoints)
-        
-        println("✅ JavaScript YAML serialization/deserialization test passed")
     }
     
     @Test
@@ -133,8 +128,6 @@ class JsYamlTest {
         assertEquals("webpack", buildTools["bundler"])
         assertEquals("babel", buildTools["transpiler"])
         assertEquals("typescript", buildTools["type_checker"])
-        
-        println("✅ JavaScript-specific YAML features test passed")
     }
     
     @Test
@@ -150,8 +143,7 @@ class JsYamlTest {
             YamlUtils.load(invalidYaml)
             throw AssertionError("Should have thrown YamlParseException")
         } catch (e: YamlParseException) {
-            assertTrue(e.message?.contains("Failed to parse YAML") == true)
-            println("✅ JavaScript YAML error handling test passed")
+            assertEquals(e.message?.contains("Failed to parse YAML"), true)
         }
     }
     
@@ -183,9 +175,6 @@ class JsYamlTest {
         @Suppress("UNCHECKED_CAST")
         val items = largeConfig["items"] as List<Map<String, Any>>
         assertEquals(100, items.size)
-        
-        println("✅ JavaScript YAML performance test passed")
-        println("   Parsed 100 items in ${duration}ms")
         assertTrue(duration < 1000, "Parsing should complete within 1 second")
     }
 }
