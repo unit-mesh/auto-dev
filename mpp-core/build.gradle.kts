@@ -18,10 +18,6 @@ sqldelight {
 }
 
 kotlin {
-    compilerOptions {
-//        freeCompilerArgs.add("-Xdata-flow-based-exhaustiveness")
-    }
-
     jvm {
         compilations.all {
 //            kotlinOptions {
@@ -50,6 +46,11 @@ kotlin {
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
                 // kotlinx-io for cross-platform file system operations
                 implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.8.0")
+
+                // Koog AI Framework - JVM only for now
+                implementation("ai.koog:koog-agents:0.5.1")
+                // Koog needs these executors
+                implementation("ai.koog:prompt-executor-llms-all:0.5.1")
             }
         }
 
@@ -62,11 +63,6 @@ kotlin {
 
         jvmMain {
             dependencies {
-                // Koog AI Framework - JVM only for now
-                implementation("ai.koog:koog-agents:0.5.1")
-                // Koog needs these executors
-                implementation("ai.koog:prompt-executor-llms-all:0.5.1")
-
                 // SQLDelight - JVM SQLite driver
                 implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
             }
