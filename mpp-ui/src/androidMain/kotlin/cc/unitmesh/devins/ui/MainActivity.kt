@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import cc.unitmesh.devins.ui.compose.MarkdownDemoApp
+import cc.unitmesh.devins.ui.compose.AutoDevInput
 
 /**
  * Markdown 渲染演示应用 - Android 版本
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MarkdownDemoApp()
+            AutoDevInput()
         }
     }
 }

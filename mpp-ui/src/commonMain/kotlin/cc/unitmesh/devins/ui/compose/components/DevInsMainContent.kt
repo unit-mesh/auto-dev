@@ -5,7 +5,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.ui.compose.state.DevInsAppState
 import cc.unitmesh.devins.ui.compose.state.rememberDevInsAppState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,7 +34,7 @@ fun DevInsMainContent() {
             if (appState.showFileTree) {
                 DevInsFileTree(
                     projectRoot = appState.projectRootPath,
-                    fileSystem = null, // TODO: Pass actual fileSystem
+                    fileSystem = appState.fileSystem,
                     onFileSelected = { filePath -> appState.openFileInEditor(filePath) },
                     modifier = Modifier
                         .width(250.dp)

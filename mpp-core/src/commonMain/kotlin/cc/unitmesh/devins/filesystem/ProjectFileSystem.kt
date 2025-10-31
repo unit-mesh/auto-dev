@@ -16,7 +16,15 @@ interface ProjectFileSystem {
      * @return 文件内容，如果文件不存在返回 null
      */
     fun readFile(path: String): String?
-    
+
+    /**
+     * 写入文件内容
+     * @param path 文件路径（相对于项目根目录或绝对路径）
+     * @param content 要写入的内容
+     * @return 是否写入成功
+     */
+    fun writeFile(path: String, content: String): Boolean
+
     /**
      * 检查文件或目录是否存在
      * @param path 文件或目录路径
@@ -61,6 +69,7 @@ interface ProjectFileSystem {
 class EmptyFileSystem : ProjectFileSystem {
     override fun getProjectPath(): String? = null
     override fun readFile(path: String): String? = null
+    override fun writeFile(path: String, content: String): Boolean = false
     override fun exists(path: String): Boolean = false
     override fun isDirectory(path: String): Boolean = false
     override fun listFiles(path: String, pattern: String?): List<String> = emptyList()
@@ -75,6 +84,7 @@ class EmptyFileSystem : ProjectFileSystem {
 expect class DefaultFileSystem(projectPath: String) : ProjectFileSystem {
     override fun getProjectPath(): String?
     override fun readFile(path: String): String?
+    override fun writeFile(path: String, content: String): Boolean
     override fun exists(path: String): Boolean
     override fun isDirectory(path: String): Boolean
     override fun listFiles(path: String, pattern: String?): List<String>

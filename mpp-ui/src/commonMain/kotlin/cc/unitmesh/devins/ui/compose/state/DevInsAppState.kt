@@ -4,13 +4,13 @@ import androidx.compose.runtime.*
 import cc.unitmesh.devins.compiler.DevInsCompilerFacade
 import cc.unitmesh.devins.ui.platform.createFileChooser
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
+import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Stable
 class DevInsAppState(
-    private val scope: CoroutineScope,
-    private val fileSystem: ProjectFileSystem? = null
+    private val scope: CoroutineScope
 ) {
     var editorContent by mutableStateOf(getDefaultContent())
         private set
@@ -28,6 +28,10 @@ class DevInsAppState(
         private set
 
     var projectRootPath by mutableStateOf<String?>(null)
+        private set
+
+    // 动态创建 fileSystem，当 projectRootPath 改变时更新
+    var fileSystem by mutableStateOf<ProjectFileSystem?>(null)
         private set
 
     var isCompiling by mutableStateOf(false)
@@ -69,6 +73,7 @@ class DevInsAppState(
 
             selectedPath?.let { path ->
                 projectRootPath = path
+                fileSystem = DefaultFileSystem(path)
                 val projectName = path.substringAfterLast('/')
                 statusMessage = "Opened project: $projectName"
             }
@@ -89,9 +94,13 @@ class DevInsAppState(
     fun saveCurrentFile() {
         currentFilePath?.let { path ->
             try {
-                // TODO: Implement file writing in ProjectFileSystem
+                val success = fileSystem?.writeFile(path, editorContent) ?: false
                 val fileName = path.substringAfterLast('/')
-                statusMessage = "Saved: $fileName"
+                if (success) {
+                    statusMessage = "Saved: $fileName"
+                } else {
+                    statusMessage = "Failed to save: $fileName"
+                }
             } catch (e: Exception) {
                 statusMessage = "Error saving file: ${e.message}"
             }
@@ -171,8 +180,7 @@ class DevInsAppState(
 
 @Composable
 fun rememberDevInsAppState(
-    scope: CoroutineScope = rememberCoroutineScope(),
-    fileSystem: ProjectFileSystem? = null
+    scope: CoroutineScope = rememberCoroutineScope()
 ): DevInsAppState {
-    return remember { DevInsAppState(scope, fileSystem) }
+    return remember { DevInsAppState(scope) }
 }

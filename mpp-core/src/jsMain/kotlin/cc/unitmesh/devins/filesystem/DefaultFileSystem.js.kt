@@ -13,7 +13,13 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
         console.warn("File system not implemented for JS platform")
         return null
     }
-    
+
+    actual override fun writeFile(path: String, content: String): Boolean {
+        // TODO: 使用 Node.js fs.writeFileSync 实现
+        console.warn("File system not implemented for JS platform")
+        return false
+    }
+
     actual override fun exists(path: String): Boolean {
         // TODO: 使用 Node.js fs.existsSync 实现
         return false

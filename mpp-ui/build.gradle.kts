@@ -112,10 +112,10 @@ kotlin {
 
 android {
     namespace = "cc.unitmesh.devins.ui"
-    compileSdk = 35
+    compileSdk = 36
     
     defaultConfig {
-        minSdk = 24
+        minSdk = 36
     }
     
     compileOptions {

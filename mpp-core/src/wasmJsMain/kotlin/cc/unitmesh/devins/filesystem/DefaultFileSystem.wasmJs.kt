@@ -13,7 +13,13 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
         println("File system not implemented for WASM platform")
         return null
     }
-    
+
+    actual override fun writeFile(path: String, content: String): Boolean {
+        // TODO: 实现 WASM 文件系统支持
+        println("File system not implemented for WASM platform")
+        return false
+    }
+
     actual override fun exists(path: String): Boolean {
         return false
     }

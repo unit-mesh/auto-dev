@@ -2,7 +2,7 @@ package cc.unitmesh.devins.ui
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
-import cc.unitmesh.devins.ui.compose.MarkdownDemoApp
+import cc.unitmesh.devins.ui.compose.AutoDevInput
 import org.jetbrains.skiko.wasm.onWasmReady
 
 /**
@@ -15,7 +15,7 @@ fun main() {
             title = "Markdown Renderer Demo - Web",
             canvasElementId = "ComposeTarget"
         ) {
-            MarkdownDemoApp()
+            AutoDevInput()
         }
     }
 }
