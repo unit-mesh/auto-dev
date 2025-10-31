@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "outDir": "./dist",
+    "rootDir": "./src/jsMain/typescript",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "types": ["node"],
+    "paths": {
+      "mpp-core": ["../mpp-core/build/js/packages/mpp-core/kotlin/mpp-core.mjs"]
+    }
+  },
+  "include": [
+    "src/jsMain/typescript/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
+}
+

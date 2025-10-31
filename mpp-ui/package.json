@@ -1,0 +1,55 @@
+{
+  "name": "@autodev/cli",
+  "version": "0.1.0",
+  "description": "AutoDev CLI - Terminal UI for AI-powered development assistant",
+  "type": "module",
+  "bin": {
+    "autodev": "./dist/index.js"
+  },
+  "scripts": {
+    "build:kotlin": "cd .. && ./gradlew :mpp-core:jsNodeProductionLibraryDistribution --no-daemon",
+    "build:ts": "tsc && chmod +x dist/index.js",
+    "build": "npm run build:kotlin && npm run build:ts",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "clean": "rm -rf dist build"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "terminal",
+    "coding-assistant",
+    "autodev",
+    "tui"
+  ],
+  "author": "AutoDev Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@autodev/mpp-core": "file:../mpp-core/build/dist/js/productionLibrary",
+    "ink": "^5.0.1",
+    "react": "^18.3.1",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
+    "ink-select-input": "^6.0.0",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/react": "^18.3.12",
+    "typescript": "^5.3.3",
+    "vitest": "^2.1.8",
+    "ink-testing-library": "^4.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ]
+}
+

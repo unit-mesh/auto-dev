@@ -2,13 +2,14 @@
 
 ## 概述
 
-`mpp-ui` 是 AutoDev 的跨平台 UI 模块，基于 Compose Multiplatform 构建，支持 JVM (Desktop)、Android 和 JS (Web) 平台。
+`mpp-ui` 是 AutoDev 的跨平台 UI 模块，基于 Compose Multiplatform 构建，支持 JVM (Desktop)、Android、JS (Web) 和 **Node.js (CLI)** 平台。
 
 本模块包含：
 - **SketchRenderer**: 原有的 LLM 响应渲染器
 - **MarkdownSketchRenderer**: 新实现的 Markdown 渲染器，使用 `multiplatform-markdown-renderer` 库
 - **MarkdownDemo**: 演示应用，展示 MarkdownSketchRenderer 的各种渲染能力
 - **FileChooser**: 跨平台文件选择器，支持 JVM、Android 和 JS 平台
+- **AutoDev CLI**: 终端 UI，使用 React/Ink 构建，集成 mpp-core 的 AI Agent 功能
 
 ## 技术栈
 
@@ -27,6 +28,9 @@
 
 ### ⚠️ Web (JS)
 配置完成，需要进一步测试。
+
+### ✅ Node.js (CLI)
+终端 UI，使用 React/Ink 构建，完全集成 mpp-core 的 AI Agent 功能。
 
 ## 构建和运行
 
@@ -235,6 +239,68 @@ val dirLauncher = rememberLauncherForActivityResult(
 
 ### Web (JS) ✅
 支持浏览器原生的文件选择对话框。
+
+---
+
+## AutoDev CLI (@autodev/cli)
+
+### 快速开始
+
+```bash
+# 安装依赖
+npm install
+
+# 构建项目（Kotlin/JS + TypeScript）
+npm run build
+
+# 运行 CLI
+npm start
+```
+
+### 首次运行
+
+首次运行时，会提示配置 LLM 提供商：
+
+1. 选择 LLM 提供商（OpenAI、Anthropic、Google 等）
+2. 输入 API Key
+3. 选择模型（或使用默认值）
+
+配置保存在 `~/.autodev/config.yaml`
+
+### 聊天命令
+
+- `/help` - 显示可用命令
+- `/clear` - 清除聊天历史
+- `/config` - 显示当前配置
+- `/exit` - 退出应用
+- `Ctrl+C` - 退出应用
+
+### 支持的 LLM 提供商
+
+- **OpenAI**: `gpt-4`, `gpt-3.5-turbo`
+- **Anthropic**: `claude-3-5-sonnet-20241022`
+- **Google**: `gemini-2.0-flash-exp`
+- **DeepSeek**: `deepseek-chat`
+- **Ollama**: `llama3.2` (本地运行)
+- **OpenRouter**: 通过 OpenRouter API 访问各种模型
+
+### 开发
+
+```bash
+# 仅构建 Kotlin/JS
+npm run build:kotlin
+
+# 仅构建 TypeScript
+npm run build:ts
+
+# 开发模式（监听 TypeScript 变化）
+npm run dev
+
+# 清理构建产物
+npm run clean
+```
+
+---
 
 ## 许可证
 
