@@ -33,6 +33,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
   const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showBanner, setShowBanner] = useState(true);
+  const [shouldPreventSubmit, setShouldPreventSubmit] = useState(false);
 
   // Update completions when input changes
   useEffect(() => {
@@ -64,6 +65,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
   }, [messages]);
 
   const handleSubmit = async () => {
+    // Don't submit if we should prevent it (e.g., when applying completion)
+    if (shouldPreventSubmit) {
+      setShouldPreventSubmit(false);
+      return;
+    }
+    
     if (!input.trim() || isProcessing) return;
 
     const message = input.trim();
@@ -163,6 +170,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
       }
       
       if (key.tab || key.return) {
+        // Prevent form submission when applying completion
+        setShouldPreventSubmit(true);
+        
         // Apply selected completion
         const selected = completionItems[selectedIndex];
         if (selected) {
