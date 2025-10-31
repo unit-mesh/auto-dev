@@ -123,8 +123,8 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
-          distribution: zulu
-          java-version: 21
+          distribution: jetbrains
+          java-version: 17.0.14
 
       # Setup Gradle
       - name: Setup Gradle
