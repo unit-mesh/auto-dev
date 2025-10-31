@@ -31,7 +31,16 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.compose) apply false
     alias(libs.plugins.composeCompiler) apply false
+    id("com.android.library") version "8.10.0" apply false
+    id("com.android.application") version "8.10.0" apply false
     id("net.saliman.properties") version "1.5.2"
+}
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 
 fun properties(key: String) = providers.gradleProperty(key)

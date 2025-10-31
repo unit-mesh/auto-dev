@@ -1,6 +1,6 @@
 - Always run build and tests before finish.
 - If my origin request/solution is not working well, please don't change it.
-- Update AGENTS.md when a task working in long context (chat and history)
+- Update AGENTS.md summary a task working in long context (chat and history) to find best practises.
 
 ### Summary
 

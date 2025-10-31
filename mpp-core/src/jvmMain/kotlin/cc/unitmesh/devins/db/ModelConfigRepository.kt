@@ -4,37 +4,37 @@ import cc.unitmesh.llm.LLMProviderType
 import cc.unitmesh.llm.ModelConfig
 
 /**
- * ModelConfig 数据访问层
+ * ModelConfig 数据访问层 - JVM 实现
  */
-class ModelConfigRepository(private val database: DevInsDatabase) {
+actual class ModelConfigRepository(private val database: DevInsDatabase) {
     
     private val queries = database.modelConfigQueries
     
     /**
      * 获取所有配置
      */
-    fun getAllConfigs(): List<ModelConfig> {
+    actual fun getAllConfigs(): List<ModelConfig> {
         return queries.selectAll().executeAsList().map { it.toModelConfig() }
     }
     
     /**
      * 获取默认配置
      */
-    fun getDefaultConfig(): ModelConfig? {
+    actual fun getDefaultConfig(): ModelConfig? {
         return queries.selectDefault().executeAsOneOrNull()?.toModelConfig()
     }
-    
+
     /**
      * 根据 ID 获取配置
      */
-    fun getConfigById(id: Long): ModelConfig? {
+    actual fun getConfigById(id: Long): ModelConfig? {
         return queries.selectById(id).executeAsOneOrNull()?.toModelConfig()
     }
-    
+
     /**
      * 保存配置
      */
-    fun saveConfig(config: ModelConfig, setAsDefault: Boolean = false): Long {
+    actual fun saveConfig(config: ModelConfig, setAsDefault: Boolean): Long {
         val now = System.currentTimeMillis()
         
         queries.insert(
@@ -61,7 +61,7 @@ class ModelConfigRepository(private val database: DevInsDatabase) {
     /**
      * 更新配置
      */
-    fun updateConfig(id: Long, config: ModelConfig) {
+    actual fun updateConfig(id: Long, config: ModelConfig) {
         val now = System.currentTimeMillis()
         
         queries.update(
@@ -79,22 +79,22 @@ class ModelConfigRepository(private val database: DevInsDatabase) {
     /**
      * 设置默认配置
      */
-    fun setDefaultConfig(id: Long) {
+    actual fun setDefaultConfig(id: Long) {
         queries.clearDefault()
         queries.setDefault(updatedAt = System.currentTimeMillis(), id = id)
     }
-    
+
     /**
      * 删除配置
      */
-    fun deleteConfig(id: Long) {
+    actual fun deleteConfig(id: Long) {
         queries.delete(id)
     }
-    
+
     /**
      * 清空所有配置
      */
-    fun deleteAllConfigs() {
+    actual fun deleteAllConfigs() {
         queries.deleteAll()
     }
     
@@ -112,13 +112,13 @@ class ModelConfigRepository(private val database: DevInsDatabase) {
         )
     }
     
-    companion object {
+    actual companion object {
         private var instance: ModelConfigRepository? = null
-        
+
         /**
          * 获取单例实例
          */
-        fun getInstance(): ModelConfigRepository {
+        actual fun getInstance(): ModelConfigRepository {
             return instance ?: synchronized(this) {
                 instance ?: run {
                     val driverFactory = DatabaseDriverFactory()
