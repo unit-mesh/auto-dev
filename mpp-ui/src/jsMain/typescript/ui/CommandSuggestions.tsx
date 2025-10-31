@@ -5,38 +5,53 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 
-interface CommandSuggestion {
-  name: string;
-  description: string;
-}
+type CompletionItem = {
+  text: string;
+  displayText: string;
+  description: string | null;
+  icon: string | null;
+  triggerType: string;
+};
 
-interface Props {
-  suggestions: CommandSuggestion[];
+type CommandSuggestionsProps = {
+  items: CompletionItem[];
   selectedIndex?: number;
-}
+};
 
-export const CommandSuggestions: React.FC<Props> = ({ suggestions, selectedIndex = 0 }) => {
-  if (suggestions.length === 0) {
+/**
+ * Display auto-completion suggestions using Kotlin CompletionManager
+ */
+export const CommandSuggestions: React.FC<CommandSuggestionsProps> = ({ 
+  items, 
+  selectedIndex = 0 
+}) => {
+  if (items.length === 0) {
     return null;
   }
 
   return (
-    <Box flexDirection="column" marginTop={1} paddingX={2}>
-      <Text dimColor>─── Suggestions ───</Text>
-      {suggestions.map((suggestion, index) => (
-        <Box key={suggestion.name} paddingLeft={2}>
-          <Text color={index === selectedIndex ? 'cyan' : 'gray'}>
-            {index === selectedIndex ? '▶ ' : '  '}
-            <Text bold={index === selectedIndex}>{suggestion.name}</Text>
-            <Text dimColor> - {suggestion.description}</Text>
-          </Text>
+    <Box flexDirection="column" marginTop={1} marginBottom={1}>
+      <Box borderStyle="round" borderColor="cyan" paddingX={1} paddingY={0}>
+        <Box flexDirection="column" width="100%">
+          {items.map((item, index) => (
+            <Box key={index} paddingY={0}>
+              <Text color={index === selectedIndex ? 'cyan' : 'gray'} bold={index === selectedIndex}>
+                {item.icon ? `${item.icon} ` : ''}
+                {item.displayText || item.text}
+                {item.description ? (
+                  <Text color="gray" dimColor> - {item.description}</Text>
+                ) : null}
+              </Text>
+            </Box>
+          ))}
         </Box>
-      ))}
+      </Box>
       <Box marginTop={1}>
-        <Text dimColor>
-          ↑/↓ to navigate  •  Tab to complete  •  Enter to select
+        <Text color="gray" dimColor>
+          ↑/↓ Navigate • Tab/Enter Complete • Esc Cancel
         </Text>
       </Box>
     </Box>
   );
 };
+

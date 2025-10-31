@@ -1,7 +1,7 @@
 /**
  * ChatInterface - Main chat UI component
  * 
- * Displays the chat history and input prompt with command auto-completion.
+ * Displays the chat history and input prompt with command auto-completion from Kotlin.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,14 +12,19 @@ import type { Message } from './App.js';
 import { Banner } from './Banner.js';
 import { CommandSuggestions } from './CommandSuggestions.js';
 import { 
-  isAtCommand, 
-  isSlashCommand, 
-  getCommandSuggestions,
-  extractCommand,
-  SLASH_COMMANDS,
-  AT_COMMANDS
+  getCompletionSuggestions,
+  shouldTriggerCompletion,
+  extractCommand
 } from '../utils/commandUtils.js';
 import { HELP_TEXT, GOODBYE_MESSAGE } from '../constants/asciiArt.js';
+
+type CompletionItem = {
+  text: string;
+  displayText: string;
+  description: string | null;
+  icon: string | null;
+  triggerType: string;
+};
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -29,19 +34,30 @@ interface ChatInterfaceProps {
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMessage }) => {
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [suggestions, setSuggestions] = useState<Array<{name: string, description: string}>>([]);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
+  const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [showBanner, setShowBanner] = useState(true);
 
-  // Update suggestions when input changes
+  // Update completions when input changes
   useEffect(() => {
-    if (isSlashCommand(input) || isAtCommand(input)) {
-      const newSuggestions = getCommandSuggestions(input);
-      setSuggestions(newSuggestions);
-      setSelectedSuggestionIndex(0);
-    } else {
-      setSuggestions([]);
-    }
+    const updateCompletions = async () => {
+      if (input.length === 0) {
+        setCompletionItems([]);
+        return;
+      }
+
+      // Check if last character triggers completion
+      const lastChar = input[input.length - 1];
+      const shouldTrigger = await shouldTriggerCompletion(lastChar);
+      
+      if (shouldTrigger || completionItems.length > 0) {
+        const items = await getCompletionSuggestions(input, input.length);
+        setCompletionItems(items);
+        setSelectedIndex(0);
+      }
+    };
+
+    updateCompletions();
   }, [input]);
 
   // Hide banner after first message
@@ -57,23 +73,36 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
     const message = input.trim();
     setInput('');
     setIsProcessing(true);
-    setSuggestions([]);
+    setCompletionItems([]);
 
     try {
       // Handle slash commands
-      if (isSlashCommand(message)) {
+      if (message.startsWith('/')) {
         await handleSlashCommand(message);
       } 
-      // Handle at commands (agents)
-      else if (isAtCommand(message)) {
-        await handleAtCommand(message);
-      }
-      // Regular message
+      // Regular message (including @agent commands)
       else {
         await onSendMessage(message);
       }
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const applyCompletion = (item: CompletionItem) => {
+    // Find the trigger character position
+    const lastTrigger = Math.max(
+      input.lastIndexOf('@'),
+      input.lastIndexOf('/'),
+      input.lastIndexOf('$'),
+      input.lastIndexOf(':')
+    );
+    
+    if (lastTrigger >= 0) {
+      const before = input.substring(0, lastTrigger + 1);
+      const newInput = before + item.text;
+      setInput(newInput);
+      setCompletionItems([]);
     }
   };
 
@@ -111,39 +140,34 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
     }
   };
 
-  const handleAtCommand = async (command: string) => {
-    const agentName = extractCommand(command);
-    const messageContent = command.replace(`@${agentName}`, '').trim();
-    
-    // Prepend agent context to the message
-    const agentMessage = `[Agent: ${agentName}] ${messageContent}`;
-    await onSendMessage(agentMessage);
-  };
-
-  // Handle keyboard navigation for suggestions
+  // Handle keyboard navigation for completions
   useInput((input, key) => {
-    if (suggestions.length > 0) {
+    if (completionItems.length > 0) {
       if (key.upArrow) {
-        setSelectedSuggestionIndex(prev => 
-          prev > 0 ? prev - 1 : suggestions.length - 1
+        setSelectedIndex(prev => 
+          prev > 0 ? prev - 1 : completionItems.length - 1
         );
         return;
       }
       
       if (key.downArrow) {
-        setSelectedSuggestionIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : 0
+        setSelectedIndex(prev => 
+          prev < completionItems.length - 1 ? prev + 1 : 0
         );
         return;
       }
       
-      if (key.tab) {
-        // Auto-complete with selected suggestion
-        const selected = suggestions[selectedSuggestionIndex];
+      if (key.tab || key.return) {
+        // Apply selected completion
+        const selected = completionItems[selectedIndex];
         if (selected) {
-          setInput(selected.name + ' ');
-          setSuggestions([]);
+          applyCompletion(selected);
         }
+        return;
+      }
+      
+      if (key.escape) {
+        setCompletionItems([]);
         return;
       }
     }
@@ -199,8 +223,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
 
       {/* Command Suggestions */}
       <CommandSuggestions 
-        suggestions={suggestions} 
-        selectedIndex={selectedSuggestionIndex}
+        items={completionItems} 
+        selectedIndex={selectedIndex}
       />
 
       {/* Input */}

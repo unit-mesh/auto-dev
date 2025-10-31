@@ -6,6 +6,10 @@ import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
+import cc.unitmesh.devins.completion.CompletionManager
+import cc.unitmesh.devins.completion.CompletionContext
+import cc.unitmesh.devins.completion.CompletionTriggerType
+import cc.unitmesh.devins.completion.CompletionItem
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -188,4 +192,132 @@ object JsModelRegistry {
         return arrayOf("OPENAI", "ANTHROPIC", "GOOGLE", "DEEPSEEK", "OLLAMA", "OPENROUTER")
     }
 }
+
+/**
+ * JavaScript-friendly completion manager
+ * Provides auto-completion for @agent, /command, $variable, etc.
+ */
+@JsExport
+class JsCompletionManager {
+    private val manager = CompletionManager()
+    
+    /**
+     * Get completion suggestions based on text and cursor position
+     * @param text Full input text
+     * @param cursorPosition Current cursor position (0-indexed)
+     * @return Array of completion items
+     */
+    @JsName("getCompletions")
+    fun getCompletions(text: String, cursorPosition: Int): Array<JsCompletionItem> {
+        // Look for the most recent trigger character before the cursor
+        var triggerOffset = -1
+        var triggerType: CompletionTriggerType? = null
+        
+        // Search backwards from cursor for a trigger character
+        for (i in (cursorPosition - 1) downTo 0) {
+            val char = text[i]
+            when (char) {
+                '@' -> {
+                    triggerOffset = i
+                    triggerType = CompletionTriggerType.AGENT
+                    break
+                }
+                '/' -> {
+                    triggerOffset = i
+                    triggerType = CompletionTriggerType.COMMAND
+                    break
+                }
+                '$' -> {
+                    triggerOffset = i
+                    triggerType = CompletionTriggerType.VARIABLE
+                    break
+                }
+                ':' -> {
+                    triggerOffset = i
+                    triggerType = CompletionTriggerType.COMMAND_VALUE
+                    break
+                }
+                ' ', '\n' -> {
+                    // Stop if we hit whitespace before finding a trigger
+                    return emptyArray()
+                }
+            }
+        }
+        
+        // No trigger found
+        if (triggerOffset < 0 || triggerType == null) return emptyArray()
+        
+        // Extract query text (text after trigger up to cursor)
+        val queryText = text.substring(triggerOffset + 1, cursorPosition)
+        
+        // Check if query is valid (no whitespace or newlines)
+        if (queryText.contains('\n') || queryText.contains(' ')) {
+            return emptyArray()
+        }
+        
+        val context = CompletionContext(
+            fullText = text,
+            cursorPosition = cursorPosition,
+            triggerType = triggerType,
+            triggerOffset = triggerOffset,
+            queryText = queryText
+        )
+        
+        val items = manager.getFilteredCompletions(context)
+        return items.map { it.toJsItem(triggerType) }.toTypedArray()
+    }
+    
+    /**
+     * Check if a character should trigger completion
+     */
+    @JsName("shouldTrigger")
+    fun shouldTrigger(char: String): Boolean {
+        if (char.isEmpty()) return false
+        val c = char[0]
+        return c in setOf('@', '/', '$', ':')
+    }
+    
+    /**
+     * Get supported trigger types
+     */
+    @JsName("getSupportedTriggers")
+    fun getSupportedTriggers(): Array<String> {
+        return arrayOf("@", "/", "$", ":")
+    }
+}
+
+/**
+ * JavaScript-friendly completion item
+ */
+@JsExport
+data class JsCompletionItem(
+    val text: String,
+    val displayText: String,
+    val description: String?,
+    val icon: String?,
+    val triggerType: String  // "AGENT", "COMMAND", "VARIABLE", "COMMAND_VALUE"
+)
+
+/**
+ * Extension to convert CompletionItem to JsCompletionItem
+ */
+private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType): JsCompletionItem {
+    val triggerTypeStr = when (triggerType) {
+        CompletionTriggerType.AGENT -> "AGENT"
+        CompletionTriggerType.COMMAND -> "COMMAND"
+        CompletionTriggerType.VARIABLE -> "VARIABLE"
+        CompletionTriggerType.COMMAND_VALUE -> "COMMAND_VALUE"
+        CompletionTriggerType.CODE_FENCE -> "CODE_FENCE"
+        CompletionTriggerType.NONE -> "NONE"
+    }
+    
+    return JsCompletionItem(
+        text = this.text,
+        displayText = this.displayText,
+        description = this.description,
+        icon = this.icon,
+        triggerType = triggerTypeStr
+    )
+}
+
 

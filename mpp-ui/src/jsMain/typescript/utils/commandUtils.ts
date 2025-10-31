@@ -1,100 +1,104 @@
-/**
- * Command parsing and validation utilities
- */
-
-/**
- * Checks if a query string represents an '@' command (agent invocation).
- * @param query The input query string.
- * @returns True if the query looks like an '@' command, false otherwise.
- */
-export const isAtCommand = (query: string): boolean =>
-  query.trim().startsWith('@') || /\s@\S/.test(query);
-
-/**
- * Checks if a query string represents an '/' command.
- * @param query The input query string.
- * @returns True if the query looks like an '/' command, false otherwise.
- */
-export const isSlashCommand = (query: string): boolean => {
-  const trimmed = query.trim();
-  
-  if (!trimmed.startsWith('/')) {
-    return false;
-  }
-
-  // Exclude line comments that start with '//'
-  if (trimmed.startsWith('//')) {
-    return false;
-  }
-
-  // Exclude block comments that start with '/*'
-  if (trimmed.startsWith('/*')) {
-    return false;
-  }
-
-  return true;
+// Kotlin exports will be available after build
+// Import types from Kotlin/JS output
+type JsCompletionItem = {
+  text: string;
+  displayText: string;
+  description: string | null;
+  icon: string | null;
+  triggerType: string;
 };
 
 /**
- * Extract command name from a query
+ * Completion manager instance (singleton)
  */
-export const extractCommand = (query: string): string | null => {
-  const trimmed = query.trim();
-  
-  if (isSlashCommand(trimmed)) {
-    const match = trimmed.match(/^\/(\w+)/);
-    return match ? match[1] : null;
-  }
-  
-  if (isAtCommand(trimmed)) {
-    const match = trimmed.match(/@(\w+)/);
-    return match ? match[1] : null;
-  }
-  
-  return null;
-};
+let completionManager: any = null;
 
 /**
- * Available slash commands
+ * Initialize the completion manager
+ * Will be loaded from Kotlin/JS build output
  */
-export const SLASH_COMMANDS = [
-  { name: 'help', description: 'Show help information' },
-  { name: 'clear', description: 'Clear chat history' },
-  { name: 'exit', description: 'Exit the application' },
-  { name: 'config', description: 'Show configuration' },
-  { name: 'model', description: 'Change AI model' },
-] as const;
+export async function initCompletionManager() {
+  if (!completionManager) {
+    try {
+      // Dynamic import from build output
+      const mppCore = await import('../../../../mpp-core/build/dist/js/productionLibrary/mpp-core.mjs');
+      completionManager = new mppCore.JsCompletionManager();
+      console.log('✅ CompletionManager initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize CompletionManager:', error);
+      console.log('💡 Make sure to build mpp-core first: ./gradlew :mpp-core:jsProductionLibraryCompileSync');
+    }
+  }
+  return completionManager;
+}
 
 /**
- * Available at commands (agents)
+ * Get completion suggestions from Kotlin CompletionManager
  */
-export const AT_COMMANDS = [
-  { name: '@code', description: 'Code generation and refactoring' },
-  { name: '@test', description: 'Test generation' },
-  { name: '@doc', description: 'Documentation generation' },
-  { name: '@review', description: 'Code review' },
-  { name: '@debug', description: 'Debugging assistance' },
-] as const;
+export async function getCompletionSuggestions(text: string, cursorPosition: number): Promise<JsCompletionItem[]> {
+  const manager = await initCompletionManager();
+  if (!manager) return [];
+  
+  try {
+    const items = manager.getCompletions(text, cursorPosition);
+    return Array.from(items || []);
+  } catch (error) {
+    console.error('❌ Error getting completions:', error);
+    return [];
+  }
+}
 
 /**
- * Get command suggestions based on partial input
+ * Check if a character should trigger completion
  */
-export const getCommandSuggestions = (query: string): Array<{name: string, description: string}> => {
-  const trimmed = query.trim().toLowerCase();
+export async function shouldTriggerCompletion(char: string): Promise<boolean> {
+  const manager = await initCompletionManager();
+  if (!manager) return false;
   
-  if (isSlashCommand(trimmed)) {
-    const commandPart = trimmed.slice(1);
-    return SLASH_COMMANDS
-      .filter(cmd => cmd.name.startsWith(commandPart))
-      .map(cmd => ({ name: `/${cmd.name}`, description: cmd.description }));
+  try {
+    return manager.shouldTrigger(char);
+  } catch (error) {
+    return false;
   }
-  
-  if (isAtCommand(trimmed)) {
-    const commandPart = trimmed.slice(trimmed.lastIndexOf('@') + 1);
-    return AT_COMMANDS
-      .filter(cmd => cmd.name.slice(1).startsWith(commandPart))
-      .map(cmd => ({ name: cmd.name, description: cmd.description }));
+}
+
+/**
+ * Get the trigger type from a character
+ */
+export function getTriggerType(char: string): string | null {
+  switch (char) {
+    case '@': return 'AGENT';
+    case '/': return 'COMMAND';
+    case '$': return 'VARIABLE';
+    case ':': return 'COMMAND_VALUE';
+    default: return null;
   }
-  
-  return [];
-};
+}
+
+/**
+ * Format completion item for display
+ */
+export function formatCompletionItem(item: JsCompletionItem): string {
+  const icon = item.icon || '';
+  const display = item.displayText || item.text;
+  const desc = item.description ? ` - ${item.description}` : '';
+  return `${icon} ${display}${desc}`.trim();
+}
+
+// Legacy functions (kept for backward compatibility but delegate to Kotlin)
+
+export function isAtCommand(text: string): boolean {
+  return text.trim().startsWith('@');
+}
+
+export function isSlashCommand(text: string): boolean {
+  return text.trim().startsWith('/');
+}
+
+export function extractCommand(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed.startsWith('@') || trimmed.startsWith('/')) {
+    return trimmed.substring(1).split(/\s+/)[0];
+  }
+  return '';
+}
