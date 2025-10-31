@@ -1,19 +1,27 @@
 {
   "name": "@autodev/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AutoDev CLI - Terminal UI for AI-powered development assistant",
   "type": "module",
   "bin": {
     "autodev": "./dist/index.js"
   },
   "scripts": {
-    "build:kotlin": "cd .. && ./gradlew :mpp-core:jsNodeProductionLibraryDistribution --no-daemon",
+    "build:kotlin": "cd .. && ./gradlew :mpp-core:assembleJsPackage",
     "build:ts": "tsc && chmod +x dist/index.js",
     "build": "npm run build:kotlin && npm run build:ts",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "clean": "rm -rf dist build"
+    "test:completion": "node test-completion.js",
+    "test:cli": "node test-cli-completion.js",
+    "test:all": "npm test && npm run test:completion && npm run test:cli",
+    "clean": "rm -rf dist build",
+    "prepublish:local": "npm run build",
+    "publish:local": "node scripts/publish-local.js",
+    "prepublish:remote": "npm run build",
+    "publish:remote": "node scripts/publish-remote.js",
+    "postinstall": "node scripts/check-mpp-core.js || echo 'Warning: mpp-core not found, run npm run build:kotlin first'"
   },
   "keywords": [
     "ai",
@@ -29,7 +37,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@autodev/mpp-core": "file:../mpp-core/build/compileSync/js/main/productionLibrary/kotlin",
+    "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
     "ink": "^5.0.1",
     "react": "^18.3.1",
     "ink-spinner": "^5.0.0",

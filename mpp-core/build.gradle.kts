@@ -3,6 +3,8 @@ plugins {
     kotlin("plugin.serialization") version "2.2.0"
     id("app.cash.sqldelight") version "2.1.0"
     id("com.android.library") version "8.10.0"
+
+    id("dev.petuska.npm.publish") version "3.5.3"
 }
 
 repositories {
@@ -51,6 +53,7 @@ kotlin {
 
     js(IR) {
         moduleName = "autodev-mpp-core"
+        useCommonJs() // 建议
         browser()
         nodejs()
         binaries.library()
@@ -63,30 +66,6 @@ kotlin {
                 sourceMap = true
                 sourceMapEmbedSources = "always"
             }
-        }
-
-        // Configure npm package
-        compilations["main"].packageJson {
-            customField("name", "@autodev/mpp-core")
-            customField("version", "0.1.0")
-            customField("main", "autodev-mpp-core.js")  // Use .js instead of .mjs
-            customField("types", "autodev-mpp-core.d.ts")
-            customField("description", "AutoDev Multiplatform Core - AI Agent and DevIns Compiler")
-            customField("author", "Unit Mesh")
-            customField("license", "MIT")
-            // public
-            customField("private", false)
-            customField("repository", mapOf(
-                "type" to "git",
-                "url" to "https://github.com/unit-mesh/auto-dev.git"
-            ))
-            customField("keywords", listOf(
-                "kotlin",
-                "multiplatform",
-                "ai",
-                "llm",
-                "devins"
-            ))
         }
     }
 
@@ -164,5 +143,32 @@ kotlin {
 //                implementation(kotlin("test-wasm-js"))
 //            }
 //        }
+    }
+}
+
+npmPublish {
+    organization.set("autodev")
+
+    packages {
+        named("js") {
+            packageJson {
+                name = "@autodev/mpp-core"
+                version = "0.1.1"
+                main = "autodev-mpp-core.js"
+                types = "autodev-mpp-core.d.ts"
+                description.set("AutoDev Multiplatform Core - AI Agent and DevIns Compiler")
+                author {
+                    name.set("Unit Mesh")
+                    email.set("h@phodal.com")
+                }
+                license.set("MIT")
+                private.set(false)
+                repository {
+                    type.set("git")
+                    url.set("https://github.com/unit-mesh/auto-dev.git")
+                }
+                keywords.set(listOf("kotlin", "multiplatform", "ai", "llm", "devins"))
+            }
+        }
     }
 }

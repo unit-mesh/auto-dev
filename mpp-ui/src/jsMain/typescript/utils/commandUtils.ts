@@ -22,7 +22,7 @@ export async function initCompletionManager() {
     try {
       // Dynamic import from build output
       // @ts-ignore - Runtime import, path is correct after build
-      const mppCore = await import('../../../mpp-core/build/compileSync/js/main/productionLibrary/kotlin/autodev-mpp-core.js');
+      const mppCore = await import('@autodev/mpp-core/autodev-mpp-core.js');
       const exports = mppCore['module.exports'] || mppCore.default || mppCore;
       if (exports?.cc?.unitmesh?.llm?.JsCompletionManager) {
         completionManager = new exports.cc.unitmesh.llm.JsCompletionManager();
@@ -32,7 +32,7 @@ export async function initCompletionManager() {
       }
     } catch (error) {
       console.error('❌ Failed to initialize CompletionManager:', error);
-      console.log('💡 Make sure to build mpp-core first: ./gradlew :mpp-core:jsProductionLibraryCompileSync');
+      console.log('💡 Make sure to build mpp-core first: npm run build:kotlin');
     }
   }
   return completionManager;
