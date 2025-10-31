@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import cc.unitmesh.devins.db.DatabaseDriverFactory
-import cc.unitmesh.devins.ui.compose.AutoDevInput
+import cc.unitmesh.devins.ui.compose.AutoDevApp
 
 /**
  * Markdown 渲染演示应用 - Android 版本
@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            AutoDevInput()
+            AutoDevApp()
         }
     }
 }

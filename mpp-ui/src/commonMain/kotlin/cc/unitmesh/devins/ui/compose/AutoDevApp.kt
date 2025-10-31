@@ -23,15 +23,8 @@ import kotlinx.coroutines.launch
 import cc.unitmesh.devins.ui.platform.createFileChooser
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 
-/**
- * 简洁 AI 聊天界面
- * 顶部输入框 + 底部工具栏
- * 
- * 支持 SpecKit 命令，可以打开目录选择项目
- * 支持 LLM 交互（通过 Koog 框架）
- */
 @Composable
-fun AutoDevInput() {
+fun AutoDevApp() {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
 

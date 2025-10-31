@@ -4,7 +4,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import cc.unitmesh.devins.ui.compose.AutoDevInput
+import cc.unitmesh.devins.ui.compose.AutoDevApp
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 
 /**
@@ -23,7 +23,7 @@ fun main() = application {
         state = windowState
     ) {
         AutoDevTheme {
-            AutoDevInput()
+            AutoDevApp()
         }
     }
 }
