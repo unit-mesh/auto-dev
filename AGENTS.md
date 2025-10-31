@@ -6,7 +6,8 @@
 ### Summary
 
 - No summary if the problem it's simple
-- Always summarize a bug fix using the structure Problem → Root Cause → Solution, ensuring clarity on what broke, why it broke, and how it was resolved.
+- Always summarize a bug fix using the structure Problem → Root Cause → Solution, ensuring clarity on what broke, why it
+  broke, and how it was resolved.
 - Don't write long documentation, just use mermaid to summary
 
 ### Kotlin Multiplatform (KMP) Best Practices for MPP-CORE and MPP-UI
@@ -16,4 +17,6 @@
 - **Platform-specific implementations**: Use `expect`/`actual` declarations for platform-dependent code. For example,
   file system operations should be actual implementations per platform (JVM, JS, Wasm).
 - **JS Exports**: Use `String` not `Char`, convert enums to strings, avoid `Flow` (use Promise + callbacks)
-- Test for CLI: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:jsProductionLibraryCompileSync && cd mpp-ui && npm install && node test-completion.js`
+- Test for AutoDev CLI:
+    1. build MPP Core: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
+    2. build MPP CLI and Run `cd mpp-ui && npm run build:ts && node dist/index.js`
