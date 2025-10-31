@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.db.ModelConfigRepository
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
@@ -242,54 +243,61 @@ fun AutoDevInput() {
                 }
             } else {
                 // 默认模式：输入框居中显示
+                // Android: 使用更紧凑的布局和更小的 padding
+                val isAndroid = Platform.isAndroid
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
+                        .padding(if (isAndroid) 16.dp else 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-        // 完整的输入组件（包含底部工具栏）
-        DevInEditorInput(
-            initialText = "",
-            placeholder = "Plan, @ for context, / for commands (try /speckit.*)",
-            callbacks = callbacks,
-            completionManager = currentWorkspace.completionManager,
-            initialModelConfig = currentModelConfig,
-            availableConfigs = allModelConfigs,
-            onModelConfigChange = { config ->
-                currentModelConfig = config
-                if (config.isValid()) {
-                    try {
-                        llmService = KoogLLMService.create(config)
-                        scope.launch {
-                            try {
-                                // 检查配置是否已存在
-                                val existingConfigs = repository.getAllConfigs()
-                                val existingConfig = existingConfigs.find {
-                                    it.provider == config.provider &&
-                                    it.modelName == config.modelName &&
-                                    it.apiKey == config.apiKey
-                                }
+                    // 完整的输入组件（包含底部工具栏）
+                    DevInEditorInput(
+                        initialText = "",
+                        placeholder = if (isAndroid) {
+                            "Plan, @ for context, / for commands"
+                        } else {
+                            "Plan, @ for context, / for commands (try /speckit.*)"
+                        },
+                        callbacks = callbacks,
+                        completionManager = currentWorkspace.completionManager,
+                        initialModelConfig = currentModelConfig,
+                        availableConfigs = allModelConfigs,
+                        onModelConfigChange = { config ->
+                            currentModelConfig = config
+                            if (config.isValid()) {
+                                try {
+                                    llmService = KoogLLMService.create(config)
+                                    scope.launch {
+                                        try {
+                                            // 检查配置是否已存在
+                                            val existingConfigs = repository.getAllConfigs()
+                                            val existingConfig = existingConfigs.find {
+                                                it.provider == config.provider &&
+                                                it.modelName == config.modelName &&
+                                                it.apiKey == config.apiKey
+                                            }
 
-                                if (existingConfig == null) {
-                                    repository.saveConfig(config, setAsDefault = true)
-                                    allModelConfigs = repository.getAllConfigs()
+                                            if (existingConfig == null) {
+                                                repository.saveConfig(config, setAsDefault = true)
+                                                allModelConfigs = repository.getAllConfigs()
+                                            }
+                                        } catch (e: Exception) {
+                                            println("⚠️ 保存配置失败: ${e.message}")
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    println("❌ 配置 LLM 服务失败: ${e.message}")
+                                    llmService = null
                                 }
-                            } catch (e: Exception) {
-                                println("⚠️ 保存配置失败: ${e.message}")
+                            } else {
+                                llmService = null
                             }
-                        }
-                    } catch (e: Exception) {
-                        println("❌ 配置 LLM 服务失败: ${e.message}")
-                        llmService = null
-                    }
-                } else {
-                    llmService = null
-                }
-            },
-            modifier = Modifier.fillMaxWidth(0.9f))
-
+                        },
+                        modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
+                    )
                 }
             }
         }

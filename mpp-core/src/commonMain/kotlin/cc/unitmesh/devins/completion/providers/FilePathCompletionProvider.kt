@@ -27,11 +27,8 @@ class FilePathCompletionProvider : CompletionProvider {
         val workspace = WorkspaceManager.getCurrentOrEmpty()
         
         // 如果没有 workspace，返回静态补全
-        val workspacePath = workspace.rootPath
-        if (workspacePath == null) {
-            return getStaticCompletions(query)
-        }
-        
+        val workspacePath = workspace.rootPath ?: return emptyList()
+
         // 初始化或更新 FileSearch
         ensureFileSearch(workspacePath)
         
@@ -111,104 +108,15 @@ class FilePathCompletionProvider : CompletionProvider {
             }
         }
     }
-    
-    /**
-     * 获取静态常用文件补全（只包含文件，不包含目录）
-     */
+
     private fun getStaticCompletions(query: String): List<CompletionItem> {
-        val commonFiles = listOf(
-            // 项目配置文件
-            CompletionItem(
-                text = "README.md",
-                displayText = "README.md",
-                description = "File: README.md",
-                icon = "📝",
-                insertHandler = createFilePathInsertHandler("README.md")
-            ),
-            CompletionItem(
-                text = "build.gradle.kts",
-                displayText = "build.gradle.kts",
-                description = "File: build.gradle.kts",
-                icon = "🔨",
-                insertHandler = createFilePathInsertHandler("build.gradle.kts")
-            ),
-            CompletionItem(
-                text = "build.gradle",
-                displayText = "build.gradle",
-                description = "File: build.gradle",
-                icon = "🔨",
-                insertHandler = createFilePathInsertHandler("build.gradle")
-            ),
-            CompletionItem(
-                text = "settings.gradle.kts",
-                displayText = "settings.gradle.kts",
-                description = "File: settings.gradle.kts",
-                icon = "🔨",
-                insertHandler = createFilePathInsertHandler("settings.gradle.kts")
-            ),
-            CompletionItem(
-                text = "settings.gradle",
-                displayText = "settings.gradle",
-                description = "File: settings.gradle",
-                icon = "🔨",
-                insertHandler = createFilePathInsertHandler("settings.gradle")
-            ),
-            CompletionItem(
-                text = "gradle.properties",
-                displayText = "gradle.properties",
-                description = "File: gradle.properties",
-                icon = "⚙️",
-                insertHandler = createFilePathInsertHandler("gradle.properties")
-            ),
-            CompletionItem(
-                text = "pom.xml",
-                displayText = "pom.xml",
-                description = "File: pom.xml",
-                icon = "📋",
-                insertHandler = createFilePathInsertHandler("pom.xml")
-            ),
-            CompletionItem(
-                text = "package.json",
-                displayText = "package.json",
-                description = "File: package.json",
-                icon = "📦",
-                insertHandler = createFilePathInsertHandler("package.json")
-            ),
-            CompletionItem(
-                text = ".gitignore",
-                displayText = ".gitignore",
-                description = "File: .gitignore",
-                icon = "🚫",
-                insertHandler = createFilePathInsertHandler(".gitignore")
-            ),
-            CompletionItem(
-                text = "Dockerfile",
-                displayText = "Dockerfile",
-                description = "File: Dockerfile",
-                icon = "🐳",
-                insertHandler = createFilePathInsertHandler("Dockerfile")
-            ),
-            CompletionItem(
-                text = ".dockerignore",
-                displayText = ".dockerignore",
-                description = "File: .dockerignore",
-                icon = "🐳",
-                insertHandler = createFilePathInsertHandler(".dockerignore")
-            )
-        )
-        
-        return commonFiles.filter { it.matchScore(query) > 0 }
+        return listOf()
     }
-    
-    /**
-     * 创建文件补全项
-     */
+
     private fun createFileCompletionItem(filePath: String): CompletionItem {
-        // 提取文件名和目录路径
         val fileName = filePath.substringAfterLast("/", filePath)
         val directoryPath = filePath.substringBeforeLast("/", "")
         
-        // 显示文本：文件名 + 路径信息
         val displayText = if (directoryPath.isNotEmpty()) {
             "$fileName • $directoryPath"
         } else {

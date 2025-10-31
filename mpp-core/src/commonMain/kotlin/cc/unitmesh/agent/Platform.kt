@@ -8,6 +8,7 @@ expect object Platform {
     val isJvm: Boolean
     val isJs: Boolean
     val isWasm: Boolean
+    val isAndroid: Boolean
 }
 
 /**

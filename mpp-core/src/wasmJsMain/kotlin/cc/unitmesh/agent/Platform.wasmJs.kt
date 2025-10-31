@@ -5,4 +5,5 @@ actual object Platform {
     actual val isJvm: Boolean = false
     actual val isJs: Boolean = false
     actual val isWasm: Boolean = true
+    actual val isAndroid: Boolean = false
 }

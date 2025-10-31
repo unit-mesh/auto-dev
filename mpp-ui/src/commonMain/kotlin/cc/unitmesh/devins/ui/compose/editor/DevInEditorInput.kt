@@ -5,6 +5,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.editor.EditorCallbacks
@@ -229,9 +231,19 @@ fun DevInEditorInput(
         }
     }
     
-    Box(modifier = modifier) {
+    val isAndroid = Platform.isAndroid
+
+    // Android 在紧凑模式下使用 Row 布局以水平居中
+    Box(
+        modifier = modifier,
+        contentAlignment = if (isAndroid && isCompactMode) Alignment.Center else Alignment.TopStart
+    ) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = if (isAndroid && isCompactMode) {
+                Modifier.fillMaxWidth(0.95f)  // Android 紧凑模式：95% 宽度，水平居中
+            } else {
+                Modifier.fillMaxWidth()
+            },
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             colors = CardDefaults.cardColors(
@@ -241,7 +253,7 @@ fun DevInEditorInput(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // 编辑器区域 - 根据模式调整高度
+                // 编辑器区域 - 根据模式和平台调整高度
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -249,7 +261,13 @@ fun DevInEditorInput(
                             min = if (isCompactMode) 48.dp else 72.dp,
                             max = if (isCompactMode) 48.dp else 120.dp
                         )
-                        .padding(if (isCompactMode) 8.dp else 16.dp)
+                        .padding(
+                            if (isCompactMode) {
+                                if (isAndroid) 12.dp else 8.dp
+                            } else {
+                                16.dp
+                            }
+                        )
                 ) {
                     BasicTextField(
                         value = textFieldValue,
