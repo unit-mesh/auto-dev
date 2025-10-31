@@ -11,6 +11,10 @@ class FileSearchTest {
     private class MockFileSystem(private val files: List<String>) : ProjectFileSystem {
         override fun getProjectPath(): String = "/test/project"
         override fun readFile(path: String): String? = null
+        override fun writeFile(path: String, content: String): Boolean {
+            return false
+        }
+
         override fun exists(path: String): Boolean = files.contains(path)
         override fun isDirectory(path: String): Boolean = path.endsWith("/")
         override fun listFiles(path: String, pattern: String?): List<String> = files
