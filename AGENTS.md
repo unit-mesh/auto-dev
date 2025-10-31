@@ -2,7 +2,6 @@
 
 - Always run build and tests before finishing a task.
 - If the original request/solution is not working well, do not change its intent. Propose a minimal fix or report issues.
-- Update `AGENTS.md` when a task relies on long-running context \(chat and history\). Add a brief decision log.
 - Never run `./gradlew clean`. Clean only the specific module, e.g., `./gradlew :mpp-core:clean`.
 
 ## Summary
@@ -16,6 +15,7 @@
 - Avoid blocking APIs in `commonMain`. Never use `runBlocking` in common code \(JS/Wasm unsupported\).
 - Use `CoroutineScope` with background `launch` + cached results to support sync-like APIs.
 - Use `expect`/`actual` for platform-specific code \(e.g., file I/O on JVM/JS/Wasm\).
+- Check export first, if some functions not working well with CLI (TypeScript)
 - JS exports:
     - Use `String`, not `Char`.
     - Convert enums to strings.
