@@ -24,16 +24,28 @@ type CompletionItem = {
 
 interface ChatInterfaceProps {
   messages: Message[];
+  pendingMessage: Message | null;
+  isCompiling: boolean;
   onSendMessage: (content: string) => Promise<void>;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMessage }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
+  messages, 
+  pendingMessage,
+  isCompiling,
+  onSendMessage 
+}) => {
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showBanner, setShowBanner] = useState(true);
   const [shouldPreventSubmit, setShouldPreventSubmit] = useState(false);
+
+  // Sync isProcessing with external state
+  useEffect(() => {
+    setIsProcessing(isCompiling || pendingMessage !== null);
+  }, [isCompiling, pendingMessage]);
 
   // Update completions when input changes
   useEffect(() => {
@@ -75,7 +87,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
 
     const message = input.trim();
     setInput('');
-    setIsProcessing(true);
     setCompletionItems([]);
 
     try {
@@ -87,8 +98,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
       else {
         await onSendMessage(message);
       }
-    } finally {
-      setIsProcessing(false);
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
   };
 
@@ -212,7 +223,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
 
       {/* Messages */}
       <Box flexDirection="column" flexGrow={1} paddingX={1} paddingY={1}>
-        {messages.length === 0 ? (
+        {messages.length === 0 && !pendingMessage ? (
           <Box>
             <Text dimColor>
               💬 Type your message to start coding
@@ -222,17 +233,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
             </Text>
           </Box>
         ) : (
-          messages.map((msg, idx) => (
-            <MessageBubble key={idx} message={msg} />
-          ))
-        )}
-        
-        {isProcessing && (
-          <Box marginTop={1}>
-            <Text color="cyan">
-              <Spinner type="dots" /> Processing...
-            </Text>
-          </Box>
+          <>
+            {/* Render completed messages */}
+            {messages.map((msg, idx) => (
+              <MessageBubble key={idx} message={msg} />
+            ))}
+            
+            {/* Render pending message (streaming or compiling) */}
+            {pendingMessage && (
+              <MessageBubble 
+                key="pending" 
+                message={pendingMessage} 
+                isPending={true}
+              />
+            )}
+          </>
         )}
       </Box>
 
@@ -265,9 +280,36 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
 
 interface MessageBubbleProps {
   message: Message;
+  isPending?: boolean;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending = false }) => {
+  // Handle different message roles
+  if (message.role === 'compiling') {
+    return (
+      <Box marginBottom={1}>
+        <Text color="yellow">
+          <Spinner type="dots" /> {message.content}
+        </Text>
+      </Box>
+    );
+  }
+
+  if (message.role === 'system') {
+    return (
+      <Box flexDirection="column" marginBottom={1}>
+        <Box>
+          <Text bold color="blue">
+            ℹ️  System:
+          </Text>
+        </Box>
+        <Box paddingLeft={2}>
+          <Text dimColor>{message.content}</Text>
+        </Box>
+      </Box>
+    );
+  }
+
   const isUser = message.role === 'user';
   const color = isUser ? 'green' : 'cyan';
   const prefix = isUser ? '👤 You' : '🤖 AI';
@@ -277,10 +319,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       <Box>
         <Text bold color={color}>
           {prefix}:
+          {isPending && !isUser && (
+            <Text color="cyan"> <Spinner type="dots" /></Text>
+          )}
         </Text>
       </Box>
       <Box paddingLeft={2}>
-        <Text>{message.content}</Text>
+        <Text>{message.content || (isPending ? '...' : '')}</Text>
       </Box>
     </Box>
   );

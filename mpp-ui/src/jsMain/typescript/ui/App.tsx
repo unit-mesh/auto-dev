@@ -14,18 +14,23 @@ import { LLMService } from '../services/LLMService.js';
 import { compileDevIns, hasDevInsCommands } from '../utils/commandUtils.js';
 
 export interface Message {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'compiling';
   content: string;
   timestamp: number;
 }
 
 export const App: React.FC = () => {
   const { exit } = useApp();
+  // Completed messages (history)
   const [messages, setMessages] = useState<Message[]>([]);
+  // Pending message being streamed
+  const [pendingMessage, setPendingMessage] = useState<Message | null>(null);
   const [isConfigured, setIsConfigured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [llmService, setLLMService] = useState<LLMService | null>(null);
+  // Track if we're currently compiling DevIns
+  const [isCompiling, setIsCompiling] = useState(false);
 
   // Initialize configuration
   useEffect(() => {
@@ -64,7 +69,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Add user message
+    // Add user message to history
     const userMessage: Message = {
       role: 'user',
       content,
@@ -78,12 +83,18 @@ export const App: React.FC = () => {
       let processedContent = content;
       
       if (hasDevInsCommands(content)) {
-        console.log('🔧 Compiling DevIns commands...');
+        // Show compiling state as pending message
+        setIsCompiling(true);
+        setPendingMessage({
+          role: 'compiling',
+          content: '🔧 Compiling DevIns commands...',
+          timestamp: Date.now(),
+        });
+
         const compileResult = await compileDevIns(content);
         
         if (compileResult) {
           if (compileResult.success) {
-            console.log('✅ DevIns compilation successful');
             // Use the compiled output instead of raw input
             processedContent = compileResult.output;
             
@@ -98,7 +109,6 @@ export const App: React.FC = () => {
             }
           } else {
             // Compilation failed - show error but still send original to LLM
-            console.error('❌ DevIns compilation failed:', compileResult.errorMessage);
             const errorMessage: Message = {
               role: 'system',
               content: `⚠️  DevIns compilation error: ${compileResult.errorMessage}`,
@@ -107,34 +117,69 @@ export const App: React.FC = () => {
             setMessages(prev => [...prev, errorMessage]);
           }
         }
+        
+        setIsCompiling(false);
+        setPendingMessage(null);
       }
+
+      // Create pending assistant message for streaming
+      setPendingMessage({
+        role: 'assistant',
+        content: '',
+        timestamp: Date.now(),
+      });
 
       // Stream response from LLM using the processed content
       let assistantContent = '';
+      let lastLineCount = 0;
 
       await llmService.streamMessage(processedContent, (chunk) => {
         assistantContent += chunk;
-        // Update the last message with streaming content
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMsg = newMessages[newMessages.length - 1];
-
-          if (lastMsg && lastMsg.role === 'assistant') {
-            lastMsg.content = assistantContent;
-          } else {
-            newMessages.push({
-              role: 'assistant',
-              content: assistantContent,
-              timestamp: Date.now(),
-            });
-          }
-
-          return newMessages;
-        });
+        
+        // Only update UI when content contains new lines (to reduce flickering)
+        // Count lines in the content
+        const currentLineCount = (assistantContent.match(/\n/g) || []).length;
+        
+        // Update if:
+        // 1. New line was added
+        // 2. Content is still short (< 100 chars) - for initial feedback
+        // 3. Every 50 characters for long single-line content
+        const shouldUpdate = 
+          currentLineCount > lastLineCount || 
+          assistantContent.length < 100 ||
+          assistantContent.length % 50 === 0;
+        
+        if (shouldUpdate) {
+          setPendingMessage({
+            role: 'assistant',
+            content: assistantContent,
+            timestamp: Date.now(),
+          });
+          lastLineCount = currentLineCount;
+        }
       });
+
+      // Final update to ensure all content is shown
+      setPendingMessage({
+        role: 'assistant',
+        content: assistantContent,
+        timestamp: Date.now(),
+      });
+
+      // Move pending message to history once complete
+      if (assistantContent) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: assistantContent,
+          timestamp: Date.now(),
+        }]);
+      }
+      setPendingMessage(null);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
+      setPendingMessage(null);
+      setIsCompiling(false);
     }
   }, [llmService]);
 
@@ -169,6 +214,13 @@ export const App: React.FC = () => {
     return <WelcomeScreen onConfigured={handleConfigured} />;
   }
 
-  return <ChatInterface messages={messages} onSendMessage={handleSendMessage} />;
+  return (
+    <ChatInterface 
+      messages={messages} 
+      pendingMessage={pendingMessage}
+      isCompiling={isCompiling}
+      onSendMessage={handleSendMessage} 
+    />
+  );
 };
 
