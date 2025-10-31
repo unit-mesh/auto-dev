@@ -370,6 +370,78 @@ data class JsInsertResult(
 )
 
 /**
+ * JavaScript-friendly DevIns compiler wrapper
+ * Compiles DevIns code (e.g., "/read-file:path") and returns the result
+ */
+@JsExport
+class JsDevInsCompiler {
+    
+    /**
+     * Compile DevIns source code and return the result
+     * @param source DevIns source code (e.g., "解释代码 /read-file:build.gradle.kts")
+     * @param variables Optional variables map
+     * @return Promise with compilation result
+     */
+    @JsName("compile")
+    fun compile(source: String, variables: dynamic = null): Promise<JsDevInsResult> {
+        return GlobalScope.promise {
+            try {
+                val varsMap = if (variables != null && jsTypeOf(variables) == "object") {
+                    val map = mutableMapOf<String, Any>()
+                    js("for (var key in variables) { map[key] = variables[key]; }")
+                    map
+                } else {
+                    emptyMap()
+                }
+                
+                val result = cc.unitmesh.devins.compiler.DevInsCompilerFacade.compile(source, varsMap)
+                
+                JsDevInsResult(
+                    success = result.isSuccess(),
+                    output = result.output,
+                    errorMessage = result.errorMessage,
+                    hasCommand = result.statistics.commandCount > 0
+                )
+            } catch (e: Exception) {
+                JsDevInsResult(
+                    success = false,
+                    output = "",
+                    errorMessage = e.message ?: "Unknown error",
+                    hasCommand = false
+                )
+            }
+        }
+    }
+    
+    /**
+     * Compile DevIns source and return just the output string
+     * @param source DevIns source code
+     * @return Promise with output string
+     */
+    @JsName("compileToString")
+    fun compileToString(source: String): Promise<String> {
+        return GlobalScope.promise {
+            try {
+                cc.unitmesh.devins.compiler.DevInsCompilerFacade.compileToString(source)
+            } catch (e: Exception) {
+                throw e
+            }
+        }
+    }
+}
+
+/**
+ * JavaScript-friendly DevIns compilation result
+ */
+@JsExport
+data class JsDevInsResult(
+    val success: Boolean,
+    val output: String,
+    val errorMessage: String?,
+    val hasCommand: Boolean
+)
+
+/**
  * Extension to convert CompletionItem to JsCompletionItem
  */
 private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType, index: Int): JsCompletionItem {

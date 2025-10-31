@@ -15,10 +15,22 @@ export type JsInsertResult = {
   shouldTriggerNextCompletion: boolean;
 };
 
+export type JsDevInsResult = {
+  success: boolean;
+  output: string;
+  errorMessage: string | null;
+  hasCommand: boolean;
+};
+
 /**
  * Completion manager instance (singleton)
  */
 let completionManager: any = null;
+
+/**
+ * DevIns compiler instance (singleton)
+ */
+let devinsCompiler: any = null;
 
 /**
  * Initialize the completion manager
@@ -56,6 +68,70 @@ export async function initCompletionManager() {
     }
   }
   return completionManager;
+}
+
+/**
+ * Initialize the DevIns compiler
+ * Will be loaded from Kotlin/JS build output
+ */
+export async function initDevInsCompiler() {
+  if (!devinsCompiler) {
+    try {
+      // Dynamic import from build output
+      // @ts-ignore - Runtime import, path is correct after build
+      const mppCore = await import('@autodev/mpp-core/autodev-mpp-core.js');
+      const exports = mppCore['module.exports'] || mppCore.default || mppCore;
+      if (exports?.cc?.unitmesh?.llm?.JsDevInsCompiler) {
+        devinsCompiler = new exports.cc.unitmesh.llm.JsDevInsCompiler();
+        console.log('✅ DevInsCompiler initialized');
+      } else {
+        console.error('❌ JsDevInsCompiler not found in exports');
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize DevInsCompiler:', error);
+      console.log('💡 Make sure to build mpp-core first: npm run build:kotlin');
+    }
+  }
+  return devinsCompiler;
+}
+
+/**
+ * Compile DevIns source code
+ * This processes commands like /read-file:path, @agent, $variable, etc.
+ */
+export async function compileDevIns(source: string, variables?: Record<string, any>): Promise<JsDevInsResult | null> {
+  const compiler = await initDevInsCompiler();
+  if (!compiler) return null;
+  
+  try {
+    const result = await compiler.compile(source, variables);
+    return result;
+  } catch (error) {
+    console.error('❌ Error compiling DevIns:', error);
+    return {
+      success: false,
+      output: '',
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      hasCommand: false
+    };
+  }
+}
+
+/**
+ * Check if text contains DevIns commands that need compilation
+ * Returns true if text contains /command or @agent syntax
+ */
+export function hasDevInsCommands(text: string): boolean {
+  // Check for /command: syntax (most common)
+  if (/\/[a-z-]+:/i.test(text)) return true;
+  
+  // Check for @agent syntax
+  if (/@[a-z-]+/i.test(text)) return true;
+  
+  // Check for $variable syntax
+  if (/\$[a-z_][a-z0-9_]*/i.test(text)) return true;
+  
+  return false;
 }
 
 /**

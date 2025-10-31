@@ -11,6 +11,7 @@ import { ChatInterface } from './ChatInterface.js';
 import { WelcomeScreen } from './WelcomeScreen.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { LLMService } from '../services/LLMService.js';
+import { compileDevIns, hasDevInsCommands } from '../utils/commandUtils.js';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -73,10 +74,45 @@ export const App: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      // Stream response from LLM
+      // Check if the message contains DevIns commands that need compilation
+      let processedContent = content;
+      
+      if (hasDevInsCommands(content)) {
+        console.log('🔧 Compiling DevIns commands...');
+        const compileResult = await compileDevIns(content);
+        
+        if (compileResult) {
+          if (compileResult.success) {
+            console.log('✅ DevIns compilation successful');
+            // Use the compiled output instead of raw input
+            processedContent = compileResult.output;
+            
+            // Add a system message showing the compilation result if it processed commands
+            if (compileResult.hasCommand && compileResult.output !== content) {
+              const compileMessage: Message = {
+                role: 'system',
+                content: `📝 Compiled output:\n${compileResult.output}`,
+                timestamp: Date.now(),
+              };
+              setMessages(prev => [...prev, compileMessage]);
+            }
+          } else {
+            // Compilation failed - show error but still send original to LLM
+            console.error('❌ DevIns compilation failed:', compileResult.errorMessage);
+            const errorMessage: Message = {
+              role: 'system',
+              content: `⚠️  DevIns compilation error: ${compileResult.errorMessage}`,
+              timestamp: Date.now(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+          }
+        }
+      }
+
+      // Stream response from LLM using the processed content
       let assistantContent = '';
 
-      await llmService.streamMessage(content, (chunk) => {
+      await llmService.streamMessage(processedContent, (chunk) => {
         assistantContent += chunk;
         // Update the last message with streaming content
         setMessages(prev => {
