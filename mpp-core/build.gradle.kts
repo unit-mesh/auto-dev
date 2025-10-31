@@ -50,8 +50,42 @@ kotlin {
     }
 
     js(IR) {
+        moduleName = "autodev-mpp-core"
         browser()
         nodejs()
+        binaries.library()
+        // Generate TypeScript definitions for better interop
+        generateTypeScriptDefinitions()
+
+        compilations.all {
+            kotlinOptions {
+                moduleKind = "es"
+                sourceMap = true
+                sourceMapEmbedSources = "always"
+            }
+        }
+
+        // Configure npm package
+        compilations["main"].packageJson {
+            customField("name", "@autodev/mpp-core")
+            customField("version", "0.1.0")
+            customField("description", "AutoDev Multiplatform Core - AI Agent and DevIns Compiler")
+            customField("author", "Unit Mesh")
+            customField("license", "MIT")
+            // public
+            customField("private", false)
+            customField("repository", mapOf(
+                "type" to "git",
+                "url" to "https://github.com/unit-mesh/auto-dev.git"
+            ))
+            customField("keywords", listOf(
+                "kotlin",
+                "multiplatform",
+                "ai",
+                "llm",
+                "devins"
+            ))
+        }
     }
 
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
