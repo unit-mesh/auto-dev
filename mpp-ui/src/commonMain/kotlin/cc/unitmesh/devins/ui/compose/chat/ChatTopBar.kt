@@ -28,16 +28,21 @@ fun ChatTopBar(
 ) {
     val isAndroid = Platform.isAndroid
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = if (isAndroid) 16.dp else 32.dp,
-                vertical = if (isAndroid) 8.dp else 16.dp
-            ),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        modifier = modifier.fillMaxWidth(), // 保留传入的 modifier（包含 statusBarsPadding）
+        shadowElevation = if (hasHistory) 4.dp else 0.dp,
+        tonalElevation = if (hasHistory) 2.dp else 0.dp
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = if (isAndroid) 16.dp else 32.dp,
+                    vertical = if (isAndroid) 12.dp else 16.dp
+                ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(if (isAndroid) 8.dp else 16.dp)
@@ -54,11 +59,13 @@ fun ChatTopBar(
 
             // Android: 使用图标按钮，Desktop: 使用带文字的按钮
             if (isAndroid) {
-                IconButton(onClick = onOpenDirectory) {
+                FilledTonalIconButton(
+                    onClick = onOpenDirectory,
+                    modifier = Modifier.size(40.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.FolderOpen,
-                        contentDescription = "Open Project",
-                        tint = MaterialTheme.colorScheme.primary
+                        contentDescription = "Open Project"
                     )
                 }
             } else {
@@ -79,11 +86,16 @@ fun ChatTopBar(
 
             // 清空历史按钮
             if (hasHistory) {
-                IconButton(onClick = onClearHistory) {
+                FilledTonalIconButton(
+                    onClick = onClearHistory,
+                    modifier = Modifier.size(40.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "New Chat",
-                        tint = MaterialTheme.colorScheme.secondary
+                        contentDescription = "New Chat"
                     )
                 }
             }
@@ -98,6 +110,7 @@ fun ChatTopBar(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
+        }
         }
     }
 }

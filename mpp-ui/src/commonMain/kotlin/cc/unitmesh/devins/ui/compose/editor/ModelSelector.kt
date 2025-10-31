@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.compose.editor
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
@@ -43,19 +44,23 @@ fun ModelSelector(
         }
     }
 
-    TextButton(
+    OutlinedButton(
         onClick = { expanded = true },
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.primary
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Text(
             text = displayText,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             maxLines = 1
         )
         Icon(
             imageVector = Icons.Default.ArrowDropDown,
             contentDescription = null,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(18.dp)
         )
     }
 

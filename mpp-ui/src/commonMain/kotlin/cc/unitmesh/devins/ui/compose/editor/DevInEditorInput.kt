@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun DevInEditorInput(
     initialText: String = "",
-    placeholder: String = "Plan, @ for context, / for commands",
+    placeholder: String = "Type your message...",
     callbacks: EditorCallbacks? = null,
     completionManager: CompletionManager? = null,
     initialModelConfig: ModelConfig? = null,
@@ -178,29 +178,21 @@ fun DevInEditorInput(
     fun handleKeyEvent(event: KeyEvent): Boolean {
         if (event.type != KeyEventType.KeyDown) return false
         
+        // 移动端：不拦截 Enter 键，让输入法和虚拟键盘正常工作
+        // 桌面端：Enter 发送，Shift+Enter 换行
+        val isAndroid = Platform.isAndroid
+        
         return when {
-            event.key == Key.Enter && !event.isShiftPressed -> {
-                if (showCompletion) {
-                    if (completionItems.isNotEmpty()) {
-                        applyCompletion(completionItems[selectedCompletionIndex])
-                    }
-                    true
-                } else {
-                    if (textFieldValue.text.isNotBlank()) {
-                        callbacks?.onSubmit(textFieldValue.text)
-                        textFieldValue = TextFieldValue("")
-                        showCompletion = false
-                    }
-                    true
-                }
-            }
-            
-            event.key == Key.Enter && event.isShiftPressed -> {
-                false
-            }
-            
+            // 补全弹窗显示时的特殊处理
             showCompletion -> {
                 when (event.key) {
+                    Key.Enter -> {
+                        // 应用选中的补全
+                        if (completionItems.isNotEmpty()) {
+                            applyCompletion(completionItems[selectedCompletionIndex])
+                        }
+                        true
+                    }
                     Key.DirectionDown -> {
                         selectedCompletionIndex = (selectedCompletionIndex + 1) % completionItems.size
                         true
@@ -226,7 +218,18 @@ fun DevInEditorInput(
                     else -> false
                 }
             }
-            // 其他键不处理
+            
+            // 桌面端：Enter 发送消息（但不在移动端拦截）
+            !isAndroid && event.key == Key.Enter && !event.isShiftPressed -> {
+                if (textFieldValue.text.isNotBlank()) {
+                    callbacks?.onSubmit(textFieldValue.text)
+                    textFieldValue = TextFieldValue("")
+                    showCompletion = false
+                }
+                true
+            }
+            
+            // 其他键不处理，让系统和输入法处理
             else -> false
         }
     }
@@ -240,12 +243,12 @@ fun DevInEditorInput(
     ) {
         Card(
             modifier = if (isAndroid && isCompactMode) {
-                Modifier.fillMaxWidth(0.95f)  // Android 紧凑模式：95% 宽度，水平居中
+                Modifier.fillMaxWidth(0.96f)  // Android 紧凑模式：96% 宽度，水平居中
             } else {
                 Modifier.fillMaxWidth()
             },
-            shape = RoundedCornerShape(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
@@ -258,14 +261,14 @@ fun DevInEditorInput(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(
-                            min = if (isCompactMode) 48.dp else 72.dp,
-                            max = if (isCompactMode) 48.dp else 120.dp
+                            min = if (isCompactMode) 56.dp else 80.dp,
+                            max = if (isCompactMode) 56.dp else 140.dp
                         )
                         .padding(
                             if (isCompactMode) {
-                                if (isAndroid) 12.dp else 8.dp
+                                if (isAndroid) 16.dp else 12.dp
                             } else {
-                                16.dp
+                                20.dp
                             }
                         )
                 ) {
@@ -278,8 +281,9 @@ fun DevInEditorInput(
                             .onPreviewKeyEvent { handleKeyEvent(it) },
                         textStyle = TextStyle(
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            lineHeight = 22.sp
                         ),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                         decorationBox = { innerTextField ->
@@ -321,23 +325,10 @@ fun DevInEditorInput(
                 HorizontalDivider()
                 BottomToolbar(
                     onSendClick = {
-                        callbacks?.onSubmit(textFieldValue.text)
-                    },
-                    onAtClick = {
-                        // 插入 @ 并触发补全
-                        val current = textFieldValue
-                        textFieldValue = TextFieldValue(
-                            text = current.text + "@",
-                            selection = androidx.compose.ui.text.TextRange(current.text.length + 1)
-                        )
-                    },
-                    onSlashClick = {
-                        // 插入 / 并触发补全
-                        val current = textFieldValue
-                        textFieldValue = TextFieldValue(
-                            text = current.text + "/",
-                            selection = androidx.compose.ui.text.TextRange(current.text.length + 1)
-                        )
+                        if (textFieldValue.text.isNotBlank()) {
+                            callbacks?.onSubmit(textFieldValue.text)
+                            textFieldValue = TextFieldValue("")
+                        }
                     },
                     sendEnabled = textFieldValue.text.isNotBlank(),
                     initialModelConfig = initialModelConfig,

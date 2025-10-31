@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import cc.unitmesh.devins.ui.platform.createFileChooser
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoDevApp() {
     val scope = rememberCoroutineScope()
@@ -142,16 +143,18 @@ fun AutoDevApp() {
         }
     }
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0.dp) // 禁用默认的 contentWindowInsets，手动处理
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 顶部工具栏
+            // 顶部工具栏 - 添加状态栏边距
             ChatTopBar(
                 hasHistory = messages.isNotEmpty(),
                 hasDebugInfo = compilerOutput.isNotEmpty(),
@@ -162,7 +165,9 @@ fun AutoDevApp() {
                     currentStreamingOutput = ""
                     println("🗑️ [SimpleAIChat] 聊天历史已清空")
                 },
-                onShowDebug = { showDebugDialog = true }
+                onShowDebug = { showDebugDialog = true },
+                modifier = Modifier
+                    .statusBarsPadding() // 添加状态栏边距
             )
             
             // 判断是否应该显示紧凑布局（有消息历史或正在处理）
@@ -183,13 +188,16 @@ fun AutoDevApp() {
                 
                 // 底部输入框 - 紧凑模式（一行）
                 Surface(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding() // 添加导航栏边距，避免被底部导航栏遮挡
+                        .imePadding(), // 添加输入法边距，键盘弹出时自动调整
                     shadowElevation = 8.dp,
                     tonalElevation = 2.dp
                 ) {
                     DevInEditorInput(
                         initialText = "",
-                        placeholder = "Continue conversation...",
+                        placeholder = "Type your message...",
                         callbacks = callbacks,
                         completionManager = currentWorkspace.completionManager,
                         initialModelConfig = currentModelConfig,
@@ -249,11 +257,7 @@ fun AutoDevApp() {
                     // 完整的输入组件（包含底部工具栏）
                     DevInEditorInput(
                         initialText = "",
-                        placeholder = if (isAndroid) {
-                            "Plan, @ for context, / for commands"
-                        } else {
-                            "Plan, @ for context, / for commands (try /speckit.*)"
-                        },
+                        placeholder = "Type your message...",
                         callbacks = callbacks,
                         completionManager = currentWorkspace.completionManager,
                         initialModelConfig = currentModelConfig,
@@ -294,6 +298,7 @@ fun AutoDevApp() {
                 }
             }
         }
+    }
         
         // Debug Dialog
         if (showDebugDialog) {
@@ -400,6 +405,5 @@ fun AutoDevApp() {
                 }
             )
         }
-    }
 }
 

@@ -11,15 +11,13 @@ import androidx.compose.ui.unit.dp
 import cc.unitmesh.llm.ModelConfig
 
 /**
- * 底部工具栏
- * 左侧：Agent 选择器 + 模型选择器
- * 右侧：@ 按钮 + / 按钮 + 发送按钮
+ * 底部工具栏（移动端优化版）
+ * 左侧：模型选择器
+ * 右侧：发送按钮
  */
 @Composable
 fun BottomToolbar(
     onSendClick: () -> Unit,
-    onAtClick: () -> Unit,
-    onSlashClick: () -> Unit,
     sendEnabled: Boolean,
     initialModelConfig: ModelConfig? = null,
     availableConfigs: List<ModelConfig> = emptyList(),
@@ -29,128 +27,31 @@ fun BottomToolbar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 左侧：选择器
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AgentSelector()
-            ModelSelector(
-                initialConfig = initialModelConfig,
-                availableConfigs = availableConfigs,
-                onConfigChange = onModelConfigChange
-            )
-        }
-        
-        // 右侧：操作按钮
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // @ 按钮 - Agent 提及
-            IconButton(
-                onClick = onAtClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AlternateEmail,
-                    contentDescription = "@ mention",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            // / 按钮 - Slash 命令
-            IconButton(
-                onClick = onSlashClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Text(
-                    text = "/",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            // 发送按钮
-            IconButton(
-                onClick = onSendClick,
-                enabled = sendEnabled,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = "Send",
-                    tint = if (sendEnabled) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                    }
-                )
-            }
-        }
-    }
-}
-
-/**
- * Agent 选择器
- */
-@Composable
-private fun AgentSelector() {
-    var expanded by remember { mutableStateOf(false) }
-    var selectedAgent by remember { mutableStateOf("Agent") }
-    
-    val agents = listOf(
-        "Default",
-        "clarify",
-        "code-review",
-        "test-gen",
-        "refactor"
-    )
-    
-    Row(
-        modifier = Modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.SmartToy,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        // 左侧：模型选择器
+        ModelSelector(
+            initialConfig = initialModelConfig,
+            availableConfigs = availableConfigs,
+            onConfigChange = onModelConfigChange
         )
         
-        TextButton(
-            onClick = { expanded = true },
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        // 右侧：发送按钮 - 使用更醒目的 FilledTonalButton
+        FilledTonalButton(
+            onClick = onSendClick,
+            enabled = sendEnabled,
+            modifier = Modifier.height(40.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp)
         ) {
-            Text(
-                text = selectedAgent,
-                style = MaterialTheme.typography.bodySmall
-            )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp)
+                imageVector = Icons.Default.Send,
+                contentDescription = "Send",
+                modifier = Modifier.size(18.dp)
             )
-        }
-        
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            agents.forEach { agent ->
-                DropdownMenuItem(
-                    text = { Text(agent) },
-                    onClick = {
-                        selectedAgent = agent
-                        expanded = false
-                    }
-                )
-            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Send")
         }
     }
 }
