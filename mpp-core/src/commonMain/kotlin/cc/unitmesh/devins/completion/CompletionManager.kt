@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.completion
 
 import cc.unitmesh.devins.completion.providers.AgentCompletionProvider
+import cc.unitmesh.devins.completion.providers.BuiltinCommandCompletionProvider
 import cc.unitmesh.devins.completion.providers.FilePathCompletionProvider
 import cc.unitmesh.devins.completion.providers.SpecKitCommandCompletionProvider
 import cc.unitmesh.devins.completion.providers.ToolBasedCommandCompletionProvider
@@ -14,6 +15,7 @@ import cc.unitmesh.devins.filesystem.ProjectFileSystem
  */
 class CompletionManager(fileSystem: ProjectFileSystem? = null) {
     private val specKitProvider = SpecKitCommandCompletionProvider(fileSystem)
+    private val builtinCommandProvider = BuiltinCommandCompletionProvider()
 
     private val providers = mapOf(
         CompletionTriggerType.AGENT to AgentCompletionProvider(),
@@ -30,9 +32,12 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
         val provider = providers[context.triggerType] ?: return emptyList()
         val baseCompletions = provider.getCompletions(context)
 
-        // 对于 COMMAND 类型，同时包含 SpecKit 命令
+        // 对于 COMMAND 类型，同时包含 SpecKit 命令和 Builtin 命令
         val allCompletions = if (context.triggerType == CompletionTriggerType.COMMAND) {
-            baseCompletions + specKitProvider.getCompletions(context)
+            // Order: Builtin commands first (for common operations), then tools, then SpecKit
+            builtinCommandProvider.getCompletions(context) + 
+            baseCompletions + 
+            specKitProvider.getCompletions(context)
         } else {
             baseCompletions
         }
