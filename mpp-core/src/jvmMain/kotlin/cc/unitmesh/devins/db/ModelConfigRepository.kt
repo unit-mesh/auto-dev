@@ -1,7 +1,7 @@
 package cc.unitmesh.devins.db
 
-import cc.unitmesh.devins.llm.LLMProviderType
-import cc.unitmesh.devins.llm.ModelConfig
+import cc.unitmesh.llm.LLMProviderType
+import cc.unitmesh.llm.ModelConfig
 
 /**
  * ModelConfig 数据访问层

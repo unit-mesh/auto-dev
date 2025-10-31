@@ -23,6 +23,7 @@ import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
+import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -36,9 +37,9 @@ fun DevInEditorInput(
     placeholder: String = "Plan, @ for context, / for commands",
     callbacks: EditorCallbacks? = null,
     completionManager: CompletionManager? = null,
-    initialModelConfig: cc.unitmesh.devins.llm.ModelConfig? = null,
-    availableConfigs: List<cc.unitmesh.devins.llm.ModelConfig> = emptyList(),
-    onModelConfigChange: (cc.unitmesh.devins.llm.ModelConfig) -> Unit = {},
+    initialModelConfig: ModelConfig? = null,
+    availableConfigs: List<ModelConfig> = emptyList(),
+    onModelConfigChange: (ModelConfig) -> Unit = {},
     isCompactMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {

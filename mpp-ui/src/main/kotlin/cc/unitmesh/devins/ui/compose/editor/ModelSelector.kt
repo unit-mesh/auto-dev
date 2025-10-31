@@ -10,7 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.llm.ModelConfig
+import cc.unitmesh.llm.ModelConfig
 
 /**
  * 模型选择器

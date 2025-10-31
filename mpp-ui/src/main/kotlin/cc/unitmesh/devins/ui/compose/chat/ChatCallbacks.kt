@@ -4,7 +4,7 @@ import cc.unitmesh.devins.compiler.DevInsCompilerFacade
 import cc.unitmesh.devins.compiler.context.CompilerContext
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
-import cc.unitmesh.devins.llm.KoogLLMService
+import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

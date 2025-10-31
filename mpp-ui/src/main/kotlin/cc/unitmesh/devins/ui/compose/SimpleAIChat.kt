@@ -9,13 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.devins.ui.compose.chat.*
-import cc.unitmesh.devins.llm.KoogLLMService
-import cc.unitmesh.devins.llm.ModelConfig
+import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.db.ModelConfigRepository

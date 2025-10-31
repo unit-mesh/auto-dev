@@ -17,8 +17,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import cc.unitmesh.devins.llm.LLMProviderType
-import cc.unitmesh.devins.llm.ModelConfig
+import cc.unitmesh.llm.LLMProviderType
+import cc.unitmesh.llm.ModelRegistry
+import cc.unitmesh.llm.ModelConfig
 
 /**
  * Dialog for configuring LLM model settings
@@ -95,7 +96,7 @@ fun ModelConfigDialog(
                                 onClick = {
                                     provider = providerType
                                     // Update model list when provider changes
-                                    val defaultModels = ModelConfig.getDefaultModelsForProvider(providerType)
+                                    val defaultModels = ModelRegistry.getAvailableModels(providerType)
                                     if (defaultModels.isNotEmpty()) {
                                         modelName = defaultModels[0]
                                     }
@@ -136,7 +137,7 @@ fun ModelConfigDialog(
                         expanded = expandedModel,
                         onDismissRequest = { expandedModel = false }
                     ) {
-                        ModelConfig.getDefaultModelsForProvider(provider).forEach { model ->
+                        ModelRegistry.getAvailableModels(provider).forEach { model ->
                             DropdownMenuItem(
                                 text = { Text(model) },
                                 onClick = {
