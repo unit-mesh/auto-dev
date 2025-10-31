@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application>
+    <!-- Permissions to access external storage files -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+        android:label="AutoDev UI"
+        android:icon="@drawable/ic_launcher"
+        android:allowBackup="true"
+        android:supportsRtl="true">
         <activity
             android:name="cc.unitmesh.devins.ui.MainActivity"
             android:exported="true"
+            android:label="AutoDev UI"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -12,4 +21,3 @@
         </activity>
     </application>
 </manifest>
-

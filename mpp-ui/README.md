@@ -8,6 +8,7 @@
 - **SketchRenderer**: 原有的 LLM 响应渲染器
 - **MarkdownSketchRenderer**: 新实现的 Markdown 渲染器，使用 `multiplatform-markdown-renderer` 库
 - **MarkdownDemo**: 演示应用，展示 MarkdownSketchRenderer 的各种渲染能力
+- **FileChooser**: 跨平台文件选择器，支持 JVM、Android 和 JS 平台
 
 ## 技术栈
 
@@ -196,6 +197,44 @@ mpp-ui/
 2. 使用 Compose Multiplatform 的跨平台 API
 3. 在多个平台上测试
 4. 更新本 README
+
+## FileChooser 平台支持
+
+### JVM (Desktop) ✅
+完全支持，使用 Swing 的 `JFileChooser`。
+
+### Android ⚠️
+当前为占位实现，调用文件选择器会返回 `null`。
+
+**原因**：Android 的 Activity Result API 要求在 Activity 创建时注册 launcher，不能在运行时动态注册。
+
+**推荐方案**：在 Compose UI 中使用 `rememberLauncherForActivityResult`：
+```kotlin
+// 文件选择示例
+val launcher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.OpenDocument()
+) { uri: Uri? ->
+    uri?.let {
+        // 处理选中的文件
+    }
+}
+
+Button(onClick = { launcher.launch(arrayOf("*/*")) }) {
+    Text("选择文件")
+}
+
+// 目录选择示例
+val dirLauncher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.OpenDocumentTree()
+) { uri: Uri? ->
+    uri?.let {
+        // 处理选中的目录
+    }
+}
+```
+
+### Web (JS) ✅
+支持浏览器原生的文件选择对话框。
 
 ## 许可证
 
