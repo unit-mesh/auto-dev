@@ -21,9 +21,15 @@ export async function initCompletionManager() {
   if (!completionManager) {
     try {
       // Dynamic import from build output
-      const mppCore = await import('../../../../mpp-core/build/dist/js/productionLibrary/mpp-core.mjs');
-      completionManager = new mppCore.JsCompletionManager();
-      console.log('✅ CompletionManager initialized');
+      // @ts-ignore - Runtime import, path is correct after build
+      const mppCore = await import('../../../mpp-core/build/compileSync/js/main/productionLibrary/kotlin/autodev-mpp-core.js');
+      const exports = mppCore['module.exports'] || mppCore.default || mppCore;
+      if (exports?.cc?.unitmesh?.llm?.JsCompletionManager) {
+        completionManager = new exports.cc.unitmesh.llm.JsCompletionManager();
+        console.log('✅ CompletionManager initialized');
+      } else {
+        console.error('❌ JsCompletionManager not found in exports');
+      }
     } catch (error) {
       console.error('❌ Failed to initialize CompletionManager:', error);
       console.log('💡 Make sure to build mpp-core first: ./gradlew :mpp-core:jsProductionLibraryCompileSync');
