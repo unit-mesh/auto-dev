@@ -12,16 +12,18 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.llm.ModelConfig
 
 /**
- * 底部工具栏（平台自适应）
- * - 移动端：只显示 Send 按钮（配置在顶部菜单）
- * - Desktop：显示模型选择器 + Send 按钮
+ * 底部工具栏（重新设计版）
+ * 布局：Agent - Model Selector - @ Symbol - Send Button
+ * - 移动端：通过顶部菜单控制 Agent，底部显示当前选择
+ * - Desktop：完整显示所有功能
  */
 @Composable
 fun BottomToolbar(
     onSendClick: () -> Unit,
     sendEnabled: Boolean,
+    onAtClick: () -> Unit = {},
+    selectedAgent: String = "Default",
     modifier: Modifier = Modifier,
-    // Desktop 相关参数（移动端不使用）
     initialModelConfig: ModelConfig? = null,
     availableConfigs: List<ModelConfig> = emptyList(),
     onModelConfigChange: (ModelConfig) -> Unit = {}
@@ -31,54 +33,85 @@ fun BottomToolbar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = if (isAndroid) Arrangement.End else Arrangement.SpaceBetween,
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Desktop: 显示模型选择器
-        if (!isAndroid) {
-            ModelSelector(
-                initialConfig = initialModelConfig,
-                availableConfigs = availableConfigs,
-                onConfigChange = onModelConfigChange
-            )
-        }
-        
-        // 发送按钮 - 平台自适应样式
-        if (isAndroid) {
-            // 移动端：更大更醒目
-            FilledTonalButton(
-                onClick = onSendClick,
-                enabled = sendEnabled,
-                modifier = Modifier.height(44.dp),
-                contentPadding = PaddingValues(horizontal = 24.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = "Send",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Send",
-                    style = MaterialTheme.typography.labelLarge
+        // 左侧：Agent + Model Selector
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Agent 显示（只读，点击打开顶部菜单配置）
+            if (!isAndroid || selectedAgent != "Default") {
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SmartToy,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = selectedAgent,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+            }
+            
+            // Model Selector（Desktop 或移动端都显示）
+            if (!isAndroid) {
+                ModelSelector(
+                    initialConfig = initialModelConfig,
+                    availableConfigs = availableConfigs,
+                    onConfigChange = onModelConfigChange
                 )
             }
-        } else {
-            // Desktop: 标准样式
+        }
+        
+        // 右侧：@ Symbol + Send Button
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // @ 按钮
+            IconButton(
+                onClick = onAtClick,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AlternateEmail,
+                    contentDescription = "@ mention",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            // 发送按钮
             FilledTonalButton(
                 onClick = onSendClick,
                 enabled = sendEnabled,
-                modifier = Modifier.height(40.dp),
-                contentPadding = PaddingValues(horizontal = 20.dp)
+                modifier = Modifier.height(if (isAndroid) 40.dp else 38.dp),
+                contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Send,
                     contentDescription = "Send",
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Send")
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Send",
+                    style = MaterialTheme.typography.labelMedium
+                )
             }
         }
     }

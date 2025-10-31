@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.editor
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -237,22 +238,25 @@ fun DevInEditorInput(
     
     val isAndroid = Platform.isAndroid
 
-    // Android 在紧凑模式下使用 Row 布局以水平居中
+    // 统一边框容器，无阴影
     Box(
         modifier = modifier,
         contentAlignment = if (isAndroid && isCompactMode) Alignment.Center else Alignment.TopStart
     ) {
-        Card(
+        Surface(
             modifier = if (isAndroid && isCompactMode) {
                 Modifier.fillMaxWidth()  // Android 紧凑模式：full width
             } else {
                 Modifier.fillMaxWidth()
             },
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            shape = RoundedCornerShape(if (isAndroid && isCompactMode) 12.dp else 16.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            ),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 0.dp,  // 无叠影
+            shadowElevation = 0.dp   // 无阴影
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth()
@@ -344,7 +348,7 @@ fun DevInEditorInput(
                 }
                 
                 // 底部工具栏
-                HorizontalDivider()
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 BottomToolbar(
                     onSendClick = {
                         if (textFieldValue.text.isNotBlank()) {
@@ -353,6 +357,15 @@ fun DevInEditorInput(
                         }
                     },
                     sendEnabled = textFieldValue.text.isNotBlank(),
+                    onAtClick = {
+                        // 插入 @ 并触发补全
+                        val current = textFieldValue
+                        textFieldValue = TextFieldValue(
+                            text = current.text + "@",
+                            selection = androidx.compose.ui.text.TextRange(current.text.length + 1)
+                        )
+                    },
+                    selectedAgent = "Default",  // TODO: 从 state 获取
                     initialModelConfig = initialModelConfig,
                     availableConfigs = availableConfigs,
                     onModelConfigChange = onModelConfigChange

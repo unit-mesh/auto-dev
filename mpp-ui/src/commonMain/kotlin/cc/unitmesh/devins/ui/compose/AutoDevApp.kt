@@ -218,12 +218,8 @@ fun AutoDevApp() {
                         .fillMaxWidth()
                         .imePadding() // 键盘弹出时，整个区域向上推
                         .navigationBarsPadding() // 添加导航栏边距
+                        .padding(horizontal = 12.dp, vertical = 8.dp)  // 外部边距
                 ) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shadowElevation = 8.dp,
-                        tonalElevation = 2.dp
-                    ) {
                     DevInEditorInput(
                         initialText = "",
                         placeholder = "Type your message...",
@@ -243,11 +239,8 @@ fun AutoDevApp() {
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    }
                 }
             } else {
                 // 默认模式：输入框居中显示
