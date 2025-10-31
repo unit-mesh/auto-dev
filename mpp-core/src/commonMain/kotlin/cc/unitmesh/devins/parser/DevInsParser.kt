@@ -384,7 +384,7 @@ class DevInsParser(
 
     /**
      * 解析 Used 节点（Agent、Command、Variable）
-     * 临时实现：消费 token 并创建基本节点以避免无限循环
+     * 生成 DevInsUsedNode 作为统一的 AST 节点，与 IDEA 版本保持一致
      */
     private fun parseUsed(): DevInsNode? {
         if (!check(DevInsTokenType.AGENT_START) &&
@@ -395,6 +395,14 @@ class DevInsParser(
 
         val startToken = advance()
         val children = mutableListOf<DevInsNode>(DevInsTokenNode(startToken))
+
+        // 确定 Used 节点的类型
+        val usedType = when (startToken.type) {
+            DevInsTokenType.AGENT_START -> DevInsUsedNode.UsedType.AGENT
+            DevInsTokenType.COMMAND_START -> DevInsUsedNode.UsedType.COMMAND
+            DevInsTokenType.VARIABLE_START -> DevInsUsedNode.UsedType.VARIABLE
+            else -> return null
+        }
 
         // 尝试解析标识符（如果存在）
         // 支持带点号的命令名（如 speckit.clarify）
@@ -419,8 +427,6 @@ class DevInsParser(
             }
         }
 
-        // 对于命令，还需要处理冒号和命令属性
-        val arguments = mutableListOf<DevInsNode>()
         if (startToken.type == DevInsTokenType.COMMAND_START) {
             if (check(DevInsTokenType.COLON)) {
                 val colonToken = advance()
@@ -430,30 +436,26 @@ class DevInsParser(
                 if (check(DevInsTokenType.COMMAND_PROP)) {
                     val propToken = advance()
                     children.add(DevInsTokenNode(propToken))
-                    arguments.add(DevInsTokenNode(propToken))
                 }
             } else {
-                // 没有冒号，消费所有后续的 IDENTIFIER 作为参数，直到换行或其他token
                 while (check(DevInsTokenType.IDENTIFIER)) {
                     val argToken = advance()
                     children.add(DevInsTokenNode(argToken))
-                    arguments.add(DevInsTokenNode(argToken))
                 }
             }
         }
 
-        // 返回对应类型的节点
-        val result = when (startToken.type) {
-            DevInsTokenType.AGENT_START -> DevInsAgentNode(name, children)
-            DevInsTokenType.COMMAND_START -> {
-                println("🔍 [DevInsParser] Parsed command: name='$name', args=${arguments.size}")
-                DevInsCommandNode(name, arguments, children)
-            }
-            DevInsTokenType.VARIABLE_START -> DevInsVariableNode(name, children)
-            else -> null
-        }
+        val identifierNode = DevInsIdentifierNode(name, listOf())
         
-        return result
+        val usedNode = DevInsUsedNode(
+            type = usedType,
+            identifier = identifierNode,
+            children = children
+        )
+        
+        println("🔍 [DevInsParser] Parsed Used node: type=$usedType, name='$name'")
+        
+        return usedNode
     }
 
     /**
