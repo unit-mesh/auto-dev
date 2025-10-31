@@ -2,6 +2,7 @@ plugins {
     kotlin("multiplatform") version "2.2.0"
     kotlin("plugin.serialization") version "2.2.0"
     id("app.cash.sqldelight") version "2.1.0"
+    id("com.android.library") version "8.10.0"
 }
 
 repositories {
@@ -17,7 +18,29 @@ sqldelight {
     }
 }
 
+android {
+    namespace = "cc.unitmesh.devins.core"
+    compileSdk = 36
+
+    defaultConfig {
+        minSdk = 24
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
 kotlin {
+    androidTarget {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
+
     jvm {
         compilations.all {
 //            kotlinOptions {
@@ -58,6 +81,13 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+            }
+        }
+
+        androidMain {
+            dependencies {
+                // SQLDelight - Android SQLite driver
+                implementation("app.cash.sqldelight:android-driver:2.1.0")
             }
         }
 

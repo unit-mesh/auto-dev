@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import cc.unitmesh.devins.db.DatabaseDriverFactory
 import cc.unitmesh.devins.ui.compose.AutoDevInput
 
 /**
@@ -12,6 +13,10 @@ import cc.unitmesh.devins.ui.compose.AutoDevInput
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 初始化数据库
+        DatabaseDriverFactory.init(this)
+
         enableEdgeToEdge()
         setContent {
             AutoDevInput()
