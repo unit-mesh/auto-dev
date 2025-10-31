@@ -354,16 +354,65 @@ fun DevInEditorInput(
                         if (textFieldValue.text.isNotBlank()) {
                             callbacks?.onSubmit(textFieldValue.text)
                             textFieldValue = TextFieldValue("")
+                            showCompletion = false
                         }
                     },
                     sendEnabled = textFieldValue.text.isNotBlank(),
                     onAtClick = {
-                        // 插入 @ 并触发补全
+                        // 插入 @ 并触发 Agent 补全
                         val current = textFieldValue
+                        val newText = current.text + "@"
+                        val newPosition = current.text.length + 1
+                        
                         textFieldValue = TextFieldValue(
-                            text = current.text + "@",
-                            selection = androidx.compose.ui.text.TextRange(current.text.length + 1)
+                            text = newText,
+                            selection = androidx.compose.ui.text.TextRange(newPosition)
                         )
+                        
+                        // 立即触发补全
+                        scope.launch {
+                            delay(50)  // 等待状态更新
+                            val context = CompletionTrigger.buildContext(
+                                newText,
+                                newPosition,
+                                CompletionTriggerType.AGENT
+                            )
+                            if (context != null && manager != null) {
+                                currentTriggerType = CompletionTriggerType.AGENT
+                                completionItems = manager.getFilteredCompletions(context)
+                                selectedCompletionIndex = 0
+                                showCompletion = completionItems.isNotEmpty()
+                                println("🔍 @ 补全触发: items=${completionItems.size}")
+                            }
+                        }
+                    },
+                    onSlashClick = {
+                        // 插入 / 并触发命令补全
+                        val current = textFieldValue
+                        val newText = current.text + "/"
+                        val newPosition = current.text.length + 1
+                        
+                        textFieldValue = TextFieldValue(
+                            text = newText,
+                            selection = androidx.compose.ui.text.TextRange(newPosition)
+                        )
+                        
+                        // 立即触发补全
+                        scope.launch {
+                            delay(50)  // 等待状态更新
+                            val context = CompletionTrigger.buildContext(
+                                newText,
+                                newPosition,
+                                CompletionTriggerType.COMMAND
+                            )
+                            if (context != null && manager != null) {
+                                currentTriggerType = CompletionTriggerType.COMMAND
+                                completionItems = manager.getFilteredCompletions(context)
+                                selectedCompletionIndex = 0
+                                showCompletion = completionItems.isNotEmpty()
+                                println("🔍 / 补全触发: items=${completionItems.size}")
+                            }
+                        }
                     },
                     selectedAgent = "Default",  // TODO: 从 state 获取
                     initialModelConfig = initialModelConfig,

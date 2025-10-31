@@ -13,7 +13,7 @@ import cc.unitmesh.llm.ModelConfig
 
 /**
  * 底部工具栏（重新设计版）
- * 布局：Agent - Model Selector - @ Symbol - Send Button
+ * 布局：Agent - Model Selector - @ Symbol - / Symbol - Send Button
  * - 移动端：通过顶部菜单控制 Agent，底部显示当前选择
  * - Desktop：完整显示所有功能
  */
@@ -22,6 +22,7 @@ fun BottomToolbar(
     onSendClick: () -> Unit,
     sendEnabled: Boolean,
     onAtClick: () -> Unit = {},
+    onSlashClick: () -> Unit = {},
     selectedAgent: String = "Default",
     modifier: Modifier = Modifier,
     initialModelConfig: ModelConfig? = null,
@@ -77,21 +78,33 @@ fun BottomToolbar(
             }
         }
         
-        // 右侧：@ Symbol + Send Button
+        // 右侧：@ Symbol + / Symbol + Send Button
         Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // @ 按钮
+            // @ 按钮 - 触发 Agent 补全
             IconButton(
                 onClick = onAtClick,
                 modifier = Modifier.size(36.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.AlternateEmail,
-                    contentDescription = "@ mention",
+                    contentDescription = "@ Agent",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            // / 按钮 - 触发命令补全
+            IconButton(
+                onClick = onSlashClick,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Text(
+                    text = "/",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
