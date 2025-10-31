@@ -49,10 +49,6 @@ data class ModelConfig(
     companion object {
         fun default() = ModelConfig()
 
-        /**
-         * Get available models for each provider using Koog's list() method
-         * 使用 Koog 框架的 list() 方法动态获取所有可用模型
-         */
         fun getDefaultModelsForProvider(provider: LLMProviderType): List<String> {
             return when (provider) {
                 LLMProviderType.OPENAI -> {
@@ -69,7 +65,12 @@ data class ModelConfig(
                 }
                 LLMProviderType.OPENROUTER -> {
                     OpenRouterModels.list().map { it.id }.ifEmpty {
-                        listOf("openai/gpt-4o", "anthropic/claude-4.5-sonnet", "google/gemini-pro")
+                        listOf(
+                            OpenAIModels.list().first().id,
+                            AnthropicModels.list().first().id,
+                            GoogleModels.list().first().id,
+                            DeepSeekModels.list().first().id
+                        )
                     }
                 }
 

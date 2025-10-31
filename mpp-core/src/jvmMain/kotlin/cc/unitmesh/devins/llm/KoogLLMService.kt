@@ -43,17 +43,17 @@ class KoogLLMService(private val config: ModelConfig) {
         val context = CompilerContext().apply {
             this.fileSystem = fileSystem
         }
-        
+
         // 编译 DevIns 代码，支持 SpecKit 命令（只编译最新的用户输入）
         println("🔍 [KoogLLMService] 开始编译 DevIns 代码...")
         println("🔍 [KoogLLMService] 用户输入: $userPrompt")
         println("🔍 [KoogLLMService] 历史消息数: ${historyMessages.size}")
         println("🔍 [KoogLLMService] 文件系统: ${fileSystem.javaClass.simpleName}")
         println("🔍 [KoogLLMService] 项目路径: ${fileSystem.getProjectPath()}")
-        
+
         val compiledResult = DevInsCompilerFacade.compile(userPrompt, context)
         val finalPrompt = compiledResult.output
-        
+
         println("🔍 [KoogLLMService] 编译完成!")
         println("🔍 [KoogLLMService] 编译结果: ${if (compiledResult.isSuccess()) "成功" else "失败"}")
         println("🔍 [KoogLLMService] 命令数量: ${compiledResult.statistics.commandCount}")
@@ -192,9 +192,6 @@ class KoogLLMService(private val config: ModelConfig) {
         }
     }
 
-    /**
-     * Validate the configuration by making a simple test call
-     */
     suspend fun validateConfig(): Result<String> {
         return try {
             val response = sendPrompt("Say 'OK' if you can hear me.")
@@ -205,9 +202,6 @@ class KoogLLMService(private val config: ModelConfig) {
     }
 
     companion object {
-        /**
-         * Create a service instance from configuration
-         */
         fun create(config: ModelConfig): KoogLLMService {
             if (!config.isValid()) {
                 throw IllegalArgumentException("Invalid model configuration: ${config.provider} requires ${if (config.provider == LLMProviderType.OLLAMA) "baseUrl and modelName" else "apiKey and modelName"}")
