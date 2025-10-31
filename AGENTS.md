@@ -1,6 +1,7 @@
 - Always run build and tests before finish.
 - If my origin request/solution is not working well, please don't change it.
-- Update AGENTS.md summary a task working in long context (chat and history) to find best practises.
+- Update AGENTS.md when a task working in long context (chat and history)
+- Never use `./gradlew clean` , just clean for your module only, for example `./gradlew :mpp-core:clean`
 
 ### Summary
 
@@ -14,3 +15,5 @@
   targets. Use `CoroutineScope` with background launch + cached results for async operations that need synchronous APIs.
 - **Platform-specific implementations**: Use `expect`/`actual` declarations for platform-dependent code. For example,
   file system operations should be actual implementations per platform (JVM, JS, Wasm).
+- Test for CLI: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:jsProductionLibraryCompileSyn
+c && cd mpp-ui && npm install && node test-deepseek.js`
