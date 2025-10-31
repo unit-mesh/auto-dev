@@ -153,7 +153,7 @@ android {
 
 compose.desktop {
     application {
-        mainClass = "cc.unitmesh.devins.ui.MarkdownDemoMainKt"
+        mainClass = "cc.unitmesh.devins.ui.MainKt"
 
         nativeDistributions {
             targetFormats(

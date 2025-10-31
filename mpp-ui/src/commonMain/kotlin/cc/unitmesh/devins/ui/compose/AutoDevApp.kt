@@ -46,6 +46,10 @@ fun AutoDevApp() {
     var showDebugDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var showModelConfigDialog by remember { mutableStateOf(false) }
+    var selectedAgent by remember { mutableStateOf("Default") }
+    
+    val availableAgents = listOf("Default", "clarify", "code-review", "test-gen", "refactor")
     
     var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
 
@@ -146,7 +150,8 @@ fun AutoDevApp() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0.dp) // 禁用默认的 contentWindowInsets，手动处理
+        // 让 Scaffold 自动处理系统栏和键盘，但我们会在组件级别微调
+        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -155,9 +160,13 @@ fun AutoDevApp() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 顶部工具栏 - 添加状态栏边距
-            ChatTopBar(
+            TopBarMenu(
                 hasHistory = messages.isNotEmpty(),
                 hasDebugInfo = compilerOutput.isNotEmpty(),
+                currentModelConfig = currentModelConfig,
+                availableConfigs = allModelConfigs,
+                selectedAgent = selectedAgent,
+                availableAgents = availableAgents,
                 onOpenDirectory = { openDirectoryChooser() },
                 onClearHistory = { 
                     chatHistoryManager.clearCurrentSession()
@@ -166,6 +175,22 @@ fun AutoDevApp() {
                     println("🗑️ [SimpleAIChat] 聊天历史已清空")
                 },
                 onShowDebug = { showDebugDialog = true },
+                onModelConfigChange = { config ->
+                    currentModelConfig = config
+                    if (config.isValid()) {
+                        try {
+                            llmService = KoogLLMService.create(config)
+                            println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
+                        } catch (e: Exception) {
+                            println("❌ 切换模型失败: ${e.message}")
+                        }
+                    }
+                },
+                onAgentChange = { agent ->
+                    selectedAgent = agent
+                    println("🤖 切换 Agent: $agent")
+                },
+                onShowModelConfig = { showModelConfigDialog = true },
                 modifier = Modifier
                     .statusBarsPadding() // 添加状态栏边距
             )
@@ -187,72 +212,55 @@ fun AutoDevApp() {
                 )
                 
                 // 底部输入框 - 紧凑模式（一行）
-                Surface(
+                // 使用 Column 包装以正确处理键盘遮挡
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .navigationBarsPadding() // 添加导航栏边距，避免被底部导航栏遮挡
-                        .imePadding(), // 添加输入法边距，键盘弹出时自动调整
-                    shadowElevation = 8.dp,
-                    tonalElevation = 2.dp
+                        .imePadding() // 键盘弹出时，整个区域向上推
+                        .navigationBarsPadding() // 添加导航栏边距
                 ) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shadowElevation = 8.dp,
+                        tonalElevation = 2.dp
+                    ) {
                     DevInEditorInput(
                         initialText = "",
                         placeholder = "Type your message...",
                         callbacks = callbacks,
                         completionManager = currentWorkspace.completionManager,
+                        isCompactMode = true,
                         initialModelConfig = currentModelConfig,
                         availableConfigs = allModelConfigs,
-                        isCompactMode = true,
                         onModelConfigChange = { config ->
                             currentModelConfig = config
                             if (config.isValid()) {
                                 try {
                                     llmService = KoogLLMService.create(config)
-                                    println("✅ LLM 服务已配置: ${config.provider.displayName} / ${config.modelName}")
-                                    
-                                    scope.launch {
-                                        try {
-                                            val existingConfigs = repository.getAllConfigs()
-                                            val existingConfig = existingConfigs.find {
-                                                it.provider == config.provider &&
-                                                it.modelName == config.modelName &&
-                                                it.apiKey == config.apiKey
-                                            }
-
-                                            if (existingConfig == null) {
-                                                repository.saveConfig(config, setAsDefault = true)
-                                                allModelConfigs = repository.getAllConfigs()
-                                            } else {
-                                                println("✅ 切换到已有配置")
-                                            }
-                                        } catch (e: Exception) {
-                                            println("⚠️ 保存配置失败: ${e.message}")
-                                        }
-                                    }
+                                    println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
                                 } catch (e: Exception) {
-                                    println("❌ 配置 LLM 服务失败: ${e.message}")
-                                    llmService = null
+                                    println("❌ 切换模型失败: ${e.message}")
                                 }
-                            } else {
-                                llmService = null
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
                     )
+                    }
                 }
             } else {
                 // 默认模式：输入框居中显示
                 // Android: 使用更紧凑的布局和更小的 padding
                 val isAndroid = Platform.isAndroid
 
-                Column(
+                // 使用 Box 支持键盘避让
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .imePadding() // 键盘弹出时自动调整
                         .padding(if (isAndroid) 16.dp else 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     // 完整的输入组件（包含底部工具栏）
                     DevInEditorInput(
@@ -269,18 +277,9 @@ fun AutoDevApp() {
                                     llmService = KoogLLMService.create(config)
                                     scope.launch {
                                         try {
-                                            // 检查配置是否已存在
-                                            val existingConfigs = repository.getAllConfigs()
-                                            val existingConfig = existingConfigs.find {
-                                                it.provider == config.provider &&
-                                                it.modelName == config.modelName &&
-                                                it.apiKey == config.apiKey
-                                            }
-
-                                            if (existingConfig == null) {
-                                                repository.saveConfig(config, setAsDefault = true)
-                                                allModelConfigs = repository.getAllConfigs()
-                                            }
+                                            repository.saveConfig(config, setAsDefault = true)
+                                            allModelConfigs = repository.getAllConfigs()
+                                            println("✅ 模型配置已保存")
                                         } catch (e: Exception) {
                                             println("⚠️ 保存配置失败: ${e.message}")
                                         }
@@ -289,8 +288,6 @@ fun AutoDevApp() {
                                     println("❌ 配置 LLM 服务失败: ${e.message}")
                                     llmService = null
                                 }
-                            } else {
-                                llmService = null
                             }
                         },
                         modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
@@ -299,6 +296,35 @@ fun AutoDevApp() {
             }
         }
     }
+    
+        // Model Config Dialog
+        if (showModelConfigDialog) {
+            cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog(
+                currentConfig = currentModelConfig ?: ModelConfig(),
+                onDismiss = { showModelConfigDialog = false },
+                onSave = { newConfig ->
+                    currentModelConfig = newConfig
+                    if (newConfig.isValid()) {
+                        try {
+                            llmService = KoogLLMService.create(newConfig)
+                            scope.launch {
+                                try {
+                                    repository.saveConfig(newConfig, setAsDefault = true)
+                                    allModelConfigs = repository.getAllConfigs()
+                                    println("✅ 模型配置已保存")
+                                } catch (e: Exception) {
+                                    println("⚠️ 保存配置失败: ${e.message}")
+                                }
+                            }
+                        } catch (e: Exception) {
+                            println("❌ 配置 LLM 服务失败: ${e.message}")
+                            llmService = null
+                        }
+                    }
+                    showModelConfigDialog = false
+                }
+            )
+        }
         
         // Debug Dialog
         if (showDebugDialog) {

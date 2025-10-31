@@ -39,11 +39,12 @@ fun DevInEditorInput(
     placeholder: String = "Type your message...",
     callbacks: EditorCallbacks? = null,
     completionManager: CompletionManager? = null,
+    isCompactMode: Boolean = false,
+    modifier: Modifier = Modifier,
+    // Desktop 相关参数（移动端不使用，会忽略）
     initialModelConfig: ModelConfig? = null,
     availableConfigs: List<ModelConfig> = emptyList(),
-    onModelConfigChange: (ModelConfig) -> Unit = {},
-    isCompactMode: Boolean = false,
-    modifier: Modifier = Modifier
+    onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
     var highlightedText by remember { mutableStateOf(initialText) }
@@ -243,7 +244,7 @@ fun DevInEditorInput(
     ) {
         Card(
             modifier = if (isAndroid && isCompactMode) {
-                Modifier.fillMaxWidth(0.96f)  // Android 紧凑模式：96% 宽度，水平居中
+                Modifier.fillMaxWidth()  // Android 紧凑模式：full width
             } else {
                 Modifier.fillMaxWidth()
             },
@@ -261,12 +262,21 @@ fun DevInEditorInput(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(
-                            min = if (isCompactMode) 56.dp else 80.dp,
-                            max = if (isCompactMode) 56.dp else 140.dp
+                            min = if (isCompactMode) {
+                                if (isAndroid) 48.dp else 56.dp
+                            } else {
+                                80.dp
+                            },
+                            max = if (isCompactMode) {
+                                // 移动端紧凑模式：允许自动扩展到 3 行
+                                if (isAndroid) 120.dp else 96.dp
+                            } else {
+                                160.dp
+                            }
                         )
                         .padding(
                             if (isCompactMode) {
-                                if (isAndroid) 16.dp else 12.dp
+                                if (isAndroid) 12.dp else 12.dp
                             } else {
                                 20.dp
                             }
@@ -276,27 +286,34 @@ fun DevInEditorInput(
                         value = textFieldValue,
                         onValueChange = { handleTextChange(it) },
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
+                            .wrapContentHeight()  // 允许高度自动撑开
                             .focusRequester(focusRequester)
                             .onPreviewKeyEvent { handleKeyEvent(it) },
                         textStyle = TextStyle(
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 15.sp,
+                            fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,  // 移动端更大
                             color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = 22.sp
+                            lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp  // 增加行高
                         ),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        maxLines = if (isAndroid && isCompactMode) 5 else 8,  // 限制最大行数
                         decorationBox = { innerTextField ->
-                            Box {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                            ) {
                                 // 显示带高亮的文本
                                 if (highlightedText.isNotEmpty()) {
                                     Text(
                                         text = highlighter.highlight(highlightedText),
                                         style = TextStyle(
                                             fontFamily = FontFamily.Monospace,
-                                            fontSize = 14.sp
+                                            fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
+                                            lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
                                         ),
-                                        modifier = Modifier.matchParentSize()
+                                        modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                                 
@@ -306,14 +323,19 @@ fun DevInEditorInput(
                                         text = placeholder,
                                         style = TextStyle(
                                             fontFamily = FontFamily.Monospace,
-                                            fontSize = 14.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                            fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                            lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
                                         )
                                     )
                                 }
                                 
                                 // 实际的输入框（透明）
-                                Box(modifier = Modifier.matchParentSize()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                ) {
                                     innerTextField()
                                 }
                             }
