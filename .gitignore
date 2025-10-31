@@ -153,3 +153,5 @@ src/main/gen
 kotlin-js-store/*
 Samples
 .playwright-mcp
+node_modules
+package-lock.json
