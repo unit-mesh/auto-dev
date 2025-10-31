@@ -1,5 +1,10 @@
+- Always run build and tests before finish.
+- If my origin request/solution is not working well, please don't change it.
+- Update AGENTS.md when a task working in long context (chat and history)
+
 ### Summary
 
+- No summary if the problem it's simple
 - Always summarize a bug fix using the structure Problem → Root Cause → Solution, ensuring clarity on what broke, why it broke, and how it was resolved.
 - Don't write long documentation, just use mermaid to summary
 

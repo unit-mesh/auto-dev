@@ -174,9 +174,39 @@ object DiffSketchRenderer {
                 
                 Divider()
                 
-                // Hunks
-                fileDiff.hunks.forEach { hunk ->
-                    HunkView(hunk)
+                // Hunks（如果不是二进制文件）
+                if (fileDiff.isBinaryFile) {
+                    // 二进制文件提示
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "二进制文件已更改",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else if (fileDiff.hunks.isEmpty()) {
+                    // 仅元数据变更（如模式变更）
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "仅元数据变更",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    fileDiff.hunks.forEach { hunk ->
+                        HunkView(hunk)
+                    }
                 }
             }
         }
@@ -206,18 +236,36 @@ object DiffSketchRenderer {
                 )
                 
                 // 文件状态标签
-                if (fileDiff.isNewFile) {
-                    Text(
-                        text = "新建文件",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF2EA043)
-                    )
-                } else if (fileDiff.isDeletedFile) {
-                    Text(
-                        text = "删除文件",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFFDA3633)
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (fileDiff.isNewFile) {
+                        Text(
+                            text = "新建文件",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFF2EA043)
+                        )
+                    } else if (fileDiff.isDeletedFile) {
+                        Text(
+                            text = "删除文件",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFFDA3633)
+                        )
+                    }
+                    
+                    if (fileDiff.isBinaryFile) {
+                        Text(
+                            text = "二进制文件",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    
+                    if (fileDiff.oldMode != null && fileDiff.newMode != null && fileDiff.oldMode != fileDiff.newMode) {
+                        Text(
+                            text = "模式变更: ${fileDiff.oldMode} → ${fileDiff.newMode}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
                 }
             }
             

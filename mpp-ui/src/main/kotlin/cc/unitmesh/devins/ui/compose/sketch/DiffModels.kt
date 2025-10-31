@@ -31,7 +31,10 @@ data class FileDiff(
     val newPath: String?,
     val hunks: List<DiffHunk>,
     val isNewFile: Boolean = false,
-    val isDeletedFile: Boolean = false
+    val isDeletedFile: Boolean = false,
+    val isBinaryFile: Boolean = false,
+    val oldMode: String? = null,
+    val newMode: String? = null
 )
 
 /**
@@ -40,7 +43,7 @@ data class FileDiff(
 object DiffParser {
     
     /**
-     * 解析统一格式的 diff 内容
+     * 解析统一格式的 diff 内容（支持标准 Unified Diff 和 Git Diff 格式）
      */
     fun parse(diffContent: String): List<FileDiff> {
         val fileDiffs = mutableListOf<FileDiff>()
@@ -50,7 +53,15 @@ object DiffParser {
         while (i < lines.size) {
             val line = lines[i]
             
-            // 检测文件头（--- 和 +++）
+            // 检测 Git diff 头部（diff --git）
+            if (line.startsWith("diff --git ")) {
+                val result = parseGitDiffBlock(lines, i)
+                fileDiffs.add(result.first)
+                i = result.second
+                continue
+            }
+            
+            // 检测标准 Unified Diff 文件头（--- 和 +++）
             if (line.startsWith("---")) {
                 val oldPath = extractPath(line)
                 i++
@@ -67,7 +78,7 @@ object DiffParser {
                 val hunks = mutableListOf<DiffHunk>()
                 i++
                 
-                while (i < lines.size && !lines[i].startsWith("---")) {
+                while (i < lines.size && !lines[i].startsWith("---") && !lines[i].startsWith("diff --git")) {
                     if (lines[i].startsWith("@@")) {
                         val hunk = parseHunk(lines, i)
                         hunks.add(hunk.first)
@@ -108,6 +119,118 @@ object DiffParser {
         }
         
         return fileDiffs
+    }
+    
+    /**
+     * 解析 Git diff 格式的文件块
+     */
+    private fun parseGitDiffBlock(lines: List<String>, startIndex: Int): Pair<FileDiff, Int> {
+        var i = startIndex
+        val gitDiffLine = lines[i]
+        
+        // 从 "diff --git a/path b/path" 中提取路径
+        val gitPathRegex = Regex("""diff --git a/(.*?) b/(.*?)$""")
+        val gitMatch = gitPathRegex.find(gitDiffLine)
+        var oldPath: String? = null
+        var newPath: String? = null
+        
+        if (gitMatch != null) {
+            oldPath = gitMatch.groupValues[1]
+            newPath = gitMatch.groupValues[2]
+        }
+        
+        i++
+        
+        // 解析 Git 特有的元数据
+        var isNewFile = false
+        var isDeletedFile = false
+        var isBinaryFile = false
+        var oldMode: String? = null
+        var newMode: String? = null
+        
+        while (i < lines.size) {
+            val line = lines[i]
+            
+            when {
+                line.startsWith("new file mode ") -> {
+                    isNewFile = true
+                    newMode = line.substringAfter("new file mode ").trim()
+                    i++
+                }
+                line.startsWith("deleted file mode ") -> {
+                    isDeletedFile = true
+                    oldMode = line.substringAfter("deleted file mode ").trim()
+                    i++
+                }
+                line.startsWith("old mode ") -> {
+                    oldMode = line.substringAfter("old mode ").trim()
+                    i++
+                }
+                line.startsWith("new mode ") -> {
+                    newMode = line.substringAfter("new mode ").trim()
+                    i++
+                }
+                line.startsWith("index ") -> {
+                    // 跳过 index 行（文件哈希）
+                    i++
+                }
+                line.startsWith("Binary files ") -> {
+                    isBinaryFile = true
+                    i++
+                    break // 二进制文件没有 hunks
+                }
+                line.startsWith("---") -> {
+                    // 找到标准 diff 头部，解析路径和 hunks
+                    val extractedOldPath = extractPath(line)
+                    if (extractedOldPath != null) {
+                        oldPath = extractedOldPath
+                    }
+                    i++
+                    
+                    if (i < lines.size && lines[i].startsWith("+++")) {
+                        val extractedNewPath = extractPath(lines[i])
+                        if (extractedNewPath != null) {
+                            newPath = extractedNewPath
+                        }
+                        i++
+                    }
+                    
+                    break // 开始解析 hunks
+                }
+                else -> {
+                    i++
+                }
+            }
+        }
+        
+        // 解析 hunks（如果不是二进制文件）
+        val hunks = mutableListOf<DiffHunk>()
+        if (!isBinaryFile) {
+            while (i < lines.size && !lines[i].startsWith("diff --git") && !lines[i].startsWith("---")) {
+                if (lines[i].startsWith("@@")) {
+                    val hunk = parseHunk(lines, i)
+                    hunks.add(hunk.first)
+                    i = hunk.second
+                } else {
+                    i++
+                }
+            }
+        }
+        
+        // 处理 /dev/null 路径
+        if (oldPath == "/dev/null") {
+            oldPath = null
+            isNewFile = true
+        }
+        if (newPath == "/dev/null") {
+            newPath = null
+            isDeletedFile = true
+        }
+        
+        return Pair(
+            FileDiff(oldPath, newPath, hunks, isNewFile, isDeletedFile, isBinaryFile, oldMode, newMode),
+            i
+        )
     }
     
     private fun extractPath(line: String): String? {
