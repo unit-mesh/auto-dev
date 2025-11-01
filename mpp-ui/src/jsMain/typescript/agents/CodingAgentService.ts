@@ -14,11 +14,11 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-import type { LLMConfig } from '../config/ConfigManager.js';
-import { LLMService } from './LLMService.js';
-import { OutputFormatter } from '../utils/outputFormatter.js';
-import { ErrorRecoveryAgent, RecoveryResult } from './ErrorRecoveryAgent.js';
-import { LogSummaryAgent, LogSummaryResult } from './LogSummaryAgent.js';
+import type { LLMConfig } from '../config/ConfigManager';
+import { LLMService } from '../services/LLMService';
+import { OutputFormatter } from '../utils/outputFormatter';
+import { ErrorRecoveryAgent, RecoveryResult } from './ErrorRecoveryAgent';
+import { LogSummaryAgent, LogSummaryResult } from './LogSummaryAgent';
 
 // Import mpp-core
 // @ts-ignore
