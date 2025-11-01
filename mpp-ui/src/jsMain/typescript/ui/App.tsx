@@ -12,11 +12,13 @@ import { WelcomeScreen } from './WelcomeScreen.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { LLMService } from '../services/LLMService.js';
 import { compileDevIns, hasDevInsCommands } from '../utils/commandUtils.js';
+import { findLastSafeSplitPoint } from '../utils/markdownSplitter.js';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system' | 'compiling';
   content: string;
   timestamp: number;
+  showPrefix?: boolean;  // For multi-block messages, only first shows prefix
 }
 
 export const App: React.FC = () => {
@@ -74,6 +76,7 @@ export const App: React.FC = () => {
       role: 'user',
       content,
       timestamp: Date.now(),
+      showPrefix: true,
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -89,6 +92,7 @@ export const App: React.FC = () => {
           role: 'compiling',
           content: '🔧 Compiling DevIns commands...',
           timestamp: Date.now(),
+          showPrefix: true,
         });
 
         const compileResult = await compileDevIns(content);
@@ -104,6 +108,7 @@ export const App: React.FC = () => {
                 role: 'system',
                 content: `📝 Compiled output:\n${compileResult.output}`,
                 timestamp: Date.now(),
+                showPrefix: true,
               };
               setMessages(prev => [...prev, compileMessage]);
             }
@@ -113,6 +118,7 @@ export const App: React.FC = () => {
               role: 'system',
               content: `⚠️  DevIns compilation error: ${compileResult.errorMessage}`,
               timestamp: Date.now(),
+              showPrefix: true,
             };
             setMessages(prev => [...prev, errorMessage]);
           }
@@ -129,64 +135,79 @@ export const App: React.FC = () => {
         timestamp: Date.now(),
       });
 
-      // Stream response from LLM using the processed content
+      // Stream response from LLM with block-level splitting
+      // Complete blocks are moved to Static to prevent scroll flicker
       let assistantContent = '';
-      let lastLineCount = 0;
+      const startTimestamp = Date.now();
+      let isFirstBlock = true;  // Track if this is the first block (should show prefix)
 
       await llmService.streamMessage(processedContent, (chunk) => {
         assistantContent += chunk;
         
-        // Only update UI when content contains new lines (to reduce flickering)
-        // Count lines in the content
-        const currentLineCount = (assistantContent.match(/\n/g) || []).length;
+        // Find safe split point (end of complete block)
+        const splitPoint = findLastSafeSplitPoint(assistantContent);
         
-        // Update if:
-        // 1. New line was added
-        // 2. Content is still short (< 100 chars) - for initial feedback
-        // 3. Every 50 characters for long single-line content
-        const shouldUpdate = 
-          currentLineCount > lastLineCount || 
-          assistantContent.length < 100 ||
-          assistantContent.length % 50 === 0;
-        
-        if (shouldUpdate) {
+        if (splitPoint === assistantContent.length) {
+          // No complete block yet, just update pending
           setPendingMessage({
             role: 'assistant',
             content: assistantContent,
-            timestamp: Date.now(),
+            timestamp: startTimestamp,
+            showPrefix: isFirstBlock,
           });
-          lastLineCount = currentLineCount;
+        } else {
+          // Found complete block(s) - split it
+          const completedContent = assistantContent.substring(0, splitPoint);
+          const pendingContent = assistantContent.substring(splitPoint);
+          
+          // Move completed block to history (Static area)
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: completedContent,
+            timestamp: startTimestamp,
+            showPrefix: isFirstBlock,  // Only first block shows prefix
+          }]);
+          
+          // Keep only pending content
+          setPendingMessage({
+            role: 'assistant',
+            content: pendingContent,
+            timestamp: startTimestamp,
+            showPrefix: false,  // Continuation blocks don't show prefix
+          });
+          
+          // Update accumulator to only pending content
+          assistantContent = pendingContent;
+          isFirstBlock = false;  // Subsequent blocks are continuations
         }
       });
 
-      // Final update to ensure all content is shown
-      setPendingMessage({
-        role: 'assistant',
-        content: assistantContent,
-        timestamp: Date.now(),
-      });
-
-      // Move pending message to history once complete
-      if (assistantContent) {
+      // Clear pending FIRST to avoid duplication
+      setPendingMessage(null);
+      
+      // Move any remaining content to history
+      if (assistantContent.trim()) {
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: assistantContent,
-          timestamp: Date.now(),
+          timestamp: startTimestamp,
+          showPrefix: isFirstBlock,  // Show prefix if this is the only block
         }]);
       }
-      setPendingMessage(null);
 
     } catch (err) {
+      // Clear pending state first
+      setPendingMessage(null);
+      setIsCompiling(false);
+      
       // Display error message in chat
       const errorMessage: Message = {
         role: 'system',
         content: err instanceof Error ? err.message : 'Failed to send message',
         timestamp: Date.now(),
+        showPrefix: true,
       };
       setMessages(prev => [...prev, errorMessage]);
-      
-      setPendingMessage(null);
-      setIsCompiling(false);
     }
   }, [llmService]);
 

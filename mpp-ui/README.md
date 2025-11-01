@@ -194,6 +194,23 @@ mpp-ui/
 └── build.gradle.kts         # Multiplatform 配置
 ```
 
+## 国际化 (i18n)
+
+mpp-ui 支持多语言，目前支持：
+- **English** (en)
+- **中文** (zh)
+
+### 语言切换
+
+**CLI**：在 `~/.autodev/config.yaml` 中设置 `language` 字段：
+```yaml
+language: zh
+```
+
+**Desktop/Android**：使用 UI 中的语言切换组件
+
+详细文档请参阅：[I18N.md](docs/I18N.md)
+
 ## 贡献
 
 在添加新功能时，请确保：
@@ -201,6 +218,7 @@ mpp-ui/
 2. 使用 Compose Multiplatform 的跨平台 API
 3. 在多个平台上测试
 4. 更新本 README
+5. 为所有用户可见的文本添加翻译（参见 [I18N.md](docs/I18N.md)）
 
 ## FileChooser 平台支持
 

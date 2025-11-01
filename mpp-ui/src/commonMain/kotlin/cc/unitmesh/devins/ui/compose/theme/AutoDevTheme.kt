@@ -31,11 +31,24 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
 )
 
+/**
+ * AutoDev 主题
+ * 支持白天模式、夜间模式和跟随系统
+ */
 @Composable
 fun AutoDevTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeManager.ThemeMode = ThemeManager.currentTheme,
     content: @Composable () -> Unit
 ) {
+    val systemInDarkTheme = isSystemInDarkTheme()
+    
+    // 根据主题模式决定是否使用深色主题
+    val darkTheme = when (themeMode) {
+        ThemeManager.ThemeMode.LIGHT -> false
+        ThemeManager.ThemeMode.DARK -> true
+        ThemeManager.ThemeMode.SYSTEM -> systemInDarkTheme
+    }
+    
     val colorScheme = if (darkTheme) {
         DarkColorScheme
     } else {
@@ -47,4 +60,21 @@ fun AutoDevTheme(
         typography = Typography(),
         content = content
     )
+}
+
+/**
+ * 向后兼容的旧版 API
+ */
+@Composable
+fun AutoDevTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    val themeMode = if (darkTheme) {
+        ThemeManager.ThemeMode.DARK
+    } else {
+        ThemeManager.ThemeMode.LIGHT
+    }
+    
+    AutoDevTheme(themeMode = themeMode, content = content)
 }

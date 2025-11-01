@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, Static } from 'ink';
 import TextInput from 'ink-text-input';
 import Spinner from 'ink-spinner';
 import type { Message } from './App.js';
@@ -16,6 +16,8 @@ import { InputRouter } from '../processors/InputRouter.js';
 import { SlashCommandProcessor } from '../processors/SlashCommandProcessor.js';
 import { AtCommandProcessor } from '../processors/AtCommandProcessor.js';
 import { VariableProcessor } from '../processors/VariableProcessor.js';
+import { t } from '../i18n/index.js';
+import { parseCodeBlocksSync } from '../utils/renderUtils.js';
 
 type CompletionItem = {
   text: string;
@@ -242,46 +244,48 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   });
 
   return (
-    <Box flexDirection="column" height="100%">
-      {/* Banner (shown initially) */}
-      {showBanner && messages.length === 0 && <Banner />}
+    <Box flexDirection="column">
+      {/* Banner (shown initially, before any messages) */}
+      {showBanner && messages.length === 0 && !pendingMessage && <Banner />}
 
-      {/* Header */}
-      <Box borderStyle="single" borderColor="cyan" paddingX={1}>
-        <Text bold color="cyan">
-          🤖 AutoDev CLI - AI Coding Assistant
-        </Text>
-      </Box>
+      {/* Static area - includes Header and all completed messages */}
+      <Static items={[
+        // Header as first item
+        <Box key="header" borderStyle="single" borderColor="cyan" paddingX={1}>
+          <Text bold color="cyan">
+            {t('chat.title')}
+          </Text>
+        </Box>,
+        // All completed messages
+        ...messages.map((msg, idx) => (
+          <MessageBubble key={`msg-${idx}`} message={msg} />
+        ))
+      ]}>
+        {(item) => item}
+      </Static>
 
-      {/* Messages */}
-      <Box flexDirection="column" flexGrow={1} paddingX={1} paddingY={1}>
-        {messages.length === 0 && !pendingMessage ? (
-          <Box>
-            <Text dimColor>
-              💬 Type your message to start coding
-            </Text>
-            <Text dimColor>
-              💡 Try /help or @code to get started
-            </Text>
-          </Box>
-        ) : (
-          <>
-            {/* Render completed messages */}
-            {messages.map((msg, idx) => (
-              <MessageBubble key={idx} message={msg} />
-            ))}
-            
-            {/* Render pending message (streaming or compiling) */}
-            {pendingMessage && (
-              <MessageBubble 
-                key="pending" 
-                message={pendingMessage} 
-                isPending={true}
-              />
-            )}
-          </>
-        )}
-      </Box>
+      {/* Dynamic area - only pending messages */}
+      {pendingMessage && (
+        <Box flexDirection="column" paddingX={1} paddingY={1}>
+          <MessageBubble 
+            key="pending" 
+            message={pendingMessage} 
+            isPending={true}
+          />
+        </Box>
+      )}
+
+      {/* Empty state hint - only show when truly empty */}
+      {messages.length === 0 && !pendingMessage && !showBanner && (
+        <Box flexDirection="column" paddingX={1} paddingY={1}>
+          <Text dimColor>
+            {t('chat.emptyHint')}
+          </Text>
+          <Text dimColor>
+            {t('chat.startHint')}
+          </Text>
+        </Box>
+      )}
 
       {/* Command Suggestions */}
       <CommandSuggestions 
@@ -296,14 +300,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           value={input}
           onChange={setInput}
           onSubmit={handleSubmit}
-          placeholder="Type your message... (or /help for commands)"
+          placeholder={t('chat.inputPlaceholder')}
         />
       </Box>
 
       {/* Footer */}
       <Box paddingX={1}>
         <Text dimColor>
-          Press Ctrl+C to exit | Type /help for commands
+          {t('chat.exitHint')} | {t('chat.helpHint')}
         </Text>
       </Box>
     </Box>
@@ -315,7 +319,7 @@ interface MessageBubbleProps {
   isPending?: boolean;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending = false }) => {
+const MessageBubbleInternal: React.FC<MessageBubbleProps> = ({ message, isPending = false }) => {
   // Handle different message roles
   if (message.role === 'compiling') {
     return (
@@ -332,7 +336,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending = fals
       <Box flexDirection="column" marginBottom={1}>
         <Box>
           <Text bold color="blue">
-            ℹ️  System:
+            {t('chat.prefixes.system')}:
           </Text>
         </Box>
         <Box paddingLeft={2}>
@@ -344,23 +348,119 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending = fals
 
   const isUser = message.role === 'user';
   const color = isUser ? 'green' : 'cyan';
-  const prefix = isUser ? '👤 You' : '🤖 AI';
+  const prefix = isUser ? t('chat.prefixes.you') : t('chat.prefixes.ai');
+  
+  // Check if we should show prefix (defaults to true for backward compatibility)
+  const showPrefix = message.showPrefix !== false;
 
   return (
     <Box flexDirection="column" marginBottom={1}>
-      <Box>
-        <Text bold color={color}>
-          {prefix}:
-          {isPending && !isUser && (
-            <Text color="cyan"> <Spinner type="dots" /></Text>
-          )}
-        </Text>
-      </Box>
-      <Box paddingLeft={2}>
-        {/* Simple text rendering for now */}
-        <Text>{message.content || (isPending ? '...' : '')}</Text>
+      {/* Only show prefix if showPrefix is true */}
+      {showPrefix && (
+        <Box>
+          <Text bold color={color}>
+            {prefix}:
+            {isPending && !isUser && (
+              <Text color="cyan"> <Spinner type="dots" /></Text>
+            )}
+          </Text>
+        </Box>
+      )}
+      <Box paddingLeft={showPrefix ? 2 : 0}>
+        <ContentBlocks content={message.content || ''} isPending={isPending} />
       </Box>
     </Box>
   );
 };
+
+// Content blocks renderer
+interface ContentBlocksProps {
+  content: string;
+  isPending: boolean;
+}
+
+const ContentBlocksInternal: React.FC<ContentBlocksProps> = ({ content, isPending }) => {
+  if (!content && isPending) {
+    return <Text dimColor>...</Text>;
+  }
+
+  if (!content) {
+    return null;
+  }
+
+  // Parse content into blocks
+  const blocks = parseCodeBlocksSync(content);
+
+  return (
+    <Box flexDirection="column">
+      {blocks.map((block, idx) => {
+        if (!block.languageId) {
+          // Text block - filter empty lines and render with proper spacing
+          const lines = block.text.split('\n');
+          
+          // Filter out leading and trailing empty lines
+          let startIdx = 0;
+          let endIdx = lines.length - 1;
+          
+          while (startIdx < lines.length && lines[startIdx].trim() === '') {
+            startIdx++;
+          }
+          while (endIdx >= 0 && lines[endIdx].trim() === '') {
+            endIdx--;
+          }
+          
+          const trimmedLines = lines.slice(startIdx, endIdx + 1);
+          
+          // If block is empty after trimming, skip it
+          if (trimmedLines.length === 0) {
+            return null;
+          }
+          
+          return (
+            <Box key={idx} flexDirection="column" marginBottom={idx < blocks.length - 1 ? 1 : 0}>
+              {trimmedLines.map((line, lineIdx) => {
+                // For empty lines in the middle, only render if surrounded by non-empty lines
+                if (line.trim() === '') {
+                  // Check if this is a paragraph break (should show as spacing)
+                  const prevLine = lineIdx > 0 ? trimmedLines[lineIdx - 1] : '';
+                  const nextLine = lineIdx < trimmedLines.length - 1 ? trimmedLines[lineIdx + 1] : '';
+                  
+                  // Only render empty line if it's between two non-empty lines
+                  if (prevLine.trim() && nextLine.trim()) {
+                    return <Text key={lineIdx}> </Text>;
+                  }
+                  return null;
+                }
+                return <Text key={lineIdx}>{line}</Text>;
+              })}
+            </Box>
+          );
+        } else {
+          // Code block - preserve all lines including empty ones (formatting matters)
+          const codeLines = block.text.split('\n');
+          return (
+            <Box key={idx} flexDirection="column" marginBottom={idx < blocks.length - 1 ? 1 : 0}>
+              {/* Language label */}
+              {block.languageId && (
+                <Text dimColor>{`[${block.languageId}]`}</Text>
+              )}
+              {/* Code content with border */}
+              <Box borderStyle="round" borderColor="gray" paddingX={1} flexDirection="column">
+                {codeLines.map((line, lineIdx) => (
+                  <Text key={lineIdx}>{line || ' '}</Text>
+                ))}
+              </Box>
+            </Box>
+          );
+        }
+      })}
+    </Box>
+  );
+};
+
+// Memoize ContentBlocks to prevent re-renders when content doesn't change
+const ContentBlocks = React.memo(ContentBlocksInternal);
+
+// Memoize MessageBubble to prevent unnecessary re-renders
+const MessageBubble = React.memo(MessageBubbleInternal);
 

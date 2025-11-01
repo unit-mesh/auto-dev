@@ -9,6 +9,7 @@ import { Box, Text } from 'ink';
 import TextInput from 'ink-text-input';
 import { ConfigManager, LLMProvider, LLMConfig } from '../config/ConfigManager.js';
 import { ModelConfigForm } from './ModelConfigForm.js';
+import { t } from '../i18n/index.js';
 
 interface WelcomeScreenProps {
   onConfigured: (config: any) => void;
@@ -68,8 +69,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
   if (saved) {
     return (
       <Box flexDirection="column" padding={2}>
-        <Text color="green">✓ Configuration saved!</Text>
-        <Text dimColor>Starting AutoDev CLI...</Text>
+        <Text color="green">{t('messages.configSaved')}</Text>
+        <Text dimColor>{t('messages.starting')}</Text>
       </Box>
     );
   }
@@ -77,7 +78,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
   if (saving) {
     return (
       <Box flexDirection="column" padding={2}>
-        <Text color="yellow">⏳ Saving configuration...</Text>
+        <Text color="yellow">{t('messages.configSaving')}</Text>
       </Box>
     );
   }
@@ -87,27 +88,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
       <Box flexDirection="column" padding={2}>
         <Box marginBottom={1}>
           <Text bold color="cyan">
-            💾 Name Your Configuration
+            {t('modelConfig.nameConfig')}
           </Text>
         </Box>
 
         <Box marginBottom={1}>
           <Text dimColor>
-            Give this configuration a name (e.g., "work", "personal", "gpt4"):
+            {t('modelConfig.namePrompt')}
           </Text>
         </Box>
 
         <Box marginBottom={1}>
           <Text>
-            <Text color="green">✓</Text> Provider: <Text bold>{pendingConfig.provider}</Text>
+            <Text color="green">✓</Text> {t('modelConfig.fields.provider')}: <Text bold>{pendingConfig.provider}</Text>
           </Text>
           <Text>
-            <Text color="green">✓</Text> Model: <Text bold>{pendingConfig.model}</Text>
+            <Text color="green">✓</Text> {t('modelConfig.fields.model')}: <Text bold>{pendingConfig.model}</Text>
           </Text>
         </Box>
 
         <Box>
-          <Text color="cyan">Name: </Text>
+          <Text color="cyan">{t('modelConfig.fields.provider')}: </Text>
           <TextInput
             value={configName}
             onChange={setConfigName}
@@ -117,7 +118,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
         </Box>
 
         <Box marginTop={1}>
-          <Text dimColor>Press Enter to save</Text>
+          <Text dimColor>{t('modelConfig.nameHint')}</Text>
         </Box>
       </Box>
     );
@@ -128,13 +129,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
       {/* Header */}
       <Box marginBottom={1}>
         <Text bold color="cyan">
-          🚀 Welcome to AutoDev CLI!
+          {t('welcome.title')}
         </Text>
       </Box>
 
       <Box marginBottom={1}>
         <Text dimColor>
-          Let's set up your AI configuration. You can add more later in ~/.autodev/config.yaml
+          {t('welcome.subtitle')}
         </Text>
       </Box>
 
@@ -144,7 +145,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
       {/* Footer */}
       <Box marginTop={1}>
         <Text dimColor>
-          Press Ctrl+C to exit
+          {t('welcome.exitHint')}
         </Text>
       </Box>
     </Box>

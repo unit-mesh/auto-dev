@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.devins.ui.i18n.Strings
 
 /**
  * 聊天界面顶部工具栏
@@ -51,7 +52,7 @@ fun ChatTopBar(
             // Desktop: 显示完整标题和按钮
             if (!isAndroid) {
                 Text(
-                    text = "AutoDev - DevIn AI",
+                    text = Strings.chatTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -65,7 +66,7 @@ fun ChatTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.FolderOpen,
-                        contentDescription = "Open Project"
+                        contentDescription = Strings.openProject
                     )
                 }
             } else {
@@ -77,10 +78,10 @@ fun ChatTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Folder,
-                        contentDescription = "Open Directory"
+                        contentDescription = Strings.openDirectory
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Open Directory")
+                    Text(Strings.openDirectory)
                 }
             }
 
@@ -95,7 +96,7 @@ fun ChatTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "New Chat"
+                        contentDescription = Strings.newChat
                     )
                 }
             }
@@ -106,7 +107,7 @@ fun ChatTopBar(
             IconButton(onClick = onShowDebug) {
                 Icon(
                     imageVector = Icons.Outlined.BugReport,
-                    contentDescription = "Debug Info",
+                    contentDescription = Strings.debugInfo,
                     tint = MaterialTheme.colorScheme.primary
                 )
             }

@@ -14,6 +14,8 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.devins.ui.compose.chat.*
+import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
+import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.llm.ChatHistoryManager
@@ -26,6 +28,18 @@ import cc.unitmesh.devins.filesystem.DefaultFileSystem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoDevApp() {
+    // 直接读取 ThemeManager 的当前主题（它本身就是 mutableStateOf，会自动触发重组）
+    val currentTheme = ThemeManager.currentTheme
+    
+    // 应用主题
+    AutoDevTheme(themeMode = currentTheme) {
+        AutoDevContent()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AutoDevContent() {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
 
