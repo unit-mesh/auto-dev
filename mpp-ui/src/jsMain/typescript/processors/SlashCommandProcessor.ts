@@ -7,6 +7,7 @@
 
 import type { InputProcessor, ProcessorContext, ProcessorResult } from './InputRouter.js';
 import { HELP_TEXT, GOODBYE_MESSAGE } from '../constants/asciiArt.js';
+import { t } from '../i18n/index.js';
 
 /**
  * 命令定义
@@ -40,7 +41,7 @@ export class SlashCommandProcessor implements InputProcessor {
   private initializeBuiltinCommands(): void {
     // /help - 显示帮助
     this.registerCommand('help', {
-      description: 'Show help information',
+      description: t('commands.help.description'),
       aliases: ['h', '?'],
       action: async () => ({
         type: 'handled',
@@ -50,19 +51,19 @@ export class SlashCommandProcessor implements InputProcessor {
     
     // /clear - 清空历史
     this.registerCommand('clear', {
-      description: 'Clear chat history',
+      description: t('commands.clear.description'),
       aliases: ['cls'],
       action: async (context) => {
         if (context.clearMessages) {
           context.clearMessages();
         }
-        return { type: 'handled', output: '✓ Chat history cleared' };
+        return { type: 'handled', output: t('commands.clear.success') };
       }
     });
     
     // /exit - 退出程序
     this.registerCommand('exit', {
-      description: 'Exit the application',
+      description: t('commands.exit.description'),
       aliases: ['quit', 'q'],
       action: async () => {
         console.log(GOODBYE_MESSAGE);
@@ -73,19 +74,19 @@ export class SlashCommandProcessor implements InputProcessor {
     
     // /config - 显示配置
     this.registerCommand('config', {
-      description: 'Show configuration',
+      description: t('commands.config.description'),
       action: async () => ({
         type: 'handled',
-        output: '📋 Configuration:\n  • Model: DeepSeek\n  • Type /help for more commands'
+        output: t('commands.config.output', { model: 'DeepSeek' })
       })
     });
     
     // /model - 切换模型（占位）
     this.registerCommand('model', {
-      description: 'Change AI model',
+      description: t('commands.model.description'),
       action: async (context, args) => ({
         type: 'handled',
-        output: `Available models: deepseek, claude, gpt\nCurrent: deepseek\n\nUsage: /model <name>`
+        output: `${t('commands.model.available', { models: 'deepseek, claude, gpt' })}\n${t('commands.model.current', { model: 'deepseek' })}\n\n${t('commands.model.usage')}`
       })
     });
   }
@@ -132,7 +133,7 @@ export class SlashCommandProcessor implements InputProcessor {
     if (!commandName) {
       return {
         type: 'error',
-        message: 'Command name is required. Usage: /command [args]'
+        message: t('commands.usage')
       };
     }
     
@@ -160,7 +161,7 @@ export class SlashCommandProcessor implements InputProcessor {
       context.logger.error(`[SlashCommandProcessor] Error executing ${commandName}:`, error);
       return {
         type: 'error',
-        message: `Command execution failed: ${error instanceof Error ? error.message : String(error)}`
+        message: t('commands.executionError', { error: error instanceof Error ? error.message : String(error) })
       };
     }
   }

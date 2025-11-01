@@ -20,6 +20,7 @@ import androidx.compose.ui.window.DialogProperties
 import cc.unitmesh.llm.LLMProviderType
 import cc.unitmesh.llm.ModelRegistry
 import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.devins.ui.i18n.Strings
 
 /**
  * Dialog for configuring LLM model settings
@@ -59,7 +60,7 @@ fun ModelConfigDialog(
             ) {
                 // Title
                 Text(
-                    text = "LLM Model Configuration",
+                    text = Strings.modelConfigTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -68,7 +69,7 @@ fun ModelConfigDialog(
 
                 // Provider Selection
                 Text(
-                    text = "Provider",
+                    text = Strings.provider,
                     style = MaterialTheme.typography.labelLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -115,7 +116,7 @@ fun ModelConfigDialog(
 
                 // Model Name Selection
                 Text(
-                    text = "Model",
+                    text = Strings.model,
                     style = MaterialTheme.typography.labelLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -131,7 +132,7 @@ fun ModelConfigDialog(
                             .fillMaxWidth()
                             .menuAnchor(),
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                        placeholder = { Text("Enter or select model name") }
+                        placeholder = { Text(Strings.enterModel) }
                     )
                     ExposedDropdownMenu(
                         expanded = expandedModel,
@@ -154,7 +155,7 @@ fun ModelConfigDialog(
                 // API Key (not for Ollama)
                 if (provider != LLMProviderType.OLLAMA) {
                     Text(
-                        text = "API Key",
+                        text = Strings.apiKey,
                         style = MaterialTheme.typography.labelLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -167,11 +168,11 @@ fun ModelConfigDialog(
                             IconButton(onClick = { showApiKey = !showApiKey }) {
                                 Icon(
                                     imageVector = if (showApiKey) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                    contentDescription = if (showApiKey) "Hide API key" else "Show API key"
+                                    contentDescription = if (showApiKey) Strings.hideApiKey else Strings.showApiKey
                                 )
                             }
                         },
-                        placeholder = { Text("Enter your API key") },
+                        placeholder = { Text(Strings.enterApiKey) },
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -180,7 +181,7 @@ fun ModelConfigDialog(
                 // Base URL (for Ollama and custom endpoints)
                 if (provider == LLMProviderType.OLLAMA) {
                     Text(
-                        text = "Base URL",
+                        text = Strings.baseUrl,
                         style = MaterialTheme.typography.labelLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -196,7 +197,7 @@ fun ModelConfigDialog(
 
                 // Advanced Parameters Section
                 Text(
-                    text = "Advanced Parameters",
+                    text = Strings.advancedParameters,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -210,10 +211,10 @@ fun ModelConfigDialog(
                     OutlinedTextField(
                         value = temperature,
                         onValueChange = { temperature = it },
-                        label = { Text("Temperature") },
+                        label = { Text(Strings.temperature) },
                         modifier = Modifier.weight(1f),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        supportingText = { Text("0.0 - 2.0", style = MaterialTheme.typography.bodySmall) }
+                        supportingText = { Text(Strings.temperatureRange, style = MaterialTheme.typography.bodySmall) }
                     )
                 }
 
@@ -223,10 +224,10 @@ fun ModelConfigDialog(
                 OutlinedTextField(
                     value = maxTokens,
                     onValueChange = { maxTokens = it },
-                    label = { Text("Max Tokens") },
+                    label = { Text(Strings.maxTokens) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    supportingText = { Text("Maximum response length", style = MaterialTheme.typography.bodySmall) }
+                    supportingText = { Text(Strings.maxResponseLength, style = MaterialTheme.typography.bodySmall) }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -238,7 +239,7 @@ fun ModelConfigDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text(Strings.cancel)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -258,7 +259,7 @@ fun ModelConfigDialog(
                             else -> apiKey.isNotBlank() && modelName.isNotBlank()
                         }
                     ) {
-                        Text("Save")
+                        Text(Strings.save)
                     }
                 }
             }

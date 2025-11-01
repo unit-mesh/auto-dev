@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.config.NamedModelConfig
+import cc.unitmesh.devins.ui.i18n.Strings
 import kotlinx.coroutines.launch
 
 /**
@@ -61,7 +62,7 @@ fun ModelSelector(
         if (currentConfig != null) {
             "${currentConfig.provider} / ${currentConfig.model}"
         } else {
-            "⚙️ Configure Model"
+            "⚙️ ${Strings.configureModel}"
         }
     }
 
@@ -116,7 +117,7 @@ fun ModelSelector(
                         if (config.name == currentConfigName) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = "Selected",
+                                contentDescription = Strings.selected,
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -131,7 +132,7 @@ fun ModelSelector(
             DropdownMenuItem(
                 text = {
                     Text(
-                        text = "No saved configurations",
+                        text = Strings.noSavedConfigs,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -145,7 +146,7 @@ fun ModelSelector(
 
         // Configure button
         DropdownMenuItem(
-            text = { Text("Configure Model...") },
+            text = { Text(Strings.configureModel) },
             onClick = {
                 showConfigDialog = true
                 expanded = false
@@ -153,7 +154,7 @@ fun ModelSelector(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Configure",
+                    contentDescription = Strings.configure,
                     modifier = Modifier.size(18.dp)
                 )
             }

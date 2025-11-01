@@ -16,6 +16,7 @@ import { InputRouter } from '../processors/InputRouter.js';
 import { SlashCommandProcessor } from '../processors/SlashCommandProcessor.js';
 import { AtCommandProcessor } from '../processors/AtCommandProcessor.js';
 import { VariableProcessor } from '../processors/VariableProcessor.js';
+import { t } from '../i18n/index.js';
 
 type CompletionItem = {
   text: string;
@@ -249,7 +250,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {/* Header */}
       <Box borderStyle="single" borderColor="cyan" paddingX={1}>
         <Text bold color="cyan">
-          🤖 AutoDev CLI - AI Coding Assistant
+          {t('chat.title')}
         </Text>
       </Box>
 
@@ -258,10 +259,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         {messages.length === 0 && !pendingMessage ? (
           <Box>
             <Text dimColor>
-              💬 Type your message to start coding
+              {t('chat.emptyHint')}
             </Text>
             <Text dimColor>
-              💡 Try /help or @code to get started
+              {t('chat.startHint')}
             </Text>
           </Box>
         ) : (
@@ -296,14 +297,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           value={input}
           onChange={setInput}
           onSubmit={handleSubmit}
-          placeholder="Type your message... (or /help for commands)"
+          placeholder={t('chat.inputPlaceholder')}
         />
       </Box>
 
       {/* Footer */}
       <Box paddingX={1}>
         <Text dimColor>
-          Press Ctrl+C to exit | Type /help for commands
+          {t('chat.exitHint')} | {t('chat.helpHint')}
         </Text>
       </Box>
     </Box>
@@ -332,7 +333,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending = fals
       <Box flexDirection="column" marginBottom={1}>
         <Box>
           <Text bold color="blue">
-            ℹ️  System:
+            {t('chat.prefixes.system')}:
           </Text>
         </Box>
         <Box paddingLeft={2}>
@@ -344,7 +345,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending = fals
 
   const isUser = message.role === 'user';
   const color = isUser ? 'green' : 'cyan';
-  const prefix = isUser ? '👤 You' : '🤖 AI';
+  const prefix = isUser ? t('chat.prefixes.you') : t('chat.prefixes.ai');
 
   return (
     <Box flexDirection="column" marginBottom={1}>
