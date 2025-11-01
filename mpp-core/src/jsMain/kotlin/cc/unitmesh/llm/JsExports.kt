@@ -59,6 +59,7 @@ class JsKoogLLMService(config: JsModelConfig) {
      * @param onChunk Callback for each chunk of text received
      * @param onError Callback for errors
      * @param onComplete Callback when streaming completes
+     * @param compileDevIns Whether to compile DevIns code (default true, should be false for agent calls)
      */
     @JsName("streamPrompt")
     fun streamPrompt(
@@ -66,13 +67,14 @@ class JsKoogLLMService(config: JsModelConfig) {
         historyMessages: Array<JsMessage> = emptyArray(),
         onChunk: (String) -> Unit,
         onError: ((Throwable) -> Unit)? = null,
-        onComplete: (() -> Unit)? = null
+        onComplete: (() -> Unit)? = null,
+        compileDevIns: Boolean = true
     ): Promise<Unit> {
         return Promise { resolve, reject ->
             GlobalScope.launch {
                 try {
                     val messages = historyMessages.map { it.toKotlinMessage() }
-                    service.streamPrompt(userPrompt, EmptyFileSystem(), messages)
+                    service.streamPrompt(userPrompt, EmptyFileSystem(), messages, compileDevIns)
                         .catch { error ->
                             onError?.invoke(error)
                             reject(error)

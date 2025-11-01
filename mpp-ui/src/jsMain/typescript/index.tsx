@@ -12,7 +12,7 @@ import { render } from 'ink';
 import { Command } from 'commander';
 import { App } from './ui/App.js';
 import { ConfigManager } from './config/ConfigManager.js';
-import { CodingAgentService } from './agents/CodingAgentService';
+import { CodingAgentService } from './agents/CodingAgentService.js';
 import * as path from 'path';
 import * as fs from 'fs';
 

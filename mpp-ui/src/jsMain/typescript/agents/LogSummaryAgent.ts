@@ -7,8 +7,8 @@
  * Similar to Cursor's "Running Command" tool design.
  */
 
-import { LLMService } from '../services/LLMService';
-import type { LLMConfig } from '../config/ConfigManager';
+import { LLMService } from '../services/LLMService.js';
+import type { LLMConfig } from '../config/ConfigManager.js';
 
 export interface LogSummaryContext {
   command: string;

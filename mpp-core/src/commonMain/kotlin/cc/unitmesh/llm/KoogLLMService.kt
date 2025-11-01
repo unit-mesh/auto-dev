@@ -44,14 +44,20 @@ class KoogLLMService(private val config: ModelConfig) {
      * @param userPrompt 用户输入的提示文本（可以包含 DevIns 语法和命令）
      * @param fileSystem 项目文件系统，用于支持 SpecKit 等命令（可选）
      * @param historyMessages 历史消息列表，用于多轮对话（可选）
+     * @param compileDevIns 是否编译 DevIns 代码（默认 true，Agent 调用时应设为 false）
      */
     fun streamPrompt(
         userPrompt: String, 
         fileSystem: ProjectFileSystem = EmptyFileSystem(),
-        historyMessages: List<Message> = emptyList()
+        historyMessages: List<Message> = emptyList(),
+        compileDevIns: Boolean = true
     ): Flow<String> = flow {
-        // 编译 DevIns 脚本
-        val finalPrompt = compilePrompt(userPrompt, fileSystem)
+        // 只在需要时编译 DevIns 脚本
+        val finalPrompt = if (compileDevIns) {
+            compilePrompt(userPrompt, fileSystem)
+        } else {
+            userPrompt
+        }
         
         // 构建包含历史的 prompt
         val prompt = buildPrompt(finalPrompt, historyMessages)

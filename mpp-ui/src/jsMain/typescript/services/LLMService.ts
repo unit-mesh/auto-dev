@@ -127,6 +127,7 @@ export class LLMService {
       let streamError: any = null;
 
       // Call streamPrompt with callbacks - it now returns a Promise
+      // IMPORTANT: Pass compileDevIns=false for agent calls to prevent DevIns compilation
       await this.koogService.streamPrompt(
         userMessage,
         historyMessages,
@@ -140,7 +141,8 @@ export class LLMService {
         },
         () => {
           // Streaming completed
-        }
+        },
+        false  // compileDevIns = false - agents send pre-formatted prompts
       );
 
       // If error callback was called, throw the error
