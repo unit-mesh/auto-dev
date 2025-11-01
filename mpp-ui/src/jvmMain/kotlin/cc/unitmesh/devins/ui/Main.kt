@@ -5,11 +5,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import cc.unitmesh.devins.ui.compose.AutoDevApp
-import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 
 /**
  * DevIn AI Assistant 主应用入口
- * 简洁的 AI 对话界面，重点测试语法高亮功能
+ * 简洁的 AI 对话界面，支持主题切换
  */
 fun main() = application {
     val windowState = rememberWindowState(
@@ -22,9 +21,8 @@ fun main() = application {
         title = "AutoDev Desktop",
         state = windowState
     ) {
-        AutoDevTheme {
-            AutoDevApp()
-        }
+        // AutoDevApp 内部已经包含 AutoDevTheme
+        AutoDevApp()
     }
 }
 

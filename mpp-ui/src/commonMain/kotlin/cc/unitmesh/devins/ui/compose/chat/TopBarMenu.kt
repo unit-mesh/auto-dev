@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 
 /**
  * 移动端优化的顶部工具栏
@@ -32,6 +36,8 @@ fun TopBarMenu(
     onShowModelConfig: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 直接读取 ThemeManager 的当前主题（它本身就是 mutableStateOf，会自动触发重组）
+    val currentTheme = ThemeManager.currentTheme
     val isAndroid = Platform.isAndroid
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -169,7 +175,74 @@ fun TopBarMenu(
 
                     HorizontalDivider()
 
-                    // 3. Open Directory
+                    // 3. 主题切换子菜单
+                    var themeMenuExpanded by remember { mutableStateOf(false) }
+                    Box {
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(
+                                        "主题",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        ThemeManager.getCurrentThemeDisplayName(),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            },
+                            onClick = { themeMenuExpanded = !themeMenuExpanded },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = when (currentTheme) {
+                                        ThemeManager.ThemeMode.LIGHT -> Icons.Default.LightMode
+                                        ThemeManager.ThemeMode.DARK -> Icons.Default.DarkMode
+                                        ThemeManager.ThemeMode.SYSTEM -> Icons.Default.Brightness4
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = if (themeMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        )
+
+                        // 主题子菜单
+                        DropdownMenu(
+                            expanded = themeMenuExpanded,
+                            onDismissRequest = { themeMenuExpanded = false }
+                        ) {
+                            ThemeManager.ThemeMode.entries.forEach { mode ->
+                                DropdownMenuItem(
+                                    text = { Text(ThemeManager.getThemeDisplayName(mode)) },
+                                    onClick = {
+                                        ThemeManager.setTheme(mode)
+                                        themeMenuExpanded = false
+                                    },
+                                    trailingIcon = {
+                                        if (mode == currentTheme) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = "Selected",
+                                                modifier = Modifier.size(16.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider()
+
+                    // 4. Open Directory
                     DropdownMenuItem(
                         text = { Text("Open Project") },
                         onClick = {

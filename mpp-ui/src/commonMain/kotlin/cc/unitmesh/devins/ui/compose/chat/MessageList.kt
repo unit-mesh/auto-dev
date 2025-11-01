@@ -41,9 +41,6 @@ fun MessageList(
     // 跟踪用户是否主动向上滚动
     var userScrolledAway by remember { mutableStateOf(false) }
     
-    // 跟踪上次触发滚动的时间，避免过于频繁
-    var lastScrollTime by remember { mutableStateOf(0L) }
-    
     // 使用 derivedStateOf 来减少重组，只在真正需要时才触发
     val shouldAutoScroll by remember {
         derivedStateOf {
@@ -51,13 +48,8 @@ fun MessageList(
         }
     }
     
-    // 滚动到底部的辅助函数（带防抖）
+    // 滚动到底部的辅助函数
     fun scrollToBottomIfNeeded() {
-        val now = System.currentTimeMillis()
-        // 防抖：100ms 内只执行一次
-        if (now - lastScrollTime < 100) return
-        lastScrollTime = now
-        
         if (shouldAutoScroll) {
             coroutineScope.launch {
                 val lastIndex = messages.size

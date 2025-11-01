@@ -9,7 +9,8 @@ import cc.unitmesh.devins.ui.compose.AutoDevApp
 import cc.unitmesh.devins.ui.platform.AndroidActivityProvider
 
 /**
- * Markdown 渲染演示应用 - Android 版本
+ * AutoDev 移动应用 - Android 版本
+ * 支持主题切换
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +24,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            // AutoDevApp 内部已经包含 AutoDevTheme
             AutoDevApp()
         }
     }
