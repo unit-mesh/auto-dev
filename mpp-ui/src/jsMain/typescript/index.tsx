@@ -19,7 +19,7 @@ import * as fs from 'fs';
 /**
  * Run in coding agent mode
  */
-async function runCodingAgent(projectPath: string, task: string) {
+async function runCodingAgent(projectPath: string, task: string, quiet: boolean = false) {
   try {
     // Resolve project path
     const resolvedPath = path.resolve(projectPath);
@@ -40,23 +40,18 @@ async function runCodingAgent(projectPath: string, task: string) {
       process.exit(1);
     }
 
-    console.log(`\n🚀 AutoDev Coding Agent`);
-    console.log(`📦 Provider: ${activeConfig.provider}`);
-    console.log(`🤖 Model: ${activeConfig.model}\n`);
+    if (!quiet) {
+      console.log(`\n🚀 AutoDev Coding Agent`);
+      console.log(`📦 Provider: ${activeConfig.provider}`);
+      console.log(`🤖 Model: ${activeConfig.model}\n`);
+    }
 
     // Create and run coding agent
-    const agent = new CodingAgentService(resolvedPath, activeConfig);
+    const agent = new CodingAgentService(resolvedPath, activeConfig, quiet);
     const result = await agent.executeTask({
       requirement: task,
       projectPath: resolvedPath,
     });
-
-    // Print summary
-    console.log('\n' + '='.repeat(60));
-    console.log(result.message);
-    console.log(`Total steps: ${result.steps.length}`);
-    console.log(`Total edits: ${result.edits.length}`);
-    console.log('='.repeat(60) + '\n');
 
     process.exit(result.success ? 0 : 1);
 
@@ -105,9 +100,11 @@ async function main() {
     .requiredOption('-p, --path <path>', 'Project path (e.g., /path/to/project or . for current directory)')
     .requiredOption('-t, --task <task>', 'Development task or requirement to complete')
     .option('-m, --max-iterations <number>', 'Maximum iterations', '10')
+    .option('-q, --quiet', 'Quiet mode - only show important messages', false)
+    .option('-v, --verbose', 'Verbose mode - show all debug information', false)
     .action(async (options) => {
       const projectPath = options.path === '.' ? process.cwd() : options.path;
-      await runCodingAgent(projectPath, options.task);
+      await runCodingAgent(projectPath, options.task, options.quiet && !options.verbose);
     });
 
   // Parse arguments

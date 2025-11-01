@@ -145,9 +145,10 @@ abstract class BaseDevInsNodeProcessor : DevInsNodeProcessor {
     
     /**
      * 记录处理信息
+     * 默认使用 debug 级别，避免污染用户输出
      */
     protected fun logProcessing(node: DevInsNode, context: CompilerContext, message: String? = null) {
         val msg = message ?: "Processing ${node.nodeType}"
-        context.logger.info("[$name] $msg")
+        context.logger.debug("[$name] $msg")
     }
 }

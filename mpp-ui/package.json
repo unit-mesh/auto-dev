@@ -41,6 +41,7 @@
     "@js-joda/core": "^5.6.5",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
+    "diff": "^7.0.0",
     "dotenv": "^16.4.5",
     "ink": "^5.0.1",
     "ink-select-input": "^6.0.0",
@@ -50,6 +51,7 @@
     "yaml": "^2.6.1"
   },
   "devDependencies": {
+    "@types/diff": "^6.0.0",
     "@types/node": "^20.11.24",
     "@types/react": "^18.3.12",
     "ink-testing-library": "^4.0.0",

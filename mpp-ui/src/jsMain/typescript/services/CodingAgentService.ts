@@ -16,6 +16,9 @@ import * as path from 'path';
 import * as os from 'os';
 import type { LLMConfig } from '../config/ConfigManager.js';
 import { LLMService } from './LLMService.js';
+import { OutputFormatter } from '../utils/outputFormatter.js';
+import { ErrorRecoveryAgent, RecoveryResult } from './ErrorRecoveryAgent.js';
+import { LogSummaryAgent, LogSummaryResult } from './LogSummaryAgent.js';
 
 // Import mpp-core
 // @ts-ignore
@@ -60,29 +63,42 @@ export class CodingAgentService {
   private projectPath: string;
   private steps: AgentStep[] = [];
   private edits: AgentEdit[] = [];
-  private maxIterations: number = 10;
+  private maxIterations: number = 100;
   private completionManager: any;
   private toolRegistry: any;
   private promptRenderer: any;
+  private formatter: OutputFormatter;
+  private errorRecoveryAgent: ErrorRecoveryAgent;
+  private logSummaryAgent: LogSummaryAgent;
+  private startTime: number = 0;
+  private lastRecoveryResult: RecoveryResult | null = null;
+  private config: LLMConfig;
 
-  constructor(projectPath: string, config: LLMConfig) {
+  constructor(projectPath: string, config: LLMConfig, quiet: boolean = false) {
     this.projectPath = path.resolve(projectPath);
+    this.config = config;
     this.llmService = new LLMService(config);
     this.completionManager = new JsCompletionManager();
     this.toolRegistry = new JsToolRegistry(this.projectPath);
     this.promptRenderer = new JsCodingAgentPromptRenderer();
+    this.formatter = new OutputFormatter(quiet);
+    this.errorRecoveryAgent = new ErrorRecoveryAgent(this.projectPath, config);
+    this.logSummaryAgent = new LogSummaryAgent(config, 2000); // Summarize if output > 2000 chars
   }
 
   /**
    * Execute a development task
    */
   async executeTask(task: AgentTask): Promise<AgentResult> {
-    console.log(`\n🤖 Starting AutoDev Agent...`);
-    console.log(`📁 Project: ${this.projectPath}`);
-    console.log(`📝 Task: ${task.requirement}\n`);
+    this.startTime = Date.now();
+    
+    this.formatter.header('AutoDev Coding Agent');
+    this.formatter.info(`Project: ${this.projectPath}`);
+    this.formatter.info(`Task: ${task.requirement}`);
 
     try {
       // Initialize workspace
+      this.formatter.section('Initializing Workspace');
       await this.initializeWorkspace();
 
       // Build context and system prompt using mpp-core
@@ -93,15 +109,17 @@ export class CodingAgentService {
       let iteration = 0;
       let taskComplete = false;
 
+      this.formatter.section('Executing Task');
+      
       while (iteration < this.maxIterations && !taskComplete) {
         iteration++;
-        console.log(`\n--- Iteration ${iteration}/${this.maxIterations} ---`);
+        this.formatter.step(iteration, this.maxIterations, 'Analyzing and executing...');
 
         // Get next action from LLM
         const action = await this.getNextAction(systemPrompt, task.requirement, iteration);
 
         if (!action) {
-          console.log('❌ Failed to get next action from LLM');
+          this.formatter.error('Failed to get next action from LLM');
           break;
         }
 
@@ -112,17 +130,53 @@ export class CodingAgentService {
         // Check if task is complete
         if (action.includes('TASK_COMPLETE') || action.includes('task complete')) {
           taskComplete = true;
-          console.log('\n✅ Task marked as complete by agent');
+          this.formatter.success('Task marked as complete by agent');
+        }
+        
+        // If AI didn't call any tools (just reasoning), end the task
+        if (stepResult.action === 'reasoning') {
+          taskComplete = true;
+          this.formatter.info('Agent completed reasoning without further actions');
         }
 
         // Small delay between iterations
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
+      // Display all file changes
+      if (this.edits.length > 0) {
+        this.formatter.section('File Changes');
+        for (const edit of this.edits) {
+          this.formatter.displayFileChange({
+            file: edit.file,
+            operation: edit.operation,
+            newContent: edit.content
+          });
+        }
+      }
+
+      const duration = Date.now() - this.startTime;
       const success = taskComplete || this.steps.filter(s => s.success).length > 0;
+      
+      // Display summary
+      this.formatter.displaySummary({
+        iterations: iteration,
+        edits: this.edits.length,
+        creates: this.edits.filter(e => e.operation === 'create').length,
+        updates: this.edits.filter(e => e.operation === 'update').length,
+        deletes: this.edits.filter(e => e.operation === 'delete').length,
+        duration
+      });
+
       const message = success
-        ? `✅ Task completed successfully in ${iteration} iterations`
+        ? `✅ Task completed successfully`
         : `⚠️  Task incomplete after ${iteration} iterations`;
+
+      if (success) {
+        this.formatter.success(message);
+      } else {
+        this.formatter.warn(message);
+      }
 
       return {
         success,
@@ -133,7 +187,7 @@ export class CodingAgentService {
 
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error(`\n❌ Agent error: ${errorMsg}`);
+      this.formatter.error(`Agent error: ${errorMsg}`);
 
       return {
         success: false,
@@ -151,9 +205,9 @@ export class CodingAgentService {
     try {
       // Initialize workspace using mpp-core
       await this.completionManager.initWorkspace(this.projectPath);
-      console.log(`✓ Workspace initialized: ${this.projectPath}`);
+      this.formatter.success(`Workspace initialized`);
     } catch (error) {
-      console.warn(`⚠️  Failed to initialize workspace: ${error}`);
+      this.formatter.warn(`Failed to initialize workspace: ${error}`);
     }
   }
 
@@ -177,8 +231,9 @@ export class CodingAgentService {
       // AGENTS.md doesn't exist, that's ok
     }
 
-    // Detect build tool
+    // Detect build tool and language
     const buildTool = await this.detectBuildTool();
+    const language = await this.detectLanguage();
 
     // Get tool list from registry
     const toolList = await this.getToolList();
@@ -186,13 +241,16 @@ export class CodingAgentService {
     // Detect shell
     const shell = process.env.SHELL || '/bin/bash';
 
+    // Enhance project structure with language info
+    const enhancedStructure = `${projectStructure}\n\nDetected Language: ${language}\nBuild Tool: ${buildTool}`;
+
     // Build context using mpp-core builder
     const builder = new JsCodingAgentContextBuilder();
     return builder
       .setProjectPath(this.projectPath)
       .setOsInfo(osInfo)
       .setTimestamp(timestamp)
-      .setProjectStructure(projectStructure)
+      .setProjectStructure(enhancedStructure)
       .setAgentRules(agentRules)
       .setBuildTool(buildTool)
       .setToolList(toolList)
@@ -247,6 +305,76 @@ export class CodingAgentService {
   }
 
   /**
+   * Detect primary language by counting source files
+   */
+  private async detectLanguage(): Promise<string> {
+    try {
+      const srcPath = path.join(this.projectPath, 'src');
+      
+      // Check if src directory exists
+      try {
+        await fs.access(srcPath);
+      } catch {
+        return 'unknown';
+      }
+
+      // Count files by extension
+      const counts: Record<string, number> = {
+        '.java': 0,
+        '.kt': 0,
+        '.ts': 0,
+        '.tsx': 0,
+        '.js': 0,
+        '.jsx': 0,
+        '.py': 0,
+        '.rs': 0,
+        '.go': 0
+      };
+
+      const countFiles = async (dir: string) => {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+            await countFiles(fullPath);
+          } else if (entry.isFile()) {
+            const ext = path.extname(entry.name);
+            if (ext in counts) {
+              counts[ext]++;
+            }
+          }
+        }
+      };
+
+      await countFiles(srcPath);
+
+      // Find the most common extension
+      const sortedLangs = Object.entries(counts)
+        .filter(([_, count]) => count > 0)
+        .sort(([_, a], [__, b]) => b - a);
+
+      if (sortedLangs.length === 0) return 'unknown';
+
+      const [topExt, topCount] = sortedLangs[0];
+      const langMap: Record<string, string> = {
+        '.java': 'Java',
+        '.kt': 'Kotlin',
+        '.ts': 'TypeScript',
+        '.tsx': 'TypeScript/React',
+        '.js': 'JavaScript',
+        '.jsx': 'JavaScript/React',
+        '.py': 'Python',
+        '.rs': 'Rust',
+        '.go': 'Go'
+      };
+
+      return `${langMap[topExt] || topExt} (${topCount} files)`;
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  /**
    * Get tool list from registry
    */
   private async getToolList(): Promise<string> {
@@ -265,27 +393,68 @@ export class CodingAgentService {
    * Get next action from LLM
    */
   private async getNextAction(systemPrompt: string, requirement: string, iteration: number): Promise<string | null> {
-    const userPrompt = iteration === 1
-      ? `Task: ${requirement}\n\nPlease start working on this task. Begin by gathering context about the project.`
-      : `Continue working on the task. Previous steps completed: ${this.steps.length}`;
+    let userPrompt: string;
+    
+    // Check if we have a recovery result from SubAgent
+    if (this.lastRecoveryResult) {
+      const recovery = this.lastRecoveryResult;
+      
+      userPrompt = `## Previous Action Failed - Recovery Needed
+
+${recovery.analysis}
+
+**Suggested Actions:**
+${recovery.suggestedActions.map((a, i) => `${i + 1}. ${a}`).join('\n')}
+
+${recovery.recoveryCommands && recovery.recoveryCommands.length > 0 ? `
+**Recovery Commands:**
+${recovery.recoveryCommands.map(cmd => `\`${cmd}\``).join('\n')}
+
+Please execute these recovery commands first, then continue with the original task.
+` : ''}
+
+**Original Task:** ${requirement}
+
+**What to do next:**
+1. Execute the recovery commands to fix the error
+2. Verify the fix worked
+3. Continue with the original task`;
+
+      this.formatter.info('🔧 Applying recovery plan from SubAgent');
+      
+      // Clear after using
+      this.lastRecoveryResult = null;
+      
+    } else if (iteration === 1) {
+      userPrompt = `Task: ${requirement}\n\nPlease start working on this task. Begin by gathering context about the project.`;
+    } else {
+      userPrompt = `Continue working on the task. Previous steps completed: ${this.steps.length}`;
+    }
 
     let response = '';
 
     try {
+      this.formatter.debug('Getting next action from LLM...');
+      
       await this.llmService.streamMessageWithSystem(
         systemPrompt,
         userPrompt,
         (chunk) => {
           response += chunk;
-          process.stdout.write(chunk);
+          // Don't output individual chunks - too noisy
+          // The full response will be logged via executeAction
         }
       );
 
-      console.log('\n'); // New line after streaming
+      // Log the complete response in debug mode
+      if (response.length > 0) {
+        this.formatter.debug(`Received ${response.length} chars from LLM`);
+      }
+
       return response;
 
     } catch (error) {
-      console.error(`\n❌ LLM error: ${error}`);
+      this.formatter.error(`LLM error: ${error}`);
       return null;
     }
   }
@@ -315,28 +484,35 @@ export class CodingAgentService {
 
     for (const match of devinMatches) {
       const devinCode = match[1].trim();
-      console.log(`\n🔧 Executing DevIns:\n${devinCode}\n`);
+      
+      // Extract command name for display
+      const cmdMatch = devinCode.match(/^\/(\w+[-\w]*)/);
+      const cmdName = cmdMatch ? cmdMatch[1] : 'command';
+      
+      this.formatter.debug(`Executing: ${devinCode}`);
 
       try {
         // Execute DevIns using tool registry
         const result = await this.compileDevIns(devinCode);
 
         if (result.success) {
-          console.log(`✓ DevIns executed successfully`);
+          this.formatter.success(`Executed ${cmdName}`);
           if (result.output) {
-            console.log(`Output:\n${result.output.substring(0, 500)}${result.output.length > 500 ? '...' : ''}`);
+            this.formatter.debug(`Output: ${result.output.substring(0, 200)}${result.output.length > 200 ? '...' : ''}`);
             allOutput += result.output + '\n';
           }
 
-          // Track file edits
-          this.trackEdits(devinCode);
+          // Track file edits (async but don't wait)
+          this.trackEdits(devinCode).catch(e => 
+            this.formatter.debug(`Failed to track edits: ${e}`)
+          );
         } else {
-          console.error(`✗ DevIns failed: ${result.errorMessage}`);
+          this.formatter.error(`Failed ${cmdName}: ${result.errorMessage}`);
           allSuccess = false;
           lastError = result.errorMessage || 'Unknown error';
         }
       } catch (error) {
-        console.error(`✗ DevIns execution error: ${error}`);
+        this.formatter.error(`Execution error: ${error}`);
         allSuccess = false;
         lastError = error instanceof Error ? error.message : String(error);
       }
@@ -415,18 +591,19 @@ export class CodingAgentService {
 
   /**
    * Parse DevIns command into tool name and parameters
+   * Fixed to properly handle multiline content in parameters
    */
   private parseDevInsCommand(line: string): { tool: string; params: Record<string, any> } | null {
     // Match pattern: /tool-name param1="value1" param2="value2"
-    const match = line.match(/^\/([a-z-]+)\s*(.*)/);
+    const match = line.match(/^\/([a-z-]+)\s*(.*)/s);  // Added 's' flag for multiline
     if (!match) return null;
 
     const tool = match[1];
     const paramsStr = match[2];
 
-    // Parse parameters
+    // Parse parameters - FIXED: Use [\s\S] instead of . to match newlines
     const params: Record<string, any> = {};
-    const paramRegex = /(\w+)=(?:"([^"]*)"|'([^']*)'|(\S+))/g;
+    const paramRegex = /(\w+)=(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'|(\S+))/g;
     let paramMatch: RegExpExecArray | null;
 
     while ((paramMatch = paramRegex.exec(paramsStr)) !== null) {
@@ -447,7 +624,7 @@ export class CodingAgentService {
       // Try to parse as number or boolean
       if (value === 'true') params[key] = true;
       else if (value === 'false') params[key] = false;
-      else if (/^\d+$/.test(value)) params[key] = parseInt(value);
+      else if (/^\d+$/.test(value)) params[key] = value;
       else params[key] = value;
     }
 
@@ -476,6 +653,20 @@ export class CodingAgentService {
             params.content || '',
             params.createDirectories !== false
           );
+          
+          // Validate write operation by reading back
+          if (result.success && params.content) {
+            try {
+              const verifyResult = await this.toolRegistry.readFile(params.path);
+              if (verifyResult.success && verifyResult.output !== params.content) {
+                this.formatter.warn(`File content mismatch after write: ${params.path}`);
+                this.formatter.debug(`Expected ${params.content.length} chars, got ${verifyResult.output.length} chars`);
+              }
+            } catch (e) {
+              // Verification failed, but write might have succeeded
+              this.formatter.debug(`Failed to verify write: ${e}`);
+            }
+          }
           break;
 
         case 'glob':
@@ -500,9 +691,68 @@ export class CodingAgentService {
         case 'shell':
           result = await this.toolRegistry.shell(
             params.command,
-            params.workingDirectory,
+            params.workingDirectory || this.projectPath,  // Default to project path
             Number(params.timeoutMs) || 30000
           );
+          
+          // If output is very long, summarize it with AI SubAgent
+          if (result.success && this.logSummaryAgent.needsSummarization(result.output)) {
+            this.formatter.info('📊 Output is long, activating Summary SubAgent...');
+            
+            const executionTimeMatch = result.output.match(/Execution Time: (\d+)ms/);
+            const executionTime = executionTimeMatch ? parseInt(executionTimeMatch[1]) : 0;
+            
+            const summaryResult = await this.logSummaryAgent.summarize(
+              {
+                command: params.command,
+                output: result.output,
+                exitCode: 0,
+                executionTime
+              },
+              (status) => {
+                this.formatter.debug(`Summary SubAgent: ${status}`);
+              }
+            );
+            
+            // Display summary in a nice box
+            this.formatter.info('\n┌─────────────────────────────────────────┐');
+            this.formatter.info('│  📊 Log Summary SubAgent               │');
+            this.formatter.info('└─────────────────────────────────────────┘');
+            this.formatter.info(LogSummaryAgent.formatSummary(summaryResult));
+            this.formatter.info('└─────────────────────────────────────────┘\n');
+            
+            // Replace the long output with the summary in the result
+            const originalLength = result.output.length;
+            result.output = `[Output summarized by AI: ${originalLength} chars -> summary]\n\n` + 
+                          LogSummaryAgent.formatSummary(summaryResult);
+          }
+          
+          // If shell command failed, activate Error Recovery SubAgent
+          if (!result.success && result.errorMessage) {
+            this.formatter.warn('Shell command failed');
+            
+            // Run SubAgent asynchronously (but wait for it)
+            const recoveryResult = await this.errorRecoveryAgent.analyzeAndRecover(
+              {
+                command: params.command,
+                errorMessage: result.errorMessage,
+                stdout: result.output,
+                stderr: result.errorMessage
+              },
+              (status) => {
+                // Progress callback
+                this.formatter.debug(`SubAgent: ${status}`);
+              }
+            );
+            
+            // Store recovery result for next iteration
+            if (recoveryResult.success && !recoveryResult.shouldAbort) {
+              this.lastRecoveryResult = recoveryResult;
+              this.formatter.info('✓ SubAgent provided recovery plan');
+            } else if (recoveryResult.shouldAbort) {
+              this.formatter.error('✗ SubAgent recommends aborting task');
+            }
+          }
           break;
 
         default:
@@ -538,16 +788,48 @@ export class CodingAgentService {
 
   /**
    * Track file edits from DevIns commands
+   * Fixed: Only track if file actually changed
    */
-  private trackEdits(devinCode: string): void {
+  private async trackEdits(devinCode: string): Promise<void> {
     // Track write operations
     if (devinCode.includes('/write-file')) {
-      const match = devinCode.match(/path="([^"]+)"/);
-      if (match) {
-        this.edits.push({
-          file: match[1],
-          operation: 'update'
-        });
+      const pathMatch = devinCode.match(/path="([^"]+)"/);
+      const contentMatch = devinCode.match(/content="([^"]*)"/);
+      
+      if (pathMatch) {
+        const filePath = pathMatch[1];
+        const newContent = contentMatch ? contentMatch[1] : '';
+        
+        try {
+          // Check if file exists and read current content
+          const readResult = await this.toolRegistry.readFile(filePath);
+          
+          if (readResult.success && readResult.output) {
+            // File exists - check if content actually changed
+            if (readResult.output !== newContent) {
+              this.edits.push({
+                file: filePath,
+                operation: 'update',
+                content: newContent
+              });
+            }
+            // If content is the same, don't track it
+          } else {
+            // File doesn't exist - this is a create
+            this.edits.push({
+              file: filePath,
+              operation: 'create',
+              content: newContent
+            });
+          }
+        } catch (error) {
+          // If we can't read, assume it's a create
+          this.edits.push({
+            file: filePath,
+            operation: 'create',
+            content: newContent
+          });
+        }
       }
     }
   }

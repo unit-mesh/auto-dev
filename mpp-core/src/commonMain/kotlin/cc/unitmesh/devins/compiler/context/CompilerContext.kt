@@ -135,21 +135,36 @@ data class CompilerOptions(
 class CompilerLogger {
     
     private val logs = mutableListOf<LogEntry>()
+    var enableDebug: Boolean = false  // 默认关闭 debug 日志
+    var minLevel: LogLevel = LogLevel.ERROR  // 最小日志级别，默认只显示错误
+    
+    fun debug(message: String) {
+        if (enableDebug && minLevel <= LogLevel.DEBUG) {
+            logs.add(LogEntry(LogLevel.DEBUG, message))
+            println("[DEBUG] $message")
+        }
+    }
     
     fun info(message: String) {
-        logs.add(LogEntry(LogLevel.INFO, message))
-        println("[INFO] $message")
+        if (minLevel <= LogLevel.INFO) {
+            logs.add(LogEntry(LogLevel.INFO, message))
+            println("[INFO] $message")
+        }
     }
     
     fun warn(message: String) {
-        logs.add(LogEntry(LogLevel.WARN, message))
-        println("[WARN] $message")
+        if (minLevel <= LogLevel.WARN) {
+            logs.add(LogEntry(LogLevel.WARN, message))
+            println("[WARN] $message")
+        }
     }
     
     fun error(message: String, throwable: Throwable? = null) {
-        logs.add(LogEntry(LogLevel.ERROR, message, throwable))
-        println("[ERROR] $message")
-        throwable?.printStackTrace()
+        if (minLevel <= LogLevel.ERROR) {
+            logs.add(LogEntry(LogLevel.ERROR, message, throwable))
+            println("[ERROR] $message")
+            throwable?.printStackTrace()
+        }
     }
     
     fun getLogs(): List<LogEntry> = logs.toList()
@@ -173,7 +188,7 @@ data class LogEntry(
  * 日志级别
  */
 enum class LogLevel {
-    INFO, WARN, ERROR
+    DEBUG, INFO, WARN, ERROR
 }
 
 /**
