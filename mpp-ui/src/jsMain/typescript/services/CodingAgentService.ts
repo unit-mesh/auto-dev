@@ -7,10 +7,13 @@
  * - Make code changes based on requirements
  * - Execute commands and tests
  * - Iterate until the task is complete
+ * 
+ * Refactored to use mpp-core abstractions for cross-platform consistency
  */
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as os from 'os';
 import type { LLMConfig } from '../config/ConfigManager.js';
 import { LLMService } from './LLMService.js';
 
@@ -19,6 +22,7 @@ import { LLMService } from './LLMService.js';
 import MppCore from '@autodev/mpp-core';
 
 const { JsCompletionManager, JsToolRegistry } = MppCore.cc.unitmesh.llm;
+const { JsCodingAgentContextBuilder, JsCodingAgentPromptRenderer } = MppCore.cc.unitmesh.agent;
 
 export interface AgentTask {
   requirement: string;
@@ -49,6 +53,7 @@ export interface AgentResult {
 
 /**
  * Coding Agent Service
+ * Now uses mpp-core for prompt generation and context building
  */
 export class CodingAgentService {
   private llmService: LLMService;
@@ -58,12 +63,14 @@ export class CodingAgentService {
   private maxIterations: number = 10;
   private completionManager: any;
   private toolRegistry: any;
+  private promptRenderer: any;
 
   constructor(projectPath: string, config: LLMConfig) {
     this.projectPath = path.resolve(projectPath);
     this.llmService = new LLMService(config);
     this.completionManager = new JsCompletionManager();
     this.toolRegistry = new JsToolRegistry(this.projectPath);
+    this.promptRenderer = new JsCodingAgentPromptRenderer();
   }
 
   /**
@@ -78,8 +85,9 @@ export class CodingAgentService {
       // Initialize workspace
       await this.initializeWorkspace();
 
-      // Build system prompt
-      const systemPrompt = await this.buildSystemPrompt(task);
+      // Build context and system prompt using mpp-core
+      const context = await this.buildContext(task);
+      const systemPrompt = this.promptRenderer.render(context, 'EN');
 
       // Main agent loop
       let iteration = 0;
@@ -150,10 +158,11 @@ export class CodingAgentService {
   }
 
   /**
-   * Build system prompt for the agent
+   * Build context for the agent using mpp-core
+   * This replaces the old buildSystemPrompt method
    */
-  async buildSystemPrompt(task: AgentTask): Promise<string> {
-    const osInfo = `${process.platform} ${process.arch}`;
+  private async buildContext(task: AgentTask): Promise<any> {
+    const osInfo = `${os.platform()} ${os.release()} ${os.arch()}`;
     const timestamp = new Date().toISOString();
 
     // Get project structure
@@ -168,69 +177,27 @@ export class CodingAgentService {
       // AGENTS.md doesn't exist, that's ok
     }
 
-    return `You are AutoDev, an autonomous AI coding agent designed to complete development tasks.
+    // Detect build tool
+    const buildTool = await this.detectBuildTool();
 
-## Environment Information
-- OS: ${osInfo}
-- Project Path: ${this.projectPath}
-- Current Time: ${timestamp}
+    // Get tool list from registry
+    const toolList = await this.getToolList();
 
-## Project Structure
-${projectStructure}
+    // Detect shell
+    const shell = process.env.SHELL || '/bin/bash';
 
-## Available Tools
-You have access to the following tools through DevIns commands:
-
-1. **read-file** - Read file content
-   Examples:
-   /read-file path="src/main.kt"
-   /read-file path="README.md" startLine=1 endLine=10
-
-2. **write-file** - Write content to file
-   Examples:
-   /write-file path="output.txt" content="Hello, World!"
-   /write-file path="config.json" content="{\"key\": \"value\"}" createDirectories=true
-
-3. **glob** - List files matching pattern
-   Examples:
-   /glob pattern="*.kt" path="src"
-   /glob pattern="**/*.{ts,js}" includeFileInfo=true
-
-4. **grep** - Search for pattern in files
-   Examples:
-   /grep pattern="function.*main" path="src" include="*.kt"
-   /grep pattern="TODO|FIXME" recursive=true caseSensitive=false
-
-5. **shell** - Execute shell command
-   Examples:
-   /shell command="ls -la"
-   /shell command="npm test" workingDirectory="frontend" timeoutMs=60000
-
-## Task Execution Guidelines
-
-1. **Gather Context First**: Before making changes, use /read-file and /glob to understand the codebase
-2. **Plan Your Approach**: Think step-by-step about what needs to be done
-3. **Make Incremental Changes**: Make one change at a time and verify it works
-4. **Test Your Changes**: Run tests or build commands to verify changes
-5. **Signal Completion**: When done, respond with "TASK_COMPLETE" in your message
-
-## Response Format
-
-For each step, respond with:
-1. Your reasoning about what to do next
-2. The DevIns command(s) to execute (wrapped in <devin></devin> tags)
-3. What you expect to happen
-
-Example:
-I need to check the existing implementation first.
-<devin>
-/read-file path="src/main.ts"
-</devin>
-
-${agentRules ? `\n## Project-Specific Rules\n${agentRules}` : ''}
-
-Remember: You are autonomous. Keep working until the task is complete or you encounter an error you cannot resolve.
-`;
+    // Build context using mpp-core builder
+    const builder = new JsCodingAgentContextBuilder();
+    return builder
+      .setProjectPath(this.projectPath)
+      .setOsInfo(osInfo)
+      .setTimestamp(timestamp)
+      .setProjectStructure(projectStructure)
+      .setAgentRules(agentRules)
+      .setBuildTool(buildTool)
+      .setToolList(toolList)
+      .setShell(shell)
+      .build();
   }
 
   /**
@@ -247,6 +214,50 @@ Remember: You are autonomous. Keep working until the task is complete or you enc
       return items.join('\n') + (entries.length > 20 ? '\n... (more files)' : '');
     } catch {
       return '(Unable to read project structure)';
+    }
+  }
+
+  /**
+   * Detect build tool from project files
+   */
+  private async detectBuildTool(): Promise<string> {
+    try {
+      const files = await fs.readdir(this.projectPath);
+      
+      if (files.includes('package.json')) {
+        return 'npm/node.js';
+      }
+      if (files.includes('build.gradle.kts') || files.includes('build.gradle')) {
+        return 'gradle';
+      }
+      if (files.includes('pom.xml')) {
+        return 'maven';
+      }
+      if (files.includes('Cargo.toml')) {
+        return 'cargo/rust';
+      }
+      if (files.includes('requirements.txt') || files.includes('setup.py')) {
+        return 'python';
+      }
+      
+      return 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Get tool list from registry
+   */
+  private async getToolList(): Promise<string> {
+    try {
+      const tools = this.toolRegistry.getAgentTools();
+      return tools.map((tool: any) => 
+        `**${tool.name}** - ${tool.description}\n   Example: ${tool.example}`
+      ).join('\n\n');
+    } catch (error) {
+      console.warn(`⚠️  Failed to get tool list: ${error}`);
+      return 'Tools: read-file, write-file, glob, grep, shell';
     }
   }
 
@@ -307,7 +318,7 @@ Remember: You are autonomous. Keep working until the task is complete or you enc
       console.log(`\n🔧 Executing DevIns:\n${devinCode}\n`);
 
       try {
-        // Compile and execute DevIns using mpp-core
+        // Execute DevIns using tool registry
         const result = await this.compileDevIns(devinCode);
 
         if (result.success) {
@@ -530,8 +541,8 @@ Remember: You are autonomous. Keep working until the task is complete or you enc
    */
   private trackEdits(devinCode: string): void {
     // Track write operations
-    if (devinCode.includes('/write:')) {
-      const match = devinCode.match(/\/write:([^:]+)/);
+    if (devinCode.includes('/write-file')) {
+      const match = devinCode.match(/path="([^"]+)"/);
       if (match) {
         this.edits.push({
           file: match[1],
@@ -541,4 +552,3 @@ Remember: You are autonomous. Keep working until the task is complete or you enc
     }
   }
 }
-
