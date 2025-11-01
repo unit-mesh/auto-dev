@@ -177,7 +177,14 @@ export const App: React.FC = () => {
       setPendingMessage(null);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      // Display error message in chat
+      const errorMessage: Message = {
+        role: 'system',
+        content: err instanceof Error ? err.message : 'Failed to send message',
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      
       setPendingMessage(null);
       setIsCompiling(false);
     }

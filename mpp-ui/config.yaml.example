@@ -1,0 +1,103 @@
+# AutoDev CLI Configuration File
+#
+# This file stores your LLM configurations. You can have multiple configurations
+# and switch between them using the `active` field.
+#
+# Location: ~/.autodev/config.yaml
+
+# Active configuration name (must match one of the configs below)
+active: work-gpt4
+
+# List of available configurations
+configs:
+  # Configuration 1: Work GPT-4
+  - name: work-gpt4
+    provider: openai
+    apiKey: sk-your-openai-api-key-here
+    model: gpt-4-turbo
+    temperature: 0.7
+    maxTokens: 4096
+    # baseUrl: https://api.openai.com/v1  # Optional: custom API endpoint
+
+  # Configuration 2: Personal Claude
+  - name: personal-claude
+    provider: anthropic
+    apiKey: sk-ant-your-anthropic-api-key-here
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.7
+    maxTokens: 4096
+
+  # Configuration 3: DeepSeek
+  - name: deepseek-chat
+    provider: deepseek
+    apiKey: sk-your-deepseek-api-key-here
+    model: deepseek-chat
+    baseUrl: https://api.deepseek.com/v1
+
+  # Configuration 4: Local Ollama
+  - name: local-llama
+    provider: ollama
+    apiKey: ""  # Ollama doesn't need API key
+    model: llama3.2
+    baseUrl: http://localhost:11434
+
+  # Configuration 5: Google Gemini
+  - name: gemini
+    provider: google
+    apiKey: your-google-api-key-here
+    model: gemini-pro
+
+  # Configuration 6: OpenRouter
+  - name: router
+    provider: openrouter
+    apiKey: sk-or-your-openrouter-api-key-here
+    model: anthropic/claude-3.5-sonnet
+    baseUrl: https://openrouter.ai/api/v1
+
+# ============================================================================
+# Provider-specific notes:
+# ============================================================================
+#
+# OpenAI:
+#   - Get API key from: https://platform.openai.com/api-keys
+#   - Models: gpt-4, gpt-4-turbo, gpt-3.5-turbo
+#
+# Anthropic:
+#   - Get API key from: https://console.anthropic.com/
+#   - Models: claude-3-5-sonnet-20241022, claude-3-opus, claude-3-sonnet
+#
+# Google:
+#   - Get API key from: https://makersuite.google.com/app/apikey
+#   - Models: gemini-pro, gemini-2.0-flash-exp
+#
+# DeepSeek:
+#   - Get API key from: https://platform.deepseek.com/
+#   - Models: deepseek-chat, deepseek-coder
+#
+# Ollama:
+#   - Install from: https://ollama.com/
+#   - No API key needed (local)
+#   - Models: llama3.2, mistral, codellama, etc.
+#
+# OpenRouter:
+#   - Get API key from: https://openrouter.ai/keys
+#   - Access to multiple providers through one API
+#   - Models: anthropic/claude-3.5-sonnet, openai/gpt-4, etc.
+#
+# ============================================================================
+# Managing configurations:
+# ============================================================================
+#
+# Add a new configuration:
+#   1. Add a new item to the `configs` list
+#   2. Give it a unique `name`
+#   3. Set the `provider`, `apiKey`, and `model`
+#
+# Switch active configuration:
+#   - Change the `active` field to match a config name
+#   - Or use: `autodev config set <name>` (coming soon)
+#
+# Delete a configuration:
+#   - Remove the item from the `configs` list
+#
+# ============================================================================

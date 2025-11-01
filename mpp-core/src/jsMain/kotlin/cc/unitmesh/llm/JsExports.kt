@@ -160,6 +160,88 @@ data class JsMessage(
 }
 
 /**
+ * JavaScript-friendly NamedModelConfig
+ */
+@JsExport
+data class JsNamedModelConfig(
+    val name: String,
+    val providerName: String,
+    val modelName: String,
+    val apiKey: String = "",
+    val temperature: Double = 0.7,
+    val maxTokens: Int = 4096,
+    val baseUrl: String = ""
+) {
+    fun toKotlin(): NamedModelConfig {
+        val provider = when (providerName.uppercase()) {
+            "OPENAI" -> LLMProviderType.OPENAI
+            "ANTHROPIC" -> LLMProviderType.ANTHROPIC
+            "GOOGLE" -> LLMProviderType.GOOGLE
+            "DEEPSEEK" -> LLMProviderType.DEEPSEEK
+            "OLLAMA" -> LLMProviderType.OLLAMA
+            "OPENROUTER" -> LLMProviderType.OPENROUTER
+            else -> throw IllegalArgumentException("Unknown provider: $providerName")
+        }
+        
+        return NamedModelConfig(
+            name = name,
+            provider = provider,
+            modelName = modelName,
+            apiKey = apiKey,
+            temperature = temperature,
+            maxTokens = maxTokens,
+            baseUrl = baseUrl
+        )
+    }
+    
+    companion object {
+        @JsName("fromKotlin")
+        fun fromKotlin(config: NamedModelConfig): JsNamedModelConfig {
+            return JsNamedModelConfig(
+                name = config.name,
+                providerName = config.provider.name,
+                modelName = config.modelName,
+                apiKey = config.apiKey,
+                temperature = config.temperature,
+                maxTokens = config.maxTokens,
+                baseUrl = config.baseUrl
+            )
+        }
+    }
+}
+
+/**
+ * JavaScript-friendly ConfigFile
+ */
+@JsExport
+data class JsConfigFile(
+    val active: String,
+    val configs: Array<JsNamedModelConfig>
+) {
+    fun toKotlin(): ConfigFile {
+        return ConfigFile(
+            active = active,
+            configs = configs.map { it.toKotlin() }
+        )
+    }
+    
+    companion object {
+        @JsName("fromKotlin")
+        fun fromKotlin(configFile: ConfigFile): JsConfigFile {
+            return JsConfigFile(
+                active = configFile.active,
+                configs = configFile.configs.map { JsNamedModelConfig.fromKotlin(it) }.toTypedArray()
+            )
+        }
+        
+        @JsName("empty")
+        fun empty(): JsConfigFile {
+            return JsConfigFile(active = "", configs = emptyArray())
+        }
+    }
+}
+
+/**
  * JavaScript-friendly result wrapper
  */
 @JsExport
