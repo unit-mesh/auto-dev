@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import Spinner from 'ink-spinner';
@@ -9,9 +9,13 @@ import {
   getCompletionSuggestions,
   shouldTriggerCompletion,
   applyCompletionItem,
-  extractCommand
+  compileDevIns
 } from '../utils/commandUtils.js';
-import { HELP_TEXT, GOODBYE_MESSAGE } from '../constants/asciiArt.js';
+import { GOODBYE_MESSAGE } from '../constants/asciiArt.js';
+import { InputRouter } from '../processors/InputRouter.js';
+import { SlashCommandProcessor } from '../processors/SlashCommandProcessor.js';
+import { AtCommandProcessor } from '../processors/AtCommandProcessor.js';
+import { VariableProcessor } from '../processors/VariableProcessor.js';
 
 type CompletionItem = {
   text: string;
@@ -27,13 +31,15 @@ interface ChatInterfaceProps {
   pendingMessage: Message | null;
   isCompiling: boolean;
   onSendMessage: (content: string) => Promise<void>;
+  onClearMessages?: () => void;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
   messages, 
   pendingMessage,
   isCompiling,
-  onSendMessage 
+  onSendMessage,
+  onClearMessages
 }) => {
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,6 +47,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showBanner, setShowBanner] = useState(true);
   const [shouldPreventSubmit, setShouldPreventSubmit] = useState(false);
+
+  // Initialize input router with processors
+  const router = useMemo(() => {
+    const r = new InputRouter();
+    
+    // Register processors with priorities
+    // Higher priority = executed first
+    r.register(new SlashCommandProcessor(), 100);
+    r.register(new AtCommandProcessor(), 50);
+    r.register(new VariableProcessor(), 30);
+    
+    return r;
+  }, []);
 
   // Sync isProcessing with external state
   useEffect(() => {
@@ -88,18 +107,65 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const message = input.trim();
     setInput('');
     setCompletionItems([]);
+    setIsProcessing(true);
 
     try {
-      // Handle slash commands
-      if (message.startsWith('/')) {
-        await handleSlashCommand(message);
-      } 
-      // Regular message (including @agent commands)
-      else {
-        await onSendMessage(message);
+      // Route input through processor chain
+      const result = await router.route(message, {
+        clearMessages: onClearMessages || (() => {}),
+        logger: {
+          info: (msg) => console.log(`[INFO] ${msg}`),
+          warn: (msg) => console.warn(`[WARN] ${msg}`),
+          error: (msg, err) => console.error(`[ERROR] ${msg}`, err || '')
+        },
+        readFile: async (path) => {
+          // Read file through DevIns compiler
+          const compileResult = await compileDevIns(`/file:${path}`);
+          if (compileResult?.success) {
+            return compileResult.output;
+          }
+          throw new Error(compileResult?.errorMessage || 'Failed to read file');
+        }
+      });
+
+      // Handle result
+      switch (result.type) {
+        case 'handled':
+          // Command was handled, output already shown
+          break;
+        
+        case 'compile':
+          // Need to compile DevIns
+          await handleDevInsCompile(result.devins);
+          break;
+        
+        case 'llm-query':
+          // Send to LLM
+          await onSendMessage(result.query);
+          break;
+        
+        case 'error':
+          // Show error
+          console.error(result.message);
+          break;
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error processing input:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDevInsCompile = async (devins: string) => {
+    // Compile DevIns and send result to LLM
+    const compileResult = await compileDevIns(devins);
+    
+    if (compileResult?.success) {
+      // Send compiled output to LLM
+      await onSendMessage(compileResult.output);
+    } else {
+      // Show compilation error
+      console.error(`DevIns compilation error: ${compileResult?.errorMessage}`);
     }
   };
 
@@ -126,40 +192,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       } else {
         setCompletionItems([]);
       }
-    }
-  };
-
-  const handleSlashCommand = async (command: string) => {
-    const cmdName = extractCommand(command);
-    
-    switch (cmdName?.toLowerCase()) {
-      case 'help':
-        console.log(HELP_TEXT);
-        break;
-      
-      case 'clear':
-        // TODO: Clear messages
-        console.log('Chat history cleared');
-        break;
-      
-      case 'config':
-        // TODO: Show config
-        console.log('Configuration:');
-        break;
-      
-      case 'exit':
-        console.log(GOODBYE_MESSAGE);
-        process.exit(0);
-        break;
-      
-      case 'model':
-        // TODO: Change model
-        console.log('Available models: ...');
-        break;
-      
-      default:
-        console.log(`Unknown command: /${cmdName}`);
-        console.log('Type /help for available commands');
     }
   };
 
@@ -325,6 +357,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending = fals
         </Text>
       </Box>
       <Box paddingLeft={2}>
+        {/* Simple text rendering for now */}
         <Text>{message.content || (isPending ? '...' : '')}</Text>
       </Box>
     </Box>

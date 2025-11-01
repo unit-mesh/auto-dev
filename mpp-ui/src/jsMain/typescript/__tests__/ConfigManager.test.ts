@@ -32,7 +32,8 @@ describe('ConfigManager', () => {
 
   it('should create empty config when file does not exist', async () => {
     const config = await ConfigManager.load();
-    expect(config.isValid()).toBe(false);
+    // 默认使用 Ollama provider，不需要 API key，所以是有效的
+    expect(config.isValid()).toBe(true);
   });
 
   it('should save and load configuration', async () => {

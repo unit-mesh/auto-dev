@@ -193,6 +193,12 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  const handleClearMessages = useCallback(() => {
+    setMessages([]);
+    setPendingMessage(null);
+    console.clear();
+  }, []);
+
   if (isLoading) {
     return (
       <Box flexDirection="column" padding={1}>
@@ -219,7 +225,8 @@ export const App: React.FC = () => {
       messages={messages} 
       pendingMessage={pendingMessage}
       isCompiling={isCompiling}
-      onSendMessage={handleSendMessage} 
+      onSendMessage={handleSendMessage}
+      onClearMessages={handleClearMessages}
     />
   );
 };
