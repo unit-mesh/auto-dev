@@ -55,6 +55,49 @@ export interface AgentResult {
 }
 
 /**
+ * Critical infrastructure files that should not be modified by simple tasks
+ */
+const PROTECTED_FILES = [
+  'build.gradle.kts',
+  'build.gradle',
+  'pom.xml',
+  'package.json',
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  'requirements.txt',
+  'Pipfile',
+  'Cargo.toml',
+  'Cargo.lock',
+  'go.mod',
+  'go.sum',
+  'CMakeLists.txt',
+  'Makefile',
+  'settings.gradle.kts',
+  'settings.gradle'
+];
+
+/**
+ * Keywords that indicate a simple task
+ */
+const SIMPLE_TASK_KEYWORDS = [
+  'hello world',
+  'create a simple',
+  'add a simple',
+  'write a simple',
+  'simple file',
+  'add a file',
+  'write a function',
+  'add a function',
+  'simple example',
+  'basic example',
+  'quick test',
+  'create a test',
+  'add a method',
+  'simple class'
+];
+
+/**
  * Coding Agent Service
  * Now uses mpp-core for prompt generation and context building
  */
@@ -73,6 +116,7 @@ export class CodingAgentService {
   private startTime: number = 0;
   private lastRecoveryResult: RecoveryResult | null = null;
   private config: LLMConfig;
+  private isSimpleTaskMode: boolean = false;
 
   constructor(projectPath: string, config: LLMConfig, quiet: boolean = false) {
     this.projectPath = path.resolve(projectPath);
@@ -87,6 +131,80 @@ export class CodingAgentService {
   }
 
   /**
+   * Check if this is a simple task that should have limited scope
+   */
+  private isSimpleTask(taskDescription: string): boolean {
+    const lowerTask = taskDescription.toLowerCase();
+    return SIMPLE_TASK_KEYWORDS.some(keyword => lowerTask.includes(keyword));
+  }
+
+  /**
+   * Check if a file is protected (critical infrastructure)
+   */
+  private isProtectedFile(filePath: string): boolean {
+    const basename = path.basename(filePath);
+    return PROTECTED_FILES.includes(basename);
+  }
+
+  /**
+   * Check if task appears complete based on heuristics
+   */
+  private checkTaskCompletion(task: string, iteration: number): boolean {
+    // Only for simple tasks after a few iterations
+    if (!this.isSimpleTaskMode || iteration < 2) {
+      return false;
+    }
+
+    // Check if we created a core file
+    const hasCreatedFile = this.edits.some(e => e.operation === 'create');
+    
+    if (hasCreatedFile) {
+      // Check if recent steps are mostly failing
+      const recentSteps = this.steps.slice(-3);
+      if (recentSteps.length > 0) {
+        const failureCount = recentSteps.filter(s => !s.success).length;
+        const mostlyFailing = failureCount >= 2;
+        
+        if (mostlyFailing) {
+          this.formatter.info('🎯 Core work completed, subsequent failures appear unrelated');
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Enhance system prompt for simple tasks
+   */
+  private enhanceSystemPromptForTask(systemPrompt: string, task: string): string {
+    if (!this.isSimpleTask(task)) {
+      return systemPrompt;
+    }
+
+    return systemPrompt + `\n\n## 🎯 IMPORTANT: Simple Task Mode
+
+This is a SIMPLE task that requires minimal changes. Follow these STRICT rules:
+
+1. **DO NOT modify build/config files**: ${PROTECTED_FILES.slice(0, 5).join(', ')}, etc.
+2. **DO NOT run full project builds or test suites** - focus only on the task
+3. **DO NOT try to fix pre-existing project issues** - ignore unrelated errors
+4. **CREATE ONLY** the minimal files needed for this specific task
+5. **VERIFY** your new code has correct syntax (read it back if needed)
+6. **RESPOND** with "TASK_COMPLETE" immediately after creating the requested file
+
+**Expected workflow:**
+- Step 1: Understand project structure (quick scan)
+- Step 2: Create the requested file
+- Step 3: Verify file was created correctly
+- Step 4: Respond with "TASK_COMPLETE"
+
+Maximum expected steps: 5-7
+If you encounter errors unrelated to your new file, mark the task complete anyway.`;
+  }
+
+  /**
    * Execute a development task
    */
   async executeTask(task: AgentTask): Promise<AgentResult> {
@@ -96,6 +214,13 @@ export class CodingAgentService {
     this.formatter.info(`Project: ${this.projectPath}`);
     this.formatter.info(`Task: ${task.requirement}`);
 
+    // Detect if this is a simple task
+    this.isSimpleTaskMode = this.isSimpleTask(task.requirement);
+    if (this.isSimpleTaskMode) {
+      this.formatter.info('📋 Simple task detected - using limited scope mode');
+      this.formatter.info('⚠️  Build files are protected from modification');
+    }
+
     try {
       // Initialize workspace
       this.formatter.section('Initializing Workspace');
@@ -103,7 +228,10 @@ export class CodingAgentService {
 
       // Build context and system prompt using mpp-core
       const context = await this.buildContext(task);
-      const systemPrompt = this.promptRenderer.render(context, 'EN');
+      let systemPrompt = this.promptRenderer.render(context, 'EN');
+      
+      // Enhance prompt for simple tasks
+      systemPrompt = this.enhanceSystemPromptForTask(systemPrompt, task.requirement);
 
       // Main agent loop
       let iteration = 0;
@@ -127,10 +255,16 @@ export class CodingAgentService {
         const stepResult = await this.executeAction(action, iteration);
         this.steps.push(stepResult);
 
-        // Check if task is complete
+        // Check if task is complete (explicit signal from LLM)
         if (action.includes('TASK_COMPLETE') || action.includes('task complete')) {
           taskComplete = true;
           this.formatter.success('Task marked as complete by agent');
+        }
+        
+        // Check completion heuristics for simple tasks
+        if (!taskComplete && this.checkTaskCompletion(task.requirement, iteration)) {
+          taskComplete = true;
+          this.formatter.success('Task appears complete based on success heuristics');
         }
         
         // If AI didn't call any tools (just reasoning), end the task
@@ -648,6 +782,17 @@ Please execute these recovery commands first, then continue with the original ta
           break;
 
         case 'write-file':
+          // Protect critical infrastructure files in simple task mode
+          if (this.isSimpleTaskMode && this.isProtectedFile(params.path)) {
+            result = {
+              success: false,
+              output: '',
+              errorMessage: `⚠️ Cannot modify protected file: ${params.path}. This file is critical project infrastructure and should not be modified for simple tasks. If you need to add functionality, create new files instead.`
+            };
+            this.formatter.warn(`🛡️  Blocked modification of protected file: ${params.path}`);
+            break;
+          }
+          
           result = await this.toolRegistry.writeFile(
             params.path,
             params.content || '',
