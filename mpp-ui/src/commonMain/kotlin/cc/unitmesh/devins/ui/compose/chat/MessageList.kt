@@ -5,9 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -16,10 +14,17 @@ import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * 消息列表组件
  * 显示完整的对话历史，使用连续流式布局
+ * 
+ * 优化的滚动策略：
+ * 1. 检测用户是否手动滚动
+ * 2. 流式输出时持续滚动到底部（除非用户主动向上滚动）
+ * 3. 新消息到达时自动滚动
  */
 @Composable
 fun MessageList(
@@ -31,17 +36,74 @@ fun MessageList(
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     
-    // 自动滚动到底部
-    LaunchedEffect(messages.size, currentOutput) {
-        if (messages.isNotEmpty() || currentOutput.isNotEmpty()) {
-            // 总是滚动到最后一项
-            val targetIndex = if (isLLMProcessing && currentOutput.isNotEmpty()) {
-                messages.size  // 流式输出项的索引
-            } else {
-                maxOf(0, messages.size - 1)
+    // 跟踪用户是否主动向上滚动
+    var userScrolledAway by remember { mutableStateOf(false) }
+    
+    // 跟踪上次触发滚动的时间，避免过于频繁
+    var lastScrollTime by remember { mutableStateOf(0L) }
+    
+    // 使用 derivedStateOf 来减少重组，只在真正需要时才触发
+    val shouldAutoScroll by remember {
+        derivedStateOf {
+            isLLMProcessing && !userScrolledAway && currentOutput.isNotEmpty()
+        }
+    }
+    
+    // 滚动到底部的辅助函数（带防抖）
+    fun scrollToBottomIfNeeded() {
+        val now = System.currentTimeMillis()
+        // 防抖：100ms 内只执行一次
+        if (now - lastScrollTime < 100) return
+        lastScrollTime = now
+        
+        if (shouldAutoScroll) {
+            coroutineScope.launch {
+                val lastIndex = messages.size
+                listState.scrollToItem(lastIndex)
             }
-            listState.animateScrollToItem(targetIndex)
+        }
+    }
+    
+    // 监听滚动状态，检测用户是否手动滚动
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            // 用户正在滚动
+            val lastVisibleIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalItems = listState.layoutInfo.totalItemsCount
+            
+            // 如果用户滚动到的位置不是底部附近（倒数第2项以内），认为用户想查看历史
+            userScrolledAway = lastVisibleIndex < totalItems - 2
+        }
+    }
+    
+    // 新消息到达时自动滚动（基于消息 ID 变化）
+    LaunchedEffect(messages.lastOrNull()?.timestamp) {
+        if (messages.isNotEmpty() && !isLLMProcessing) {
+            // 新消息完成时，重置用户滚动状态并滚动到底部
+            userScrolledAway = false
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
+    
+    // 监听内容变化（每50字符或每新行）
+    LaunchedEffect(currentOutput) {
+        if (shouldAutoScroll) {
+            val lineCount = currentOutput.count { it == '\n' }
+            val chunkIndex = currentOutput.length / 100  // 改为每100字符，减少频率
+            val contentSignature = lineCount + chunkIndex
+            
+            // 延迟执行，避免在布局完成前滚动
+            delay(100)
+            scrollToBottomIfNeeded()
+        }
+    }
+    
+    // 流式输出开始时，重置状态
+    LaunchedEffect(isLLMProcessing) {
+        if (isLLMProcessing) {
+            userScrolledAway = false
         }
     }
     
@@ -69,7 +131,13 @@ fun MessageList(
             // 显示正在生成的 AI 响应（只在流式输出时显示）
             if (isLLMProcessing && currentOutput.isNotEmpty()) {
                 item(key = "streaming") {
-                    StreamingMessageItem(content = currentOutput)
+                    StreamingMessageItem(
+                        content = currentOutput,
+                        onContentUpdate = { blockCount ->
+                            // 块数量变化时触发滚动
+                            scrollToBottomIfNeeded()
+                        }
+                    )
                 }
             }
         }
@@ -132,7 +200,10 @@ private fun MessageItem(message: Message) {
  * 流式输出消息项
  */
 @Composable
-private fun StreamingMessageItem(content: String) {
+private fun StreamingMessageItem(
+    content: String,
+    onContentUpdate: (blockCount: Int) -> Unit = {}
+) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -166,6 +237,7 @@ private fun StreamingMessageItem(content: String) {
             SketchRenderer.RenderResponse(
                 content = content,
                 isComplete = false,
+                onContentUpdate = onContentUpdate,
                 modifier = Modifier.fillMaxWidth()
             )
         }
