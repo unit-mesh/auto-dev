@@ -535,7 +535,7 @@ private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType, index: I
         CompletionTriggerType.CODE_FENCE -> "CODE_FENCE"
         CompletionTriggerType.NONE -> "NONE"
     }
-    
+
     return JsCompletionItem(
         text = this.text,
         displayText = this.displayText,
@@ -546,4 +546,220 @@ private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType, index: I
     )
 }
 
+/**
+ * JavaScript-friendly Tool Registry wrapper
+ * Provides access to built-in tools like read-file, write-file, glob, grep, shell
+ */
+@JsExport
+class JsToolRegistry(projectPath: String) {
+    private val registry: cc.unitmesh.agent.tool.registry.ToolRegistry
+
+    init {
+        val fileSystem = cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem(projectPath)
+        val shellExecutor = cc.unitmesh.agent.tool.shell.JsShellExecutor()
+        registry = cc.unitmesh.agent.tool.registry.ToolRegistry(fileSystem, shellExecutor)
+    }
+
+    /**
+     * Execute read-file tool
+     */
+    @JsName("readFile")
+    fun readFile(path: String, startLine: Int? = null, endLine: Int? = null): Promise<JsToolResult> {
+        return GlobalScope.promise {
+            try {
+                val params = cc.unitmesh.agent.tool.impl.ReadFileParams(
+                    path = path,
+                    startLine = startLine,
+                    endLine = endLine
+                )
+                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.READ_FILE, params)
+                result.toJsToolResult()
+            } catch (e: Exception) {
+                JsToolResult(
+                    success = false,
+                    output = "",
+                    errorMessage = e.message ?: "Unknown error",
+                    metadata = emptyMap()
+                )
+            }
+        }
+    }
+
+    /**
+     * Execute write-file tool
+     */
+    @JsName("writeFile")
+    fun writeFile(path: String, content: String, createDirectories: Boolean = true): Promise<JsToolResult> {
+        return GlobalScope.promise {
+            try {
+                val params = cc.unitmesh.agent.tool.impl.WriteFileParams(
+                    path = path,
+                    content = content,
+                    createDirectories = createDirectories
+                )
+                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.WRITE_FILE, params)
+                result.toJsToolResult()
+            } catch (e: Exception) {
+                JsToolResult(
+                    success = false,
+                    output = "",
+                    errorMessage = e.message ?: "Unknown error",
+                    metadata = emptyMap()
+                )
+            }
+        }
+    }
+
+    /**
+     * Execute glob tool
+     */
+    @JsName("glob")
+    fun glob(pattern: String, path: String = ".", includeFileInfo: Boolean = false): Promise<JsToolResult> {
+        return GlobalScope.promise {
+            try {
+                val params = cc.unitmesh.agent.tool.impl.GlobParams(
+                    pattern = pattern,
+                    path = path,
+                    includeFileInfo = includeFileInfo
+                )
+                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.GLOB, params)
+                result.toJsToolResult()
+            } catch (e: Exception) {
+                JsToolResult(
+                    success = false,
+                    output = "",
+                    errorMessage = e.message ?: "Unknown error",
+                    metadata = emptyMap()
+                )
+            }
+        }
+    }
+
+    /**
+     * Execute grep tool
+     */
+    @JsName("grep")
+    fun grep(
+        pattern: String,
+        path: String = ".",
+        include: String? = null,
+        exclude: String? = null,
+        recursive: Boolean = true,
+        caseSensitive: Boolean = true
+    ): Promise<JsToolResult> {
+        return GlobalScope.promise {
+            try {
+                val params = cc.unitmesh.agent.tool.impl.GrepParams(
+                    pattern = pattern,
+                    path = path,
+                    include = include,
+                    exclude = exclude,
+                    recursive = recursive,
+                    caseSensitive = caseSensitive
+                )
+                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.GREP, params)
+                result.toJsToolResult()
+            } catch (e: Exception) {
+                JsToolResult(
+                    success = false,
+                    output = "",
+                    errorMessage = e.message ?: "Unknown error",
+                    metadata = emptyMap()
+                )
+            }
+        }
+    }
+
+    /**
+     * Execute shell tool
+     */
+    @JsName("shell")
+    fun shell(
+        command: String,
+        workingDirectory: String? = null,
+        timeoutMs: Double = 30000.0
+    ): Promise<JsToolResult> {
+        return GlobalScope.promise {
+            try {
+                val params = cc.unitmesh.agent.tool.impl.ShellParams(
+                    command = command,
+                    workingDirectory = workingDirectory,
+                    timeoutMs = timeoutMs.toLong()
+                )
+                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.SHELL, params)
+                result.toJsToolResult()
+            } catch (e: Exception) {
+                JsToolResult(
+                    success = false,
+                    output = "",
+                    errorMessage = e.message ?: "Unknown error",
+                    metadata = emptyMap()
+                )
+            }
+        }
+    }
+
+    /**
+     * Get list of available tools
+     */
+    @JsName("getAvailableTools")
+    fun getAvailableTools(): Array<String> {
+        return registry.getToolNames().toTypedArray()
+    }
+
+    /**
+     * Get all tools as agent tools
+     */
+    @JsName("getAgentTools")
+    fun getAgentTools(): Array<JsAgentTool> {
+        return registry.getAgentTools().map { tool ->
+            JsAgentTool(
+                name = tool.name,
+                description = tool.description,
+                example = tool.example
+            )
+        }.toTypedArray()
+    }
+}
+
+/**
+ * JavaScript-friendly tool result
+ */
+@JsExport
+data class JsToolResult(
+    val success: Boolean,
+    val output: String,
+    val errorMessage: String?,
+    val metadata: Map<String, String>
+)
+
+/**
+ * JavaScript-friendly agent tool
+ */
+@JsExport
+data class JsAgentTool(
+    val name: String,
+    val description: String,
+    val example: String
+)
+
+/**
+ * Extension to convert ToolResult to JsToolResult
+ */
+private fun cc.unitmesh.agent.tool.ToolResult.toJsToolResult(): JsToolResult {
+    return when (this) {
+        is cc.unitmesh.agent.tool.ToolResult.Success -> JsToolResult(
+            success = true,
+            output = this.content,
+            errorMessage = null,
+            metadata = this.metadata
+        )
+        is cc.unitmesh.agent.tool.ToolResult.Error -> JsToolResult(
+            success = false,
+            output = "",
+            errorMessage = this.message,
+            metadata = emptyMap()
+        )
+    }
+}
 

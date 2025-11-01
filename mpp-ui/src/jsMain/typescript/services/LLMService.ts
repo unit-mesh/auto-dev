@@ -95,8 +95,67 @@ export class LLMService {
     } catch (error) {
       // Remove the user message from history if request failed
       this.chatHistory.pop();
-      
+
       console.error('Error in streamMessage:', error);
+      throw this.formatLLMError(error);
+    }
+  }
+
+  /**
+   * Send a message with system prompt and receive streaming response
+   */
+  async streamMessageWithSystem(
+    systemPrompt: string,
+    userMessage: string,
+    onChunk: (chunk: string) => void
+  ): Promise<void> {
+    // Add system message if this is the first message
+    if (this.chatHistory.length === 0) {
+      this.chatHistory.push({ role: 'system', content: systemPrompt });
+    }
+
+    // Add user message to history
+    this.chatHistory.push({ role: 'user', content: userMessage });
+
+    try {
+      // Convert history to JsMessage format (exclude current message)
+      const historyMessages = this.chatHistory.slice(0, -1).map(msg =>
+        new JsMessage(msg.role, msg.content)
+      );
+
+      let fullResponse = '';
+      let streamError: any = null;
+
+      // Call streamPrompt with callbacks - it now returns a Promise
+      await this.koogService.streamPrompt(
+        userMessage,
+        historyMessages,
+        (chunk: string) => {
+          fullResponse += chunk;
+          onChunk(chunk);
+        },
+        (error: any) => {
+          // Capture error from error callback
+          streamError = error;
+        },
+        () => {
+          // Streaming completed
+        }
+      );
+
+      // If error callback was called, throw the error
+      if (streamError) {
+        throw this.formatLLMError(streamError);
+      }
+
+      // Add assistant response to history
+      this.chatHistory.push({ role: 'assistant', content: fullResponse });
+
+    } catch (error) {
+      // Remove the user message from history if request failed
+      this.chatHistory.pop();
+
+      console.error('Error in streamMessageWithSystem:', error);
       throw this.formatLLMError(error);
     }
   }
