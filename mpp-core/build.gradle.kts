@@ -12,6 +12,8 @@ repositories {
     mavenCentral()
 }
 
+version = "0.1.2"
+
 sqldelight {
     databases {
         create("DevInsDatabase") {
@@ -153,7 +155,7 @@ npmPublish {
         named("js") {
             packageJson {
                 name = "@autodev/mpp-core"
-                version = "0.1.1"
+                version = project.version.toString()
                 main = "autodev-mpp-core.js"
                 types = "autodev-mpp-core.d.ts"
                 description.set("AutoDev Multiplatform Core - AI Agent and DevIns Compiler")
