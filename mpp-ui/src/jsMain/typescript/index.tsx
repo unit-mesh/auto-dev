@@ -85,7 +85,7 @@ async function main() {
   program
     .name('autodev')
     .description('AutoDev CLI - AI-powered development assistant')
-    .version('0.1.1');
+    .version('0.1.3');
 
   // Interactive mode (default)
   program
