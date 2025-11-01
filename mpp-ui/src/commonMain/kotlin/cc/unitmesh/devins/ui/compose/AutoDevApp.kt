@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
-import cc.unitmesh.devins.db.ModelConfigRepository
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.devins.ui.compose.chat.*
@@ -19,6 +18,7 @@ import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
+import cc.unitmesh.devins.ui.config.ConfigManager
 import kotlinx.coroutines.launch
 import cc.unitmesh.devins.ui.platform.createFileChooser
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
@@ -40,7 +40,6 @@ fun AutoDevApp() {
     }
     
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
-    var allModelConfigs by remember { mutableStateOf<List<ModelConfig>>(emptyList()) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var showConfigWarning by remember { mutableStateOf(false) }
     var showDebugDialog by remember { mutableStateOf(false) }
@@ -73,25 +72,18 @@ fun AutoDevApp() {
         }
     }
     
-    val repository = remember {
-        ModelConfigRepository.getInstance()
-    }
-    
+    // Load configuration from file
     LaunchedEffect(Unit) {
         try {
-            val savedConfigs = repository.getAllConfigs()
+            val wrapper = ConfigManager.load()
+            val activeConfig = wrapper.getActiveModelConfig()
 
-            // 保存所有配置到状态
-            allModelConfigs = savedConfigs
-
-            if (savedConfigs.isNotEmpty()) {
-                val defaultConfig = repository.getDefaultConfig()
-                val configToUse = defaultConfig ?: savedConfigs.first()
-
-                currentModelConfig = configToUse
-                if (configToUse.isValid()) {
-                    llmService = KoogLLMService.create(configToUse)
-                }
+            if (activeConfig != null && activeConfig.isValid()) {
+                currentModelConfig = activeConfig
+                llmService = KoogLLMService.create(activeConfig)
+                println("✅ 加载配置: ${activeConfig.provider.displayName} / ${activeConfig.modelName}")
+            } else {
+                println("⚠️ 未找到有效配置")
             }
         } catch (e: Exception) {
             println("⚠️ 加载配置失败: ${e.message}")
@@ -164,7 +156,6 @@ fun AutoDevApp() {
                 hasHistory = messages.isNotEmpty(),
                 hasDebugInfo = compilerOutput.isNotEmpty(),
                 currentModelConfig = currentModelConfig,
-                availableConfigs = allModelConfigs,
                 selectedAgent = selectedAgent,
                 availableAgents = availableAgents,
                 onOpenDirectory = { openDirectoryChooser() },
@@ -226,8 +217,6 @@ fun AutoDevApp() {
                         callbacks = callbacks,
                         completionManager = currentWorkspace.completionManager,
                         isCompactMode = true,
-                        initialModelConfig = currentModelConfig,
-                        availableConfigs = allModelConfigs,
                         onModelConfigChange = { config ->
                             currentModelConfig = config
                             if (config.isValid()) {
@@ -261,22 +250,12 @@ fun AutoDevApp() {
                         placeholder = "Type your message...",
                         callbacks = callbacks,
                         completionManager = currentWorkspace.completionManager,
-                        initialModelConfig = currentModelConfig,
-                        availableConfigs = allModelConfigs,
                         onModelConfigChange = { config ->
                             currentModelConfig = config
                             if (config.isValid()) {
                                 try {
                                     llmService = KoogLLMService.create(config)
-                                    scope.launch {
-                                        try {
-                                            repository.saveConfig(config, setAsDefault = true)
-                                            allModelConfigs = repository.getAllConfigs()
-                                            println("✅ 模型配置已保存")
-                                        } catch (e: Exception) {
-                                            println("⚠️ 保存配置失败: ${e.message}")
-                                        }
-                                    }
+                                    println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
                                 } catch (e: Exception) {
                                     println("❌ 配置 LLM 服务失败: ${e.message}")
                                     llmService = null
@@ -300,15 +279,7 @@ fun AutoDevApp() {
                     if (newConfig.isValid()) {
                         try {
                             llmService = KoogLLMService.create(newConfig)
-                            scope.launch {
-                                try {
-                                    repository.saveConfig(newConfig, setAsDefault = true)
-                                    allModelConfigs = repository.getAllConfigs()
-                                    println("✅ 模型配置已保存")
-                                } catch (e: Exception) {
-                                    println("⚠️ 保存配置失败: ${e.message}")
-                                }
-                            }
+                            println("✅ 模型配置已保存")
                         } catch (e: Exception) {
                             println("❌ 配置 LLM 服务失败: ${e.message}")
                             llmService = null

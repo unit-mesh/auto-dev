@@ -33,6 +33,8 @@ import kotlinx.coroutines.launch
 /**
  * DevIn 编辑器输入组件
  * 完整的输入界面，包含底部工具栏
+ * 
+ * Model configuration is now managed internally by ModelSelector via ConfigManager.
  */
 @Composable
 fun DevInEditorInput(
@@ -42,9 +44,7 @@ fun DevInEditorInput(
     completionManager: CompletionManager? = null,
     isCompactMode: Boolean = false,
     modifier: Modifier = Modifier,
-    // Desktop 相关参数（移动端不使用，会忽略）
-    initialModelConfig: ModelConfig? = null,
-    availableConfigs: List<ModelConfig> = emptyList(),
+    // Model config change callback
     onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
@@ -415,8 +415,6 @@ fun DevInEditorInput(
                         }
                     },
                     selectedAgent = "Default",  // TODO: 从 state 获取
-                    initialModelConfig = initialModelConfig,
-                    availableConfigs = availableConfigs,
                     onModelConfigChange = onModelConfigChange
                 )
             }

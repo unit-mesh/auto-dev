@@ -22,7 +22,6 @@ fun TopBarMenu(
     hasHistory: Boolean,
     hasDebugInfo: Boolean,
     currentModelConfig: ModelConfig?,
-    availableConfigs: List<ModelConfig>,
     selectedAgent: String,
     availableAgents: List<String>,
     onOpenDirectory: () -> Unit,

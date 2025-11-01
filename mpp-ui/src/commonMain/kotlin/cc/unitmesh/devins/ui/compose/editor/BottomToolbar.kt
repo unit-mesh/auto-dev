@@ -16,6 +16,8 @@ import cc.unitmesh.llm.ModelConfig
  * 布局：Agent - Model Selector - @ Symbol - / Symbol - Send Button
  * - 移动端：通过顶部菜单控制 Agent，底部显示当前选择
  * - Desktop：完整显示所有功能
+ * 
+ * ModelSelector now loads configs from ConfigManager internally.
  */
 @Composable
 fun BottomToolbar(
@@ -25,8 +27,6 @@ fun BottomToolbar(
     onSlashClick: () -> Unit = {},
     selectedAgent: String = "Default",
     modifier: Modifier = Modifier,
-    initialModelConfig: ModelConfig? = null,
-    availableConfigs: List<ModelConfig> = emptyList(),
     onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
     val isAndroid = Platform.isAndroid
@@ -71,8 +71,6 @@ fun BottomToolbar(
             // Model Selector（Desktop 或移动端都显示）
             if (!isAndroid) {
                 ModelSelector(
-                    initialConfig = initialModelConfig,
-                    availableConfigs = availableConfigs,
                     onConfigChange = onModelConfigChange
                 )
             }

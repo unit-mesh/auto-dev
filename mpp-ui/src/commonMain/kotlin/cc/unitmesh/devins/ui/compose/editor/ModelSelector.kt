@@ -12,33 +12,54 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.devins.ui.config.NamedModelConfig
+import kotlinx.coroutines.launch
 
 /**
  * 模型选择器
  * Provides a UI for selecting and configuring LLM models
  * 
- * @param initialConfig Initial model configuration (from database or previous session)
- * @param availableConfigs List of all saved configurations from database
+ * Loads configurations from ~/.autodev/config.yaml using ConfigManager.
+ * No longer depends on database or external config lists.
+ * 
  * @param onConfigChange Callback when model configuration changes
  */
 @Composable
 fun ModelSelector(
-    initialConfig: ModelConfig? = null,
-    availableConfigs: List<ModelConfig> = emptyList(),
     onConfigChange: (ModelConfig) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showConfigDialog by remember { mutableStateOf(false) }
     
-    // 当前配置：如果有 initialConfig 且有效则使用，否则为 null
-    var currentConfig by remember(initialConfig) { 
-        mutableStateOf(if (initialConfig?.isValid() == true) initialConfig else null)
+    // Load configurations from file
+    var availableConfigs by remember { mutableStateOf<List<NamedModelConfig>>(emptyList()) }
+    var currentConfigName by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    
+    // Load initial configuration
+    LaunchedEffect(Unit) {
+        try {
+            val wrapper = ConfigManager.load()
+            availableConfigs = wrapper.getAllConfigs()
+            currentConfigName = wrapper.getActiveName()
+            
+            // Notify parent of initial config
+            wrapper.getActiveModelConfig()?.let { onConfigChange(it) }
+        } catch (e: Exception) {
+            println("Failed to load configs: ${e.message}")
+        }
+    }
+    
+    // Get current config
+    val currentConfig = remember(currentConfigName, availableConfigs) {
+        availableConfigs.find { it.name == currentConfigName }
     }
 
     // 显示文本：如果有配置显示配置信息，否则显示提示
     val displayText = remember(currentConfig) {
-        if (currentConfig != null && currentConfig!!.isValid()) {
-            "${currentConfig!!.provider.displayName} / ${currentConfig!!.modelName}"
+        if (currentConfig != null) {
+            "${currentConfig.provider} / ${currentConfig.model}"
         } else {
             "⚙️ Configure Model"
         }
@@ -74,18 +95,25 @@ fun ModelSelector(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = "${config.provider.displayName} / ${config.modelName}",
+                            text = "${config.provider} / ${config.model}",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     },
                     onClick = {
-                        currentConfig = config
-                        onConfigChange(config)
-                        expanded = false
+                        scope.launch {
+                            try {
+                                ConfigManager.setActive(config.name)
+                                currentConfigName = config.name
+                                onConfigChange(config.toModelConfig())
+                                expanded = false
+                            } catch (e: Exception) {
+                                println("Failed to set active config: ${e.message}")
+                            }
+                        }
                     },
                     trailingIcon = {
                         // 如果是当前选中的配置，显示对勾
-                        if (config == currentConfig) {
+                        if (config.name == currentConfigName) {
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "Selected",
@@ -134,14 +162,35 @@ fun ModelSelector(
 
     if (showConfigDialog) {
         ModelConfigDialog(
-            currentConfig = currentConfig ?: ModelConfig(),
+            currentConfig = currentConfig?.toModelConfig() ?: ModelConfig(),
             onDismiss = { showConfigDialog = false },
-            onSave = { newConfig ->
-                currentConfig = newConfig
-                
-                // 通知父组件配置已更改（父组件负责保存到数据库）
-                onConfigChange(newConfig)
-                showConfigDialog = false
+            onSave = { newModelConfig ->
+                scope.launch {
+                    try {
+                        // Prompt for name if it's a new configuration
+                        val configName = currentConfigName ?: "default"
+                        
+                        // Convert ModelConfig to NamedModelConfig
+                        val namedConfig = NamedModelConfig.fromModelConfig(
+                            name = configName,
+                            config = newModelConfig
+                        )
+                        
+                        // Save to file
+                        ConfigManager.saveConfig(namedConfig, setActive = true)
+                        
+                        // Reload configs
+                        val wrapper = ConfigManager.load()
+                        availableConfigs = wrapper.getAllConfigs()
+                        currentConfigName = wrapper.getActiveName()
+                        
+                        // Notify parent
+                        onConfigChange(newModelConfig)
+                        showConfigDialog = false
+                    } catch (e: Exception) {
+                        println("Failed to save config: ${e.message}")
+                    }
+                }
             }
         )
     }
