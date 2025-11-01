@@ -23,8 +23,10 @@
 
 ## AutoDev CLI Quick Test
 
-1. Build MPP Core:
-    - `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
-2. Build and run MPP CLI:
-    - `cd mpp-ui && npm run build:ts && node dist/index.js`
+- Test scripts for CLI put at mpp-ui/test-scripts
+- Test CLI
+  1. Build MPP Core:
+      - `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
+  2. Build and run MPP CLI:
+      - `cd mpp-ui && npm run build:ts && node dist/index.js`
  
