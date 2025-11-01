@@ -46,7 +46,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":mpp-core"))
-//                implementation(compose.desktop.currentOs)
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material3)
@@ -61,17 +60,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
                 // JSON 处理
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-
-                // Multiplatform Markdown Renderer - using older stable version
-                implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
-                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")
-                
-                // JSON 处理
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-
-//                testImplementation(kotlin("test"))
-//                testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
             }
         }
         
@@ -85,9 +74,12 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
-//                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
                 // Rich text editor for Compose Desktop
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")
+                
+                // Multiplatform Markdown Renderer for JVM
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")
             }
         }
         
@@ -102,6 +94,10 @@ kotlin {
                 implementation("androidx.activity:activity-compose:1.11.0")
                 implementation("androidx.appcompat:appcompat:1.6.1")
                 implementation("androidx.core:core-ktx:1.17.0")
+                
+                // Multiplatform Markdown Renderer for Android
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")
             }
         }
         
