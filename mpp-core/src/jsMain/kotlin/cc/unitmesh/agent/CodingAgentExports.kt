@@ -225,13 +225,15 @@ class JsCodingAgentContextBuilder {
 class JsCodingAgent(
     private val projectPath: String,
     private val llmService: cc.unitmesh.llm.JsKoogLLMService,
-    private val maxIterations: Int = 100
+    private val maxIterations: Int = 100,
+    private val renderer: JsCodingAgentRenderer? = null
 ) {
     // 内部使用 Kotlin 的 CodingAgent
     private val agent: CodingAgent = CodingAgent(
         projectPath = projectPath,
         llmService = llmService.service,  // 访问内部 KoogLLMService
-        maxIterations = maxIterations
+        maxIterations = maxIterations,
+        renderer = if (renderer != null) JsRendererAdapter(renderer) else DefaultCodingAgentRenderer()
     )
 
     /**

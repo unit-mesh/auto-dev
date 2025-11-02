@@ -12,6 +12,7 @@ import { render } from 'ink';
 import { Command } from 'commander';
 import { App } from './ui/App.js';
 import { ConfigManager } from './config/ConfigManager.js';
+import { CliRenderer } from './agents/CliRenderer.js';
 // Use Kotlin CodingAgent instead of TypeScript implementation
 import mppCore from '@autodev/mpp-core';
 import * as path from 'path';
@@ -61,19 +62,23 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       )
     );
 
-    // Create and run Kotlin CodingAgent
+    // Create CLI renderer
+    const renderer = new CliRenderer();
+
+    // Create and run Kotlin CodingAgent with custom renderer
     const agent = new KotlinCC.unitmesh.agent.JsCodingAgent(
       resolvedPath,
       llmService,
-      10 // maxIterations
+      10, // maxIterations
+      renderer // custom renderer
     );
-    
+
     // Create task object
     const taskObj = new KotlinCC.unitmesh.agent.JsAgentTask(
       task,
       resolvedPath
     );
-    
+
     const result = await agent.executeTask(taskObj);
 
     if (!quiet) {

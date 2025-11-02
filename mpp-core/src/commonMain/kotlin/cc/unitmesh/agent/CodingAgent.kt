@@ -11,24 +11,124 @@ import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
+import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.llm.KoogLLMService
 
 /**
+ * Output renderer interface for CodingAgent
+ * Allows customization of output formatting (e.g., CLI vs TUI)
+ */
+interface CodingAgentRenderer {
+    fun renderIterationHeader(current: Int, max: Int)
+    fun renderLLMResponseStart()
+    fun renderLLMResponseChunk(chunk: String)
+    fun renderLLMResponseEnd()
+    fun renderToolCall(toolName: String, paramsStr: String)
+    fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?)
+    fun renderTaskComplete()
+    fun renderFinalResult(success: Boolean, message: String, iterations: Int)
+    fun renderError(message: String)
+    fun renderRepeatWarning(toolName: String, count: Int)
+}
+
+/**
+ * Default console renderer
+ */
+class DefaultCodingAgentRenderer : CodingAgentRenderer {
+    private val reasoningBuffer = StringBuilder()
+    private var isInDevinBlock = false
+
+    override fun renderIterationHeader(current: Int, max: Int) {
+        println("\n[$current/$max] Analyzing and executing...")
+    }
+
+    override fun renderLLMResponseStart() {
+        reasoningBuffer.clear()
+        isInDevinBlock = false
+        print("💭 ")
+    }
+
+    override fun renderLLMResponseChunk(chunk: String) {
+        // Parse chunk to detect devin blocks
+        reasoningBuffer.append(chunk)
+        val text = reasoningBuffer.toString()
+
+        // Check if we're entering or leaving a devin block
+        if (text.contains("<devin>")) {
+            isInDevinBlock = true
+        }
+        if (text.contains("</devin>")) {
+            isInDevinBlock = false
+        }
+
+        // Only print if not in devin block
+        if (!isInDevinBlock && !chunk.contains("<devin>") && !chunk.contains("</devin>")) {
+            print(chunk)
+        }
+    }
+
+    override fun renderLLMResponseEnd() {
+        println("\n")
+    }
+
+    override fun renderToolCall(toolName: String, paramsStr: String) {
+        println("🔧 /$toolName $paramsStr")
+    }
+
+    override fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?) {
+        val icon = if (success) "✓" else "✗"
+        print("   $icon $toolName")
+
+        // Show key result info if available
+        if (success && output != null) {
+            // For read-file, show full content (no truncation) so LLM can see complete file
+            // For other tools, show preview (300 chars)
+            val shouldTruncate = toolName != "read-file"
+            val maxLength = if (shouldTruncate) 300 else Int.MAX_VALUE
+
+            val preview = if (output.length > maxLength) output.take(maxLength) else output
+            if (preview.isNotEmpty() && !preview.startsWith("Successfully")) {
+                print(" → ${preview.replace("\n", " ")}")
+                if (shouldTruncate && output.length > maxLength) print("...")
+            }
+        }
+        println()
+    }
+
+    override fun renderTaskComplete() {
+        println("✓ Task marked as complete\n")
+    }
+
+    override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {
+        val icon = if (success) "✅" else "⚠️ "
+        println("\n$icon $message")
+    }
+
+    override fun renderError(message: String) {
+        println("❌ $message")
+    }
+
+    override fun renderRepeatWarning(toolName: String, count: Int) {
+        println("⚠️  Warning: Tool '$toolName' has been called $count times in a row")
+    }
+}
+
+/**
  * CodingAgent - 自动化编码任务的 MainAgent 实现
- * 
+ *
  * 功能：
  * 1. 分析项目结构
  * 2. 读取和理解代码
  * 3. 根据需求进行代码修改
  * 4. 执行命令和测试
  * 5. 迭代直到任务完成
- * 
+ *
  * 集成的 Tools：
  * - ReadFileTool: 读取文件内容
  * - WriteFileTool: 写入文件
  * - ShellTool: 执行 shell 命令
  * - GlobTool: 文件搜索
- * 
+ *
  * 集成的 SubAgents：
  * - ErrorRecoveryAgent: 命令失败时分析和恢复
  * - LogSummaryAgent: 长输出自动摘要
@@ -36,7 +136,8 @@ import cc.unitmesh.llm.KoogLLMService
 class CodingAgent(
     private val projectPath: String,
     private val llmService: KoogLLMService,
-    maxIterations: Int = 100
+    maxIterations: Int = 100,
+    private val renderer: CodingAgentRenderer = DefaultCodingAgentRenderer()
 ) : MainAgent<AgentTask, ToolResult.AgentResult>(
     AgentDefinition(
         name = "CodingAgent",
@@ -64,18 +165,29 @@ class CodingAgent(
     private val steps = mutableListOf<AgentStep>()
     private val edits = mutableListOf<AgentEdit>()
     private val promptRenderer = CodingAgentPromptRenderer()
-    
+
     // ToolRegistry for managing file/shell tools
     private val toolRegistry = ToolRegistry(
         fileSystem = DefaultToolFileSystem(projectPath = projectPath),
         shellExecutor = DefaultShellExecutor()
     )
-    
+
+    // SubAgents
+    private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
+    private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
+
+    // 上一次恢复结果
+    private var lastRecoveryResult: String? = null
+
+    // 重复操作检测
+    private val recentToolCalls = mutableListOf<String>()
+    private val MAX_REPEAT_COUNT = 3
+
     init {
         // 注册 SubAgents（作为 Tools）
-        registerTool(ErrorRecoveryAgent(projectPath, llmService))
-        registerTool(LogSummaryAgent(llmService, threshold = 2000))
-        
+        registerTool(errorRecoveryAgent)
+        registerTool(logSummaryAgent)
+
         // ToolRegistry 已经在 init 中注册了内置 tools（read-file, write-file, shell, glob）
     }
 
@@ -109,82 +221,137 @@ class CodingAgent(
         resetIteration()
         steps.clear()
         edits.clear()
-        
+
         println("🚀 Starting CodingAgent")
         println("Project: ${task.projectPath}")
         println("Task: ${task.requirement}")
-        
+
         // 主循环
         while (shouldContinue()) {
             incrementIteration()
-            println("\n[$currentIteration/$maxIterations] Analyzing and executing...")
-            
+            renderer.renderIterationHeader(currentIteration, maxIterations)
+
             // 1. 构建上下文
             val context = buildContext(task)
-            
+
             // 2. 生成系统提示
             val systemPrompt = buildSystemPrompt(context)
-            
+
             // 3. 构建用户提示（包含任务和历史）
             val userPrompt = buildUserPrompt(task, steps)
-            
-            // 4. 调用 LLM 获取下一步行动
+
+            // 4. 调用 LLM 获取下一步行动（流式输出）
             val fullPrompt = "$systemPrompt\n\nUser: $userPrompt"
-            val llmResponse = try {
-                llmService.sendPrompt(fullPrompt)
+            val llmResponse = StringBuilder()
+
+            try {
+                renderer.renderLLMResponseStart()
+
+                // 使用流式输出
+                llmService.streamPrompt(
+                    userPrompt = fullPrompt,
+                    fileSystem = EmptyFileSystem(),  // Agent 不需要 DevIns 编译
+                    historyMessages = emptyList(),
+                    compileDevIns = false  // Agent 已经格式化了 prompt
+                ).collect { chunk ->
+                    llmResponse.append(chunk)
+                    renderer.renderLLMResponseChunk(chunk)
+                }
+
+                renderer.renderLLMResponseEnd()
             } catch (e: Exception) {
-                println("❌ LLM call failed: ${e.message}")
+                renderer.renderError("LLM call failed: ${e.message}")
                 break
             }
-            
-            // Display LLM response with code highlighting
-            displayLLMResponse(llmResponse)
-            
+
             // 5. 解析所有行动（DevIns 工具调用）
-            val actions = parseAllActions(llmResponse)
-            
-            // 6. 执行所有行动
+            val actions = parseAllActions(llmResponse.toString())
+
+            // 6. 执行所有行动（逐个执行，而不是一次性执行）
             if (actions.isEmpty()) {
                 println("✓ No actions needed\n")
                 break
             }
-            
+
+            var hasError = false
             for ((index, action) in actions.withIndex()) {
+                val toolName = action.tool ?: "unknown"
+
+                // 格式化参数为字符串
+                val paramsStr = action.params.entries.joinToString(" ") { (key, value) ->
+                    "$key=\"$value\""
+                }
+
+                // 检测重复操作
+                val toolSignature = "$toolName:$paramsStr"
+                recentToolCalls.add(toolSignature)
+                if (recentToolCalls.size > 10) {
+                    recentToolCalls.removeAt(0)
+                }
+
+                // 检查最近是否重复调用同一个工具
+                val repeatCount = recentToolCalls.takeLast(MAX_REPEAT_COUNT).count { it == toolSignature }
+                if (repeatCount >= MAX_REPEAT_COUNT) {
+                    renderer.renderRepeatWarning(toolName, repeatCount)
+                    // 如果是读取文件重复，直接跳过
+                    if (toolName == "read-file") {
+                        println("   Skipping repeated read-file operation")
+                        break
+                    }
+                }
+
+                // 先显示工具调用
+                renderer.renderToolCall(toolName, paramsStr)
+
                 // 执行行动
                 val stepResult = executeAction(action)
                 steps.add(stepResult)
-                
-                // Show compact result
-                val icon = if (stepResult.success) "✓" else "✗"
-                val toolName = action.tool ?: "unknown"
-                print("   $icon $toolName")
-                
-                // Show key result info if available
-                if (stepResult.success && stepResult.result != null) {
-                    val preview = stepResult.result!!.take(60)
-                    if (preview.isNotEmpty() && !preview.startsWith("Successfully")) {
-                        print(" → ${preview.replace("\n", " ")}")
-                        if (stepResult.result!!.length > 60) print("...")
+
+                // 显示工具结果（传递完整输出）
+                renderer.renderToolResult(toolName, stepResult.success, stepResult.result, stepResult.result)
+                println()  // 每个工具执行后换行
+
+                // 如果是 shell 命令失败，自动调用 ErrorRecoveryAgent
+                if (!stepResult.success && toolName == "shell") {
+                    hasError = true
+                    val errorMessage = stepResult.result ?: "Unknown error"
+
+                    // 调用 ErrorRecoveryAgent
+                    val recoveryResult = callErrorRecoveryAgent(
+                        command = action.params["command"] as? String ?: "",
+                        errorMessage = errorMessage
+                    )
+
+                    if (recoveryResult != null) {
+                        lastRecoveryResult = recoveryResult
+                        // 不继续执行后续工具，让 LLM 在下一轮使用恢复建议
+                        break
                     }
                 }
-                println()
             }
-            println()
-            
+
             // 7. 检查是否完成
-            if (isTaskComplete(llmResponse)) {
-                println("✓ Task marked as complete\n")
+            if (isTaskComplete(llmResponse.toString())) {
+                renderer.renderTaskComplete()
+                break
+            }
+
+            // 8. 检查是否陷入循环（连续多次无进展）
+            if (currentIteration > 5 && steps.takeLast(5).all { !it.success || it.result?.contains("already exists") == true }) {
+                renderer.renderError("Agent appears to be stuck. Stopping.")
                 break
             }
         }
-        
+
         val success = steps.any { it.success }
         val message = if (success) {
             "Task completed after $currentIteration iterations"
         } else {
             "Task incomplete after $currentIteration iterations"
         }
-        
+
+        renderer.renderFinalResult(success, message, currentIteration)
+
         return AgentResult(
             success = success,
             message = message,
@@ -199,15 +366,15 @@ class CodingAgent(
     private fun buildUserPrompt(task: AgentTask, history: List<AgentStep>): String {
         val sb = StringBuilder()
         sb.append("Task: ${task.requirement}\n\n")
-        
+
         // 检查是否有恢复计划
         if (lastRecoveryResult != null) {
             sb.append("## Previous Action Failed - Recovery Needed\n\n")
-            sb.append(lastRecoveryResult!!.content)
+            sb.append(lastRecoveryResult!!)
             sb.append("\n\nPlease address the error and continue with the original task.\n\n")
             lastRecoveryResult = null  // 清除恢复结果
         }
-        
+
         // 添加最近的历史（最后3步）
         if (history.isNotEmpty()) {
             val recentSteps = history.takeLast(3)
@@ -215,22 +382,26 @@ class CodingAgent(
             recentSteps.forEach { step ->
                 sb.append("- Step ${step.step}: ${step.action}")
                 if (step.result != null) {
-                    sb.append(" -> ${step.result.take(100)}")
+                    // For read-file, show full content so LLM can see complete file
+                    // For other tools, truncate to 200 chars
+                    val isReadFile = step.action.contains("/read-file")
+                    val maxLength = if (isReadFile) Int.MAX_VALUE else 200
+                    val result = if (step.result.length > maxLength) {
+                        step.result.take(maxLength) + "..."
+                    } else {
+                        step.result
+                    }
+                    sb.append(" -> $result")
                 }
                 sb.append("\n")
             }
             sb.append("\n")
         }
-        
+
         sb.append("What should we do next? Use DevIns tools like /read-file, /write-file, /shell, etc.")
-        
+
         return sb.toString()
     }
-    
-    /**
-     * 上次恢复结果
-     */
-    private var lastRecoveryResult: ToolResult.AgentResult? = null
 
     override fun buildSystemPrompt(context: CodingAgentContext, language: String): String {
         return promptRenderer.render(context, language)
@@ -269,15 +440,15 @@ class CodingAgent(
     }
 
     /**
-     * 解析 LLM 响应中的所有行动
+     * 解析 LLM 响应中的第一个行动（只执行一个工具）
      */
     private fun parseAllActions(llmResponse: String): List<AgentAction> {
         val actions = mutableListOf<AgentAction>()
-        
+
         // 提取所有 <devin> 标签内容
         val devinRegex = Regex("<devin>([\\s\\S]*?)</devin>", RegexOption.MULTILINE)
         val devinMatches = devinRegex.findAll(llmResponse).toList()
-        
+
         if (devinMatches.isEmpty()) {
             // 没有 devin 标签，尝试直接解析
             val action = parseAction(llmResponse)
@@ -286,46 +457,30 @@ class CodingAgent(
             }
             return actions
         }
-        
-        // 解析每个 devin 块中的工具调用
-        for (devinMatch in devinMatches) {
-            val commandText = devinMatch.groupValues[1].trim()
-            
-            // 在每个 devin 块中可能有多个工具调用（用换行分隔）
-            val lines = commandText.lines()
-            var currentTool: String? = null
-            val currentParams = mutableMapOf<String, Any>()
-            
-            for (line in lines) {
-                val trimmed = line.trim()
-                if (trimmed.isEmpty()) continue
-                
-                // 检查是否是工具调用开始
-                if (trimmed.startsWith("/")) {
-                    // 保存上一个工具
-                    if (currentTool != null) {
-                        actions.add(AgentAction("tool", currentTool, currentParams.toMap()))
-                        currentParams.clear()
-                    }
-                    
-                    // 解析新工具
-                    val action = parseAction("<devin>$trimmed</devin>")
-                    if (action.type == "tool") {
-                        currentTool = action.tool
-                        currentParams.putAll(action.params)
-                    }
-                } else if (currentTool != null) {
-                    // 可能是多行参数的延续
-                    // 这里简化处理，跳过
+
+        // 只解析第一个 devin 块中的第一个工具调用
+        val firstDevinMatch = devinMatches.firstOrNull() ?: return actions
+        val commandText = firstDevinMatch.groupValues[1].trim()
+
+        // 在 devin 块中找到第一个工具调用
+        val lines = commandText.lines()
+
+        for (line in lines) {
+            val trimmed = line.trim()
+            if (trimmed.isEmpty()) continue
+
+            // 检查是否是工具调用开始
+            if (trimmed.startsWith("/")) {
+                // 解析这个工具
+                val action = parseAction("<devin>$trimmed</devin>")
+                if (action.type == "tool") {
+                    actions.add(action)
+                    // 只返回第一个工具
+                    return actions
                 }
             }
-            
-            // 添加最后一个工具
-            if (currentTool != null) {
-                actions.add(AgentAction("tool", currentTool, currentParams))
-            }
         }
-        
+
         return actions
     }
     
@@ -628,61 +783,46 @@ class CodingAgent(
     }
 
     /**
-     * Display LLM response with better formatting using CodeFence parser
+     * 调用 ErrorRecoveryAgent 来分析和恢复错误
      */
-    private fun displayLLMResponse(response: String) {
-        println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        
-        // Parse all code fences (including devin blocks)
-        val codeFences = cc.unitmesh.devins.parser.CodeFence.parseAll(response)
-        
-        var hasDevinBlocks = false
-        val reasoningParts = mutableListOf<String>()
-        
-        for (fence in codeFences) {
-            when (fence.languageId) {
-                "devin" -> {
-                    hasDevinBlocks = true
-                    // Display tool call in a compact format
-                    val firstLine = fence.text.lines().first()
-                    println("🔧 $firstLine")
-                }
-                "markdown" -> {
-                    // Collect reasoning text
-                    reasoningParts.add(fence.text)
-                }
+    private suspend fun callErrorRecoveryAgent(command: String, errorMessage: String): String? {
+        println("\n════════════════════════════════════════════════════════")
+        println("   🔧 ACTIVATING ERROR RECOVERY SUBAGENT")
+        println("════════════════════════════════════════════════════════\n")
+
+        return try {
+            val input = mapOf(
+                "command" to command,
+                "errorMessage" to errorMessage,
+                "exitCode" to 1
+            )
+
+            val result = errorRecoveryAgent.run(input) { progress ->
+                println("   $progress")
             }
-        }
-        
-        // Display reasoning at the top if we have tool calls
-        if (hasDevinBlocks && reasoningParts.isNotEmpty()) {
-            val reasoning = reasoningParts.joinToString(" ").trim()
-            if (reasoning.isNotEmpty()) {
-                // Show first sentence only
-                val firstSentence = reasoning.split(Regex("[.!?]")).firstOrNull()?.trim() ?: ""
-                if (firstSentence.isNotEmpty() && firstSentence.length > 10) {
-                    val display = if (firstSentence.length > 100) {
-                        firstSentence.take(100) + "..."
+
+            when (result) {
+                is ToolResult.AgentResult -> {
+                    if (result.success) {
+                        println("\n✓ Error Recovery completed")
+                        println("Suggestion: ${result.content}\n")
+                        result.content
                     } else {
-                        firstSentence
+                        println("\n✗ Error Recovery failed: ${result.content}\n")
+                        null
                     }
-                    println("💭 $display")
+                }
+                else -> {
+                    println("\n✗ Unexpected result type from ErrorRecoveryAgent\n")
+                    null
                 }
             }
-        } else if (reasoningParts.isNotEmpty()) {
-            // No tool calls, just show brief reasoning
-            val reasoning = reasoningParts.joinToString(" ").trim()
-            val preview = if (reasoning.length > 120) {
-                reasoning.take(120) + "..."
-            } else {
-                reasoning
-            }
-            println("💭 $preview")
+        } catch (e: Exception) {
+            println("\n✗ Error Recovery failed: ${e.message}\n")
+            null
         }
-        
-        println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
     }
-    
+
     /**
      * 检查任务是否完成
      */
@@ -696,7 +836,7 @@ class CodingAgent(
             "all done",
             "finished"
         )
-        
+
         return completeKeywords.any { keyword ->
             llmResponse.contains(keyword, ignoreCase = true)
         }

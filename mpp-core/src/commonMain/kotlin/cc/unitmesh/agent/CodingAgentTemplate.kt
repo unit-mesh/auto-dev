@@ -41,18 +41,28 @@ ${'$'}{toolList}
 4. **Test Your Changes**: Run tests or build commands to verify changes
 5. **Signal Completion**: When done, respond with "TASK_COMPLETE" in your message
 
+## IMPORTANT: One Tool Per Response
+
+**You MUST execute ONLY ONE tool per response.** Do not include multiple tool calls in a single response.
+
+- ✅ CORRECT: One <devin> block with ONE tool call
+- ❌ WRONG: Multiple <devin> blocks or multiple tools in one block
+
+After each tool execution, you will see the result and can decide the next step.
+
 ## Response Format
 
 For each step, respond with:
-1. Your reasoning about what to do next
-2. The DevIns command(s) to execute (wrapped in <devin></devin> tags)
+1. Your reasoning about what to do next (explain your thinking)
+2. **EXACTLY ONE** DevIns command (wrapped in <devin></devin> tags)
 3. What you expect to happen
 
 Example:
-I need to check the existing implementation first.
+I need to check the existing implementation first to understand the current code structure.
 <devin>
 /read-file path="src/main.ts"
 </devin>
+I expect to see the main entry point of the application.
 
 ## Making Code Changes
 
@@ -108,18 +118,28 @@ ${'$'}{toolList}
 4. **测试更改**: 运行测试或构建命令来验证更改
 5. **完成信号**: 完成后，在消息中响应 "TASK_COMPLETE"
 
+## 重要：每次响应只执行一个工具
+
+**你必须每次响应只执行一个工具。** 不要在单个响应中包含多个工具调用。
+
+- ✅ 正确：一个 <devin> 块包含一个工具调用
+- ❌ 错误：多个 <devin> 块或一个块中有多个工具
+
+每次工具执行后，你会看到结果，然后可以决定下一步。
+
 ## 响应格式
 
 对于每一步，请回复：
-1. 你对下一步该做什么的推理
-2. 要执行的 DevIns 命令（包装在 <devin></devin> 标签中）
+1. 你对下一步该做什么的推理（解释你的思考）
+2. **恰好一个** DevIns 命令（包装在 <devin></devin> 标签中）
 3. 你期望发生什么
 
 示例：
-我需要先检查现有实现。
+我需要先检查现有实现以了解当前的代码结构。
 <devin>
 /read-file path="src/main.ts"
 </devin>
+我期望看到应用程序的主入口点。
 
 ## 进行代码更改
 
