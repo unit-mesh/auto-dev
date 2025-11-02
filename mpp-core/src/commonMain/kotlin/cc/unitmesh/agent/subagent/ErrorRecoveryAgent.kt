@@ -6,6 +6,7 @@ import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.platform.GitOperations
+import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -16,6 +17,8 @@ import kotlinx.serialization.json.Json
  * 分析命令失败原因并提供恢复方案
  * 从 TypeScript 版本移植
  * 
+ * 作为 Tool，可以被任何 Agent 调用
+ * 
  * 跨平台支持：
  * - JVM: 完整支持 git 操作
  * - Android/JS/Wasm: 不支持 git，仅分析错误消息
@@ -23,7 +26,7 @@ import kotlinx.serialization.json.Json
 class ErrorRecoveryAgent(
     private val projectPath: String,
     private val llmService: KoogLLMService
-) : SubAgent<ErrorContext, RecoveryResult>(
+) : SubAgent<ErrorContext, ToolResult.AgentResult>(
     definition = createDefinition()
 ) {
     private val gitOps = GitOperations(projectPath)
@@ -45,7 +48,7 @@ class ErrorRecoveryAgent(
     override suspend fun execute(
         input: ErrorContext,
         onProgress: (String) -> Unit
-    ): RecoveryResult {
+    ): ToolResult.AgentResult {
         onProgress("🔧 Error Recovery SubAgent")
         onProgress("Command: ${input.command}")
         onProgress("Error: ${input.errorMessage.take(80)}...")
@@ -73,29 +76,47 @@ class ErrorRecoveryAgent(
 
         // Step 4: Ask LLM for fix
         onProgress("🤖 Analyzing error with AI...")
-        val analysis = askLLMForFix(context)
+        val recovery = askLLMForFix(context)
 
         onProgress("✓ Analysis complete")
-        return analysis
+        
+        // Convert RecoveryResult to ToolResult.AgentResult
+        return ToolResult.AgentResult(
+            success = recovery.success,
+            content = formatRecovery(recovery),
+            metadata = mapOf(
+                "shouldRetry" to recovery.shouldRetry.toString(),
+                "shouldAbort" to recovery.shouldAbort.toString(),
+                "suggestedActionsCount" to recovery.suggestedActions.size.toString(),
+                "hasRecoveryCommands" to (recovery.recoveryCommands != null).toString()
+            )
+        )
     }
 
-    override fun formatOutput(output: RecoveryResult): String {
+    override fun formatOutput(output: ToolResult.AgentResult): String {
+        return output.content
+    }
+    
+    /**
+     * 格式化恢复结果
+     */
+    private fun formatRecovery(recovery: RecoveryResult): String {
         return buildString {
             appendLine("📋 Analysis:")
-            appendLine("   ${output.analysis}")
+            appendLine("   ${recovery.analysis}")
 
-            if (output.suggestedActions.isNotEmpty()) {
+            if (recovery.suggestedActions.isNotEmpty()) {
                 appendLine()
                 appendLine("💡 Suggested Actions:")
-                output.suggestedActions.forEachIndexed { index, action ->
+                recovery.suggestedActions.forEachIndexed { index, action ->
                     appendLine("   ${index + 1}. $action")
                 }
             }
 
-            if (output.recoveryCommands != null && output.recoveryCommands.isNotEmpty()) {
+            if (recovery.recoveryCommands != null && recovery.recoveryCommands.isNotEmpty()) {
                 appendLine()
                 appendLine("🔧 Recovery Commands:")
-                output.recoveryCommands.forEach { cmd ->
+                recovery.recoveryCommands.forEach { cmd ->
                     appendLine("   $ $cmd")
                 }
             }
@@ -339,7 +360,7 @@ data class ErrorContext(
 )
 
 /**
- * 恢复结果
+ * 恢复结果 - 内部数据类
  */
 @Serializable
 data class RecoveryResult(
@@ -363,4 +384,3 @@ private data class RecoveryResultJson(
     val shouldRetry: Boolean? = null,
     val shouldAbort: Boolean? = null
 )
-

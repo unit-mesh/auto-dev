@@ -5,6 +5,7 @@ import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
+import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -18,7 +19,7 @@ import kotlinx.serialization.json.Json
 class LogSummaryAgent(
     private val llmService: KoogLLMService,
     private val threshold: Int = 2000
-) : SubAgent<LogSummaryContext, LogSummaryResult>(
+) : SubAgent<LogSummaryContext, ToolResult.AgentResult>(
     definition = createDefinition()
 ) {
     private val json = Json {
@@ -43,7 +44,7 @@ class LogSummaryAgent(
     override suspend fun execute(
         input: LogSummaryContext,
         onProgress: (String) -> Unit
-    ): LogSummaryResult {
+    ): ToolResult.AgentResult {
         onProgress("Starting log analysis...")
 
         // Quick heuristic analysis first
@@ -53,7 +54,7 @@ class LogSummaryAgent(
         // Build prompt for AI analysis
         val prompt = buildAnalysisPrompt(input, heuristics)
 
-        return try {
+        val summary = try {
             val aiResponse = llmService.sendPrompt(
                 "${getSystemPrompt()}\n\n$prompt"
             )
@@ -64,9 +65,28 @@ class LogSummaryAgent(
             onProgress("AI analysis failed, using heuristics")
             heuristicFallback(input, heuristics)
         }
+        
+        // Convert LogSummaryResult to ToolResult.AgentResult
+        return ToolResult.AgentResult(
+            success = summary.success,
+            content = formatSummary(summary),
+            metadata = mapOf(
+                "keyPointsCount" to summary.keyPoints.size.toString(),
+                "errorsCount" to summary.errors.size.toString(),
+                "warningsCount" to summary.warnings.size.toString(),
+                "hasStatistics" to (summary.statistics != null).toString()
+            )
+        )
     }
 
-    override fun formatOutput(output: LogSummaryResult): String {
+    override fun formatOutput(output: ToolResult.AgentResult): String {
+        return output.content
+    }
+    
+    /**
+     * 格式化摘要结果
+     */
+    private fun formatSummary(output: LogSummaryResult): String {
         return buildString {
             appendLine("📊 Summary: ${output.summary}")
 

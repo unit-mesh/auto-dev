@@ -1,76 +1,43 @@
 package cc.unitmesh.agent.core
 
 import cc.unitmesh.agent.model.AgentDefinition
+import cc.unitmesh.agent.tool.ToolResult
 
 /**
- * SubAgent 抽象基类
+ * SubAgent - 用于处理子任务的 Agent
  * 
- * SubAgent 是独立的执行单元，具有：
- * 1. 独立的 LLM 会话上下文
- * 2. 独立的工具权限控制
- * 3. 独立的超时和重试策略
- * 4. 结构化的输入输出
+ * SubAgent 继承自 Agent，专门用于处理特定的子任务，例如：
+ * - ErrorRecoveryAgent: 分析和修复错误
+ * - LogSummaryAgent: 总结长日志输出
+ * - CodeReviewAgent: 代码审查
+ * - TestGenerationAgent: 测试生成
  * 
- * 参考 Gemini CLI 的 AgentExecutor 设计
+ * SubAgent 的特点：
+ * 1. 聚焦于单一职责
+ * 2. 可被 MainAgent 当作 Tool 调用
+ * 3. 拥有独立的 LLM 上下文
+ * 4. 输入输出结构化
+ * 5. 本身就是一个 Tool，可以被任何 Agent 使用
+ * 
+ * 参考 Gemini CLI 的 SubagentToolWrapper 设计
  */
-abstract class SubAgent<TInput, TOutput>(
-    val definition: AgentDefinition
-) {
+abstract class SubAgent<TInput : Any, TOutput : ToolResult>(
+    definition: AgentDefinition
+) : Agent<TInput, TOutput>(definition) {
+    
     /**
-     * 验证输入
+     * SubAgent 的优先级
+     * 用于在多个 SubAgent 同时触发时决定执行顺序
+     * 数值越小，优先级越高
+     */
+    open val priority: Int = 100
+
+    /**
+     * 检查是否应该触发此 SubAgent
      * 
-     * @param input 原始输入数据
-     * @return 验证后的输入对象
-     * @throws IllegalArgumentException 如果输入无效
+     * @param context 当前上下文
+     * @return 是否应该执行
      */
-    abstract fun validateInput(input: Map<String, Any>): TInput
-
-    /**
-     * 执行 SubAgent
-     * 
-     * @param input 验证后的输入
-     * @param onProgress 进度回调
-     * @return 结构化输出
-     */
-    abstract suspend fun execute(
-        input: TInput,
-        onProgress: (String) -> Unit = {}
-    ): TOutput
-
-    /**
-     * 格式化输出为字符串（用于展示）
-     * 
-     * @param output 结构化输出
-     * @return 格式化的字符串
-     */
-    abstract fun formatOutput(output: TOutput): String
-
-    /**
-     * 执行 SubAgent（统一入口）
-     * 
-     * @param rawInput 原始输入
-     * @param onProgress 进度回调
-     * @return 格式化后的输出字符串
-     */
-    suspend fun run(
-        rawInput: Map<String, Any>,
-        onProgress: (String) -> Unit = {}
-    ): String {
-        val validatedInput = validateInput(rawInput)
-        val output = execute(validatedInput, onProgress)
-        return formatOutput(output)
-    }
-
-    /**
-     * 获取 Agent 名称
-     */
-    val name: String
-        get() = definition.name
-
-    /**
-     * 获取 Agent 显示名称
-     */
-    val displayName: String
-        get() = definition.displayName
+    open fun shouldTrigger(context: Map<String, Any>): Boolean = true
 }
 

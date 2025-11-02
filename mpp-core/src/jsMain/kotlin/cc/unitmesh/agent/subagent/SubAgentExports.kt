@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.subagent
 
+import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
@@ -10,6 +11,7 @@ import kotlin.js.Promise
  * JS exports for SubAgents
  * 
  * Provides JavaScript-friendly exports for error recovery and log summary agents
+ * Now returns ToolResult.AgentResult directly for better interoperability
  */
 
 /**
@@ -33,30 +35,6 @@ data class JsErrorContext(
 }
 
 /**
- * JS-friendly RecoveryResult
- */
-@JsExport
-data class JsRecoveryResult(
-    val success: Boolean,
-    val analysis: String,
-    val suggestedActions: Array<String>,
-    val recoveryCommands: Array<String>?,
-    val shouldRetry: Boolean,
-    val shouldAbort: Boolean
-) {
-    companion object {
-        fun fromCommon(result: RecoveryResult): JsRecoveryResult = JsRecoveryResult(
-            success = result.success,
-            analysis = result.analysis,
-            suggestedActions = result.suggestedActions.toTypedArray(),
-            recoveryCommands = result.recoveryCommands?.toTypedArray(),
-            shouldRetry = result.shouldRetry,
-            shouldAbort = result.shouldAbort
-        )
-    }
-}
-
-/**
  * JS-friendly LogSummaryContext
  */
 @JsExport
@@ -75,31 +53,8 @@ data class JsLogSummaryContext(
 }
 
 /**
- * JS-friendly LogSummaryResult
- */
-@JsExport
-data class JsLogSummaryResult(
-    val success: Boolean,
-    val summary: String,
-    val keyPoints: Array<String>,
-    val errors: Array<String>,
-    val warnings: Array<String>,
-    val nextSteps: Array<String>?
-) {
-    companion object {
-        fun fromCommon(result: LogSummaryResult): JsLogSummaryResult = JsLogSummaryResult(
-            success = result.success,
-            summary = result.summary,
-            keyPoints = result.keyPoints.toTypedArray(),
-            errors = result.errors.toTypedArray(),
-            warnings = result.warnings.toTypedArray(),
-            nextSteps = result.nextSteps?.toTypedArray()
-        )
-    }
-}
-
-/**
  * JS-friendly ErrorRecoveryAgent
+ * Returns ToolResult directly
  */
 @JsExport
 class JsErrorRecoveryAgent(
@@ -110,18 +65,19 @@ class JsErrorRecoveryAgent(
     
     /**
      * Analyze and recover from error
+     * Returns a ToolResult with analysis and metadata
      */
-    fun execute(errorContext: JsErrorContext): Promise<JsRecoveryResult> {
+    fun execute(errorContext: JsErrorContext): Promise<ToolResult.AgentResult> {
         return GlobalScope.promise {
             val commonContext = errorContext.toCommon()
-            val result = agent.execute(commonContext) { /* ignore progress */ }
-            JsRecoveryResult.fromCommon(result)
+            agent.execute(commonContext) { /* ignore progress */ }
         }
     }
 }
 
 /**
  * JS-friendly LogSummaryAgent
+ * Returns ToolResult directly
  */
 @JsExport
 class JsLogSummaryAgent(
@@ -132,12 +88,12 @@ class JsLogSummaryAgent(
     
     /**
      * Summarize long output
+     * Returns a ToolResult with summary and metadata
      */
-    fun execute(context: JsLogSummaryContext): Promise<JsLogSummaryResult> {
+    fun execute(context: JsLogSummaryContext): Promise<ToolResult.AgentResult> {
         return GlobalScope.promise {
             val commonContext = context.toCommon()
-            val result = agent.execute(commonContext) { /* ignore progress */ }
-            JsLogSummaryResult.fromCommon(result)
+            agent.execute(commonContext) { /* ignore progress */ }
         }
     }
     

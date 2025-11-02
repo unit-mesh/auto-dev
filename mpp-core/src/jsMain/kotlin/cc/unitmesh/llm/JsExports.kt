@@ -92,6 +92,23 @@ class JsKoogLLMService(config: JsModelConfig) {
         }
     }
     
+    /**
+     * Send a prompt and get complete response (non-streaming)
+     * Simple wrapper for SubAgents that only need basic prompt->response
+     * @param prompt The complete prompt (includes system + user prompt)
+     * @return Promise that resolves to the complete response text
+     */
+    @JsName("sendPrompt")
+    fun sendPrompt(prompt: String): Promise<String> {
+        return GlobalScope.promise {
+            try {
+                service.sendPrompt(prompt)
+            } catch (e: Throwable) {
+                "[Error: ${e.message}]"
+            }
+        }
+    }
+    
     // Note: suspend functions cannot be exported to JS directly
     // They need to be called from Kotlin coroutines
     // JavaScript code should use streamPrompt() instead
@@ -761,6 +778,12 @@ private fun cc.unitmesh.agent.tool.ToolResult.toJsToolResult(): JsToolResult {
             output = "",
             errorMessage = this.message,
             metadata = emptyMap()
+        )
+        is cc.unitmesh.agent.tool.ToolResult.AgentResult -> JsToolResult(
+            success = this.success,
+            output = this.content,
+            errorMessage = if (!this.success) "Agent execution failed" else null,
+            metadata = this.metadata
         )
     }
 }

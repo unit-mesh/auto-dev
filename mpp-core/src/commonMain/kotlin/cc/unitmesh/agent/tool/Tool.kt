@@ -55,18 +55,37 @@ sealed class ToolResult {
 
     @Serializable
     data class Error(val message: String, val errorType: String = "UNKNOWN") : ToolResult()
+    
+    /**
+     * Agent 结果 - 包含结构化数据
+     * 用于 Agent 执行结果，可以携带额外的元数据
+     */
+    @Serializable
+    data class AgentResult(
+        val success: Boolean,
+        val content: String,
+        val metadata: Map<String, String> = emptyMap()
+    ) : ToolResult()
 
-    fun isSuccess(): Boolean = this is Success
-    fun isError(): Boolean = this is Error
+    fun isSuccess(): Boolean = this is Success || (this is AgentResult && this.success)
+    fun isError(): Boolean = this is Error || (this is AgentResult && !this.success)
 
     fun getOutput(): String = when (this) {
         is Success -> content
+        is AgentResult -> content
         is Error -> ""
     }
 
     fun getError(): String = when (this) {
         is Success -> ""
+        is AgentResult -> if (!success) content else ""
         is Error -> message
+    }
+    
+    fun extractMetadata(): Map<String, String> = when (this) {
+        is Success -> metadata
+        is AgentResult -> metadata
+        is Error -> emptyMap()
     }
 }
 

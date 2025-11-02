@@ -17,15 +17,26 @@ import * as os from 'os';
 import type { LLMConfig } from '../config/ConfigManager.js';
 import { LLMService } from '../services/LLMService.js';
 import { OutputFormatter } from '../utils/outputFormatter.js';
-import { ErrorRecoveryAgent, RecoveryResult } from './ErrorRecoveryAgent.js';
-import { LogSummaryAgent, LogSummaryResult } from './LogSummaryAgent.js';
 
-// Import mpp-core
+// Import mpp-core (Kotlin Multiplatform)
 // @ts-ignore
 import MppCore from '@autodev/mpp-core';
 
-const { JsCompletionManager, JsToolRegistry } = MppCore.cc.unitmesh.llm;
+const { JsCompletionManager, JsToolRegistry, JsKoogLLMService, JsModelConfig } = MppCore.cc.unitmesh.llm;
 const { JsCodingAgentContextBuilder, JsCodingAgentPromptRenderer } = MppCore.cc.unitmesh.agent;
+const { 
+  JsErrorRecoveryAgent, 
+  JsLogSummaryAgent, 
+  JsErrorContext, 
+  JsLogSummaryContext
+} = MppCore.cc.unitmesh.agent.subagent;
+
+// Type for mpp-core AgentResult (ToolResult.AgentResult)
+interface KotlinAgentResult {
+  success: boolean;
+  content: string;
+  metadata: { [key: string]: string };
+}
 
 export interface AgentTask {
   requirement: string;
@@ -111,10 +122,11 @@ export class CodingAgentService {
   private toolRegistry: any;
   private promptRenderer: any;
   private formatter: OutputFormatter;
-  private errorRecoveryAgent: ErrorRecoveryAgent;
-  private logSummaryAgent: LogSummaryAgent;
+  private errorRecoveryAgent: any; // JsErrorRecoveryAgent from mpp-core
+  private logSummaryAgent: any; // JsLogSummaryAgent from mpp-core
+  private koogLLMService: any; // JsKoogLLMService for Kotlin SubAgents
   private startTime: number = 0;
-  private lastRecoveryResult: RecoveryResult | null = null;
+  private lastRecoveryResult: KotlinAgentResult | null = null;
   private config: LLMConfig;
   private isSimpleTaskMode: boolean = false;
 
@@ -126,8 +138,21 @@ export class CodingAgentService {
     this.toolRegistry = new JsToolRegistry(this.projectPath);
     this.promptRenderer = new JsCodingAgentPromptRenderer();
     this.formatter = new OutputFormatter(quiet);
-    this.errorRecoveryAgent = new ErrorRecoveryAgent(this.projectPath, config);
-    this.logSummaryAgent = new LogSummaryAgent(config, 2000); // Summarize if output > 2000 chars
+    
+    // Create KoogLLMService for Kotlin SubAgents
+    const modelConfig = new JsModelConfig(
+      config.provider.toUpperCase(), // e.g., "OPENAI", "OLLAMA"
+      config.model || 'gpt-4',
+      config.apiKey || '',
+      config.temperature || 0.7,
+      config.maxTokens || 4096,
+      config.baseUrl || ''
+    );
+    this.koogLLMService = new JsKoogLLMService(modelConfig);
+    
+    // Initialize Kotlin SubAgents
+    this.errorRecoveryAgent = new JsErrorRecoveryAgent(this.projectPath, this.koogLLMService);
+    this.logSummaryAgent = new JsLogSummaryAgent(this.koogLLMService, 2000); // Summarize if output > 2000 chars
   }
 
   /**
@@ -533,24 +558,15 @@ If you encounter errors unrelated to your new file, mark the task complete anywa
     if (this.lastRecoveryResult) {
       const recovery = this.lastRecoveryResult;
       
+      // Kotlin SubAgent returns formatted content directly
       userPrompt = `## Previous Action Failed - Recovery Needed
 
-${recovery.analysis}
-
-**Suggested Actions:**
-${recovery.suggestedActions.map((a, i) => `${i + 1}. ${a}`).join('\n')}
-
-${recovery.recoveryCommands && recovery.recoveryCommands.length > 0 ? `
-**Recovery Commands:**
-${recovery.recoveryCommands.map(cmd => `\`${cmd}\``).join('\n')}
-
-Please execute these recovery commands first, then continue with the original task.
-` : ''}
+${recovery.content}
 
 **Original Task:** ${requirement}
 
 **What to do next:**
-1. Execute the recovery commands to fix the error
+1. Execute the recovery commands (if provided) to fix the error
 2. Verify the fix worked
 3. Continue with the original task`;
 
@@ -840,61 +856,79 @@ Please execute these recovery commands first, then continue with the original ta
             Number(params.timeoutMs) || 30000
           );
           
-          // If output is very long, summarize it with AI SubAgent
+          // If output is very long, summarize it with AI SubAgent (Kotlin)
           if (result.success && this.logSummaryAgent.needsSummarization(result.output)) {
-            this.formatter.info('📊 Output is long, activating Summary SubAgent...');
+            console.log('\n════════════════════════════════════════════════════════');
+            console.log('   📊 ACTIVATING KOTLIN LOG SUMMARY SUBAGENT');
+            console.log('════════════════════════════════════════════════════════\n');
+            this.formatter.info('📊 Output is long, activating Summary SubAgent (Kotlin)...');
             
             const executionTimeMatch = result.output.match(/Execution Time: (\d+)ms/);
             const executionTime = executionTimeMatch ? parseInt(executionTimeMatch[1]) : 0;
             
-            const summaryResult = await this.logSummaryAgent.summarize(
-              {
-                command: params.command,
-                output: result.output,
-                exitCode: 0,
-                executionTime
-              },
-              (status) => {
-                this.formatter.debug(`Summary SubAgent: ${status}`);
-              }
+            // Call Kotlin SubAgent - use execute() which returns ToolResult.AgentResult
+            const summaryContext = new JsLogSummaryContext(
+              params.command,
+              result.output,
+              0,
+              executionTime
             );
+            
+            console.log('[DEBUG] Calling JsLogSummaryAgent.execute()...');
+            const summaryResult = await this.logSummaryAgent.execute(summaryContext);
+            console.log('[DEBUG] LogSummaryAgent returned:', summaryResult);
             
             // Display summary in a nice box
             this.formatter.info('\n┌─────────────────────────────────────────┐');
-            this.formatter.info('│  📊 Log Summary SubAgent               │');
+            this.formatter.info('│  📊 Log Summary SubAgent (Kotlin)      │');
             this.formatter.info('└─────────────────────────────────────────┘');
-            this.formatter.info(LogSummaryAgent.formatSummary(summaryResult));
+            this.formatter.info(summaryResult.content); // Already formatted by Kotlin
             this.formatter.info('└─────────────────────────────────────────┘\n');
             
             // Replace the long output with the summary in the result
             const originalLength = result.output.length;
             result.output = `[Output summarized by AI: ${originalLength} chars -> summary]\n\n` + 
-                          LogSummaryAgent.formatSummary(summaryResult);
+                          summaryResult.content;
           }
           
-          // If shell command failed, activate Error Recovery SubAgent
+          // If shell command failed, activate Error Recovery SubAgent (Kotlin)
           if (!result.success && result.errorMessage) {
-            this.formatter.warn('Shell command failed');
+            console.log('\n════════════════════════════════════════════════════════');
+            console.log('   🔧 ACTIVATING KOTLIN ERROR RECOVERY SUBAGENT');
+            console.log('════════════════════════════════════════════════════════\n');
+            this.formatter.warn('Shell command failed, activating Error Recovery SubAgent (Kotlin)...');
             
-            // Run SubAgent asynchronously (but wait for it)
-            const recoveryResult = await this.errorRecoveryAgent.analyzeAndRecover(
-              {
-                command: params.command,
-                errorMessage: result.errorMessage,
-                stdout: result.output,
-                stderr: result.errorMessage
-              },
-              (status) => {
-                // Progress callback
-                this.formatter.debug(`SubAgent: ${status}`);
-              }
+            // Call Kotlin SubAgent - use execute() which returns ToolResult.AgentResult
+            const errorContext = new JsErrorContext(
+              params.command,
+              result.errorMessage,
+              result.exitCode || 1,
+              result.output,
+              result.errorMessage
             );
             
+            console.log('[DEBUG] Calling JsErrorRecoveryAgent.execute()...');
+            const recoveryResult = await this.errorRecoveryAgent.execute(errorContext);
+            console.log('[DEBUG] ErrorRecoveryAgent returned:', recoveryResult);
+            console.log('[DEBUG] Result type:', typeof recoveryResult);
+            console.log('[DEBUG] Has success:', recoveryResult.success);
+            console.log('[DEBUG] Has content:', !!recoveryResult.content);
+            console.log('[DEBUG] Has metadata:', !!recoveryResult.metadata);
+            
+            // Display recovery result
+            this.formatter.info('\n┌─────────────────────────────────────────┐');
+            this.formatter.info('│  🔧 Error Recovery SubAgent (Kotlin)   │');
+            this.formatter.info('└─────────────────────────────────────────┘');
+            this.formatter.info(recoveryResult.content); // Already formatted by Kotlin
+            this.formatter.info('└─────────────────────────────────────────┘\n');
+            
             // Store recovery result for next iteration
-            if (recoveryResult.success && !recoveryResult.shouldAbort) {
+            const shouldAbort = recoveryResult.metadata['shouldAbort'] === 'true';
+            console.log('[DEBUG] Should abort:', shouldAbort);
+            if (recoveryResult.success && !shouldAbort) {
               this.lastRecoveryResult = recoveryResult;
               this.formatter.info('✓ SubAgent provided recovery plan');
-            } else if (recoveryResult.shouldAbort) {
+            } else if (shouldAbort) {
               this.formatter.error('✗ SubAgent recommends aborting task');
             }
           }
