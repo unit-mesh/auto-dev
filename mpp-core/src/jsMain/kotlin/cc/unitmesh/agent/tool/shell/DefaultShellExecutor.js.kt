@@ -7,21 +7,19 @@ import kotlin.js.Promise
 
 /**
  * JavaScript platform implementation of shell executor
- * Currently provides empty implementation - could be extended to use Node.js child_process
+ * Uses JsShellExecutor for Node.js environment
  */
 actual class DefaultShellExecutor : ShellExecutor {
+    
+    private val jsExecutor = JsShellExecutor()
 
     actual override suspend fun execute(command: String, config: ShellExecutionConfig): ShellResult {
-        // TODO: Could implement using Node.js child_process module
-        throw ToolException(
-            "Shell execution is not yet implemented for JavaScript platform",
-            ToolErrorType.NOT_SUPPORTED
-        )
+        return jsExecutor.execute(command, config)
     }
 
-    actual override fun isAvailable(): Boolean = false
+    actual override fun isAvailable(): Boolean = jsExecutor.isAvailable()
 
-    actual override fun getDefaultShell(): String? = null
+    actual override fun getDefaultShell(): String? = jsExecutor.getDefaultShell()
 }
 
 /**

@@ -26,7 +26,7 @@ import kotlin.js.Promise
 @JsExport
 class JsKoogLLMService(config: JsModelConfig) {
     private val kotlinConfig: ModelConfig
-    private val service: KoogLLMService
+    internal val service: KoogLLMService  // 改为 internal 以便在同一模块访问
     
     init {
         // Convert string provider to LLMProviderType

@@ -76,13 +76,11 @@ class KoogLLMService(private val config: ModelConfig) {
 
     /**
      * 发送非流式提示
+     * 直接使用 AIAgent
      */
     suspend fun sendPrompt(prompt: String): String {
         return try {
-            val agent = AIAgent(
-                promptExecutor = executor,
-                llmModel = model
-            )
+            val agent = AIAgent(promptExecutor = executor, llmModel = model)
             agent.run(prompt)
         } catch (e: Exception) {
             "[Error: ${e.message}]"

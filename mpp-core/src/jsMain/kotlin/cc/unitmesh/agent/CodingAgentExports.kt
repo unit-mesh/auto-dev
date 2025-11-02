@@ -1,6 +1,10 @@
 package cc.unitmesh.agent
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.promise
 import kotlin.js.JsExport
+import kotlin.js.JsName
+import kotlin.js.Promise
 
 /**
  * JS exports for Coding Agent functionality
@@ -212,4 +216,45 @@ class JsCodingAgentContextBuilder {
         )
     }
 }
+
+/**
+ * JS Export for CodingAgent (MainAgent)
+ * 使用 Kotlin 的 MainAgent 替代 TypeScript 的 CodingAgentService
+ */
+@JsExport
+class JsCodingAgent(
+    private val projectPath: String,
+    private val llmService: cc.unitmesh.llm.JsKoogLLMService,
+    private val maxIterations: Int = 100
+) {
+    // 内部使用 Kotlin 的 CodingAgent
+    private val agent: CodingAgent = CodingAgent(
+        projectPath = projectPath,
+        llmService = llmService.service,  // 访问内部 KoogLLMService
+        maxIterations = maxIterations
+    )
+
+    /**
+     * 执行编码任务
+     */
+    @JsName("executeTask")
+    fun executeTask(task: JsAgentTask): Promise<JsAgentResult> {
+        return GlobalScope.promise {
+            val kotlinTask = task.toCommon()
+            val result = agent.executeTask(kotlinTask)
+            JsAgentResult.fromCommon(result)
+        }
+    }
+
+    /**
+     * 初始化工作空间
+     */
+    @JsName("initializeWorkspace")
+    fun initializeWorkspace(): Promise<Unit> {
+        return GlobalScope.promise {
+            agent.initializeWorkspace(projectPath)
+        }
+    }
+}
+
 

@@ -12,9 +12,12 @@ import { render } from 'ink';
 import { Command } from 'commander';
 import { App } from './ui/App.js';
 import { ConfigManager } from './config/ConfigManager.js';
-import { CodingAgentService } from './agents/CodingAgentService.js';
+// Use Kotlin CodingAgent instead of TypeScript implementation
+import mppCore from '@autodev/mpp-core';
 import * as path from 'path';
 import * as fs from 'fs';
+
+const { cc: KotlinCC } = mppCore;
 
 /**
  * Run in coding agent mode
@@ -46,12 +49,39 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       console.log(`🤖 Model: ${activeConfig.model}\n`);
     }
 
-    // Create and run coding agent
-    const agent = new CodingAgentService(resolvedPath, activeConfig, quiet);
-    const result = await agent.executeTask({
-      requirement: task,
-      projectPath: resolvedPath,
-    });
+    // Create Kotlin LLM service
+    const llmService = new KotlinCC.unitmesh.llm.JsKoogLLMService(
+      new KotlinCC.unitmesh.llm.JsModelConfig(
+        activeConfig.provider,
+        activeConfig.model,
+        activeConfig.apiKey || '',
+        activeConfig.temperature || 0.7,
+        activeConfig.maxTokens || 4096,
+        activeConfig.baseUrl || ''
+      )
+    );
+
+    // Create and run Kotlin CodingAgent
+    const agent = new KotlinCC.unitmesh.agent.JsCodingAgent(
+      resolvedPath,
+      llmService,
+      10 // maxIterations
+    );
+    
+    // Create task object
+    const taskObj = new KotlinCC.unitmesh.agent.JsAgentTask(
+      task,
+      resolvedPath
+    );
+    
+    const result = await agent.executeTask(taskObj);
+
+    if (!quiet) {
+      console.log(result.success ? '✅ Task completed successfully' : '❌ Task failed');
+      if (result.message) {
+        console.log(result.message);
+      }
+    }
 
     process.exit(result.success ? 0 : 1);
 
