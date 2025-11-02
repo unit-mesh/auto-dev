@@ -145,26 +145,35 @@ class CodingAgent(
             
             // 6. 执行所有行动
             if (actions.isEmpty()) {
-                println("✓ Agent completed reasoning")
+                println("✓ No actions needed\n")
                 break
             }
             
-            for (action in actions) {
-                // Debug: show parsed action
-                if (action.type == "tool") {
-                    println("[DEBUG] Parsed tool: ${action.tool}, params: ${action.params}")
-                }
-                
+            for ((index, action) in actions.withIndex()) {
                 // 执行行动
                 val stepResult = executeAction(action)
                 steps.add(stepResult)
                 
-                println("Step result: ${if (stepResult.success) "✓" else "✗"} ${stepResult.action}")
+                // Show compact result
+                val icon = if (stepResult.success) "✓" else "✗"
+                val toolName = action.tool ?: "unknown"
+                print("   $icon $toolName")
+                
+                // Show key result info if available
+                if (stepResult.success && stepResult.result != null) {
+                    val preview = stepResult.result!!.take(60)
+                    if (preview.isNotEmpty() && !preview.startsWith("Successfully")) {
+                        print(" → ${preview.replace("\n", " ")}")
+                        if (stepResult.result!!.length > 60) print("...")
+                    }
+                }
+                println()
             }
+            println()
             
             // 7. 检查是否完成
             if (isTaskComplete(llmResponse)) {
-                println("✓ Task marked as complete")
+                println("✓ Task marked as complete\n")
                 break
             }
         }
@@ -537,18 +546,14 @@ class CodingAgent(
             success = false
         )
         
-        println("[DEBUG] Executing tool: $toolName with params: ${action.params}")
-        
         // Normalize parameters based on tool type
         val normalizedParams = normalizeToolParams(toolName, action.params)
-        println("[DEBUG] Normalized params: $normalizedParams")
         
         // 检查工具是否存在
         val tool = toolRegistry.getTool(toolName)
         if (tool == null) {
             val availableTools = toolRegistry.getToolNames().joinToString(", ")
-            val errorMsg = "Tool not found: $toolName. Available tools: $availableTools"
-            println("[DEBUG] $errorMsg")
+            val errorMsg = "Tool not found: $toolName. Available: $availableTools"
             return AgentStep(
                 step = currentIteration,
                 action = toolName,
@@ -623,44 +628,56 @@ class CodingAgent(
     }
 
     /**
-     * Display LLM response with better formatting
+     * Display LLM response with better formatting using CodeFence parser
      */
     private fun displayLLMResponse(response: String) {
-        println("\n[LLM Response] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         
-        // Extract reasoning text (before <devin> tags)
-        val devinStart = response.indexOf("<devin>")
-        val reasoningText = if (devinStart > 0) {
-            response.substring(0, devinStart).trim()
-        } else {
-            response.trim()
-        }
+        // Parse all code fences (including devin blocks)
+        val codeFences = cc.unitmesh.devins.parser.CodeFence.parseAll(response)
         
-        // Show reasoning (truncated if too long)
-        if (reasoningText.isNotEmpty()) {
-            val truncated = if (reasoningText.length > 300) {
-                reasoningText.take(300) + "..."
-            } else {
-                reasoningText
-            }
-            println("💭 $truncated")
-        }
+        var hasDevinBlocks = false
+        val reasoningParts = mutableListOf<String>()
         
-        // Extract and show tool calls
-        val devinRegex = Regex("<devin>([\\s\\S]*?)</devin>", RegexOption.MULTILINE)
-        val toolCalls = devinRegex.findAll(response).toList()
-        
-        if (toolCalls.isNotEmpty()) {
-            println("\n🔧 Tool Calls:")
-            toolCalls.forEach { match ->
-                val toolCode = match.groupValues[1].trim()
-                // Show each tool call with proper formatting
-                toolCode.lines().forEach { line ->
-                    if (line.trim().isNotEmpty()) {
-                        println("   $line")
-                    }
+        for (fence in codeFences) {
+            when (fence.languageId) {
+                "devin" -> {
+                    hasDevinBlocks = true
+                    // Display tool call in a compact format
+                    val firstLine = fence.text.lines().first()
+                    println("🔧 $firstLine")
+                }
+                "markdown" -> {
+                    // Collect reasoning text
+                    reasoningParts.add(fence.text)
                 }
             }
+        }
+        
+        // Display reasoning at the top if we have tool calls
+        if (hasDevinBlocks && reasoningParts.isNotEmpty()) {
+            val reasoning = reasoningParts.joinToString(" ").trim()
+            if (reasoning.isNotEmpty()) {
+                // Show first sentence only
+                val firstSentence = reasoning.split(Regex("[.!?]")).firstOrNull()?.trim() ?: ""
+                if (firstSentence.isNotEmpty() && firstSentence.length > 10) {
+                    val display = if (firstSentence.length > 100) {
+                        firstSentence.take(100) + "..."
+                    } else {
+                        firstSentence
+                    }
+                    println("💭 $display")
+                }
+            }
+        } else if (reasoningParts.isNotEmpty()) {
+            // No tool calls, just show brief reasoning
+            val reasoning = reasoningParts.joinToString(" ").trim()
+            val preview = if (reasoning.length > 120) {
+                reasoning.take(120) + "..."
+            } else {
+                reasoning
+            }
+            println("💭 $preview")
         }
         
         println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
