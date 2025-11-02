@@ -71,11 +71,12 @@ kotlin {
         }
     }
 
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        nodejs()
-    }
+    // Temporarily disable wasmJs due to configuration issues
+    // @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    // wasmJs {
+    //     browser()
+    //     nodejs()
+    // }
 
     sourceSets {
         commonMain {

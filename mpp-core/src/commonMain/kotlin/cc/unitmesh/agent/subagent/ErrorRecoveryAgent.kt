@@ -5,18 +5,20 @@ import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
+import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.llm.KoogLLMService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import java.io.File
 
 /**
  * 错误恢复 SubAgent
  * 
  * 分析命令失败原因并提供恢复方案
  * 从 TypeScript 版本移植
+ * 
+ * 跨平台支持：
+ * - JVM: 完整支持 git 操作
+ * - Android/JS/Wasm: 不支持 git，仅分析错误消息
  */
 class ErrorRecoveryAgent(
     private val projectPath: String,
@@ -24,6 +26,7 @@ class ErrorRecoveryAgent(
 ) : SubAgent<ErrorContext, RecoveryResult>(
     definition = createDefinition()
 ) {
+    private val gitOps = GitOperations(projectPath)
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
@@ -47,15 +50,22 @@ class ErrorRecoveryAgent(
         onProgress("Command: ${input.command}")
         onProgress("Error: ${input.errorMessage.take(80)}...")
 
-        // Step 1: Check for file modifications
-        onProgress("Checking for file modifications...")
-        val modifiedFiles = getModifiedFiles()
+        // Step 1: Check for file modifications (only if supported)
+        val modifiedFiles = if (gitOps.isSupported()) {
+            onProgress("Checking for file modifications...")
+            getModifiedFiles()
+        } else {
+            onProgress("⚠️  Git not available on this platform, skipping file analysis")
+            emptyList()
+        }
 
         // Step 2: Get diffs for modified files
-        if (modifiedFiles.isNotEmpty()) {
+        val fileDiffs = if (modifiedFiles.isNotEmpty()) {
             onProgress("Getting diffs for ${modifiedFiles.size} file(s)...")
+            getFileDiffs(modifiedFiles)
+        } else {
+            emptyMap()
         }
-        val fileDiffs = getFileDiffs(modifiedFiles)
 
         // Step 3: Build error context
         onProgress("Building error context...")
@@ -95,60 +105,28 @@ class ErrorRecoveryAgent(
     /**
      * 获取修改的文件列表
      */
-    private suspend fun getModifiedFiles(): List<String> = withContext(Dispatchers.IO) {
-        try {
-            val process = ProcessBuilder("git", "diff", "--name-only")
-                .directory(File(projectPath))
-                .redirectErrorStream(true)
-                .start()
-
-            val output = process.inputStream.bufferedReader().readText()
-            process.waitFor()
-
-            val files = output.trim().split("\n").filter { it.isNotBlank() }
-
-            if (files.isNotEmpty()) {
-                println("   📝 Modified: ${files.map { it.split("/").last() }.joinToString(", ")}")
-            } else {
-                println("   ✓ No modifications detected")
-            }
-
-            files
-        } catch (e: Exception) {
-            println("   ⚠️  Git check failed: ${e.message}")
-            emptyList()
-        }
+    private suspend fun getModifiedFiles(): List<String> {
+        return gitOps.getModifiedFiles()
     }
 
     /**
      * 获取文件差异
      */
-    private suspend fun getFileDiffs(files: List<String>): Map<String, String> = withContext(Dispatchers.IO) {
+    private suspend fun getFileDiffs(files: List<String>): Map<String, String> {
         val diffs = mutableMapOf<String, String>()
-
+        
         for (file in files) {
-            try {
-                val process = ProcessBuilder("git", "diff", "--", file)
-                    .directory(File(projectPath))
-                    .redirectErrorStream(true)
-                    .start()
-
-                val output = process.inputStream.bufferedReader().readText()
-                process.waitFor()
-
-                if (output.isNotBlank()) {
-                    diffs[file] = output
-                }
-            } catch (e: Exception) {
-                // Silently skip
+            val diff = gitOps.getFileDiff(file)
+            if (diff != null && diff.isNotBlank()) {
+                diffs[file] = diff
             }
         }
-
+        
         if (diffs.isNotEmpty()) {
             println("   📄 Collected ${diffs.size} diff(s)")
         }
-
-        diffs
+        
+        return diffs
     }
 
     /**
