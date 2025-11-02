@@ -137,26 +137,34 @@ class CodingAgent(
                 break
             }
             
-            println("[LLM Response] ${llmResponse.take(200)}...")
+            // Display LLM response with code highlighting
+            displayLLMResponse(llmResponse)
             
-            // 5. 检查是否完成
-            if (isTaskComplete(llmResponse)) {
-                println("✓ Task marked as complete")
+            // 5. 解析所有行动（DevIns 工具调用）
+            val actions = parseAllActions(llmResponse)
+            
+            // 6. 执行所有行动
+            if (actions.isEmpty()) {
+                println("✓ Agent completed reasoning")
                 break
             }
             
-            // 6. 解析行动（DevIns 工具调用）
-            val action = parseAction(llmResponse)
+            for (action in actions) {
+                // Debug: show parsed action
+                if (action.type == "tool") {
+                    println("[DEBUG] Parsed tool: ${action.tool}, params: ${action.params}")
+                }
+                
+                // 执行行动
+                val stepResult = executeAction(action)
+                steps.add(stepResult)
+                
+                println("Step result: ${if (stepResult.success) "✓" else "✗"} ${stepResult.action}")
+            }
             
-            // 7. 执行行动
-            val stepResult = executeAction(action)
-            steps.add(stepResult)
-            
-            println("Step result: ${if (stepResult.success) "✓" else "✗"} ${stepResult.action}")
-            
-            // 8. 如果只是推理，没有工具调用，结束
-            if (action.type == "reasoning") {
-                println("✓ Agent completed reasoning")
+            // 7. 检查是否完成
+            if (isTaskComplete(llmResponse)) {
+                println("✓ Task marked as complete")
                 break
             }
         }
@@ -252,6 +260,67 @@ class CodingAgent(
     }
 
     /**
+     * 解析 LLM 响应中的所有行动
+     */
+    private fun parseAllActions(llmResponse: String): List<AgentAction> {
+        val actions = mutableListOf<AgentAction>()
+        
+        // 提取所有 <devin> 标签内容
+        val devinRegex = Regex("<devin>([\\s\\S]*?)</devin>", RegexOption.MULTILINE)
+        val devinMatches = devinRegex.findAll(llmResponse).toList()
+        
+        if (devinMatches.isEmpty()) {
+            // 没有 devin 标签，尝试直接解析
+            val action = parseAction(llmResponse)
+            if (action.type != "reasoning") {
+                actions.add(action)
+            }
+            return actions
+        }
+        
+        // 解析每个 devin 块中的工具调用
+        for (devinMatch in devinMatches) {
+            val commandText = devinMatch.groupValues[1].trim()
+            
+            // 在每个 devin 块中可能有多个工具调用（用换行分隔）
+            val lines = commandText.lines()
+            var currentTool: String? = null
+            val currentParams = mutableMapOf<String, Any>()
+            
+            for (line in lines) {
+                val trimmed = line.trim()
+                if (trimmed.isEmpty()) continue
+                
+                // 检查是否是工具调用开始
+                if (trimmed.startsWith("/")) {
+                    // 保存上一个工具
+                    if (currentTool != null) {
+                        actions.add(AgentAction("tool", currentTool, currentParams.toMap()))
+                        currentParams.clear()
+                    }
+                    
+                    // 解析新工具
+                    val action = parseAction("<devin>$trimmed</devin>")
+                    if (action.type == "tool") {
+                        currentTool = action.tool
+                        currentParams.putAll(action.params)
+                    }
+                } else if (currentTool != null) {
+                    // 可能是多行参数的延续
+                    // 这里简化处理，跳过
+                }
+            }
+            
+            // 添加最后一个工具
+            if (currentTool != null) {
+                actions.add(AgentAction("tool", currentTool, currentParams))
+            }
+        }
+        
+        return actions
+    }
+    
+    /**
      * 解析 LLM 响应中的行动
      * 寻找 DevIns 工具调用，如 /read-file, /write-file, /shell 等
      * 
@@ -260,9 +329,14 @@ class CodingAgent(
      * 2. 多行格式：/tool-name\ncommand content
      */
     private fun parseAction(llmResponse: String): AgentAction {
+        // 先提取 <devin> 标签内容
+        val devinRegex = Regex("<devin>([\\s\\S]*?)</devin>", RegexOption.MULTILINE)
+        val devinMatch = devinRegex.find(llmResponse)
+        val commandText = devinMatch?.groupValues?.get(1)?.trim() ?: llmResponse
+        
         // 查找工具调用模式：/tool-name ...
-        val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""", setOf(RegexOption.MULTILINE))
-        val match = toolPattern.find(llmResponse)
+        val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""", RegexOption.MULTILINE)
+        val match = toolPattern.find(commandText)
         
         if (match != null) {
             val toolName = match.groups[1]?.value ?: return AgentAction("reasoning", null, emptyMap())
@@ -270,31 +344,56 @@ class CodingAgent(
             
             val params = mutableMapOf<String, Any>()
             
-            // 检查是否有 key="value" 格式的参数
-            val paramPattern = Regex("""(\w+)="([^"]*)"""")
-            val paramMatches = paramPattern.findAll(rest).toList()
-            
-            if (paramMatches.isNotEmpty()) {
-                // 格式 1: /tool key="value" key2="value2"
-                paramMatches.forEach { paramMatch ->
-                    val key = paramMatch.groups[1]?.value ?: return@forEach
-                    val value = paramMatch.groups[2]?.value ?: ""
-                    params[key] = value
+            // Parse key="value" parameters (including multiline values)
+            if (rest.contains("=\"")) {
+                val remaining = rest.toCharArray().toList()
+                var i = 0
+                
+                while (i < remaining.size) {
+                    // Find key
+                    val keyStart = i
+                    while (i < remaining.size && remaining[i] != '=') i++
+                    if (i >= remaining.size) break
+                    
+                    val key = remaining.subList(keyStart, i).joinToString("").trim()
+                    i++ // skip '='
+                    
+                    if (i >= remaining.size || remaining[i] != '"') {
+                        i++
+                        continue
+                    }
+                    
+                    i++ // skip opening quote
+                    val valueStart = i
+                    
+                    // Find closing quote (handle escaped quotes)
+                    var escaped = false
+                    while (i < remaining.size) {
+                        when {
+                            escaped -> escaped = false
+                            remaining[i] == '\\' -> escaped = true
+                            remaining[i] == '"' -> break
+                        }
+                        i++
+                    }
+                    
+                    if (i > valueStart && key.isNotEmpty()) {
+                        val value = remaining.subList(valueStart, i).joinToString("")
+                            .replace("""\\"""", "\"")
+                            .replace("""\\n""", "\n")
+                        params[key] = value
+                    }
+                    
+                    i++ // skip closing quote
                 }
             } else if (rest.isNotEmpty()) {
                 // 格式 2: /shell\ncommand 或 /tool\ncontent
-                // 对于 shell 工具，将剩余内容作为 command
                 if (toolName == "shell") {
-                    // 移除可能的换行符，提取命令
-                    val command = rest.trim()
-                    if (command.isNotEmpty()) {
-                        params["command"] = command
-                    }
+                    params["command"] = rest.trim()
                 } else {
                     // 其他工具：尝试提取第一行作为主要参数
                     val firstLine = rest.lines().firstOrNull()?.trim()
                     if (firstLine != null && firstLine.isNotEmpty()) {
-                        // 根据工具类型设置默认参数名
                         val defaultParamName = when (toolName) {
                             "read-file", "write-file" -> "path"
                             "glob", "grep" -> "pattern"
@@ -523,6 +622,50 @@ class CodingAgent(
         )
     }
 
+    /**
+     * Display LLM response with better formatting
+     */
+    private fun displayLLMResponse(response: String) {
+        println("\n[LLM Response] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        
+        // Extract reasoning text (before <devin> tags)
+        val devinStart = response.indexOf("<devin>")
+        val reasoningText = if (devinStart > 0) {
+            response.substring(0, devinStart).trim()
+        } else {
+            response.trim()
+        }
+        
+        // Show reasoning (truncated if too long)
+        if (reasoningText.isNotEmpty()) {
+            val truncated = if (reasoningText.length > 300) {
+                reasoningText.take(300) + "..."
+            } else {
+                reasoningText
+            }
+            println("💭 $truncated")
+        }
+        
+        // Extract and show tool calls
+        val devinRegex = Regex("<devin>([\\s\\S]*?)</devin>", RegexOption.MULTILINE)
+        val toolCalls = devinRegex.findAll(response).toList()
+        
+        if (toolCalls.isNotEmpty()) {
+            println("\n🔧 Tool Calls:")
+            toolCalls.forEach { match ->
+                val toolCode = match.groupValues[1].trim()
+                // Show each tool call with proper formatting
+                toolCode.lines().forEach { line ->
+                    if (line.trim().isNotEmpty()) {
+                        println("   $line")
+                    }
+                }
+            }
+        }
+        
+        println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+    }
+    
     /**
      * 检查任务是否完成
      */
