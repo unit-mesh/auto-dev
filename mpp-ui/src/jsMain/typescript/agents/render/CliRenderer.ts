@@ -7,7 +7,6 @@ import chalk from 'chalk';
 import hljs from 'highlight.js';
 
 export class CliRenderer {
-  // Required by Kotlin JS export interface
   readonly __doNotUseOrImplementIt: any = {};
 
   private reasoningBuffer: string = '';
@@ -159,10 +158,11 @@ export class CliRenderer {
           details: `${mode === 'create' ? 'Creating' : 'Updating'} file: ${params.path || 'unknown'}`
         };
       case 'shell':
+        const command = params.command || params.cmd || 'unknown';
         return {
           name: 'Shell command',
           description: 'command executor',
-          details: `Running: ${params.command || 'unknown'}`
+          details: `Running: ${command}`
         };
       case 'glob':
         return {
