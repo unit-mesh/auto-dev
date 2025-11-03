@@ -177,8 +177,6 @@ class ComposeRenderer : BaseRenderer() {
         fullOutput: String?
     ) {
         val summary = formatToolResultSummary(toolName, success, output)
-
-        // Add tool result to timeline
         _timeline.add(
             TimelineItem.ToolResultItem(
                 toolName = toolName,
@@ -372,17 +370,13 @@ class ComposeRenderer : BaseRenderer() {
         if (!success) return "Failed"
 
         val toolType = toolName.toToolType()
-
         return when (toolType) {
             ToolType.ReadFile -> {
                 val lines = output?.lines()?.size ?: 0
                 "Read $lines lines"
             }
-
             ToolType.WriteFile -> "File written successfully"
-
             ToolType.Glob -> {
-                // Parse the actual file count from the output
                 val firstLine = output?.lines()?.firstOrNull() ?: ""
                 if (firstLine.contains("Found ") && firstLine.contains(" files matching")) {
                     val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
@@ -398,33 +392,7 @@ class ComposeRenderer : BaseRenderer() {
                 val lines = output?.lines()?.size ?: 0
                 if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
             }
-
-            else -> {
-                // Fallback for legacy string-based tools
-                when (toolName) {
-                    ToolType.ReadFile.name -> {
-                        val lines = output?.lines()?.size ?: 0
-                        "Read $lines lines"
-                    }
-                    ToolNames.WRITE_FILE -> "File written successfully"
-                    ToolNames.GLOB -> {
-                        val firstLine = output?.lines()?.firstOrNull() ?: ""
-                        if (firstLine.contains("Found ") && firstLine.contains(" files matching")) {
-                            val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
-                            "Found $count files"
-                        } else if (output?.contains("No files found") == true) {
-                            "No files found"
-                        } else {
-                            "Search completed"
-                        }
-                    }
-                    ToolNames.SHELL -> {
-                        val lines = output?.lines()?.size ?: 0
-                        if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
-                    }
-                    else -> "Success"
-                }
-            }
+            else ->"Success"
         }
     }
 

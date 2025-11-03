@@ -1,23 +1,19 @@
 package cc.unitmesh.agent.recovery
 
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
-import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.llm.KoogLLMService
 
 /**
  * 错误恢复管理器
- * 
+ *
  * 负责处理工具执行失败时的错误恢复逻辑
  */
-class ErrorRecoveryManager(
-    private val projectPath: String,
-    private val llmService: KoogLLMService
-) {
+class ErrorRecoveryManager(private val projectPath: String, private val llmService: KoogLLMService) {
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
-    
+
     /**
      * 处理工具执行错误
-     * 
+     *
      * @param toolName 失败的工具名称
      * @param command 执行的命令（如果适用）
      * @param errorMessage 错误消息
@@ -30,11 +26,10 @@ class ErrorRecoveryManager(
         errorMessage: String,
         exitCode: Int? = null
     ): String? {
-        // 只对特定类型的工具错误进行恢复
         if (!shouldAttemptRecovery(toolName, errorMessage)) {
             return null
         }
-        
+
         println("\n════════════════════════════════════════════════════════")
         println("   🔧 ACTIVATING ERROR RECOVERY SUBAGENT")
         println("   Tool: $toolName")
@@ -49,16 +44,6 @@ class ErrorRecoveryManager(
             }
 
             when (result) {
-                is ToolResult.AgentResult -> {
-                    if (result.success) {
-                        println("\n✓ Error Recovery completed")
-                        println("Suggestion: ${result.content}\n")
-                        result.content
-                    } else {
-                        println("\n✗ Error Recovery failed: ${result.content}\n")
-                        null
-                    }
-                }
                 else -> {
                     println("\n✗ Unexpected result type from ErrorRecoveryAgent\n")
                     null
@@ -69,7 +54,7 @@ class ErrorRecoveryManager(
             null
         }
     }
-    
+
     /**
      * 判断是否应该尝试错误恢复
      */
@@ -78,7 +63,7 @@ class ErrorRecoveryManager(
         if (toolName == "shell") {
             return true
         }
-        
+
         // 对于文件操作错误，如果是权限或路径问题，尝试恢复
         if (toolName in listOf("write-file", "read-file")) {
             val recoverableErrors = listOf(
@@ -89,10 +74,10 @@ class ErrorRecoveryManager(
             )
             return recoverableErrors.any { errorMessage.contains(it, ignoreCase = true) }
         }
-        
+
         return false
     }
-    
+
     /**
      * 构建恢复输入参数
      */
@@ -106,13 +91,13 @@ class ErrorRecoveryManager(
             "toolName" to toolName,
             "errorMessage" to errorMessage
         )
-        
+
         command?.let { input["command"] = it }
         exitCode?.let { input["exitCode"] = it }
-        
+
         return input
     }
-    
+
     /**
      * 检查错误是否是致命的（不应该继续执行）
      */
@@ -124,7 +109,7 @@ class ErrorRecoveryManager(
             "authentication failed",
             "permission permanently denied"
         )
-        
+
         return fatalErrors.any { errorMessage.contains(it, ignoreCase = true) }
     }
 }

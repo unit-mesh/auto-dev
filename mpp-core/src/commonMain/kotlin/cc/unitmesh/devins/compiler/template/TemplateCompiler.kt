@@ -18,19 +18,10 @@ class TemplateCompiler(
      */
     fun compile(template: String): String {
         var result = template
-        
-        // 替换变量占位符
         result = replaceVariables(result)
-        
-        // 处理模板函数
         result = processTemplateFunctions(result)
-        
-        // 处理条件语句
         result = processConditionals(result)
-        
-        // 处理循环语句
         result = processLoops(result)
-        
         return result
     }
     

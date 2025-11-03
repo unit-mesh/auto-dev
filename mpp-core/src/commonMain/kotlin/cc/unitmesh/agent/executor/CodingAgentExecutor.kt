@@ -20,7 +20,7 @@ import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContex
 
 /**
  * CodingAgent 执行器 - 负责执行主要的 Agent 逻辑
- * 
+ *
  * 参考 DefaultAgentExecutor 的设计，将执行逻辑从 CodingAgent 中分离出来
  */
 class CodingAgentExecutor(
@@ -39,7 +39,7 @@ class CodingAgentExecutor(
     // 重复操作检测
     private val recentToolCalls = mutableListOf<String>()
     private val MAX_REPEAT_COUNT = 3
-    
+
     /**
      * 执行 Agent 任务
      */
@@ -49,51 +49,51 @@ class CodingAgentExecutor(
         onProgress: (String) -> Unit = {}
     ): AgentResult {
         resetExecution()
-        
+
         // 创建对话管理器
         val conversationManager = ConversationManager(llmService, systemPrompt)
-        
+
         // 构建初始用户消息
         val initialUserMessage = buildInitialUserMessage(task)
-        
+
         onProgress("🚀 CodingAgent started")
         onProgress("Project: ${task.projectPath}")
         onProgress("Task: ${task.requirement}")
-        
+
         while (shouldContinue()) {
             yield()
-            
+
             currentIteration++
             renderer.renderIterationHeader(currentIteration, maxIterations)
-            
+
             // 发送消息并获取响应
             val llmResponse = StringBuilder()
-            
+
             try {
                 renderer.renderLLMResponseStart()
-                
+
                 val messageToSend = if (currentIteration == 1) {
                     initialUserMessage
                 } else {
                     // 后续迭代使用工具执行结果
                     buildContinuationMessage()
                 }
-                
+
                 conversationManager.sendMessage(messageToSend).cancellable().collect { chunk ->
                     llmResponse.append(chunk)
                     renderer.renderLLMResponseChunk(chunk)
                 }
-                
+
                 renderer.renderLLMResponseEnd()
-                
+
                 // 添加助手响应到对话历史
                 conversationManager.addAssistantResponse(llmResponse.toString())
-                
+
             } catch (e: Exception) {
                 renderer.renderError("LLM call failed: ${e.message}")
                 break
             }
-            
+
             // 解析和执行工具调用
             val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
 
@@ -101,47 +101,47 @@ class CodingAgentExecutor(
                 renderer.renderTaskComplete()
                 break
             }
-            
+
             // 执行工具调用
             val toolResults = executeToolCalls(toolCalls)
-            
+
             // 将工具执行结果添加到对话历史
             val toolResultsText = ToolResultFormatter.formatMultipleToolResults(toolResults)
             conversationManager.addToolResults(toolResultsText)
-            
+
             // 检查是否完成
             if (isTaskComplete(llmResponse.toString())) {
                 renderer.renderTaskComplete()
                 break
             }
-            
+
             // 检查是否陷入循环
             if (isStuck()) {
                 renderer.renderError("Agent appears to be stuck. Stopping.")
                 break
             }
         }
-        
+
         return buildResult()
     }
-    
+
     private fun resetExecution() {
         currentIteration = 0
         steps.clear()
         edits.clear()
         recentToolCalls.clear()
     }
-    
+
     private fun shouldContinue(): Boolean {
         return currentIteration < maxIterations
     }
-    
+
     private fun buildInitialUserMessage(task: AgentTask): String {
         return "Task: ${task.requirement}\n\n" +
                 "Please analyze this task and use the available DevIns tools to complete it. " +
                 "Use tools like /read-file, /write-file, /shell, etc. as needed."
     }
-    
+
     private fun buildContinuationMessage(): String {
         return "Please continue with the task based on the tool execution results above. " +
                 "Use additional tools if needed, or summarize if the task is complete."
@@ -153,7 +153,8 @@ class CodingAgentExecutor(
     private suspend fun executeToolCalls(
         toolCalls: List<cc.unitmesh.agent.state.ToolCall>
     ): List<Triple<String, Map<String, Any>, cc.unitmesh.agent.orchestrator.ToolExecutionResult>> {
-        val results = mutableListOf<Triple<String, Map<String, Any>, cc.unitmesh.agent.orchestrator.ToolExecutionResult>>()
+        val results =
+            mutableListOf<Triple<String, Map<String, Any>, cc.unitmesh.agent.orchestrator.ToolExecutionResult>>()
 
         for ((index, toolCall) in toolCalls.withIndex()) {
             val toolName = toolCall.toolName
@@ -221,8 +222,6 @@ class CodingAgentExecutor(
             )
 
             results.add(Triple(toolName, params, executionResult))
-
-            // 记录步骤
             val stepResult = AgentStep(
                 step = currentIteration,
                 action = toolName,
@@ -270,11 +269,13 @@ class CodingAgentExecutor(
         val mode = params["mode"] as? String
 
         if (path != null && content != null) {
-            edits.add(AgentEdit(
-                file = path,
-                operation = if (mode == "create") AgentEditOperation.CREATE else AgentEditOperation.UPDATE,
-                content = content
-            ))
+            edits.add(
+                AgentEdit(
+                    file = path,
+                    operation = if (mode == "create") AgentEditOperation.CREATE else AgentEditOperation.UPDATE,
+                    content = content
+                )
+            )
         }
     }
 
@@ -295,7 +296,7 @@ class CodingAgentExecutor(
 
     private fun isStuck(): Boolean {
         return currentIteration > 5 &&
-               steps.takeLast(5).all { !it.success || it.result?.contains("already exists") == true }
+                steps.takeLast(5).all { !it.success || it.result?.contains("already exists") == true }
     }
 
     private fun buildResult(): AgentResult {
