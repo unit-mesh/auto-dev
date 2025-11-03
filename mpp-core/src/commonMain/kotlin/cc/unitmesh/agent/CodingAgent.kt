@@ -291,19 +291,13 @@ class CodingAgent(
 
                 // 检查最近是否重复调用同一个工具
                 val repeatCount = recentToolCalls.takeLast(MAX_REPEAT_COUNT).count { it == toolSignature }
-                if (repeatCount >= MAX_REPEAT_COUNT) {
+
+                // 对于任何工具，如果连续2次相同就停止执行
+                if (repeatCount >= 2) {
                     renderer.renderRepeatWarning(toolName, repeatCount)
-                    // 如果是读取文件重复，直接跳过并停止执行
-                    if (toolName == "read-file") {
-                        println("   Skipping repeated read-file operation")
-                        hasError = true
-                        break
-                    } else {
-                        // 对于其他工具的重复调用，也停止执行以避免无限循环
-                        println("   Stopping execution due to repeated tool calls")
-                        hasError = true
-                        break
-                    }
+                    println("   Stopping execution due to repeated tool calls")
+                    hasError = true
+                    break
                 }
 
                 // 先显示工具调用
@@ -315,7 +309,6 @@ class CodingAgent(
 
                 // 显示工具结果（传递完整输出）
                 renderer.renderToolResult(toolName, stepResult.success, stepResult.result, stepResult.result)
-                println()  // 每个工具执行后换行
 
                 // 如果是 shell 命令失败，自动调用 ErrorRecoveryAgent
                 if (!stepResult.success && toolName == "shell") {

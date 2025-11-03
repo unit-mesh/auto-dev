@@ -186,7 +186,7 @@ export class CliRenderer {
     }
 
     this.lastIterationReasoning = currentReasoning;
-    console.log('\n');
+    console.log(); // Single line break after reasoning
   }
 
   private calculateSimilarity(str1: string, str2: string): number {
@@ -204,7 +204,7 @@ export class CliRenderer {
 
   renderToolCall(toolName: string, paramsStr: string): void {
     const toolInfo = this.formatToolCallDisplay(toolName, paramsStr);
-    console.log('\n' + chalk.bold('● ') + chalk.bold(toolInfo.name) + chalk.gray(' - ' + toolInfo.description));
+    console.log(chalk.bold('● ') + chalk.bold(toolInfo.name) + chalk.gray(' - ' + toolInfo.description));
     if (toolInfo.details) {
       console.log('  ⎿ ' + chalk.gray(toolInfo.details));
     }
