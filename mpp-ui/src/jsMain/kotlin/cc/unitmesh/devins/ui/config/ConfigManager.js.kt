@@ -3,22 +3,14 @@ package cc.unitmesh.devins.ui.config
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
 
-// External Node.js modules (must be top-level)
-@JsModule("fs")
-@JsNonModule
-external val fsModule: dynamic
+// Check if we're in Node.js environment
+private val isNodeJs: Boolean = js("typeof process !== 'undefined' && process.versions && process.versions.node") as Boolean
 
-@JsModule("fs/promises")
-@JsNonModule
-external val fsPromises: dynamic
-
-@JsModule("path")
-@JsNonModule
-external val pathModule: dynamic
-
-@JsModule("os")
-@JsNonModule
-external val osModule: dynamic
+// External Node.js modules (conditionally loaded)
+private val fsModule: dynamic = if (isNodeJs) js("require('fs')") else null
+private val fsPromises: dynamic = if (isNodeJs) js("require('fs/promises')") else null
+private val pathModule: dynamic = if (isNodeJs) js("require('path')") else null
+private val osModule: dynamic = if (isNodeJs) js("require('os')") else null
 
 /**
  * JS implementation of ConfigManager
@@ -26,9 +18,23 @@ external val osModule: dynamic
  * This implementation is called by TypeScript code
  */
 actual object ConfigManager {
-    private val homeDir: String = osModule.homedir() as String
-    private val configDir: String = pathModule.join(homeDir, ".autodev") as String
-    private val configFilePath: String = pathModule.join(configDir, "config.yaml") as String
+    private val homeDir: String = if (isNodeJs) {
+        osModule.homedir() as String
+    } else {
+        "/tmp" // Fallback for browser environment
+    }
+
+    private val configDir: String = if (isNodeJs) {
+        pathModule.join(homeDir, ".autodev") as String
+    } else {
+        "/tmp/.autodev" // Fallback for browser environment
+    }
+
+    private val configFilePath: String = if (isNodeJs) {
+        pathModule.join(configDir, "config.yaml") as String
+    } else {
+        "/tmp/.autodev/config.yaml" // Fallback for browser environment
+    }
 
     private val json =
         Json {
@@ -38,6 +44,11 @@ actual object ConfigManager {
 
     actual suspend fun load(): AutoDevConfigWrapper {
         return try {
+            if (!isNodeJs) {
+                console.warn("Config loading not supported in browser environment")
+                return createEmpty()
+            }
+
             // Check if file exists
             val exists =
                 try {
@@ -66,6 +77,11 @@ actual object ConfigManager {
 
     actual suspend fun save(configFile: ConfigFile) {
         try {
+            if (!isNodeJs) {
+                console.warn("Config saving not supported in browser environment")
+                return
+            }
+
             // Ensure directory exists
             try {
                 fsPromises.mkdir(configDir, js("{ recursive: true }")).await()

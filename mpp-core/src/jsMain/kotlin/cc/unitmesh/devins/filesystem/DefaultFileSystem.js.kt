@@ -6,13 +6,26 @@ package cc.unitmesh.devins.filesystem
  */
 @Suppress("UNUSED_VARIABLE")
 actual class DefaultFileSystem actual constructor(private val projectPath: String) : ProjectFileSystem {
-    
-    private val fs = js("require('fs')")
-    private val path = js("require('path')")
+
+    // Check if we're in Node.js environment
+    private val isNodeJs: Boolean = js("typeof process !== 'undefined' && process.versions && process.versions.node") as Boolean
+
+    private val fs = if (isNodeJs) js("require('fs')") else null
+    private val path = if (isNodeJs) js("require('path')") else null
+
+    private fun requireNodeJs(): Boolean {
+        if (!isNodeJs) {
+            console.warn("File system operations not supported in browser environment")
+            return false
+        }
+        return true
+    }
     
     actual override fun getProjectPath(): String? = projectPath
     
     actual override fun readFile(path: String): String? {
+        if (!requireNodeJs()) return null
+
         return try {
             val resolvedPath = resolvePathInternal(path)
             if (exists(resolvedPath) && !isDirectory(resolvedPath)) {
@@ -28,15 +41,17 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     }
 
     actual override fun writeFile(path: String, content: String): Boolean {
+        if (!requireNodeJs()) return false
+
         return try {
             val resolvedPath = resolvePathInternal(path)
-            
+
             // 确保父目录存在
             val dirname = this.path.dirname(resolvedPath)
             if (!exists(dirname)) {
                 fs.mkdirSync(dirname, js("{ recursive: true }"))
             }
-            
+
             fs.writeFileSync(resolvedPath, content, "utf8")
             true
         } catch (e: Exception) {
@@ -46,6 +61,7 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     }
 
     actual override fun exists(path: String): Boolean {
+        if (!requireNodeJs()) return false
         return try {
             val resolvedPath = resolvePathInternal(path)
             fs.existsSync(resolvedPath) as Boolean
@@ -55,6 +71,7 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     }
 
     actual override fun isDirectory(path: String): Boolean {
+        if (!requireNodeJs()) return false
         return try {
             val resolvedPath = resolvePathInternal(path)
             if (fs.existsSync(resolvedPath) as Boolean) {
@@ -69,14 +86,15 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     }
     
     actual override fun listFiles(path: String, pattern: String?): List<String> {
+        if (!requireNodeJs()) return emptyList()
         return try {
             val dirPath = resolvePathInternal(path)
             if (!exists(dirPath) || !isDirectory(dirPath)) {
                 return emptyList()
             }
-            
+
             val files = (fs.readdirSync(dirPath) as Array<String>).toList()
-            
+
             if (pattern != null) {
                 val regexPattern = pattern
                     .replace(".", "\\.")
@@ -94,6 +112,7 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     }
     
     actual override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> {
+        if (!requireNodeJs()) return emptyList()
         return try {
             if (!exists(projectPath) || !isDirectory(projectPath)) {
                 return emptyList()
@@ -211,11 +230,20 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     actual override fun resolvePath(relativePath: String): String {
         return resolvePathInternal(relativePath)
     }
-    
+
     /**
      * 解析路径为绝对路径
      */
     private fun resolvePathInternal(inputPath: String): String {
+        if (!isNodeJs) {
+            // Fallback for browser environment
+            return if (inputPath.startsWith("/")) {
+                inputPath
+            } else {
+                "$projectPath/$inputPath"
+            }
+        }
+
         return if (path.isAbsolute(inputPath) as Boolean) {
             path.normalize(inputPath) as String
         } else {
