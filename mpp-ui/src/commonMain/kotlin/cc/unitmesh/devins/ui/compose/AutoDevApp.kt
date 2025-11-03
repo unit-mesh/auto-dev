@@ -66,7 +66,7 @@ private fun AutoDevContent() {
     var selectedAgent by remember { mutableStateOf("Default") }
     var useAgentMode by remember { mutableStateOf(true) } // New: toggle between chat and agent mode
 
-    val availableAgents = listOf("Default", "clarify", "code-review", "test-gen", "refactor")
+    val availableAgents = listOf("Default")
 
     var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
 
@@ -162,7 +162,6 @@ private fun AutoDevContent() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        // 让 Scaffold 自动处理系统栏和键盘，但我们会在组件级别微调
         contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         Column(
@@ -172,7 +171,6 @@ private fun AutoDevContent() {
                     .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 顶部工具栏 - 添加状态栏边距和模式切换
             TopBarMenu(
                 hasHistory = messages.isNotEmpty(),
                 hasDebugInfo = compilerOutput.isNotEmpty(),
@@ -210,20 +208,16 @@ private fun AutoDevContent() {
                         .statusBarsPadding() // 添加状态栏边距
             )
 
-            // Choose between Agent mode and traditional Chat mode
             if (useAgentMode) {
-                // New Agent mode using ComposeRenderer
                 AgentChatInterface(
                     llmService = llmService,
                     onConfigWarning = { showConfigWarning = true },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                // Traditional chat mode
                 val isCompactMode = messages.isNotEmpty() || isLLMProcessing
 
                 if (isCompactMode) {
-                    // 紧凑模式：显示消息列表，输入框在底部
                     MessageList(
                         messages = messages,
                         isLLMProcessing = isLLMProcessing,
@@ -236,14 +230,12 @@ private fun AutoDevContent() {
                                 .weight(1f)
                     )
 
-                    // 底部输入框 - 紧凑模式（一行）
-                    // 使用 Column 包装以正确处理键盘遮挡
                     Column(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .imePadding() // 键盘弹出时，整个区域向上推
-                                .navigationBarsPadding() // 添加导航栏边距
+                                .imePadding()
+                                .navigationBarsPadding()
                                 .padding(horizontal = 12.dp, vertical = 8.dp) // 外部边距
                     ) {
                         DevInEditorInput(
@@ -267,20 +259,15 @@ private fun AutoDevContent() {
                         )
                     }
                 } else {
-                    // 默认模式：输入框居中显示
-                    // Android: 使用更紧凑的布局和更小的 padding
                     val isAndroid = Platform.isAndroid
-
-                    // 使用 Box 支持键盘避让
                     Box(
                         modifier =
                             Modifier
                                 .fillMaxSize()
-                                .imePadding() // 键盘弹出时自动调整
+                                .imePadding()
                                 .padding(if (isAndroid) 16.dp else 32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        // 完整的输入组件（包含底部工具栏）
                         DevInEditorInput(
                             initialText = "",
                             placeholder = "Type your message...",
@@ -301,10 +288,10 @@ private fun AutoDevContent() {
                             modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
                         )
                     }
-                } // End of traditional chat mode
-            } // End of mode selection
-        } // End of Column
-    } // End of Scaffold
+                }
+            }
+        }
+    }
 
     // Model Config Dialog
     if (showModelConfigDialog) {
@@ -327,7 +314,6 @@ private fun AutoDevContent() {
         )
     }
 
-    // Debug Dialog
     if (showDebugDialog) {
         DebugDialog(
             compilerOutput = compilerOutput,
@@ -335,7 +321,6 @@ private fun AutoDevContent() {
         )
     }
 
-    // 配置警告弹窗
     if (showConfigWarning) {
         AlertDialog(
             onDismissRequest = { showConfigWarning = false },
@@ -361,7 +346,6 @@ private fun AutoDevContent() {
         )
     }
 
-    // 错误提示弹窗
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },

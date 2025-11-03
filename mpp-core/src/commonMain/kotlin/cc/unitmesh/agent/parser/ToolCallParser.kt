@@ -9,24 +9,18 @@ import cc.unitmesh.agent.state.ToolCall
 class ToolCallParser {
     private val devinParser = DevinBlockParser()
     private val escapeProcessor = EscapeSequenceProcessor
-    
-    /**
-     * Parse all tool calls from LLM response
-     */
+
     fun parseToolCalls(llmResponse: String): List<ToolCall> {
         val toolCalls = mutableListOf<ToolCall>()
         
-        // First try to extract from DevIn blocks
         val devinBlocks = devinParser.extractDevinBlocks(llmResponse)
         
         if (devinBlocks.isEmpty()) {
-            // No DevIn blocks, try direct parsing
             val directCall = parseDirectToolCall(llmResponse)
             if (directCall != null) {
                 toolCalls.add(directCall)
             }
         } else {
-            // Parse from first DevIn block only (as per original logic)
             val firstBlock = devinBlocks.firstOrNull()
             if (firstBlock != null) {
                 val toolCall = parseToolCallFromDevinBlock(firstBlock)
@@ -38,17 +32,11 @@ class ToolCallParser {
         
         return toolCalls
     }
-    
-    /**
-     * Parse DevIn blocks from content
-     */
+
     fun parseDevinBlocks(content: String): List<DevinBlock> {
         return devinParser.extractDevinBlocks(content)
     }
-    
-    /**
-     * Parse a tool call from a DevIn block
-     */
+
     private fun parseToolCallFromDevinBlock(block: DevinBlock): ToolCall? {
         val lines = block.content.lines()
         
@@ -99,11 +87,9 @@ class ToolCallParser {
     private fun parseParameters(toolName: String, rest: String): Map<String, Any> {
         val params = mutableMapOf<String, Any>()
         
-        // Parse key="value" parameters (including multiline values)
         if (rest.contains("=\"")) {
             parseKeyValueParameters(rest, params)
         } else if (rest.isNotEmpty()) {
-            // Format 2: /shell\ncommand or /tool\ncontent
             parseSimpleParameter(toolName, rest, params)
         }
         

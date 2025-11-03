@@ -21,10 +21,8 @@ class CodingAgentViewModel(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    // Use ComposeRenderer for UI state management
     val renderer = ComposeRenderer()
 
-    // Create CodingAgent with ComposeRenderer
     private val codingAgent =
         CodingAgent(
             projectPath = projectPath,
@@ -33,16 +31,10 @@ class CodingAgentViewModel(
             renderer = renderer
         )
 
-    // Simple execution state
     var isExecuting by mutableStateOf(false)
         private set
-
-    // Current execution job for cancellation
     private var currentExecutionJob: Job? = null
 
-    /**
-     * Execute a coding task using the new CodingAgent architecture
-     */
     fun executeTask(task: String) {
         if (isExecuting) {
             println("Agent is already executing")

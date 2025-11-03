@@ -75,11 +75,9 @@ fun AgentChatInterface(
         return
     }
 
-    // Main agent interface
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        // Agent status bar
         if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
             AgentStatusBar(
                 isExecuting = viewModel.isExecuting,
@@ -91,7 +89,6 @@ fun AgentChatInterface(
             )
         }
 
-        // Messages and tool calls display
         AgentMessageList(
             renderer = viewModel.renderer,
             modifier =
@@ -100,14 +97,12 @@ fun AgentChatInterface(
                     .weight(1f)
         )
 
-        // Input area
-        val callbacks =
-            remember(viewModel) {
-                createAgentCallbacks(
-                    viewModel = viewModel,
-                    onConfigWarning = onConfigWarning
-                )
-            }
+        val callbacks = remember(viewModel) {
+            createAgentCallbacks(
+                viewModel = viewModel,
+                onConfigWarning = onConfigWarning
+            )
+        }
 
         DevInEditorInput(
             initialText = "",
@@ -135,20 +130,17 @@ private fun AgentStatusBar(
     onCancel: () -> Unit
 ) {
     Card(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -238,12 +230,14 @@ private fun CopyAllButton(viewModel: CodingAgentViewModel) {
                                 appendLine("[$role]: ${item.message.content}")
                                 appendLine()
                             }
+
                             is ComposeRenderer.TimelineItem.ToolCallItem -> {
                                 appendLine("[Tool Call]: ${item.toolName}")
                                 appendLine("Description: ${item.description}")
                                 item.details?.let { appendLine("Parameters: $it") }
                                 appendLine()
                             }
+
                             is ComposeRenderer.TimelineItem.ToolResultItem -> {
                                 val status = if (item.success) "SUCCESS" else "FAILED"
                                 appendLine("[Tool Result]: ${item.toolName} - $status")
@@ -251,10 +245,12 @@ private fun CopyAllButton(viewModel: CodingAgentViewModel) {
                                 item.output?.let { appendLine("Output: $it") }
                                 appendLine()
                             }
+
                             is ComposeRenderer.TimelineItem.ErrorItem -> {
                                 appendLine("[Error]: ${item.error}")
                                 appendLine()
                             }
+
                             is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
                                 val status = if (item.success) "COMPLETED" else "FAILED"
                                 appendLine("[Task $status]: ${item.message}")
@@ -263,7 +259,6 @@ private fun CopyAllButton(viewModel: CodingAgentViewModel) {
                         }
                     }
 
-                    // Add current streaming output if any
                     if (viewModel.renderer.currentStreamingOutput.isNotEmpty()) {
                         appendLine("[Assistant - Streaming]: ${viewModel.renderer.currentStreamingOutput}")
                     }
@@ -281,7 +276,6 @@ private fun CopyAllButton(viewModel: CodingAgentViewModel) {
     }
 }
 
-// Helper function to format execution time
 private fun formatExecutionTime(timeMs: Long): String {
     val seconds = timeMs / 1000
     return when {
