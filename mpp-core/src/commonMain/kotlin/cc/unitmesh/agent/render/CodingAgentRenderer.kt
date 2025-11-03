@@ -20,6 +20,9 @@ interface CodingAgentRenderer {
     fun renderFinalResult(success: Boolean, message: String, iterations: Int)
     fun renderError(message: String)
     fun renderRepeatWarning(toolName: String, count: Int)
+
+    // Policy and permission methods
+    fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>)
 }
 
 /**

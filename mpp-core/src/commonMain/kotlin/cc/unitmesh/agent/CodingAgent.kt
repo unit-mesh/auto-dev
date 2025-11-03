@@ -7,11 +7,13 @@ import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.subagent.LogSummaryAgent
 import cc.unitmesh.agent.tool.ToolResult
-import cc.unitmesh.agent.tool.ToolExecutionContext
-import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
+import cc.unitmesh.agent.orchestrator.ToolOrchestrator
+import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
+import cc.unitmesh.agent.parser.ToolCallParser
+import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
@@ -75,6 +77,11 @@ class CodingAgent(
         fileSystem = DefaultToolFileSystem(projectPath = projectPath),
         shellExecutor = DefaultShellExecutor()
     )
+
+    // New orchestration components
+    private val policyEngine = DefaultPolicyEngine()
+    private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer)
+    private val toolCallParser = ToolCallParser()
 
     // SubAgents
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
@@ -172,20 +179,20 @@ class CodingAgent(
             }
 
             // 5. 解析所有行动（DevIns 工具调用）
-            val actions = parseAllActions(llmResponse.toString())
+            val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
 
             // 6. 执行所有行动（逐个执行，而不是一次性执行）
-            if (actions.isEmpty()) {
+            if (toolCalls.isEmpty()) {
                 println("✓ No actions needed\n")
                 break
             }
 
             var hasError = false
-            for ((index, action) in actions.withIndex()) {
-                val toolName = action.tool ?: "unknown"
+            for ((index, toolCall) in toolCalls.withIndex()) {
+                val toolName = toolCall.toolName
 
                 // 格式化参数为字符串
-                val paramsStr = action.params.entries.joinToString(" ") { (key, value) ->
+                val paramsStr = toolCall.params.entries.joinToString(" ") { (key, value) ->
                     "$key=\"$value\""
                 }
 
@@ -213,8 +220,26 @@ class CodingAgent(
                 // Check for cancellation before executing tool
                 yield()
 
-                // 执行行动
-                val stepResult = executeAction(action)
+                // 执行行动 - 使用新的 orchestrator
+                val executionContext = OrchestratorContext(
+                    workingDirectory = projectPath,
+                    environment = emptyMap()
+                )
+                val executionResult = toolOrchestrator.executeToolCall(
+                    toolName,
+                    toolCall.params.mapValues { it.value as Any },
+                    executionContext
+                )
+
+                // 转换为 AgentStep
+                val stepResult = AgentStep(
+                    step = currentIteration,
+                    action = toolName,
+                    tool = toolName,
+                    params = toolCall.params.mapValues { it.value as Any },
+                    result = executionResult.content,
+                    success = executionResult.isSuccess
+                )
                 steps.add(stepResult)
 
                 // 显示工具结果（传递完整输出）
@@ -227,7 +252,7 @@ class CodingAgent(
 
                     // 调用 ErrorRecoveryAgent
                     val recoveryResult = callErrorRecoveryAgent(
-                        command = action.params["command"] as? String ?: "",
+                        command = toolCall.params["command"] ?: "",
                         errorMessage = errorMessage
                     )
 
@@ -235,6 +260,21 @@ class CodingAgent(
                         lastRecoveryResult = recoveryResult
                         // 不继续执行后续工具，让 LLM 在下一轮使用恢复建议
                         break
+                    }
+                }
+
+                // 根据工具类型记录编辑
+                if (toolName == "write-file" && executionResult.isSuccess) {
+                    val path = toolCall.params["path"]
+                    val content = toolCall.params["content"]
+                    val mode = toolCall.params["mode"]
+
+                    if (path != null && content != null) {
+                        edits.add(AgentEdit(
+                            file = path,
+                            operation = if (mode == "create") AgentEditOperation.CREATE else AgentEditOperation.UPDATE,
+                            content = content
+                        ))
                     }
                 }
             }
@@ -348,359 +388,11 @@ class CodingAgent(
         return "2024-01-01T00:00:00Z"
     }
 
-    /**
-     * 解析 LLM 响应中的第一个行动（只执行一个工具）
-     */
-    private fun parseAllActions(llmResponse: String): List<AgentAction> {
-        val actions = mutableListOf<AgentAction>()
 
-        // 提取所有 <devin> 标签内容
-        val devinRegex = Regex("<devin>([\\s\\S]*?)</devin>", RegexOption.MULTILINE)
-        val devinMatches = devinRegex.findAll(llmResponse).toList()
-
-        if (devinMatches.isEmpty()) {
-            // 没有 devin 标签，尝试直接解析
-            val action = parseAction(llmResponse)
-            if (action.type != "reasoning") {
-                actions.add(action)
-            }
-            return actions
-        }
-
-        // 只解析第一个 devin 块中的第一个工具调用
-        val firstDevinMatch = devinMatches.firstOrNull() ?: return actions
-        val commandText = firstDevinMatch.groupValues[1].trim()
-
-        // 在 devin 块中找到第一个工具调用
-        val lines = commandText.lines()
-
-        for (line in lines) {
-            val trimmed = line.trim()
-            if (trimmed.isEmpty()) continue
-
-            // 检查是否是工具调用开始
-            if (trimmed.startsWith("/")) {
-                // 解析这个工具
-                val action = parseAction("<devin>$trimmed</devin>")
-                if (action.type == "tool") {
-                    actions.add(action)
-                    // 只返回第一个工具
-                    return actions
-                }
-            }
-        }
-
-        return actions
-    }
     
-    /**
-     * 解析 LLM 响应中的行动
-     * 寻找 DevIns 工具调用，如 /read-file, /write-file, /shell 等
-     * 
-     * 支持两种格式：
-     * 1. 单行格式：/tool-name param1="value1" param2="value2"
-     * 2. 多行格式：/tool-name\ncommand content
-     */
-    private fun parseAction(llmResponse: String): AgentAction {
-        // 先提取 <devin> 标签内容
-        val devinRegex = Regex("<devin>([\\s\\S]*?)</devin>", RegexOption.MULTILINE)
-        val devinMatch = devinRegex.find(llmResponse)
-        val commandText = devinMatch?.groupValues?.get(1)?.trim() ?: llmResponse
-        
-        // 查找工具调用模式：/tool-name ...
-        val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""", RegexOption.MULTILINE)
-        val match = toolPattern.find(commandText)
-        
-        if (match != null) {
-            val toolName = match.groups[1]?.value ?: return AgentAction("reasoning", null, emptyMap())
-            val rest = match.groups[2]?.value?.trim() ?: ""
-            
-            val params = mutableMapOf<String, Any>()
-            
-            // Parse key="value" parameters (including multiline values)
-            if (rest.contains("=\"")) {
-                val remaining = rest.toCharArray().toList()
-                var i = 0
-                
-                while (i < remaining.size) {
-                    // Find key
-                    val keyStart = i
-                    while (i < remaining.size && remaining[i] != '=') i++
-                    if (i >= remaining.size) break
-                    
-                    val key = remaining.subList(keyStart, i).joinToString("").trim()
-                    i++ // skip '='
-                    
-                    if (i >= remaining.size || remaining[i] != '"') {
-                        i++
-                        continue
-                    }
-                    
-                    i++ // skip opening quote
-                    val valueStart = i
-                    
-                    // Find closing quote (handle escaped quotes)
-                    var escaped = false
-                    while (i < remaining.size) {
-                        when {
-                            escaped -> escaped = false
-                            remaining[i] == '\\' -> escaped = true
-                            remaining[i] == '"' -> break
-                        }
-                        i++
-                    }
-                    
-                    if (i > valueStart && key.isNotEmpty()) {
-                        val value = remaining.subList(valueStart, i).joinToString("")
-                        params[key] = processEscapeSequences(value)
-                    }
-                    
-                    i++ // skip closing quote
-                }
-            } else if (rest.isNotEmpty()) {
-                // 格式 2: /shell\ncommand 或 /tool\ncontent
-                if (toolName == "shell") {
-                    params["command"] = processEscapeSequences(rest.trim())
-                } else {
-                    // 其他工具：尝试提取第一行作为主要参数
-                    val firstLine = rest.lines().firstOrNull()?.trim()
-                    if (firstLine != null && firstLine.isNotEmpty()) {
-                        val defaultParamName = when (toolName) {
-                            "read-file", "write-file" -> "path"
-                            "glob", "grep" -> "pattern"
-                            else -> "content"
-                        }
-                        params[defaultParamName] = processEscapeSequences(firstLine)
-                    }
-                }
-            }
-            
-            return AgentAction(
-                type = "tool",
-                tool = toolName,
-                params = params
-            )
-        }
-        
-        // 没有找到工具调用，视为推理
-        return AgentAction(
-            type = "reasoning",
-            tool = null,
-            params = emptyMap()
-        )
-    }
 
-    /**
-     * 处理转义序列
-     */
-    private fun processEscapeSequences(content: String): String {
-        return content
-            .replace("\\n", "\n")
-            .replace("\\r", "\r")
-            .replace("\\t", "\t")
-            .replace("\\\"", "\"")
-            .replace("\\'", "'")
-            .replace("\\\\", "\\")
-    }
 
-    /**
-     * Normalize tool parameters to match expected parameter names
-     * E.g., "cmd" -> "command" for shell tool
-     */
-    private fun normalizeToolParams(toolName: String, params: Map<String, Any>): Map<String, Any> {
-        return when (toolName) {
-            "shell" -> {
-                val normalized = params.toMutableMap()
-                // Map "cmd" to "command"
-                if (normalized.containsKey("cmd") && !normalized.containsKey("command")) {
-                    normalized["command"] = normalized["cmd"]!!
-                    normalized.remove("cmd")
-                }
-                normalized
-            }
-            else -> params
-        }
-    }
 
-    /**
-     * Execute tool with type-specific parameter conversion
-     */
-    private suspend fun executeToolWithParams(
-        tool: cc.unitmesh.agent.tool.Tool,
-        toolName: String,
-        params: Map<String, Any>,
-        context: ToolExecutionContext
-    ): ToolResult {
-        return when (toolName) {
-            "shell" -> {
-                val shellTool = tool as cc.unitmesh.agent.tool.impl.ShellTool
-                val shellParams = cc.unitmesh.agent.tool.impl.ShellParams(
-                    command = params["command"] as? String ?: "",
-                    workingDirectory = params["workingDirectory"] as? String,
-                    environment = (params["environment"] as? Map<*, *>)?.mapKeys { it.key.toString() }?.mapValues { it.value.toString() } ?: emptyMap(),
-                    timeoutMs = (params["timeoutMs"] as? Number)?.toLong() ?: 30000L,
-                    description = params["description"] as? String,
-                    shell = params["shell"] as? String
-                )
-                val invocation = shellTool.createInvocation(shellParams)
-                invocation.execute(context)
-            }
-            "read-file" -> {
-                val readFileTool = tool as cc.unitmesh.agent.tool.impl.ReadFileTool
-                val readFileParams = cc.unitmesh.agent.tool.impl.ReadFileParams(
-                    path = params["path"] as? String ?: "",
-                    startLine = params["startLine"] as? Int,
-                    endLine = params["endLine"] as? Int,
-                    maxLines = params["maxLines"] as? Int
-                )
-                val invocation = readFileTool.createInvocation(readFileParams)
-                invocation.execute(context)
-            }
-            "write-file" -> {
-                val writeFileTool = tool as cc.unitmesh.agent.tool.impl.WriteFileTool
-                val writeFileParams = cc.unitmesh.agent.tool.impl.WriteFileParams(
-                    path = params["path"] as? String ?: "",
-                    content = params["content"] as? String ?: "",
-                    createDirectories = params["createDirectories"] as? Boolean ?: true,
-                    overwrite = params["overwrite"] as? Boolean ?: true,
-                    append = params["append"] as? Boolean ?: false
-                )
-                val invocation = writeFileTool.createInvocation(writeFileParams)
-                invocation.execute(context)
-            }
-            "glob" -> {
-                val globTool = tool as cc.unitmesh.agent.tool.impl.GlobTool
-                val globParams = cc.unitmesh.agent.tool.impl.GlobParams(
-                    pattern = params["pattern"] as? String ?: ""
-                )
-                val invocation = globTool.createInvocation(globParams)
-                invocation.execute(context)
-            }
-            "grep" -> {
-                val grepTool = tool as cc.unitmesh.agent.tool.impl.GrepTool
-                val grepParams = cc.unitmesh.agent.tool.impl.GrepParams(
-                    pattern = params["pattern"] as? String ?: "",
-                    path = params["path"] as? String,
-                    include = params["include"] as? String,
-                    exclude = params["exclude"] as? String,
-                    caseSensitive = params["caseSensitive"] as? Boolean ?: false,
-                    maxMatches = params["maxMatches"] as? Int ?: 100,
-                    contextLines = params["contextLines"] as? Int ?: 0,
-                    recursive = params["recursive"] as? Boolean ?: true
-                )
-                val invocation = grepTool.createInvocation(grepParams)
-                invocation.execute(context)
-            }
-            else -> {
-                ToolResult.Error("Unknown tool: $toolName", ToolErrorType.UNKNOWN.code.toString())
-            }
-        }
-    }
-
-    /**
-     * 执行一个行动
-     */
-    private suspend fun executeAction(action: AgentAction): AgentStep {
-        if (action.type == "reasoning") {
-            return AgentStep(
-                step = currentIteration,
-                action = "reasoning",
-                tool = null,
-                params = null,
-                result = "Agent is thinking",
-                success = true
-            )
-        }
-        
-        val toolName = action.tool ?: return AgentStep(
-            step = currentIteration,
-            action = "unknown",
-            tool = null,
-            params = null,
-            result = "No tool specified",
-            success = false
-        )
-        
-        // Normalize parameters based on tool type
-        val normalizedParams = normalizeToolParams(toolName, action.params)
-        
-        // 检查工具是否存在
-        val tool = toolRegistry.getTool(toolName)
-        if (tool == null) {
-            val availableTools = toolRegistry.getToolNames().joinToString(", ")
-            val errorMsg = "Tool not found: $toolName. Available: $availableTools"
-            return AgentStep(
-                step = currentIteration,
-                action = toolName,
-                tool = toolName,
-                params = action.params,
-                result = errorMsg,
-                success = false
-            )
-        }
-        
-        return try {
-            // 创建执行上下文
-            val context = ToolExecutionContext(
-                workingDirectory = projectPath,
-                environment = emptyMap()
-            )
-            
-            // Convert params to tool-specific type and execute
-            val result = executeToolWithParams(tool, toolName, normalizedParams, context)
-            
-            // 根据工具类型记录编辑
-            if (toolName == "write-file" && result is ToolResult.Success) {
-                val path = action.params["path"] as? String
-                val content = action.params["content"] as? String
-                val mode = action.params["mode"] as? String
-                
-                if (path != null && content != null) {
-                    edits.add(AgentEdit(
-                        file = path,
-                        operation = if (mode == "create") AgentEditOperation.CREATE else AgentEditOperation.UPDATE,
-                        content = content
-                    ))
-                }
-            }
-            
-            // 转换为 AgentStep
-            AgentStep(
-                step = currentIteration,
-                action = toolName,
-                tool = toolName,
-                params = action.params,
-                result = when (result) {
-                    is ToolResult.Success -> result.content
-                    is ToolResult.Error -> result.message
-                    is ToolResult.AgentResult -> result.content
-                    else -> "Unknown result type"
-                },
-                success = when (result) {
-                    is ToolResult.Success -> true
-                    is ToolResult.Error -> false
-                    is ToolResult.AgentResult -> result.success
-                    else -> false
-                }
-            )
-        } catch (e: Exception) {
-            errorStep(toolName, "Tool execution failed: ${e.message}")
-        }
-    }
-    
-    /**
-     * 创建错误步骤
-     */
-    private fun errorStep(action: String, message: String): AgentStep {
-        return AgentStep(
-            step = currentIteration,
-            action = action,
-            tool = action,
-            params = null,
-            result = message,
-            success = false
-        )
-    }
 
     /**
      * 调用 ErrorRecoveryAgent 来分析和恢复错误
@@ -778,11 +470,4 @@ class CodingAgent(
     }
 }
 
-/**
- * 表示一个 Agent 行动
- */
-data class AgentAction(
-    val type: String,
-    val tool: String?,
-    val params: Map<String, Any>
-)
+

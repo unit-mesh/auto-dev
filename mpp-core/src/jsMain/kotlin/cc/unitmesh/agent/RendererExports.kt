@@ -91,5 +91,12 @@ class JsRendererAdapter(private val jsRenderer: JsCodingAgentRenderer) : CodingA
     override fun renderRepeatWarning(toolName: String, count: Int) {
         jsRenderer.renderRepeatWarning(toolName, count)
     }
+
+    override fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>) {
+        // For now, just log to console since JS renderer doesn't have this method yet
+        console.log("🔐 Tool '$toolName' requires user confirmation")
+        console.log("   Parameters: ${params.entries.joinToString(", ") { "${it.key}=${it.value}" }}")
+        console.log("   (Auto-approved for now)")
+    }
 }
 

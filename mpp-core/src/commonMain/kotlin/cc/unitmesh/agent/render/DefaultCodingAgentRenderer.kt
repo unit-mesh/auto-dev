@@ -76,4 +76,10 @@ class DefaultCodingAgentRenderer : BaseRenderer() {
     override fun renderRepeatWarning(toolName: String, count: Int) {
         println("⚠️  Warning: Tool '$toolName' has been called $count times in a row")
     }
+
+    override fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>) {
+        println("🔐 Tool '$toolName' requires user confirmation")
+        println("   Parameters: ${params.entries.joinToString(", ") { "${it.key}=${it.value}" }}")
+        println("   (Auto-approved for now)")
+    }
 }

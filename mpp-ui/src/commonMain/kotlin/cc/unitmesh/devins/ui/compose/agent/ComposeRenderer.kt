@@ -83,15 +83,15 @@ class ComposeRenderer : BaseRenderer() {
         val description: String,
         val details: String? = null
     )
-    
+
     // BaseRenderer implementation
-    
+
     override fun renderIterationHeader(current: Int, max: Int) {
         _currentIteration = current
         _maxIterations = max
         // Don't show iteration headers in Compose UI - they're handled by the UI components
     }
-    
+
     override fun renderLLMResponseStart() {
         super.renderLLMResponseStart()
         _currentStreamingOutput = ""
@@ -103,23 +103,23 @@ class ComposeRenderer : BaseRenderer() {
         }
         _currentExecutionTime = Clock.System.now().toEpochMilliseconds() - _executionStartTime
     }
-    
+
     override fun renderLLMResponseChunk(chunk: String) {
         reasoningBuffer.append(chunk)
-        
+
         // Wait for more content if we detect an incomplete devin block
         if (hasIncompleteDevinBlock(reasoningBuffer.toString())) {
             return
         }
-        
+
         // Process the buffer to filter out devin blocks
         val processedContent = filterDevinBlocks(reasoningBuffer.toString())
         val cleanContent = cleanNewlines(processedContent)
-        
+
         // Update streaming output for Compose UI
         _currentStreamingOutput = cleanContent
     }
-    
+
     override fun renderLLMResponseEnd() {
         super.renderLLMResponseEnd()
 
@@ -137,7 +137,7 @@ class ComposeRenderer : BaseRenderer() {
         _currentStreamingOutput = ""
         _isProcessing = false
     }
-    
+
     override fun renderToolCall(toolName: String, paramsStr: String) {
         val toolInfo = formatToolCallDisplay(toolName, paramsStr)
 
@@ -175,12 +175,12 @@ class ComposeRenderer : BaseRenderer() {
 
         _currentToolCall = null
     }
-    
+
     override fun renderTaskComplete() {
         _taskCompleted = true
         _isProcessing = false
     }
-    
+
     override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {
         _timeline.add(TimelineItem.TaskCompleteItem(
             success = success,
@@ -204,9 +204,15 @@ class ComposeRenderer : BaseRenderer() {
             )
         ))
     }
-    
+
+    override fun renderUserConfirmationRequest(
+        toolName: String,
+        params: Map<String, Any>
+    ) {
+        TODO("Not yet implemented")
+    }
+
     // Public methods for UI interaction
-    
     fun addUserMessage(content: String) {
         _timeline.add(TimelineItem.MessageItem(
             message = Message(
@@ -225,7 +231,7 @@ class ComposeRenderer : BaseRenderer() {
         _executionStartTime = 0L
         _currentExecutionTime = 0L
     }
-    
+
     fun clearError() {
         _errorMessage = null
     }
