@@ -121,7 +121,9 @@ export class CliRenderer {
       // Find what's new since last output
       const newContent = processedContent.slice(this.lastOutputLength || 0);
       if (newContent.length > 0) {
-        process.stdout.write(chalk.white(newContent));
+        // Clean up excessive newlines - replace multiple consecutive newlines with at most 2
+        const cleanedContent = newContent.replace(/\n{3,}/g, '\n\n');
+        process.stdout.write(chalk.white(cleanedContent));
         this.lastOutputLength = processedContent.length;
       }
     }
@@ -186,7 +188,12 @@ export class CliRenderer {
     }
 
     this.lastIterationReasoning = currentReasoning;
-    console.log(); // Single line break after reasoning
+
+    // Only add a line break if the content doesn't already end with one
+    const trimmedContent = finalContent.trimEnd();
+    if (trimmedContent.length > 0 && !trimmedContent.endsWith('\n')) {
+      console.log(); // Single line break after reasoning only if needed
+    }
   }
 
   private calculateSimilarity(str1: string, str2: string): number {
