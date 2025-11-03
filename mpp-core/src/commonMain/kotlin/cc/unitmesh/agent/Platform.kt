@@ -9,6 +9,9 @@ expect object Platform {
     val isJs: Boolean
     val isWasm: Boolean
     val isAndroid: Boolean
+
+    fun getOSName(): String
+    fun getDefaultShell(): String
 }
 
 /**

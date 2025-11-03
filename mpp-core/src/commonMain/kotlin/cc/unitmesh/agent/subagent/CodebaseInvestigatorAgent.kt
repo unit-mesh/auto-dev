@@ -7,6 +7,7 @@ import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.model.ToolConfig
 import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.serialization.Serializable
 
@@ -47,7 +48,7 @@ class CodebaseInvestigatorAgent(
     private val llmService: KoogLLMService
 ) : SubAgent<InvestigationContext, ToolResult.AgentResult>(
     AgentDefinition(
-        name = "CodebaseInvestigatorAgent",
+        name = ToolNames.CODEBASE_INVESTIGATOR,
         displayName = "Codebase Investigator",
         description = "Analyzes codebase structure and provides insights using code analysis",
         promptConfig = PromptConfig(

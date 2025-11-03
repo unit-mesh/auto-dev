@@ -28,6 +28,11 @@ object ToolNames {
     // Utility tools
     const val HELP = "help"
     const val VERSION = "version"
+
+    // SubAgent tools
+    const val ERROR_RECOVERY = "error-recovery"
+    const val LOG_SUMMARY = "log-summary"
+    const val CODEBASE_INVESTIGATOR = "codebase-investigator"
     
     /**
      * All available tool names
@@ -38,7 +43,8 @@ object ToolNames {
         SHELL, EXEC,
         EDIT_FILE, PATCH_FILE,
         FILE_INFO, DIR_INFO,
-        HELP, VERSION
+        HELP, VERSION,
+        ERROR_RECOVERY, LOG_SUMMARY, CODEBASE_INVESTIGATOR
     )
     
     /**
@@ -56,6 +62,13 @@ object ToolNames {
      */
     val EXECUTION_TOOLS = setOf(
         SHELL, EXEC
+    )
+
+    /**
+     * SubAgent tools for specialized tasks
+     */
+    val SUBAGENT_TOOLS = setOf(
+        ERROR_RECOVERY, LOG_SUMMARY, CODEBASE_INVESTIGATOR
     )
     
     /**

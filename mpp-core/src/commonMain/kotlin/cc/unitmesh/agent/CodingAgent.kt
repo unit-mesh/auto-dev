@@ -10,6 +10,7 @@ import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.subagent.LogSummaryAgent
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorAgent
 import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
@@ -57,7 +58,7 @@ class CodingAgent(
         displayName = "Autonomous Coding Agent",
         description = "Autonomous coding agent for development tasks",
         promptConfig = PromptConfig(
-            systemPrompt = buildCodingAgentSystemPrompt(),
+            systemPrompt = "You are an autonomous coding agent. Use the available tools to complete development tasks.",
             queryTemplate = "Task: \${requirement}\nProject Path: \${projectPath}",
             initialMessages = emptyList()
         ),
@@ -73,7 +74,15 @@ class CodingAgent(
             terminateOnError = false
         ),
         toolConfig = ToolConfig(
-            allowedTools = listOf("read-file", "write-file", "shell", "glob", "error-recovery", "log-summary", "codebase-investigator")
+            allowedTools = listOf(
+                ToolNames.READ_FILE,
+                ToolNames.WRITE_FILE,
+                ToolNames.SHELL,
+                ToolNames.GLOB,
+                ToolNames.ERROR_RECOVERY,
+                ToolNames.LOG_SUMMARY,
+                ToolNames.CODEBASE_INVESTIGATOR
+            )
         )
     )
 ), CodingAgentService {
@@ -179,7 +188,6 @@ class CodingAgent(
             )
         )
 
-        // 使用 DefaultAgentExecutor 执行
         val result = agentExecutor.execute(
             definition = definition,
             context = context,
@@ -248,57 +256,10 @@ class CodingAgent(
         }
     }
 
-    /**
-     * Build system prompt for CodingAgent
-     */
-    private fun buildCodingAgentSystemPrompt(): String {
-        return """
-You are an autonomous coding agent specialized in software development tasks.
-
-## Your Capabilities
-- Analyze project structure and understand codebases
-- Read and write files
-- Execute shell commands
-- Generate and modify code
-- Run tests and fix errors
-- Use SubAgents for specialized tasks (error recovery, log analysis, codebase investigation)
-
-## Available Tools
-- read-file: Read file contents
-- write-file: Create or modify files
-- shell: Execute shell commands
-- glob: Search for files using patterns
-- error-recovery: Analyze and recover from errors (SubAgent)
-- log-summary: Summarize long command outputs (SubAgent)
-- codebase-investigator: Analyze codebase structure and investigate code patterns (SubAgent)
-
-## Working Process
-1. Understand the task requirements
-2. Analyze the project structure
-3. Plan your approach
-4. Execute actions step by step
-5. Test and verify your changes
-6. Use error recovery when commands fail
-7. Call complete_task when finished
-
-## Important Rules
-- Always use DevIns format for tool calls: <devin>/tool-name param="value"</devin>
-- Read files before modifying them to understand the context
-- Test your changes after making them
-- Use error-recovery SubAgent when shell commands fail
-- Call complete_task tool when the task is finished
-- Be methodical and explain your reasoning
-
-## Output Format
-- Explain your thinking process
-- Use tool calls to perform actions
-- Provide clear status updates
-- Call complete_task with a summary when done
-        """.trimIndent()
-    }
-
     override fun buildSystemPrompt(context: CodingAgentContext, language: String): String {
-        return buildCodingAgentSystemPrompt()
+        val renderer = CodingAgentPromptRenderer()
+        val tools = getAllTools()
+        return renderer.renderSystemPrompt(tools, language)
     }
 
     override suspend fun initializeWorkspace(projectPath: String) {
@@ -319,51 +280,3 @@ You are an autonomous coding agent specialized in software development tasks.
     }
 }
 
-/**
- * Build system prompt for CodingAgent
- */
-private fun buildCodingAgentSystemPrompt(): String {
-    return """
-You are an autonomous coding agent specialized in software development tasks.
-
-## Your Capabilities
-- Analyze project structure and understand codebases
-- Read and write files
-- Execute shell commands
-- Generate and modify code
-- Run tests and fix errors
-- Use SubAgents for specialized tasks (error recovery, log analysis, codebase investigation)
-
-## Available Tools
-- read-file: Read file contents
-- write-file: Create or modify files
-- shell: Execute shell commands
-- glob: Search for files using patterns
-- error-recovery: Analyze and recover from errors (SubAgent)
-- log-summary: Summarize long command outputs (SubAgent)
-- codebase-investigator: Analyze codebase structure and investigate code patterns (SubAgent)
-
-## Working Process
-1. Understand the task requirements
-2. Analyze the project structure
-3. Plan your approach
-4. Execute actions step by step
-5. Test and verify your changes
-6. Use error recovery when commands fail
-7. Call complete_task when finished
-
-## Important Rules
-- Always use DevIns format for tool calls: <devin>/tool-name param="value"</devin>
-- Read files before modifying them to understand the context
-- Test your changes after making them
-- Use error-recovery SubAgent when shell commands fail
-- Call complete_task tool when the task is finished
-- Be methodical and explain your reasoning
-
-## Output Format
-- Explain your thinking process
-- Use tool calls to perform actions
-- Provide clear status updates
-- Call complete_task with a summary when done
-    """.trimIndent()
-}
