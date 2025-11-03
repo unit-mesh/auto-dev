@@ -40,7 +40,7 @@ class ToolBasedCommandCompletionProvider(
         return toolType?.tuiEmoji ?: when (toolName) {
             // Fallback for legacy tools
             ToolType.ReadFile.name -> "📄"
-            ToolNames.WRITE_FILE -> "✏️"
+            ToolType.WriteFile.name -> "✏️"
             "grep" -> "🔍"
             "glob" -> "🌐"
             "shell" -> "💻"
