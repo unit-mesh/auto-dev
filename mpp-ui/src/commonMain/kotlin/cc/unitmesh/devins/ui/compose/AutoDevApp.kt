@@ -1,6 +1,5 @@
 package cc.unitmesh.devins.ui.compose
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -11,20 +10,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
-import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
-import cc.unitmesh.devins.workspace.WorkspaceManager
-import cc.unitmesh.devins.ui.compose.chat.*
-import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
-import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
-import cc.unitmesh.devins.ui.compose.theme.ThemeManager
-import cc.unitmesh.llm.KoogLLMService
-import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
+import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
+import cc.unitmesh.devins.ui.compose.chat.DebugDialog
+import cc.unitmesh.devins.ui.compose.chat.MessageList
+import cc.unitmesh.devins.ui.compose.chat.TopBarMenu
+import cc.unitmesh.devins.ui.compose.chat.createChatCallbacks
+import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
+import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
+import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.devins.ui.config.ConfigManager
-import kotlinx.coroutines.launch
 import cc.unitmesh.devins.ui.platform.createFileChooser
-import cc.unitmesh.devins.filesystem.DefaultFileSystem
+import cc.unitmesh.devins.workspace.WorkspaceManager
+import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.llm.ModelConfig
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
