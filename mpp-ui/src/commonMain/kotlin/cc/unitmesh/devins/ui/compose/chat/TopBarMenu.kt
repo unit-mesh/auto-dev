@@ -28,11 +28,13 @@ fun TopBarMenu(
     currentModelConfig: ModelConfig?,
     selectedAgent: String,
     availableAgents: List<String>,
+    useAgentMode: Boolean = true,
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
     onModelConfigChange: (ModelConfig) -> Unit,
     onAgentChange: (String) -> Unit,
+    onModeToggle: () -> Unit = {},
     onShowModelConfig: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -175,7 +177,37 @@ fun TopBarMenu(
 
                     HorizontalDivider()
 
-                    // 3. 主题切换子菜单
+                    // 3. 模式切换
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(
+                                    "Mode",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    if (useAgentMode) "Coding Agent" else "Chat Mode",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onModeToggle()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (useAgentMode) Icons.Default.SmartToy else Icons.Default.Chat,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    )
+
+                    HorizontalDivider()
+
+                    // 4. 主题切换子菜单
                     var themeMenuExpanded by remember { mutableStateOf(false) }
                     Box {
                         DropdownMenuItem(

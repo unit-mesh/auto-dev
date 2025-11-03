@@ -14,6 +14,8 @@ import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.llm.KoogLLMService
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.cancellable
 
 /**
  * CodingAgent - 自动化编码任务的 MainAgent 实现
@@ -130,6 +132,9 @@ class CodingAgent(
 
         // 主循环
         while (shouldContinue()) {
+            // Check for cancellation
+            yield()
+
             incrementIteration()
             renderer.renderIterationHeader(currentIteration, maxIterations)
 
@@ -149,13 +154,13 @@ class CodingAgent(
             try {
                 renderer.renderLLMResponseStart()
 
-                // 使用流式输出
+                // 使用流式输出，支持取消
                 llmService.streamPrompt(
                     userPrompt = fullPrompt,
                     fileSystem = EmptyFileSystem(),  // Agent 不需要 DevIns 编译
                     historyMessages = emptyList(),
                     compileDevIns = false  // Agent 已经格式化了 prompt
-                ).collect { chunk ->
+                ).cancellable().collect { chunk ->
                     llmResponse.append(chunk)
                     renderer.renderLLMResponseChunk(chunk)
                 }
@@ -204,6 +209,9 @@ class CodingAgent(
 
                 // 先显示工具调用
                 renderer.renderToolCall(toolName, paramsStr)
+
+                // Check for cancellation before executing tool
+                yield()
 
                 // 执行行动
                 val stepResult = executeAction(action)

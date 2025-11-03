@@ -14,6 +14,7 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.devins.ui.compose.chat.*
+import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.llm.KoogLLMService
@@ -61,7 +62,8 @@ private fun AutoDevContent() {
     var errorMessage by remember { mutableStateOf("") }
     var showModelConfigDialog by remember { mutableStateOf(false) }
     var selectedAgent by remember { mutableStateOf("Default") }
-    
+    var useAgentMode by remember { mutableStateOf(true) } // New: toggle between chat and agent mode
+
     val availableAgents = listOf("Default", "clarify", "code-review", "test-gen", "refactor")
     
     var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
@@ -165,15 +167,16 @@ private fun AutoDevContent() {
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 顶部工具栏 - 添加状态栏边距
+            // 顶部工具栏 - 添加状态栏边距和模式切换
             TopBarMenu(
                 hasHistory = messages.isNotEmpty(),
                 hasDebugInfo = compilerOutput.isNotEmpty(),
                 currentModelConfig = currentModelConfig,
                 selectedAgent = selectedAgent,
                 availableAgents = availableAgents,
+                useAgentMode = useAgentMode,
                 onOpenDirectory = { openDirectoryChooser() },
-                onClearHistory = { 
+                onClearHistory = {
                     chatHistoryManager.clearCurrentSession()
                     messages = emptyList()
                     currentStreamingOutput = ""
@@ -195,15 +198,25 @@ private fun AutoDevContent() {
                     selectedAgent = agent
                     println("🤖 切换 Agent: $agent")
                 },
+                onModeToggle = { useAgentMode = !useAgentMode },
                 onShowModelConfig = { showModelConfigDialog = true },
                 modifier = Modifier
                     .statusBarsPadding() // 添加状态栏边距
             )
             
-            // 判断是否应该显示紧凑布局（有消息历史或正在处理）
-            val isCompactMode = messages.isNotEmpty() || isLLMProcessing
-            
-            if (isCompactMode) {
+            // Choose between Agent mode and traditional Chat mode
+            if (useAgentMode) {
+                // New Agent mode using ComposeRenderer
+                AgentChatInterface(
+                    llmService = llmService,
+                    onConfigWarning = { showConfigWarning = true },
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                // Traditional chat mode
+                val isCompactMode = messages.isNotEmpty() || isLLMProcessing
+
+                if (isCompactMode) {
                 // 紧凑模式：显示消息列表，输入框在底部
                 MessageList(
                     messages = messages,
@@ -279,9 +292,10 @@ private fun AutoDevContent() {
                         modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
                     )
                 }
-            }
-        }
-    }
+            } // End of traditional chat mode
+        } // End of mode selection
+    } // End of Column
+} // End of Scaffold
     
         // Model Config Dialog
         if (showModelConfigDialog) {
