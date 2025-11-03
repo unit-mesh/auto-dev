@@ -2,116 +2,18 @@ package cc.unitmesh.agent
 
 import cc.unitmesh.agent.core.MainAgent
 import cc.unitmesh.agent.model.*
+import cc.unitmesh.agent.render.CodingAgentRenderer
+import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.subagent.LogSummaryAgent
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolExecutionContext
-import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.llm.KoogLLMService
-
-/**
- * Output renderer interface for CodingAgent
- * Allows customization of output formatting (e.g., CLI vs TUI)
- */
-interface CodingAgentRenderer {
-    fun renderIterationHeader(current: Int, max: Int)
-    fun renderLLMResponseStart()
-    fun renderLLMResponseChunk(chunk: String)
-    fun renderLLMResponseEnd()
-    fun renderToolCall(toolName: String, paramsStr: String)
-    fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?)
-    fun renderTaskComplete()
-    fun renderFinalResult(success: Boolean, message: String, iterations: Int)
-    fun renderError(message: String)
-    fun renderRepeatWarning(toolName: String, count: Int)
-}
-
-/**
- * Default console renderer
- */
-class DefaultCodingAgentRenderer : CodingAgentRenderer {
-    private val reasoningBuffer = StringBuilder()
-    private var isInDevinBlock = false
-
-    override fun renderIterationHeader(current: Int, max: Int) {
-        println("\n[$current/$max] Analyzing and executing...")
-    }
-
-    override fun renderLLMResponseStart() {
-        reasoningBuffer.clear()
-        isInDevinBlock = false
-        print("💭 ")
-    }
-
-    override fun renderLLMResponseChunk(chunk: String) {
-        // Parse chunk to detect devin blocks
-        reasoningBuffer.append(chunk)
-        val text = reasoningBuffer.toString()
-
-        // Check if we're entering or leaving a devin block
-        if (text.contains("<devin>")) {
-            isInDevinBlock = true
-        }
-        if (text.contains("</devin>")) {
-            isInDevinBlock = false
-        }
-
-        // Only print if not in devin block
-        if (!isInDevinBlock && !chunk.contains("<devin>") && !chunk.contains("</devin>")) {
-            print(chunk)
-        }
-    }
-
-    override fun renderLLMResponseEnd() {
-        println("\n")
-    }
-
-    override fun renderToolCall(toolName: String, paramsStr: String) {
-        println("🔧 /$toolName $paramsStr")
-    }
-
-    override fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?) {
-        val icon = if (success) "✓" else "✗"
-        print("   $icon $toolName")
-
-        // Show key result info if available
-        if (success && output != null) {
-            // For read-file, show full content (no truncation) so LLM can see complete file
-            // For other tools, show preview (300 chars)
-            val shouldTruncate = toolName != "read-file"
-            val maxLength = if (shouldTruncate) 300 else Int.MAX_VALUE
-
-            val preview = if (output.length > maxLength) output.take(maxLength) else output
-            if (preview.isNotEmpty() && !preview.startsWith("Successfully")) {
-                print(" → ${preview.replace("\n", " ")}")
-                if (shouldTruncate && output.length > maxLength) print("...")
-            }
-        }
-        println()
-    }
-
-    override fun renderTaskComplete() {
-        println("✓ Task marked as complete\n")
-    }
-
-    override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {
-        val icon = if (success) "✅" else "⚠️ "
-        println("\n$icon $message")
-    }
-
-    override fun renderError(message: String) {
-        println("❌ $message")
-    }
-
-    override fun renderRepeatWarning(toolName: String, count: Int) {
-        println("⚠️  Warning: Tool '$toolName' has been called $count times in a row")
-    }
-}
 
 /**
  * CodingAgent - 自动化编码任务的 MainAgent 实现

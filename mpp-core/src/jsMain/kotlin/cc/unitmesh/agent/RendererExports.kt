@@ -1,7 +1,7 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.render.CodingAgentRenderer
 import kotlin.js.JsExport
-import kotlin.js.JsName
 
 /**
  * JS-friendly renderer interface

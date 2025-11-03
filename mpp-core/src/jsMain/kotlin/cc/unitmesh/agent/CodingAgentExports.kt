@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import kotlin.js.JsExport
