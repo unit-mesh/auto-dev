@@ -81,7 +81,7 @@ class CodingAgent(
                 ToolNames.GLOB,
                 ToolNames.ERROR_RECOVERY,
                 ToolNames.LOG_SUMMARY,
-                ToolNames.CODEBASE_INVESTIGATOR
+//                ToolNames.CODEBASE_INVESTIGATOR
             )
         )
     )
@@ -98,13 +98,13 @@ class CodingAgent(
     // SubAgents
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
-    private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
+//    private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
 
     init {
         // 注册 SubAgents（作为 Tools）
         registerTool(errorRecoveryAgent)
         registerTool(logSummaryAgent)
-        registerTool(codebaseInvestigatorAgent)
+//        registerTool(codebaseInvestigatorAgent)
     }
 
     override suspend fun execute(
