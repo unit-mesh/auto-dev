@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.devins.compiler.variable.VariableTable
 
 /**
@@ -51,9 +52,26 @@ data class CodingAgentContext(
     }
     
     companion object {
-        /**
-         * Builder for platform-specific context creation
-         */
+        fun fromTask(task: AgentTask, toolList: List<ExecutableTool<*, *>>) : CodingAgentContext {
+            return CodingAgentContext(
+                projectPath = task.projectPath,
+                osInfo = getOSInfo(),
+                timestamp = getCurrentTimestamp(),
+                toolList = toolList.joinToString("\n") {
+                    "/${it.name} ${it.description}"
+                }
+            )
+        }
+
+        private fun getOSInfo(): String {
+            return "Unknown"
+        }
+
+        private fun getCurrentTimestamp(): String {
+            return "2024-01-01T00:00:00Z"
+        }
+
+
         interface Builder {
             suspend fun build(projectPath: String, requirement: String): CodingAgentContext
         }

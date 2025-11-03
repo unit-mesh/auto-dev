@@ -120,21 +120,12 @@ class CodingAgent(
     }
 
     private fun buildContext(task: AgentTask): CodingAgentContext {
-        return CodingAgentContext(
-            projectPath = task.projectPath,
-            osInfo = getOSInfo(),
-            timestamp = getCurrentTimestamp(),
-            toolList = getAllTools().joinToString("\n") { it.name }
+        return CodingAgentContext.fromTask(
+            task,
+            toolList = getAllTools()
         )
     }
 
-    private fun getOSInfo(): String {
-        return "Unknown"
-    }
-
-    private fun getCurrentTimestamp(): String {
-        return "2024-01-01T00:00:00Z"
-    }
 
     override fun validateInput(input: Map<String, Any>): AgentTask {
         val requirement = input["requirement"] as? String
