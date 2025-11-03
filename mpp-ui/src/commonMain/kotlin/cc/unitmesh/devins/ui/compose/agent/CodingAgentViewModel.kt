@@ -23,13 +23,12 @@ class CodingAgentViewModel(
 
     val renderer = ComposeRenderer()
 
-    private val codingAgent =
-        CodingAgent(
-            projectPath = projectPath,
-            llmService = llmService,
-            maxIterations,
-            renderer = renderer
-        )
+    private val codingAgent = createPlatformCodingAgent(
+        projectPath = projectPath,
+        llmService = llmService,
+        maxIterations = maxIterations,
+        renderer = renderer
+    )
 
     var isExecuting by mutableStateOf(false)
         private set

@@ -107,6 +107,9 @@ kotlin {
             dependencies {
                 // SQLDelight - Android SQLite driver
                 implementation("app.cash.sqldelight:android-driver:2.1.0")
+                
+                // AndroidX DocumentFile for SAF support
+                implementation("androidx.documentfile:documentfile:1.0.1")
             }
         }
 

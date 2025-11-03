@@ -115,7 +115,7 @@ class WriteFileInvocation(
 class WriteFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<WriteFileParams, ToolResult>() {
-    override val name: String = ToolNames.WRITE_FILE
+    override val name: String = ToolType.WriteFile.name
     override val description: String = """
         Create new files or write content to existing files using the provided content.
         Supports creating parent directories automatically and can append to existing files.
@@ -126,7 +126,6 @@ class WriteFileTool(
     override fun getParameterClass(): String = WriteFileParams::class.simpleName ?: "WriteFileParams"
     
     override fun createToolInvocation(params: WriteFileParams): ToolInvocation<WriteFileParams, ToolResult> {
-        // Validate parameters
         validateParameters(params)
         return WriteFileInvocation(params, this, fileSystem)
     }

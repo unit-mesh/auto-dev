@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
+        android:requestLegacyExternalStorage="true"
         android:label="AutoDev Mobile"
         android:icon="@drawable/ic_launcher"
         android:allowBackup="true"

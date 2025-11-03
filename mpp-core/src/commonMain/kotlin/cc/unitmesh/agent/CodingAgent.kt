@@ -13,8 +13,10 @@ import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.subagent.LogSummaryAgent
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
+import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
+import cc.unitmesh.agent.tool.shell.ShellExecutor
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 
@@ -22,7 +24,9 @@ class CodingAgent(
     private val projectPath: String,
     private val llmService: KoogLLMService,
     override val maxIterations: Int = 100,
-    private val renderer: CodingAgentRenderer = DefaultCodingAgentRenderer()
+    private val renderer: CodingAgentRenderer = DefaultCodingAgentRenderer(),
+    private val fileSystem: ToolFileSystem? = null,
+    private val shellExecutor: ShellExecutor? = null
 ) : MainAgent<AgentTask, ToolResult.AgentResult>(
     AgentDefinition(
         name = "CodingAgent",
@@ -45,8 +49,8 @@ class CodingAgent(
     private val promptRenderer = CodingAgentPromptRenderer()
 
     private val toolRegistry = ToolRegistry(
-        fileSystem = DefaultToolFileSystem(projectPath = projectPath),
-        shellExecutor = DefaultShellExecutor()
+        fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
+        shellExecutor = shellExecutor ?: DefaultShellExecutor()
     )
 
     // New orchestration components
