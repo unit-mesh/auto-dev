@@ -32,4 +32,3 @@ class CodingAgentPromptRenderer {
         return compiler.compile(template)
     }
 }
-
