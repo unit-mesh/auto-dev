@@ -1,42 +1,38 @@
 package cc.unitmesh.agent.render
 
 /**
- * Default console renderer
+ * Default console renderer - simple text output
+ * Suitable for basic console applications and testing
  */
-class DefaultCodingAgentRenderer : CodingAgentRenderer {
-    private val reasoningBuffer = StringBuilder()
-    private var isInDevinBlock = false
+class DefaultCodingAgentRenderer : BaseRenderer() {
 
     override fun renderIterationHeader(current: Int, max: Int) {
         println("\n[$current/$max] Analyzing and executing...")
     }
 
     override fun renderLLMResponseStart() {
-        reasoningBuffer.clear()
-        isInDevinBlock = false
+        super.renderLLMResponseStart()
         print("💭 ")
     }
 
     override fun renderLLMResponseChunk(chunk: String) {
-        // Parse chunk to detect devin blocks
         reasoningBuffer.append(chunk)
-        val text = reasoningBuffer.toString()
 
-        // Check if we're entering or leaving a devin block
-        if (text.contains("<devin>")) {
-            isInDevinBlock = true
-        }
-        if (text.contains("</devin>")) {
-            isInDevinBlock = false
+        // Wait for more content if we detect an incomplete devin block
+        if (hasIncompleteDevinBlock(reasoningBuffer.toString())) {
+            return
         }
 
-        // Only print if not in devin block
-        if (!isInDevinBlock && !chunk.contains("<devin>") && !chunk.contains("</devin>")) {
-            print(chunk)
-        }
+        // Filter devin blocks and output clean content
+        val processedContent = filterDevinBlocks(reasoningBuffer.toString())
+        val cleanContent = cleanNewlines(processedContent)
+
+        // Simple output for default renderer
+        print(cleanContent)
     }
 
     override fun renderLLMResponseEnd() {
+        super.renderLLMResponseEnd()
         println("\n")
     }
 

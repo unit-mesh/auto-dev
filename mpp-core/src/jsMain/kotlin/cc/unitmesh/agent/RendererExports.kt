@@ -1,24 +1,51 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.render.CodingAgentRenderer
+import cc.unitmesh.agent.render.RendererType
 import kotlin.js.JsExport
 
 /**
  * JS-friendly renderer interface
  * Allows TypeScript to provide custom rendering implementations
+ * This interface mirrors the Kotlin CodingAgentRenderer interface
  */
 @JsExport
 interface JsCodingAgentRenderer {
+    // Lifecycle methods
     fun renderIterationHeader(current: Int, max: Int)
     fun renderLLMResponseStart()
     fun renderLLMResponseChunk(chunk: String)
     fun renderLLMResponseEnd()
+
+    // Tool execution methods
     fun renderToolCall(toolName: String, paramsStr: String)
     fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?)
+
+    // Status and completion methods
     fun renderTaskComplete()
     fun renderFinalResult(success: Boolean, message: String, iterations: Int)
     fun renderError(message: String)
     fun renderRepeatWarning(toolName: String, count: Int)
+}
+
+/**
+ * Renderer factory for creating different types of renderers
+ */
+@JsExport
+object RendererFactory {
+    /**
+     * Create a renderer adapter from JS implementation
+     */
+    fun createRenderer(jsRenderer: JsCodingAgentRenderer): CodingAgentRenderer {
+        return JsRendererAdapter(jsRenderer)
+    }
+
+    /**
+     * Get renderer type information for JS consumers
+     */
+    fun getRendererTypes(): Array<String> {
+        return RendererType.values().map { it.name }.toTypedArray()
+    }
 }
 
 /**

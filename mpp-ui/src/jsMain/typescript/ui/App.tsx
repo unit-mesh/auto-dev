@@ -10,7 +10,7 @@ import { Box, Text, useApp, useInput } from 'ink';
 import { ChatInterface } from './ChatInterface.js';
 import { WelcomeScreen } from './WelcomeScreen.js';
 import { ConfigManager } from '../config/ConfigManager.js';
-import { LLMService } from '../agents/LLMService';
+import { LLMService } from '../agents/LLMService.js';
 import { compileDevIns, hasDevInsCommands } from '../utils/commandUtils.js';
 import { findLastSafeSplitPoint } from '../utils/markdownSplitter.js';
 
