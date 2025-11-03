@@ -17,10 +17,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import cc.unitmesh.llm.LLMProviderType
-import cc.unitmesh.llm.ModelRegistry
-import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.ui.i18n.Strings
+import cc.unitmesh.llm.LLMProviderType
+import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.llm.ModelRegistry
 
 /**
  * Dialog for configuring LLM model settings
@@ -47,16 +47,18 @@ fun ModelConfigDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(
-            modifier = Modifier
-                .width(600.dp)
-                .heightIn(max = 700.dp),
+            modifier =
+                Modifier
+                    .width(600.dp)
+                    .heightIn(max = 700.dp),
             shape = MaterialTheme.shapes.large,
             tonalElevation = 8.dp
         ) {
             Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState())
+                modifier =
+                    Modifier
+                        .padding(24.dp)
+                        .verticalScroll(rememberScrollState())
             ) {
                 // Title
                 Text(
@@ -82,9 +84,10 @@ fun ModelConfigDialog(
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedProvider) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                     )
                     ExposedDropdownMenu(
@@ -128,9 +131,10 @@ fun ModelConfigDialog(
                         value = modelName,
                         onValueChange = { modelName = it },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedModel) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                         placeholder = { Text(Strings.enterModel) }
                     )
@@ -244,20 +248,22 @@ fun ModelConfigDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            val config = ModelConfig(
-                                provider = provider,
-                                modelName = modelName.trim(),
-                                apiKey = apiKey.trim(),
-                                temperature = temperature.toDoubleOrNull() ?: 0.0,
-                                maxTokens = maxTokens.toIntOrNull() ?: 2000,
-                                baseUrl = baseUrl.trim()
-                            )
+                            val config =
+                                ModelConfig(
+                                    provider = provider,
+                                    modelName = modelName.trim(),
+                                    apiKey = apiKey.trim(),
+                                    temperature = temperature.toDoubleOrNull() ?: 0.0,
+                                    maxTokens = maxTokens.toIntOrNull() ?: 2000,
+                                    baseUrl = baseUrl.trim()
+                                )
                             onSave(config)
                         },
-                        enabled = when (provider) {
-                            LLMProviderType.OLLAMA -> modelName.isNotBlank() && baseUrl.isNotBlank()
-                            else -> apiKey.isNotBlank() && modelName.isNotBlank()
-                        }
+                        enabled =
+                            when (provider) {
+                                LLMProviderType.OLLAMA -> modelName.isNotBlank() && baseUrl.isNotBlank()
+                                else -> apiKey.isNotBlank() && modelName.isNotBlank()
+                            }
                     ) {
                         Text(Strings.save)
                     }
@@ -266,4 +272,3 @@ fun ModelConfigDialog(
         }
     }
 }
-

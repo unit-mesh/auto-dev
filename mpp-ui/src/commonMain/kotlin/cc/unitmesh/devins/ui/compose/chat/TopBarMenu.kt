@@ -3,18 +3,18 @@ package cc.unitmesh.devins.ui.compose.chat
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.BugReport
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
-import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
+import cc.unitmesh.llm.ModelConfig
 
 /**
  * 移动端优化的顶部工具栏
@@ -50,12 +50,13 @@ fun TopBarMenu(
         color = MaterialTheme.colorScheme.surface
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = if (isAndroid) 16.dp else 32.dp,
-                    vertical = if (isAndroid) 12.dp else 16.dp
-                ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = if (isAndroid) 16.dp else 32.dp,
+                        vertical = if (isAndroid) 12.dp else 16.dp
+                    ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -93,7 +94,7 @@ fun TopBarMenu(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    currentModelConfig?.let { "${it.provider.displayName} / ${it.modelName}" } 
+                                    currentModelConfig?.let { "${it.provider.displayName} / ${it.modelName}" }
                                         ?: "Configure Model",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -227,11 +228,12 @@ fun TopBarMenu(
                             onClick = { themeMenuExpanded = !themeMenuExpanded },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = when (currentTheme) {
-                                        ThemeManager.ThemeMode.LIGHT -> Icons.Default.LightMode
-                                        ThemeManager.ThemeMode.DARK -> Icons.Default.DarkMode
-                                        ThemeManager.ThemeMode.SYSTEM -> Icons.Default.Brightness4
-                                    },
+                                    imageVector =
+                                        when (currentTheme) {
+                                            ThemeManager.ThemeMode.LIGHT -> Icons.Default.LightMode
+                                            ThemeManager.ThemeMode.DARK -> Icons.Default.DarkMode
+                                            ThemeManager.ThemeMode.SYSTEM -> Icons.Default.Brightness4
+                                        },
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -331,5 +333,3 @@ fun TopBarMenu(
         }
     }
 }
-
-

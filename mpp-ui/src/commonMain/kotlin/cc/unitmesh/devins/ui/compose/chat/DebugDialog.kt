@@ -22,9 +22,10 @@ fun DebugDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.9f),
+            modifier =
+                Modifier
+                    .fillMaxWidth(0.9f)
+                    .fillMaxHeight(0.9f),
             shape = MaterialTheme.shapes.large,
             tonalElevation = 6.dp
         ) {
@@ -33,9 +34,10 @@ fun DebugDialog(
             ) {
                 // 标题栏
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -47,34 +49,37 @@ fun DebugDialog(
                         Text("✕", style = MaterialTheme.typography.titleLarge)
                     }
                 }
-                
+
                 HorizontalDivider()
-                
+
                 // 编译输出
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState())
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                            .verticalScroll(rememberScrollState())
                 ) {
                     Text(
                         text = "Compiler Output:",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    
+
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
                     ) {
                         SelectionContainer {
                             Text(
                                 text = compilerOutput,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontFamily = FontFamily.Monospace
-                                ),
+                                style =
+                                    MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = FontFamily.Monospace
+                                    ),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(16.dp)
                             )
@@ -85,4 +90,3 @@ fun DebugDialog(
         }
     }
 }
-

@@ -14,17 +14,15 @@ import kotlinx.coroutines.launch
 
 /**
  * Language Switcher Component
- * 
+ *
  * Provides a dropdown menu for switching between supported languages
  */
 @Composable
-fun LanguageSwitcher(
-    modifier: Modifier = Modifier
-) {
+fun LanguageSwitcher(modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
     val currentLanguage by LanguageManager.currentLanguage.collectAsState()
     val scope = rememberCoroutineScope()
-    
+
     Box(modifier = modifier) {
         OutlinedButton(
             onClick = { expanded = true },
@@ -38,7 +36,7 @@ fun LanguageSwitcher(
             Spacer(modifier = Modifier.width(8.dp))
             Text(currentLanguage.displayName)
         }
-        
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -70,4 +68,3 @@ fun LanguageSwitcher(
         }
     }
 }
-

@@ -14,10 +14,10 @@ data class HighlightStyle(
     val bold: Boolean = false,
     val italic: Boolean = false
 ) {
-    fun toSpanStyle(): SpanStyle = SpanStyle(
-        color = color,
-        fontWeight = if (bold) androidx.compose.ui.text.font.FontWeight.Bold else null,
-        fontStyle = if (italic) androidx.compose.ui.text.font.FontStyle.Italic else null
-    )
+    fun toSpanStyle(): SpanStyle =
+        SpanStyle(
+            color = color,
+            fontWeight = if (bold) androidx.compose.ui.text.font.FontWeight.Bold else null,
+            fontStyle = if (italic) androidx.compose.ui.text.font.FontStyle.Italic else null
+        )
 }
-

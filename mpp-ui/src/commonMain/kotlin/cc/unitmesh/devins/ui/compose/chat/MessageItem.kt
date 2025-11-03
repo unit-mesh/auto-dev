@@ -41,9 +41,10 @@ fun MessageItem(message: Message) {
             else -> {
                 // 用户和 AI 消息都使用 SketchRenderer
                 Box(
-                    modifier = Modifier.Companion
-                        .fillMaxWidth()
-                        .padding(start = 32.dp)
+                    modifier =
+                        Modifier.Companion
+                            .fillMaxWidth()
+                            .padding(start = 32.dp)
                 ) {
                     SketchRenderer.RenderResponse(
                         content = message.content,
@@ -104,11 +105,12 @@ fun MessageLabel(
     role: MessageRole,
     modifier: Modifier = Modifier.Companion
 ) {
-    val (icon, label, color) = when (role) {
-        MessageRole.USER -> Triple("👤", "You", MaterialTheme.colorScheme.secondary)
-        MessageRole.ASSISTANT -> Triple("🤖", "AI Assistant", MaterialTheme.colorScheme.primary)
-        MessageRole.SYSTEM -> Triple("⚙️", "System", MaterialTheme.colorScheme.tertiary)
-    }
+    val (icon, label, color) =
+        when (role) {
+            MessageRole.USER -> Triple("👤", "You", MaterialTheme.colorScheme.secondary)
+            MessageRole.ASSISTANT -> Triple("🤖", "AI Assistant", MaterialTheme.colorScheme.primary)
+            MessageRole.SYSTEM -> Triple("⚙️", "System", MaterialTheme.colorScheme.tertiary)
+        }
 
     Row(
         modifier = modifier,

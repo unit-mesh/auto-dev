@@ -5,7 +5,6 @@ package cc.unitmesh.devins.ui.platform
  * 目前提供空实现，未来可以基于 HTML5 File API 实现
  */
 class JsFileChooser : FileChooser {
-    
     override suspend fun chooseFile(
         title: String,
         initialDirectory: String?,
@@ -14,7 +13,7 @@ class JsFileChooser : FileChooser {
         console.warn("File chooser not implemented for JS platform")
         return null
     }
-    
+
     override suspend fun chooseDirectory(
         title: String,
         initialDirectory: String?
@@ -25,4 +24,3 @@ class JsFileChooser : FileChooser {
 }
 
 actual fun createFileChooser(): FileChooser = JsFileChooser()
-

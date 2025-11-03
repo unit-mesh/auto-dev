@@ -40,7 +40,6 @@ import kotlin.coroutines.resume
  * 必须在 Activity onCreate() 之前注册
  */
 class AndroidFileChooser(private val activity: ComponentActivity) : FileChooser {
-
     private var fileContinuation: Continuation<String?>? = null
     private var directoryContinuation: Continuation<String?>? = null
 
@@ -64,47 +63,50 @@ class AndroidFileChooser(private val activity: ComponentActivity) : FileChooser 
         title: String,
         initialDirectory: String?,
         fileExtensions: List<String>?
-    ): String? = suspendCancellableCoroutine { continuation ->
-        fileContinuation = continuation
+    ): String? =
+        suspendCancellableCoroutine { continuation ->
+            fileContinuation = continuation
 
-        // 构建 MIME 类型数组
-        val mimeTypes = if (fileExtensions.isNullOrEmpty()) {
-            arrayOf("*/*")
-        } else {
-            fileExtensions.map { ext ->
-                getMimeTypeForExtension(ext)
-            }.toTypedArray()
+            // 构建 MIME 类型数组
+            val mimeTypes =
+                if (fileExtensions.isNullOrEmpty()) {
+                    arrayOf("*/*")
+                } else {
+                    fileExtensions.map { ext ->
+                        getMimeTypeForExtension(ext)
+                    }.toTypedArray()
+                }
+
+            continuation.invokeOnCancellation {
+                fileContinuation = null
+            }
+
+            try {
+                filePickerLauncher.launch(mimeTypes)
+            } catch (_: Exception) {
+                continuation.resume(null)
+            }
         }
 
-        continuation.invokeOnCancellation {
-            fileContinuation = null
-        }
-
-        try {
-            filePickerLauncher.launch(mimeTypes)
-        } catch (_: Exception) {
-            continuation.resume(null)
-        }
-    }
-    
     override suspend fun chooseDirectory(
         title: String,
         initialDirectory: String?
-    ): String? = suspendCancellableCoroutine { continuation ->
-        directoryContinuation = continuation
+    ): String? =
+        suspendCancellableCoroutine { continuation ->
+            directoryContinuation = continuation
 
-        continuation.invokeOnCancellation {
-            directoryContinuation = null
-        }
+            continuation.invokeOnCancellation {
+                directoryContinuation = null
+            }
 
-        try {
-            // 可选：设置初始 URI
-            val initialUri = initialDirectory?.toUri()
-            directoryPickerLauncher.launch(initialUri)
-        } catch (_: Exception) {
-            continuation.resume(null)
+            try {
+                // 可选：设置初始 URI
+                val initialUri = initialDirectory?.toUri()
+                directoryPickerLauncher.launch(initialUri)
+            } catch (_: Exception) {
+                continuation.resume(null)
+            }
         }
-    }
 
     /**
      * 从 URI 获取文件路径
@@ -136,7 +138,6 @@ class AndroidFileChooser(private val activity: ComponentActivity) : FileChooser 
         }
     }
 }
-
 
 /**
  * Android 上的 Activity 提供者
@@ -199,9 +200,3 @@ actual fun createFileChooser(): FileChooser {
  */
 @Suppress("unused")
 fun createFileChooser(activity: ComponentActivity): FileChooser = AndroidFileChooser(activity)
-
-
-
-
-
-

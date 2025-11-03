@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.android.application")
+    alias(libs.plugins.ktlint)
 }
 
 repositories {
@@ -19,14 +20,14 @@ kotlin {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
         }
     }
-    
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
         }
     }
-    
+
     js(IR) {
         browser {
             commonWebpackConfig {
@@ -41,7 +42,7 @@ kotlin {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
         }
     }
-    
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -66,44 +67,44 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
             }
         }
-        
+
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
             }
         }
-        
+
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 // Rich text editor for Compose Desktop
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")
-                
+
                 // Multiplatform Markdown Renderer for JVM
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
             }
         }
-        
+
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
             }
         }
-        
+
         val androidMain by getting {
             dependencies {
                 implementation("androidx.activity:activity-compose:1.11.0")
                 implementation("androidx.appcompat:appcompat:1.6.1")
                 implementation("androidx.core:core-ktx:1.17.0")
-                
+
                 // Multiplatform Markdown Renderer for Android
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
             }
         }
-        
+
         val jsMain by getting {
             dependencies {
                 implementation(compose.html.core)
@@ -131,18 +132,19 @@ android {
 
     packaging {
         resources {
-            excludes += setOf(
-                "META-INF/INDEX.LIST",
-                "META-INF/DEPENDENCIES",
-                "META-INF/LICENSE",
-                "META-INF/LICENSE.txt",
-                "META-INF/license.txt",
-                "META-INF/NOTICE",
-                "META-INF/NOTICE.txt",
-                "META-INF/notice.txt",
-                "META-INF/*.kotlin_module",
-                "META-INF/io.netty.versions.properties"
-            )
+            excludes +=
+                setOf(
+                    "META-INF/INDEX.LIST",
+                    "META-INF/DEPENDENCIES",
+                    "META-INF/LICENSE",
+                    "META-INF/LICENSE.txt",
+                    "META-INF/license.txt",
+                    "META-INF/NOTICE",
+                    "META-INF/NOTICE.txt",
+                    "META-INF/notice.txt",
+                    "META-INF/*.kotlin_module",
+                    "META-INF/io.netty.versions.properties"
+                )
         }
     }
 
@@ -182,5 +184,18 @@ compose.desktop {
 tasks.register("printClasspath") {
     doLast {
         println(configurations["jvmRuntimeClasspath"].asPath)
+    }
+}
+
+// Ktlint configuration
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    version.set("1.0.1")
+    android.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(true)
+
+    filter {
+        exclude("**/generated/**")
+        exclude("**/build/**")
     }
 }

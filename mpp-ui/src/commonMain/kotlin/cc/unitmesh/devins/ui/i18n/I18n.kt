@@ -2,7 +2,7 @@ package cc.unitmesh.devins.ui.i18n
 
 /**
  * Internationalization support for AutoDev UI
- * 
+ *
  * Provides simple i18n without external dependencies
  * Supports English and Chinese (Simplified)
  */
@@ -13,7 +13,7 @@ package cc.unitmesh.devins.ui.i18n
 enum class Language(val code: String, val displayName: String) {
     ENGLISH("en", "English"),
     CHINESE("zh", "中文");
-    
+
     companion object {
         fun fromCode(code: String): Language {
             return entries.find { it.code == code } ?: ENGLISH
@@ -26,32 +26,33 @@ enum class Language(val code: String, val displayName: String) {
  */
 object Strings {
     private var currentLanguage = Language.ENGLISH
-    
+
     // Translation tables
-    private val translations = mapOf(
-        Language.ENGLISH to EnglishStrings,
-        Language.CHINESE to ChineseStrings
-    )
-    
+    private val translations =
+        mapOf(
+            Language.ENGLISH to EnglishStrings,
+            Language.CHINESE to ChineseStrings
+        )
+
     /**
      * Set current language
      */
     fun setLanguage(lang: Language) {
         currentLanguage = lang
     }
-    
+
     /**
      * Get current language
      */
     fun getLanguage(): Language = currentLanguage
-    
+
     /**
      * Get translated string
      */
     private fun get(key: String): String {
         return translations[currentLanguage]?.get(key) ?: key
     }
-    
+
     // Common strings
     val save: String get() = get("common.save")
     val cancel: String get() = get("common.cancel")
@@ -59,14 +60,14 @@ object Strings {
     val confirm: String get() = get("common.confirm")
     val configure: String get() = get("common.configure")
     val loading: String get() = get("common.loading")
-    
+
     // Chat UI
     val chatTitle: String get() = get("chat.title")
     val openDirectory: String get() = get("chat.openDirectory")
     val openProject: String get() = get("chat.openProject")
     val newChat: String get() = get("chat.newChat")
     val debugInfo: String get() = get("chat.debugInfo")
-    
+
     // Model Configuration
     val modelConfigTitle: String get() = get("modelConfig.title")
     val provider: String get() = get("modelConfig.provider")
@@ -85,16 +86,14 @@ object Strings {
     val maxResponseLength: String get() = get("modelConfig.maxResponseLength")
     val temperatureRange: String get() = get("modelConfig.temperatureRange")
     val selected: String get() = get("modelConfig.selected")
-    
+
     // Messages
-    fun failedToLoadConfigs(error: String): String = 
-        get("messages.failedToLoadConfigs").replace("{{error}}", error)
-    
-    fun failedToSetActiveConfig(error: String): String = 
+    fun failedToLoadConfigs(error: String): String = get("messages.failedToLoadConfigs").replace("{{error}}", error)
+
+    fun failedToSetActiveConfig(error: String): String =
         get("messages.failedToSetActiveConfig").replace("{{error}}", error)
-    
-    fun failedToSaveConfig(error: String): String = 
-        get("messages.failedToSaveConfig").replace("{{error}}", error)
+
+    fun failedToSaveConfig(error: String): String = get("messages.failedToSaveConfig").replace("{{error}}", error)
 }
 
 /**
@@ -107,13 +106,11 @@ private object EnglishStrings : Map<String, String> by mapOf(
     "common.confirm" to "Confirm",
     "common.configure" to "Configure",
     "common.loading" to "Loading",
-    
     "chat.title" to "AutoDev - DevIn AI",
     "chat.openDirectory" to "Open Directory",
     "chat.openProject" to "Open Project",
     "chat.newChat" to "New Chat",
     "chat.debugInfo" to "Debug Info",
-    
     "modelConfig.title" to "LLM Model Configuration",
     "modelConfig.provider" to "Provider",
     "modelConfig.model" to "Model",
@@ -131,7 +128,6 @@ private object EnglishStrings : Map<String, String> by mapOf(
     "modelConfig.maxResponseLength" to "Maximum response length",
     "modelConfig.temperatureRange" to "0.0 - 2.0",
     "modelConfig.selected" to "Selected",
-    
     "messages.failedToLoadConfigs" to "Failed to load configs: {{error}}",
     "messages.failedToSetActiveConfig" to "Failed to set active config: {{error}}",
     "messages.failedToSaveConfig" to "Failed to save config: {{error}}"
@@ -147,13 +143,11 @@ private object ChineseStrings : Map<String, String> by mapOf(
     "common.confirm" to "确认",
     "common.configure" to "配置",
     "common.loading" to "加载中",
-    
     "chat.title" to "AutoDev - DevIn AI",
     "chat.openDirectory" to "打开目录",
     "chat.openProject" to "打开项目",
     "chat.newChat" to "新建聊天",
     "chat.debugInfo" to "调试信息",
-    
     "modelConfig.title" to "LLM 模型配置",
     "modelConfig.provider" to "提供商",
     "modelConfig.model" to "模型",
@@ -171,9 +165,7 @@ private object ChineseStrings : Map<String, String> by mapOf(
     "modelConfig.maxResponseLength" to "最大响应长度",
     "modelConfig.temperatureRange" to "0.0 - 2.0",
     "modelConfig.selected" to "已选择",
-    
     "messages.failedToLoadConfigs" to "加载配置失败：{{error}}",
     "messages.failedToSetActiveConfig" to "设置活动配置失败：{{error}}",
     "messages.failedToSaveConfig" to "保存配置失败：{{error}}"
 )
-

@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 fun AutoDevApp() {
     // 直接读取 ThemeManager 的当前主题（它本身就是 mutableStateOf，会自动触发重组）
     val currentTheme = ThemeManager.currentTheme
-    
+
     // 应用主题
     AutoDevTheme(themeMode = currentTheme) {
         AutoDevContent()
@@ -49,13 +49,13 @@ private fun AutoDevContent() {
     var messages by remember { mutableStateOf<List<Message>>(emptyList()) }
     var currentStreamingOutput by remember { mutableStateOf("") }
     var isLLMProcessing by remember { mutableStateOf(false) }
-    
+
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
-    
+
     LaunchedEffect(Unit) {
         messages = chatHistoryManager.getMessages()
     }
-    
+
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var showConfigWarning by remember { mutableStateOf(false) }
@@ -67,7 +67,7 @@ private fun AutoDevContent() {
     var useAgentMode by remember { mutableStateOf(true) } // New: toggle between chat and agent mode
 
     val availableAgents = listOf("Default", "clarify", "code-review", "test-gen", "refactor")
-    
+
     var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
 
     val workspaceState by WorkspaceManager.workspaceFlow.collectAsState()
@@ -89,7 +89,7 @@ private fun AutoDevContent() {
             }
         }
     }
-    
+
     // Load configuration from file
     LaunchedEffect(Unit) {
         try {
@@ -107,42 +107,44 @@ private fun AutoDevContent() {
             println("⚠️ 加载配置失败: ${e.message}")
         }
     }
-    
-    val callbacks = createChatCallbacks(
-        fileSystem = currentWorkspace.fileSystem,
-        llmService = llmService,
-        chatHistoryManager = chatHistoryManager,
-        scope = scope,
-        onCompilerOutput = { compilerOutput = it },
-        onUserMessage = { userMsg ->
-            // 添加用户消息到本地状态
-            messages = messages + userMsg
-        },
-        onStreamingOutput = { output ->
-            // 更新流式输出
-            currentStreamingOutput = output
-        },
-        onAssistantMessage = { assistantMsg ->
-            // AI 响应完成，添加到本地状态
-            messages = messages + assistantMsg
-            currentStreamingOutput = ""  // 清空流式输出
-        },
-        onProcessingChange = { isLLMProcessing = it },
-        onError = { 
-            errorMessage = it
-            showErrorDialog = true
-        },
-        onConfigWarning = { showConfigWarning = true }
-    )
-    
+
+    val callbacks =
+        createChatCallbacks(
+            fileSystem = currentWorkspace.fileSystem,
+            llmService = llmService,
+            chatHistoryManager = chatHistoryManager,
+            scope = scope,
+            onCompilerOutput = { compilerOutput = it },
+            onUserMessage = { userMsg ->
+                // 添加用户消息到本地状态
+                messages = messages + userMsg
+            },
+            onStreamingOutput = { output ->
+                // 更新流式输出
+                currentStreamingOutput = output
+            },
+            onAssistantMessage = { assistantMsg ->
+                // AI 响应完成，添加到本地状态
+                messages = messages + assistantMsg
+                currentStreamingOutput = "" // 清空流式输出
+            },
+            onProcessingChange = { isLLMProcessing = it },
+            onError = {
+                errorMessage = it
+                showErrorDialog = true
+            },
+            onConfigWarning = { showConfigWarning = true }
+        )
+
     // 打开目录选择器
     fun openDirectoryChooser() {
         scope.launch {
             val fileChooser = createFileChooser()
-            val selectedPath = fileChooser.chooseDirectory(
-                title = "Select Project Directory",
-                initialDirectory = currentWorkspace.rootPath
-            )
+            val selectedPath =
+                fileChooser.chooseDirectory(
+                    title = "Select Project Directory",
+                    initialDirectory = currentWorkspace.rootPath
+                )
 
             selectedPath?.let { path ->
                 val projectName = path.substringAfterLast('/')
@@ -156,7 +158,7 @@ private fun AutoDevContent() {
             }
         }
     }
-    
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -164,9 +166,10 @@ private fun AutoDevContent() {
         contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 顶部工具栏 - 添加状态栏边距和模式切换
@@ -202,10 +205,11 @@ private fun AutoDevContent() {
                 },
                 onModeToggle = { useAgentMode = !useAgentMode },
                 onShowModelConfig = { showModelConfigDialog = true },
-                modifier = Modifier
-                    .statusBarsPadding() // 添加状态栏边距
+                modifier =
+                    Modifier
+                        .statusBarsPadding() // 添加状态栏边距
             )
-            
+
             // Choose between Agent mode and traditional Chat mode
             if (useAgentMode) {
                 // New Agent mode using ComposeRenderer
@@ -219,211 +223,215 @@ private fun AutoDevContent() {
                 val isCompactMode = messages.isNotEmpty() || isLLMProcessing
 
                 if (isCompactMode) {
-                // 紧凑模式：显示消息列表，输入框在底部
-                MessageList(
-                    messages = messages,
-                    isLLMProcessing = isLLMProcessing,
-                    currentOutput = currentStreamingOutput,
-                    projectPath = currentWorkspace.rootPath,
-                    fileSystem = currentWorkspace.fileSystem,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
-                
-                // 底部输入框 - 紧凑模式（一行）
-                // 使用 Column 包装以正确处理键盘遮挡
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .imePadding() // 键盘弹出时，整个区域向上推
-                        .navigationBarsPadding() // 添加导航栏边距
-                        .padding(horizontal = 12.dp, vertical = 8.dp)  // 外部边距
-                ) {
-                    DevInEditorInput(
-                        initialText = "",
-                        placeholder = "Type your message...",
-                        callbacks = callbacks,
-                        completionManager = currentWorkspace.completionManager,
-                        isCompactMode = true,
-                        onModelConfigChange = { config ->
-                            currentModelConfig = config
-                            if (config.isValid()) {
-                                try {
-                                    llmService = KoogLLMService.create(config)
-                                    println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
-                                } catch (e: Exception) {
-                                    println("❌ 切换模型失败: ${e.message}")
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                    // 紧凑模式：显示消息列表，输入框在底部
+                    MessageList(
+                        messages = messages,
+                        isLLMProcessing = isLLMProcessing,
+                        currentOutput = currentStreamingOutput,
+                        projectPath = currentWorkspace.rootPath,
+                        fileSystem = currentWorkspace.fileSystem,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
                     )
-                }
-            } else {
-                // 默认模式：输入框居中显示
-                // Android: 使用更紧凑的布局和更小的 padding
-                val isAndroid = Platform.isAndroid
 
-                // 使用 Box 支持键盘避让
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .imePadding() // 键盘弹出时自动调整
-                        .padding(if (isAndroid) 16.dp else 32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // 完整的输入组件（包含底部工具栏）
-                    DevInEditorInput(
-                        initialText = "",
-                        placeholder = "Type your message...",
-                        callbacks = callbacks,
-                        completionManager = currentWorkspace.completionManager,
-                        onModelConfigChange = { config ->
-                            currentModelConfig = config
-                            if (config.isValid()) {
-                                try {
-                                    llmService = KoogLLMService.create(config)
-                                    println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
-                                } catch (e: Exception) {
-                                    println("❌ 配置 LLM 服务失败: ${e.message}")
-                                    llmService = null
+                    // 底部输入框 - 紧凑模式（一行）
+                    // 使用 Column 包装以正确处理键盘遮挡
+                    Column(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .imePadding() // 键盘弹出时，整个区域向上推
+                                .navigationBarsPadding() // 添加导航栏边距
+                                .padding(horizontal = 12.dp, vertical = 8.dp) // 外部边距
+                    ) {
+                        DevInEditorInput(
+                            initialText = "",
+                            placeholder = "Type your message...",
+                            callbacks = callbacks,
+                            completionManager = currentWorkspace.completionManager,
+                            isCompactMode = true,
+                            onModelConfigChange = { config ->
+                                currentModelConfig = config
+                                if (config.isValid()) {
+                                    try {
+                                        llmService = KoogLLMService.create(config)
+                                        println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
+                                    } catch (e: Exception) {
+                                        println("❌ 切换模型失败: ${e.message}")
+                                    }
                                 }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                } else {
+                    // 默认模式：输入框居中显示
+                    // Android: 使用更紧凑的布局和更小的 padding
+                    val isAndroid = Platform.isAndroid
+
+                    // 使用 Box 支持键盘避让
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .imePadding() // 键盘弹出时自动调整
+                                .padding(if (isAndroid) 16.dp else 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // 完整的输入组件（包含底部工具栏）
+                        DevInEditorInput(
+                            initialText = "",
+                            placeholder = "Type your message...",
+                            callbacks = callbacks,
+                            completionManager = currentWorkspace.completionManager,
+                            onModelConfigChange = { config ->
+                                currentModelConfig = config
+                                if (config.isValid()) {
+                                    try {
+                                        llmService = KoogLLMService.create(config)
+                                        println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
+                                    } catch (e: Exception) {
+                                        println("❌ 配置 LLM 服务失败: ${e.message}")
+                                        llmService = null
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
+                        )
+                    }
+                } // End of traditional chat mode
+            } // End of mode selection
+        } // End of Column
+    } // End of Scaffold
+
+    // Model Config Dialog
+    if (showModelConfigDialog) {
+        cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog(
+            currentConfig = currentModelConfig ?: ModelConfig(),
+            onDismiss = { showModelConfigDialog = false },
+            onSave = { newConfig ->
+                currentModelConfig = newConfig
+                if (newConfig.isValid()) {
+                    try {
+                        llmService = KoogLLMService.create(newConfig)
+                        println("✅ 模型配置已保存")
+                    } catch (e: Exception) {
+                        println("❌ 配置 LLM 服务失败: ${e.message}")
+                        llmService = null
+                    }
+                }
+                showModelConfigDialog = false
+            }
+        )
+    }
+
+    // Debug Dialog
+    if (showDebugDialog) {
+        DebugDialog(
+            compilerOutput = compilerOutput,
+            onDismiss = { showDebugDialog = false }
+        )
+    }
+
+    // 配置警告弹窗
+    if (showConfigWarning) {
+        AlertDialog(
+            onDismissRequest = { showConfigWarning = false },
+            title = {
+                Text("⚠️ 未配置 LLM 模型")
+            },
+            text = {
+                Column {
+                    Text("请先配置 LLM 模型才能使用 AI 功能。")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "点击右下角的模型选择器进行配置。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            } // End of traditional chat mode
-        } // End of mode selection
-    } // End of Column
-} // End of Scaffold
-    
-        // Model Config Dialog
-        if (showModelConfigDialog) {
-            cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog(
-                currentConfig = currentModelConfig ?: ModelConfig(),
-                onDismiss = { showModelConfigDialog = false },
-                onSave = { newConfig ->
-                    currentModelConfig = newConfig
-                    if (newConfig.isValid()) {
-                        try {
-                            llmService = KoogLLMService.create(newConfig)
-                            println("✅ 模型配置已保存")
-                        } catch (e: Exception) {
-                            println("❌ 配置 LLM 服务失败: ${e.message}")
-                            llmService = null
-                        }
-                    }
-                    showModelConfigDialog = false
+            },
+            confirmButton = {
+                TextButton(onClick = { showConfigWarning = false }) {
+                    Text("知道了")
                 }
-            )
-        }
-        
-        // Debug Dialog
-        if (showDebugDialog) {
-            DebugDialog(
-                compilerOutput = compilerOutput,
-                onDismiss = { showDebugDialog = false }
-            )
-        }
-        
-        // 配置警告弹窗
-        if (showConfigWarning) {
-            AlertDialog(
-                onDismissRequest = { showConfigWarning = false },
-                title = {
-                    Text("⚠️ 未配置 LLM 模型")
-                },
-                text = {
-                    Column {
-                        Text("请先配置 LLM 模型才能使用 AI 功能。")
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "点击右下角的模型选择器进行配置。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showConfigWarning = false }) {
-                        Text("知道了")
-                    }
-                }
-            )
-        }
-        
-        // 错误提示弹窗
-        if (showErrorDialog) {
-            AlertDialog(
-                onDismissRequest = { showErrorDialog = false },
-                title = {
-                    Text("❌ LLM API 错误")
-                },
-                text = {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                        Text(
-                            "调用 LLM API 时发生错误：",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        // 错误信息卡片
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
+            }
+        )
+    }
+
+    // 错误提示弹窗
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = {
+                Text("❌ LLM API 错误")
+            },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text(
+                        "调用 LLM API 时发生错误：",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 错误信息卡片
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors =
+                            CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.errorContainer
                             )
-                        ) {
-                            SelectionContainer {
-                                Text(
-                                    text = errorMessage,
-                                    style = MaterialTheme.typography.bodySmall.copy(
+                    ) {
+                        SelectionContainer {
+                            Text(
+                                text = errorMessage,
+                                style =
+                                    MaterialTheme.typography.bodySmall.copy(
                                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                                     ),
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.padding(12.dp)
-                                )
-                            }
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(12.dp)
+                            )
                         }
-                        
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        // 常见问题提示
-                        Text(
-                            "常见解决方法：",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            "• 检查 API Key 是否正确\n" +
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 常见问题提示
+                    Text(
+                        "常见解决方法：",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "• 检查 API Key 是否正确\n" +
                             "• 确认账户余额充足\n" +
                             "• 检查网络连接\n" +
                             "• 验证模型名称是否正确",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showErrorDialog = false }) {
-                        Text("关闭")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showErrorDialog = false
-                            // 打开模型配置
-                        }
-                    ) {
-                        Text("重新配置")
-                    }
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            )
-        }
+            },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("关闭")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showErrorDialog = false
+                        // 打开模型配置
+                    }
+                ) {
+                    Text("重新配置")
+                }
+            }
+        )
+    }
 }
-

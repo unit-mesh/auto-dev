@@ -16,7 +16,7 @@ interface FileChooser {
         initialDirectory: String? = null,
         fileExtensions: List<String>? = null
     ): String?
-    
+
     /**
      * 选择目录
      * @param title 对话框标题
@@ -33,4 +33,3 @@ interface FileChooser {
  * 获取平台特定的文件选择器实例
  */
 expect fun createFileChooser(): FileChooser
-

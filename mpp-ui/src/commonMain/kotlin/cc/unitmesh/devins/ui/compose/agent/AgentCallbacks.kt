@@ -13,13 +13,13 @@ fun createAgentCallbacks(
     return object : EditorCallbacks {
         override fun onSubmit(text: String) {
             if (text.isBlank()) return
-            
+
             // Check if agent is already executing
             if (viewModel.isExecuting) {
                 println("Agent is already executing, ignoring new task")
                 return
             }
-            
+
             // Execute the task using CodingAgent
             viewModel.executeTask(text.trim())
         }

@@ -18,18 +18,24 @@ import androidx.compose.ui.unit.dp
  * 渲染代码块
  */
 @Composable
-fun CodeBlockRenderer(code: String, language: String, displayName: String = language) {
+fun CodeBlockRenderer(
+    code: String,
+    language: String,
+    displayName: String = language
+) {
     Card(
         modifier = Modifier.Companion.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
     ) {
         Column(
-            modifier = Modifier.Companion
-                .fillMaxWidth()
-                .padding(12.dp)
+            modifier =
+                Modifier.Companion
+                    .fillMaxWidth()
+                    .padding(12.dp)
         ) {
             if (displayName.isNotEmpty() && displayName != "markdown") {
                 Text(
@@ -43,9 +49,10 @@ fun CodeBlockRenderer(code: String, language: String, displayName: String = lang
             SelectionContainer {
                 Text(
                     text = code,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Companion.Monospace
-                    ),
+                    style =
+                        MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Companion.Monospace
+                        ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.Companion.fillMaxWidth()
                 )

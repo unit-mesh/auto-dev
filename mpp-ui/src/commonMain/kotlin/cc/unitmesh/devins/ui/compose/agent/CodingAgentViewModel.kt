@@ -3,8 +3,8 @@ package cc.unitmesh.devins.ui.compose.agent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.agent.AgentTask
+import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 
@@ -25,12 +25,13 @@ class CodingAgentViewModel(
     val renderer = ComposeRenderer()
 
     // Create CodingAgent with ComposeRenderer
-    private val codingAgent = CodingAgent(
-        projectPath = projectPath,
-        llmService = llmService,
-        maxIterations = maxIterations,
-        renderer = renderer
-    )
+    private val codingAgent =
+        CodingAgent(
+            projectPath = projectPath,
+            llmService = llmService,
+            maxIterations = maxIterations,
+            renderer = renderer
+        )
 
     // Simple execution state
     var isExecuting by mutableStateOf(false)
@@ -52,35 +53,36 @@ class CodingAgentViewModel(
         renderer.clearError()
         renderer.addUserMessage(task)
 
-        currentExecutionJob = scope.launch {
-            try {
-                val agentTask = AgentTask(
-                    requirement = task,
-                    projectPath = projectPath
-                )
+        currentExecutionJob =
+            scope.launch {
+                try {
+                    val agentTask =
+                        AgentTask(
+                            requirement = task,
+                            projectPath = projectPath
+                        )
 
-                val result = codingAgent.executeTask(agentTask)
+                    val result = codingAgent.executeTask(agentTask)
 
-                // Result is already handled by the renderer
-                isExecuting = false
-                currentExecutionJob = null
+                    // Result is already handled by the renderer
+                    isExecuting = false
+                    currentExecutionJob = null
+                } catch (e: CancellationException) {
+                    // Task was cancelled - reset all states and add cancellation message at the end
+                    renderer.forceStop() // Stop all loading states
 
-            } catch (e: CancellationException) {
-                // Task was cancelled - reset all states and add cancellation message at the end
-                renderer.forceStop() // Stop all loading states
-
-                // Add cancellation message to timeline (will appear at the end)
-                renderer.renderError("Task cancelled by user")
-                isExecuting = false
-                currentExecutionJob = null
-            } catch (e: Exception) {
-                renderer.renderError(e.message ?: "Unknown error")
-                isExecuting = false
-                currentExecutionJob = null
+                    // Add cancellation message to timeline (will appear at the end)
+                    renderer.renderError("Task cancelled by user")
+                    isExecuting = false
+                    currentExecutionJob = null
+                } catch (e: Exception) {
+                    renderer.renderError(e.message ?: "Unknown error")
+                    isExecuting = false
+                    currentExecutionJob = null
+                }
             }
-        }
     }
-    
+
     /**
      * Cancel current task
      */
@@ -113,4 +115,3 @@ class CodingAgentViewModel(
         scope.cancel()
     }
 }
-

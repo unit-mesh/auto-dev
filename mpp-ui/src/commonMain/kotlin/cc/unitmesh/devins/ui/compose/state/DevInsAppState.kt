@@ -2,9 +2,9 @@ package cc.unitmesh.devins.ui.compose.state
 
 import androidx.compose.runtime.*
 import cc.unitmesh.devins.compiler.DevInsCompilerFacade
-import cc.unitmesh.devins.ui.platform.createFileChooser
-import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
+import cc.unitmesh.devins.filesystem.ProjectFileSystem
+import cc.unitmesh.devins.ui.platform.createFileChooser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -45,19 +45,20 @@ class DevInsAppState(
 
     val showOutput: Boolean
         get() = output.isNotBlank()
-    
+
     fun updateEditorContent(content: String) {
         editorContent = content
     }
-    
+
     fun openFile() {
         scope.launch {
             val fileChooser = createFileChooser()
-            val selectedPath = fileChooser.chooseFile(
-                title = "Open File",
-                initialDirectory = currentFilePath?.substringBeforeLast('/'),
-                fileExtensions = listOf("devin", "devins", "kt", "java", "js", "ts", "py", "json", "yaml", "yml", "md", "txt")
-            )
+            val selectedPath =
+                fileChooser.chooseFile(
+                    title = "Open File",
+                    initialDirectory = currentFilePath?.substringBeforeLast('/'),
+                    fileExtensions = listOf("devin", "devins", "kt", "java", "js", "ts", "py", "json", "yaml", "yml", "md", "txt")
+                )
 
             selectedPath?.let { openFileInEditor(it) }
         }
@@ -66,10 +67,11 @@ class DevInsAppState(
     fun openProject() {
         scope.launch {
             val fileChooser = createFileChooser()
-            val selectedPath = fileChooser.chooseDirectory(
-                title = "Select Project Directory",
-                initialDirectory = projectRootPath
-            )
+            val selectedPath =
+                fileChooser.chooseDirectory(
+                    title = "Select Project Directory",
+                    initialDirectory = projectRootPath
+                )
 
             selectedPath?.let { path ->
                 projectRootPath = path
@@ -108,7 +110,7 @@ class DevInsAppState(
             statusMessage = "No file to save"
         }
     }
-    
+
     fun compile() {
         if (!canCompile) return
 
@@ -123,9 +125,9 @@ class DevInsAppState(
                     output = result.output
                     isOutputError = false
                     statusMessage = "Compilation successful - " +
-                            "Variables: ${result.statistics.variableCount}, " +
-                            "Commands: ${result.statistics.commandCount}, " +
-                            "Agents: ${result.statistics.agentCount}"
+                        "Variables: ${result.statistics.variableCount}, " +
+                        "Commands: ${result.statistics.commandCount}, " +
+                        "Agents: ${result.statistics.agentCount}"
                 } else {
                     output = "Error: ${result.errorMessage}"
                     isOutputError = true
@@ -140,14 +142,15 @@ class DevInsAppState(
             }
         }
     }
-    
+
     fun clearOutput() {
         output = ""
         isOutputError = false
         statusMessage = "Output cleared"
     }
-    
-    private fun getDefaultContent(): String = """
+
+    private fun getDefaultContent(): String =
+        """
         ---
         name: "DevIns Example"
         variables:
@@ -175,12 +178,10 @@ class DevInsAppState(
 
         Author: ${'$'}author
         Version: ${'$'}version
-    """.trimIndent()
+        """.trimIndent()
 }
 
 @Composable
-fun rememberDevInsAppState(
-    scope: CoroutineScope = rememberCoroutineScope()
-): DevInsAppState {
+fun rememberDevInsAppState(scope: CoroutineScope = rememberCoroutineScope()): DevInsAppState {
     return remember { DevInsAppState(scope) }
 }

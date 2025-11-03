@@ -11,7 +11,6 @@ import kotlinx.datetime.Clock
  * Integrates the BaseRenderer architecture with Compose state management
  */
 class ComposeRenderer : BaseRenderer() {
-
     // Unified timeline for all events (messages, tool calls, results)
     private val _timeline = mutableStateListOf<TimelineItem>()
     val timeline: List<TimelineItem> = _timeline
@@ -86,7 +85,10 @@ class ComposeRenderer : BaseRenderer() {
 
     // BaseRenderer implementation
 
-    override fun renderIterationHeader(current: Int, max: Int) {
+    override fun renderIterationHeader(
+        current: Int,
+        max: Int
+    ) {
         _currentIteration = current
         _maxIterations = max
         // Don't show iteration headers in Compose UI - they're handled by the UI components
@@ -126,52 +128,71 @@ class ComposeRenderer : BaseRenderer() {
         // Add the completed reasoning as a message to timeline
         val finalContent = _currentStreamingOutput.trim()
         if (finalContent.isNotEmpty()) {
-            _timeline.add(TimelineItem.MessageItem(
-                message = Message(
-                    role = MessageRole.ASSISTANT,
-                    content = finalContent
+            _timeline.add(
+                TimelineItem.MessageItem(
+                    message =
+                        Message(
+                            role = MessageRole.ASSISTANT,
+                            content = finalContent
+                        )
                 )
-            ))
+            )
         }
 
         _currentStreamingOutput = ""
         _isProcessing = false
     }
 
-    override fun renderToolCall(toolName: String, paramsStr: String) {
+    override fun renderToolCall(
+        toolName: String,
+        paramsStr: String
+    ) {
         val toolInfo = formatToolCallDisplay(toolName, paramsStr)
 
         // Add tool call to timeline
-        _timeline.add(TimelineItem.ToolCallItem(
-            toolName = toolInfo.toolName,
-            description = toolInfo.description,
-            details = toolInfo.details
-        ))
+        _timeline.add(
+            TimelineItem.ToolCallItem(
+                toolName = toolInfo.toolName,
+                description = toolInfo.description,
+                details = toolInfo.details
+            )
+        )
 
         // Keep current tool call for status display
-        _currentToolCall = ToolCallInfo(
-            toolName = toolInfo.toolName,
-            description = toolInfo.description,
-            details = toolInfo.details
-        )
+        _currentToolCall =
+            ToolCallInfo(
+                toolName = toolInfo.toolName,
+                description = toolInfo.description,
+                details = toolInfo.details
+            )
     }
 
-    override fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?) {
+    override fun renderToolResult(
+        toolName: String,
+        success: Boolean,
+        output: String?,
+        fullOutput: String?
+    ) {
         val summary = formatToolResultSummary(toolName, success, output)
 
         // Add tool result to timeline
-        _timeline.add(TimelineItem.ToolResultItem(
-            toolName = toolName,
-            success = success,
-            summary = summary,
-            output = if (success && output != null) {
-                // For file search tools, keep full output; for others, limit to 2000 chars
-                when (toolName) {
-                    "glob", "grep" -> output
-                    else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated]"
-                }
-            } else null
-        ))
+        _timeline.add(
+            TimelineItem.ToolResultItem(
+                toolName = toolName,
+                success = success,
+                summary = summary,
+                output =
+                    if (success && output != null) {
+                        // For file search tools, keep full output; for others, limit to 2000 chars
+                        when (toolName) {
+                            "glob", "grep" -> output
+                            else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated]"
+                        }
+                    } else {
+                        null
+                    }
+            )
+        )
 
         _currentToolCall = null
     }
@@ -181,11 +202,17 @@ class ComposeRenderer : BaseRenderer() {
         _isProcessing = false
     }
 
-    override fun renderFinalResult(success: Boolean, message: String, iterations: Int) {
-        _timeline.add(TimelineItem.TaskCompleteItem(
-            success = success,
-            message = message
-        ))
+    override fun renderFinalResult(
+        success: Boolean,
+        message: String,
+        iterations: Int
+    ) {
+        _timeline.add(
+            TimelineItem.TaskCompleteItem(
+                success = success,
+                message = message
+            )
+        )
         _isProcessing = false
         _taskCompleted = true
     }
@@ -196,13 +223,19 @@ class ComposeRenderer : BaseRenderer() {
         _isProcessing = false
     }
 
-    override fun renderRepeatWarning(toolName: String, count: Int) {
-        _timeline.add(TimelineItem.MessageItem(
-            message = Message(
-                role = MessageRole.ASSISTANT,
-                content = "⚠️ Warning: Tool '$toolName' has been called $count times in a row"
+    override fun renderRepeatWarning(
+        toolName: String,
+        count: Int
+    ) {
+        _timeline.add(
+            TimelineItem.MessageItem(
+                message =
+                    Message(
+                        role = MessageRole.ASSISTANT,
+                        content = "⚠️ Warning: Tool '$toolName' has been called $count times in a row"
+                    )
             )
-        ))
+        )
     }
 
     override fun renderUserConfirmationRequest(
@@ -214,12 +247,15 @@ class ComposeRenderer : BaseRenderer() {
 
     // Public methods for UI interaction
     fun addUserMessage(content: String) {
-        _timeline.add(TimelineItem.MessageItem(
-            message = Message(
-                role = MessageRole.USER,
-                content = content
+        _timeline.add(
+            TimelineItem.MessageItem(
+                message =
+                    Message(
+                        role = MessageRole.USER,
+                        content = content
+                    )
             )
-        ))
+        )
     }
 
     fun clearMessages() {
@@ -240,12 +276,15 @@ class ComposeRenderer : BaseRenderer() {
         // If there's streaming output, save it as a message first
         val currentOutput = _currentStreamingOutput.trim()
         if (currentOutput.isNotEmpty()) {
-            _timeline.add(TimelineItem.MessageItem(
-                message = Message(
-                    role = MessageRole.ASSISTANT,
-                    content = "$currentOutput\n\n[Interrupted]"
+            _timeline.add(
+                TimelineItem.MessageItem(
+                    message =
+                        Message(
+                            role = MessageRole.ASSISTANT,
+                            content = "$currentOutput\n\n[Interrupted]"
+                        )
                 )
-            ))
+            )
         }
 
         _isProcessing = false
@@ -255,40 +294,52 @@ class ComposeRenderer : BaseRenderer() {
 
     // Private helper methods
 
-    private fun formatToolCallDisplay(toolName: String, paramsStr: String): ToolCallInfo {
+    private fun formatToolCallDisplay(
+        toolName: String,
+        paramsStr: String
+    ): ToolCallInfo {
         // Parse parameters from the string format
         val params = parseParamsString(paramsStr)
 
         return when (toolName) {
-            "read-file" -> ToolCallInfo(
-                toolName = "${params["path"] ?: "unknown"} - read file",
-                description = "file reader",
-                details = "Reading file: ${params["path"] ?: "unknown"}"
-            )
-            "write-file" -> ToolCallInfo(
-                toolName = "${params["path"] ?: "unknown"} - write file",
-                description = "file writer",
-                details = "Writing to file: ${params["path"] ?: "unknown"}"
-            )
-            "glob" -> ToolCallInfo(
-                toolName = "File search",
-                description = "pattern matcher",
-                details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
-            )
-            "shell" -> ToolCallInfo(
-                toolName = "Shell command",
-                description = "command executor",
-                details = "Executing: ${params["command"] ?: "unknown command"}"
-            )
-            else -> ToolCallInfo(
-                toolName = toolName,
-                description = "tool execution",
-                details = paramsStr
-            )
+            "read-file" ->
+                ToolCallInfo(
+                    toolName = "${params["path"] ?: "unknown"} - read file",
+                    description = "file reader",
+                    details = "Reading file: ${params["path"] ?: "unknown"}"
+                )
+            "write-file" ->
+                ToolCallInfo(
+                    toolName = "${params["path"] ?: "unknown"} - write file",
+                    description = "file writer",
+                    details = "Writing to file: ${params["path"] ?: "unknown"}"
+                )
+            "glob" ->
+                ToolCallInfo(
+                    toolName = "File search",
+                    description = "pattern matcher",
+                    details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
+                )
+            "shell" ->
+                ToolCallInfo(
+                    toolName = "Shell command",
+                    description = "command executor",
+                    details = "Executing: ${params["command"] ?: "unknown command"}"
+                )
+            else ->
+                ToolCallInfo(
+                    toolName = toolName,
+                    description = "tool execution",
+                    details = paramsStr
+                )
         }
     }
 
-    private fun formatToolResultSummary(toolName: String, success: Boolean, output: String?): String {
+    private fun formatToolResultSummary(
+        toolName: String,
+        success: Boolean,
+        output: String?
+    ): String {
         if (!success) return "Failed"
 
         return when (toolName) {

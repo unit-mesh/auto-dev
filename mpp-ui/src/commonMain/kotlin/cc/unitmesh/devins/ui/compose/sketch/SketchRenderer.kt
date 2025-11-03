@@ -9,7 +9,7 @@ import cc.unitmesh.devins.parser.CodeFence
 
 /**
  * Sketch 渲染器 - 主渲染器
- * 
+ *
  * 负责解析和分发不同类型的内容块到对应的子渲染器：
  * - Markdown/Text -> TextBlockRenderer
  * - Code -> CodeBlockRenderer
@@ -18,7 +18,7 @@ import cc.unitmesh.devins.parser.CodeFence
 object SketchRenderer : BaseContentRenderer() {
     /**
      * 渲染 LLM 响应内容（向后兼容的方法）
-     * 
+     *
      * @param content 要渲染的内容
      * @param isComplete 是否渲染完成
      * @param onContentUpdate 内容更新回调（返回当前渲染的块数量，用于外层滚动控制）
@@ -41,7 +41,7 @@ object SketchRenderer : BaseContentRenderer() {
             modifier = modifier
         )
     }
-    
+
     /**
      * 实现 ContentRenderer 接口的渲染方法
      */
@@ -54,7 +54,7 @@ object SketchRenderer : BaseContentRenderer() {
     ) {
         Column(modifier = modifier) {
             val codeFences = CodeFence.parseAll(content)
-            
+
             // 通知外层当前渲染的块数量和最后一个块类型
             if (codeFences.isNotEmpty()) {
                 notifyRenderUpdate(
@@ -101,4 +101,3 @@ object SketchRenderer : BaseContentRenderer() {
         }
     }
 }
-

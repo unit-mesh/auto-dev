@@ -13,15 +13,15 @@ import kotlinx.coroutines.flow.asStateFlow
 object LanguageManager {
     private val _currentLanguage = MutableStateFlow(Language.ENGLISH)
     val currentLanguage: StateFlow<Language> = _currentLanguage.asStateFlow()
-    
+
     private var initialized = false
-    
+
     /**
      * Initialize language from user preferences
      */
     suspend fun init() {
         if (initialized) return
-        
+
         try {
             val config = ConfigManager.load()
             val langCode = config.getLanguage() ?: detectSystemLanguage()
@@ -35,14 +35,14 @@ object LanguageManager {
             initialized = true
         }
     }
-    
+
     /**
      * Set current language and persist preference
      */
     suspend fun setLanguage(language: Language) {
         _currentLanguage.value = language
         Strings.setLanguage(language)
-        
+
         // Persist to config
         try {
             saveLanguagePreference(language.code)
@@ -50,7 +50,7 @@ object LanguageManager {
             println("Failed to save language preference: ${e.message}")
         }
     }
-    
+
     /**
      * Detect system language
      * Platform-specific implementations should override this
@@ -60,10 +60,9 @@ object LanguageManager {
         // Platform-specific implementations will override this via expect/actual
         return "en"
     }
-    
+
     /**
      * Get current language
      */
     fun getLanguage(): Language = _currentLanguage.value
 }
-

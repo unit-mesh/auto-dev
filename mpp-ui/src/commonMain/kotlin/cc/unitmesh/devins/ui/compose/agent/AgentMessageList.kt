@@ -8,9 +8,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +36,7 @@ fun AgentMessageList(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    
+
     // Auto-scroll to bottom when new content arrives
     LaunchedEffect(renderer.timeline.size, renderer.currentStreamingOutput) {
         if (renderer.timeline.isNotEmpty() || renderer.currentStreamingOutput.isNotEmpty()) {
@@ -47,12 +47,14 @@ fun AgentMessageList(
             }
         }
     }
-    
+
     LazyColumn(
         state = listState,
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface), // Match CLI background
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface),
+        // Match CLI background
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp), // Reduce padding
         verticalArrangement = Arrangement.spacedBy(6.dp) // Reduce spacing
     ) {
@@ -116,15 +118,19 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = !expanded },
-            colors = CardDefaults.cardColors(
-                containerColor = if (isUser)
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                else
-                    MaterialTheme.colorScheme.surface
-            ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded },
+            colors =
+                CardDefaults.cardColors(
+                    containerColor =
+                        if (isUser) {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        }
+                ),
             shape = RoundedCornerShape(4.dp), // Smaller radius for CLI-like appearance
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Remove shadow
         ) {
@@ -132,10 +138,12 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
                 // Message content
                 Text(
                     text = message.content,
-                    color = if (isUser)
-                        MaterialTheme.colorScheme.onPrimary
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    color =
+                        if (isUser) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -151,10 +159,12 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
                         if (!isUser) {
                             Text(
                                 text = formatTimestamp(Clock.System.now().toEpochMilliseconds()),
-                                color = if (isUser)
-                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                color =
+                                    if (isUser) {
+                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    },
                                 style = MaterialTheme.typography.labelSmall
                             )
                         } else {
@@ -169,10 +179,12 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
                                 contentDescription = "Copy message",
-                                tint = if (isUser)
-                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                tint =
+                                    if (isUser) {
+                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                    },
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -186,9 +198,10 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
 @Composable
 private fun StreamingMessageItem(content: String) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -205,7 +218,7 @@ private fun StreamingMessageItem(content: String) {
                     strokeWidth = 2.dp
                 )
             }
-            
+
             if (content.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -229,44 +242,52 @@ private fun ToolResultItem(
     val clipboardManager = LocalClipboardManager.current
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
         shape = RoundedCornerShape(4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             // Header row - always visible
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { if (output != null) expanded = !expanded },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { if (output != null) expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = if (success) "✓" else "✗",
-                    color = if (success)
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    else
-                        MaterialTheme.colorScheme.onErrorContainer,
+                    color =
+                        if (success) {
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = toolName,
                     fontWeight = FontWeight.Medium,
-                    color = if (success)
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    else
-                        MaterialTheme.colorScheme.onErrorContainer,
+                    color =
+                        if (success) {
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "→ $summary",
-                    color = if (success)
-                        Color(0xFF4CAF50)
-                    else
-                        MaterialTheme.colorScheme.onErrorContainer,
+                    color =
+                        if (success) {
+                            Color(0xFF4CAF50)
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -276,10 +297,12 @@ private fun ToolResultItem(
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (expanded) "Collapse" else "Expand",
-                        tint = if (success)
-                            MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                        else
-                            MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f),
+                        tint =
+                            if (success) {
+                                MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                            } else {
+                                MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f)
+                            },
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -297,10 +320,12 @@ private fun ToolResultItem(
                     Text(
                         text = "Output:",
                         fontWeight = FontWeight.Medium,
-                        color = if (success)
-                            MaterialTheme.colorScheme.onSecondaryContainer
-                        else
-                            MaterialTheme.colorScheme.onErrorContainer,
+                        color =
+                            if (success) {
+                                MaterialTheme.colorScheme.onSecondaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onErrorContainer
+                            },
                         style = MaterialTheme.typography.bodyMedium
                     )
 
@@ -313,10 +338,12 @@ private fun ToolResultItem(
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
                                 contentDescription = "Copy output",
-                                tint = if (success)
-                                    MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                                else
-                                    MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f),
+                                tint =
+                                    if (success) {
+                                        MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f)
+                                    },
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -324,12 +351,13 @@ private fun ToolResultItem(
                         // Copy entire block button
                         IconButton(
                             onClick = {
-                                val blockText = buildString {
-                                    val status = if (success) "SUCCESS" else "FAILED"
-                                    appendLine("[Tool Result]: $toolName - $status")
-                                    appendLine("Summary: $summary")
-                                    appendLine("Output: $output")
-                                }
+                                val blockText =
+                                    buildString {
+                                        val status = if (success) "SUCCESS" else "FAILED"
+                                        appendLine("[Tool Result]: $toolName - $status")
+                                        appendLine("Summary: $summary")
+                                        appendLine("Output: $output")
+                                    }
                                 clipboardManager.setText(AnnotatedString(blockText))
                             },
                             modifier = Modifier.size(24.dp)
@@ -337,10 +365,12 @@ private fun ToolResultItem(
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
                                 contentDescription = "Copy entire block",
-                                tint = if (success)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.error,
+                                tint =
+                                    if (success) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.error
+                                    },
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -348,9 +378,10 @@ private fun ToolResultItem(
                 }
 
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -367,11 +398,15 @@ private fun ToolResultItem(
 }
 
 @Composable
-private fun ErrorItem(error: String, onDismiss: () -> Unit) {
+private fun ErrorItem(
+    error: String,
+    onDismiss: () -> Unit
+) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer
+            ),
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -401,11 +436,15 @@ private fun ErrorItem(error: String, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun TaskCompletedItem(success: Boolean, message: String) {
+private fun TaskCompletedItem(
+    success: Boolean,
+    message: String
+) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
@@ -429,9 +468,10 @@ private fun TaskCompletedItem(success: Boolean, message: String) {
 @Composable
 private fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -462,9 +502,10 @@ private fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
 
                 // "Executing" badge
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
@@ -501,18 +542,20 @@ private fun ToolCallItem(
     val clipboardManager = LocalClipboardManager.current
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
         shape = RoundedCornerShape(4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             // Header row - always visible
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -575,11 +618,12 @@ private fun ToolCallItem(
                         // Copy entire block button
                         IconButton(
                             onClick = {
-                                val blockText = buildString {
-                                    appendLine("[Tool Call]: $toolName")
-                                    appendLine("Description: $description")
-                                    appendLine("Parameters: $details")
-                                }
+                                val blockText =
+                                    buildString {
+                                        appendLine("[Tool Call]: $toolName")
+                                        appendLine("Description: $description")
+                                        appendLine("Parameters: $details")
+                                    }
                                 clipboardManager.setText(AnnotatedString(blockText))
                             },
                             modifier = Modifier.size(24.dp)
@@ -595,9 +639,10 @@ private fun ToolCallItem(
                 }
 
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(

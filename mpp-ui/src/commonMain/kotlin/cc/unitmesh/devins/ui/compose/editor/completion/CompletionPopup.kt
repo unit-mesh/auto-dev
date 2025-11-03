@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionContext
+import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import kotlinx.coroutines.launch
 
@@ -40,10 +40,10 @@ fun CompletionPopup(
         onDismiss()
         return
     }
-    
+
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    
+
     LaunchedEffect(selectedIndex) {
         if (selectedIndex in items.indices) {
             scope.launch {
@@ -51,26 +51,28 @@ fun CompletionPopup(
             }
         }
     }
-    
+
     Popup(
         alignment = Alignment.TopStart,
         offset = offset,
         onDismissRequest = onDismiss,
-        properties = PopupProperties(
-            focusable = false,
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true
-        )
+        properties =
+            PopupProperties(
+                focusable = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true
+            )
     ) {
         Surface(
-            modifier = modifier
-                .width(450.dp)
-                .heightIn(max = 280.dp)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(6.dp)
-                ),
+            modifier =
+                modifier
+                    .width(450.dp)
+                    .heightIn(max = 280.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(6.dp)
+                    ),
             shape = RoundedCornerShape(6.dp),
             shadowElevation = 4.dp,
             tonalElevation = 1.dp
@@ -101,17 +103,18 @@ private fun CompletionItemRow(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                if (isSelected) {
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                } else {
-                    Color.Transparent
-                }
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    } else {
+                        Color.Transparent
+                    }
+                )
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         item.icon?.let { icon ->
@@ -125,10 +128,11 @@ private fun CompletionItemRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = item.displayText,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 13.sp,
-                    fontFamily = FontFamily.Monospace
-                ),
+                style =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 13.sp,
+                        fontFamily = FontFamily.Monospace
+                    ),
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -155,12 +159,13 @@ private fun CompletionItemRow(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                     fontSize = 9.sp,
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
-                        )
-                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                    modifier =
+                        Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
+                            )
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
                 )
             }
         }
@@ -171,7 +176,7 @@ object CompletionTrigger {
     fun shouldTrigger(char: Char): Boolean {
         return char in setOf('@', '/', '$', ':', '`')
     }
-    
+
     fun getTriggerType(char: Char): CompletionTriggerType {
         return when (char) {
             '@' -> CompletionTriggerType.AGENT
@@ -182,29 +187,30 @@ object CompletionTrigger {
             else -> CompletionTriggerType.NONE
         }
     }
-    
+
     fun buildContext(
         fullText: String,
         cursorPosition: Int,
         triggerType: CompletionTriggerType
     ): CompletionContext? {
-        val triggerChar = when (triggerType) {
-            CompletionTriggerType.AGENT -> '@'
-            CompletionTriggerType.COMMAND -> '/'
-            CompletionTriggerType.VARIABLE -> '$'
-            CompletionTriggerType.COMMAND_VALUE -> ':'
-            else -> return null
-        }
-        
+        val triggerChar =
+            when (triggerType) {
+                CompletionTriggerType.AGENT -> '@'
+                CompletionTriggerType.COMMAND -> '/'
+                CompletionTriggerType.VARIABLE -> '$'
+                CompletionTriggerType.COMMAND_VALUE -> ':'
+                else -> return null
+            }
+
         val triggerOffset = fullText.lastIndexOf(triggerChar, cursorPosition - 1)
         if (triggerOffset < 0) return null
-        
+
         val queryText = fullText.substring(triggerOffset + 1, cursorPosition)
 
         if (queryText.contains('\n') || queryText.contains(' ')) {
             return null
         }
-        
+
         return CompletionContext(
             fullText = fullText,
             cursorPosition = cursorPosition,
@@ -214,4 +220,3 @@ object CompletionTrigger {
         )
     }
 }
-

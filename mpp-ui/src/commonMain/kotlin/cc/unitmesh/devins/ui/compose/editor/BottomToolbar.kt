@@ -16,7 +16,7 @@ import cc.unitmesh.llm.ModelConfig
  * 布局：Agent - Model Selector - @ Symbol - / Symbol - Send Button
  * - 移动端：通过顶部菜单控制 Agent，底部显示当前选择
  * - Desktop：完整显示所有功能
- * 
+ *
  * ModelSelector now loads configs from ConfigManager internally.
  */
 @Composable
@@ -30,11 +30,12 @@ fun BottomToolbar(
     onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
     val isAndroid = Platform.isAndroid
-    
+
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -67,7 +68,7 @@ fun BottomToolbar(
                     }
                 }
             }
-            
+
             // Model Selector（Desktop 或移动端都显示）
             if (!isAndroid) {
                 ModelSelector(
@@ -75,7 +76,7 @@ fun BottomToolbar(
                 )
             }
         }
-        
+
         // 右侧：@ Symbol + / Symbol + Send Button
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -93,7 +94,7 @@ fun BottomToolbar(
                     modifier = Modifier.size(20.dp)
                 )
             }
-            
+
             // / 按钮 - 触发命令补全
             IconButton(
                 onClick = onSlashClick,
@@ -105,7 +106,7 @@ fun BottomToolbar(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             // 发送按钮
             FilledTonalButton(
                 onClick = onSendClick,

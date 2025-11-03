@@ -6,6 +6,7 @@ gradleIntelliJPlugin = "2.1.0"
 qodana = "0.1.13"
 kover = "0.7.5"
 compose = "1.8.0"
+ktlint = "13.1.0"
 
 chapi = "2.1.2"
 jtokkit = "1.1.0"
@@ -25,5 +26,6 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 
 [bundles]

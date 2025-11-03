@@ -2,8 +2,8 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,10 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
-import cc.unitmesh.devins.llm.MessageRole
 
 /**
  * Agent Chat Interface
@@ -27,20 +27,23 @@ fun AgentChatInterface(
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
-    
+
     // Create ViewModel with current workspace
-    val viewModel = remember(llmService, currentWorkspace?.rootPath) {
-        val workspace = currentWorkspace
-        val rootPath = workspace?.rootPath
-        if (llmService != null && workspace != null && rootPath != null) {
-            CodingAgentViewModel(
-                llmService = llmService,
-                projectPath = rootPath,
-                maxIterations = 100
-            )
-        } else null
-    }
-    
+    val viewModel =
+        remember(llmService, currentWorkspace?.rootPath) {
+            val workspace = currentWorkspace
+            val rootPath = workspace?.rootPath
+            if (llmService != null && workspace != null && rootPath != null) {
+                CodingAgentViewModel(
+                    llmService = llmService,
+                    projectPath = rootPath,
+                    maxIterations = 100
+                )
+            } else {
+                null
+            }
+        }
+
     if (viewModel == null) {
         // Show configuration prompt
         Box(
@@ -71,7 +74,7 @@ fun AgentChatInterface(
         }
         return
     }
-    
+
     // Main agent interface
     Column(
         modifier = modifier.fillMaxSize()
@@ -87,23 +90,25 @@ fun AgentChatInterface(
                 onCancel = { viewModel.cancelTask() }
             )
         }
-        
+
         // Messages and tool calls display
         AgentMessageList(
             renderer = viewModel.renderer,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
         )
-        
+
         // Input area
-        val callbacks = remember(viewModel) {
-            createAgentCallbacks(
-                viewModel = viewModel,
-                onConfigWarning = onConfigWarning
-            )
-        }
-        
+        val callbacks =
+            remember(viewModel) {
+                createAgentCallbacks(
+                    viewModel = viewModel,
+                    onConfigWarning = onConfigWarning
+                )
+            }
+
         DevInEditorInput(
             initialText = "",
             placeholder = "Describe your coding task...",
@@ -111,10 +116,11 @@ fun AgentChatInterface(
             completionManager = currentWorkspace?.completionManager,
             isCompactMode = true,
             onModelConfigChange = { /* Handle model config change if needed */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .imePadding()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .imePadding()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
         )
     }
 }
@@ -129,17 +135,20 @@ private fun AgentStatusBar(
     onCancel: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -195,9 +204,10 @@ private fun AgentStatusBar(
                 if (isExecuting) {
                     Button(
                         onClick = onCancel,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Stop,
@@ -219,44 +229,45 @@ private fun CopyAllButton(viewModel: CodingAgentViewModel) {
 
     OutlinedButton(
         onClick = {
-            val allText = buildString {
-                viewModel.renderer.timeline.forEach { item ->
-                    when (item) {
-                        is ComposeRenderer.TimelineItem.MessageItem -> {
-                            val role = if (item.message.role == MessageRole.USER) "User" else "Assistant"
-                            appendLine("[$role]: ${item.message.content}")
-                            appendLine()
-                        }
-                        is ComposeRenderer.TimelineItem.ToolCallItem -> {
-                            appendLine("[Tool Call]: ${item.toolName}")
-                            appendLine("Description: ${item.description}")
-                            item.details?.let { appendLine("Parameters: $it") }
-                            appendLine()
-                        }
-                        is ComposeRenderer.TimelineItem.ToolResultItem -> {
-                            val status = if (item.success) "SUCCESS" else "FAILED"
-                            appendLine("[Tool Result]: ${item.toolName} - $status")
-                            appendLine("Summary: ${item.summary}")
-                            item.output?.let { appendLine("Output: $it") }
-                            appendLine()
-                        }
-                        is ComposeRenderer.TimelineItem.ErrorItem -> {
-                            appendLine("[Error]: ${item.error}")
-                            appendLine()
-                        }
-                        is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
-                            val status = if (item.success) "COMPLETED" else "FAILED"
-                            appendLine("[Task $status]: ${item.message}")
-                            appendLine()
+            val allText =
+                buildString {
+                    viewModel.renderer.timeline.forEach { item ->
+                        when (item) {
+                            is ComposeRenderer.TimelineItem.MessageItem -> {
+                                val role = if (item.message.role == MessageRole.USER) "User" else "Assistant"
+                                appendLine("[$role]: ${item.message.content}")
+                                appendLine()
+                            }
+                            is ComposeRenderer.TimelineItem.ToolCallItem -> {
+                                appendLine("[Tool Call]: ${item.toolName}")
+                                appendLine("Description: ${item.description}")
+                                item.details?.let { appendLine("Parameters: $it") }
+                                appendLine()
+                            }
+                            is ComposeRenderer.TimelineItem.ToolResultItem -> {
+                                val status = if (item.success) "SUCCESS" else "FAILED"
+                                appendLine("[Tool Result]: ${item.toolName} - $status")
+                                appendLine("Summary: ${item.summary}")
+                                item.output?.let { appendLine("Output: $it") }
+                                appendLine()
+                            }
+                            is ComposeRenderer.TimelineItem.ErrorItem -> {
+                                appendLine("[Error]: ${item.error}")
+                                appendLine()
+                            }
+                            is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
+                                val status = if (item.success) "COMPLETED" else "FAILED"
+                                appendLine("[Task $status]: ${item.message}")
+                                appendLine()
+                            }
                         }
                     }
-                }
 
-                // Add current streaming output if any
-                if (viewModel.renderer.currentStreamingOutput.isNotEmpty()) {
-                    appendLine("[Assistant - Streaming]: ${viewModel.renderer.currentStreamingOutput}")
+                    // Add current streaming output if any
+                    if (viewModel.renderer.currentStreamingOutput.isNotEmpty()) {
+                        appendLine("[Assistant - Streaming]: ${viewModel.renderer.currentStreamingOutput}")
+                    }
                 }
-            }
             clipboardManager.setText(AnnotatedString(allText))
         }
     ) {

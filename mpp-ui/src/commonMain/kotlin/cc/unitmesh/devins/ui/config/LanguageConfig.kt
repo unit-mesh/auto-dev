@@ -16,7 +16,7 @@ fun AutoDevConfigWrapper.getLanguage(): String? {
 
 /**
  * Save language preference to config file
- * 
+ *
  * Note: This is a placeholder implementation.
  * In a real implementation, we would add a 'language' field to ConfigFile.
  */
@@ -29,4 +29,3 @@ suspend fun saveLanguagePreference(languageCode: String) {
         println("Failed to save language preference: ${e.message}")
     }
 }
-

@@ -17,7 +17,6 @@ import com.mikepenz.markdown.m3.Markdown
  * 使用 Compose + multiplatform-markdown-renderer
  */
 actual object MarkdownSketchRenderer {
-    
     @Composable
     actual fun RenderResponse(
         content: String,
@@ -25,22 +24,23 @@ actual object MarkdownSketchRenderer {
         modifier: Modifier
     ) {
         val scrollState = rememberScrollState()
-        
+
         // 自动滚动到底部
         LaunchedEffect(content) {
             if (content.isNotEmpty()) {
                 scrollState.animateScrollTo(scrollState.maxValue)
             }
         }
-        
+
         Column(
-            modifier = modifier
-                .verticalScroll(scrollState)
-                .padding(16.dp)
+            modifier =
+                modifier
+                    .verticalScroll(scrollState)
+                    .padding(16.dp)
         ) {
             // 使用 CodeFence 解析内容
             val codeFences = CodeFence.parseAll(content)
-            
+
             codeFences.forEach { fence ->
                 when (fence.languageId.lowercase()) {
                     "markdown", "md", "" -> {
@@ -69,7 +69,7 @@ actual object MarkdownSketchRenderer {
                     }
                 }
             }
-            
+
             // 如果未完成，显示加载指示器
             if (!isComplete && content.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -79,7 +79,7 @@ actual object MarkdownSketchRenderer {
             }
         }
     }
-    
+
     /**
      * 渲染 Markdown 文本
      * 使用 multiplatform-markdown-renderer 的 Markdown 组件
@@ -89,9 +89,10 @@ actual object MarkdownSketchRenderer {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             // 使用 multiplatform-markdown-renderer 渲染 Markdown
@@ -101,32 +102,39 @@ actual object MarkdownSketchRenderer {
             )
         }
     }
-    
+
     /**
      * 渲染代码块
      * 使用 Material Card 包装，显示语言标签和代码内容
      */
     @Composable
-    private fun CodeBlockRenderer(code: String, language: String, displayName: String = language) {
+    private fun CodeBlockRenderer(
+        code: String,
+        language: String,
+        displayName: String = language
+    ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
             ) {
                 // 语言标签
                 if (displayName.isNotEmpty() && displayName != "markdown") {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
@@ -140,14 +148,15 @@ actual object MarkdownSketchRenderer {
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                     )
                 }
-                
+
                 // 将代码内容用 Markdown 代码块格式包装，让 Markdown 渲染器处理
-                val codeBlock = if (displayName.isNotEmpty() && displayName != "markdown") {
-                    "```$language\n$code\n```"
-                } else {
-                    "```\n$code\n```"
-                }
-                
+                val codeBlock =
+                    if (displayName.isNotEmpty() && displayName != "markdown") {
+                        "```$language\n$code\n```"
+                    } else {
+                        "```\n$code\n```"
+                    }
+
                 Markdown(
                     content = codeBlock,
                     modifier = Modifier.fillMaxWidth()
@@ -155,7 +164,7 @@ actual object MarkdownSketchRenderer {
             }
         }
     }
-    
+
     @Composable
     actual fun RenderPlainText(
         text: String,
@@ -164,9 +173,10 @@ actual object MarkdownSketchRenderer {
         Card(
             modifier = modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
         ) {
             Text(
                 text = text,
@@ -176,7 +186,7 @@ actual object MarkdownSketchRenderer {
             )
         }
     }
-    
+
     @Composable
     actual fun RenderMarkdown(
         markdown: String,
@@ -188,5 +198,3 @@ actual object MarkdownSketchRenderer {
         )
     }
 }
-
-
