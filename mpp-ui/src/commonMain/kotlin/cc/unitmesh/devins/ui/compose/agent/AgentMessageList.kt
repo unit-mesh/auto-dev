@@ -25,10 +25,6 @@ import cc.unitmesh.devins.llm.MessageRole
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
-/**
- * Agent Message List Component
- * Displays messages and tool calls from ComposeRenderer
- */
 @Composable
 fun AgentMessageList(
     renderer: ComposeRenderer,
@@ -37,7 +33,6 @@ fun AgentMessageList(
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Auto-scroll to bottom when new content arrives
     LaunchedEffect(renderer.timeline.size, renderer.currentStreamingOutput) {
         if (renderer.timeline.isNotEmpty() || renderer.currentStreamingOutput.isNotEmpty()) {
             coroutineScope.launch {
@@ -64,6 +59,7 @@ fun AgentMessageList(
                 is ComposeRenderer.TimelineItem.MessageItem -> {
                     MessageItem(message = timelineItem.message)
                 }
+
                 is ComposeRenderer.TimelineItem.ToolCallItem -> {
                     ToolCallItem(
                         toolName = timelineItem.toolName,
@@ -71,6 +67,7 @@ fun AgentMessageList(
                         details = timelineItem.details
                     )
                 }
+
                 is ComposeRenderer.TimelineItem.ToolResultItem -> {
                     ToolResultItem(
                         toolName = timelineItem.toolName,
@@ -79,9 +76,11 @@ fun AgentMessageList(
                         output = timelineItem.output
                     )
                 }
+
                 is ComposeRenderer.TimelineItem.ErrorItem -> {
                     ErrorItem(error = timelineItem.error, onDismiss = { renderer.clearError() })
                 }
+
                 is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
                     TaskCompletedItem(
                         success = timelineItem.success,
@@ -91,14 +90,12 @@ fun AgentMessageList(
             }
         }
 
-        // Display current streaming output
         if (renderer.currentStreamingOutput.isNotEmpty()) {
             item {
                 StreamingMessageItem(content = renderer.currentStreamingOutput)
             }
         }
 
-        // Display current tool call (if any)
         renderer.currentToolCall?.let { toolCall ->
             item {
                 CurrentToolCallItem(toolCall = toolCall)
@@ -232,7 +229,7 @@ private fun StreamingMessageItem(content: String) {
 }
 
 @Composable
-private fun ToolResultItem(
+fun ToolResultItem(
     toolName: String,
     success: Boolean,
     summary: String,
@@ -466,7 +463,7 @@ private fun TaskCompletedItem(
 }
 
 @Composable
-private fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
+fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
     Card(
         colors =
             CardDefaults.cardColors(
@@ -533,7 +530,7 @@ private fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
 }
 
 @Composable
-private fun ToolCallItem(
+fun ToolCallItem(
     toolName: String,
     description: String,
     details: String?
@@ -550,12 +547,8 @@ private fun ToolCallItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            // Header row - always visible
             Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -576,7 +569,6 @@ private fun ToolCallItem(
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-                // Expand/collapse icon
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = if (expanded) "Collapse" else "Expand",
@@ -585,7 +577,6 @@ private fun ToolCallItem(
                 )
             }
 
-            // Expandable details
             if (expanded && details != null) {
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -602,7 +593,6 @@ private fun ToolCallItem(
                     )
 
                     Row {
-                        // Copy parameters button
                         IconButton(
                             onClick = { clipboardManager.setText(AnnotatedString(details)) },
                             modifier = Modifier.size(24.dp)
@@ -615,7 +605,6 @@ private fun ToolCallItem(
                             )
                         }
 
-                        // Copy entire block button
                         IconButton(
                             onClick = {
                                 val blockText =
@@ -658,10 +647,8 @@ private fun ToolCallItem(
     }
 }
 
-// Helper function to format tool parameters nicely
-private fun formatToolParameters(params: String): String {
+fun formatToolParameters(params: String): String {
     return try {
-        // Try to parse and format as key-value pairs
         val lines = mutableListOf<String>()
         val regex = Regex("""(\w+)=["']?([^"']*?)["']?(?:\s|$)""")
         regex.findAll(params).forEach { match ->
@@ -680,8 +667,7 @@ private fun formatToolParameters(params: String): String {
     }
 }
 
-// Helper function to format output nicely
-private fun formatOutput(output: String): String {
+fun formatOutput(output: String): String {
     return when {
         // If it looks like JSON, try to format it
         output.trim().startsWith("{") || output.trim().startsWith("[") -> {
@@ -706,8 +692,7 @@ private fun formatOutput(output: String): String {
     }
 }
 
-// Helper function to format timestamp
-private fun formatTimestamp(timestamp: Long): String {
+fun formatTimestamp(timestamp: Long): String {
     val now = Clock.System.now().toEpochMilliseconds()
     val diff = now - timestamp
 

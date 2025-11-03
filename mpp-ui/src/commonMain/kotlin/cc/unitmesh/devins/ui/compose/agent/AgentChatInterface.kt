@@ -16,10 +16,6 @@ import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 
-/**
- * Agent Chat Interface
- * Uses the new ComposeRenderer architecture for consistent rendering
- */
 @Composable
 fun AgentChatInterface(
     llmService: KoogLLMService?,
@@ -27,13 +23,11 @@ fun AgentChatInterface(
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
-
-    // Create ViewModel with current workspace
     val viewModel =
         remember(llmService, currentWorkspace?.rootPath) {
             val workspace = currentWorkspace
-            val rootPath = workspace?.rootPath
-            if (llmService != null && workspace != null && rootPath != null) {
+            val rootPath = workspace?.rootPath ?: return@remember null
+            if (llmService != null) {
                 CodingAgentViewModel(
                     llmService = llmService,
                     projectPath = rootPath,
@@ -45,11 +39,7 @@ fun AgentChatInterface(
         }
 
     if (viewModel == null) {
-        // Show configuration prompt
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Card(
                 modifier = Modifier.padding(32.dp)
             ) {
