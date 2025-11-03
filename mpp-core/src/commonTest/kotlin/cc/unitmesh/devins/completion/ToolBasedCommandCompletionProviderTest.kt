@@ -93,7 +93,7 @@ class ToolBasedCommandCompletionProviderTest {
 
         // Check that all built-in tools are present
         val toolNames = completions.map { it.text }.toSet()
-        assertTrue(ToolNames.READ_FILE in toolNames, "Should contain read-file tool")
+        assertTrue(ToolType.ReadFile.name in toolNames, "Should contain read-file tool")
         assertTrue(ToolNames.WRITE_FILE in toolNames, "Should contain write-file tool")
         assertTrue("grep" in toolNames, "Should contain grep tool")
         assertTrue("glob" in toolNames, "Should contain glob tool")
@@ -115,7 +115,7 @@ class ToolBasedCommandCompletionProviderTest {
 
         // Should prioritize exact matches
         val firstCompletion = completions.first()
-        assertEquals(ToolNames.READ_FILE, firstCompletion.text)
+        assertEquals(ToolType.ReadFile.name, firstCompletion.text)
         assertTrue(firstCompletion.description?.isNotEmpty() == true, "Should have description")
         assertEquals("📄", firstCompletion.icon)
     }
@@ -152,7 +152,7 @@ class ToolBasedCommandCompletionProviderTest {
         )
 
         val completions = provider.getCompletions(context)
-        val readFileCompletion = completions.find { it.text == ToolNames.READ_FILE }
+        val readFileCompletion = completions.find { it.text == ToolType.ReadFile.name }
 
         assertTrue(readFileCompletion != null, "Should find read-file completion")
 

@@ -39,7 +39,7 @@ class ToolBasedCommandCompletionProvider(
         val toolType = toolName.toToolType()
         return toolType?.tuiEmoji ?: when (toolName) {
             // Fallback for legacy tools
-            ToolNames.READ_FILE -> "📄"
+            ToolType.ReadFile.name -> "📄"
             ToolNames.WRITE_FILE -> "✏️"
             "grep" -> "🔍"
             "glob" -> "🌐"

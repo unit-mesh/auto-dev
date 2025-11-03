@@ -334,7 +334,7 @@ class ComposeRenderer : BaseRenderer() {
             else -> {
                 // Fallback for legacy string-based tools
                 when (toolName) {
-                    ToolNames.READ_FILE -> ToolCallInfo(
+                    ToolType.ReadFile.name -> ToolCallInfo(
                         toolName = "${params["path"] ?: "unknown"} - read file",
                         description = "file reader",
                         details = "Reading file: ${params["path"] ?: "unknown"}"
@@ -402,7 +402,7 @@ class ComposeRenderer : BaseRenderer() {
             else -> {
                 // Fallback for legacy string-based tools
                 when (toolName) {
-                    ToolNames.READ_FILE -> {
+                    ToolType.ReadFile.name -> {
                         val lines = output?.lines()?.size ?: 0
                         "Read $lines lines"
                     }

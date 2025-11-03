@@ -4,9 +4,6 @@ import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import kotlinx.serialization.Serializable
 
-/**
- * Parameters for the ReadFile tool
- */
 @Serializable
 data class ReadFileParams(
     /**
@@ -52,9 +49,7 @@ class ReadFileInvocation(
         return "Read file: ${params.path}$rangeDesc"
     }
     
-    override fun getToolLocations(): List<ToolLocation> {
-        return listOf(ToolLocation(params.path, LocationType.FILE))
-    }
+    override fun getToolLocations(): List<ToolLocation> = listOf(ToolLocation(params.path, LocationType.FILE))
     
     override suspend fun execute(context: ToolExecutionContext): ToolResult {
         return ToolErrorUtils.safeExecute(ToolErrorType.FILE_NOT_FOUND) {
@@ -126,14 +121,11 @@ class ReadFileInvocation(
     }
 }
 
-/**
- * Tool for reading file contents with optional line range support
- */
 class ReadFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<ReadFileParams, ToolResult>() {
     
-    override val name: String = ToolNames.READ_FILE
+    override val name: String = ToolType.ReadFile.name
     override val description: String = """
         Read and retrieve file content from project using relative or absolute path. 
         Supports line ranges for reading specific portions of files.

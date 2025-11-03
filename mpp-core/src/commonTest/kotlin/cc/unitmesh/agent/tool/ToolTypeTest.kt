@@ -120,24 +120,6 @@ class ToolTypeTest {
     }
     
     @Test
-    fun testBackwardCompatibilityWithToolNames() {
-        // Test that ToolNames constants still work
-        @Suppress("DEPRECATION")
-        val oldReadFile = ToolNames.READ_FILE
-        assertEquals("read-file", oldReadFile)
-        assertEquals(ToolType.ReadFile, oldReadFile.toToolType())
-        
-        @Suppress("DEPRECATION")
-        val oldWriteFile = ToolNames.WRITE_FILE
-        assertEquals("write-file", oldWriteFile)
-        assertEquals(ToolType.WriteFile, oldWriteFile.toToolType())
-        
-        @Suppress("DEPRECATION")
-        val allOldTools = ToolNames.ALL_TOOLS
-        assertEquals(ToolType.ALL_TOOL_NAMES, allOldTools)
-    }
-    
-    @Test
     fun testToolCategoryProperties() {
         val fileSystemCategory = ToolCategory.FileSystem
         assertEquals("File System", fileSystemCategory.displayName)

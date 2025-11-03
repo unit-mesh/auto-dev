@@ -591,7 +591,7 @@ class JsToolRegistry(projectPath: String) {
                     startLine = startLine,
                     endLine = endLine
                 )
-                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.READ_FILE, params)
+                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolType.ReadFile.name, params)
                 result.toJsToolResult()
             } catch (e: Exception) {
                 JsToolResult(

@@ -5,7 +5,7 @@ import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.tool.ToolResult
-import cc.unitmesh.agent.tool.ToolNames
+import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
@@ -344,7 +344,7 @@ Provide a JSON summary as specified in your system prompt.
 
     companion object {
         private fun createDefinition() = AgentDefinition(
-            name = ToolNames.LOG_SUMMARY,
+            name = ToolType.LogSummary.name,
             displayName = "Log Summary SubAgent",
             description = "Summarizes long command outputs",
             promptConfig = PromptConfig(

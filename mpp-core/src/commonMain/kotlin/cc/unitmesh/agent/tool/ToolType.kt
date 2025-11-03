@@ -2,7 +2,7 @@ package cc.unitmesh.agent.tool
 
 /**
  * Sealed class representing all available tool types with their metadata
- * 
+ *
  * This replaces the string-based tool names with a type-safe approach that includes:
  * - Tool name (for backward compatibility)
  * - Display name (human-readable)
@@ -17,7 +17,7 @@ sealed class ToolType(
     val composeIcon: String,
     val category: ToolCategory
 ) {
-    
+
     // File System Tools
     data object ReadFile : ToolType(
         name = "read-file",
@@ -26,7 +26,7 @@ sealed class ToolType(
         composeIcon = "file_open",
         category = ToolCategory.FileSystem
     )
-    
+
     data object WriteFile : ToolType(
         name = "write-file",
         displayName = "Write File",
@@ -34,7 +34,7 @@ sealed class ToolType(
         composeIcon = "edit",
         category = ToolCategory.FileSystem
     )
-    
+
     data object ListFiles : ToolType(
         name = "list-files",
         displayName = "List Files",
@@ -42,14 +42,7 @@ sealed class ToolType(
         composeIcon = "folder",
         category = ToolCategory.FileSystem
     )
-    
-    data object EditFile : ToolType(
-        name = "edit-file",
-        displayName = "Edit File",
-        tuiEmoji = "📝",
-        composeIcon = "edit_note",
-        category = ToolCategory.FileSystem
-    )
+
 
     // Search Tools
     data object Grep : ToolType(
@@ -59,21 +52,13 @@ sealed class ToolType(
         composeIcon = "search",
         category = ToolCategory.Search
     )
-    
+
     data object Glob : ToolType(
         name = "glob",
         displayName = "Find Files",
         tuiEmoji = "🌐",
         composeIcon = "find_in_page",
         category = ToolCategory.Search
-    )
-
-    data object PatchFile : ToolType(
-        name = "patch-file",
-        displayName = "Patch File",
-        tuiEmoji = "🔧",
-        composeIcon = "build",
-        category = ToolCategory.FileSystem
     )
 
     data object Shell : ToolType(
@@ -91,7 +76,7 @@ sealed class ToolType(
         composeIcon = "healing",
         category = ToolCategory.SubAgent
     )
-    
+
     data object LogSummary : ToolType(
         name = "log-summary",
         displayName = "Log Summary",
@@ -99,7 +84,7 @@ sealed class ToolType(
         composeIcon = "summarize",
         category = ToolCategory.SubAgent
     )
-    
+
     data object CodebaseInvestigator : ToolType(
         name = "codebase-investigator",
         displayName = "Codebase Investigator",
@@ -107,32 +92,31 @@ sealed class ToolType(
         composeIcon = "science",
         category = ToolCategory.SubAgent
     )
-    
+
     companion object {
         /**
          * All available tool types
          */
         val ALL_TOOLS = listOf(
-            ReadFile, WriteFile, ListFiles, EditFile, PatchFile,
-            Grep, Glob,
+            ReadFile, WriteFile, Grep, Glob,
             Shell,
             ErrorRecovery, LogSummary, CodebaseInvestigator
         )
-        
+
         /**
          * Get tool type by name (for backward compatibility)
          */
         fun fromName(name: String): ToolType? {
             return ALL_TOOLS.find { it.name == name }
         }
-        
+
         /**
          * Get all tools by category
          */
         fun byCategory(category: ToolCategory): List<ToolType> {
             return ALL_TOOLS.filter { it.category == category }
         }
-        
+
         /**
          * Get all tool names (for backward compatibility)
          */

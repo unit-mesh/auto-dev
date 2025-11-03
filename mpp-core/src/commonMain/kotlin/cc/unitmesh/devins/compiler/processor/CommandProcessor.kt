@@ -51,7 +51,7 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         
         // 根据命令类型进行处理
         return when (commandName.lowercase()) {
-            "file", ToolNames.READ_FILE -> processFileCommand(commandName, argumentsText, context)
+            "file", ToolType.ReadFile.name -> processFileCommand(commandName, argumentsText, context)
             "symbol" -> processSymbolCommand(commandName, argumentsText, context)
             "write" -> processWriteCommand(commandName, argumentsText, context)
             "run" -> processRunCommand(commandName, argumentsText, context)

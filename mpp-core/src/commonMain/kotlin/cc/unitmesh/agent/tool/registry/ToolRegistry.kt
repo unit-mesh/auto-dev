@@ -66,21 +66,41 @@ class ToolRegistry(
     fun hasToolNamed(toolName: String): Boolean {
         return toolName in tools
     }
-    
-    /**
-     * Get tools that require file system access
-     */
-    fun getFileSystemTools(): Map<String, ExecutableTool<*, *>> {
-        return tools.filterKeys { ToolNames.requiresFileSystem(it) }
+
+    fun generateToolExample(tool: ExecutableTool<*, *>): String {
+        val toToolType = tool.name.toToolType() ?: return "/${tool.name} <parameters>"
+        return when (toToolType) {
+            ToolType.ReadFile -> """
+                /read-file path="src/main.kt"
+                /read-file path="README.md" startLine=1 endLine=10
+            """.trimIndent()
+
+            ToolType.WriteFile -> """
+                /write-file path="output.txt" content="Hello, World!"
+                /write-file path="config.json" content="{\"key\": \"value\"}" createDirectories=true
+            """.trimIndent()
+
+            ToolType.Grep -> """
+                /grep pattern="function.*main" path="src" include="*.kt"
+                /grep pattern="TODO|FIXME" recursive=true caseSensitive=false
+            """.trimIndent()
+
+            ToolType.Glob -> """
+                /glob pattern="*.kt" path="src"
+                /glob pattern="**/*.{ts,js}" includeFileInfo=true
+            """.trimIndent()
+
+            ToolType.Shell -> """
+                /shell command="ls -la"
+                /shell command="npm test" workingDirectory="frontend" timeoutMs=60000
+            """.trimIndent()
+
+            else -> {
+                "/${tool.name} <parameters>"
+            }
+        }
     }
-    
-    /**
-     * Get tools that execute external commands
-     */
-    fun getExecutionTools(): Map<String, ExecutableTool<*, *>> {
-        return tools.filterKeys { ToolNames.isExecutionTool(it) }
-    }
-    
+
     /**
      * Create a tool invocation from parameters
      */
@@ -109,7 +129,7 @@ class ToolRegistry(
             null
         }
     }
-    
+
     /**
      * Execute a tool with parameters
      */
@@ -132,10 +152,7 @@ class ToolRegistry(
             )
         }
     }
-    
-    /**
-     * Get tool information as AgentTool objects
-     */
+
     fun getAgentTools(): List<AgentTool> {
         return tools.values.map { tool ->
             AgentTool(
@@ -164,7 +181,6 @@ class ToolRegistry(
      * Register all built-in tools
      */
     private fun registerBuiltinTools() {
-        // File system tools
         registerTool(ReadFileTool(fileSystem))
         registerTool(WriteFileTool(fileSystem))
         registerTool(GrepTool(fileSystem))
@@ -175,60 +191,8 @@ class ToolRegistry(
             registerTool(ShellTool(shellExecutor))
         }
     }
-    
-    /**
-     * Generate example usage for a tool
-     */
-    private fun generateToolExample(tool: ExecutableTool<*, *>): String {
-        return when (tool.name) {
-            ToolNames.READ_FILE -> """
-                /read-file path="src/main.kt"
-                /read-file path="README.md" startLine=1 endLine=10
-            """.trimIndent()
-            
-            ToolNames.WRITE_FILE -> """
-                /write-file path="output.txt" content="Hello, World!"
-                /write-file path="config.json" content="{\"key\": \"value\"}" createDirectories=true
-            """.trimIndent()
-            
-            ToolNames.GREP -> """
-                /grep pattern="function.*main" path="src" include="*.kt"
-                /grep pattern="TODO|FIXME" recursive=true caseSensitive=false
-            """.trimIndent()
-            
-            ToolNames.GLOB -> """
-                /glob pattern="*.kt" path="src"
-                /glob pattern="**/*.{ts,js}" includeFileInfo=true
-            """.trimIndent()
-            
-            ToolNames.SHELL -> """
-                /shell command="ls -la"
-                /shell command="npm test" workingDirectory="frontend" timeoutMs=60000
-            """.trimIndent()
-            
-            else -> "/${tool.name} <parameters>"
-        }
-    }
-    
-    /**
-     * Get registry statistics
-     */
-    fun getStats(): RegistryStats {
-        val fileSystemToolCount = tools.keys.count { ToolNames.requiresFileSystem(it) }
-        val executionToolCount = tools.keys.count { ToolNames.isExecutionTool(it) }
-        
-        return RegistryStats(
-            totalTools = tools.size,
-            fileSystemTools = fileSystemToolCount,
-            executionTools = executionToolCount,
-            availableTools = tools.keys.toList().sorted()
-        )
-    }
 }
 
-/**
- * Statistics about the tool registry
- */
 data class RegistryStats(
     val totalTools: Int,
     val fileSystemTools: Int,
@@ -236,9 +200,6 @@ data class RegistryStats(
     val availableTools: List<String>
 )
 
-/**
- * Global tool registry instance
- */
 object GlobalToolRegistry {
     private var instance: ToolRegistry? = null
     
