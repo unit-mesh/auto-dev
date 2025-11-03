@@ -15,7 +15,7 @@ actual object Platform {
     }
 
     actual fun getDefaultShell(): String {
-        return "/system/bin/sh"  // Android uses sh shell
+        return "/system/bin/sh"
     }
 
     actual fun getCurrentTimestamp(): String {

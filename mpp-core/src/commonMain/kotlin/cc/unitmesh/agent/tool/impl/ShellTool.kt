@@ -136,7 +136,7 @@ class ShellTool(
     private val shellExecutor: ShellExecutor = DefaultShellExecutor()
 ) : BaseExecutableTool<ShellParams, ToolResult>() {
     
-    override val name: String = ToolNames.SHELL
+    override val name: String = ToolType.Shell.name
     override val description: String = """
         Execute shell commands in the project environment with security controls.
         Use for system operations, build scripts, environment setup, or external tool execution.
@@ -160,44 +160,24 @@ class ShellTool(
             throw ToolException("Timeout must be positive", ToolErrorType.PARAMETER_OUT_OF_RANGE)
         }
 
-        // Check for path traversal in working directory
         params.workingDirectory?.let { workDir ->
             if (workDir.contains("..")) {
                 throw ToolException("Path traversal not allowed in working directory", ToolErrorType.PATH_INVALID)
             }
         }
 
-        // Validate environment variable names
         params.environment.keys.forEach { key ->
             if (key.isBlank() || key.contains('=')) {
                 throw ToolException("Invalid environment variable name: $key", ToolErrorType.INVALID_PARAMETERS)
             }
         }
 
-        // Additional command validation
         if (!shellExecutor.validateCommand(params.command)) {
             throw ToolException("Command not allowed: ${params.command}", ToolErrorType.PERMISSION_DENIED)
         }
     }
+
+    fun isAvailable(): Boolean = shellExecutor.isAvailable()
     
-    /**
-     * Get common shell commands for the current platform
-     */
-    fun getCommonCommands(): Map<String, String> {
-        return ShellUtils.getCommonCommands()
-    }
-    
-    /**
-     * Check if shell execution is available
-     */
-    fun isAvailable(): Boolean {
-        return shellExecutor.isAvailable()
-    }
-    
-    /**
-     * Get the default shell for the current platform
-     */
-    fun getDefaultShell(): String? {
-        return shellExecutor.getDefaultShell()
-    }
+    fun getDefaultShell(): String? = shellExecutor.getDefaultShell()
 }

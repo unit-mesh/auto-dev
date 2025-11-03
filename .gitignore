@@ -171,3 +171,4 @@ kotlin-js-store/*
 .playwright-mcp
 node_modules
 package-lock.json
+Samples/

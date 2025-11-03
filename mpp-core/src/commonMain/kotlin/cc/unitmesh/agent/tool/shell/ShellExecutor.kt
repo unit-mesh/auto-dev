@@ -65,10 +65,6 @@ interface ShellExecutor {
      * Get the default shell for the current platform
      */
     fun getDefaultShell(): String?
-    
-    /**
-     * Validate if a command is safe to execute (basic security check)
-     */
     fun validateCommand(command: String): Boolean {
         // Basic validation - can be overridden by implementations
         val dangerousCommands = setOf(
