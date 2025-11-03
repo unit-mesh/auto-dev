@@ -129,7 +129,6 @@ fun DevInEditorInput(
 
 
 
-    // 应用补全
     fun applyCompletion(item: CompletionItem) {
         val insertHandler = item.insertHandler
         val result = if (insertHandler != null) {
@@ -405,12 +404,11 @@ fun DevInEditorInput(
                                 newPosition,
                                 CompletionTriggerType.COMMAND
                             )
-                            if (context != null && manager != null) {
+                            if (context != null) {
                                 currentTriggerType = CompletionTriggerType.COMMAND
                                 completionItems = manager.getFilteredCompletions(context)
                                 selectedCompletionIndex = 0
                                 showCompletion = completionItems.isNotEmpty()
-                                println("🔍 / 补全触发: items=${completionItems.size}")
                             }
                         }
                     },
@@ -420,7 +418,6 @@ fun DevInEditorInput(
             }
         }
         
-        // 补全弹窗
         if (showCompletion && completionItems.isNotEmpty()) {
             CompletionPopup(
                 items = completionItems,
@@ -439,7 +436,6 @@ fun DevInEditorInput(
         }
     }
     
-    // 自动聚焦
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }

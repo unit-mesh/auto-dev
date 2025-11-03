@@ -26,9 +26,6 @@ import cc.unitmesh.devins.completion.CompletionContext
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import kotlinx.coroutines.launch
 
-/**
- * 补全弹窗组件
- */
 @Composable
 fun CompletionPopup(
     items: List<CompletionItem>,
@@ -47,7 +44,6 @@ fun CompletionPopup(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     
-    // 当选中项改变时，滚动到可见区域
     LaunchedEffect(selectedIndex) {
         if (selectedIndex in items.indices) {
             scope.launch {
@@ -96,9 +92,6 @@ fun CompletionPopup(
     }
 }
 
-/**
- * 单个补全项行
- */
 @Composable
 private fun CompletionItemRow(
     item: CompletionItem,
@@ -121,7 +114,6 @@ private fun CompletionItemRow(
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 图标（emoji）
         item.icon?.let { icon ->
             Text(
                 text = icon,
@@ -130,9 +122,7 @@ private fun CompletionItemRow(
             )
         }
 
-        // 主要内容
         Column(modifier = Modifier.weight(1f)) {
-            // 显示文本
             Text(
                 text = item.displayText,
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -144,7 +134,6 @@ private fun CompletionItemRow(
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
 
-            // 描述文本
             item.description?.let { description ->
                 Text(
                     text = description,
@@ -158,7 +147,6 @@ private fun CompletionItemRow(
             }
         }
 
-        // 右侧信息（如文件扩展名）
         if (item.description != "Directory") {
             val fileExtension = item.text.substringAfterLast('.', "")
             if (fileExtension.isNotEmpty() && fileExtension.length <= 4) {
@@ -179,9 +167,6 @@ private fun CompletionItemRow(
     }
 }
 
-/**
- * 补全触发器 - 检测是否应该触发补全
- */
 object CompletionTrigger {
     fun shouldTrigger(char: Char): Boolean {
         return char in setOf('@', '/', '$', ':', '`')
@@ -203,7 +188,6 @@ object CompletionTrigger {
         cursorPosition: Int,
         triggerType: CompletionTriggerType
     ): CompletionContext? {
-        // 找到最近的触发字符
         val triggerChar = when (triggerType) {
             CompletionTriggerType.AGENT -> '@'
             CompletionTriggerType.COMMAND -> '/'
@@ -215,10 +199,8 @@ object CompletionTrigger {
         val triggerOffset = fullText.lastIndexOf(triggerChar, cursorPosition - 1)
         if (triggerOffset < 0) return null
         
-        // 提取查询文本（触发字符后到光标的文本）
         val queryText = fullText.substring(triggerOffset + 1, cursorPosition)
-        
-        // 检查查询文本是否有效（不包含空白字符或换行）
+
         if (queryText.contains('\n') || queryText.contains(' ')) {
             return null
         }
