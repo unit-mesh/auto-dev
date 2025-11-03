@@ -3,6 +3,7 @@ package cc.unitmesh.agent.tool.impl
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.FileInfo
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
+import cc.unitmesh.agent.tool.gitignore.GitIgnoreParser
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,7 +14,8 @@ data class GlobParams(
     val includeHidden: Boolean = false,
     val maxResults: Int = 1000,
     val sortByTime: Boolean = false,
-    val includeFileInfo: Boolean = false
+    val includeFileInfo: Boolean = false,
+    val respectGitIgnore: Boolean = true
 )
 
 @Serializable
@@ -28,7 +30,8 @@ data class GlobFileResult(
 class GlobInvocation(
     params: GlobParams,
     tool: GlobTool,
-    private val fileSystem: ToolFileSystem
+    private val fileSystem: ToolFileSystem,
+    private val gitIgnoreParser: GitIgnoreParser? = null
 ) : BaseToolInvocation<GlobParams, ToolResult>(params, tool) {
     
     override fun getDescription(): String {
@@ -67,7 +70,8 @@ class GlobInvocation(
                 "returned_matches" to limitedMatches.size.toString(),
                 "include_directories" to params.includeDirectories.toString(),
                 "include_hidden" to params.includeHidden.toString(),
-                "sort_by_time" to params.sortByTime.toString()
+                "sort_by_time" to params.sortByTime.toString(),
+                "respect_gitignore" to params.respectGitIgnore.toString()
             )
             
             ToolResult.Success(resultText, metadata)
@@ -77,24 +81,37 @@ class GlobInvocation(
     private fun findMatches(searchPath: String): List<GlobFileResult> {
         val matches = mutableListOf<GlobFileResult>()
         val projectPath = fileSystem.getProjectPath()
-        
+
         fun collectMatches(currentPath: String) {
             try {
                 val files = fileSystem.listFiles(currentPath)
-                
+
                 for (file in files) {
                     val fileInfo = fileSystem.getFileInfo(file)
                     if (fileInfo == null) continue
-                    
+
                     val fileName = file.substringAfterLast('/')
-                    
+
                     if (!params.includeHidden && fileName.startsWith('.')) {
                         continue
                     }
-                    
+
+                    // Check gitignore if enabled
+                    if (params.respectGitIgnore && gitIgnoreParser != null && projectPath != null) {
+                        val relativePath = if (file.startsWith(projectPath)) {
+                            file.removePrefix(projectPath).removePrefix("/")
+                        } else {
+                            file
+                        }
+
+                        if (gitIgnoreParser.isIgnored(relativePath)) {
+                            continue
+                        }
+                    }
+
                     if (fileInfo.isDirectory) {
                         collectMatches(file)
-                        
+
                         if (params.includeDirectories && matchesPattern(file, params.pattern)) {
                             matches.add(createFileResult(file, fileInfo, projectPath))
                         }
@@ -108,7 +125,7 @@ class GlobInvocation(
                 // Skip directories that can't be read
             }
         }
-        
+
         collectMatches(searchPath)
         return matches
     }
@@ -216,20 +233,39 @@ class GlobInvocation(
 class GlobTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<GlobParams, ToolResult>() {
-    
+
     override val name: String = ToolNames.GLOB
     override val description: String = """
         Find files and directories using glob patterns with wildcard support.
         Supports recursive search (**), character classes ([abc]), alternatives ({a,b}),
-        and standard wildcards (* and ?). Essential for discovering files by pattern,
-        analyzing project structure, or finding files for batch operations.
+        and standard wildcards (* and ?). Respects .gitignore rules by default.
+        Essential for discovering files by pattern, analyzing project structure,
+        or finding files for batch operations.
     """.trimIndent()
-    
+
     override fun getParameterClass(): String = GlobParams::class.simpleName ?: "GlobParams"
-    
+
     override fun createToolInvocation(params: GlobParams): ToolInvocation<GlobParams, ToolResult> {
         validateParameters(params)
-        return GlobInvocation(params, this, fileSystem)
+
+        // Create GitIgnoreParser if respectGitIgnore is enabled and we have a project path
+        val gitIgnoreParser = if (params.respectGitIgnore) {
+            val projectPath = fileSystem.getProjectPath()
+            if (projectPath != null) {
+                try {
+                    GitIgnoreParser(projectPath)
+                } catch (e: Exception) {
+                    // If GitIgnore parser fails to initialize, continue without it
+                    null
+                }
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+
+        return GlobInvocation(params, this, fileSystem, gitIgnoreParser)
     }
     
     private fun validateParameters(params: GlobParams) {
