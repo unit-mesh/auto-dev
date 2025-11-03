@@ -3,14 +3,18 @@ package cc.unitmesh.devins.ui.compose.agent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.devins.llm.MessageRole
 
 /**
  * Agent Chat Interface
@@ -79,6 +83,7 @@ fun AgentChatInterface(
                 currentIteration = viewModel.renderer.currentIteration,
                 maxIterations = viewModel.renderer.maxIterations,
                 executionTime = viewModel.renderer.currentExecutionTime,
+                viewModel = viewModel,
                 onCancel = { viewModel.cancelTask() }
             )
         }
@@ -120,6 +125,7 @@ private fun AgentStatusBar(
     currentIteration: Int,
     maxIterations: Int,
     executionTime: Long,
+    viewModel: CodingAgentViewModel,
     onCancel: () -> Unit
 ) {
     Card(
@@ -176,24 +182,91 @@ private fun AgentStatusBar(
                     }
                 }
             }
-            
-            if (isExecuting) {
-                Button(
-                    onClick = onCancel,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Stop,
-                        contentDescription = "Stop",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Stop")
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Copy All button
+                if (!isExecuting) {
+                    CopyAllButton(viewModel = viewModel)
+                }
+
+                // Stop button
+                if (isExecuting) {
+                    Button(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Stop,
+                            contentDescription = "Stop",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Stop")
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CopyAllButton(viewModel: CodingAgentViewModel) {
+    val clipboardManager = LocalClipboardManager.current
+
+    OutlinedButton(
+        onClick = {
+            val allText = buildString {
+                viewModel.renderer.timeline.forEach { item ->
+                    when (item) {
+                        is ComposeRenderer.TimelineItem.MessageItem -> {
+                            val role = if (item.message.role == MessageRole.USER) "User" else "Assistant"
+                            appendLine("[$role]: ${item.message.content}")
+                            appendLine()
+                        }
+                        is ComposeRenderer.TimelineItem.ToolCallItem -> {
+                            appendLine("[Tool Call]: ${item.toolName}")
+                            appendLine("Description: ${item.description}")
+                            item.details?.let { appendLine("Parameters: $it") }
+                            appendLine()
+                        }
+                        is ComposeRenderer.TimelineItem.ToolResultItem -> {
+                            val status = if (item.success) "SUCCESS" else "FAILED"
+                            appendLine("[Tool Result]: ${item.toolName} - $status")
+                            appendLine("Summary: ${item.summary}")
+                            item.output?.let { appendLine("Output: $it") }
+                            appendLine()
+                        }
+                        is ComposeRenderer.TimelineItem.ErrorItem -> {
+                            appendLine("[Error]: ${item.error}")
+                            appendLine()
+                        }
+                        is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
+                            val status = if (item.success) "COMPLETED" else "FAILED"
+                            appendLine("[Task $status]: ${item.message}")
+                            appendLine()
+                        }
+                    }
+                }
+
+                // Add current streaming output if any
+                if (viewModel.renderer.currentStreamingOutput.isNotEmpty()) {
+                    appendLine("[Assistant - Streaming]: ${viewModel.renderer.currentStreamingOutput}")
+                }
+            }
+            clipboardManager.setText(AnnotatedString(allText))
+        }
+    ) {
+        Icon(
+            imageVector = Icons.Default.ContentCopy,
+            contentDescription = "Copy all",
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text("Copy All")
     }
 }
 

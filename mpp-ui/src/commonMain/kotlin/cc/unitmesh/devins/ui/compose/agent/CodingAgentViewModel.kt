@@ -66,8 +66,10 @@ class CodingAgentViewModel(
                 currentExecutionJob = null
 
             } catch (e: CancellationException) {
-                // Task was cancelled - reset all states
+                // Task was cancelled - reset all states and add cancellation message at the end
                 renderer.forceStop() // Stop all loading states
+
+                // Add cancellation message to timeline (will appear at the end)
                 renderer.renderError("Task cancelled by user")
                 isExecuting = false
                 currentExecutionJob = null

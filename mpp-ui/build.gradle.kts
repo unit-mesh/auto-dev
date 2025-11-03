@@ -59,6 +59,9 @@ kotlin {
                 // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
+                // DateTime for KMP
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+
                 // JSON 处理
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
             }
@@ -78,8 +81,8 @@ kotlin {
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")
                 
                 // Multiplatform Markdown Renderer for JVM
-                implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
-                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
             }
         }
         
@@ -96,8 +99,8 @@ kotlin {
                 implementation("androidx.core:core-ktx:1.17.0")
                 
                 // Multiplatform Markdown Renderer for Android
-                implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
-                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
             }
         }
         

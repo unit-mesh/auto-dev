@@ -12,6 +12,8 @@ pluginManagement {
 
 include("mpp-core")
 include("mpp-ui")
+include("mpp-codegraph")
+
 include("core")
 
 include(

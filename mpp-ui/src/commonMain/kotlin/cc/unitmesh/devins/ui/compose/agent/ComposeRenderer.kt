@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import cc.unitmesh.agent.render.BaseRenderer
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
+import kotlinx.datetime.Clock
 
 /**
  * Compose UI Renderer that extends BaseRenderer
@@ -43,17 +44,17 @@ class ComposeRenderer : BaseRenderer() {
     val currentExecutionTime: Long get() = _currentExecutionTime
 
     // Timeline data structures for chronological rendering
-    sealed class TimelineItem(val timestamp: Long = System.currentTimeMillis()) {
+    sealed class TimelineItem(val timestamp: Long = Clock.System.now().toEpochMilliseconds()) {
         data class MessageItem(
             val message: Message,
-            val itemTimestamp: Long = System.currentTimeMillis()
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
         data class ToolCallItem(
             val toolName: String,
             val description: String,
             val details: String? = null,
-            val itemTimestamp: Long = System.currentTimeMillis()
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
         data class ToolResultItem(
@@ -61,18 +62,18 @@ class ComposeRenderer : BaseRenderer() {
             val success: Boolean,
             val summary: String,
             val output: String? = null,
-            val itemTimestamp: Long = System.currentTimeMillis()
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
         data class ErrorItem(
             val error: String,
-            val itemTimestamp: Long = System.currentTimeMillis()
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
         data class TaskCompleteItem(
             val success: Boolean,
             val message: String,
-            val itemTimestamp: Long = System.currentTimeMillis()
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
     }
 
@@ -98,9 +99,9 @@ class ComposeRenderer : BaseRenderer() {
 
         // Start timing if this is the first iteration
         if (_executionStartTime == 0L) {
-            _executionStartTime = System.currentTimeMillis()
+            _executionStartTime = Clock.System.now().toEpochMilliseconds()
         }
-        _currentExecutionTime = System.currentTimeMillis() - _executionStartTime
+        _currentExecutionTime = Clock.System.now().toEpochMilliseconds() - _executionStartTime
     }
     
     override fun renderLLMResponseChunk(chunk: String) {
@@ -163,7 +164,13 @@ class ComposeRenderer : BaseRenderer() {
             toolName = toolName,
             success = success,
             summary = summary,
-            output = if (success && output != null && output.length <= 1000) output else null
+            output = if (success && output != null) {
+                // For file search tools, keep full output; for others, limit to 2000 chars
+                when (toolName) {
+                    "glob", "grep" -> output
+                    else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated]"
+                }
+            } else null
         ))
 
         _currentToolCall = null
@@ -224,6 +231,17 @@ class ComposeRenderer : BaseRenderer() {
     }
 
     fun forceStop() {
+        // If there's streaming output, save it as a message first
+        val currentOutput = _currentStreamingOutput.trim()
+        if (currentOutput.isNotEmpty()) {
+            _timeline.add(TimelineItem.MessageItem(
+                message = Message(
+                    role = MessageRole.ASSISTANT,
+                    content = "$currentOutput\n\n[Interrupted]"
+                )
+            ))
+        }
+
         _isProcessing = false
         _currentStreamingOutput = ""
         _currentToolCall = null
@@ -274,8 +292,16 @@ class ComposeRenderer : BaseRenderer() {
             }
             "write-file" -> "File written successfully"
             "glob" -> {
-                val fileCount = output?.lines()?.size ?: 0
-                "Found $fileCount files"
+                // Parse the actual file count from the output
+                val firstLine = output?.lines()?.firstOrNull() ?: ""
+                if (firstLine.contains("Found ") && firstLine.contains(" files matching")) {
+                    val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
+                    "Found $count files"
+                } else if (output?.contains("No files found") == true) {
+                    "No files found"
+                } else {
+                    "Search completed"
+                }
             }
             "shell" -> {
                 val lines = output?.lines()?.size ?: 0
