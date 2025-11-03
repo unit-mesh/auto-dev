@@ -1,20 +1,13 @@
 package cc.unitmesh.devins.compiler.processor
 
-import cc.unitmesh.agent.tool.ToolNames
-import cc.unitmesh.devins.ast.*
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.devins.ast.DevInsCommandNode
+import cc.unitmesh.devins.ast.DevInsNode
 import cc.unitmesh.devins.command.SpecKitCommand
 import cc.unitmesh.devins.command.SpecKitTemplateCompiler
 import cc.unitmesh.devins.compiler.context.CompilerContext
-import cc.unitmesh.devins.compiler.variable.VariableType
 
-/**
- * 命令处理器
- * 处理 DevIns 中的命令节点（如 /file:example.kt）
- * 参考 @exts/devins-lang/src/main/kotlin/cc/unitmesh/devti/language/compiler/processor/UsedProcessor.kt 中的命令处理部分
- */
 class CommandProcessor : BaseDevInsNodeProcessor() {
-    
-    // 缓存 SpecKit 命令列表
     private var specKitCommands: List<SpecKitCommand>? = null
     
     override suspend fun process(node: DevInsNode, context: CompilerContext): ProcessResult {
@@ -53,10 +46,10 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         return when (commandName.lowercase()) {
             "file", ToolType.ReadFile.name -> processFileCommand(commandName, argumentsText, context)
             "symbol" -> processSymbolCommand(commandName, argumentsText, context)
-            "write" -> processWriteCommand(commandName, argumentsText, context)
+            "write", ToolType.WriteFile.name -> processWriteCommand(commandName, argumentsText, context)
             "run" -> processRunCommand(commandName, argumentsText, context)
-            "shell" -> processShellCommand(commandName, argumentsText, context)
-            "search" -> processSearchCommand(commandName, argumentsText, context)
+            "shell", ToolType.Shell.name -> processShellCommand(commandName, argumentsText, context)
+            "search", ToolType.Grep.name, ToolType.Glob.name -> processSearchCommand(commandName, argumentsText, context)
             "patch" -> processPatchCommand(commandName, argumentsText, context)
             "browse" -> processBrowseCommand(commandName, argumentsText, context)
             else -> processUnknownCommand(commandName, argumentsText, context)
@@ -70,7 +63,6 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
     ): ProcessResult {
         context.logger.info("[$name] Processing SpecKit command: $commandName")
         
-        // 延迟加载 SpecKit 命令列表
         if (specKitCommands == null) {
             specKitCommands = SpecKitCommand.loadAll(context.fileSystem)
             specKitCommands?.forEach { cmd ->
@@ -79,7 +71,6 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
             context.logger.info("[$name] Loaded ${specKitCommands?.size ?: 0} SpecKit commands")
         }
         
-        // 查找对应的命令
         val command = SpecKitCommand.findByFullName(specKitCommands ?: emptyList(), commandName)
         
         if (command == null) {
@@ -87,10 +78,6 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
             return ProcessResult.failure("SpecKit command not found: $commandName")
         }
         
-        println("✅ [CommandProcessor] Found SpecKit command: ${command.fullCommandName}")
-        println("🔍 [CommandProcessor] Template preview: ${command.template.take(100)}...")
-        
-        // 编译命令模板
         val compiler = SpecKitTemplateCompiler(
             fileSystem = context.fileSystem,
             template = command.template,
@@ -99,9 +86,6 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         )
         
         val output = compiler.compile()
-        println("✅ [CommandProcessor] Compiled output length: ${output.length}")
-        println("🔍 [CommandProcessor] Output preview: ${output.take(200)}...")
-        
         context.appendOutput(output)
         
         return ProcessResult.success(
