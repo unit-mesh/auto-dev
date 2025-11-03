@@ -43,10 +43,20 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       process.exit(1);
     }
 
+    // Load MCP servers configuration
+    const mcpServers = config.getMcpServers();
+    const enabledMcpServers = Object.fromEntries(
+      Object.entries(mcpServers).filter(([_, server]) => !server.disabled)
+    );
+
     if (!quiet) {
       console.log(`\n🚀 AutoDev Coding Agent`);
       console.log(`📦 Provider: ${activeConfig.provider}`);
-      console.log(`🤖 Model: ${activeConfig.model}\n`);
+      console.log(`🤖 Model: ${activeConfig.model}`);
+      if (Object.keys(enabledMcpServers).length > 0) {
+        console.log(`🔌 MCP Servers: ${Object.keys(enabledMcpServers).join(', ')}`);
+      }
+      console.log();
     }
 
     // Create Kotlin LLM service
@@ -64,12 +74,13 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
     // Create CLI renderer
     const renderer = new CliRenderer();
 
-    // Create and run Kotlin CodingAgent with custom renderer
+    // Create and run Kotlin CodingAgent with custom renderer and MCP servers
     const agent = new KotlinCC.unitmesh.agent.JsCodingAgent(
       resolvedPath,
       llmService,
       10, // maxIterations
-      renderer // custom renderer
+      renderer, // custom renderer
+      Object.keys(enabledMcpServers).length > 0 ? enabledMcpServers : null // MCP servers
     );
 
     // Create task object

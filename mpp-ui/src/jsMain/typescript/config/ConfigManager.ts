@@ -26,11 +26,28 @@ export interface LLMConfig {
 }
 
 /**
+ * MCP Server configuration
+ */
+export interface McpServerConfig {
+  command?: string;
+  url?: string;
+  args?: string[];
+  disabled?: boolean;
+  autoApprove?: string[];
+  env?: Record<string, string>;
+  timeout?: number;
+  trust?: boolean;
+  headers?: Record<string, string>;
+  cwd?: string;
+}
+
+/**
  * Root configuration file structure
  */
 export interface ConfigFile {
   active: string;  // Name of the active configuration
   configs: LLMConfig[];
+  mcpServers?: Record<string, McpServerConfig>;  // MCP servers configuration
 }
 
 /**
@@ -234,6 +251,23 @@ export class AutoDevConfigWrapper {
    */
   getActiveName(): string {
     return this.configFile.active;
+  }
+
+  /**
+   * Get MCP servers configuration
+   */
+  getMcpServers(): Record<string, McpServerConfig> {
+    return this.configFile.mcpServers || {};
+  }
+
+  /**
+   * Get enabled MCP servers
+   */
+  getEnabledMcpServers(): Record<string, McpServerConfig> {
+    const mcpServers = this.getMcpServers();
+    return Object.fromEntries(
+      Object.entries(mcpServers).filter(([_, server]) => !server.disabled)
+    );
   }
 
   /**

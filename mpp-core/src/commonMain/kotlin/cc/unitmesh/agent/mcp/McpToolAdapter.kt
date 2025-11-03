@@ -1,48 +1,123 @@
 package cc.unitmesh.agent.mcp
 
-import cc.unitmesh.agent.tool.AgentTool
+import cc.unitmesh.agent.tool.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 /**
- * Adapter to convert MCP tools to AgentTool interface
+ * Adapter that wraps an MCP tool as an ExecutableTool
  * 
- * This allows MCP tools to be used seamlessly with the existing agent system.
+ * This adapter bridges the gap between MCP tools and the Agent tool system,
+ * allowing MCP servers to be used as standard tools in the CodingAgent.
  */
-object McpToolAdapter {
-    /**
-     * Convert McpToolInfo to AgentTool
-     */
-    fun toAgentTool(toolInfo: McpToolInfo): AgentTool {
-        return AgentTool(
-            name = toolInfo.name,
-            description = toolInfo.description,
-            example = "",
-            isMcp = true,
-            mcpGroup = toolInfo.serverName,
-            completion = toolInfo.name
-        )
+class McpToolAdapter(
+    private val toolInfo: McpToolInfo,
+    private val serverName: String,
+    private val clientManager: McpClientManager
+) : BaseExecutableTool<McpToolAdapter.Params, ToolResult.Success>() {
+    
+    override val name: String = "${serverName}_${toolInfo.name}"
+    override val description: String = toolInfo.description
+    
+    @Serializable
+    data class Params(
+        val arguments: String = "{}" // JSON string of arguments
+    )
+    
+    override fun getParameterClass(): String = "McpToolAdapter.Params"
+    
+    override fun createToolInvocation(params: Params): ToolInvocation<Params, ToolResult.Success> {
+        return McpToolInvocation(params, this)
     }
     
-    /**
-     * Convert a list of McpToolInfo to AgentTools
-     */
-    fun toAgentTools(tools: List<McpToolInfo>): List<AgentTool> {
-        return tools.map { toAgentTool(it) }
-    }
-    
-    /**
-     * Convert a map of server name to tools to a flat list of AgentTools
-     */
-    fun toAgentTools(toolsMap: Map<String, List<McpToolInfo>>): List<AgentTool> {
-        return toolsMap.values.flatten().map { toAgentTool(it) }
-    }
-    
-    /**
-     * Filter enabled tools from a map
-     */
-    fun getEnabledTools(toolsMap: Map<String, List<McpToolInfo>>): List<AgentTool> {
-        return toolsMap.values.flatten()
-            .filter { it.enabled }
-            .map { toAgentTool(it) }
+    private inner class McpToolInvocation(
+        params: Params,
+        tool: ExecutableTool<Params, ToolResult.Success>
+    ) : BaseToolInvocation<Params, ToolResult.Success>(params, tool) {
+        
+        override fun getDescription(): String {
+            return "Execute MCP tool: ${toolInfo.name} on server: $serverName"
+        }
+        
+        override suspend fun execute(context: ToolExecutionContext): ToolResult.Success {
+            try {
+                val result = clientManager.executeTool(
+                    serverName = serverName,
+                    toolName = toolInfo.name,
+                    arguments = params.arguments
+                )
+                
+                return ToolResult.Success(
+                    content = result,
+                    metadata = mapOf(
+                        "mcp_server" to serverName,
+                        "mcp_tool" to toolInfo.name
+                    )
+                )
+            } catch (e: Exception) {
+                return ToolResult.Success(
+                    content = "Error executing MCP tool: ${e.message}",
+                    metadata = mapOf(
+                        "mcp_server" to serverName,
+                        "mcp_tool" to toolInfo.name,
+                        "error" to "true"
+                    )
+                )
+            }
+        }
     }
 }
 
+/**
+ * Factory for creating MCP tool adapters
+ */
+object McpToolAdapterFactory {
+    private val json = Json { ignoreUnknownKeys = true }
+    
+    /**
+     * Create tool adapters for all discovered MCP tools
+     * 
+     * @param discoveredTools Map of server name to list of discovered tools
+     * @param clientManager The MCP client manager to use for execution
+     * @return List of ExecutableTool instances
+     */
+    fun createAdapters(
+        discoveredTools: Map<String, List<McpToolInfo>>,
+        clientManager: McpClientManager
+    ): List<ExecutableTool<*, *>> {
+        val adapters = mutableListOf<ExecutableTool<*, *>>()
+        
+        discoveredTools.forEach { (serverName, tools) ->
+            tools.filter { it.enabled }.forEach { toolInfo ->
+                adapters.add(McpToolAdapter(toolInfo, serverName, clientManager))
+            }
+        }
+        
+        return adapters
+    }
+    
+    /**
+     * Create AgentTool representations for discovered MCP tools
+     * Used for displaying in UI and prompts
+     */
+    fun createAgentTools(
+        discoveredTools: Map<String, List<McpToolInfo>>
+    ): List<AgentTool> {
+        val agentTools = mutableListOf<AgentTool>()
+        
+        discoveredTools.forEach { (serverName, tools) ->
+            tools.filter { it.enabled }.forEach { toolInfo ->
+                agentTools.add(
+                    AgentTool(
+                        name = "${serverName}_${toolInfo.name}",
+                        description = toolInfo.description,
+                        isMcp = true,
+                        mcpGroup = serverName
+                    )
+                )
+            }
+        }
+        
+        return agentTools
+    }
+}

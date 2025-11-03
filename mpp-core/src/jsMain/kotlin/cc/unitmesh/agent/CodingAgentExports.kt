@@ -227,15 +227,48 @@ class JsCodingAgent(
     private val projectPath: String,
     private val llmService: cc.unitmesh.llm.JsKoogLLMService,
     private val maxIterations: Int = 100,
-    private val renderer: JsCodingAgentRenderer? = null
+    private val renderer: JsCodingAgentRenderer? = null,
+    private val mcpServers: dynamic = null  // JS object for MCP configuration
 ) {
     // 内部使用 Kotlin 的 CodingAgent
     private val agent: CodingAgent = CodingAgent(
         projectPath = projectPath,
         llmService = llmService.service,  // 访问内部 KoogLLMService
         maxIterations = maxIterations,
-        renderer = if (renderer != null) JsRendererAdapter(renderer) else DefaultCodingAgentRenderer()
+        renderer = if (renderer != null) JsRendererAdapter(renderer) else DefaultCodingAgentRenderer(),
+        mcpServers = parseMcpServers(mcpServers)
     )
+    
+    /**
+     * Parse JS MCP servers object to Kotlin map
+     */
+    private fun parseMcpServers(jsMcpServers: dynamic): Map<String, cc.unitmesh.agent.mcp.McpServerConfig>? {
+        if (jsMcpServers == null || jsMcpServers == undefined) {
+            return null
+        }
+        
+        return try {
+            val map = mutableMapOf<String, cc.unitmesh.agent.mcp.McpServerConfig>()
+            val keys = js("Object.keys(jsMcpServers)") as Array<String>
+            
+            for (key in keys) {
+                val server = jsMcpServers[key]
+                val config = cc.unitmesh.agent.mcp.McpServerConfig(
+                    command = server.command as? String,
+                    url = server.url as? String,
+                    args = (server.args as? Array<*>)?.map { it.toString() } ?: emptyList(),
+                    disabled = (server.disabled as? Boolean) ?: false,
+                    autoApprove = (server.autoApprove as? Array<*>)?.map { it.toString() }
+                )
+                map[key] = config
+            }
+            
+            map
+        } catch (e: Exception) {
+            console.log("Error parsing MCP servers: ${e.message}")
+            null
+        }
+    }
 
     /**
      * 执行编码任务

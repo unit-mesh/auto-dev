@@ -64,4 +64,11 @@ expect object ConfigManager {
      * Check if configuration file exists
      */
     suspend fun exists(): Boolean
+    
+    /**
+     * Save MCP servers configuration
+     * 
+     * @param mcpServers Map of server name to server configuration
+     */
+    suspend fun saveMcpServers(mcpServers: Map<String, cc.unitmesh.agent.mcp.McpServerConfig>)
 }

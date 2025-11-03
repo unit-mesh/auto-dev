@@ -2,6 +2,8 @@ package cc.unitmesh.agent
 
 import cc.unitmesh.agent.core.MainAgent
 import cc.unitmesh.agent.executor.CodingAgentExecutor
+import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.agent.mcp.McpToolsInitializer
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
@@ -27,7 +29,8 @@ class CodingAgent(
     override val maxIterations: Int = 100,
     private val renderer: CodingAgentRenderer = DefaultCodingAgentRenderer(),
     private val fileSystem: ToolFileSystem? = null,
-    private val shellExecutor: ShellExecutor? = null
+    private val shellExecutor: ShellExecutor? = null,
+    private val mcpServers: Map<String, McpServerConfig>? = null
 ) : MainAgent<AgentTask, ToolResult.AgentResult>(
     AgentDefinition(
         name = "CodingAgent",
@@ -61,6 +64,9 @@ class CodingAgent(
     private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
 
     private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
+    
+    // MCP Tools 初始化器
+    private val mcpToolsInitializer = McpToolsInitializer()
 
     // 执行器
     private val executor = CodingAgentExecutor(
@@ -76,8 +82,6 @@ class CodingAgent(
         registerTool(errorRecoveryAgent)
         registerTool(logSummaryAgent)
         registerTool(codebaseInvestigatorAgent)
-
-        /// TODO 注册 MCP Tools
     }
 
     override suspend fun execute(
@@ -118,7 +122,40 @@ class CodingAgent(
     }
 
     override suspend fun initializeWorkspace(projectPath: String) {
-        // TODO: 扫描项目结构，检测构建工具等
+        if (!mcpServers.isNullOrEmpty()) {
+            initializeMcpTools(mcpServers)
+        }
+    }
+    
+    /**
+     * Initialize and register MCP tools from configuration
+     */
+    private suspend fun initializeMcpTools(mcpServers: Map<String, McpServerConfig>) {
+        try {
+            println("🔌 Initializing MCP tools...")
+            
+            val mcpTools = mcpToolsInitializer.initialize(mcpServers)
+            
+            if (mcpTools.isNotEmpty()) {
+                mcpTools.forEach { tool ->
+                    registerTool(tool)
+                }
+                
+                println("✅ Registered ${mcpTools.size} MCP tools from ${mcpServers.size} servers")
+            } else {
+                println("ℹ️  No MCP tools discovered")
+            }
+        } catch (e: Exception) {
+            println("⚠️  Warning: Failed to initialize MCP tools: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+    
+    /**
+     * Shutdown MCP connections
+     */
+    suspend fun shutdown() {
+        mcpToolsInitializer.shutdown()
     }
 
     private fun buildContext(task: AgentTask): CodingAgentContext {
