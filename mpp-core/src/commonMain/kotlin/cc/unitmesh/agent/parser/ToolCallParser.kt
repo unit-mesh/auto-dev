@@ -26,8 +26,7 @@ class ToolCallParser {
             if (firstBlock != null) {
                 val toolCall = parseToolCallFromDevinBlock(firstBlock)
                 if (toolCall != null) {
-                    // For write-file tools, try to extract content from the surrounding context
-                    if (toolCall.toolName == "write-file" && !toolCall.params.containsKey("content")) {
+                    if (toolCall.toolName == ToolType.WriteFile.name && !toolCall.params.containsKey("content")) {
                         val contentFromContext = extractContentFromContext(llmResponse, firstBlock)
                         if (contentFromContext != null) {
                             val updatedParams = toolCall.params.toMutableMap()
@@ -46,10 +45,6 @@ class ToolCallParser {
         return toolCalls
     }
 
-    fun parseDevinBlocks(content: String): List<DevinBlock> {
-        return devinParser.extractDevinBlocks(content)
-    }
-
     private fun parseToolCallFromDevinBlock(block: DevinBlock): ToolCall? {
         val lines = block.content.lines()
         
@@ -65,10 +60,7 @@ class ToolCallParser {
         
         return null
     }
-    
-    /**
-     * Parse a direct tool call (without DevIn blocks)
-     */
+
     private fun parseDirectToolCall(response: String): ToolCall? {
         val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""", RegexOption.MULTILINE)
         val match = toolPattern.find(response) ?: return null
@@ -79,9 +71,6 @@ class ToolCallParser {
         return parseToolCallFromLine("/$toolName $rest")
     }
     
-    /**
-     * Parse a tool call from a single line
-     */
     private fun parseToolCallFromLine(line: String): ToolCall? {
         val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""")
         val match = toolPattern.find(line) ?: return null
@@ -93,10 +82,7 @@ class ToolCallParser {
         
         return ToolCall.create(toolName, params)
     }
-    
-    /**
-     * Parse parameters from the rest of the tool call line
-     */
+
     private fun parseParameters(toolName: String, rest: String): Map<String, Any> {
         val params = mutableMapOf<String, Any>()
         
@@ -108,10 +94,7 @@ class ToolCallParser {
         
         return params
     }
-    
-    /**
-     * Parse key="value" style parameters
-     */
+
     private fun parseKeyValueParameters(rest: String, params: MutableMap<String, Any>) {
         val remaining = rest.toCharArray().toList()
         var i = 0
@@ -157,11 +140,9 @@ class ToolCallParser {
      * Parse simple parameter (single value without key)
      */
     private fun parseSimpleParameter(toolName: String, rest: String, params: MutableMap<String, Any>) {
-        if (toolName == "shell") {
+        if (toolName == ToolType.Shell.name) {
             params["command"] = escapeProcessor.processEscapeSequences(rest.trim())
-        } else if (toolName == "write-file") {
-            // For write-file, if only one parameter is provided, it's the path
-            // The content should be provided in a separate parameter or in the LLM context
+        } else if (toolName == ToolType.WriteFile.name) {
             val firstLine = rest.lines().firstOrNull()?.trim()
             if (firstLine != null && firstLine.isNotEmpty()) {
                 params["path"] = escapeProcessor.processEscapeSequences(firstLine)

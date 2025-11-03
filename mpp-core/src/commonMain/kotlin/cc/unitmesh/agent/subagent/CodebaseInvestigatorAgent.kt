@@ -6,7 +6,6 @@ import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.model.ToolConfig
 import cc.unitmesh.agent.tool.ToolResult
-import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
@@ -68,8 +67,6 @@ class CodebaseInvestigatorAgent(
         )
     )
 ) {
-
-    // Simple in-memory cache for analysis results
     private var analysisCache: Map<String, String> = emptyMap()
 
     override fun validateInput(input: Map<String, Any>): InvestigationContext {
@@ -141,9 +138,6 @@ class CodebaseInvestigatorAgent(
         }
     }
 
-    /**
-     * Process the investigation query using simple text analysis
-     */
     private suspend fun processInvestigationQuery(
         input: InvestigationContext,
         onProgress: (String) -> Unit
@@ -151,7 +145,6 @@ class CodebaseInvestigatorAgent(
         val findings = mutableListOf<String>()
         val recommendations = mutableListOf<String>()
 
-        // Analyze query intent and extract relevant information
         val queryAnalysis = analyzeQuery(input.query)
 
         when (input.scope) {

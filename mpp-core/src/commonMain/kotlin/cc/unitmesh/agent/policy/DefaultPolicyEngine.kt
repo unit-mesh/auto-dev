@@ -2,6 +2,7 @@ package cc.unitmesh.agent.policy
 
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext
 import cc.unitmesh.agent.state.ToolCall
+import cc.unitmesh.agent.tool.ToolType
 
 /**
  * Default implementation of PolicyEngine
@@ -131,7 +132,7 @@ class DefaultPolicyEngine : PolicyEngine {
         addRule(PolicyRule(
             name = "allow_read_file",
             description = "Allow reading files",
-            toolPattern = "read-file",
+            toolPattern = ToolType.ReadFile.name,
             decision = PolicyDecision.ALLOW,
             riskLevel = RiskLevel.LOW,
             priority = 10
@@ -140,7 +141,7 @@ class DefaultPolicyEngine : PolicyEngine {
         addRule(PolicyRule(
             name = "allow_write_file",
             description = "Allow writing files",
-            toolPattern = "write-file",
+            toolPattern = ToolType.WriteFile.name,
             decision = PolicyDecision.ALLOW,
             riskLevel = RiskLevel.MEDIUM,
             priority = 10
@@ -149,7 +150,7 @@ class DefaultPolicyEngine : PolicyEngine {
         addRule(PolicyRule(
             name = "allow_glob",
             description = "Allow file globbing",
-            toolPattern = "glob",
+            toolPattern = ToolType.Glob.name,
             decision = PolicyDecision.ALLOW,
             riskLevel = RiskLevel.LOW,
             priority = 10
@@ -158,7 +159,7 @@ class DefaultPolicyEngine : PolicyEngine {
         addRule(PolicyRule(
             name = "allow_grep",
             description = "Allow text searching",
-            toolPattern = "grep",
+            toolPattern = ToolType.Grep.name,
             decision = PolicyDecision.ALLOW,
             riskLevel = RiskLevel.LOW,
             priority = 10
@@ -168,7 +169,7 @@ class DefaultPolicyEngine : PolicyEngine {
         addRule(PolicyRule(
             name = "allow_shell",
             description = "Allow shell commands",
-            toolPattern = "shell",
+            toolPattern = ToolType.Shell.name,
             decision = PolicyDecision.ALLOW,
             riskLevel = RiskLevel.HIGH,
             priority = 5

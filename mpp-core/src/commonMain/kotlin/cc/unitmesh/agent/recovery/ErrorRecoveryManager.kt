@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.recovery
 
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
+import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.llm.KoogLLMService
 
 /**
@@ -60,12 +61,12 @@ class ErrorRecoveryManager(private val projectPath: String, private val llmServi
      */
     private fun shouldAttemptRecovery(toolName: String, errorMessage: String): Boolean {
         // 对于 shell 命令错误，总是尝试恢复
-        if (toolName == "shell") {
+        if (toolName == ToolType.Shell.name) {
             return true
         }
 
         // 对于文件操作错误，如果是权限或路径问题，尝试恢复
-        if (toolName in listOf("write-file", "read-file")) {
+        if (toolName in listOf(ToolType.ReadFile.name, ToolType.WriteFile.name)) {
             val recoverableErrors = listOf(
                 "permission denied",
                 "no such file or directory",

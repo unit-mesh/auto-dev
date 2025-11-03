@@ -9,6 +9,7 @@ import cc.unitmesh.agent.orchestrator.ToolOrchestrator
 import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
+import cc.unitmesh.agent.subagent.CodebaseInvestigatorAgent
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.subagent.LogSummaryAgent
 import cc.unitmesh.agent.tool.ToolResult
@@ -53,13 +54,13 @@ class CodingAgent(
         shellExecutor = shellExecutor ?: DefaultShellExecutor()
     )
 
-    // New orchestration components
     private val policyEngine = DefaultPolicyEngine()
     private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer)
 
-    // SubAgents
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
+
+    private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
 
     // 执行器
     private val executor = CodingAgentExecutor(
@@ -74,25 +75,22 @@ class CodingAgent(
         // 注册 SubAgents（作为 Tools）
         registerTool(errorRecoveryAgent)
         registerTool(logSummaryAgent)
+        registerTool(codebaseInvestigatorAgent)
 
-        // ToolRegistry 已经在 init 中注册了内置 tools（read-file, write-file, shell, glob）
+        /// TODO 注册 MCP Tools
     }
 
     override suspend fun execute(
         input: AgentTask,
         onProgress: (String) -> Unit
     ): ToolResult.AgentResult {
-        // 初始化工作空间
         initializeWorkspace(input.projectPath)
 
-        // 构建系统提示词
         val context = buildContext(input)
         val systemPrompt = buildSystemPrompt(context)
 
-        // 使用执行器执行任务
         val result = executor.execute(input, systemPrompt, onProgress)
 
-        // 返回结果
         return ToolResult.AgentResult(
             success = result.success,
             content = result.message,

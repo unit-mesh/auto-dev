@@ -172,17 +172,6 @@ class ToolOrchestrator(
             ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)
             ToolType.Glob -> executeGlobTool(tool, params, basicContext)
             ToolType.Grep -> executeGrepTool(tool, params, basicContext)
-            null -> {
-                // Fallback for unknown tools or legacy string matching
-                when (toolName) {
-                    "shell" -> executeShellTool(tool, params, basicContext)
-                    "read-file" -> executeReadFileTool(tool, params, basicContext)
-                    "write-file" -> executeWriteFileTool(tool, params, basicContext)
-                    "glob" -> executeGlobTool(tool, params, basicContext)
-                    "grep" -> executeGrepTool(tool, params, basicContext)
-                    else -> ToolResult.Error("Unknown tool: $toolName")
-                }
-            }
             else -> ToolResult.Error("Tool not implemented: ${toolType.displayName}")
         }
     }

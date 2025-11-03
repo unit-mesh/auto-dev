@@ -280,7 +280,6 @@ $context
      */
     private fun parseRecoveryResponse(response: String): RecoveryResult {
         return try {
-            // Try to extract JSON from response
             val jsonMatch = Regex("```json\\s*([\\s\\S]*?)\\s*```").find(response)?.groupValues?.get(1)
                 ?: Regex("\\{[\\s\\S]*?\\}").find(response)?.value
 
