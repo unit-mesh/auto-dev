@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.config
 
+import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 
@@ -18,12 +19,17 @@ import kotlinx.serialization.Serializable
  *     provider: anthropic
  *     apiKey: sk-ant-...
  *     model: claude-3-opus
+ * mcpServers:
+ *   filesystem:
+ *     command: npx
+ *     args: ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
  * ```
  */
 @Serializable
 data class ConfigFile(
     val active: String = "",
-    val configs: List<NamedModelConfig> = emptyList()
+    val configs: List<NamedModelConfig> = emptyList(),
+    val mcpServers: Map<String, McpServerConfig> = emptyMap()
 )
 
 /**
@@ -131,5 +137,19 @@ class AutoDevConfigWrapper(private val configFile: ConfigFile) {
      */
     fun getActiveModelConfig(): ModelConfig? {
         return getActiveConfig()?.toModelConfig()
+    }
+
+    /**
+     * Get MCP server configurations
+     */
+    fun getMcpServers(): Map<String, McpServerConfig> {
+        return configFile.mcpServers
+    }
+
+    /**
+     * Get enabled MCP servers
+     */
+    fun getEnabledMcpServers(): Map<String, McpServerConfig> {
+        return configFile.mcpServers.filter { !it.value.disabled && it.value.validate() }
     }
 }

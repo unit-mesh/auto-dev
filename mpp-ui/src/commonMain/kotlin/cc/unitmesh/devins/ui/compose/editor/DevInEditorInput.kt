@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.agent.mcp.McpClientManagerFactory
+import cc.unitmesh.agent.mcp.McpConfig
+import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.completion.CompletionTriggerType
@@ -26,6 +29,8 @@ import cc.unitmesh.devins.editor.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
+import cc.unitmesh.devins.ui.compose.settings.McpSettingsDialog
+import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -56,10 +61,24 @@ fun DevInEditorInput(
     var selectedCompletionIndex by remember { mutableStateOf(0) }
     var currentTriggerType by remember { mutableStateOf(CompletionTriggerType.NONE) }
 
+    // MCP 设置对话框状态
+    var showMcpSettings by remember { mutableStateOf(false) }
+    var mcpServers by remember { mutableStateOf<Map<String, McpServerConfig>>(emptyMap()) }
+    val mcpClientManager = remember { McpClientManagerFactory.create() }
+
     val highlighter = remember { DevInSyntaxHighlighter() }
     val manager = completionManager ?: remember { CompletionManager() }
     val focusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
+
+    // Initialize MCP client manager with config
+    LaunchedEffect(Unit) {
+        val configWrapper = ConfigManager.load()
+        mcpServers = configWrapper.getMcpServers()
+        if (mcpServers.isNotEmpty()) {
+            mcpClientManager.initialize(McpConfig(mcpServers = mcpServers))
+        }
+    }
 
     // 延迟高亮以避免频繁解析
     LaunchedEffect(textFieldValue.text) {
@@ -433,10 +452,38 @@ fun DevInEditorInput(
                             }
                         }
                     },
+                    onSettingsClick = {
+                        showMcpSettings = true
+                    },
                     selectedAgent = "Default", // TODO: 从 state 获取
                     onModelConfigChange = onModelConfigChange
                 )
             }
+        }
+
+        // MCP Settings Dialog
+        if (showMcpSettings) {
+            McpSettingsDialog(
+                mcpClientManager = mcpClientManager,
+                initialServers = mcpServers,
+                onDismiss = { showMcpSettings = false },
+                onSave = { updatedServers, enabledTools ->
+                    scope.launch {
+                        // Update local state
+                        mcpServers = updatedServers
+
+                        // Save to config file
+                        val configWrapper = ConfigManager.load()
+                        val currentConfig = configWrapper.getConfigFile()
+                        val updatedConfig = currentConfig.copy(
+                            mcpServers = updatedServers
+                        )
+                        ConfigManager.save(updatedConfig)
+
+                        println("MCP configuration saved: ${updatedServers.size} servers, ${enabledTools.values.flatten().count { it.enabled }} tools enabled")
+                    }
+                }
+            )
         }
 
         if (showCompletion && completionItems.isNotEmpty()) {

@@ -172,7 +172,7 @@ class ToolOrchestrator(
             ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)
             ToolType.Glob -> executeGlobTool(tool, params, basicContext)
             ToolType.Grep -> executeGrepTool(tool, params, basicContext)
-            else -> ToolResult.Error("Tool not implemented: ${toolType.displayName}")
+            else -> ToolResult.Error("Tool not implemented: ${toolType?.displayName ?: "unknown"}")
         }
     }
 

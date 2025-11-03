@@ -117,6 +117,9 @@ kotlin {
             dependencies {
                 // SQLDelight - JVM SQLite driver
                 implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+
+                // MCP SDK for JVM
+                implementation("io.modelcontextprotocol:kotlin-sdk:0.7.4")
             }
         }
 

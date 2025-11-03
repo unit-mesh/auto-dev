@@ -13,7 +13,7 @@ import cc.unitmesh.llm.ModelConfig
 
 /**
  * 底部工具栏（重新设计版）
- * 布局：Agent - Model Selector - @ Symbol - / Symbol - Send Button
+ * 布局：Agent - Model Selector - @ Symbol - / Symbol - Settings - Send Button
  * - 移动端：通过顶部菜单控制 Agent，底部显示当前选择
  * - Desktop：完整显示所有功能
  *
@@ -25,6 +25,7 @@ fun BottomToolbar(
     sendEnabled: Boolean,
     onAtClick: () -> Unit = {},
     onSlashClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     selectedAgent: String = "Default",
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {}
@@ -77,7 +78,7 @@ fun BottomToolbar(
             }
         }
 
-        // 右侧：@ Symbol + / Symbol + Send Button
+        // 右侧：@ Symbol + / Symbol + Settings + Send Button
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -104,6 +105,19 @@ fun BottomToolbar(
                     text = "/",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Settings 按钮 - 打开 MCP 工具配置
+            IconButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "MCP Settings",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
