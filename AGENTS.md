@@ -1,14 +1,15 @@
 ## Core Rules
 
-- Always run build and tests before finishing a task.
-- If the original request/solution is not working well, do not change its intent. Propose a minimal fix or report issues.
-- Never run `./gradlew clean`. Clean only the specific module, e.g., `./gradlew :mpp-core:clean`.
+- Always run the build and tests before completing a task, making sure they pass.
+- Put test scripts under `docs/test-scripts`.
+- If an existing request/solution does not work, preserve its intent.
+- Do not run `./gradlew clean`. Clean only the specific module, e.g., `./gradlew :mpp-core:clean`.
 
 ## Summary
 
 - Omit a summary if the problem is simple.
 - For bug fixes, summarize as: Problem → Root Cause → Solution.
-- Keep it short. Use Mermaid for visual summaries.
+- Keep summary short if need. Use Mermaid for long chat only.
 
 ## Kotlin Multiplatform \(KMP\) Best Practices for `mpp-core` and `mpp-ui`
 
@@ -23,10 +24,8 @@
 
 ## AutoDev CLI Quick Test
 
-- Test scripts for CLI put at mpp-ui/test-scripts
-- Test CLI
-  1. Build MPP Core:
-      - `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
-  2. Build and run MPP CLI:
-      - `cd mpp-ui && npm run build:ts && node dist/index.js`
+1. Build MPP Core:
+    - `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
+2. Build and run MPP CLI:
+    - `cd mpp-ui && npm run build:ts && node dist/index.js`
  
