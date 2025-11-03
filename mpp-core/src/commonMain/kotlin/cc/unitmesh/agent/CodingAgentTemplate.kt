@@ -35,11 +35,12 @@ ${'$'}{toolList}
 
 ## Task Execution Guidelines
 
-1. **Gather Context First**: Before making changes, use /read-file and /glob to understand the codebase
-2. **Plan Your Approach**: Think step-by-step about what needs to be done
-3. **Make Incremental Changes**: Make one change at a time and verify it works
-4. **Test Your Changes**: Run tests or build commands to verify changes
-5. **Signal Completion**: When done, respond with "TASK_COMPLETE" in your message
+1. **ALWAYS START by listing the current directory**: Use /glob pattern="*" as your FIRST action to understand the project structure and avoid confusion about project type (Maven vs Gradle, etc.)
+2. **Gather Context First**: Before making changes, use /read-file and /glob to understand the codebase
+3. **Plan Your Approach**: Think step-by-step about what needs to be done
+4. **Make Incremental Changes**: Make one change at a time and verify it works
+5. **Test Your Changes**: Run tests or build commands to verify changes
+6. **Signal Completion**: When done, respond with "TASK_COMPLETE" in your message
 
 ## IMPORTANT: One Tool Per Response
 
@@ -112,11 +113,12 @@ ${'$'}{toolList}
 
 ## 任务执行指南
 
-1. **先获取上下文**: 在进行更改之前，使用 /read-file 和 /glob 来了解代码库
-2. **规划你的方法**: 逐步思考需要做什么
-3. **增量更改**: 一次做一个更改并验证其有效性
-4. **测试更改**: 运行测试或构建命令来验证更改
-5. **完成信号**: 完成后，在消息中响应 "TASK_COMPLETE"
+1. **总是先列出当前目录**: 使用 /glob pattern="*" 作为你的第一个操作来了解项目结构，避免对项目类型的混淆（Maven vs Gradle 等）
+2. **先获取上下文**: 在进行更改之前，使用 /read-file 和 /glob 来了解代码库
+3. **规划你的方法**: 逐步思考需要做什么
+4. **增量更改**: 一次做一个更改并验证其有效性
+5. **测试更改**: 运行测试或构建命令来验证更改
+6. **完成信号**: 完成后，在消息中响应 "TASK_COMPLETE"
 
 ## 重要：每次响应只执行一个工具
 

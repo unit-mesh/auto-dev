@@ -43,6 +43,7 @@
     "commander": "^12.1.0",
     "diff": "^7.0.0",
     "dotenv": "^16.4.5",
+    "highlight.js": "^11.11.1",
     "ink": "^5.0.1",
     "ink-select-input": "^6.0.0",
     "ink-spinner": "^5.0.0",
