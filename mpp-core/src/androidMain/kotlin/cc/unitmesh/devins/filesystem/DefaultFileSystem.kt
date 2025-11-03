@@ -27,14 +27,14 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
 
     actual override fun writeFile(path: String, content: String): Boolean {
         return try {
-            val resolvedPath = resolvePathInternal(path)
+            val resolvedPathStr = resolvePath(path)
+            val file = java.io.File(resolvedPathStr)
             // 确保父目录存在
-            resolvedPath.parent?.let { parent ->
-                if (!parent.exists()) {
-                    Files.createDirectories(parent)
-                }
+            val parentFile = file.parentFile
+            if (parentFile != null && !parentFile.exists()) {
+                parentFile.mkdirs()
             }
-            resolvedPath.writeText(content)
+            file.writeText(content)
             true
         } catch (e: Exception) {
             false

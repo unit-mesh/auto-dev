@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.parser
 
 import cc.unitmesh.agent.state.ToolCall
+import cc.unitmesh.agent.tool.ToolNames
 
 /**
  * Parser for extracting tool calls from LLM responses
@@ -172,7 +173,7 @@ class ToolCallParser {
             val firstLine = rest.lines().firstOrNull()?.trim()
             if (firstLine != null && firstLine.isNotEmpty()) {
                 val defaultParamName = when (toolName) {
-                    "read-file" -> "path"
+                    ToolNames.READ_FILE -> "path"
                     "glob", "grep" -> "pattern"
                     else -> "content"
                 }

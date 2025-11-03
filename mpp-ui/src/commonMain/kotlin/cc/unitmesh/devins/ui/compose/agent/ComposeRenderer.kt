@@ -2,6 +2,9 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.*
 import cc.unitmesh.agent.render.BaseRenderer
+import cc.unitmesh.agent.tool.ToolNames
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import kotlinx.datetime.Clock
@@ -292,46 +295,72 @@ class ComposeRenderer : BaseRenderer() {
         _currentToolCall = null
     }
 
-    // Private helper methods
-
     private fun formatToolCallDisplay(
         toolName: String,
         paramsStr: String
     ): ToolCallInfo {
-        // Parse parameters from the string format
         val params = parseParamsString(paramsStr)
+        val toolType = toolName.toToolType()
 
-        return when (toolName) {
-            "read-file" ->
+        return when (toolType) {
+            ToolType.ReadFile ->
                 ToolCallInfo(
-                    toolName = "${params["path"] ?: "unknown"} - read file",
+                    toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
                     description = "file reader",
                     details = "Reading file: ${params["path"] ?: "unknown"}"
                 )
-            "write-file" ->
+
+            ToolType.WriteFile ->
                 ToolCallInfo(
-                    toolName = "${params["path"] ?: "unknown"} - write file",
+                    toolName = "${params["path"] ?: "unknown"} - ${toolType.displayName}",
                     description = "file writer",
                     details = "Writing to file: ${params["path"] ?: "unknown"}"
                 )
-            "glob" ->
+
+            ToolType.Glob ->
                 ToolCallInfo(
-                    toolName = "File search",
+                    toolName = toolType.displayName,
                     description = "pattern matcher",
                     details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
                 )
-            "shell" ->
+
+            ToolType.Shell ->
                 ToolCallInfo(
-                    toolName = "Shell command",
+                    toolName = toolType.displayName,
                     description = "command executor",
-                    details = "Executing: ${params["command"] ?: "unknown command"}"
+                    details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
                 )
-            else ->
-                ToolCallInfo(
-                    toolName = toolName,
-                    description = "tool execution",
-                    details = paramsStr
-                )
+
+            else -> {
+                // Fallback for legacy string-based tools
+                when (toolName) {
+                    ToolNames.READ_FILE -> ToolCallInfo(
+                        toolName = "${params["path"] ?: "unknown"} - read file",
+                        description = "file reader",
+                        details = "Reading file: ${params["path"] ?: "unknown"}"
+                    )
+                    ToolNames.WRITE_FILE -> ToolCallInfo(
+                        toolName = "${params["path"] ?: "unknown"} - write file",
+                        description = "file writer",
+                        details = "Writing to file: ${params["path"] ?: "unknown"}"
+                    )
+                    ToolNames.GLOB -> ToolCallInfo(
+                        toolName = "File search",
+                        description = "pattern matcher",
+                        details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
+                    )
+                    ToolNames.SHELL -> ToolCallInfo(
+                        toolName = "Shell command",
+                        description = "command executor",
+                        details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
+                    )
+                    else -> ToolCallInfo(
+                        toolName = toolName,
+                        description = "tool execution",
+                        details = paramsStr
+                    )
+                }
+            }
         }
     }
 
@@ -342,13 +371,17 @@ class ComposeRenderer : BaseRenderer() {
     ): String {
         if (!success) return "Failed"
 
-        return when (toolName) {
-            "read-file" -> {
+        val toolType = toolName.toToolType()
+
+        return when (toolType) {
+            ToolType.ReadFile -> {
                 val lines = output?.lines()?.size ?: 0
                 "Read $lines lines"
             }
-            "write-file" -> "File written successfully"
-            "glob" -> {
+
+            ToolType.WriteFile -> "File written successfully"
+
+            ToolType.Glob -> {
                 // Parse the actual file count from the output
                 val firstLine = output?.lines()?.firstOrNull() ?: ""
                 if (firstLine.contains("Found ") && firstLine.contains(" files matching")) {
@@ -360,11 +393,38 @@ class ComposeRenderer : BaseRenderer() {
                     "Search completed"
                 }
             }
-            "shell" -> {
+
+            ToolType.Shell -> {
                 val lines = output?.lines()?.size ?: 0
                 if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
             }
-            else -> "Success"
+
+            else -> {
+                // Fallback for legacy string-based tools
+                when (toolName) {
+                    ToolNames.READ_FILE -> {
+                        val lines = output?.lines()?.size ?: 0
+                        "Read $lines lines"
+                    }
+                    ToolNames.WRITE_FILE -> "File written successfully"
+                    ToolNames.GLOB -> {
+                        val firstLine = output?.lines()?.firstOrNull() ?: ""
+                        if (firstLine.contains("Found ") && firstLine.contains(" files matching")) {
+                            val count = firstLine.substringAfter("Found ").substringBefore(" files").toIntOrNull() ?: 0
+                            "Found $count files"
+                        } else if (output?.contains("No files found") == true) {
+                            "No files found"
+                        } else {
+                            "Search completed"
+                        }
+                    }
+                    ToolNames.SHELL -> {
+                        val lines = output?.lines()?.size ?: 0
+                        if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
+                    }
+                    else -> "Success"
+                }
+            }
         }
     }
 

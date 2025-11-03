@@ -1,5 +1,8 @@
 package cc.unitmesh.devins.completion.providers
 
+import cc.unitmesh.agent.tool.ToolNames
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.agent.tool.registry.GlobalToolRegistry
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.devins.completion.BaseCompletionProvider
@@ -30,12 +33,14 @@ class ToolBasedCommandCompletionProvider(
     }
 
     /**
-     * 根据工具名称获取对应的图标
+     * 根据工具名称获取对应的图标 - 现在使用 ToolType 系统
      */
     private fun getToolIcon(toolName: String): String {
-        return when (toolName) {
-            "read-file" -> "📄"
-            "write-file" -> "✏️"
+        val toolType = toolName.toToolType()
+        return toolType?.tuiEmoji ?: when (toolName) {
+            // Fallback for legacy tools
+            ToolNames.READ_FILE -> "📄"
+            ToolNames.WRITE_FILE -> "✏️"
             "grep" -> "🔍"
             "glob" -> "🌐"
             "shell" -> "💻"

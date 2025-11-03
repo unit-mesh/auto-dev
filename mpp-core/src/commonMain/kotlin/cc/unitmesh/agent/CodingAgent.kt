@@ -3,7 +3,6 @@ package cc.unitmesh.agent
 import cc.unitmesh.agent.core.MainAgent
 import cc.unitmesh.agent.executor.CodingAgentExecutor
 import cc.unitmesh.agent.model.AgentDefinition
-import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
@@ -17,6 +16,7 @@ import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.llm.ModelConfig
 
 class CodingAgent(
     private val projectPath: String,
@@ -33,12 +33,7 @@ class CodingAgent(
             queryTemplate = null,
             initialMessages = emptyList()
         ),
-        modelConfig = ModelConfig(
-            modelId = "gpt-4",
-            temperature = 0.7,
-            maxTokens = 2000,
-            topP = 1.0
-        ),
+        modelConfig = ModelConfig.default(),
         runConfig = RunConfig(
             maxTurns = 100,
             maxTimeMinutes = 30,

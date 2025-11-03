@@ -39,8 +39,6 @@ class KoogLLMService(private val config: ModelConfig) {
         }
         
         val prompt = buildPrompt(finalPrompt, historyMessages)
-
-        // 执行流式调用
         executor.executeStreaming(prompt, model)
             .cancellable()
             .collect { frame ->
@@ -93,9 +91,6 @@ class KoogLLMService(private val config: ModelConfig) {
         user(finalPrompt)
     }
 
-    /**
-     * 验证配置是否可用
-     */
     suspend fun validateConfig(): Result<String> {
         return try {
             val response = sendPrompt("Say 'OK' if you can hear me.")
@@ -106,9 +101,6 @@ class KoogLLMService(private val config: ModelConfig) {
     }
 
     companion object {
-        /**
-         * 创建 KoogLLMService 实例（带配置验证）
-         */
         fun create(config: ModelConfig): KoogLLMService {
             require(config.isValid()) {
                 val requirement = if (config.provider == LLMProviderType.OLLAMA) {

@@ -3,12 +3,12 @@ package cc.unitmesh.agent.subagent
 import cc.unitmesh.agent.core.SubAgent
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.PromptConfig
-import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.model.ToolConfig
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 
 /**
@@ -56,12 +56,7 @@ class CodebaseInvestigatorAgent(
             queryTemplate = "Investigation Query: \${query}\nProject Path: \${projectPath}",
             initialMessages = emptyList()
         ),
-        modelConfig = ModelConfig(
-            modelId = "gpt-4",
-            temperature = 0.3,
-            maxTokens = 2000,
-            topP = 1.0
-        ),
+        modelConfig = ModelConfig.default(),
         runConfig = RunConfig(
             maxTurns = 5,
             maxTimeMinutes = 10,

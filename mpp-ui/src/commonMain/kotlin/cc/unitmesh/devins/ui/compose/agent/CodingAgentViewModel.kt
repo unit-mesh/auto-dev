@@ -27,7 +27,7 @@ class CodingAgentViewModel(
         CodingAgent(
             projectPath = projectPath,
             llmService = llmService,
-            maxIterations = maxIterations,
+            maxIterations,
             renderer = renderer
         )
 

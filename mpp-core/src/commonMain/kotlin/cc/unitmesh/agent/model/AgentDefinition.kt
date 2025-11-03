@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.model
 
+import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 
 /**
@@ -28,17 +29,6 @@ data class PromptConfig(
     val systemPrompt: String,
     val queryTemplate: String? = null,
     val initialMessages: List<String> = emptyList()
-)
-
-/**
- * 模型配置
- */
-@Serializable
-data class ModelConfig(
-    val modelId: String,
-    val temperature: Double = 0.7,
-    val maxTokens: Int = 4096,
-    val topP: Double = 0.95
 )
 
 /**

@@ -8,7 +8,10 @@ import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.state.ToolExecutionState
 import cc.unitmesh.agent.state.ToolStateManager
 import cc.unitmesh.agent.tool.Tool
+import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.agent.tool.impl.WriteFileTool
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -157,14 +160,26 @@ class ToolOrchestrator(
         // Convert orchestration context to basic tool context
         val basicContext = context.toBasicContext()
 
-        // Execute using the existing tool execution logic from CodingAgent
-        return when (toolName) {
-            "shell" -> executeShellTool(tool, params, basicContext)
-            "read-file" -> executeReadFileTool(tool, params, basicContext)
-            "write-file" -> executeWriteFileTool(tool, params, basicContext)
-            "glob" -> executeGlobTool(tool, params, basicContext)
-            "grep" -> executeGrepTool(tool, params, basicContext)
-            else -> ToolResult.Error("Unknown tool: $toolName")
+        // Execute using the new ToolType system with fallback to string matching
+        val toolType = toolName.toToolType()
+        return when (toolType) {
+            ToolType.Shell -> executeShellTool(tool, params, basicContext)
+            ToolType.ReadFile -> executeReadFileTool(tool, params, basicContext)
+            ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)
+            ToolType.Glob -> executeGlobTool(tool, params, basicContext)
+            ToolType.Grep -> executeGrepTool(tool, params, basicContext)
+            null -> {
+                // Fallback for unknown tools or legacy string matching
+                when (toolName) {
+                    "shell" -> executeShellTool(tool, params, basicContext)
+                    "read-file" -> executeReadFileTool(tool, params, basicContext)
+                    "write-file" -> executeWriteFileTool(tool, params, basicContext)
+                    "glob" -> executeGlobTool(tool, params, basicContext)
+                    "grep" -> executeGrepTool(tool, params, basicContext)
+                    else -> ToolResult.Error("Unknown tool: $toolName")
+                }
+            }
+            else -> ToolResult.Error("Tool not implemented: ${toolType.displayName}")
         }
     }
 

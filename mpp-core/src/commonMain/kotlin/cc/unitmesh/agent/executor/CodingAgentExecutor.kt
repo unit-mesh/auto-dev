@@ -8,7 +8,10 @@ import cc.unitmesh.agent.parser.ToolCallParser
 import cc.unitmesh.agent.recovery.ErrorRecoveryManager
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolExecutionState
+import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.yield
@@ -172,10 +175,15 @@ class CodingAgentExecutor(
             val exactMatches = recentToolCalls.takeLast(MAX_REPEAT_COUNT).count { it == toolSignature }
 
             // 对于某些工具，允许更多的重复（比如 read-file 可能需要多次读取不同文件）
-            val maxAllowedRepeats = when (toolName) {
-                "read-file", "write-file" -> 3  // 文件操作允许更多重复
-                "shell" -> 2  // Shell 命令更严格
-                else -> 2
+            val toolType = toolName.toToolType()
+            val maxAllowedRepeats = when (toolType) {
+                ToolType.ReadFile, ToolType.WriteFile -> 3  // 文件操作允许更多重复
+                ToolType.Shell -> 2  // Shell 命令更严格
+                else -> when (toolName) {
+                    "read-file", "write-file" -> 3  // 向后兼容
+                    "shell" -> 2
+                    else -> 2
+                }
             }
 
             if (exactMatches >= maxAllowedRepeats) {
@@ -227,12 +235,11 @@ class CodingAgentExecutor(
 
             renderer.renderToolResult(toolName, stepResult.success, stepResult.result, stepResult.result)
 
-            // 记录编辑操作
-            if (toolName == "write-file" && executionResult.isSuccess) {
+            val currentToolType = toolName.toToolType()
+            if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {
                 recordFileEdit(params)
             }
 
-            // 如果工具执行失败，尝试错误恢复
             if (!executionResult.isSuccess) {
                 val command = if (toolName == "shell") params["command"] as? String else null
                 val recoveryResult = errorRecoveryManager.handleToolError(
@@ -247,7 +254,6 @@ class CodingAgentExecutor(
                     // 注意：这里不直接修改对话历史，而是让调用者处理
                 }
 
-                // 检查是否是致命错误
                 if (errorRecoveryManager.isFatalError(toolName, executionResult.content ?: "")) {
                     renderer.renderError("Fatal error encountered. Stopping execution.")
                     break
@@ -258,9 +264,6 @@ class CodingAgentExecutor(
         return results
     }
 
-    /**
-     * 记录文件编辑操作
-     */
     private fun recordFileEdit(params: Map<String, Any>) {
         val path = params["path"] as? String
         val content = params["content"] as? String
@@ -275,9 +278,6 @@ class CodingAgentExecutor(
         }
     }
 
-    /**
-     * 检查任务是否完成
-     */
     private fun isTaskComplete(llmResponse: String): Boolean {
         val completeKeywords = listOf(
             "TASK_COMPLETE",
@@ -293,17 +293,11 @@ class CodingAgentExecutor(
         }
     }
 
-    /**
-     * 检查是否陷入循环
-     */
     private fun isStuck(): Boolean {
         return currentIteration > 5 &&
                steps.takeLast(5).all { !it.success || it.result?.contains("already exists") == true }
     }
 
-    /**
-     * 构建最终结果
-     */
     private fun buildResult(): AgentResult {
         val success = steps.any { it.success }
         val message = if (success) {

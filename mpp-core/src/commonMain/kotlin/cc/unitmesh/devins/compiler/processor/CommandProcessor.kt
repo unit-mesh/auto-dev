@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.compiler.processor
 
+import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.devins.ast.*
 import cc.unitmesh.devins.command.SpecKitCommand
 import cc.unitmesh.devins.command.SpecKitTemplateCompiler
@@ -50,7 +51,7 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         
         // 根据命令类型进行处理
         return when (commandName.lowercase()) {
-            "file", "read-file" -> processFileCommand(commandName, argumentsText, context)
+            "file", ToolNames.READ_FILE -> processFileCommand(commandName, argumentsText, context)
             "symbol" -> processSymbolCommand(commandName, argumentsText, context)
             "write" -> processWriteCommand(commandName, argumentsText, context)
             "run" -> processRunCommand(commandName, argumentsText, context)

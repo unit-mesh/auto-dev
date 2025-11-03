@@ -86,11 +86,6 @@ interface CodingAgentService {
      * @param projectPath The path to the project
      */
     suspend fun initializeWorkspace(projectPath: String)
-    
-    /**
-     * Get the maximum number of iterations before stopping
-     */
-    fun getMaxIterations(): Int = 10
 }
 
 

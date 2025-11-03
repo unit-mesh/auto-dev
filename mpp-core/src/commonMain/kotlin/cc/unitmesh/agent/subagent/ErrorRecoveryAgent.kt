@@ -2,13 +2,13 @@ package cc.unitmesh.agent.subagent
 
 import cc.unitmesh.agent.core.SubAgent
 import cc.unitmesh.agent.model.AgentDefinition
-import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -342,7 +342,7 @@ $context
             promptConfig = PromptConfig(
                 systemPrompt = "You are an Error Recovery Agent specialized in diagnosing and fixing command failures."
             ),
-            modelConfig = ModelConfig(modelId = "gpt-4"),
+            modelConfig = ModelConfig.default(),
             runConfig = RunConfig(maxTurns = 5, maxTimeMinutes = 2)
         )
     }

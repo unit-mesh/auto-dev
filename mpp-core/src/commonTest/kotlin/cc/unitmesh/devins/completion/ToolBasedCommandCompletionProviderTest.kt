@@ -8,6 +8,7 @@ import cc.unitmesh.agent.tool.shell.ShellResult
 import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.ToolException
+import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.devins.completion.providers.ToolBasedCommandCompletionProvider
 import kotlinx.datetime.Clock
 import kotlin.test.Test
@@ -68,14 +69,14 @@ class ToolBasedCommandCompletionProviderTest {
     private val shellExecutor = MockShellExecutor()
     private val toolRegistry = ToolRegistry(fileSystem, shellExecutor)
     private val provider = ToolBasedCommandCompletionProvider(toolRegistry)
-    
+
     @Test
     fun testSupportsCommandTriggerType() {
         assertTrue(provider.supports(CompletionTriggerType.COMMAND))
         assertTrue(!provider.supports(CompletionTriggerType.AGENT))
         assertTrue(!provider.supports(CompletionTriggerType.VARIABLE))
     }
-    
+
     @Test
     fun testGetAllToolCompletions() {
         val context = CompletionContext(
@@ -85,19 +86,19 @@ class ToolBasedCommandCompletionProviderTest {
             triggerOffset = 0,
             queryText = ""
         )
-        
+
         val completions = provider.getCompletions(context)
-        
+
         assertTrue(completions.isNotEmpty(), "Should have tool completions")
-        
+
         // Check that all built-in tools are present
         val toolNames = completions.map { it.text }.toSet()
-        assertTrue("read-file" in toolNames, "Should contain read-file tool")
-        assertTrue("write-file" in toolNames, "Should contain write-file tool")
+        assertTrue(ToolNames.READ_FILE in toolNames, "Should contain read-file tool")
+        assertTrue(ToolNames.WRITE_FILE in toolNames, "Should contain write-file tool")
         assertTrue("grep" in toolNames, "Should contain grep tool")
         assertTrue("glob" in toolNames, "Should contain glob tool")
     }
-    
+
     @Test
     fun testFilterCompletionsByQuery() {
         val context = CompletionContext(
@@ -107,18 +108,18 @@ class ToolBasedCommandCompletionProviderTest {
             triggerOffset = 0,
             queryText = "read"
         )
-        
+
         val completions = provider.getCompletions(context)
-        
+
         assertTrue(completions.isNotEmpty(), "Should have matching completions")
-        
+
         // Should prioritize exact matches
         val firstCompletion = completions.first()
-        assertEquals("read-file", firstCompletion.text)
+        assertEquals(ToolNames.READ_FILE, firstCompletion.text)
         assertTrue(firstCompletion.description?.isNotEmpty() == true, "Should have description")
         assertEquals("📄", firstCompletion.icon)
     }
-    
+
     @Test
     fun testCompletionItemHasCorrectProperties() {
         val context = CompletionContext(
@@ -128,18 +129,18 @@ class ToolBasedCommandCompletionProviderTest {
             triggerOffset = 0,
             queryText = "write"
         )
-        
+
         val completions = provider.getCompletions(context)
-        val writeFileCompletion = completions.find { it.text == "write-file" }
-        
+        val writeFileCompletion = completions.find { it.text == ToolNames.WRITE_FILE }
+
         assertTrue(writeFileCompletion != null, "Should find write-file completion")
-        assertEquals("write-file", writeFileCompletion.text)
-        assertEquals("write-file", writeFileCompletion.displayText)
+        assertEquals(ToolNames.WRITE_FILE, writeFileCompletion.text)
+        assertEquals(ToolNames.WRITE_FILE, writeFileCompletion.displayText)
         assertTrue(writeFileCompletion.description?.contains("write") == true, "Description should mention writing")
         assertEquals("✏️", writeFileCompletion.icon)
         assertTrue(writeFileCompletion.insertHandler != null, "Should have insert handler")
     }
-    
+
     @Test
     fun testInsertHandler() {
         val context = CompletionContext(
@@ -149,21 +150,21 @@ class ToolBasedCommandCompletionProviderTest {
             triggerOffset = 0,
             queryText = "read"
         )
-        
+
         val completions = provider.getCompletions(context)
-        val readFileCompletion = completions.find { it.text == "read-file" }
-        
+        val readFileCompletion = completions.find { it.text == ToolNames.READ_FILE }
+
         assertTrue(readFileCompletion != null, "Should find read-file completion")
-        
+
         val insertHandler = readFileCompletion.insertHandler
         assertTrue(insertHandler != null, "Should have insert handler")
-        
+
         val result = insertHandler.invoke("/read", 5)
         assertEquals("/read-file:", result.newText)
         assertEquals(11, result.newCursorPosition) // Position after "/read-file:"
         assertEquals(true, result.shouldTriggerNextCompletion) // read-file 需要参数，应该触发下一级补全
     }
-    
+
     @Test
     fun testNoMatchingCompletions() {
         val context = CompletionContext(
@@ -173,12 +174,12 @@ class ToolBasedCommandCompletionProviderTest {
             triggerOffset = 0,
             queryText = "xyz"
         )
-        
+
         val completions = provider.getCompletions(context)
-        
+
         assertTrue(completions.isEmpty(), "Should have no matching completions for non-existent tool")
     }
-    
+
     @Test
     fun testPartialMatching() {
         val context = CompletionContext(
@@ -188,11 +189,11 @@ class ToolBasedCommandCompletionProviderTest {
             triggerOffset = 0,
             queryText = "gr"
         )
-        
+
         val completions = provider.getCompletions(context)
-        
+
         assertTrue(completions.isNotEmpty(), "Should have matching completions")
-        
+
         // Should find grep tool
         val grepCompletion = completions.find { it.text == "grep" }
         assertTrue(grepCompletion != null, "Should find grep tool")

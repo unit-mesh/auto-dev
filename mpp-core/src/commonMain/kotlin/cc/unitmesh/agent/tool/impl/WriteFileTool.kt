@@ -115,7 +115,6 @@ class WriteFileInvocation(
 class WriteFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<WriteFileParams, ToolResult>() {
-    
     override val name: String = ToolNames.WRITE_FILE
     override val description: String = """
         Create new files or write content to existing files using the provided content.

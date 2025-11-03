@@ -2,12 +2,12 @@ package cc.unitmesh.agent.subagent
 
 import cc.unitmesh.agent.core.SubAgent
 import cc.unitmesh.agent.model.AgentDefinition
-import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -350,7 +350,7 @@ Provide a JSON summary as specified in your system prompt.
             promptConfig = PromptConfig(
                 systemPrompt = "You are a Log Summary Agent specialized in analyzing command outputs."
             ),
-            modelConfig = ModelConfig(modelId = "gpt-4"),
+            modelConfig = ModelConfig.default(),
             runConfig = RunConfig(maxTurns = 3, maxTimeMinutes = 1)
         )
     }
