@@ -12,6 +12,9 @@ expect object Platform {
 
     fun getOSName(): String
     fun getDefaultShell(): String
+    fun getCurrentTimestamp(): String
+    fun getOSInfo(): String
+    fun getOSVersion(): String
 }
 
 /**

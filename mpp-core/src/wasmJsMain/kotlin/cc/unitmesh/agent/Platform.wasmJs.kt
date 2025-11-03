@@ -1,5 +1,7 @@
 package cc.unitmesh.agent
 
+import kotlin.js.Date
+
 actual object Platform {
     actual val name: String = "WebAssembly"
     actual val isJvm: Boolean = false
@@ -12,6 +14,29 @@ actual object Platform {
     }
 
     actual fun getDefaultShell(): String {
-        return "bash"  // Default to bash for WASM
+        return "/bin/bash"  // Default to bash for WASM
+    }
+
+    actual fun getCurrentTimestamp(): String {
+        val date = Date()
+        return date.toISOString()
+    }
+
+    actual fun getOSInfo(): String {
+        // In WASM environment, try to get browser info
+        return try {
+            val userAgent = js("navigator.userAgent || 'Unknown Browser'") as String
+            "WebAssembly in Browser: $userAgent"
+        } catch (e: Exception) {
+            "WebAssembly Runtime"
+        }
+    }
+
+    actual fun getOSVersion(): String {
+        return try {
+            js("navigator.appVersion || 'Unknown'") as String
+        } catch (e: Exception) {
+            "Unknown"
+        }
     }
 }

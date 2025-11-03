@@ -55,22 +55,14 @@ data class CodingAgentContext(
         fun fromTask(task: AgentTask, toolList: List<ExecutableTool<*, *>>) : CodingAgentContext {
             return CodingAgentContext(
                 projectPath = task.projectPath,
-                osInfo = getOSInfo(),
-                timestamp = getCurrentTimestamp(),
+                osInfo = Platform.getOSInfo(),
+                timestamp = Platform.getCurrentTimestamp(),
+                shell = Platform.getDefaultShell(),
                 toolList = toolList.joinToString("\n") {
                     "/${it.name} ${it.description}"
                 }
             )
         }
-
-        private fun getOSInfo(): String {
-            return "Unknown"
-        }
-
-        private fun getCurrentTimestamp(): String {
-            return "2024-01-01T00:00:00Z"
-        }
-
 
         interface Builder {
             suspend fun build(projectPath: String, requirement: String): CodingAgentContext
