@@ -17,8 +17,6 @@ sealed class ToolType(
     val composeIcon: String,
     val category: ToolCategory
 ) {
-
-    // File System Tools
     data object ReadFile : ToolType(
         name = "read-file",
         displayName = "Read File",
@@ -43,6 +41,21 @@ sealed class ToolType(
         category = ToolCategory.FileSystem
     )
 
+    data object EditFile : ToolType(
+        name = "edit-file",
+        displayName = "Edit File",
+        tuiEmoji = "📝",
+        composeIcon = "edit_note",
+        category = ToolCategory.FileSystem
+    )
+
+    data object PatchFile : ToolType(
+        name = "patch-file",
+        displayName = "Patch File",
+        tuiEmoji = "🔧",
+        composeIcon = "build",
+        category = ToolCategory.FileSystem
+    )
 
     // Search Tools
     data object Grep : ToolType(
@@ -97,11 +110,14 @@ sealed class ToolType(
         /**
          * All available tool types
          */
-        val ALL_TOOLS = listOf(
-            ReadFile, WriteFile, Grep, Glob,
-            Shell,
-            ErrorRecovery, LogSummary, CodebaseInvestigator
-        )
+        val ALL_TOOLS by lazy {
+            listOf(
+                ReadFile, WriteFile, ListFiles, EditFile, PatchFile,
+                Grep, Glob,
+                Shell,
+                ErrorRecovery, LogSummary, CodebaseInvestigator
+            )
+        }
 
         /**
          * Get tool type by name (for backward compatibility)
@@ -120,22 +136,22 @@ sealed class ToolType(
         /**
          * Get all tool names (for backward compatibility)
          */
-        val ALL_TOOL_NAMES = ALL_TOOLS.map { it.name }.toSet()
+        val ALL_TOOL_NAMES by lazy { ALL_TOOLS.map { it.name }.toSet() }
 
         /**
          * Tools that require file system access
          */
-        val FILE_SYSTEM_TOOLS = byCategory(ToolCategory.FileSystem)
+        val FILE_SYSTEM_TOOLS by lazy { byCategory(ToolCategory.FileSystem) }
 
         /**
          * Tools that execute external commands
          */
-        val EXECUTION_TOOLS = byCategory(ToolCategory.Execution)
+        val EXECUTION_TOOLS by lazy { byCategory(ToolCategory.Execution) }
 
         /**
          * SubAgent tools for specialized tasks
          */
-        val SUBAGENT_TOOLS = byCategory(ToolCategory.SubAgent)
+        val SUBAGENT_TOOLS by lazy { byCategory(ToolCategory.SubAgent) }
 
         /**
          * Check if a tool name is valid

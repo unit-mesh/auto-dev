@@ -47,8 +47,6 @@ class LogSummaryAgent(
         onProgress: (String) -> Unit
     ): ToolResult.AgentResult {
         onProgress("Starting log analysis...")
-
-        // Quick heuristic analysis first
         val heuristics = quickAnalysis(input)
         onProgress("Performing AI analysis...")
 

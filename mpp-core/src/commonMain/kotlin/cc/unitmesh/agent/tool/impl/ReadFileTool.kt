@@ -124,7 +124,6 @@ class ReadFileInvocation(
 class ReadFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<ReadFileParams, ToolResult>() {
-    
     override val name: String = ToolType.ReadFile.name
     override val description: String = """
         Read and retrieve file content from project using relative or absolute path. 

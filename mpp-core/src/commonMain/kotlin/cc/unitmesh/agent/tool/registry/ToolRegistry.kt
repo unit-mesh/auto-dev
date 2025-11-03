@@ -186,7 +186,6 @@ class ToolRegistry(
         registerTool(GrepTool(fileSystem))
         registerTool(GlobTool(fileSystem))
         
-        // Execution tools (only if available)
         if (shellExecutor.isAvailable()) {
             registerTool(ShellTool(shellExecutor))
         }

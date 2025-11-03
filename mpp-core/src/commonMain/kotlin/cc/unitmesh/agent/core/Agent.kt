@@ -104,11 +104,6 @@ abstract class Agent<TInput : Any, TOutput : ToolResult>(
     }
 }
 
-/**
- * Agent 的 Tool 调用实现
- * 
- * 封装了 Agent 的执行逻辑，提供统一的调用接口
- */
 class AgentInvocation<TInput : Any, TOutput : ToolResult>(
     override val params: TInput,
     override val tool: Agent<TInput, TOutput>
