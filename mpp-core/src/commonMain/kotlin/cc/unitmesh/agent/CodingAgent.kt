@@ -452,9 +452,7 @@ class CodingAgent(
                     
                     if (i > valueStart && key.isNotEmpty()) {
                         val value = remaining.subList(valueStart, i).joinToString("")
-                            .replace("""\\"""", "\"")
-                            .replace("""\\n""", "\n")
-                        params[key] = value
+                        params[key] = processEscapeSequences(value)
                     }
                     
                     i++ // skip closing quote
@@ -462,7 +460,7 @@ class CodingAgent(
             } else if (rest.isNotEmpty()) {
                 // 格式 2: /shell\ncommand 或 /tool\ncontent
                 if (toolName == "shell") {
-                    params["command"] = rest.trim()
+                    params["command"] = processEscapeSequences(rest.trim())
                 } else {
                     // 其他工具：尝试提取第一行作为主要参数
                     val firstLine = rest.lines().firstOrNull()?.trim()
@@ -472,7 +470,7 @@ class CodingAgent(
                             "glob", "grep" -> "pattern"
                             else -> "content"
                         }
-                        params[defaultParamName] = firstLine
+                        params[defaultParamName] = processEscapeSequences(firstLine)
                     }
                 }
             }
@@ -490,6 +488,19 @@ class CodingAgent(
             tool = null,
             params = emptyMap()
         )
+    }
+
+    /**
+     * 处理转义序列
+     */
+    private fun processEscapeSequences(content: String): String {
+        return content
+            .replace("\\n", "\n")
+            .replace("\\r", "\r")
+            .replace("\\t", "\t")
+            .replace("\\\"", "\"")
+            .replace("\\'", "'")
+            .replace("\\\\", "\\")
     }
 
     /**
