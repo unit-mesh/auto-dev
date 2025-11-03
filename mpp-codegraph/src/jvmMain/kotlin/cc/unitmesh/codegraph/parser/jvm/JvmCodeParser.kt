@@ -7,6 +7,8 @@ import org.treesitter.TSNode
 import org.treesitter.TSParser
 import org.treesitter.TreeSitterJava
 import org.treesitter.TreeSitterKotlin
+import org.treesitter.TreeSitterJavascript
+import org.treesitter.TreeSitterPython
 import java.util.*
 
 /**
@@ -73,6 +75,8 @@ class JvmCodeParser : CodeParser {
         parser.language = when (language) {
             Language.JAVA -> TreeSitterJava()
             Language.KOTLIN -> TreeSitterKotlin()
+            Language.JAVASCRIPT, Language.TYPESCRIPT -> TreeSitterJavascript()
+            Language.PYTHON -> TreeSitterPython()
             else -> throw IllegalArgumentException("Unsupported language: $language")
         }
         return parser
@@ -102,21 +106,34 @@ class JvmCodeParser : CodeParser {
         parentName: String = ""
     ) {
         when (node.type) {
-            "class_declaration", "interface_declaration", "enum_declaration" -> {
+            // Java/Kotlin class-like structures
+            "class_declaration", "interface_declaration", "enum_declaration",
+            // JavaScript/TypeScript class
+            "class", "class_declaration",
+            // Python class
+            "class_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
-                
+
                 // Process children with this node as parent
                 for (i in 0 until node.childCount) {
                     val child = node.getChild(i) ?: continue
                     processNode(child, sourceCode, filePath, packageName, language, nodes, codeNode.name)
                 }
             }
-            "method_declaration", "function_declaration" -> {
+            // Java/Kotlin methods
+            "method_declaration", "function_declaration",
+            // JavaScript/TypeScript functions
+            "function", "function_declaration", "method_definition",
+            // Python functions
+            "function_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
             }
-            "field_declaration", "property_declaration" -> {
+            // Java/Kotlin fields
+            "field_declaration", "property_declaration",
+            // JavaScript/TypeScript fields
+            "field_definition", "public_field_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
             }
@@ -171,11 +188,16 @@ class JvmCodeParser : CodeParser {
     private fun extractPackageName(node: TSNode, sourceCode: String): String {
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
-            if (child.type == "package_declaration") {
-                return extractNodeText(child, sourceCode)
-                    .removePrefix("package")
-                    .removeSuffix(";")
-                    .trim()
+            when (child.type) {
+                // Java/Kotlin package
+                "package_declaration" -> {
+                    return extractNodeText(child, sourceCode)
+                        .removePrefix("package")
+                        .removeSuffix(";")
+                        .trim()
+                }
+                // JavaScript/TypeScript module (we'll use empty string for now)
+                // Python doesn't have explicit package declarations in the file
             }
         }
         return ""
@@ -199,12 +221,20 @@ class JvmCodeParser : CodeParser {
     
     private fun mapNodeTypeToCodeElementType(nodeType: String): CodeElementType {
         return when (nodeType) {
+            // Java/Kotlin
             "class_declaration" -> CodeElementType.CLASS
             "interface_declaration" -> CodeElementType.INTERFACE
             "enum_declaration" -> CodeElementType.ENUM
             "method_declaration", "function_declaration" -> CodeElementType.METHOD
             "field_declaration" -> CodeElementType.FIELD
             "property_declaration" -> CodeElementType.PROPERTY
+            // JavaScript/TypeScript
+            "class" -> CodeElementType.CLASS
+            "function", "method_definition" -> CodeElementType.METHOD
+            "field_definition", "public_field_definition" -> CodeElementType.FIELD
+            // Python
+            "class_definition" -> CodeElementType.CLASS
+            "function_definition" -> CodeElementType.METHOD
             else -> CodeElementType.UNKNOWN
         }
     }

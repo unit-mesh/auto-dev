@@ -30,7 +30,9 @@ MPP CodeGraph provides a unified API for parsing source code across different pl
 
 - **Multiplatform Support**: Works on JVM and JavaScript platforms
 - **TreeSitter-based Parsing**: Uses TreeSitter for accurate and fast parsing
-- **Language Support**: Java, Kotlin, C#, JavaScript, TypeScript, Python, Go, Rust
+- **Language Support**:
+  - **Fully Tested**: Java, JavaScript, TypeScript, Python
+  - **Experimental**: Kotlin, C#, Go, Rust
 - **Code Graph Model**: Unified data model for code nodes and relationships
 - **Type-safe API**: Kotlin-first design with full type safety
 
@@ -60,6 +62,8 @@ Uses TreeSitter Java bindings from `io.github.bonede`:
   - `tree-sitter-java:0.23.4`
   - `tree-sitter-kotlin:0.3.8.1`
   - `tree-sitter-c-sharp:0.23.1`
+  - `tree-sitter-javascript:0.23.1`
+  - `tree-sitter-python:0.23.4`
 
 - **Implementation**:
   - `JvmCodeParser`: JVM-specific parser implementation
@@ -190,6 +194,8 @@ Run JS tests only:
 - tree-sitter-java: 0.23.4
 - tree-sitter-kotlin: 0.3.8.1
 - tree-sitter-csharp: 0.23.1
+- tree-sitter-javascript: 0.23.1
+- tree-sitter-python: 0.23.4
 
 **JS (npm packages)**:
 - web-tree-sitter: 0.22.2
