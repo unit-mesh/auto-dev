@@ -7,6 +7,7 @@ import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolNames
+import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
@@ -336,7 +337,7 @@ $context
 
     companion object {
         private fun createDefinition() = AgentDefinition(
-            name = ToolNames.ERROR_RECOVERY,
+            name = ToolType.ErrorRecovery.name,
             displayName = "Error Recovery SubAgent",
             description = "Analyzes command failures and provides recovery plans",
             promptConfig = PromptConfig(

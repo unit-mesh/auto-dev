@@ -1,6 +1,5 @@
 package cc.unitmesh.devins.completion.providers
 
-import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.agent.tool.registry.GlobalToolRegistry
@@ -32,38 +31,23 @@ class ToolBasedCommandCompletionProvider(
         return filterAndSort(completionItems, query)
     }
 
-    /**
-     * 根据工具名称获取对应的图标 - 现在使用 ToolType 系统
-     */
-    private fun getToolIcon(toolName: String): String {
-        val toolType = toolName.toToolType()
-        return toolType?.tuiEmoji ?: when (toolName) {
-            // Fallback for legacy tools
-            ToolType.ReadFile.name -> "📄"
-            ToolType.WriteFile.name -> "✏️"
-            "grep" -> "🔍"
-            "glob" -> "🌐"
-            "shell" -> "💻"
-            else -> "🔧"
-        }
-    }
+    private fun getToolIcon(toolName: String): String = toolName.toToolType()?.tuiEmoji ?: "🔧"
 
-    /**
-     * 创建命令插入处理器
-     * 根据命令类型决定插入空格还是冒号
-     */
     private fun createCommandInsertHandler(commandName: String): (String, Int) -> InsertResult {
         return { fullText, cursorPos ->
             val slashPos = fullText.lastIndexOf('/', cursorPos - 1)
             if (slashPos >= 0) {
-                val before = fullText.substring(0, slashPos)
+                val before = fullText.take(slashPos)
                 val after = fullText.substring(cursorPos)
 
-                // 根据命令类型决定后缀
                 val suffix = when {
-                    // 需要参数的命令使用冒号
-                    commandName in listOf("read-file", "write-file", "file", "write", "read") -> ":"
-                    // 其他命令使用空格
+                    commandName in listOf(
+                        ToolType.ReadFile.name,
+                        ToolType.WriteFile.name,
+                        ToolType.Glob.name,
+                        ToolType.Grep.name
+                    ) -> ":"
+
                     else -> " "
                 }
 
@@ -71,7 +55,7 @@ class ToolBasedCommandCompletionProvider(
                 InsertResult(
                     newText = newText,
                     newCursorPosition = before.length + commandName.length + 2,
-                    shouldTriggerNextCompletion = suffix == ":" // 如果是冒号，触发下一级补全
+                    shouldTriggerNextCompletion = suffix == ":"
                 )
             } else {
                 InsertResult(fullText, cursorPos)

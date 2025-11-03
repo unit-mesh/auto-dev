@@ -278,7 +278,7 @@ class GrepTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<GrepParams, ToolResult>() {
     
-    override val name: String = ToolNames.GREP
+    override val name: String = ToolType.Grep.name
     override val description: String = """
         Search for patterns in file contents using regular expressions.
         Supports file filtering with include/exclude patterns, case-sensitive/insensitive search,

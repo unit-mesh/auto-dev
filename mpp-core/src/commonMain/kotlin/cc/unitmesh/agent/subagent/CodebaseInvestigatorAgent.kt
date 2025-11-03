@@ -7,6 +7,7 @@ import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.model.ToolConfig
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolNames
+import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
@@ -48,7 +49,7 @@ class CodebaseInvestigatorAgent(
     private val llmService: KoogLLMService
 ) : SubAgent<InvestigationContext, ToolResult.AgentResult>(
     AgentDefinition(
-        name = ToolNames.CODEBASE_INVESTIGATOR,
+        name = ToolType.CodebaseInvestigator.name,
         displayName = "Codebase Investigator",
         description = "Analyzes codebase structure and provides insights using code analysis",
         promptConfig = PromptConfig(
@@ -192,9 +193,6 @@ class CodebaseInvestigatorAgent(
         )
     }
 
-    /**
-     * Build a summary of the investigation results
-     */
     private fun buildSummary(query: String, findings: List<String>, recommendations: List<String>): String {
         return buildString {
             appendLine("### Investigation Summary")
@@ -220,10 +218,7 @@ class CodebaseInvestigatorAgent(
             }
         }
     }
-    
-    /**
-     * Analyze the investigation query to determine intent and extract keywords
-     */
+
     private fun analyzeQuery(query: String): QueryAnalysis {
         val lowerQuery = query.lowercase()
 
@@ -250,9 +245,6 @@ class CodebaseInvestigatorAgent(
             .filter { it.isNotBlank() }
     }
 
-    /**
-     * Find relevant elements based on keywords and type
-     */
     private fun findRelevantElements(keywords: List<String>, elementType: String): List<String> {
         // Simplified implementation - in a real scenario, this would scan actual files
         val findings = mutableListOf<String>()
@@ -276,9 +268,6 @@ class CodebaseInvestigatorAgent(
         return findings
     }
 
-    /**
-     * Analyze dependency patterns for given keywords
-     */
     private fun analyzeDependencyPatterns(keywords: List<String>): List<String> {
         val findings = mutableListOf<String>()
 

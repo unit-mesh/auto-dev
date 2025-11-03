@@ -27,9 +27,9 @@ class ToolRegistryTest {
         val allTools = registry.getAllTools()
         assertTrue(allTools.isNotEmpty(), "Should have registered tools")
         assertTrue(ToolType.ReadFile.name in allTools.keys, "Should contain read-file tool")
-        assertTrue(ToolNames.WRITE_FILE in allTools.keys, "Should contain write-file tool")
-        assertTrue(ToolNames.GREP in allTools.keys, "Should contain grep tool")
-        assertTrue(ToolNames.GLOB in allTools.keys, "Should contain glob tool")
+        assertTrue(ToolType.WriteFile.name in allTools.keys, "Should contain write-file tool")
+        assertTrue(ToolType.Grep.name in allTools.keys, "Should contain grep tool")
+        assertTrue(ToolType.Glob.name in allTools.keys, "Should contain glob tool")
     }
     
     @Test
@@ -56,7 +56,7 @@ class ToolRegistryTest {
     @Test
     fun testHasToolNamed() {
         assertTrue(registry.hasToolNamed(ToolType.ReadFile.name), "Should have read-file tool")
-        assertTrue(registry.hasToolNamed(ToolNames.WRITE_FILE), "Should have write-file tool")
+        assertTrue(registry.hasToolNamed(ToolType.WriteFile.name), "Should have write-file tool")
         assertTrue(!registry.hasToolNamed("non-existent-tool"), "Should not have non-existent tool")
     }
     

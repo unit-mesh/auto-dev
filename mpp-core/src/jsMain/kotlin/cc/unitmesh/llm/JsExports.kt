@@ -2,6 +2,13 @@
 
 package cc.unitmesh.llm
 
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
+import cc.unitmesh.agent.tool.impl.GrepParams
+import cc.unitmesh.agent.tool.impl.ShellParams
+import cc.unitmesh.agent.tool.registry.ToolRegistry
+import cc.unitmesh.agent.tool.shell.JsShellExecutor
+import cc.unitmesh.devins.compiler.DevInsCompilerFacade
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.Message
@@ -495,7 +502,7 @@ class JsDevInsCompiler {
                     emptyMap()
                 }
                 
-                val result = cc.unitmesh.devins.compiler.DevInsCompilerFacade.compile(source, varsMap)
+                val result = DevInsCompilerFacade.compile(source, varsMap)
                 
                 JsDevInsResult(
                     success = result.isSuccess(),
@@ -523,7 +530,7 @@ class JsDevInsCompiler {
     fun compileToString(source: String): Promise<String> {
         return GlobalScope.promise {
             try {
-                cc.unitmesh.devins.compiler.DevInsCompilerFacade.compileToString(source)
+                DevInsCompilerFacade.compileToString(source)
             } catch (e: Exception) {
                 throw e
             }
@@ -571,12 +578,12 @@ private fun CompletionItem.toJsItem(triggerType: CompletionTriggerType, index: I
  */
 @JsExport
 class JsToolRegistry(projectPath: String) {
-    private val registry: cc.unitmesh.agent.tool.registry.ToolRegistry
+    private val registry: ToolRegistry
 
     init {
-        val fileSystem = cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem(projectPath)
-        val shellExecutor = cc.unitmesh.agent.tool.shell.JsShellExecutor()
-        registry = cc.unitmesh.agent.tool.registry.ToolRegistry(fileSystem, shellExecutor)
+        val fileSystem = DefaultToolFileSystem(projectPath)
+        val shellExecutor = JsShellExecutor()
+        registry = ToolRegistry(fileSystem, shellExecutor)
     }
 
     /**
@@ -591,7 +598,7 @@ class JsToolRegistry(projectPath: String) {
                     startLine = startLine,
                     endLine = endLine
                 )
-                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolType.ReadFile.name, params)
+                val result = registry.executeTool(ToolType.ReadFile.name, params)
                 result.toJsToolResult()
             } catch (e: Exception) {
                 JsToolResult(
@@ -616,7 +623,7 @@ class JsToolRegistry(projectPath: String) {
                     content = content,
                     createDirectories = createDirectories
                 )
-                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.WRITE_FILE, params)
+                val result = registry.executeTool(ToolType.WriteFile.name, params)
                 result.toJsToolResult()
             } catch (e: Exception) {
                 JsToolResult(
@@ -641,7 +648,7 @@ class JsToolRegistry(projectPath: String) {
                     path = path,
                     includeFileInfo = includeFileInfo
                 )
-                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.GLOB, params)
+                val result = registry.executeTool(ToolType.Glob.name, params)
                 result.toJsToolResult()
             } catch (e: Exception) {
                 JsToolResult(
@@ -668,7 +675,7 @@ class JsToolRegistry(projectPath: String) {
     ): Promise<JsToolResult> {
         return GlobalScope.promise {
             try {
-                val params = cc.unitmesh.agent.tool.impl.GrepParams(
+                val params = GrepParams(
                     pattern = pattern,
                     path = path,
                     include = include,
@@ -676,7 +683,7 @@ class JsToolRegistry(projectPath: String) {
                     recursive = recursive,
                     caseSensitive = caseSensitive
                 )
-                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.GREP, params)
+                val result = registry.executeTool(ToolType.Grep.name, params)
                 result.toJsToolResult()
             } catch (e: Exception) {
                 JsToolResult(
@@ -700,12 +707,12 @@ class JsToolRegistry(projectPath: String) {
     ): Promise<JsToolResult> {
         return GlobalScope.promise {
             try {
-                val params = cc.unitmesh.agent.tool.impl.ShellParams(
+                val params = ShellParams(
                     command = command,
                     workingDirectory = workingDirectory,
                     timeoutMs = timeoutMs.toLong()
                 )
-                val result = registry.executeTool(cc.unitmesh.agent.tool.ToolNames.SHELL, params)
+                val result = registry.executeTool(ToolType.Shell.name, params)
                 result.toJsToolResult()
             } catch (e: Exception) {
                 JsToolResult(
