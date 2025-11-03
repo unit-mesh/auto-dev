@@ -1,12 +1,12 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.core.MainAgent
+import cc.unitmesh.agent.executor.CodingAgentExecutor
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.ModelConfig
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
-import cc.unitmesh.agent.parser.ToolCallParser
 import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
@@ -16,16 +16,12 @@ import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
-import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.llm.KoogLLMService
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.yield
-import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
 
 class CodingAgent(
     private val projectPath: String,
     private val llmService: KoogLLMService,
-    maxIterations: Int = 100,
+    override val maxIterations: Int = 100,
     private val renderer: CodingAgentRenderer = DefaultCodingAgentRenderer()
 ) : MainAgent<AgentTask, ToolResult.AgentResult>(
     AgentDefinition(
@@ -51,8 +47,6 @@ class CodingAgent(
     )
 ), CodingAgentService {
 
-    private val steps = mutableListOf<AgentStep>()
-    private val edits = mutableListOf<AgentEdit>()
     private val promptRenderer = CodingAgentPromptRenderer()
 
     private val toolRegistry = ToolRegistry(
@@ -63,18 +57,19 @@ class CodingAgent(
     // New orchestration components
     private val policyEngine = DefaultPolicyEngine()
     private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer)
-    private val toolCallParser = ToolCallParser()
 
     // SubAgents
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
 
-    // 上一次恢复结果
-    private var lastRecoveryResult: String? = null
-
-    // 重复操作检测
-    private val recentToolCalls = mutableListOf<String>()
-    private val MAX_REPEAT_COUNT = 3
+    // 执行器
+    private val executor = CodingAgentExecutor(
+        projectPath = projectPath,
+        llmService = llmService,
+        toolOrchestrator = toolOrchestrator,
+        renderer = renderer,
+        maxIterations = maxIterations
+    )
 
     init {
         // 注册 SubAgents（作为 Tools）
@@ -88,22 +83,22 @@ class CodingAgent(
         input: AgentTask,
         onProgress: (String) -> Unit
     ): ToolResult.AgentResult {
-        onProgress("🚀 CodingAgent started")
-        onProgress("Project: ${input.projectPath}")
-        onProgress("Task: ${input.requirement}")
-
         // 初始化工作空间
         initializeWorkspace(input.projectPath)
 
-        // 执行任务
-        val result = executeTask(input)
+        // 构建系统提示词
+        val context = buildContext(input)
+        val systemPrompt = buildSystemPrompt(context)
+
+        // 使用执行器执行任务
+        val result = executor.execute(input, systemPrompt, onProgress)
 
         // 返回结果
         return ToolResult.AgentResult(
             success = result.success,
             content = result.message,
             metadata = mapOf(
-                "iterations" to currentIteration.toString(),
+                "iterations" to "0", // executor 内部管理迭代
                 "steps" to result.steps.size.toString(),
                 "edits" to result.edits.size.toString()
             )
@@ -111,215 +106,15 @@ class CodingAgent(
     }
 
     override suspend fun executeTask(task: AgentTask): AgentResult {
-        resetIteration()
-        steps.clear()
-        edits.clear()
+        // 构建系统提示词
+        val context = buildContext(task)
+        val systemPrompt = buildSystemPrompt(context)
 
-        while (shouldContinue()) {
-            yield()
-
-            incrementIteration()
-            renderer.renderIterationHeader(currentIteration, maxIterations)
-
-            val context = buildContext(task)
-            val systemPrompt = buildSystemPrompt(context)
-            val userPrompt = buildUserPrompt(task, steps)
-
-            val fullPrompt = "$systemPrompt\n\nUser: $userPrompt"
-            val llmResponse = StringBuilder()
-
-            try {
-                renderer.renderLLMResponseStart()
-
-                llmService.streamPrompt(
-                    userPrompt = fullPrompt,
-                    fileSystem = EmptyFileSystem(),  // Agent 不需要 DevIns 编译
-                    historyMessages = emptyList(),
-                    compileDevIns = false  // Agent 已经格式化了 prompt
-                ).cancellable().collect { chunk ->
-                    llmResponse.append(chunk)
-                    renderer.renderLLMResponseChunk(chunk)
-                }
-
-                renderer.renderLLMResponseEnd()
-            } catch (e: Exception) {
-                renderer.renderError("LLM call failed: ${e.message}")
-                break
-            }
-
-            // 5. 解析所有行动（DevIns 工具调用）
-            val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
-
-            // 6. 执行所有行动（逐个执行，而不是一次性执行）
-            if (toolCalls.isEmpty()) {
-                println("✓ No actions needed\n")
-                break
-            }
-
-            var hasError = false
-            for ((index, toolCall) in toolCalls.withIndex()) {
-                val toolName = toolCall.toolName
-
-                // 格式化参数为字符串
-                val paramsStr = toolCall.params.entries.joinToString(" ") { (key, value) ->
-                    "$key=\"$value\""
-                }
-
-                // 检测重复操作
-                val toolSignature = "$toolName:$paramsStr"
-                recentToolCalls.add(toolSignature)
-                if (recentToolCalls.size > 10) {
-                    recentToolCalls.removeAt(0)
-                }
-
-                // 检查最近是否重复调用同一个工具
-                val repeatCount = recentToolCalls.takeLast(MAX_REPEAT_COUNT).count { it == toolSignature }
-
-                // 对于任何工具，如果连续2次相同就停止执行
-                if (repeatCount >= 2) {
-                    renderer.renderRepeatWarning(toolName, repeatCount)
-                    println("   Stopping execution due to repeated tool calls")
-                    hasError = true
-                    break
-                }
-
-                // 先显示工具调用
-                renderer.renderToolCall(toolName, paramsStr)
-
-                // Check for cancellation before executing tool
-                yield()
-
-                // 执行行动 - 使用新的 orchestrator
-                val executionContext = OrchestratorContext(
-                    workingDirectory = projectPath,
-                    environment = emptyMap()
-                )
-                val executionResult = toolOrchestrator.executeToolCall(
-                    toolName,
-                    toolCall.params.mapValues { it.value as Any },
-                    executionContext
-                )
-
-                // 转换为 AgentStep
-                val stepResult = AgentStep(
-                    step = currentIteration,
-                    action = toolName,
-                    tool = toolName,
-                    params = toolCall.params.mapValues { it.value as Any },
-                    result = executionResult.content,
-                    success = executionResult.isSuccess
-                )
-                steps.add(stepResult)
-
-                // 显示工具结果（传递完整输出）
-                renderer.renderToolResult(toolName, stepResult.success, stepResult.result, stepResult.result)
-
-                // 如果是 shell 命令失败，自动调用 ErrorRecoveryAgent
-                if (!stepResult.success && toolName == "shell") {
-                    hasError = true
-                    val errorMessage = stepResult.result ?: "Unknown error"
-
-                    // 调用 ErrorRecoveryAgent
-                    val recoveryResult = callErrorRecoveryAgent(
-                        command = toolCall.params["command"] ?: "",
-                        errorMessage = errorMessage
-                    )
-
-                    if (recoveryResult != null) {
-                        lastRecoveryResult = recoveryResult
-                        // 不继续执行后续工具，让 LLM 在下一轮使用恢复建议
-                        break
-                    }
-                }
-
-                // 根据工具类型记录编辑
-                if (toolName == "write-file" && executionResult.isSuccess) {
-                    val path = toolCall.params["path"]
-                    val content = toolCall.params["content"]
-                    val mode = toolCall.params["mode"]
-
-                    if (path != null && content != null) {
-                        edits.add(AgentEdit(
-                            file = path,
-                            operation = if (mode == "create") AgentEditOperation.CREATE else AgentEditOperation.UPDATE,
-                            content = content
-                        ))
-                    }
-                }
-            }
-
-            // 7. 检查是否完成
-            if (isTaskComplete(llmResponse.toString())) {
-                renderer.renderTaskComplete()
-                break
-            }
-
-            // 8. 检查是否陷入循环（连续多次无进展）
-            if (currentIteration > 5 && steps.takeLast(5).all { !it.success || it.result?.contains("already exists") == true }) {
-                renderer.renderError("Agent appears to be stuck. Stopping.")
-                break
-            }
-        }
-
-        val success = steps.any { it.success }
-        val message = if (success) {
-            "Task completed after $currentIteration iterations"
-        } else {
-            "Task incomplete after $currentIteration iterations"
-        }
-
-        renderer.renderFinalResult(success, message, currentIteration)
-
-        return AgentResult(
-            success = success,
-            message = message,
-            steps = steps,
-            edits = edits
-        )
+        // 使用执行器执行任务
+        return executor.execute(task, systemPrompt)
     }
 
-    /**
-     * 构建用户提示（包含任务和最近的历史）
-     */
-    private fun buildUserPrompt(task: AgentTask, history: List<AgentStep>): String {
-        val sb = StringBuilder()
-        sb.append("Task: ${task.requirement}\n\n")
 
-        // 检查是否有恢复计划
-        if (lastRecoveryResult != null) {
-            sb.append("## Previous Action Failed - Recovery Needed\n\n")
-            sb.append(lastRecoveryResult!!)
-            sb.append("\n\nPlease address the error and continue with the original task.\n\n")
-            lastRecoveryResult = null  // 清除恢复结果
-        }
-
-        // 添加最近的历史（最后3步）
-        if (history.isNotEmpty()) {
-            val recentSteps = history.takeLast(3)
-            sb.append("Recent history:\n")
-            recentSteps.forEach { step ->
-                sb.append("- Step ${step.step}: ${step.action}")
-                if (step.result != null) {
-                    // For read-file, show full content so LLM can see complete file
-                    // For other tools, truncate to 200 chars
-                    val isReadFile = step.action.contains("/read-file")
-                    val maxLength = if (isReadFile) Int.MAX_VALUE else 200
-                    val result = if (step.result.length > maxLength) {
-                        step.result.take(maxLength) + "..."
-                    } else {
-                        step.result
-                    }
-                    sb.append(" -> $result")
-                }
-                sb.append("\n")
-            }
-            sb.append("\n")
-        }
-
-        sb.append("What should we do next? Use DevIns tools like /read-file, /write-file, /shell, etc.")
-
-        return sb.toString()
-    }
 
     override fun buildSystemPrompt(context: CodingAgentContext, language: String): String {
         return promptRenderer.render(context, language)
@@ -344,59 +139,6 @@ class CodingAgent(
 
     private fun getCurrentTimestamp(): String {
         return "2024-01-01T00:00:00Z"
-    }
-
-    private suspend fun callErrorRecoveryAgent(command: String, errorMessage: String): String? {
-        println("\n════════════════════════════════════════════════════════")
-        println("   🔧 ACTIVATING ERROR RECOVERY SUBAGENT")
-        println("════════════════════════════════════════════════════════\n")
-
-        return try {
-            val input = mapOf(
-                "command" to command,
-                "errorMessage" to errorMessage,
-                "exitCode" to 1
-            )
-
-            val result = errorRecoveryAgent.run(input) { progress ->
-                println("   $progress")
-            }
-
-            when (result) {
-                is ToolResult.AgentResult -> {
-                    if (result.success) {
-                        println("\n✓ Error Recovery completed")
-                        println("Suggestion: ${result.content}\n")
-                        result.content
-                    } else {
-                        println("\n✗ Error Recovery failed: ${result.content}\n")
-                        null
-                    }
-                }
-                else -> {
-                    println("\n✗ Unexpected result type from ErrorRecoveryAgent\n")
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            println("\n✗ Error Recovery failed: ${e.message}\n")
-            null
-        }
-    }
-
-    private fun isTaskComplete(llmResponse: String): Boolean {
-        val completeKeywords = listOf(
-            "TASK_COMPLETE",
-            "task complete",
-            "Task completed",
-            "implementation is complete",
-            "all done",
-            "finished"
-        )
-
-        return completeKeywords.any { keyword ->
-            llmResponse.contains(keyword, ignoreCase = true)
-        }
     }
 
     override fun validateInput(input: Map<String, Any>): AgentTask {

@@ -12,9 +12,9 @@ class ToolCallParser {
 
     fun parseToolCalls(llmResponse: String): List<ToolCall> {
         val toolCalls = mutableListOf<ToolCall>()
-        
+
         val devinBlocks = devinParser.extractDevinBlocks(llmResponse)
-        
+
         if (devinBlocks.isEmpty()) {
             val directCall = parseDirectToolCall(llmResponse)
             if (directCall != null) {
@@ -25,11 +25,23 @@ class ToolCallParser {
             if (firstBlock != null) {
                 val toolCall = parseToolCallFromDevinBlock(firstBlock)
                 if (toolCall != null) {
-                    toolCalls.add(toolCall)
+                    // For write-file tools, try to extract content from the surrounding context
+                    if (toolCall.toolName == "write-file" && !toolCall.params.containsKey("content")) {
+                        val contentFromContext = extractContentFromContext(llmResponse, firstBlock)
+                        if (contentFromContext != null) {
+                            val updatedParams = toolCall.params.toMutableMap()
+                            updatedParams["content"] = contentFromContext
+                            toolCalls.add(ToolCall.create(toolCall.toolName, updatedParams))
+                        } else {
+                            toolCalls.add(toolCall)
+                        }
+                    } else {
+                        toolCalls.add(toolCall)
+                    }
                 }
             }
         }
-        
+
         return toolCalls
     }
 
@@ -146,17 +158,65 @@ class ToolCallParser {
     private fun parseSimpleParameter(toolName: String, rest: String, params: MutableMap<String, Any>) {
         if (toolName == "shell") {
             params["command"] = escapeProcessor.processEscapeSequences(rest.trim())
+        } else if (toolName == "write-file") {
+            // For write-file, if only one parameter is provided, it's the path
+            // The content should be provided in a separate parameter or in the LLM context
+            val firstLine = rest.lines().firstOrNull()?.trim()
+            if (firstLine != null && firstLine.isNotEmpty()) {
+                params["path"] = escapeProcessor.processEscapeSequences(firstLine)
+                // For write-file without explicit content, we'll need to handle this in the orchestrator
+                // by prompting the LLM to provide the content
+            }
         } else {
             // Other tools: try to extract first line as main parameter
             val firstLine = rest.lines().firstOrNull()?.trim()
             if (firstLine != null && firstLine.isNotEmpty()) {
                 val defaultParamName = when (toolName) {
-                    "read-file", "write-file" -> "path"
+                    "read-file" -> "path"
                     "glob", "grep" -> "pattern"
                     else -> "content"
                 }
                 params[defaultParamName] = escapeProcessor.processEscapeSequences(firstLine)
             }
         }
+    }
+
+    /**
+     * Extract content from the LLM response context for write-file operations
+     * This looks for code blocks or content that appears to be intended for the file
+     */
+    private fun extractContentFromContext(llmResponse: String, devinBlock: DevinBlock): String? {
+        // Look for code blocks after the devin block
+        val afterBlock = llmResponse.substring(devinBlock.endOffset)
+
+        // Try to find code blocks with ```
+        val codeBlockRegex = Regex("```(?:\\w+)?\\s*\\n([\\s\\S]*?)\\n```", RegexOption.MULTILINE)
+        val codeMatch = codeBlockRegex.find(afterBlock)
+        if (codeMatch != null) {
+            return codeMatch.groupValues[1].trim()
+        }
+
+        // Look for content in the same devin block after the tool call
+        val blockContent = devinBlock.content
+        val lines = blockContent.lines()
+        val toolCallLineIndex = lines.indexOfFirst { it.trim().startsWith("/write-file") }
+
+        if (toolCallLineIndex >= 0 && toolCallLineIndex < lines.size - 1) {
+            // Get content after the tool call line
+            val contentLines = lines.subList(toolCallLineIndex + 1, lines.size)
+            val content = contentLines.joinToString("\n").trim()
+            if (content.isNotEmpty()) {
+                return content
+            }
+        }
+
+        // Look for content in the LLM response before the devin block
+        val beforeBlock = llmResponse.substring(0, devinBlock.startOffset)
+        val beforeCodeMatch = codeBlockRegex.find(beforeBlock)
+        if (beforeCodeMatch != null) {
+            return beforeCodeMatch.groupValues[1].trim()
+        }
+
+        return null
     }
 }

@@ -7,7 +7,9 @@ import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.state.ToolExecutionState
 import cc.unitmesh.agent.state.ToolStateManager
+import cc.unitmesh.agent.tool.Tool
 import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.impl.WriteFileTool
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 
@@ -167,13 +169,24 @@ class ToolOrchestrator(
     }
 
     private suspend fun executeShellTool(
-        tool: cc.unitmesh.agent.tool.Tool,
+        tool: Tool,
         params: Map<String, Any>,
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
         val shellTool = tool as cc.unitmesh.agent.tool.impl.ShellTool
+
+        // Extract command - check multiple possible parameter names
+        val command = params["command"] as? String
+            ?: params["cmd"] as? String
+            ?: params.values.firstOrNull { it is String && (it as String).isNotBlank() } as? String
+            ?: return ToolResult.Error("Shell command cannot be empty")
+
+        if (command.isBlank()) {
+            return ToolResult.Error("Shell command cannot be empty")
+        }
+
         val shellParams = cc.unitmesh.agent.tool.impl.ShellParams(
-            command = params["command"] as? String ?: "",
+            command = command,
             workingDirectory = params["workingDirectory"] as? String,
             environment = (params["environment"] as? Map<*, *>)?.mapKeys { it.key.toString() }?.mapValues { it.value.toString() } ?: emptyMap(),
             timeoutMs = (params["timeoutMs"] as? Number)?.toLong() ?: 30000L,
@@ -185,7 +198,7 @@ class ToolOrchestrator(
     }
 
     private suspend fun executeReadFileTool(
-        tool: cc.unitmesh.agent.tool.Tool,
+        tool: Tool,
         params: Map<String, Any>,
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
@@ -201,14 +214,26 @@ class ToolOrchestrator(
     }
 
     private suspend fun executeWriteFileTool(
-        tool: cc.unitmesh.agent.tool.Tool,
+        tool: Tool,
         params: Map<String, Any>,
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
-        val writeFileTool = tool as cc.unitmesh.agent.tool.impl.WriteFileTool
+        val writeFileTool = tool as WriteFileTool
+
+        val path = params["path"] as? String
+        val content = params["content"] as? String
+
+        if (path.isNullOrBlank()) {
+            return ToolResult.Error("File path cannot be empty")
+        }
+
+        if (content.isNullOrBlank()) {
+            return ToolResult.Error("File content cannot be empty. Please provide the content parameter with the file content to write. Example: /write-file path=\"$path\" content=\"your content here\"")
+        }
+
         val writeFileParams = cc.unitmesh.agent.tool.impl.WriteFileParams(
-            path = params["path"] as? String ?: "",
-            content = params["content"] as? String ?: "",
+            path = path,
+            content = content,
             createDirectories = params["createDirectories"] as? Boolean ?: true,
             overwrite = params["overwrite"] as? Boolean ?: true,
             append = params["append"] as? Boolean ?: false
@@ -218,7 +243,7 @@ class ToolOrchestrator(
     }
 
     private suspend fun executeGlobTool(
-        tool: cc.unitmesh.agent.tool.Tool,
+        tool: Tool,
         params: Map<String, Any>,
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
@@ -231,7 +256,7 @@ class ToolOrchestrator(
     }
 
     private suspend fun executeGrepTool(
-        tool: cc.unitmesh.agent.tool.Tool,
+        tool: Tool,
         params: Map<String, Any>,
         context: cc.unitmesh.agent.tool.ToolExecutionContext
     ): ToolResult {
