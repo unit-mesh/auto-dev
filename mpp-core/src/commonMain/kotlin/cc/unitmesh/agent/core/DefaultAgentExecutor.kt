@@ -65,6 +65,8 @@ class DefaultAgentExecutor(
                     val responseText = StringBuilder()
                     llmService.streamPrompt(
                         userPrompt = currentPrompt,
+                        fileSystem = cc.unitmesh.devins.filesystem.EmptyFileSystem(),
+                        historyMessages = emptyList(),
                         compileDevIns = false  // Agent 自己处理 DevIns
                     ).catch { e ->
                         throw Exception("LLM call failed: ${e.message}")

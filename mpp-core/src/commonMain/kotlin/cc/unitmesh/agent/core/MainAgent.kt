@@ -31,18 +31,17 @@ abstract class MainAgent<TInput : Any, TOutput : ToolResult>(
 
     /**
      * 注册一个工具（可以是普通 Tool 或 SubAgent）
-     * 
+     *
      * @param tool 要注册的工具
      */
     fun registerTool(tool: ExecutableTool<*, *>) {
         tools.add(tool)
-        // 如果是 SubAgent，按优先级排序
         sortToolsByPriority()
     }
 
     /**
      * 注销一个工具
-     * 
+     *
      * @param tool 要注销的工具
      */
     fun unregisterTool(tool: ExecutableTool<*, *>) {
