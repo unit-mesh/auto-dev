@@ -81,6 +81,9 @@ class ToolOrchestrator(
             }
             stateManager.updateState(finalState)
             
+            // 从 ToolResult 中提取 metadata
+            val metadata = result.extractMetadata()
+            
             return ToolExecutionResult(
                 executionId = context.executionId,
                 toolName = toolName,
@@ -88,7 +91,8 @@ class ToolOrchestrator(
                 startTime = startTime,
                 endTime = endTime,
                 retryCount = context.currentRetry,
-                state = finalState
+                state = finalState,
+                metadata = metadata
             )
             
         } catch (e: Exception) {

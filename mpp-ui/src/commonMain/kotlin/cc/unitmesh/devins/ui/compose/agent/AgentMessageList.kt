@@ -64,7 +64,8 @@ fun AgentMessageList(
                     ToolCallItem(
                         toolName = timelineItem.toolName,
                         description = timelineItem.description,
-                        details = timelineItem.details
+                        details = timelineItem.details,
+                        fullParams = timelineItem.fullParams
                     )
                 }
 
@@ -73,7 +74,8 @@ fun AgentMessageList(
                         toolName = timelineItem.toolName,
                         success = timelineItem.success,
                         summary = timelineItem.summary,
-                        output = timelineItem.output
+                        output = timelineItem.output,
+                        fullOutput = timelineItem.fullOutput
                     )
                 }
 
@@ -233,10 +235,17 @@ fun ToolResultItem(
     toolName: String,
     success: Boolean,
     summary: String,
-    output: String?
+    output: String?,
+    fullOutput: String? = null
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    // 失败的工具调用默认展开，并显示完整输出
+    var expanded by remember { mutableStateOf(!success) }
+    var showFullOutput by remember { mutableStateOf(!success) }
     val clipboardManager = LocalClipboardManager.current
+    
+    // Determine which output to display
+    val displayOutput = if (showFullOutput) fullOutput else output
+    val hasFullOutput = fullOutput != null && fullOutput != output
 
     Card(
         colors =
@@ -252,7 +261,7 @@ fun ToolResultItem(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .clickable { if (output != null) expanded = !expanded },
+                        .clickable { if (displayOutput != null) expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -290,7 +299,7 @@ fun ToolResultItem(
                 )
 
                 // Show expand icon only if there's output to show
-                if (output != null) {
+                if (displayOutput != null) {
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (expanded) "Collapse" else "Expand",
@@ -306,7 +315,7 @@ fun ToolResultItem(
             }
 
             // Expandable output
-            if (expanded && output != null) {
+            if (expanded && displayOutput != null) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
@@ -314,22 +323,38 @@ fun ToolResultItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
-                    Text(
-                        text = "Output:",
-                        fontWeight = FontWeight.Medium,
-                        color =
-                            if (success) {
-                                MaterialTheme.colorScheme.onSecondaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.onErrorContainer
-                            },
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Column {
+                        Text(
+                            text = "Output:",
+                            fontWeight = FontWeight.Medium,
+                            color =
+                                if (success) {
+                                    MaterialTheme.colorScheme.onSecondaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onErrorContainer
+                                },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        // Show toggle button if there's a full output different from truncated output
+                        if (hasFullOutput) {
+                            TextButton(
+                                onClick = { showFullOutput = !showFullOutput },
+                                modifier = Modifier.height(32.dp)
+                            ) {
+                                Text(
+                                    text = if (showFullOutput) "Show Less" else "Show Full Output",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
 
                     Row {
                         // Copy output button
                         IconButton(
-                            onClick = { clipboardManager.setText(AnnotatedString(output)) },
+                            onClick = { clipboardManager.setText(AnnotatedString(displayOutput ?: "")) },
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
@@ -345,7 +370,7 @@ fun ToolResultItem(
                             )
                         }
 
-                        // Copy entire block button
+                        // Copy entire block button (always copy full output if available)
                         IconButton(
                             onClick = {
                                 val blockText =
@@ -353,7 +378,7 @@ fun ToolResultItem(
                                         val status = if (success) "SUCCESS" else "FAILED"
                                         appendLine("[Tool Result]: $toolName - $status")
                                         appendLine("Summary: $summary")
-                                        appendLine("Output: $output")
+                                        appendLine("Output: ${fullOutput ?: output ?: ""}")
                                     }
                                 clipboardManager.setText(AnnotatedString(blockText))
                             },
@@ -382,7 +407,7 @@ fun ToolResultItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = formatOutput(output),
+                        text = formatOutput(displayOutput),
                         modifier = Modifier.padding(8.dp),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodyMedium,
@@ -533,10 +558,16 @@ fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
 fun ToolCallItem(
     toolName: String,
     description: String,
-    details: String?
+    details: String?,
+    fullParams: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showFullParams by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
+    
+    // Determine which params to display
+    val displayParams = if (showFullParams) fullParams else details
+    val hasFullParams = fullParams != null && fullParams != details
 
     Card(
         colors =
@@ -548,7 +579,7 @@ fun ToolCallItem(
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Row(
-                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth().clickable { if (displayParams != null) expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -577,7 +608,7 @@ fun ToolCallItem(
                 )
             }
 
-            if (expanded && details != null) {
+            if (expanded && displayParams != null) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
@@ -585,16 +616,33 @@ fun ToolCallItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
-                    Text(
-                        text = "Parameters:",
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Column {
+                        Text(
+                            text = "Parameters:",
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        // Show toggle button if there are full params different from formatted details
+                        if (hasFullParams) {
+                            TextButton(
+                                onClick = { showFullParams = !showFullParams },
+                                modifier = Modifier.height(32.dp)
+                            ) {
+                                Text(
+                                    text = if (showFullParams) "Show Formatted" else "Show Raw Params",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
 
                     Row {
+                        // Copy parameters button
                         IconButton(
-                            onClick = { clipboardManager.setText(AnnotatedString(details)) },
+                            onClick = { clipboardManager.setText(AnnotatedString(displayParams ?: "")) },
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
@@ -605,13 +653,14 @@ fun ToolCallItem(
                             )
                         }
 
+                        // Copy entire block button (always copy full params if available)
                         IconButton(
                             onClick = {
                                 val blockText =
                                     buildString {
                                         appendLine("[Tool Call]: $toolName")
                                         appendLine("Description: $description")
-                                        appendLine("Parameters: $details")
+                                        appendLine("Parameters: ${fullParams ?: details ?: ""}")
                                     }
                                 clipboardManager.setText(AnnotatedString(blockText))
                             },
@@ -635,7 +684,7 @@ fun ToolCallItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = formatToolParameters(details),
+                        text = if (showFullParams) (displayParams ?: "") else formatToolParameters(displayParams ?: ""),
                         modifier = Modifier.padding(8.dp),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodyMedium,

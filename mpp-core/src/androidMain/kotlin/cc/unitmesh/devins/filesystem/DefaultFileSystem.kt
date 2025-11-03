@@ -2,8 +2,10 @@ package cc.unitmesh.devins.filesystem
 
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.*
-import kotlin.streams.toList
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.readText
 
 /**
  * JVM 平台的文件系统实现
@@ -37,6 +39,7 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             file.writeText(content)
             true
         } catch (e: Exception) {
+            e.printStackTrace()
             false
         }
     }

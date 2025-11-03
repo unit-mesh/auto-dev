@@ -109,15 +109,20 @@ class ShellInvocation(
                 "shell" to (shellExecutor.getDefaultShell() ?: "unknown"),
                 "stdout_length" to result.stdout.length.toString(),
                 "stderr_length" to result.stderr.length.toString(),
-                "success" to result.isSuccess().toString()
+                "success" to result.isSuccess().toString(),
+                // 保存完整的 stdout 和 stderr 用于调试
+                "stdout" to result.stdout,
+                "stderr" to result.stderr
             )
             
             if (result.isSuccess()) {
                 ToolResult.Success(output, metadata)
             } else {
+                // 失败时，在 Error 中包含简短摘要，metadata 包含完整信息（包括 stdout/stderr）
                 ToolResult.Error(
                     message = "Command failed with exit code ${result.exitCode}: ${result.stderr.ifEmpty { result.stdout }}",
-                    errorType = ToolErrorType.COMMAND_FAILED.code
+                    errorType = ToolErrorType.COMMAND_FAILED.code,
+                    metadata = metadata
                 )
             }
         }

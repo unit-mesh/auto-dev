@@ -232,7 +232,33 @@ class CodingAgentExecutor(
             )
             steps.add(stepResult)
 
-            renderer.renderToolResult(toolName, stepResult.success, stepResult.result, stepResult.result)
+            // 为失败的工具，从 ToolResult 中提取完整的错误信息
+            val fullOutput = when (val result = executionResult.result) {
+                is ToolResult.Error -> {
+                    // 包含完整的错误信息和元数据
+                    buildString {
+                        appendLine("Error: ${result.message}")
+                        appendLine("Error Type: ${result.errorType}")
+                        // 对于 shell 命令，尝试从元数据中获取 stderr
+                        executionResult.metadata["stderr"]?.let { stderr ->
+                            if (stderr.isNotEmpty()) {
+                                appendLine("\nStderr:")
+                                appendLine(stderr)
+                            }
+                        }
+                        executionResult.metadata["stdout"]?.let { stdout ->
+                            if (stdout.isNotEmpty()) {
+                                appendLine("\nStdout:")
+                                appendLine(stdout)
+                            }
+                        }
+                    }
+                }
+                is ToolResult.AgentResult -> if (!result.success) result.content else stepResult.result
+                else -> stepResult.result
+            }
+
+            renderer.renderToolResult(toolName, stepResult.success, stepResult.result, fullOutput)
 
             val currentToolType = toolName.toToolType()
             if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {

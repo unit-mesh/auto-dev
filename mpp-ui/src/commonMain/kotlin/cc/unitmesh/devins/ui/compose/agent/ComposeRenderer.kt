@@ -56,6 +56,7 @@ class ComposeRenderer : BaseRenderer() {
             val toolName: String,
             val description: String,
             val details: String? = null,
+            val fullParams: String? = null, // 完整的原始参数，用于折叠展示
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
@@ -63,7 +64,8 @@ class ComposeRenderer : BaseRenderer() {
             val toolName: String,
             val success: Boolean,
             val summary: String,
-            val output: String? = null,
+            val output: String? = null, // 截断的输出用于直接展示
+            val fullOutput: String? = null, // 完整的输出，用于折叠展示或错误诊断
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
@@ -152,12 +154,13 @@ class ComposeRenderer : BaseRenderer() {
     ) {
         val toolInfo = formatToolCallDisplay(toolName, paramsStr)
 
-        // Add tool call to timeline
+        // Add tool call to timeline with full params for detailed inspection
         _timeline.add(
             TimelineItem.ToolCallItem(
                 toolName = toolInfo.toolName,
                 description = toolInfo.description,
-                details = toolInfo.details
+                details = toolInfo.details,
+                fullParams = paramsStr // 保存完整的原始参数
             )
         )
 
@@ -184,14 +187,15 @@ class ComposeRenderer : BaseRenderer() {
                 summary = summary,
                 output =
                     if (success && output != null) {
-                        // For file search tools, keep full output; for others, limit to 2000 chars
+                        // For file search tools, keep full output; for others, limit to 2000 chars for direct display
                         when (toolName) {
                             "glob", "grep" -> output
-                            else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated]"
+                            else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated - click to view full]"
                         }
                     } else {
                         null
-                    }
+                    },
+                fullOutput = fullOutput // 保存完整的输出，用于查看完整日志和错误诊断
             )
         )
 
@@ -329,36 +333,12 @@ class ComposeRenderer : BaseRenderer() {
                     details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
                 )
 
-            else -> {
-                // Fallback for legacy string-based tools
-                when (toolName) {
-                    ToolType.ReadFile.name -> ToolCallInfo(
-                        toolName = "${params["path"] ?: "unknown"} - read file",
-                        description = "file reader",
-                        details = "Reading file: ${params["path"] ?: "unknown"}"
-                    )
-                    ToolNames.WRITE_FILE -> ToolCallInfo(
-                        toolName = "${params["path"] ?: "unknown"} - write file",
-                        description = "file writer",
-                        details = "Writing to file: ${params["path"] ?: "unknown"}"
-                    )
-                    ToolNames.GLOB -> ToolCallInfo(
-                        toolName = "File search",
-                        description = "pattern matcher",
-                        details = "Searching for files matching pattern: ${params["pattern"] ?: "*"}"
-                    )
-                    ToolNames.SHELL -> ToolCallInfo(
-                        toolName = "Shell command",
-                        description = "command executor",
-                        details = "Executing: ${params["command"] ?: params["cmd"] ?: "unknown command"}"
-                    )
-                    else -> ToolCallInfo(
-                        toolName = toolName,
-                        description = "tool execution",
-                        details = paramsStr
-                    )
-                }
-            }
+            else ->
+                ToolCallInfo(
+                    toolName = toolName,
+                    description = "tool execution",
+                    details = paramsStr
+                )
         }
     }
 
@@ -375,6 +355,7 @@ class ComposeRenderer : BaseRenderer() {
                 val lines = output?.lines()?.size ?: 0
                 "Read $lines lines"
             }
+
             ToolType.WriteFile -> "File written successfully"
             ToolType.Glob -> {
                 val firstLine = output?.lines()?.firstOrNull() ?: ""
@@ -392,14 +373,14 @@ class ComposeRenderer : BaseRenderer() {
                 val lines = output?.lines()?.size ?: 0
                 if (lines > 0) "Executed ($lines lines output)" else "Executed successfully"
             }
-            else ->"Success"
+
+            else -> "Success"
         }
     }
 
     private fun parseParamsString(paramsStr: String): Map<String, String> {
         val params = mutableMapOf<String, String>()
 
-        // Simple parsing for key="value" format
         val regex = Regex("""(\w+)="([^"]*)"|\s*(\w+)=([^\s]+)""")
         regex.findAll(paramsStr).forEach { match ->
             val key = match.groups[1]?.value ?: match.groups[3]?.value

@@ -54,7 +54,11 @@ sealed class ToolResult {
     data class Success(val content: String, val metadata: Map<String, String> = emptyMap()) : ToolResult()
 
     @Serializable
-    data class Error(val message: String, val errorType: String = "UNKNOWN") : ToolResult()
+    data class Error(
+        val message: String, 
+        val errorType: String = "UNKNOWN",
+        val metadata: Map<String, String> = emptyMap()
+    ) : ToolResult()
     
     /**
      * Agent 结果 - 包含结构化数据
@@ -85,7 +89,7 @@ sealed class ToolResult {
     fun extractMetadata(): Map<String, String> = when (this) {
         is Success -> metadata
         is AgentResult -> metadata
-        is Error -> emptyMap()
+        is Error -> metadata
     }
 }
 
