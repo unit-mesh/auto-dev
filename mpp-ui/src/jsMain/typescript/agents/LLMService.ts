@@ -5,7 +5,7 @@
  * compiled mpp-core module.
  */
 
-import type { LegacyConfig } from '../config/ConfigManager.js';
+import type { LegacyConfig } from '../config/ConfigManager';
 
 // Import the compiled Kotlin/JS module
 // @ts-ignore - Kotlin/JS generated module

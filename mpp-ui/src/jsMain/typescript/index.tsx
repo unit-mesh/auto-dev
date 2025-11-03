@@ -12,7 +12,7 @@ import { render } from 'ink';
 import { Command } from 'commander';
 import { App } from './ui/App.js';
 import { ConfigManager } from './config/ConfigManager.js';
-import { CliRenderer } from './agents/CliRenderer.js';
+import { CliRenderer } from './agents/render/CliRenderer';
 // Use Kotlin CodingAgent instead of TypeScript implementation
 import mppCore from '@autodev/mpp-core';
 import * as path from 'path';
