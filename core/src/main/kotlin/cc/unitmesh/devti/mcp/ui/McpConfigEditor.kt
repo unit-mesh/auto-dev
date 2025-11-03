@@ -66,7 +66,7 @@ class McpConfigEditor(
                     
                     // Load initial configuration
                     text = if (initialConfig != null && initialConfig.isNotEmpty()) {
-                        json.encodeToString(McpConfig(mcpServers = initialConfig))
+                        serializeMcpServers(initialConfig)
                     } else {
                         getDefaultTemplate()
                     }
@@ -155,18 +155,67 @@ class McpConfigEditor(
         }
     }
     
+    /**
+     * Manually serialize MCP servers to avoid @Serializable issues
+     */
+    private fun serializeMcpServers(servers: Map<String, McpServerConfig>): String {
+        val sb = StringBuilder()
+        sb.appendLine("{")
+        sb.appendLine("  \"mcpServers\": {")
+        
+        servers.entries.forEachIndexed { index, (name, config) ->
+            sb.appendLine("    \"$name\": {")
+            
+            if (config.command != null) {
+                sb.appendLine("      \"command\": \"${config.command}\",")
+            }
+            if (config.url != null) {
+                sb.appendLine("      \"url\": \"${config.url}\",")
+            }
+            
+            // Args
+            sb.append("      \"args\": [")
+            config.args.forEachIndexed { i, arg ->
+                sb.append("\"$arg\"")
+                if (i < config.args.size - 1) sb.append(", ")
+            }
+            sb.appendLine("],")
+            
+            sb.appendLine("      \"disabled\": ${config.disabled},")
+            
+            // AutoApprove
+            sb.append("      \"autoApprove\": [")
+            config.autoApprove?.forEachIndexed { i, tool ->
+                sb.append("\"$tool\"")
+                if (i < config.autoApprove.size - 1) sb.append(", ")
+            }
+            sb.append("]")
+            
+            sb.appendLine()
+            sb.append("    }")
+            if (index < servers.size - 1) sb.append(",")
+            sb.appendLine()
+        }
+        
+        sb.appendLine("  }")
+        sb.appendLine("}")
+        return sb.toString()
+    }
+    
     private fun getDefaultTemplate(): String {
-        val defaultConfig = McpConfig(
-            mcpServers = mapOf(
-                "AutoDev" to McpServerConfig(
-                    command = "npx",
-                    args = listOf("-y", "@jetbrains/mcp-proxy"),
-                    disabled = false,
-                    autoApprove = emptyList()
-                )
-            )
-        )
-        return json.encodeToString(defaultConfig)
+        // Directly create JSON string to avoid serialization issues
+        return """
+{
+  "mcpServers": {
+    "AutoDev": {
+      "command": "npx",
+      "args": ["-y", "@jetbrains/mcp-proxy"],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+        """.trimIndent()
     }
     
     companion object {
