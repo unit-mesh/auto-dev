@@ -85,11 +85,12 @@ repositories {
     }
 }
 
-// mpp-core is configured in its own build.gradle.kts file
+// mpp-core, mpp-ui, and mpp-codegraph are configured in their own build.gradle.kts files
 
 configure(subprojects - project(":exts")
         - project(":mpp-core")
         - project(":mpp-ui")
+        - project(":mpp-codegraph")
 ) {
     apply {
         plugin("idea")
