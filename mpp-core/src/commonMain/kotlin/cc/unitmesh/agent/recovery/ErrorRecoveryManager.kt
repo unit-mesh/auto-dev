@@ -39,16 +39,18 @@ class ErrorRecoveryManager(private val projectPath: String, private val llmServi
 
         return try {
             val input = buildRecoveryInput(toolName, command, errorMessage, exitCode)
+            val validatedInput = errorRecoveryAgent.validateInput(input)
 
-            val result = errorRecoveryAgent.run(input) { progress ->
+            val result = errorRecoveryAgent.execute(validatedInput) { progress ->
                 println("   $progress")
             }
 
-            when (result) {
-                else -> {
-                    println("\n✗ Unexpected result type from ErrorRecoveryAgent\n")
-                    null
-                }
+            if (result.success) {
+                println("\n✓ Error Recovery completed successfully\n")
+                result.content
+            } else {
+                println("\n✗ Error Recovery failed: ${result.content}\n")
+                null
             }
         } catch (e: Exception) {
             println("\n✗ Error Recovery failed: ${e.message}\n")
@@ -60,23 +62,34 @@ class ErrorRecoveryManager(private val projectPath: String, private val llmServi
      * 判断是否应该尝试错误恢复
      */
     private fun shouldAttemptRecovery(toolName: String, errorMessage: String): Boolean {
-        // 对于 shell 命令错误，总是尝试恢复
+        // 对于 shell 命令错误，检查是否是可恢复的错误类型
         if (toolName == ToolType.Shell.name) {
-            return true
-        }
-
-        // 对于文件操作错误，如果是权限或路径问题，尝试恢复
-        if (toolName in listOf(ToolType.ReadFile.name, ToolType.WriteFile.name)) {
-            val recoverableErrors = listOf(
-                "permission denied",
-                "no such file or directory",
-                "file not found",
-                "access denied"
+            val recoverableShellErrors = listOf(
+                "compilation failed", "build failed", "test failed",
+                "dependency", "gradle", "maven", "npm", "yarn",
+                "syntax error", "cannot find symbol", "unresolved reference",
+                "permission denied", "command not found"
             )
-            return recoverableErrors.any { errorMessage.contains(it, ignoreCase = true) }
+            return recoverableShellErrors.any { errorMessage.contains(it, ignoreCase = true) }
         }
 
-        return false
+        // 对于文件操作错误，检查具体的错误类型
+        if (toolName in listOf(ToolType.ReadFile.name, ToolType.WriteFile.name, ToolType.Glob.name)) {
+            val recoverableFileErrors = listOf(
+                "permission denied", "no such file or directory", "file not found",
+                "access denied", "directory not found", "path does not exist",
+                "invalid path", "encoding error", "file locked"
+            )
+            return recoverableFileErrors.any { errorMessage.contains(it, ignoreCase = true) }
+        }
+
+        // 对于其他工具，检查通用的可恢复错误
+        val generalRecoverableErrors = listOf(
+            "timeout", "connection", "network", "temporary", "retry",
+            "configuration", "environment", "missing"
+        )
+
+        return generalRecoverableErrors.any { errorMessage.contains(it, ignoreCase = true) }
     }
 
     /**
@@ -89,11 +102,10 @@ class ErrorRecoveryManager(private val projectPath: String, private val llmServi
         exitCode: Int?
     ): Map<String, Any> {
         val input = mutableMapOf<String, Any>(
-            "toolName" to toolName,
+            "command" to (command ?: toolName),
             "errorMessage" to errorMessage
         )
 
-        command?.let { input["command"] = it }
         exitCode?.let { input["exitCode"] = it }
 
         return input

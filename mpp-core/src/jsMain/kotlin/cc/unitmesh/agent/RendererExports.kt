@@ -26,6 +26,9 @@ interface JsCodingAgentRenderer {
     fun renderFinalResult(success: Boolean, message: String, iterations: Int)
     fun renderError(message: String)
     fun renderRepeatWarning(toolName: String, count: Int)
+
+    // Error recovery methods
+    fun renderRecoveryAdvice(recoveryAdvice: String)
 }
 
 /**
@@ -92,11 +95,15 @@ class JsRendererAdapter(private val jsRenderer: JsCodingAgentRenderer) : CodingA
         jsRenderer.renderRepeatWarning(toolName, count)
     }
 
-    override fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>) {
-        // For now, just log to console since JS renderer doesn't have this method yet
-        console.log("🔐 Tool '$toolName' requires user confirmation")
-        console.log("   Parameters: ${params.entries.joinToString(", ") { "${it.key}=${it.value}" }}")
-        console.log("   (Auto-approved for now)")
+    override fun renderRecoveryAdvice(recoveryAdvice: String) {
+        jsRenderer.renderRecoveryAdvice(recoveryAdvice)
     }
+
+    override fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>) {
+        // For now, just use error rendering since JS renderer doesn't have this method yet
+        jsRenderer.renderError("🔐 Tool '$toolName' requires user confirmation: $params (Auto-approved)")
+    }
+
+
 }
 

@@ -21,6 +21,9 @@ interface CodingAgentRenderer {
     fun renderError(message: String)
     fun renderRepeatWarning(toolName: String, count: Int)
 
+    // Error recovery methods
+    fun renderRecoveryAdvice(recoveryAdvice: String)
+
     // Policy and permission methods
     fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>)
 }

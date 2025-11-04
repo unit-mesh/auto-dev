@@ -77,6 +77,20 @@ class DefaultCodingAgentRenderer : BaseRenderer() {
         println("⚠️  Warning: Tool '$toolName' has been called $count times in a row")
     }
 
+    override fun renderRecoveryAdvice(recoveryAdvice: String) {
+        println("\n🔧 ERROR RECOVERY ADVICE:")
+        println("─".repeat(50))
+        // Split by lines and add proper indentation
+        recoveryAdvice.lines().forEach { line ->
+            if (line.trim().isNotEmpty()) {
+                println("   $line")
+            } else {
+                println()
+            }
+        }
+        println("─".repeat(50))
+    }
+
     override fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>) {
         println("🔐 Tool '$toolName' requires user confirmation")
         println("   Parameters: ${params.entries.joinToString(", ") { "${it.key}=${it.value}" }}")

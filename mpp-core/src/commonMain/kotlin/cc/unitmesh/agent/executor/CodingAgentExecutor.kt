@@ -232,19 +232,53 @@ class CodingAgentExecutor(
 
             if (!executionResult.isSuccess) {
                 val command = if (toolName == "shell") params["command"] as? String else null
+                val errorMessage = executionResult.content ?: "Unknown error"
+
+                renderer.renderError("Tool execution failed: $errorMessage")
+
                 val recoveryResult = errorRecoveryManager.handleToolError(
                     toolName = toolName,
                     command = command,
-                    errorMessage = executionResult.content ?: "Unknown error"
+                    errorMessage = errorMessage
                 )
 
                 if (recoveryResult != null) {
-                    // 将恢复建议添加到对话历史中
-                    // 这将在下一轮迭代中被使用
-                    // 注意：这里不直接修改对话历史，而是让调用者处理
+                    // 显示恢复建议
+                    renderer.renderRecoveryAdvice(recoveryResult)
+
+                    // 将恢复建议添加到工具结果中，这样 LLM 可以看到并采取行动
+                    val enhancedResult = buildString {
+                        appendLine("Tool execution failed with error:")
+                        appendLine(errorMessage)
+                        appendLine()
+                        appendLine("Error Recovery Analysis:")
+                        appendLine(recoveryResult)
+                    }
+
+                    // 创建增强的错误结果
+                    val enhancedExecutionResult = ToolExecutionResult(
+                        executionId = executionResult.executionId,
+                        toolName = executionResult.toolName,
+                        result = ToolResult.Error(enhancedResult, "tool_execution_with_recovery"),
+                        startTime = executionResult.startTime,
+                        endTime = executionResult.endTime,
+                        retryCount = executionResult.retryCount,
+                        state = executionResult.state,
+                        metadata = executionResult.metadata + mapOf(
+                            "hasRecoveryAdvice" to "true",
+                            "originalError" to errorMessage
+                        )
+                    )
+
+                    // 更新 results 中的最后一个条目
+                    if (results.isNotEmpty()) {
+                        val lastIndex = results.size - 1
+                        val (lastToolName, lastParams, _) = results[lastIndex]
+                        results[lastIndex] = Triple(lastToolName, lastParams, enhancedExecutionResult)
+                    }
                 }
 
-                if (errorRecoveryManager.isFatalError(toolName, executionResult.content ?: "")) {
+                if (errorRecoveryManager.isFatalError(toolName, errorMessage)) {
                     renderer.renderError("Fatal error encountered. Stopping execution.")
                     break
                 }

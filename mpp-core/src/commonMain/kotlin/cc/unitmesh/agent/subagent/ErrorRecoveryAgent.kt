@@ -134,23 +134,45 @@ class ErrorRecoveryAgent(
      */
     private fun formatRecovery(recovery: RecoveryResult): String {
         return buildString {
-            appendLine("📋 Analysis:")
-            appendLine("   ${recovery.analysis}")
+            // Header with status indicator
+            if (recovery.success) {
+                appendLine("🔍 ERROR ANALYSIS COMPLETE")
+            } else {
+                appendLine("⚠️  ERROR ANALYSIS FAILED")
+            }
+            appendLine("=" .repeat(50))
 
+            // Analysis section
+            appendLine("📋 **Analysis:**")
+            appendLine("   ${recovery.analysis}")
+            appendLine()
+
+            // Suggested actions with better formatting
             if (recovery.suggestedActions.isNotEmpty()) {
-                appendLine()
-                appendLine("💡 Suggested Actions:")
+                appendLine("💡 **Recommended Actions:**")
                 recovery.suggestedActions.forEachIndexed { index, action ->
                     appendLine("   ${index + 1}. $action")
                 }
+                appendLine()
             }
 
+            // Recovery commands with execution hints
             if (recovery.recoveryCommands != null && recovery.recoveryCommands.isNotEmpty()) {
-                appendLine()
-                appendLine("🔧 Recovery Commands:")
-                recovery.recoveryCommands.forEach { cmd ->
-                    appendLine("   $ $cmd")
+                appendLine("🔧 **Recovery Commands:**")
+                appendLine("   Run these commands in order:")
+                recovery.recoveryCommands.forEachIndexed { index, cmd ->
+                    appendLine("   ${index + 1}. $ $cmd")
                 }
+                appendLine()
+            }
+
+            // Next steps guidance
+            if (recovery.shouldRetry) {
+                appendLine("🔄 **Next Steps:** The agent will retry the failed operation automatically.")
+            } else if (recovery.shouldAbort) {
+                appendLine("🛑 **Next Steps:** Manual intervention required. Please review the error and fix manually.")
+            } else {
+                appendLine("⏸️  **Next Steps:** Consider the suggested actions before proceeding.")
             }
         }
     }
@@ -254,31 +276,53 @@ class ErrorRecoveryAgent(
      */
     private suspend fun askLLMForFix(context: String): RecoveryResult {
         val systemPrompt = """
-You are an Error Recovery Agent. Your job is to:
-1. Analyze why a command failed
-2. Identify the root cause (especially if files were corrupted)
-3. Suggest specific fixes
+You are an Error Recovery Agent specialized in diagnosing and fixing development tool failures.
 
-Focus on:
-- Build file corruption (build.gradle.kts, pom.xml, package.json, etc.)
-- Syntax errors introduced by recent changes
-- File permission or path issues
+## Your Responsibilities:
+1. **Analyze** the error message and context thoroughly
+2. **Identify** the root cause with high precision
+3. **Suggest** specific, actionable recovery steps
+4. **Provide** exact commands when possible
 
-Respond in this JSON format:
+## Common Error Categories to Focus On:
+- **Build System Issues**: Corrupted build files (build.gradle.kts, pom.xml, package.json, etc.)
+- **Dependency Problems**: Missing dependencies, version conflicts, repository issues
+- **Syntax Errors**: Recent code changes that broke compilation
+- **File System Issues**: Permission denied, file not found, path problems
+- **Environment Issues**: Missing tools, wrong versions, configuration problems
+- **Git Issues**: Merge conflicts, corrupted repository state
+
+## Analysis Guidelines:
+- Look for specific error patterns and keywords
+- Consider recent file modifications as potential causes
+- Distinguish between temporary and permanent failures
+- Assess whether the error is recoverable or requires manual intervention
+
+## Response Format:
+Always respond with valid JSON in this exact format:
+```json
 {
-  "analysis": "Brief explanation of what went wrong",
-  "rootCause": "The specific cause (e.g., 'build.gradle.kts was corrupted')",
+  "analysis": "Clear, concise explanation of what went wrong and why",
+  "rootCause": "The specific technical cause (e.g., 'Syntax error in build.gradle.kts line 15')",
   "suggestedActions": [
-    "Specific action 1",
-    "Specific action 2"
+    "Step-by-step action that user should take",
+    "Another specific action with clear instructions"
   ],
   "recoveryCommands": [
-    "git checkout build.gradle.kts",
-    "./gradlew build"
+    "exact command to run",
+    "another command if needed"
   ],
   "shouldRetry": true,
   "shouldAbort": false
 }
+```
+
+## Important Notes:
+- Keep analysis concise but informative
+- Make suggested actions specific and actionable
+- Only include recovery commands that are safe to run
+- Set shouldRetry=true if the error is likely fixable
+- Set shouldAbort=true only for unrecoverable errors
 """.trimIndent()
 
         val userPrompt = """

@@ -382,5 +382,42 @@ export class CliRenderer {
     console.log(chalk.yellow(`⚠️  Warning: Tool '${toolName}' has been called ${count} times in a row`));
     console.log(chalk.yellow(`   This may indicate the agent is stuck in a loop. Stopping execution.`));
   }
+
+  renderRecoveryAdvice(recoveryAdvice: string): void {
+    console.log();
+    console.log(chalk.cyan('🔧 ERROR RECOVERY ADVICE:'));
+    console.log(chalk.cyan('─'.repeat(50)));
+
+    // Split by lines and add proper indentation with colors
+    const lines = recoveryAdvice.split('\n');
+    for (const line of lines) {
+      if (line.trim().length > 0) {
+        // Color different sections differently
+        if (line.includes('Analysis:')) {
+          console.log(chalk.blue(`   ${line}`));
+        } else if (line.includes('Recommended Actions:')) {
+          console.log(chalk.green(`   ${line}`));
+        } else if (line.includes('Recovery Commands:')) {
+          console.log(chalk.yellow(`   ${line}`));
+        } else if (line.includes('Next Steps:')) {
+          console.log(chalk.magenta(`   ${line}`));
+        } else if (line.trim().startsWith('$')) {
+          // Command lines in cyan
+          console.log(chalk.cyan(`   ${line}`));
+        } else if (line.trim().match(/^\d+\./)) {
+          // Numbered items in white
+          console.log(chalk.white(`   ${line}`));
+        } else {
+          // Regular text in gray
+          console.log(chalk.gray(`   ${line}`));
+        }
+      } else {
+        console.log();
+      }
+    }
+
+    console.log(chalk.cyan('─'.repeat(50)));
+    console.log();
+  }
 }
 

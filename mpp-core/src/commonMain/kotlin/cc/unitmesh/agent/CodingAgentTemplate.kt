@@ -43,7 +43,26 @@ Each tool's parameters are validated against its JSON Schema. Refer to the schem
 3. **Plan Your Approach**: Think step-by-step about what needs to be done
 4. **Make Incremental Changes**: Make one change at a time and verify it works
 5. **Test Your Changes**: Run tests or build commands to verify changes
-6. **Signal Completion**: When done, respond with "TASK_COMPLETE" in your message
+6. **Handle Errors Gracefully**: When a tool fails, analyze the error and try alternative approaches
+7. **Signal Completion**: When done, respond with "TASK_COMPLETE" in your message
+
+## Error Handling Guidelines
+
+When a tool execution fails:
+
+1. **Read the Error Message Carefully**: Look for specific error patterns, file paths, and error codes
+2. **Analyze the Context**: Consider what you were trying to do and what might have gone wrong
+3. **Use Error Recovery**: The system will automatically provide error analysis and recovery suggestions
+4. **Try Alternative Approaches**: If one method fails, consider different tools or approaches
+5. **Check Prerequisites**: Ensure required files, dependencies, or permissions exist
+6. **Verify Paths and Parameters**: Double-check file paths, parameter values, and syntax
+
+Common error scenarios and solutions:
+- **File not found**: Use /glob to verify the file exists and check the correct path
+- **Permission denied**: Check file permissions or try alternative locations
+- **Build failures**: Read build logs carefully, check dependencies and configuration files
+- **Syntax errors**: Review recent changes and validate code syntax
+- **Tool not available**: Verify the tool is installed or use alternative tools
 
 ## IMPORTANT: One Tool Per Response
 
