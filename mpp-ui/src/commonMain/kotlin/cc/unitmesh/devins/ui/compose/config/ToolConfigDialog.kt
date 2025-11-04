@@ -25,7 +25,6 @@ import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.config.ToolConfigManager
 import cc.unitmesh.agent.config.ToolItem
-import cc.unitmesh.agent.config.ToolSource
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.devins.ui.config.ConfigManager
@@ -700,13 +699,12 @@ private fun McpServerHeader(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Server status icon
             val (statusIcon, statusColor) = when (serverState.status) {
                 McpServerLoadingStatus.LOADING -> Icons.Default.Refresh to MaterialTheme.colorScheme.primary
                 McpServerLoadingStatus.LOADED -> Icons.Default.Cloud to MaterialTheme.colorScheme.primary
                 McpServerLoadingStatus.ERROR -> Icons.Default.Error to MaterialTheme.colorScheme.error
                 McpServerLoadingStatus.DISABLED -> Icons.Default.CloudOff to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                McpServerLoadingStatus.NOT_STARTED -> Icons.Default.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                McpServerLoadingStatus.AVAILABLE -> Icons.Default.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             }
 
             Icon(
@@ -724,23 +722,6 @@ private fun McpServerHeader(
                     text = "MCP: $serverName",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium
-                )
-
-                val statusText = when (serverState.status) {
-                    McpServerLoadingStatus.LOADING -> "Loading tools..."
-                    McpServerLoadingStatus.LOADED -> {
-                        val duration = serverState.loadingDuration?.let { "${it}ms" } ?: ""
-                        "Loaded ${tools.size} tools $duration"
-                    }
-                    McpServerLoadingStatus.ERROR -> "Error: ${serverState.errorMessage ?: "Unknown error"}"
-                    McpServerLoadingStatus.DISABLED -> "Disabled"
-                    McpServerLoadingStatus.NOT_STARTED -> "Not started"
-                }
-
-                Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
 
