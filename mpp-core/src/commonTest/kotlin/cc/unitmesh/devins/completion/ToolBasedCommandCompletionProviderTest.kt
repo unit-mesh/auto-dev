@@ -9,7 +9,6 @@ import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.ToolException
 import cc.unitmesh.agent.tool.ToolNames
-import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.completion.providers.ToolBasedCommandCompletionProvider
 import kotlinx.datetime.Clock
 import kotlin.test.Test
@@ -95,7 +94,7 @@ class ToolBasedCommandCompletionProviderTest {
         // Check that all built-in tools are present
         val toolNames = completions.map { it.text }.toSet()
         assertTrue(ToolType.ReadFile.name in toolNames, "Should contain read-file tool")
-        assertTrue(ToolType.WriteFile.name in toolNames, "Should contain write-file tool")
+        assertTrue(ToolNames.WRITE_FILE in toolNames, "Should contain write-file tool")
         assertTrue("grep" in toolNames, "Should contain grep tool")
         assertTrue("glob" in toolNames, "Should contain glob tool")
     }
@@ -132,11 +131,11 @@ class ToolBasedCommandCompletionProviderTest {
         )
 
         val completions = provider.getCompletions(context)
-        val writeFileCompletion = completions.find { it.text == ToolType.WriteFile.name }
+        val writeFileCompletion = completions.find { it.text == ToolNames.WRITE_FILE }
 
         assertTrue(writeFileCompletion != null, "Should find write-file completion")
-        assertEquals(ToolType.WriteFile.name, writeFileCompletion.text)
-        assertEquals(ToolType.WriteFile.name, writeFileCompletion.displayText)
+        assertEquals(ToolNames.WRITE_FILE, writeFileCompletion.text)
+        assertEquals(ToolNames.WRITE_FILE, writeFileCompletion.displayText)
         assertTrue(writeFileCompletion.description?.contains("write") == true, "Description should mention writing")
         assertEquals("✏️", writeFileCompletion.icon)
         assertTrue(writeFileCompletion.insertHandler != null, "Should have insert handler")

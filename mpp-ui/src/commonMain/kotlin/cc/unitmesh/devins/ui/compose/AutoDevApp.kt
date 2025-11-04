@@ -31,7 +31,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoDevApp() {
-    // 直接读取 ThemeManager 的当前主题（它本身就是 mutableStateOf，会自动触发重组）
     val currentTheme = ThemeManager.currentTheme
 
     // 应用主题

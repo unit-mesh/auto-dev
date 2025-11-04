@@ -188,6 +188,7 @@ fun ToolConfigDialog(
                                 }
                             }
                         )
+
                         1 -> McpServerConfigTab(
                             mcpConfigJson = mcpConfigJson,
                             errorMessage = mcpConfigError,
@@ -208,21 +209,19 @@ fun ToolConfigDialog(
                                         isReloading = true
                                         mcpConfigError = null
                                         mcpLoadError = null
-                                        
+
                                         // Validate JSON first
                                         val result = deserializeMcpConfig(mcpConfigJson)
                                         if (result.isFailure) {
                                             mcpConfigError = result.exceptionOrNull()?.message ?: "Invalid JSON format"
                                             return@launch
                                         }
-                                        
+
                                         val newMcpServers = result.getOrThrow()
-                                        
-                                        // Save configuration to ConfigManager
                                         val updatedConfig = toolConfig.copy(mcpServers = newMcpServers)
                                         ConfigManager.saveToolConfig(updatedConfig)
                                         toolConfig = updatedConfig
-                                        
+
                                         // Discover MCP tools
                                         try {
                                             mcpTools = ToolConfigManager.discoverMcpTools(
@@ -325,9 +324,8 @@ private fun ToolSelectionTab(
     onBuiltinToolToggle: (ToolCategory, String, Boolean) -> Unit,
     onMcpToolToggle: (String, Boolean) -> Unit
 ) {
-    // 折叠状态
     val expandedCategories = remember { mutableStateMapOf<String, Boolean>() }
-    
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 4.dp)
@@ -336,7 +334,7 @@ private fun ToolSelectionTab(
         builtinToolsByCategory.forEach { (category, tools) ->
             val categoryKey = category.name
             val isExpanded = expandedCategories.getOrPut(categoryKey) { true }
-            
+
             item {
                 CollapsibleCategoryHeader(
                     category = category,
@@ -365,7 +363,7 @@ private fun ToolSelectionTab(
         if (mcpTools.isNotEmpty()) {
             val mcpKey = "MCP_TOOLS"
             val isMcpExpanded = expandedCategories.getOrPut(mcpKey) { true }
-            
+
             item {
                 CollapsibleCategoryHeader(
                     categoryName = "MCP Tools",
@@ -422,7 +420,7 @@ private fun McpServerConfigTab(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             // Status indicator
             Row(
                 verticalAlignment = Alignment.CenterVertically,

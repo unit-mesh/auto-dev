@@ -41,21 +41,6 @@ sealed class ToolType(
         category = ToolCategory.FileSystem
     )
 
-    data object EditFile : ToolType(
-        name = "edit-file",
-        displayName = "Edit File",
-        tuiEmoji = "📝",
-        composeIcon = "edit_note",
-        category = ToolCategory.FileSystem
-    )
-
-    data object PatchFile : ToolType(
-        name = "patch-file",
-        displayName = "Patch File",
-        tuiEmoji = "🔧",
-        composeIcon = "build",
-        category = ToolCategory.FileSystem
-    )
 
     // Search Tools
     data object Grep : ToolType(
@@ -112,8 +97,7 @@ sealed class ToolType(
          */
         val ALL_TOOLS by lazy {
             listOf(
-                ReadFile, WriteFile, ListFiles, EditFile, PatchFile,
-                Grep, Glob,
+                ReadFile, WriteFile, Grep, Glob,
                 Shell,
                 ErrorRecovery, LogSummary, CodebaseInvestigator
             )
@@ -133,52 +117,20 @@ sealed class ToolType(
             return ALL_TOOLS.filter { it.category == category }
         }
 
-        /**
-         * Get all tool names (for backward compatibility)
-         */
         val ALL_TOOL_NAMES by lazy { ALL_TOOLS.map { it.name }.toSet() }
 
-        /**
-         * Tools that require file system access
-         */
-        val FILE_SYSTEM_TOOLS by lazy { byCategory(ToolCategory.FileSystem) }
 
-        /**
-         * Tools that execute external commands
-         */
-        val EXECUTION_TOOLS by lazy { byCategory(ToolCategory.Execution) }
+        fun isValidToolName(name: String): Boolean = name in ALL_TOOL_NAMES
 
-        /**
-         * SubAgent tools for specialized tasks
-         */
-        val SUBAGENT_TOOLS by lazy { byCategory(ToolCategory.SubAgent) }
-
-        /**
-         * Check if a tool name is valid
-         */
-        fun isValidToolName(name: String): Boolean {
-            return name in ALL_TOOL_NAMES
-        }
-
-        /**
-         * Check if a tool requires file system access
-         */
         fun requiresFileSystem(toolType: ToolType): Boolean {
             return toolType.category == ToolCategory.FileSystem || toolType.category == ToolCategory.Search
         }
 
-        /**
-         * Check if a tool executes external commands
-         */
         fun isExecutionTool(toolType: ToolType): Boolean {
             return toolType.category == ToolCategory.Execution
         }
     }
 }
-
-/**
- * Extension functions for convenient access
- */
 
 /**
  * Convert string tool name to ToolType (for migration)
