@@ -41,7 +41,7 @@ fun ToolConfigDialog(
 ) {
     var toolConfig by remember { mutableStateOf(ToolConfigFile.default()) }
     var builtinToolsByCategory by remember { mutableStateOf<Map<ToolCategory, List<ToolItem>>>(emptyMap()) }
-    var mcpTools by remember { mutableStateOf<List<ToolItem>>(emptyList()) }
+    var mcpTools by remember { mutableStateOf<Map<String, List<ToolItem>>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTab by remember { mutableStateOf(0) }
     var mcpConfigJson by remember { mutableStateOf("") }
@@ -70,7 +70,8 @@ fun ToolConfigDialog(
                             toolConfig.enabledMcpTools.toSet()
                         )
                         mcpLoadError = null
-                        println("✅ Loaded ${mcpTools.size} MCP tools from ${toolConfig.mcpServers.size} servers")
+                        val totalTools = mcpTools.values.sumOf { it.size }
+                        println("✅ Loaded $totalTools MCP tools from ${toolConfig.mcpServers.size} servers")
                     } catch (e: Exception) {
                         mcpLoadError = "Failed to load MCP tools: ${e.message}"
                         println("❌ Error loading MCP tools: ${e.message}")
@@ -183,8 +184,10 @@ fun ToolConfigDialog(
                                 }
                             },
                             onMcpToolToggle = { toolName, enabled ->
-                                mcpTools = mcpTools.map {
-                                    if (it.name == toolName) it.copy(enabled = enabled) else it
+                                mcpTools = mcpTools.mapValues { (_, tools) ->
+                                    tools.map { tool ->
+                                        if (tool.name == toolName) tool.copy(enabled = enabled) else tool
+                                    }
                                 }
                             }
                         )
@@ -228,7 +231,8 @@ fun ToolConfigDialog(
                                                 newMcpServers,
                                                 toolConfig.enabledMcpTools.toSet()
                                             )
-                                            println("✅ Reloaded ${mcpTools.size} MCP tools from ${newMcpServers.size} servers")
+                                            val totalTools = mcpTools.values.sumOf { it.size }
+                                            println("✅ Reloaded $totalTools MCP tools from ${newMcpServers.size} servers")
                                         } catch (e: Exception) {
                                             mcpLoadError = "Failed to load MCP tools: ${e.message}"
                                             println("❌ Error loading MCP tools: ${e.message}")
@@ -255,10 +259,11 @@ fun ToolConfigDialog(
                         // Summary
                         val enabledBuiltin = builtinToolsByCategory.values.flatten().count { it.enabled }
                         val totalBuiltin = builtinToolsByCategory.values.flatten().size
-                        val enabledMcp = mcpTools.count { it.enabled }
+                        val enabledMcp = mcpTools.values.flatten().count { it.enabled }
+                        val totalMcp = mcpTools.values.flatten().size
 
                         Text(
-                            text = "Built-in: $enabledBuiltin/$totalBuiltin | MCP: $enabledMcp/${mcpTools.size}",
+                            text = "Built-in: $enabledBuiltin/$totalBuiltin | MCP: $enabledMcp/$totalMcp",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f)
@@ -279,7 +284,8 @@ fun ToolConfigDialog(
                                             .filter { it.enabled }
                                             .map { it.name }
 
-                                        val enabledMcpTools = mcpTools
+                                        val enabledMcpTools = mcpTools.values
+                                            .flatten()
                                             .filter { it.enabled }
                                             .map { it.name }
 
@@ -320,7 +326,7 @@ fun ToolConfigDialog(
 @Composable
 private fun ToolSelectionTab(
     builtinToolsByCategory: Map<ToolCategory, List<ToolItem>>,
-    mcpTools: List<ToolItem>,
+    mcpTools: Map<String, List<ToolItem>>,
     onBuiltinToolToggle: (ToolCategory, String, Boolean) -> Unit,
     onMcpToolToggle: (String, Boolean) -> Unit
 ) {
@@ -360,31 +366,34 @@ private fun ToolSelectionTab(
             }
         }
 
-        if (mcpTools.isNotEmpty()) {
-            val mcpKey = "MCP_TOOLS"
-            val isMcpExpanded = expandedCategories.getOrPut(mcpKey) { true }
+        // Display MCP tools grouped by server
+        mcpTools.forEach { (serverName, tools) ->
+            if (tools.isNotEmpty()) {
+                val serverKey = "MCP_SERVER_$serverName"
+                val isServerExpanded = expandedCategories.getOrPut(serverKey) { true }
 
-            item {
-                CollapsibleCategoryHeader(
-                    categoryName = "MCP Tools",
-                    icon = Icons.Default.Cloud,
-                    isExpanded = isMcpExpanded,
-                    toolCount = mcpTools.size,
-                    enabledCount = mcpTools.count { it.enabled },
-                    onToggle = {
-                        expandedCategories[mcpKey] = !isMcpExpanded
-                    }
-                )
-            }
-
-            if (isMcpExpanded) {
-                items(mcpTools) { tool ->
-                    CompactToolItemRow(
-                        tool = tool,
-                        onToggle = { enabled ->
-                            onMcpToolToggle(tool.name, enabled)
+                item {
+                    CollapsibleCategoryHeader(
+                        categoryName = "MCP: $serverName",
+                        icon = Icons.Default.Cloud,
+                        isExpanded = isServerExpanded,
+                        toolCount = tools.size,
+                        enabledCount = tools.count { it.enabled },
+                        onToggle = {
+                            expandedCategories[serverKey] = !isServerExpanded
                         }
                     )
+                }
+
+                if (isServerExpanded) {
+                    items(tools) { tool ->
+                        CompactToolItemRow(
+                            tool = tool,
+                            onToggle = { enabled ->
+                                onMcpToolToggle(tool.name, enabled)
+                            }
+                        )
+                    }
                 }
             }
         }

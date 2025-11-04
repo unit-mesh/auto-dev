@@ -75,22 +75,8 @@ object ToolConfigManager {
     suspend fun discoverMcpTools(
         mcpServers: Map<String, McpServerConfig>,
         enabledMcpTools: Set<String>
-    ): List<ToolItem> {
-        // This would require MCP client initialization
-        // For now, return placeholder based on server names
-        return mcpServers.mapNotNull { (serverName, config) ->
-            if (!config.disabled && config.validate()) {
-                ToolItem(
-                    name = "$serverName-tools",
-                    displayName = "$serverName Tools",
-                    description = "Tools from MCP server: $serverName",
-                    category = "MCP",
-                    source = ToolSource.MCP,
-                    enabled = "$serverName-tools" in enabledMcpTools,
-                    serverName = serverName
-                )
-            } else null
-        }
+    ): Map<String, List<ToolItem>> {
+        return McpToolConfigManager.discoverMcpTools(mcpServers, enabledMcpTools)
     }
 
     fun updateToolConfig(
