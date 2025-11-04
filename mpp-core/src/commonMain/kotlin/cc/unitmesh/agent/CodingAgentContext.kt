@@ -4,6 +4,7 @@ import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.compiler.variable.VariableTable
+import kotlinx.serialization.json.*
 
 /**
  * Coding Agent Context - provides context information for autonomous coding agent
@@ -67,7 +68,7 @@ data class CodingAgentContext(
         /**
          * Format tool list with enhanced schema information for AI understanding
          */
-        private fun formatToolListForAI(toolList: List<ExecutableTool<*, *>>): String {
+        fun formatToolListForAI(toolList: List<ExecutableTool<*, *>>): String {
             // 🔍 调试：打印工具列表信息
             println("🔍 [CodingAgentContext] 格式化工具列表，共 ${toolList.size} 个工具:")
             toolList.forEach { tool ->
@@ -82,84 +83,62 @@ data class CodingAgentContext(
             return toolList.joinToString("\n\n") { tool ->
                 buildString {
                     // Tool header with name and description
-                    appendLine("<tool name=\"${tool.name}\">")
+                    appendLine("## ${tool.name}")
 
                     // Check for empty description and provide warning
                     val description = tool.description.takeIf { it.isNotBlank() }
                         ?: "Tool description not available"
-                    appendLine("  <description>$description</description>")
+                    appendLine("**Description:** $description")
+                    appendLine()
 
                     // Get ToolType for schema information
                     val toolType = tool.name.toToolType()
 
                     if (toolType != null) {
-                        // Use declarative schema for built-in tools
-                        appendLine("  <parameters>")
-                        appendLine("    <schema>")
+                        // Use JSON Schema for built-in tools
+                        appendLine("**Parameters JSON Schema:**")
+                        appendLine("```json")
 
-                        // Get parameter description from schema
-                        val parameterDescription = toolType.schema.getParameterDescription()
-                        val lines = parameterDescription.split("\n")
+                        val jsonSchema = toolType.schema.toJsonSchema()
+                        // Pretty print the JSON schema
+                        val prettyJson = formatJsonSchema(jsonSchema)
+                        appendLine(prettyJson)
 
-                        // Skip the main description and "Parameters:" line, process parameter details
-                        var inParameters = false
-                        for (line in lines) {
-                            if (line.startsWith("Parameters:")) {
-                                inParameters = true
-                                continue
-                            }
-                            if (inParameters && line.startsWith("  - ")) {
-                                // Parse parameter line: "  - paramName: type (required/optional) [default: value] [enum] - description"
-                                val paramLine = line.substring(4) // Remove "  - "
-                                val colonIndex = paramLine.indexOf(':')
-                                if (colonIndex > 0) {
-                                    val paramName = paramLine.substring(0, colonIndex)
-                                    val rest = paramLine.substring(colonIndex + 1).trim()
-
-                                    // Extract type, required status, and description
-                                    val parts = rest.split(" - ", limit = 2)
-                                    val typeInfo = parts[0].trim()
-                                    val description = if (parts.size > 1) parts[1] else ""
-
-                                    appendLine("      <param name=\"$paramName\">")
-                                    appendLine("        <type>$typeInfo</type>")
-                                    if (description.isNotEmpty()) {
-                                        appendLine("        <description>$description</description>")
-                                    }
-                                    appendLine("      </param>")
-                                }
-                            }
-                        }
-
-                        appendLine("    </schema>")
-                        appendLine("  </parameters>")
+                        appendLine("```")
                     } else {
                         // Fallback for MCP tools or other tools
                         val paramClass = tool.getParameterClass()
                         when {
                             paramClass.isBlank() || paramClass == "Unit" -> {
-                                // No parameters
+                                appendLine("**Parameters:** None")
                             }
                             paramClass == "AgentInput" -> {
                                 // Generic agent input - provide more specific info for SubAgents
-                                appendLine("  <parameters>")
-                                appendLine("    <type>Map&lt;String, Any&gt;</type>")
-                                appendLine("    <usage>/${tool.name} [key-value parameters]</usage>")
-                                appendLine("  </parameters>")
+                                appendLine("**Parameters JSON Schema:**")
+                                appendLine("```json")
+                                appendLine("""{
+  "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Generic agent input parameters",
+  "additionalProperties": true
+}""")
+                                appendLine("```")
                             }
                             tool.name.contains("_") -> {
                                 // Likely an MCP tool
-                                appendLine("  <parameters>")
-                                appendLine("    <type>JSON object</type>")
-                                appendLine("    <usage>/${tool.name} arguments=\"{...}\"</usage>")
-                                appendLine("  </parameters>")
+                                appendLine("**Parameters JSON Schema:**")
+                                appendLine("```json")
+                                appendLine("""{
+  "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "MCP tool parameters",
+  "additionalProperties": true
+}""")
+                                appendLine("```")
                             }
                             else -> {
                                 // Valid parameter class
-                                appendLine("  <parameters>")
-                                appendLine("    <type>$paramClass</type>")
-                                appendLine("    <usage>/${tool.name} [parameters]</usage>")
-                                appendLine("  </parameters>")
+                                appendLine("**Parameters:** $paramClass")
                             }
                         }
                     }
@@ -167,45 +146,143 @@ data class CodingAgentContext(
                     // Add example if available
                     val example = generateToolExample(tool, toolType)
                     if (example.isNotEmpty()) {
-                        appendLine("  <example>")
-                        appendLine("    $example")
-                        appendLine("  </example>")
+                        appendLine()
+                        appendLine("**Example:**")
+                        appendLine(example)
                     }
-
-                    append("</tool>")
                 }
             }
         }
 
         /**
-         * Generate example usage for a tool with schema-based examples
+         * Format JSON schema as compact single line with $schema field
+         */
+        private fun formatJsonSchema(jsonElement: JsonElement): String {
+            val jsonObject = jsonElement.jsonObject.toMutableMap()
+
+            // Add $schema field if not present
+            if (!jsonObject.containsKey("\$schema")) {
+                jsonObject["\$schema"] = JsonPrimitive("http://json-schema.org/draft-07/schema#")
+            }
+
+            // Create a new JsonObject with $schema first
+            val orderedJson = buildJsonObject {
+                put("\$schema", jsonObject["\$schema"]!!)
+                jsonObject.forEach { (key, value) ->
+                    if (key != "\$schema") {
+                        put(key, value)
+                    }
+                }
+            }
+
+            // Return compact JSON string
+            return orderedJson.toString()
+        }
+
+
+        /**
+         * Generate example usage for a tool with DevIns-style format (/command + JSON block)
          */
         private fun generateToolExample(tool: ExecutableTool<*, *>, toolType: ToolType?): String {
             return if (toolType != null) {
-                // Use schema-based example
-                toolType.schema.getExampleUsage(tool.name)
+                // Generate DevIns-style example with JSON parameters
+                generateDevInsExample(tool.name, toolType)
             } else {
                 // Fallback for MCP tools or other tools
                 when (tool.name) {
-                    "read-file" -> "/${tool.name} path=\"src/main.kt\""
-                    "write-file" -> "/${tool.name} path=\"output.txt\" content=\"Hello, World!\""
-                    "grep" -> "/${tool.name} pattern=\"function.*main\" path=\"src\" include=\"*.kt\""
-                    "glob" -> "/${tool.name} pattern=\"*.kt\" path=\"src\""
-                    "shell" -> "/${tool.name} command=\"ls -la\""
-                    "error-recovery" -> "/${tool.name} errorMessage=\"Compilation failed\" context=\"building project\""
-                    "log-summary" -> "/${tool.name} logContent=\"[ERROR] Failed to start server...\" logType=\"error\""
-                    "codebase-investigator" -> "/${tool.name} query=\"find all REST endpoints\" scope=\"architecture\""
+                    "read-file" -> """/${tool.name}
+```json
+{"path": "src/main.kt", "startLine": 1, "endLine": 50}
+```"""
+                    "write-file" -> """/${tool.name}
+```json
+{"path": "output.txt", "content": "Hello, World!"}
+```"""
+                    "grep" -> """/${tool.name}
+```json
+{"pattern": "function.*main", "path": "src", "include": "*.kt"}
+```"""
+                    "glob" -> """/${tool.name}
+```json
+{"pattern": "*.kt", "path": "src"}
+```"""
+                    "shell" -> """/${tool.name}
+```json
+{"command": "ls -la"}
+```"""
                     else -> {
                         // For MCP tools or other tools, provide a generic example
                         if (tool.name.contains("_")) {
                             // Likely an MCP tool with server_toolname format
-                            "/${tool.name} arguments=\"{\\\"path\\\": \\\"/tmp\\\"}\""
+                            """/${tool.name}
+```json
+{"arguments": {"path": "/tmp"}}
+```"""
                         } else {
-                            "/${tool.name} <parameters>"
+                            """/${tool.name}
+```json
+{"parameter": "value"}
+```"""
                         }
                     }
                 }
             }
+        }
+
+        /**
+         * Generate DevIns-style example with JSON parameters based on schema
+         */
+        private fun generateDevInsExample(toolName: String, toolType: ToolType): String {
+            val jsonSchema = toolType.schema.toJsonSchema()
+            val properties = jsonSchema.jsonObject["properties"]?.jsonObject
+
+            if (properties == null || properties.isEmpty()) {
+                return """/$toolName
+```json
+{}
+```"""
+            }
+
+            // Generate example JSON based on schema properties
+            val exampleJson = buildJsonObject {
+                properties.forEach { (paramName, paramSchema) ->
+                    val paramObj = paramSchema.jsonObject
+                    val type = paramObj["type"]?.jsonPrimitive?.content
+                    val defaultValue = paramObj["default"]
+
+                    when {
+                        defaultValue != null -> put(paramName, defaultValue)
+                        type == "string" -> {
+                            val example = when (paramName) {
+                                "path" -> "src/main.kt"
+                                "content" -> "Hello, World!"
+                                "pattern" -> "*.kt"
+                                "command" -> "ls -la"
+                                "message" -> "Example message"
+                                else -> "example_value"
+                            }
+                            put(paramName, example)
+                        }
+                        type == "integer" -> {
+                            val example = when (paramName) {
+                                "startLine", "endLine" -> 1
+                                "maxLines" -> 100
+                                "port" -> 8080
+                                else -> 42
+                            }
+                            put(paramName, example)
+                        }
+                        type == "boolean" -> put(paramName, false)
+                        type == "array" -> put(paramName, buildJsonArray { add("example") })
+                        else -> put(paramName, JsonPrimitive("example"))
+                    }
+                }
+            }
+
+            return """/$toolName
+```json
+${exampleJson.toString()}
+```"""
         }
 
         interface Builder {

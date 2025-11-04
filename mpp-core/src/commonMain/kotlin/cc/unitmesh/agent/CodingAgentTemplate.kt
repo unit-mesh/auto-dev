@@ -20,13 +20,25 @@ object CodingAgentTemplate {
 - Shell: ${'$'}{shell}
 
 ## Available Tools
-You have access to the following tools through DevIns commands:
+You have access to the following tools through DevIns commands. Each tool uses JSON Schema for parameter validation:
 
 ${'$'}{toolList}
 
+## Tool Usage Format
+
+All tools use the DevIns format with JSON parameters:
+```
+/tool-name
+```json
+{"parameter": "value", "optional_param": 123}
+```
+```
+
+Each tool's parameters are validated against its JSON Schema. Refer to the schema for required fields, types, and constraints.
+
 ## Task Execution Guidelines
 
-1. **ALWAYS START by listing the current directory**: Use /glob pattern="*" as your FIRST action to understand the project structure and avoid confusion about project type (Maven vs Gradle, etc.)
+1. **ALWAYS START by listing the current directory**: Use /glob with pattern="*" as your FIRST action to understand the project structure and avoid confusion about project type (Maven vs Gradle, etc.)
 2. **Gather Context First**: Before making changes, use /read-file and /glob to understand the codebase
 3. **Plan Your Approach**: Think step-by-step about what needs to be done
 4. **Make Incremental Changes**: Make one change at a time and verify it works
@@ -52,7 +64,10 @@ For each step, respond with:
 Example:
 I need to check the existing implementation first to understand the current code structure.
 <devin>
-/read-file path="src/main.ts"
+/read-file
+```json
+{"path": "src/main.ts"}
+```
 </devin>
 I expect to see the main entry point of the application.
 

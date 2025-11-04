@@ -2,6 +2,7 @@
 
 package cc.unitmesh.llm
 
+import cc.unitmesh.agent.CodingAgentContext
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.impl.GrepParams
@@ -745,6 +746,15 @@ class JsToolRegistry(projectPath: String) {
                 example = tool.example
             )
         }.toTypedArray()
+    }
+
+    /**
+     * Format tool list for AI consumption (similar to CodingAgentContext.formatToolListForAI)
+     */
+    @JsName("formatToolListForAI")
+    fun formatToolListForAI(): String {
+        val tools = registry.getAllTools().values.toList()
+        return CodingAgentContext.formatToolListForAI(tools)
     }
 }
 

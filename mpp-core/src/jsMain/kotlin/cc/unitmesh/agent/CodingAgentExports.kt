@@ -2,6 +2,7 @@ package cc.unitmesh.agent
 
 import cc.unitmesh.agent.config.JsToolConfigFile
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
+import cc.unitmesh.agent.Platform
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import kotlin.js.JsExport
@@ -68,6 +69,23 @@ data class JsCodingAgentContext(
                 shell = context.shell,
                 moduleInfo = context.moduleInfo,
                 frameworkContext = context.frameworkContext
+            )
+        }
+
+        /**
+         * Create from task and tool registry (JS-friendly version of CodingAgentContext.fromTask)
+         */
+        @JsName("fromTask")
+        fun fromTask(task: JsAgentTask, toolRegistry: cc.unitmesh.llm.JsToolRegistry): JsCodingAgentContext {
+            // Get formatted tool list from registry
+            val toolList = toolRegistry.formatToolListForAI()
+
+            return JsCodingAgentContext(
+                projectPath = task.projectPath,
+                osInfo = Platform.getOSInfo(),
+                timestamp = Platform.getCurrentTimestamp(),
+                shell = Platform.getDefaultShell(),
+                toolList = toolList
             )
         }
     }
