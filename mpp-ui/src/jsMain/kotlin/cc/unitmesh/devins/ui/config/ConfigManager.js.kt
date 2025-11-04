@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.config
 
+import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.mcp.McpServerConfig
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
@@ -35,6 +36,12 @@ actual object ConfigManager {
         pathModule.join(configDir, "config.yaml") as String
     } else {
         "/tmp/.autodev/config.yaml" // Fallback for browser environment
+    }
+
+    private val toolConfigFilePath: String = if (isNodeJs) {
+        pathModule.join(configDir, "mcp.json") as String
+    } else {
+        "/tmp/.autodev/mcp.json" // Fallback for browser environment
     }
 
     private val json =
@@ -170,6 +177,62 @@ actual object ConfigManager {
         val updatedConfigFile = configFile.copy(mcpServers = mcpServers)
         save(updatedConfigFile)
     }
+    
+    actual suspend fun loadToolConfig(): ToolConfigFile {
+        return try {
+            if (!isNodeJs) {
+                console.warn("Tool config loading not supported in browser environment")
+                return ToolConfigFile.default()
+            }
+            
+            // Check if file exists
+            val exists =
+                try {
+                    fsPromises.access(toolConfigFilePath).await()
+                    true
+                } catch (e: dynamic) {
+                    false
+                }
+            
+            if (!exists) {
+                return ToolConfigFile.default()
+            }
+            
+            // Read file
+            val content = fsPromises.readFile(toolConfigFilePath, "utf-8").await() as String
+            
+            // Parse JSON
+            json.decodeFromString<ToolConfigFile>(content)
+        } catch (e: Throwable) {
+            console.error("Error loading tool config:", e)
+            ToolConfigFile.default()
+        }
+    }
+    
+    actual suspend fun saveToolConfig(toolConfig: ToolConfigFile) {
+        try {
+            if (!isNodeJs) {
+                console.warn("Tool config saving not supported in browser environment")
+                return
+            }
+            
+            // Ensure directory exists
+            try {
+                fsPromises.mkdir(configDir, js("{ recursive: true }")).await()
+            } catch (e: dynamic) {
+                // Directory might already exist
+            }
+            
+            // Write JSON
+            val jsonContent = json.encodeToString(ToolConfigFile.serializer(), toolConfig)
+            fsPromises.writeFile(toolConfigFilePath, jsonContent, "utf-8").await()
+        } catch (e: Throwable) {
+            console.error("Error saving tool config:", e)
+            throw e
+        }
+    }
+    
+    actual fun getToolConfigPath(): String = toolConfigFilePath
 
     private fun createEmpty(): AutoDevConfigWrapper {
         return AutoDevConfigWrapper(ConfigFile(active = "", configs = emptyList()))

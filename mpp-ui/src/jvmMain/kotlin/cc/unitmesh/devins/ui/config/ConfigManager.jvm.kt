@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.config
 
+import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.mcp.McpServerConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,6 +15,7 @@ actual object ConfigManager {
     private val homeDir = System.getProperty("user.home")
     private val configDir = File(homeDir, ".autodev")
     private val configFile = File(configDir, "config.yaml")
+    private val toolConfigFile = File(configDir, "mcp.json")
 
     // Simple YAML serializer (we'll use a simple format that's both JSON and YAML compatible)
     private val json =
@@ -121,6 +123,38 @@ actual object ConfigManager {
         val updatedConfigFile = configFile.copy(mcpServers = mcpServers)
         save(updatedConfigFile)
     }
+    
+    actual suspend fun loadToolConfig(): ToolConfigFile =
+        withContext(Dispatchers.IO) {
+            try {
+                if (!toolConfigFile.exists()) {
+                    return@withContext ToolConfigFile.default()
+                }
+                
+                val content = toolConfigFile.readText()
+                json.decodeFromString<ToolConfigFile>(content)
+            } catch (e: Exception) {
+                println("Error loading tool config: ${e.message}")
+                ToolConfigFile.default()
+            }
+        }
+    
+    actual suspend fun saveToolConfig(toolConfig: ToolConfigFile) =
+        withContext(Dispatchers.IO) {
+            try {
+                // Ensure directory exists
+                configDir.mkdirs()
+                
+                // Write JSON
+                val jsonContent = json.encodeToString(ToolConfigFile.serializer(), toolConfig)
+                toolConfigFile.writeText(jsonContent)
+            } catch (e: Exception) {
+                println("Error saving tool config: ${e.message}")
+                throw e
+            }
+        }
+    
+    actual fun getToolConfigPath(): String = toolConfigFile.absolutePath
 
     private fun createEmpty(): AutoDevConfigWrapper {
         return AutoDevConfigWrapper(ConfigFile(active = "", configs = emptyList()))

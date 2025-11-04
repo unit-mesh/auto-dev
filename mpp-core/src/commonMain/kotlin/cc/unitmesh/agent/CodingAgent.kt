@@ -30,7 +30,8 @@ class CodingAgent(
     private val renderer: CodingAgentRenderer = DefaultCodingAgentRenderer(),
     private val fileSystem: ToolFileSystem? = null,
     private val shellExecutor: ShellExecutor? = null,
-    private val mcpServers: Map<String, McpServerConfig>? = null
+    private val mcpServers: Map<String, McpServerConfig>? = null,
+    private val toolConfigService: cc.unitmesh.agent.config.ToolConfigService? = null
 ) : MainAgent<AgentTask, ToolResult.AgentResult>(
     AgentDefinition(
         name = "CodingAgent",
@@ -51,6 +52,9 @@ class CodingAgent(
 ), CodingAgentService {
 
     private val promptRenderer = CodingAgentPromptRenderer()
+    
+    // Tool configuration service
+    private val configService = toolConfigService ?: cc.unitmesh.agent.config.ToolConfigService.default()
 
     private val toolRegistry = ToolRegistry(
         fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
@@ -78,10 +82,16 @@ class CodingAgent(
     )
 
     init {
-        // 注册 SubAgents（作为 Tools）
-        registerTool(errorRecoveryAgent)
-        registerTool(logSummaryAgent)
-        registerTool(codebaseInvestigatorAgent)
+        // 注册 SubAgents（作为 Tools）- 根据配置决定是否启用
+        if (configService.isBuiltinToolEnabled("error-recovery")) {
+            registerTool(errorRecoveryAgent)
+        }
+        if (configService.isBuiltinToolEnabled("log-summary")) {
+            registerTool(logSummaryAgent)
+        }
+        if (configService.isBuiltinToolEnabled("codebase-investigator")) {
+            registerTool(codebaseInvestigatorAgent)
+        }
     }
 
     override suspend fun execute(
@@ -122,8 +132,12 @@ class CodingAgent(
     }
 
     override suspend fun initializeWorkspace(projectPath: String) {
-        if (!mcpServers.isNullOrEmpty()) {
-            initializeMcpTools(mcpServers)
+        // Use MCP servers from toolConfigService if available, otherwise fall back to constructor param
+        val mcpServersToInit = configService.getEnabledMcpServers().takeIf { it.isNotEmpty() }
+            ?: mcpServers
+        
+        if (!mcpServersToInit.isNullOrEmpty()) {
+            initializeMcpTools(mcpServersToInit)
         }
     }
     
@@ -137,11 +151,14 @@ class CodingAgent(
             val mcpTools = mcpToolsInitializer.initialize(mcpServers)
             
             if (mcpTools.isNotEmpty()) {
-                mcpTools.forEach { tool ->
+                // Filter MCP tools based on configuration
+                val filteredMcpTools = configService.filterMcpTools(mcpTools)
+                
+                filteredMcpTools.forEach { tool ->
                     registerTool(tool)
                 }
                 
-                println("✅ Registered ${mcpTools.size} MCP tools from ${mcpServers.size} servers")
+                println("✅ Registered ${filteredMcpTools.size}/${mcpTools.size} MCP tools from ${mcpServers.size} servers")
             } else {
                 println("ℹ️  No MCP tools discovered")
             }

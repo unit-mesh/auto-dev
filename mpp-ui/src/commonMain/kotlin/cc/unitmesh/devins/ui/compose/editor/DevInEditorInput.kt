@@ -29,7 +29,7 @@ import cc.unitmesh.devins.editor.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
-import cc.unitmesh.devins.ui.compose.settings.McpSettingsDialog
+import cc.unitmesh.devins.ui.compose.config.ToolConfigDialog
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.delay
@@ -61,8 +61,8 @@ fun DevInEditorInput(
     var selectedCompletionIndex by remember { mutableStateOf(0) }
     var currentTriggerType by remember { mutableStateOf(CompletionTriggerType.NONE) }
 
-    // MCP 设置对话框状态
-    var showMcpSettings by remember { mutableStateOf(false) }
+    // Tool Configuration 对话框状态
+    var showToolConfig by remember { mutableStateOf(false) }
     var mcpServers by remember { mutableStateOf<Map<String, McpServerConfig>>(emptyMap()) }
     val mcpClientManager = remember { McpClientManagerFactory.create() }
 
@@ -453,7 +453,7 @@ fun DevInEditorInput(
                         }
                     },
                     onSettingsClick = {
-                        showMcpSettings = true
+                        showToolConfig = true
                     },
                     selectedAgent = "Default", // TODO: 从 state 获取
                     onModelConfigChange = onModelConfigChange
@@ -461,26 +461,19 @@ fun DevInEditorInput(
             }
         }
 
-        // MCP Settings Dialog
-        if (showMcpSettings) {
-            McpSettingsDialog(
-                mcpClientManager = mcpClientManager,
-                initialServers = mcpServers,
-                onDismiss = { showMcpSettings = false },
-                onSave = { updatedServers, enabledTools ->
+        // Tool Configuration Dialog
+        if (showToolConfig) {
+            cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
+                onDismiss = { showToolConfig = false },
+                onSave = { toolConfigFile ->
                     scope.launch {
                         // Update local state
-                        mcpServers = updatedServers
+                        mcpServers = toolConfigFile.mcpServers
 
-                        // Save to config file
-                        val configWrapper = ConfigManager.load()
-                        val currentConfig = configWrapper.getConfigFile()
-                        val updatedConfig = currentConfig.copy(
-                            mcpServers = updatedServers
-                        )
-                        ConfigManager.save(updatedConfig)
-
-                        println("MCP configuration saved: ${updatedServers.size} servers, ${enabledTools.values.flatten().count { it.enabled }} tools enabled")
+                        println("✅ Tool configuration saved")
+                        println("   Enabled built-in tools: ${toolConfigFile.enabledBuiltinTools.size}")
+                        println("   Enabled MCP tools: ${toolConfigFile.enabledMcpTools.size}")
+                        println("   MCP servers: ${toolConfigFile.mcpServers.size}")
                     }
                 }
             )

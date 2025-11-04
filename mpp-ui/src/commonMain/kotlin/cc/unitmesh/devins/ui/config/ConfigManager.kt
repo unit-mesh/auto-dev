@@ -71,4 +71,20 @@ expect object ConfigManager {
      * @param mcpServers Map of server name to server configuration
      */
     suspend fun saveMcpServers(mcpServers: Map<String, cc.unitmesh.agent.mcp.McpServerConfig>)
+    
+    /**
+     * Load tool configuration from file (~/.autodev/mcp.json)
+     * Returns default config if file doesn't exist
+     */
+    suspend fun loadToolConfig(): cc.unitmesh.agent.config.ToolConfigFile
+    
+    /**
+     * Save tool configuration to file (~/.autodev/mcp.json)
+     */
+    suspend fun saveToolConfig(toolConfig: cc.unitmesh.agent.config.ToolConfigFile)
+    
+    /**
+     * Get tool config file path
+     */
+    fun getToolConfigPath(): String
 }

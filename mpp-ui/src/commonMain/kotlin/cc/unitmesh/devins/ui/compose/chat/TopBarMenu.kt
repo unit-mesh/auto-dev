@@ -36,6 +36,7 @@ fun TopBarMenu(
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
     onShowModelConfig: () -> Unit,
+    onShowToolConfig: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // 直接读取 ThemeManager 的当前主题（它本身就是 mutableStateOf，会自动触发重组）
@@ -107,6 +108,29 @@ fun TopBarMenu(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    )
+
+                    HorizontalDivider()
+
+                    // Tool Configuration
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "Tool Configuration",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onShowToolConfig()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Build,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )

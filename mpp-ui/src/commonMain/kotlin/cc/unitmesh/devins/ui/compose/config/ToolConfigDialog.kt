@@ -1,0 +1,753 @@
+package cc.unitmesh.devins.ui.compose.config
+
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import cc.unitmesh.agent.config.ToolConfigFile
+import cc.unitmesh.agent.config.ToolConfigManager
+import cc.unitmesh.agent.config.ToolItem
+import cc.unitmesh.agent.config.ToolSource
+import cc.unitmesh.agent.tool.ToolCategory
+import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.devins.ui.config.ConfigManager
+import kotlinx.coroutines.launch
+
+/**
+ * Unified Tool and MCP Configuration Dialog
+ *
+ * Combines MCP server configuration with tool selection
+ * - Configure MCP servers
+ * - Select built-in tools
+ * - Select specific tools from configured MCP servers
+ */
+@Composable
+fun ToolConfigDialog(
+    onDismiss: () -> Unit,
+    onSave: (ToolConfigFile) -> Unit
+) {
+    var toolConfig by remember { mutableStateOf(ToolConfigFile.default()) }
+    var builtinToolsByCategory by remember { mutableStateOf<Map<ToolCategory, List<ToolItem>>>(emptyMap()) }
+    var mcpTools by remember { mutableStateOf<List<ToolItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var selectedTab by remember { mutableStateOf(0) }
+    var mcpConfigJson by remember { mutableStateOf("") }
+    var mcpConfigError by remember { mutableStateOf<String?>(null) }
+    var mcpLoadError by remember { mutableStateOf<String?>(null) }
+    var isReloading by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+
+    // Load configuration on start
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                toolConfig = ConfigManager.loadToolConfig()
+                val allTools = ToolConfigManager.getBuiltinToolsByCategory()
+                builtinToolsByCategory = ToolConfigManager.applyEnabledTools(allTools, toolConfig)
+
+                // Serialize MCP config to JSON for editing
+                mcpConfigJson = serializeMcpConfig(toolConfig.mcpServers)
+
+                // Auto-load MCP tools if any servers are configured
+                if (toolConfig.mcpServers.isNotEmpty()) {
+                    try {
+                        mcpTools = ToolConfigManager.discoverMcpTools(
+                            toolConfig.mcpServers,
+                            toolConfig.enabledMcpTools.toSet()
+                        )
+                        mcpLoadError = null
+                        println("✅ Loaded ${mcpTools.size} MCP tools from ${toolConfig.mcpServers.size} servers")
+                    } catch (e: Exception) {
+                        mcpLoadError = "Failed to load MCP tools: ${e.message}"
+                        println("❌ Error loading MCP tools: ${e.message}")
+                    }
+                }
+
+                isLoading = false
+            } catch (e: Exception) {
+                println("Error loading tool config: ${e.message}")
+                mcpLoadError = "Failed to load configuration: ${e.message}"
+                isLoading = false
+            }
+        }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier
+                .width(850.dp)
+                .height(650.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Tool Configuration",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Close")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    // Tab navigation
+                    TabRow(selectedTabIndex = selectedTab) {
+                        Tab(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            text = { Text("Tools") }
+                        )
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("MCP Servers") }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Show MCP load error if present
+                    if (mcpLoadError != null) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Error,
+                                    contentDescription = "Error",
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = mcpLoadError!!,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    }
+
+                    when (selectedTab) {
+                        0 -> ToolSelectionTab(
+                            builtinToolsByCategory = builtinToolsByCategory,
+                            mcpTools = mcpTools,
+                            onBuiltinToolToggle = { category, toolName, enabled ->
+                                builtinToolsByCategory = builtinToolsByCategory.mapValues { (cat, toolsList) ->
+                                    if (cat == category) {
+                                        toolsList.map {
+                                            if (it.name == toolName) it.copy(enabled = enabled) else it
+                                        }
+                                    } else toolsList
+                                }
+                            },
+                            onMcpToolToggle = { toolName, enabled ->
+                                mcpTools = mcpTools.map {
+                                    if (it.name == toolName) it.copy(enabled = enabled) else it
+                                }
+                            }
+                        )
+                        1 -> McpServerConfigTab(
+                            mcpConfigJson = mcpConfigJson,
+                            errorMessage = mcpConfigError,
+                            isReloading = isReloading,
+                            onMcpConfigChange = { newJson ->
+                                mcpConfigJson = newJson
+                                // Real-time JSON validation
+                                val result = deserializeMcpConfig(newJson)
+                                mcpConfigError = if (result.isFailure) {
+                                    result.exceptionOrNull()?.message
+                                } else {
+                                    null
+                                }
+                            },
+                            onReloadMcpTools = {
+                                scope.launch {
+                                    try {
+                                        isReloading = true
+                                        mcpConfigError = null
+                                        mcpLoadError = null
+                                        
+                                        // Validate JSON first
+                                        val result = deserializeMcpConfig(mcpConfigJson)
+                                        if (result.isFailure) {
+                                            mcpConfigError = result.exceptionOrNull()?.message ?: "Invalid JSON format"
+                                            return@launch
+                                        }
+                                        
+                                        val newMcpServers = result.getOrThrow()
+                                        
+                                        // Save configuration to ConfigManager
+                                        val updatedConfig = toolConfig.copy(mcpServers = newMcpServers)
+                                        ConfigManager.saveToolConfig(updatedConfig)
+                                        toolConfig = updatedConfig
+                                        
+                                        // Discover MCP tools
+                                        try {
+                                            mcpTools = ToolConfigManager.discoverMcpTools(
+                                                newMcpServers,
+                                                toolConfig.enabledMcpTools.toSet()
+                                            )
+                                            println("✅ Reloaded ${mcpTools.size} MCP tools from ${newMcpServers.size} servers")
+                                        } catch (e: Exception) {
+                                            mcpLoadError = "Failed to load MCP tools: ${e.message}"
+                                            println("❌ Error loading MCP tools: ${e.message}")
+                                        }
+                                    } catch (e: Exception) {
+                                        mcpConfigError = "Error reloading MCP tools: ${e.message}"
+                                        println("❌ Error reloading MCP tools: ${e.message}")
+                                    } finally {
+                                        isReloading = false
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Action buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Summary
+                        val enabledBuiltin = builtinToolsByCategory.values.flatten().count { it.enabled }
+                        val totalBuiltin = builtinToolsByCategory.values.flatten().size
+                        val enabledMcp = mcpTools.count { it.enabled }
+
+                        Text(
+                            text = "Built-in: $enabledBuiltin/$totalBuiltin | MCP: $enabledMcp/${mcpTools.size}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        TextButton(onClick = onDismiss) {
+                            Text("Cancel")
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    try {
+                                        val enabledBuiltinTools = builtinToolsByCategory.values
+                                            .flatten()
+                                            .filter { it.enabled }
+                                            .map { it.name }
+
+                                        val enabledMcpTools = mcpTools
+                                            .filter { it.enabled }
+                                            .map { it.name }
+
+                                        // Parse MCP config from JSON
+                                        val result = deserializeMcpConfig(mcpConfigJson)
+                                        if (result.isFailure) {
+                                            mcpConfigError = result.exceptionOrNull()?.message ?: "Invalid JSON format"
+                                            selectedTab = 1 // Switch to MCP tab to show error
+                                            return@launch
+                                        }
+
+                                        val newMcpServers = result.getOrThrow()
+
+                                        val updatedConfig = toolConfig.copy(
+                                            enabledBuiltinTools = enabledBuiltinTools,
+                                            enabledMcpTools = enabledMcpTools,
+                                            mcpServers = newMcpServers
+                                        )
+
+                                        ConfigManager.saveToolConfig(updatedConfig)
+                                        onSave(updatedConfig)
+                                        onDismiss()
+                                    } catch (e: Exception) {
+                                        println("Error saving tool config: ${e.message}")
+                                    }
+                                }
+                            }
+                        ) {
+                            Text("Save")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToolSelectionTab(
+    builtinToolsByCategory: Map<ToolCategory, List<ToolItem>>,
+    mcpTools: List<ToolItem>,
+    onBuiltinToolToggle: (ToolCategory, String, Boolean) -> Unit,
+    onMcpToolToggle: (String, Boolean) -> Unit
+) {
+    // 折叠状态
+    val expandedCategories = remember { mutableStateMapOf<String, Boolean>() }
+    
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 4.dp)
+    ) {
+        // Built-in tools by category (collapsible)
+        builtinToolsByCategory.forEach { (category, tools) ->
+            val categoryKey = category.name
+            val isExpanded = expandedCategories.getOrPut(categoryKey) { true }
+            
+            item {
+                CollapsibleCategoryHeader(
+                    category = category,
+                    icon = getCategoryIcon(category),
+                    isExpanded = isExpanded,
+                    toolCount = tools.size,
+                    enabledCount = tools.count { it.enabled },
+                    onToggle = {
+                        expandedCategories[categoryKey] = !isExpanded
+                    }
+                )
+            }
+
+            if (isExpanded) {
+                items(tools) { tool ->
+                    CompactToolItemRow(
+                        tool = tool,
+                        onToggle = { enabled ->
+                            onBuiltinToolToggle(category, tool.name, enabled)
+                        }
+                    )
+                }
+            }
+        }
+
+        if (mcpTools.isNotEmpty()) {
+            val mcpKey = "MCP_TOOLS"
+            val isMcpExpanded = expandedCategories.getOrPut(mcpKey) { true }
+            
+            item {
+                CollapsibleCategoryHeader(
+                    categoryName = "MCP Tools",
+                    icon = Icons.Default.Cloud,
+                    isExpanded = isMcpExpanded,
+                    toolCount = mcpTools.size,
+                    enabledCount = mcpTools.count { it.enabled },
+                    onToggle = {
+                        expandedCategories[mcpKey] = !isMcpExpanded
+                    }
+                )
+            }
+
+            if (isMcpExpanded) {
+                items(mcpTools) { tool ->
+                    CompactToolItemRow(
+                        tool = tool,
+                        onToggle = { enabled ->
+                            onMcpToolToggle(tool.name, enabled)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun McpServerConfigTab(
+    mcpConfigJson: String,
+    errorMessage: String?,
+    isReloading: Boolean,
+    onMcpConfigChange: (String) -> Unit,
+    onReloadMcpTools: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Header with status indicator
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "MCP Server Configuration",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "JSON is validated in real-time",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Status indicator
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (isReloading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Text(
+                        text = "Loading...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else if (errorMessage != null) {
+                    Icon(
+                        Icons.Default.Error,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Invalid JSON",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else if (mcpConfigJson.isNotBlank()) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = "Valid",
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Valid JSON",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF4CAF50)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (errorMessage != null) {
+            Surface(
+                color = MaterialTheme.colorScheme.errorContainer,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(bottom = 6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Error,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = errorMessage,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        }
+
+        OutlinedTextField(
+            value = mcpConfigJson,
+            onValueChange = onMcpConfigChange,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            textStyle = MaterialTheme.typography.bodySmall.copy(
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+            ),
+            placeholder = {
+                Text(
+                    text = getDefaultMcpConfigTemplate(),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            },
+            isError = errorMessage != null,
+            enabled = !isReloading
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Example: uvx for Python tools, npx for Node.js tools",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Button(
+                onClick = onReloadMcpTools,
+                enabled = !isReloading && errorMessage == null
+            ) {
+                if (isReloading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(if (isReloading) "Loading..." else "Save & Reload")
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollapsibleCategoryHeader(
+    category: ToolCategory? = null,
+    categoryName: String? = null,
+    icon: ImageVector,
+    isExpanded: Boolean,
+    toolCount: Int,
+    enabledCount: Int,
+    onToggle: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() },
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                if (isExpanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
+                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = categoryName ?: category?.name ?: "",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "$enabledCount/$toolCount",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompactToolItemRow(
+    tool: ToolItem,
+    onToggle: (Boolean) -> Unit
+) {
+    var isChecked by remember { mutableStateOf(tool.enabled) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 1.dp)
+            .background(
+                color = if (isChecked) {
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                } else {
+                    Color.Transparent
+                },
+                shape = RoundedCornerShape(4.dp)
+            )
+            .clickable {
+                isChecked = !isChecked
+                onToggle(isChecked)
+            }
+            .padding(horizontal = 4.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = isChecked,
+            onCheckedChange = {
+                isChecked = it
+                onToggle(it)
+            },
+            modifier = Modifier.size(20.dp)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Name
+        Text(
+            text = tool.displayName,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.width(120.dp),
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Description
+        Text(
+            text = tool.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
+
+        // MCP server badge (if applicable)
+        if (tool.serverName.isNotEmpty()) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Surface(
+                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(2.dp)
+            ) {
+                Text(
+                    text = tool.serverName,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                    fontSize = 9.sp
+                )
+            }
+        }
+    }
+}
+
+private fun getCategoryIcon(category: ToolCategory): ImageVector {
+    return when (category) {
+        ToolCategory.FileSystem -> Icons.Default.Folder
+        ToolCategory.Search -> Icons.Default.Search
+        ToolCategory.Execution -> Icons.Default.PlayArrow
+        ToolCategory.Information -> Icons.Default.Info
+        ToolCategory.Utility -> Icons.Default.Build
+        ToolCategory.SubAgent -> Icons.Default.SmartToy
+    }
+}
+
+private fun serializeMcpConfig(mcpServers: Map<String, McpServerConfig>): String {
+    if (mcpServers.isEmpty()) {
+        return getDefaultMcpConfigTemplate()
+    }
+
+    return try {
+        kotlinx.serialization.json.Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+        }.encodeToString(
+            kotlinx.serialization.serializer<Map<String, McpServerConfig>>(),
+            mcpServers
+        )
+    } catch (e: Exception) {
+        println("Error serializing MCP config: ${e.message}")
+        getDefaultMcpConfigTemplate()
+    }
+}
+
+private fun deserializeMcpConfig(json: String): Result<Map<String, McpServerConfig>> {
+    if (json.isBlank()) {
+        return Result.success(emptyMap())
+    }
+
+    return try {
+        val jsonParser = kotlinx.serialization.json.Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
+
+        val servers = jsonParser.decodeFromString<Map<String, McpServerConfig>>(json.trim())
+
+        // Validate each server config
+        servers.forEach { (name, config) ->
+            if (!config.validate()) {
+                return Result.failure(Exception("Invalid config for server '$name': must have either 'command' or 'url'"))
+            }
+        }
+
+        Result.success(servers)
+    } catch (e: Exception) {
+        Result.failure(Exception("Failed to parse JSON: ${e.message}"))
+    }
+}
+
+private fun getDefaultMcpConfigTemplate(): String {
+    return """
+{
+  "filesystem": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
+    "env": {}
+  },
+  "github": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_TOKEN": "<your-token>"
+    }
+  }
+}
+    """.trimIndent()
+}
+

@@ -63,6 +63,7 @@ private fun AutoDevContent() {
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var showModelConfigDialog by remember { mutableStateOf(false) }
+    var showToolConfigDialog by remember { mutableStateOf(false) }
     var selectedAgent by remember { mutableStateOf("Default") }
     var useAgentMode by remember { mutableStateOf(true) } // New: toggle between chat and agent mode
 
@@ -203,6 +204,7 @@ private fun AutoDevContent() {
                 },
                 onModeToggle = { useAgentMode = !useAgentMode },
                 onShowModelConfig = { showModelConfigDialog = true },
+                onShowToolConfig = { showToolConfigDialog = true },
                 modifier =
                     Modifier
                         .statusBarsPadding() // 添加状态栏边距
@@ -310,6 +312,19 @@ private fun AutoDevContent() {
                     }
                 }
                 showModelConfigDialog = false
+            }
+        )
+    }
+
+    // Tool Config Dialog
+    if (showToolConfigDialog) {
+        cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
+            onDismiss = { showToolConfigDialog = false },
+            onSave = { newConfig ->
+                println("✅ 工具配置已保存")
+                println("   启用的内置工具: ${newConfig.enabledBuiltinTools.size}")
+                println("   启用的 MCP 工具: ${newConfig.enabledMcpTools.size}")
+                showToolConfigDialog = false
             }
         )
     }
