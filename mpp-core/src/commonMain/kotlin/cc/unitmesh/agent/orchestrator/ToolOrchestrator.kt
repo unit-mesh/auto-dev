@@ -235,13 +235,16 @@ class ToolOrchestrator(
             return ToolResult.Error("File path cannot be empty")
         }
 
-        if (content.isNullOrBlank()) {
-            return ToolResult.Error("File content cannot be empty. Please provide the content parameter with the file content to write. Example: /write-file path=\"$path\" content=\"your content here\"")
+        if (content == null) {
+            return ToolResult.Error("File content parameter is missing. Please provide the content parameter with the file content to write. Example: /write-file path=\"$path\" content=\"your content here\"")
         }
+
+        // Allow empty content (blank files are valid)
+        val actualContent = content
 
         val writeFileParams = cc.unitmesh.agent.tool.impl.WriteFileParams(
             path = path,
-            content = content,
+            content = actualContent,
             createDirectories = params["createDirectories"] as? Boolean ?: true,
             overwrite = params["overwrite"] as? Boolean ?: true,
             append = params["append"] as? Boolean ?: false

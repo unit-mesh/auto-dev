@@ -8,15 +8,25 @@ object EscapeSequenceProcessor {
     
     /**
      * Process escape sequences in a string
+     * Order matters: process \\\\ first to avoid double processing
      */
     fun processEscapeSequences(content: String): String {
-        return content
-            .replace("\\n", "\n")
-            .replace("\\r", "\r")
-            .replace("\\t", "\t")
-            .replace("\\\"", "\"")
-            .replace("\\'", "'")
-            .replace("\\\\", "\\")
+        var result = content
+
+        // Process double backslash first to avoid conflicts
+        result = result.replace("\\\\", "\u0001") // Temporary placeholder
+
+        // Process other escape sequences
+        result = result.replace("\\n", "\n")
+        result = result.replace("\\r", "\r")
+        result = result.replace("\\t", "\t")
+        result = result.replace("\\\"", "\"")
+        result = result.replace("\\'", "'")
+
+        // Restore single backslashes
+        result = result.replace("\u0001", "\\")
+
+        return result
     }
     
     /**

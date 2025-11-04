@@ -96,42 +96,69 @@ class ToolCallParser {
     }
 
     private fun parseKeyValueParameters(rest: String, params: MutableMap<String, Any>) {
+        // Use regex-based parsing for better handling of complex content
+        val paramPattern = Regex("""(\w+)="([^"\\]*(?:\\.[^"\\]*)*)"(?:\s|$)""")
+        val matches = paramPattern.findAll(rest)
+
+        for (match in matches) {
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            params[key] = escapeProcessor.processEscapeSequences(value)
+        }
+
+        // Fallback to character-by-character parsing for edge cases
+        if (params.isEmpty()) {
+            parseKeyValueParametersCharByChar(rest, params)
+        }
+    }
+
+    private fun parseKeyValueParametersCharByChar(rest: String, params: MutableMap<String, Any>) {
         val remaining = rest.toCharArray().toList()
         var i = 0
-        
+
         while (i < remaining.size) {
+            // Skip whitespace
+            while (i < remaining.size && remaining[i].isWhitespace()) i++
+            if (i >= remaining.size) break
+
             // Find key
             val keyStart = i
             while (i < remaining.size && remaining[i] != '=') i++
             if (i >= remaining.size) break
-            
+
             val key = remaining.subList(keyStart, i).joinToString("").trim()
             i++ // skip '='
-            
+
+            // Skip whitespace after =
+            while (i < remaining.size && remaining[i].isWhitespace()) i++
             if (i >= remaining.size || remaining[i] != '"') {
                 i++
                 continue
             }
-            
+
             i++ // skip opening quote
             val valueStart = i
-            
-            // Find closing quote (handle escaped quotes)
+
+            // Find closing quote (handle escaped quotes and newlines)
             var escaped = false
+            var depth = 0
             while (i < remaining.size) {
                 when {
                     escaped -> escaped = false
                     remaining[i] == '\\' -> escaped = true
-                    remaining[i] == '"' -> break
+                    remaining[i] == '"' -> {
+                        // Check if this is really the end quote
+                        if (depth == 0) break
+                    }
                 }
                 i++
             }
-            
+
             if (i > valueStart && key.isNotEmpty()) {
                 val value = remaining.subList(valueStart, i).joinToString("")
                 params[key] = escapeProcessor.processEscapeSequences(value)
             }
-            
+
             i++ // skip closing quote
         }
     }
@@ -168,28 +195,36 @@ class ToolCallParser {
      * This looks for code blocks or content that appears to be intended for the file
      */
     private fun extractContentFromContext(llmResponse: String, devinBlock: DevinBlock): String? {
-        // Look for code blocks after the devin block
-        val afterBlock = llmResponse.substring(devinBlock.endOffset)
-
-        // Try to find code blocks with ```
-        val codeBlockRegex = Regex("```(?:\\w+)?\\s*\\n([\\s\\S]*?)\\n```", RegexOption.MULTILINE)
-        val codeMatch = codeBlockRegex.find(afterBlock)
-        if (codeMatch != null) {
-            return codeMatch.groupValues[1].trim()
-        }
-
-        // Look for content in the same devin block after the tool call
+        // First, try to extract content from within the devin block itself
         val blockContent = devinBlock.content
         val lines = blockContent.lines()
         val toolCallLineIndex = lines.indexOfFirst { it.trim().startsWith("/write-file") }
 
-        if (toolCallLineIndex >= 0 && toolCallLineIndex < lines.size - 1) {
-            // Get content after the tool call line
-            val contentLines = lines.subList(toolCallLineIndex + 1, lines.size)
-            val content = contentLines.joinToString("\n").trim()
-            if (content.isNotEmpty()) {
-                return content
+        if (toolCallLineIndex >= 0) {
+            // Check if the write-file command already has content parameter
+            val toolCallLine = lines[toolCallLineIndex].trim()
+            val contentMatch = Regex("""content="([^"\\]*(?:\\.[^"\\]*)*)"(?:\s|$)""").find(toolCallLine)
+            if (contentMatch != null) {
+                // Content is already in the command line, don't override it
+                return null
             }
+
+            // Look for content after the tool call line within the same devin block
+            if (toolCallLineIndex < lines.size - 1) {
+                val contentLines = lines.subList(toolCallLineIndex + 1, lines.size)
+                val content = contentLines.joinToString("\n").trim()
+                if (content.isNotEmpty()) {
+                    return content
+                }
+            }
+        }
+
+        // Look for code blocks after the devin block
+        val afterBlock = llmResponse.substring(devinBlock.endOffset)
+        val codeBlockRegex = Regex("```(?:\\w+)?\\s*\\n([\\s\\S]*?)\\n```", RegexOption.MULTILINE)
+        val codeMatch = codeBlockRegex.find(afterBlock)
+        if (codeMatch != null) {
+            return codeMatch.groupValues[1].trim()
         }
 
         // Look for content in the LLM response before the devin block

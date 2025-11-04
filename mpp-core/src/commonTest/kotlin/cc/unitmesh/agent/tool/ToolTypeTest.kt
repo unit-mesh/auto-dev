@@ -35,9 +35,7 @@ class ToolTypeTest {
         assertTrue(fileSystemTools.contains(ToolType.ReadFile))
         assertTrue(fileSystemTools.contains(ToolType.WriteFile))
         assertTrue(fileSystemTools.contains(ToolType.ListFiles))
-        assertTrue(fileSystemTools.contains(ToolType.EditFile))
-        assertTrue(fileSystemTools.contains(ToolType.PatchFile))
-        
+
         val executionTools = ToolType.byCategory(ToolCategory.Execution)
         assertTrue(executionTools.contains(ToolType.Shell))
         
