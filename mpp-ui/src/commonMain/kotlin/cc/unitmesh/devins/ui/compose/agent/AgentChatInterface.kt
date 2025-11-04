@@ -1,6 +1,8 @@
 package cc.unitmesh.devins.ui.compose.agent
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Stop
@@ -106,6 +108,13 @@ fun AgentChatInterface(
                     .fillMaxWidth()
                     .imePadding()
                     .padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+
+        ToolLoadingStatusBar(
+            viewModel = viewModel,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
         )
     }
 }
@@ -274,3 +283,156 @@ private fun formatExecutionTime(timeMs: Long): String {
         else -> "${seconds / 3600}h ${(seconds % 3600) / 60}m"
     }
 }
+
+@Composable
+private fun ToolLoadingStatusBar(
+    viewModel: CodingAgentViewModel,
+    modifier: Modifier = Modifier
+) {
+    val toolStatus by remember { derivedStateOf { viewModel.getToolLoadingStatus() } }
+    val mcpPreloadingMessage by remember { derivedStateOf { viewModel.mcpPreloadingMessage } }
+
+    // Show the status bar with a subtle design
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Built-in Tools Status
+            ToolStatusChip(
+                label = "Built-in",
+                count = toolStatus.builtinToolsEnabled,
+                total = toolStatus.builtinToolsTotal,
+                isLoading = false,
+                color = MaterialTheme.colorScheme.primary,
+                tooltip = "Core tools: read-file, write-file, grep, glob, shell"
+            )
+
+            // SubAgents Status
+            ToolStatusChip(
+                label = "SubAgents",
+                count = toolStatus.subAgentsEnabled,
+                total = toolStatus.subAgentsTotal,
+                isLoading = false,
+                color = MaterialTheme.colorScheme.secondary,
+                tooltip = "AI agents: error-recovery, log-summary, codebase-investigator"
+            )
+
+            // MCP Tools Status (async)
+            ToolStatusChip(
+                label = "MCP Tools",
+                count = toolStatus.mcpServersLoaded,
+                total = toolStatus.mcpServersTotal,
+                isLoading = toolStatus.isLoading,
+                color = if (!toolStatus.isLoading && toolStatus.mcpServersLoaded > 0) {
+                    MaterialTheme.colorScheme.tertiary
+                } else {
+                    MaterialTheme.colorScheme.outline
+                },
+                tooltip = "External tools from MCP servers (filesystem, context7)"
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Status message with icon
+            if (mcpPreloadingMessage.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (toolStatus.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(12.dp),
+                            strokeWidth = 1.5.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Text(
+                        text = mcpPreloadingMessage,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
+            } else if (!toolStatus.isLoading && toolStatus.mcpServersLoaded > 0) {
+                Text(
+                    text = "✓ All tools ready",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToolStatusChip(
+    label: String,
+    count: Int,
+    total: Int,
+    isLoading: Boolean,
+    color: androidx.compose.ui.graphics.Color,
+    tooltip: String = "",
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        // Status indicator with better visual feedback
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .background(
+                    color = if (isLoading) MaterialTheme.colorScheme.outline.copy(alpha = 0.6f) else color,
+                    shape = CircleShape
+                )
+        ) {
+            // Add a subtle inner glow for loaded tools
+            if (!isLoading && count > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .align(Alignment.Center)
+                        .background(
+                            color = color.copy(alpha = 0.3f),
+                            shape = CircleShape
+                        )
+                )
+            }
+        }
+
+        // Label and count with better typography
+        Text(
+            text = "$label ($count/$total)",
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isLoading) {
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
+
+        // Loading indicator - smaller and more subtle
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(10.dp),
+                strokeWidth = 1.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+
