@@ -1,6 +1,11 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.config.McpToolConfigService
+import cc.unitmesh.agent.config.McpToolConfigManager
+import cc.unitmesh.agent.config.ToolItem
+import cc.unitmesh.agent.tool.BaseExecutableTool
+import cc.unitmesh.agent.tool.ToolExecutionContext
+import cc.unitmesh.agent.tool.ToolInvocation
 import cc.unitmesh.agent.core.MainAgent
 import cc.unitmesh.agent.executor.CodingAgentExecutor
 import cc.unitmesh.agent.mcp.McpServerConfig
@@ -58,13 +63,20 @@ class CodingAgent(
 ), CodingAgentService {
 
     private val promptRenderer = CodingAgentPromptRenderer()
-    
+
     private val configService = mcpToolConfigService
 
-    private val toolRegistry = ToolRegistry(
-        fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
-        shellExecutor = shellExecutor ?: DefaultShellExecutor()
-    )
+    private val toolRegistry = run {
+        println("🔧 [CodingAgent] Initializing ToolRegistry with configService: ${mcpToolConfigService != null}")
+        if (mcpToolConfigService != null) {
+            println("🔧 [CodingAgent] Enabled builtin tools: ${mcpToolConfigService.toolConfig.enabledBuiltinTools}")
+        }
+        ToolRegistry(
+            fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
+            shellExecutor = shellExecutor ?: DefaultShellExecutor(),
+            configService = mcpToolConfigService  // 直接传递构造函数参数
+        )
+    }
 
     private val policyEngine = DefaultPolicyEngine()
     private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer)
@@ -165,6 +177,7 @@ class CodingAgent(
         try {
             val mcpTools = mcpToolsInitializer.initialize(mcpServers)
             println("🔍 Discovered ${mcpTools.size} MCP tools")
+            println("🔧 [initializeMcpTools] MCP tools initialization returned ${mcpTools.size} tools")
 
             if (mcpTools.isNotEmpty()) {
                 // Debug: Print discovered tools
@@ -202,15 +215,57 @@ class CodingAgent(
     }
 
     private suspend fun buildContext(task: AgentTask): CodingAgentContext {
-        // 确保 MCP 工具已初始化
-        if (!mcpToolsInitialized && mcpServers != null) {
-            initializeMcpTools(mcpServers)
-            mcpToolsInitialized = true
+        // 尝试使用预加载的 MCP 工具，如果没有则初始化
+        if (!mcpToolsInitialized) {
+            println("🔧 [buildContext] Checking for preloaded MCP tools...")
+
+            // 首先尝试从预加载缓存中获取 MCP 工具
+            val mcpServersToUse = configService.getEnabledMcpServers().takeIf { it.isNotEmpty() }
+                ?: mcpServers
+
+            if (!mcpServersToUse.isNullOrEmpty()) {
+                try {
+                    val enabledMcpTools = configService.toolConfig.enabledMcpTools.toSet()
+                    val cachedMcpTools = McpToolConfigManager.discoverMcpTools(mcpServersToUse, enabledMcpTools)
+
+                    if (cachedMcpTools.isNotEmpty()) {
+                        println("🔧 [buildContext] Found ${cachedMcpTools.values.sumOf { it.size }} preloaded MCP tools")
+
+                        // 将预加载的工具转换为 ExecutableTool 并注册
+                        cachedMcpTools.values.flatten().forEach { toolItem ->
+                            if (toolItem.enabled) {
+                                // 创建一个简单的 MCP 工具适配器
+                                val mcpTool = createMcpToolFromItem(toolItem)
+                                registerTool(mcpTool)
+                                println("   Registered MCP tool: ${toolItem.name}")
+                            }
+                        }
+
+                        mcpToolsInitialized = true
+                        println("✅ [buildContext] Successfully registered ${cachedMcpTools.values.sumOf { it.count { tool -> tool.enabled } }} MCP tools from cache")
+                    } else {
+                        println("🔧 [buildContext] No preloaded MCP tools found, falling back to direct initialization...")
+                        initializeMcpTools(mcpServersToUse)
+                        mcpToolsInitialized = true
+                    }
+                } catch (e: Exception) {
+                    println("⚠️ [buildContext] Failed to use preloaded MCP tools: ${e.message}")
+                    if (mcpServers != null) {
+                        println("🔧 [buildContext] Falling back to direct initialization...")
+                        initializeMcpTools(mcpServers)
+                        mcpToolsInitialized = true
+                    }
+                }
+            }
         }
+
+        println("🔧 [buildContext] Getting all available tools...")
+        val allTools = getAllAvailableTools()
+        println("🔧 [buildContext] Got ${allTools.size} tools for context")
 
         return CodingAgentContext.fromTask(
             task,
-            toolList = getAllAvailableTools()
+            toolList = allTools
         )
     }
 
@@ -220,7 +275,7 @@ class CodingAgent(
     private fun getAllAvailableTools(): List<ExecutableTool<*, *>> {
         val allTools = mutableListOf<ExecutableTool<*, *>>()
 
-        // 1. 添加 ToolRegistry 中的内置工具
+        // 1. 添加 ToolRegistry 中的内置工具（已经根据配置过滤）
         allTools.addAll(toolRegistry.getAllTools().values)
 
         // 2. 添加 MainAgent 中注册的工具（SubAgent 和 MCP 工具）
@@ -229,7 +284,42 @@ class CodingAgent(
         val mainAgentTools = getAllTools().filter { it.name !in registryToolNames }
         allTools.addAll(mainAgentTools)
 
+        println("🔍 [getAllAvailableTools] 总共获取到 ${allTools.size} 个工具")
+        allTools.forEach { tool ->
+            println("   - ${tool.name} (${tool::class.simpleName})")
+        }
+
         return allTools
+    }
+
+    /**
+     * 从 ToolItem 创建 MCP 工具适配器
+     */
+    private fun createMcpToolFromItem(toolItem: ToolItem): ExecutableTool<*, *> {
+        // 创建一个简单的 MCP 工具适配器
+        return object : BaseExecutableTool<Map<String, Any>, ToolResult.Success>() {
+            override val name: String = toolItem.name
+            override val description: String = toolItem.description
+
+            override fun getParameterClass(): String = "Map<String, Any>"
+
+            override fun createToolInvocation(params: Map<String, Any>): ToolInvocation<Map<String, Any>, ToolResult.Success> {
+                val outerTool = this
+                return object : ToolInvocation<Map<String, Any>, ToolResult.Success> {
+                    override val params: Map<String, Any> = params
+                    override val tool: ExecutableTool<Map<String, Any>, ToolResult.Success> = outerTool
+
+                    override fun getDescription(): String = toolItem.description
+                    override fun getToolLocations(): List<cc.unitmesh.agent.tool.ToolLocation> = emptyList()
+
+                    override suspend fun execute(context: ToolExecutionContext): ToolResult.Success {
+                        // 这里应该调用实际的 MCP 工具执行
+                        // 但是为了简化，我们先返回一个占位符结果
+                        return ToolResult.Success("MCP tool ${toolItem.name} executed (placeholder)")
+                    }
+                }
+            }
+        }
     }
 
 

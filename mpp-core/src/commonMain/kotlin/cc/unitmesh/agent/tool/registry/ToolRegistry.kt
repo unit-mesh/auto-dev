@@ -14,7 +14,8 @@ import kotlinx.serialization.json.JsonElement
  */
 class ToolRegistry(
     private val fileSystem: ToolFileSystem = DefaultToolFileSystem(),
-    private val shellExecutor: ShellExecutor = DefaultShellExecutor()
+    private val shellExecutor: ShellExecutor = DefaultShellExecutor(),
+    private val configService: cc.unitmesh.agent.config.McpToolConfigService? = null
 ) {
     private val tools = mutableMapOf<String, ExecutableTool<*, *>>()
     private val json = Json { ignoreUnknownKeys = true }
@@ -178,16 +179,40 @@ class ToolRegistry(
     }
     
     /**
-     * Register all built-in tools
+     * Register all built-in tools (filtered by configuration if available)
      */
     private fun registerBuiltinTools() {
-        registerTool(ReadFileTool(fileSystem))
-        registerTool(WriteFileTool(fileSystem))
-        registerTool(GrepTool(fileSystem))
-        registerTool(GlobTool(fileSystem))
-        
-        if (shellExecutor.isAvailable()) {
-            registerTool(ShellTool(shellExecutor))
+        val allBuiltinTools = listOf(
+            ReadFileTool(fileSystem),
+            WriteFileTool(fileSystem),
+            GrepTool(fileSystem),
+            GlobTool(fileSystem)
+        ).let { tools ->
+            if (shellExecutor.isAvailable()) {
+                tools + ShellTool(shellExecutor)
+            } else tools
+        }
+
+        println("🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}")
+        println("🔧 [ToolRegistry] ConfigService available: ${configService != null}")
+
+        // Filter tools based on configuration if available
+        val toolsToRegister = if (configService != null) {
+            val filtered = configService.filterBuiltinTools(allBuiltinTools)
+            println("🔧 [ToolRegistry] Filtered tools: ${filtered.map { it.name }}")
+            filtered
+        } else {
+            println("🔧 [ToolRegistry] No config service, registering all tools")
+            allBuiltinTools
+        }
+
+        toolsToRegister.forEach { tool ->
+            registerTool(tool)
+        }
+
+        println("🔧 Registered ${toolsToRegister.size}/${allBuiltinTools.size} built-in tools")
+        toolsToRegister.forEach { tool ->
+            println("   Built-in tool: ${tool.name}")
         }
     }
 }

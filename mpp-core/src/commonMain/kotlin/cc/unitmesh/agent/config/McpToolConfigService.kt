@@ -8,7 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 
-class McpToolConfigService(private val toolConfig: ToolConfigFile) {
+class McpToolConfigService(val toolConfig: ToolConfigFile) {
     init {
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             McpToolConfigManager.init(toolConfig)

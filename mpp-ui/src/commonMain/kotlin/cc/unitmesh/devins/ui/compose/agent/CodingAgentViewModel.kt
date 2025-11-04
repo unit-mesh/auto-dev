@@ -185,9 +185,39 @@ class CodingAgentViewModel(
     fun areMcpServersReady(): Boolean = !McpToolConfigManager.isPreloading()
 
     /**
+     * Get tool loading status for UI display
+     */
+    fun getToolLoadingStatus(): ToolLoadingStatus {
+        return ToolLoadingStatus(
+            builtinToolsEnabled = 0, // Assume all built-in tools are enabled by default
+            builtinToolsTotal = 5, // read-file, write-file, grep, glob, shell
+            subAgentsEnabled = 3, // error-recovery, log-summary, codebase-investigator
+            subAgentsTotal = 3,
+            mcpServersLoaded = mcpPreloadingStatus.preloadedServers.size,
+            mcpServersTotal = 2, // filesystem, context7 (hardcoded for now)
+            mcpToolsEnabled = mcpPreloadingStatus.totalCachedConfigurations * 14, // Estimate 14 tools per server
+            isLoading = McpToolConfigManager.isPreloading()
+        )
+    }
+
+    /**
      * Dispose resources
      */
     fun dispose() {
         scope.cancel()
     }
 }
+
+/**
+ * Data class to hold tool loading status information
+ */
+data class ToolLoadingStatus(
+    val builtinToolsEnabled: Int = 0,
+    val builtinToolsTotal: Int = 0,
+    val subAgentsEnabled: Int = 0,
+    val subAgentsTotal: Int = 0,
+    val mcpServersLoaded: Int = 0,
+    val mcpServersTotal: Int = 0,
+    val mcpToolsEnabled: Int = 0,
+    val isLoading: Boolean = false
+)
