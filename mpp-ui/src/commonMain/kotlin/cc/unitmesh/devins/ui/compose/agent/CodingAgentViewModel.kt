@@ -8,6 +8,8 @@ import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.PreloadingStatus
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
@@ -41,6 +43,9 @@ class CodingAgentViewModel(
     var mcpPreloadingMessage by mutableStateOf("")
         private set
 
+    // Cached tool configuration for UI display
+    private var cachedToolConfig: cc.unitmesh.agent.config.ToolConfigFile? = null
+
     init {
         // Start MCP preloading immediately when ViewModel is created
         scope.launch {
@@ -55,6 +60,9 @@ class CodingAgentViewModel(
         try {
             mcpPreloadingMessage = "Loading MCP servers configuration..."
             val toolConfig = ConfigManager.loadToolConfig()
+
+            // Cache the tool configuration for UI display
+            cachedToolConfig = toolConfig
 
             if (toolConfig.mcpServers.isEmpty()) {
                 mcpPreloadingMessage = "No MCP servers configured"
@@ -73,8 +81,15 @@ class CodingAgentViewModel(
                 delay(500) // Update every 500ms
             }
 
-            // Final status update
-            mcpPreloadingStatus = McpToolConfigManager.getPreloadingStatus()
+            // Wait a bit more to ensure all status updates are complete
+            delay(1000)
+
+            // Final status update - force refresh multiple times to ensure we get the latest
+            repeat(3) {
+                mcpPreloadingStatus = McpToolConfigManager.getPreloadingStatus()
+                delay(100)
+            }
+
             val preloadedCount = mcpPreloadingStatus.preloadedServers.size
             val totalCount = toolConfig.mcpServers.filter { !it.value.disabled }.size
 
@@ -83,6 +98,13 @@ class CodingAgentViewModel(
             } else {
                 "MCP servers initialization completed (no tools loaded)"
             }
+
+            // Debug: Print final status
+            println("🔍 [CodingAgentViewModel] Final MCP status:")
+            println("   Preloaded servers: ${mcpPreloadingStatus.preloadedServers}")
+            println("   Total cached: ${mcpPreloadingStatus.totalCachedConfigurations}")
+            println("   Is preloading: ${McpToolConfigManager.isPreloading()}")
+            println("   Message: $mcpPreloadingMessage")
 
         } catch (e: Exception) {
             mcpPreloadingMessage = "Failed to load MCP servers: ${e.message}"
@@ -185,17 +207,83 @@ class CodingAgentViewModel(
     fun areMcpServersReady(): Boolean = !McpToolConfigManager.isPreloading()
 
     /**
+     * Refresh tool configuration (call this when user modifies tool settings)
+     */
+    suspend fun refreshToolConfig() {
+        try {
+            val newToolConfig = ConfigManager.loadToolConfig()
+            cachedToolConfig = newToolConfig
+
+            // If MCP servers configuration changed, restart preloading
+            val currentMcpServers = cachedToolConfig?.mcpServers ?: emptyMap()
+            if (currentMcpServers.isNotEmpty()) {
+                // Restart MCP preloading with new configuration
+                startMcpPreloading()
+            }
+        } catch (e: Exception) {
+            println("Error refreshing tool config: ${e.message}")
+        }
+    }
+
+    /**
      * Get tool loading status for UI display
      */
     fun getToolLoadingStatus(): ToolLoadingStatus {
+        val toolConfig = cachedToolConfig
+
+        // Get built-in tools from ToolType (excluding SubAgents)
+        val allBuiltinTools = ToolType.ALL_TOOLS.filter { it.category != ToolCategory.SubAgent }
+        val builtinToolsEnabled = if (toolConfig != null) {
+            allBuiltinTools.count { toolType ->
+                toolType.name in toolConfig.enabledBuiltinTools
+            }
+        } else {
+            allBuiltinTools.size // Default: all enabled
+        }
+
+        // Get SubAgents from ToolType
+        val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
+        val subAgentsEnabled = if (toolConfig != null) {
+            subAgentTools.count { toolType ->
+                toolType.name in toolConfig.enabledBuiltinTools
+            }
+        } else {
+            subAgentTools.size // Default: all enabled
+        }
+
+        // Get MCP tools information
+        val mcpServersTotal = toolConfig?.mcpServers?.filter { !it.value.disabled }?.size ?: 0
+        val mcpServersLoaded = mcpPreloadingStatus.preloadedServers.size
+
+        // Get actual MCP tools count from preloaded cache
+        val mcpToolsEnabled = if (McpToolConfigManager.isPreloading()) {
+            0 // Still loading
+        } else {
+            // Use the preloading status to get tool count
+            // This is an approximation based on preloaded servers
+            val enabledMcpToolsCount = toolConfig?.enabledMcpTools?.size ?: 0
+            if (enabledMcpToolsCount > 0) {
+                enabledMcpToolsCount
+            } else {
+                // Estimate based on preloaded servers (14 tools per filesystem server, 2 per context7)
+                mcpPreloadingStatus.preloadedServers.sumOf { serverName ->
+                    when (serverName) {
+                        "filesystem" -> 14
+                        "context7" -> 2
+                        else -> 5 // Default estimate
+                    }
+                }
+            }
+        }
+
         return ToolLoadingStatus(
-            builtinToolsEnabled = 0, // Assume all built-in tools are enabled by default
-            builtinToolsTotal = 5, // read-file, write-file, grep, glob, shell
-            subAgentsEnabled = 3, // error-recovery, log-summary, codebase-investigator
-            subAgentsTotal = 3,
-            mcpServersLoaded = mcpPreloadingStatus.preloadedServers.size,
-            mcpServersTotal = 2, // filesystem, context7 (hardcoded for now)
-            mcpToolsEnabled = mcpPreloadingStatus.totalCachedConfigurations * 14, // Estimate 14 tools per server
+            builtinToolsEnabled = builtinToolsEnabled,
+            builtinToolsTotal = allBuiltinTools.size,
+            subAgentsEnabled = subAgentsEnabled,
+            subAgentsTotal = subAgentTools.size,
+            mcpServersLoaded = mcpServersLoaded,
+            mcpServersTotal = mcpServersTotal,
+            mcpToolsEnabled = mcpToolsEnabled,
             isLoading = McpToolConfigManager.isPreloading()
         )
     }

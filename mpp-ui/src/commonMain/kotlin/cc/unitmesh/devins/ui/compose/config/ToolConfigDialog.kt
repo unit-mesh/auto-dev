@@ -715,8 +715,6 @@ private fun McpServerHeader(
             )
 
             Spacer(modifier = Modifier.width(8.dp))
-
-            // Server name and status
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "MCP: $serverName",
@@ -725,7 +723,6 @@ private fun McpServerHeader(
                 )
             }
 
-            // Tool count and enabled count
             if (tools.isNotEmpty()) {
                 Text(
                     text = "${tools.count { it.enabled }}/${tools.size}",

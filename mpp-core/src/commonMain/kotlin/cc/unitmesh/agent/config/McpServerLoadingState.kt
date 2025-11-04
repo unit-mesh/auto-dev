@@ -13,7 +13,7 @@ expect fun getCurrentTimeMillis(): Long
 @Serializable
 enum class McpServerLoadingStatus {
     /** Server has not started loading yet */
-    NOT_STARTED,
+    AVAILABLE,
     /** Server is currently loading tools */
     LOADING,
     /** Server has successfully loaded tools */
@@ -89,7 +89,7 @@ data class McpLoadingState(
         status: McpServerLoadingStatus, 
         errorMessage: String? = null
     ): McpLoadingState {
-        val currentState = servers[serverName] ?: McpServerState(serverName, McpServerLoadingStatus.NOT_STARTED)
+        val currentState = servers[serverName] ?: McpServerState(serverName, McpServerLoadingStatus.AVAILABLE)
         val updatedState = currentState.copy(
             status = status,
             errorMessage = errorMessage,
@@ -100,7 +100,7 @@ data class McpLoadingState(
     }
     
     fun updateServerTools(serverName: String, tools: List<ToolItem>): McpLoadingState {
-        val currentState = servers[serverName] ?: McpServerState(serverName, McpServerLoadingStatus.NOT_STARTED)
+        val currentState = servers[serverName] ?: McpServerState(serverName, McpServerLoadingStatus.AVAILABLE)
         val updatedState = currentState.copy(
             tools = tools,
             status = McpServerLoadingStatus.LOADED,

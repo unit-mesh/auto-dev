@@ -289,8 +289,12 @@ private fun ToolLoadingStatusBar(
     viewModel: CodingAgentViewModel,
     modifier: Modifier = Modifier
 ) {
-    val toolStatus by remember { derivedStateOf { viewModel.getToolLoadingStatus() } }
-    val mcpPreloadingMessage by remember { derivedStateOf { viewModel.mcpPreloadingMessage } }
+    // 直接观察状态变化，不使用 derivedStateOf
+    val mcpPreloadingStatus = viewModel.mcpPreloadingStatus
+    val mcpPreloadingMessage = viewModel.mcpPreloadingMessage
+    val toolStatus by remember(mcpPreloadingStatus) {
+        derivedStateOf { viewModel.getToolLoadingStatus() }
+    }
 
     // Show the status bar with a subtle design
     Card(
@@ -330,15 +334,15 @@ private fun ToolLoadingStatusBar(
             // MCP Tools Status (async)
             ToolStatusChip(
                 label = "MCP Tools",
-                count = toolStatus.mcpServersLoaded,
-                total = toolStatus.mcpServersTotal,
+                count = toolStatus.mcpToolsEnabled,
+                total = if (toolStatus.isLoading) "∞" else toolStatus.mcpToolsEnabled.toString(),
                 isLoading = toolStatus.isLoading,
-                color = if (!toolStatus.isLoading && toolStatus.mcpServersLoaded > 0) {
+                color = if (!toolStatus.isLoading && toolStatus.mcpToolsEnabled > 0) {
                     MaterialTheme.colorScheme.tertiary
                 } else {
                     MaterialTheme.colorScheme.outline
                 },
-                tooltip = "External tools from MCP servers (filesystem, context7)"
+                tooltip = "External tools from MCP servers (${toolStatus.mcpServersLoaded}/${toolStatus.mcpServersTotal} servers)"
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -379,7 +383,7 @@ private fun ToolLoadingStatusBar(
 private fun ToolStatusChip(
     label: String,
     count: Int,
-    total: Int,
+    total: Any, // Can be Int or String
     isLoading: Boolean,
     color: androidx.compose.ui.graphics.Color,
     tooltip: String = "",

@@ -174,7 +174,7 @@ object McpToolConfigManager {
             val status = if (config.disabled) {
                 McpServerLoadingStatus.DISABLED
             } else {
-                McpServerLoadingStatus.NOT_STARTED
+                McpServerLoadingStatus.AVAILABLE
             }
             loadingState = loadingState.updateServerStatus(serverName, status)
         }
