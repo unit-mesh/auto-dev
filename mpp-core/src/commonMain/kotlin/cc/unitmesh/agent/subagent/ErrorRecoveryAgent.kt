@@ -47,6 +47,8 @@ class ErrorRecoveryAgent(
         )
     }
 
+    override fun getParameterClass(): String = ErrorContext::class.simpleName ?: "ErrorContext"
+
     override suspend fun execute(
         input: ErrorContext,
         onProgress: (String) -> Unit

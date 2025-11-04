@@ -54,8 +54,48 @@ fun ToolConfigDialog(
     var mcpConfigError by remember { mutableStateOf<String?>(null) }
     var mcpLoadError by remember { mutableStateOf<String?>(null) }
     var isReloading by remember { mutableStateOf(false) }
+    var hasUnsavedChanges by remember { mutableStateOf(false) }
+    var autoSaveJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
     val scope = rememberCoroutineScope()
+
+    // Auto-save function with debouncing
+    fun scheduleAutoSave() {
+        hasUnsavedChanges = true
+        autoSaveJob?.cancel()
+        autoSaveJob = scope.launch {
+            kotlinx.coroutines.delay(2000) // Wait 2 seconds before auto-saving
+            try {
+                val enabledBuiltinTools = builtinToolsByCategory.values
+                    .flatten()
+                    .filter { it.enabled }
+                    .map { it.name }
+
+                val enabledMcpTools = mcpTools.values
+                    .flatten()
+                    .filter { it.enabled }
+                    .map { it.name }
+
+                // Parse MCP config from JSON
+                val result = deserializeMcpConfig(mcpConfigJson)
+                if (result.isSuccess) {
+                    val newMcpServers = result.getOrThrow()
+                    val updatedConfig = toolConfig.copy(
+                        enabledBuiltinTools = enabledBuiltinTools,
+                        enabledMcpTools = enabledMcpTools,
+                        mcpServers = newMcpServers
+                    )
+
+                    ConfigManager.saveToolConfig(updatedConfig)
+                    toolConfig = updatedConfig
+                    hasUnsavedChanges = false
+                    println("✅ Auto-saved tool configuration")
+                }
+            } catch (e: Exception) {
+                println("❌ Auto-save failed: ${e.message}")
+            }
+        }
+    }
 
     // Load configuration on start
     LaunchedEffect(Unit) {
@@ -115,6 +155,13 @@ fun ToolConfigDialog(
         }
     }
 
+    // Cleanup auto-save job when dialog is dismissed
+    DisposableEffect(Unit) {
+        onDispose {
+            autoSaveJob?.cancel()
+        }
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = Modifier
@@ -135,11 +182,42 @@ fun ToolConfigDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Tool Configuration",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Tool Configuration",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        // Unsaved changes indicator
+                        if (hasUnsavedChanges) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Schedule,
+                                        contentDescription = "Auto-saving",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "Auto-saving...",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Default.Close, contentDescription = "Close")
                     }
@@ -211,6 +289,7 @@ fun ToolConfigDialog(
                                         }
                                     } else toolsList
                                 }
+                                scheduleAutoSave()
                             },
                             onMcpToolToggle = { toolName, enabled ->
                                 mcpTools = mcpTools.mapValues { (_, tools) ->
@@ -218,6 +297,7 @@ fun ToolConfigDialog(
                                         if (tool.name == toolName) tool.copy(enabled = enabled) else tool
                                     }
                                 }
+                                scheduleAutoSave()
                             }
                         )
 
@@ -291,12 +371,27 @@ fun ToolConfigDialog(
                         val enabledMcp = mcpTools.values.flatten().count { it.enabled }
                         val totalMcp = mcpTools.values.flatten().size
 
-                        Text(
-                            text = "Built-in: $enabledBuiltin/$totalBuiltin | MCP: $enabledMcp/$totalMcp",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Built-in: $enabledBuiltin/$totalBuiltin | MCP: $enabledMcp/$totalMcp",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            if (hasUnsavedChanges) {
+                                Text(
+                                    text = "Changes will be auto-saved in 2 seconds...",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            } else {
+                                Text(
+                                    text = "All changes saved",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
 
                         TextButton(onClick = onDismiss) {
                             Text("Cancel")
@@ -308,6 +403,9 @@ fun ToolConfigDialog(
                             onClick = {
                                 scope.launch {
                                     try {
+                                        // Cancel any pending auto-save
+                                        autoSaveJob?.cancel()
+
                                         val enabledBuiltinTools = builtinToolsByCategory.values
                                             .flatten()
                                             .filter { it.enabled }
@@ -343,7 +441,7 @@ fun ToolConfigDialog(
                                 }
                             }
                         ) {
-                            Text("Save")
+                            Text("Apply & Close")
                         }
                     }
                 }

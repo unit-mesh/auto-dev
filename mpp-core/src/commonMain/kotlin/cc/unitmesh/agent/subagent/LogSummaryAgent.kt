@@ -33,6 +33,8 @@ class LogSummaryAgent(
      */
     fun needsSummarization(output: String): Boolean = output.length > threshold
 
+    override fun getParameterClass(): String = LogSummaryContext::class.simpleName ?: "LogSummaryContext"
+
     override fun validateInput(input: Map<String, Any>): LogSummaryContext {
         return LogSummaryContext(
             command = input["command"] as? String ?: throw IllegalArgumentException("command is required"),

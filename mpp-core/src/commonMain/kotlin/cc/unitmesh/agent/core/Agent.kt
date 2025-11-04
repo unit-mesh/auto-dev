@@ -45,6 +45,7 @@ abstract class Agent<TInput : Any, TOutput : ToolResult>(
 
     /**
      * 获取参数类型名称（用于 KMP 兼容）
+     * 子类应该重写此方法以返回具体的参数类型名称
      */
     override fun getParameterClass(): String = "AgentInput"
 

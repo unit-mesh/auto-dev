@@ -14,6 +14,7 @@ import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorAgent
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.subagent.LogSummaryAgent
+import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
@@ -200,8 +201,26 @@ class CodingAgent(
 
         return CodingAgentContext.fromTask(
             task,
-            toolList = getAllTools()
+            toolList = getAllAvailableTools()
         )
+    }
+
+    /**
+     * 获取所有可用的工具，包括内置工具、SubAgent 和 MCP 工具
+     */
+    private fun getAllAvailableTools(): List<ExecutableTool<*, *>> {
+        val allTools = mutableListOf<ExecutableTool<*, *>>()
+
+        // 1. 添加 ToolRegistry 中的内置工具
+        allTools.addAll(toolRegistry.getAllTools().values)
+
+        // 2. 添加 MainAgent 中注册的工具（SubAgent 和 MCP 工具）
+        // 注意：避免重复添加已经在 ToolRegistry 中的 SubAgent
+        val registryToolNames = toolRegistry.getAllTools().keys
+        val mainAgentTools = getAllTools().filter { it.name !in registryToolNames }
+        allTools.addAll(mainAgentTools)
+
+        return allTools
     }
 
 

@@ -69,6 +69,8 @@ class CodebaseInvestigatorAgent(
 ) {
     private var analysisCache: Map<String, String> = emptyMap()
 
+    override fun getParameterClass(): String = InvestigationContext::class.simpleName ?: "InvestigationContext"
+
     override fun validateInput(input: Map<String, Any>): InvestigationContext {
         val query = input["query"] as? String
             ?: throw IllegalArgumentException("Missing required parameter: query")

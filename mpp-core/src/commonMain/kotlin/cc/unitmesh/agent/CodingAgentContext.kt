@@ -66,7 +66,14 @@ data class CodingAgentContext(
          * Format tool list with enhanced schema information for AI understanding
          */
         private fun formatToolListForAI(toolList: List<ExecutableTool<*, *>>): String {
+            // 🔍 调试：打印工具列表信息
+            println("🔍 [CodingAgentContext] 格式化工具列表，共 ${toolList.size} 个工具:")
+            toolList.forEach { tool ->
+                println("  - ${tool.name} (${tool::class.simpleName}): ${tool.getParameterClass()}")
+            }
+
             if (toolList.isEmpty()) {
+                println("❌ [CodingAgentContext] 工具列表为空")
                 return "No tools available."
             }
 
@@ -74,15 +81,36 @@ data class CodingAgentContext(
                 buildString {
                     // Tool header with name and description
                     appendLine("<tool name=\"${tool.name}\">")
-                    appendLine("  <description>${tool.description}</description>")
 
-                    // Parameter schema information
+                    // Check for empty description and provide warning
+                    val description = tool.description.takeIf { it.isNotBlank() }
+                        ?: "Tool description not available"
+                    appendLine("  <description>$description</description>")
+
+                    // Parameter schema information with improved handling
                     val paramClass = tool.getParameterClass()
-                    if (paramClass.isNotEmpty() && paramClass != "Unit") {
-                        appendLine("  <parameters>")
-                        appendLine("    <type>$paramClass</type>")
-                        appendLine("    <usage>/${tool.name} [parameters]</usage>")
-                        appendLine("  </parameters>")
+
+                    when {
+                        paramClass.isBlank() -> {
+                            // No parameters - this is fine for some tools
+                        }
+                        paramClass == "Unit" -> {
+                            // Unit type means no meaningful parameters
+                        }
+                        paramClass == "AgentInput" -> {
+                            // Generic agent input - provide more specific info for SubAgents
+                            appendLine("  <parameters>")
+                            appendLine("    <type>Map&lt;String, Any&gt;</type>")
+                            appendLine("    <usage>/${tool.name} [key-value parameters]</usage>")
+                            appendLine("  </parameters>")
+                        }
+                        else -> {
+                            // Valid parameter class
+                            appendLine("  <parameters>")
+                            appendLine("    <type>$paramClass</type>")
+                            appendLine("    <usage>/${tool.name} [parameters]</usage>")
+                            appendLine("  </parameters>")
+                        }
                     }
 
                     // Add example if available (for built-in tools)
@@ -108,7 +136,18 @@ data class CodingAgentContext(
                 "grep" -> "/${tool.name} pattern=\"function.*main\" path=\"src\" include=\"*.kt\""
                 "glob" -> "/${tool.name} pattern=\"*.kt\" path=\"src\""
                 "shell" -> "/${tool.name} command=\"ls -la\""
-                else -> "/${tool.name} <parameters>"
+                "error-recovery" -> "/${tool.name} command=\"gradle build\" errorMessage=\"Compilation failed\""
+                "log-summary" -> "/${tool.name} command=\"npm test\" output=\"[long test output...]\""
+                "codebase-investigator" -> "/${tool.name} query=\"find all REST endpoints\" scope=\"methods\""
+                else -> {
+                    // For MCP tools or other tools, provide a generic example
+                    if (tool.name.contains("_")) {
+                        // Likely an MCP tool with server_toolname format
+                        "/${tool.name} arguments=\"{}\""
+                    } else {
+                        "/${tool.name} <parameters>"
+                    }
+                }
             }
         }
 
