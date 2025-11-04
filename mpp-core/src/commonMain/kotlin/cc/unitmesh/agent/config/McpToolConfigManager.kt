@@ -110,12 +110,12 @@ object McpToolConfigManager {
 
                                 val tools = discoveredTools.map { toolInfo ->
                                     ToolItem(
-                                        name = "${serverName}_${toolInfo.name}",
+                                        name = toolInfo.name, // Use actual tool name, not prefixed
                                         displayName = toolInfo.name,
                                         description = toolInfo.description,
                                         category = "MCP",
                                         source = ToolSource.MCP,
-                                        enabled = "${serverName}_${toolInfo.name}" in enabledMcpTools,
+                                        enabled = toolInfo.name in enabledMcpTools, // Check by actual tool name
                                         serverName = serverName
                                     )
                                 }
@@ -231,12 +231,12 @@ object McpToolConfigManager {
             // Convert to ToolItem format
             val tools = discoveredTools.map { toolInfo ->
                 ToolItem(
-                    name = "${serverName}_${toolInfo.name}",
+                    name = toolInfo.name, // Use actual tool name, not prefixed
                     displayName = toolInfo.name,
                     description = toolInfo.description,
                     category = "MCP",
                     source = ToolSource.MCP,
-                    enabled = "${serverName}_${toolInfo.name}" in enabledMcpTools,
+                    enabled = toolInfo.name in enabledMcpTools, // Check by actual tool name
                     serverName = serverName
                 )
             }

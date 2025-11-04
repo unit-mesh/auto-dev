@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.orchestrator
 
+import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.policy.PolicyEngine
 import cc.unitmesh.agent.policy.PolicyDecision
@@ -13,6 +14,7 @@ import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.agent.tool.impl.WriteFileTool
+import cc.unitmesh.agent.config.McpToolConfigService
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 
@@ -24,7 +26,8 @@ class ToolOrchestrator(
     private val registry: ToolRegistry,
     private val policyEngine: PolicyEngine,
     private val renderer: CodingAgentRenderer,
-    private val stateManager: ToolStateManager = ToolStateManager()
+    private val stateManager: ToolStateManager = ToolStateManager(),
+    private val mcpConfigService: McpToolConfigService? = null
 ) {
     
     /**
@@ -158,22 +161,97 @@ class ToolOrchestrator(
         params: Map<String, Any>,
         context: ToolExecutionContext
     ): ToolResult {
+        // First try to get tool from registry (built-in tools)
         val tool = registry.getTool(toolName)
-            ?: return ToolResult.Error("Tool not found: $toolName")
-
-        // Convert orchestration context to basic tool context
-        val basicContext = context.toBasicContext()
-
-        // Execute using the new ToolType system with fallback to string matching
-        val toolType = toolName.toToolType()
-        return when (toolType) {
-            ToolType.Shell -> executeShellTool(tool, params, basicContext)
-            ToolType.ReadFile -> executeReadFileTool(tool, params, basicContext)
-            ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)
-            ToolType.Glob -> executeGlobTool(tool, params, basicContext)
-            ToolType.Grep -> executeGrepTool(tool, params, basicContext)
-            else -> ToolResult.Error("Tool not implemented: ${toolType?.displayName ?: "unknown"}")
+        if (tool != null) {
+            // Convert orchestration context to basic tool context
+            val basicContext = context.toBasicContext()
+            val toolType = toolName.toToolType()
+            return when (toolType) {
+                ToolType.Shell -> executeShellTool(tool, params, basicContext)
+                ToolType.ReadFile -> executeReadFileTool(tool, params, basicContext)
+                ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)
+                ToolType.Glob -> executeGlobTool(tool, params, basicContext)
+                ToolType.Grep -> executeGrepTool(tool, params, basicContext)
+                else -> ToolResult.Error("Tool not implemented: ${toolType?.displayName ?: "unknown"}")
+            }
         }
+
+        return executeMcpTool(toolName, params, context)
+    }
+
+    /**
+     * Execute MCP tool by finding the appropriate server and delegating to McpToolConfigManager
+     */
+    private suspend fun executeMcpTool(
+        toolName: String,
+        params: Map<String, Any>,
+        context: ToolExecutionContext
+    ): ToolResult {
+        if (mcpConfigService == null) {
+            return ToolResult.Error("Tool not found: $toolName (MCP not configured)")
+        }
+
+        try {
+            val serverName = findMcpServerForTool(toolName)
+                ?: return ToolResult.Error("Tool not found: $toolName (no MCP server provides this tool)")
+
+            val arguments = convertParamsToJson(params)
+
+            val result = McpToolConfigManager.executeTool(
+                serverName = serverName,
+                toolName = toolName,
+                arguments = arguments
+            )
+
+            return ToolResult.Success(result)
+
+        } catch (e: Exception) {
+            return ToolResult.Error("MCP tool execution failed: ${e.message}")
+        }
+    }
+
+    private suspend fun findMcpServerForTool(toolName: String): String? {
+        if (mcpConfigService == null) return null
+
+        try {
+            val mcpServers = mcpConfigService.getEnabledMcpServers()
+            val enabledMcpTools = mcpConfigService.toolConfig.enabledMcpTools.toSet()
+
+            // Discover tools from all servers to find which one has this tool
+            val toolsByServer = McpToolConfigManager.discoverMcpTools(
+                mcpServers, enabledMcpTools
+            )
+
+            // Find the server that has this tool
+            for ((serverName, tools) in toolsByServer) {
+                if (tools.any { it.name == toolName && it.enabled }) {
+                    return serverName
+                }
+            }
+
+            return null
+        } catch (e: Exception) {
+            println("Error finding MCP server for tool '$toolName': ${e.message}")
+            return null
+        }
+    }
+
+    /**
+     * Convert parameters map to JSON string for MCP
+     */
+    private fun convertParamsToJson(params: Map<String, Any>): String {
+        // Simple JSON conversion - in production you'd use a proper JSON library
+        val jsonPairs = params.map { (key, value) ->
+            val jsonValue = when (value) {
+                is String -> "\"$value\""
+                is Number -> value.toString()
+                is Boolean -> value.toString()
+                else -> "\"$value\""
+            }
+            "\"$key\": $jsonValue"
+        }
+        return "{${jsonPairs.joinToString(", ")}}"
     }
 
     private suspend fun executeShellTool(

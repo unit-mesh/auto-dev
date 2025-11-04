@@ -79,7 +79,7 @@ class CodingAgent(
     }
 
     private val policyEngine = DefaultPolicyEngine()
-    private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer)
+    private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer, mcpConfigService = mcpToolConfigService)
 
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
