@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.config
 
 import android.content.Context
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.agent.config.ToolConfigFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -38,6 +39,10 @@ actual object ConfigManager {
     
     private fun getConfigFile(): File {
         return File(getConfigDir(), "config.yaml")
+    }
+
+    private fun getToolConfigFile(): File {
+        return File(getConfigDir(), "mcp.json")
     }
     
     // JSON parser for potential JSON config support
@@ -140,10 +145,43 @@ actual object ConfigManager {
     actual suspend fun saveMcpServers(mcpServers: Map<String, McpServerConfig>) {
         val wrapper = load()
         val configFile = wrapper.getConfigFile()
-        
+
         val updatedConfigFile = configFile.copy(mcpServers = mcpServers)
         save(updatedConfigFile)
     }
+
+    actual suspend fun loadToolConfig(): ToolConfigFile =
+        withContext(Dispatchers.IO) {
+            try {
+                val file = getToolConfigFile()
+                if (!file.exists()) {
+                    return@withContext ToolConfigFile.default()
+                }
+
+                val content = file.readText()
+                json.decodeFromString<ToolConfigFile>(content)
+            } catch (e: Exception) {
+                println("Error loading tool config: ${e.message}")
+                ToolConfigFile.default()
+            }
+        }
+
+    actual suspend fun saveToolConfig(toolConfig: ToolConfigFile) =
+        withContext(Dispatchers.IO) {
+            try {
+                val dir = getConfigDir()
+                dir.mkdirs()
+
+                val file = getToolConfigFile()
+                val jsonContent = json.encodeToString(ToolConfigFile.serializer(), toolConfig)
+                file.writeText(jsonContent)
+            } catch (e: Exception) {
+                println("Error saving tool config: ${e.message}")
+                throw e
+            }
+        }
+
+    actual fun getToolConfigPath(): String = getToolConfigFile().absolutePath
 
     private fun createEmpty(): AutoDevConfigWrapper {
         return AutoDevConfigWrapper(ConfigFile(active = "", configs = emptyList()))

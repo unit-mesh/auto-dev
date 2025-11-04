@@ -133,6 +133,22 @@ actual class McpClientManager {
         }
     }
 
+    actual suspend fun discoverServerTools(serverName: String): List<McpToolInfo> = withContext(Dispatchers.IO) {
+        val config = currentConfig ?: return@withContext emptyList()
+        val serverConfig = config.mcpServers[serverName] ?: return@withContext emptyList()
+
+        if (serverConfig.disabled) {
+            return@withContext emptyList()
+        }
+
+        try {
+            return@withContext connectAndDiscoverTools(serverName, serverConfig)
+        } catch (e: Exception) {
+            println("Error discovering tools for server '$serverName': ${e.message}")
+            return@withContext emptyList()
+        }
+    }
+
     actual fun getServerStatus(serverName: String): McpServerStatus {
         return serverStatuses[serverName] ?: McpServerStatus.DISCONNECTED
     }

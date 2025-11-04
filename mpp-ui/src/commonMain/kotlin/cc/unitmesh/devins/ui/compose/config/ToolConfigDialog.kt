@@ -20,6 +20,11 @@ import androidx.compose.ui.window.Dialog
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.config.ToolConfigManager
 import cc.unitmesh.agent.config.ToolItem
+import cc.unitmesh.agent.config.McpLoadingState
+import cc.unitmesh.agent.config.McpLoadingStateCallback
+import cc.unitmesh.agent.config.McpServerState
+import cc.unitmesh.agent.config.McpServerLoadingStatus
+import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.ToolSource
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.mcp.McpServerConfig
@@ -42,6 +47,7 @@ fun ToolConfigDialog(
     var toolConfig by remember { mutableStateOf(ToolConfigFile.default()) }
     var builtinToolsByCategory by remember { mutableStateOf<Map<ToolCategory, List<ToolItem>>>(emptyMap()) }
     var mcpTools by remember { mutableStateOf<Map<String, List<ToolItem>>>(emptyMap()) }
+    var mcpLoadingState by remember { mutableStateOf(McpLoadingState()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTab by remember { mutableStateOf(0) }
     var mcpConfigJson by remember { mutableStateOf("") }
@@ -64,17 +70,39 @@ fun ToolConfigDialog(
 
                 // Auto-load MCP tools if any servers are configured
                 if (toolConfig.mcpServers.isNotEmpty()) {
-                    try {
-                        mcpTools = ToolConfigManager.discoverMcpTools(
-                            toolConfig.mcpServers,
-                            toolConfig.enabledMcpTools.toSet()
-                        )
-                        mcpLoadError = null
-                        val totalTools = mcpTools.values.sumOf { it.size }
-                        println("✅ Loaded $totalTools MCP tools from ${toolConfig.mcpServers.size} servers")
-                    } catch (e: Exception) {
-                        mcpLoadError = "Failed to load MCP tools: ${e.message}"
-                        println("❌ Error loading MCP tools: ${e.message}")
+                    scope.launch {
+                        // Create callback for incremental loading
+                        val callback = object : McpLoadingStateCallback {
+                            override fun onServerStateChanged(serverName: String, state: McpServerState) {
+                                mcpLoadingState = mcpLoadingState.updateServerState(serverName, state)
+
+                                // Update tools when server is loaded
+                                if (state.isLoaded) {
+                                    mcpTools = mcpTools + (serverName to state.tools)
+                                }
+                            }
+
+                            override fun onLoadingStateChanged(loadingState: McpLoadingState) {
+                                mcpLoadingState = loadingState
+                            }
+
+                            override fun onBuiltinToolsLoaded(tools: List<ToolItem>) {
+                                mcpLoadingState = mcpLoadingState.copy(builtinToolsLoaded = true)
+                            }
+                        }
+
+                        try {
+                            // Use incremental loading
+                            mcpLoadingState = McpToolConfigManager.discoverMcpToolsIncremental(
+                                toolConfig.mcpServers,
+                                toolConfig.enabledMcpTools.toSet(),
+                                callback
+                            )
+                            mcpLoadError = null
+                        } catch (e: Exception) {
+                            mcpLoadError = "Failed to load MCP tools: ${e.message}"
+                            println("❌ Error loading MCP tools: ${e.message}")
+                        }
                     }
                 }
 
@@ -174,6 +202,7 @@ fun ToolConfigDialog(
                         0 -> ToolSelectionTab(
                             builtinToolsByCategory = builtinToolsByCategory,
                             mcpTools = mcpTools,
+                            mcpLoadingState = mcpLoadingState,
                             onBuiltinToolToggle = { category, toolName, enabled ->
                                 builtinToolsByCategory = builtinToolsByCategory.mapValues { (cat, toolsList) ->
                                     if (cat == category) {
@@ -327,6 +356,7 @@ fun ToolConfigDialog(
 private fun ToolSelectionTab(
     builtinToolsByCategory: Map<ToolCategory, List<ToolItem>>,
     mcpTools: Map<String, List<ToolItem>>,
+    mcpLoadingState: McpLoadingState,
     onBuiltinToolToggle: (ToolCategory, String, Boolean) -> Unit,
     onMcpToolToggle: (String, Boolean) -> Unit
 ) {
@@ -366,34 +396,31 @@ private fun ToolSelectionTab(
             }
         }
 
-        // Display MCP tools grouped by server
-        mcpTools.forEach { (serverName, tools) ->
-            if (tools.isNotEmpty()) {
-                val serverKey = "MCP_SERVER_$serverName"
-                val isServerExpanded = expandedCategories.getOrPut(serverKey) { true }
+        // Display MCP tools grouped by server with loading states
+        val serverEntries = mcpLoadingState.servers.entries.toList()
+        items(serverEntries) { (serverName, serverState) ->
+            val serverKey = "MCP_SERVER_$serverName"
+            val isServerExpanded = expandedCategories.getOrPut(serverKey) { true }
+            val tools = mcpTools[serverName] ?: emptyList()
 
-                item {
-                    CollapsibleCategoryHeader(
-                        categoryName = "MCP: $serverName",
-                        icon = Icons.Default.Cloud,
-                        isExpanded = isServerExpanded,
-                        toolCount = tools.size,
-                        enabledCount = tools.count { it.enabled },
-                        onToggle = {
-                            expandedCategories[serverKey] = !isServerExpanded
+            McpServerHeader(
+                serverName = serverName,
+                serverState = serverState,
+                tools = tools,
+                isExpanded = isServerExpanded,
+                onToggle = {
+                    expandedCategories[serverKey] = !isServerExpanded
+                }
+            )
+
+            if (isServerExpanded && tools.isNotEmpty()) {
+                tools.forEach { tool ->
+                    CompactToolItemRow(
+                        tool = tool,
+                        onToggle = { enabled ->
+                            onMcpToolToggle(tool.name, enabled)
                         }
                     )
-                }
-
-                if (isServerExpanded) {
-                    items(tools) { tool ->
-                        CompactToolItemRow(
-                            tool = tool,
-                            onToggle = { enabled ->
-                                onMcpToolToggle(tool.name, enabled)
-                            }
-                        )
-                    }
                 }
             }
         }
@@ -548,6 +575,103 @@ private fun McpServerConfigTab(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(if (isReloading) "Loading..." else "Save & Reload")
             }
+        }
+    }
+}
+
+@Composable
+private fun McpServerHeader(
+    serverName: String,
+    serverState: McpServerState,
+    tools: List<ToolItem>,
+    isExpanded: Boolean,
+    onToggle: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+            .clickable { onToggle() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Server status icon
+            val (statusIcon, statusColor) = when (serverState.status) {
+                McpServerLoadingStatus.LOADING -> Icons.Default.Refresh to MaterialTheme.colorScheme.primary
+                McpServerLoadingStatus.LOADED -> Icons.Default.Cloud to MaterialTheme.colorScheme.primary
+                McpServerLoadingStatus.ERROR -> Icons.Default.Error to MaterialTheme.colorScheme.error
+                McpServerLoadingStatus.DISABLED -> Icons.Default.CloudOff to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                McpServerLoadingStatus.NOT_STARTED -> Icons.Default.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            }
+
+            Icon(
+                imageVector = statusIcon,
+                contentDescription = null,
+                tint = statusColor,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Server name and status
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "MCP: $serverName",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium
+                )
+
+                val statusText = when (serverState.status) {
+                    McpServerLoadingStatus.LOADING -> "Loading tools..."
+                    McpServerLoadingStatus.LOADED -> {
+                        val duration = serverState.loadingDuration?.let { "${it}ms" } ?: ""
+                        "Loaded ${tools.size} tools $duration"
+                    }
+                    McpServerLoadingStatus.ERROR -> "Error: ${serverState.errorMessage ?: "Unknown error"}"
+                    McpServerLoadingStatus.DISABLED -> "Disabled"
+                    McpServerLoadingStatus.NOT_STARTED -> "Not started"
+                }
+
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            }
+
+            // Tool count and enabled count
+            if (tools.isNotEmpty()) {
+                Text(
+                    text = "${tools.count { it.enabled }}/${tools.size}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            // Loading indicator
+            if (serverState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            // Expand/collapse icon
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         }
     }
 }

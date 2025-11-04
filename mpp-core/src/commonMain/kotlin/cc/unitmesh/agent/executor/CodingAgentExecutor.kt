@@ -117,9 +117,7 @@ class CodingAgentExecutor(
     }
 
     private fun buildInitialUserMessage(task: AgentTask): String {
-        return "Task: ${task.requirement}\n\n" +
-                "Please analyze this task and use the available DevIns tools to complete it. " +
-                "Use tools like /read-file, /write-file, /shell, etc. as needed."
+        return "Task: ${task.requirement}"
     }
 
     private fun buildContinuationMessage(): String {

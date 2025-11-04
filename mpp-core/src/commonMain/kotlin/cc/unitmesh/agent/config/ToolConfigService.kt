@@ -17,7 +17,6 @@ class ToolConfigService(
      * Check if a built-in tool is enabled
      */
     fun isBuiltinToolEnabled(toolName: String): Boolean {
-        // If no specific configuration, enable all by default
         if (toolConfig.enabledBuiltinTools.isEmpty()) {
             return true
         }
@@ -60,14 +59,31 @@ class ToolConfigService(
      * Filter MCP tools based on configuration
      */
     fun <T : ExecutableTool<*, *>> filterMcpTools(tools: List<T>): List<T> {
-        // If no MCP tools enabled, return empty
+        println("🔍 Filtering MCP tools: ${tools.size} discovered, ${toolConfig.enabledMcpTools.size} configured")
+
+        // Debug: Print configured enabled tools
+        if (toolConfig.enabledMcpTools.isNotEmpty()) {
+            println("   Configured enabled MCP tools:")
+            toolConfig.enabledMcpTools.forEach { toolName ->
+                println("     - $toolName")
+            }
+        }
+
+        // If no MCP tools configuration exists, enable all discovered tools by default
+        // This allows MCP tools to work out of the box when servers are configured
         if (toolConfig.enabledMcpTools.isEmpty()) {
-            return emptyList()
+            println("ℹ️  No MCP tools explicitly enabled, enabling all discovered tools by default")
+            return tools
         }
-        
-        return tools.filter { tool ->
-            isMcpToolEnabled(tool.name)
+
+        val filteredTools = tools.filter { tool ->
+            val enabled = isMcpToolEnabled(tool.name)
+            println("   Tool '${tool.name}': ${if (enabled) "✓ enabled" else "✗ disabled"}")
+            enabled
         }
+
+        println("🔧 Filtered result: ${filteredTools.size}/${tools.size} tools enabled")
+        return filteredTools
     }
     
     /**

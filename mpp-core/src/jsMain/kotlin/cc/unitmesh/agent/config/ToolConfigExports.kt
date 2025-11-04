@@ -2,6 +2,7 @@ package cc.unitmesh.agent.config
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
+import kotlinx.serialization.json.Json
 import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.js.Promise
@@ -17,14 +18,45 @@ import kotlin.js.Promise
  */
 @JsExport
 object JsToolConfigManager {
-    
+
+    /**
+     * Load tool configuration from file (~/.autodev/mcp.json)
+     */
+    @JsName("loadToolConfig")
+    fun loadToolConfig(): Promise<JsToolConfigFile> {
+        return GlobalScope.promise {
+            try {
+                val config = loadToolConfigFromFile()
+                JsToolConfigFile.fromCommon(config)
+            } catch (e: Exception) {
+                console.error("Error loading tool config:", e.message)
+                JsToolConfigFile.default()
+            }
+        }
+    }
+
+    /**
+     * Save tool configuration to file (~/.autodev/mcp.json)
+     */
+    @JsName("saveToolConfig")
+    fun saveToolConfig(config: JsToolConfigFile): Promise<Unit> {
+        return GlobalScope.promise {
+            try {
+                saveToolConfigToFile(config.toCommon())
+            } catch (e: Exception) {
+                console.error("Error saving tool config:", e.message)
+                throw e
+            }
+        }
+    }
+
     /**
      * Get all built-in tools grouped by category
      */
     @JsName("getBuiltinToolsByCategory")
     fun getBuiltinToolsByCategory(): dynamic {
         val toolsByCategory = ToolConfigManager.getBuiltinToolsByCategory()
-        
+
         // Convert to JS object
         val result = js("{}")
         toolsByCategory.forEach { (category, tools) ->
@@ -40,7 +72,7 @@ object JsToolConfigManager {
                 toolObj
             }.toTypedArray()
         }
-        
+
         return result
     }
     
@@ -160,6 +192,98 @@ class JsChatConfig(
                 maxTokens = config.maxTokens
             )
         }
+    }
+}
+
+/**
+ * Load tool configuration from file system (JS implementation)
+ */
+private suspend fun loadToolConfigFromFile(): ToolConfigFile {
+    return try {
+        // Use Node.js fs module (synchronous for simplicity)
+        val fs = js("require('fs')")
+        val os = js("require('os')")
+        val path = js("require('path')")
+
+        val homeDir = os.homedir() as String
+        val configDir = path.join(homeDir, ".autodev") as String
+        val configFile = path.join(configDir, "mcp.json") as String
+
+        console.log("🔍 Loading tool config from:", configFile)
+
+        // Check if file exists
+        val fileExists = try {
+            fs.existsSync(configFile) as Boolean
+        } catch (e: dynamic) {
+            false
+        }
+
+        console.log("📁 File exists:", fileExists)
+
+        if (!fileExists) {
+            console.log("⚠️ Tool config file doesn't exist, using default")
+            return ToolConfigFile.default()
+        }
+
+        console.log("✅ Tool config file exists")
+
+        // Read file content synchronously
+        val content = fs.readFileSync(configFile, "utf-8") as String
+        console.log("📄 Tool config file content length:", content.length)
+        console.log("📄 Tool config file content preview:", content.take(200))
+
+        // Parse JSON
+        val json = Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+        }
+        val config = json.decodeFromString<ToolConfigFile>(content)
+        console.log("✅ Tool config parsed successfully")
+        console.log("  Builtin tools:", config.enabledBuiltinTools.size)
+        console.log("  MCP tools:", config.enabledMcpTools.size)
+        console.log("  MCP servers:", config.mcpServers.size)
+
+        config
+    } catch (e: Exception) {
+        console.error("❌ Error loading tool config from file:", e.message)
+        console.error("Stack trace:", e.stackTraceToString())
+        ToolConfigFile.default()
+    }
+}
+
+/**
+ * Save tool configuration to file system (JS implementation)
+ */
+private suspend fun saveToolConfigToFile(config: ToolConfigFile) {
+    try {
+        // Use Node.js fs module (synchronous for simplicity)
+        val fs = js("require('fs')")
+        val os = js("require('os')")
+        val path = js("require('path')")
+
+        val homeDir = os.homedir() as String
+        val configDir = path.join(homeDir, ".autodev") as String
+        val configFile = path.join(configDir, "mcp.json") as String
+
+        // Ensure directory exists
+        try {
+            fs.mkdirSync(configDir, js("{ recursive: true }"))
+        } catch (e: dynamic) {
+            // Directory might already exist
+        }
+
+        // Serialize to JSON
+        val json = Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+        }
+        val jsonContent = json.encodeToString(ToolConfigFile.serializer(), config)
+
+        // Write file synchronously
+        fs.writeFileSync(configFile, jsonContent, "utf-8")
+    } catch (e: Exception) {
+        console.error("Error saving tool config to file:", e.message)
+        throw e
     }
 }
 

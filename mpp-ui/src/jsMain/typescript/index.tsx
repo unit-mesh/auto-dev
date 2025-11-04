@@ -43,16 +43,41 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       process.exit(1);
     }
 
-    // Load MCP servers configuration
+    // Load tool configuration (includes MCP tool settings)
+    const toolConfig = await KotlinCC.unitmesh.agent.config.JsToolConfigManager.loadToolConfig();
+
+    // Debug: Log tool config details
+    if (!quiet) {
+      console.log('🔍 Debug: Tool config loaded');
+      console.log('  Enabled builtin tools:', toolConfig.enabledBuiltinTools.length);
+      console.log('  Enabled MCP tools:', toolConfig.enabledMcpTools.length);
+      console.log('  MCP servers in tool config:', Object.keys(toolConfig.mcpServers || {}).length);
+    }
+
+    // Load MCP servers configuration from main config
     const mcpServers = config.getMcpServers();
+
+    if (!quiet) {
+      console.log('  MCP servers in main config:', Object.keys(mcpServers).length);
+    }
+
+    // Merge MCP servers from both sources (tool config takes precedence)
+    const allMcpServers = { ...mcpServers, ...toolConfig.mcpServers };
     const enabledMcpServers = Object.fromEntries(
-      Object.entries(mcpServers).filter(([_, server]) => !server.disabled)
+      Object.entries(allMcpServers).filter(([_, server]: [string, any]) => !server.disabled)
     );
+
+    if (!quiet) {
+      console.log('  Total MCP servers after merge:', Object.keys(allMcpServers).length);
+      console.log('  Enabled MCP servers:', Object.keys(enabledMcpServers).length);
+    }
 
     if (!quiet) {
       console.log(`\n🚀 AutoDev Coding Agent`);
       console.log(`📦 Provider: ${activeConfig.provider}`);
       console.log(`🤖 Model: ${activeConfig.model}`);
+      console.log(`🔧 Enabled builtin tools: ${toolConfig.enabledBuiltinTools.length}`);
+      console.log(`🔌 Enabled MCP tools: ${toolConfig.enabledMcpTools.length}`);
       if (Object.keys(enabledMcpServers).length > 0) {
         console.log(`🔌 MCP Servers: ${Object.keys(enabledMcpServers).join(', ')}`);
       }

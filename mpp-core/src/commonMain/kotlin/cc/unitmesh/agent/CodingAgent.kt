@@ -53,7 +53,6 @@ class CodingAgent(
 
     private val promptRenderer = CodingAgentPromptRenderer()
     
-    // Tool configuration service
     private val configService = toolConfigService ?: cc.unitmesh.agent.config.ToolConfigService.default()
 
     private val toolRegistry = ToolRegistry(
@@ -69,7 +68,6 @@ class CodingAgent(
 
     private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
     
-    // MCP Tools 初始化器
     private val mcpToolsInitializer = McpToolsInitializer()
 
     // 执行器
@@ -82,7 +80,6 @@ class CodingAgent(
     )
 
     init {
-        // 注册 SubAgents（作为 Tools）- 根据配置决定是否启用
         if (configService.isBuiltinToolEnabled("error-recovery")) {
             registerTool(errorRecoveryAgent)
         }
@@ -117,14 +114,11 @@ class CodingAgent(
     }
 
     override suspend fun executeTask(task: AgentTask): AgentResult {
-        // 构建系统提示词
         val context = buildContext(task)
         val systemPrompt = buildSystemPrompt(context)
 
-        // 使用执行器执行任务
         return executor.execute(task, systemPrompt)
     }
-
 
 
     override fun buildSystemPrompt(context: CodingAgentContext, language: String): String {
@@ -132,7 +126,6 @@ class CodingAgent(
     }
 
     override suspend fun initializeWorkspace(projectPath: String) {
-        // Use MCP servers from toolConfigService if available, otherwise fall back to constructor param
         val mcpServersToInit = configService.getEnabledMcpServers().takeIf { it.isNotEmpty() }
             ?: mcpServers
         
@@ -145,22 +138,38 @@ class CodingAgent(
      * Initialize and register MCP tools from configuration
      */
     private suspend fun initializeMcpTools(mcpServers: Map<String, McpServerConfig>) {
+        println("🔧 Initializing MCP tools from ${mcpServers.size} servers...")
+
+        // Debug: Print server configurations
+        mcpServers.forEach { (name, config) ->
+            println("   Server '$name': ${config.command} ${config.args.joinToString(" ")} (disabled: ${config.disabled})")
+        }
+
         try {
-            println("🔌 Initializing MCP tools...")
-            
             val mcpTools = mcpToolsInitializer.initialize(mcpServers)
-            
+            println("🔍 Discovered ${mcpTools.size} MCP tools")
+
             if (mcpTools.isNotEmpty()) {
-                // Filter MCP tools based on configuration
+                // Debug: Print discovered tools
+                mcpTools.forEach { tool ->
+                    println("   Discovered tool: ${tool.name} (${tool::class.simpleName})")
+                }
+
                 val filteredMcpTools = configService.filterMcpTools(mcpTools)
-                
+                println("🔧 Filtered to ${filteredMcpTools.size} enabled tools")
+
+                // Debug: Print filtered tools
+                filteredMcpTools.forEach { tool ->
+                    println("   Enabled tool: ${tool.name}")
+                }
+
                 filteredMcpTools.forEach { tool ->
                     registerTool(tool)
                 }
-                
+
                 println("✅ Registered ${filteredMcpTools.size}/${mcpTools.size} MCP tools from ${mcpServers.size} servers")
             } else {
-                println("ℹ️  No MCP tools discovered")
+                println("ℹ️  No MCP tools discovered from ${mcpServers.size} servers")
             }
         } catch (e: Exception) {
             println("⚠️  Warning: Failed to initialize MCP tools: ${e.message}")

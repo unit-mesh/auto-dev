@@ -18,15 +18,6 @@ object CodingAgentTemplate {
 - Current File: ${'$'}{currentFile}
 - Build Tool: ${'$'}{buildTool}
 - Shell: ${'$'}{shell}
-#if (${'$'}{frameworkContext})
-- Framework Context: ${'$'}{frameworkContext}
-#end
-#if (${'$'}{moduleInfo})
-${'$'}{moduleInfo}
-#end
-
-## Project Structure
-${'$'}{projectStructure}
 
 ## Available Tools
 You have access to the following tools through DevIns commands:
@@ -96,12 +87,6 @@ Remember: You are autonomous. Keep working until the task is complete or you enc
 - 当前文件: ${'$'}{currentFile}
 - 构建工具: ${'$'}{buildTool}
 - Shell: ${'$'}{shell}
-#if (${'$'}{frameworkContext})
-- 框架上下文: ${'$'}{frameworkContext}
-#end
-#if (${'$'}{moduleInfo})
-${'$'}{moduleInfo}
-#end
 
 ## 项目结构
 ${'$'}{projectStructure}

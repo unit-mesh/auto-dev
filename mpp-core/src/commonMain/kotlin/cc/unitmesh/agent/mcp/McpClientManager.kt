@@ -25,6 +25,12 @@ expect class McpClientManager {
      * Returns a map of server name to list of discovered tools
      */
     suspend fun discoverAllTools(): Map<String, List<McpToolInfo>>
+
+    /**
+     * Discover tools from a specific MCP server
+     * Returns a list of discovered tools for the specified server
+     */
+    suspend fun discoverServerTools(serverName: String): List<McpToolInfo>
     
     /**
      * Get the current status of a specific MCP server

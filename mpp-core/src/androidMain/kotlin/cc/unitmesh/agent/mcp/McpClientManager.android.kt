@@ -18,6 +18,11 @@ actual class McpClientManager {
         return emptyMap()
     }
 
+    actual suspend fun discoverServerTools(serverName: String): List<McpToolInfo> {
+        println("McpClientManager.discoverServerTools() - Android implementation not yet available")
+        return emptyList()
+    }
+
     actual fun getServerStatus(serverName: String): McpServerStatus {
         return serverStatuses[serverName] ?: McpServerStatus.DISCONNECTED
     }

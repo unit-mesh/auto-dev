@@ -112,6 +112,24 @@ actual class McpClientManager {
         return result
     }
 
+    actual suspend fun discoverServerTools(serverName: String): List<McpToolInfo> {
+        val config = currentConfig ?: return emptyList()
+        val serverConfig = config.mcpServers[serverName] ?: return emptyList()
+
+        if (serverConfig.disabled) {
+            return emptyList()
+        }
+
+        try {
+            // For now, return empty list as JS implementation is not fully available
+            console.log("discoverServerTools for $serverName - JS implementation not yet available")
+            return emptyList()
+        } catch (e: Throwable) {
+            console.error("Error discovering tools for server '$serverName'", e)
+            return emptyList()
+        }
+    }
+
     actual fun getServerStatus(serverName: String): McpServerStatus {
         return serverStatuses[serverName] ?: McpServerStatus.DISCONNECTED
     }
