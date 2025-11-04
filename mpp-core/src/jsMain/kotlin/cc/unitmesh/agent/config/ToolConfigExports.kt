@@ -115,10 +115,10 @@ class JsToolConfigFile(
     fun toCommon(): ToolConfigFile {
         // Parse MCP servers from JS object
         val mcpServersMap = mutableMapOf<String, cc.unitmesh.agent.mcp.McpServerConfig>()
-        if (mcpServers != null && mcpServers != undefined) {
-            val keys = js("Object.keys(mcpServers)") as Array<String>
+        if (this.mcpServers != null && this.mcpServers != undefined) {
+            val keys = js("Object.keys(this.mcpServers)") as Array<String>
             for (key in keys) {
-                val server = mcpServers[key]
+                val server = this.mcpServers[key]
                 val config = cc.unitmesh.agent.mcp.McpServerConfig(
                     command = server.command as? String,
                     url = server.url as? String,

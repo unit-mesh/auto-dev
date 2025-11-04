@@ -228,7 +228,8 @@ class JsCodingAgent(
     private val llmService: cc.unitmesh.llm.JsKoogLLMService,
     private val maxIterations: Int = 100,
     private val renderer: JsCodingAgentRenderer? = null,
-    private val mcpServers: dynamic = null  // JS object for MCP configuration
+    private val mcpServers: dynamic = null,  // JS object for MCP configuration
+    private val toolConfig: cc.unitmesh.agent.config.JsToolConfigFile? = null  // Tool configuration
 ) {
     // 内部使用 Kotlin 的 CodingAgent
     private val agent: CodingAgent = CodingAgent(
@@ -236,9 +237,21 @@ class JsCodingAgent(
         llmService = llmService.service,  // 访问内部 KoogLLMService
         maxIterations = maxIterations,
         renderer = if (renderer != null) JsRendererAdapter(renderer) else DefaultCodingAgentRenderer(),
-        mcpServers = parseMcpServers(mcpServers)
+        mcpServers = parseMcpServers(mcpServers),
+        toolConfigService = createToolConfigService(toolConfig)
     )
     
+    /**
+     * Create tool config service from JS tool config
+     */
+    private fun createToolConfigService(jsToolConfig: cc.unitmesh.agent.config.JsToolConfigFile?): cc.unitmesh.agent.config.ToolConfigService? {
+        return if (jsToolConfig != null) {
+            cc.unitmesh.agent.config.ToolConfigService(jsToolConfig.toCommon())
+        } else {
+            null
+        }
+    }
+
     /**
      * Parse JS MCP servers object to Kotlin map
      */

@@ -17,14 +17,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import cc.unitmesh.agent.config.McpLoadingState
+import cc.unitmesh.agent.config.McpLoadingStateCallback
+import cc.unitmesh.agent.config.McpServerLoadingStatus
+import cc.unitmesh.agent.config.McpServerState
+import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.config.ToolConfigManager
 import cc.unitmesh.agent.config.ToolItem
-import cc.unitmesh.agent.config.McpLoadingState
-import cc.unitmesh.agent.config.McpLoadingStateCallback
-import cc.unitmesh.agent.config.McpServerState
-import cc.unitmesh.agent.config.McpServerLoadingStatus
-import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.ToolSource
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.mcp.McpServerConfig
@@ -256,7 +256,7 @@ fun ToolConfigDialog(
 
                                         // Discover MCP tools
                                         try {
-                                            mcpTools = ToolConfigManager.discoverMcpTools(
+                                            val discoveredTools = ToolConfigManager.discoverMcpTools(
                                                 newMcpServers,
                                                 toolConfig.enabledMcpTools.toSet()
                                             )
@@ -666,7 +666,6 @@ private fun McpServerHeader(
                 Spacer(modifier = Modifier.width(8.dp))
             }
 
-            // Expand/collapse icon
             Icon(
                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                 contentDescription = if (isExpanded) "Collapse" else "Expand",

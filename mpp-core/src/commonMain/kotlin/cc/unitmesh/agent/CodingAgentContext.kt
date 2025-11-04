@@ -58,10 +58,58 @@ data class CodingAgentContext(
                 osInfo = Platform.getOSInfo(),
                 timestamp = Platform.getCurrentTimestamp(),
                 shell = Platform.getDefaultShell(),
-                toolList = toolList.joinToString("\n") {
-                    "/${it.name} ${it.description}"
-                }
+                toolList = formatToolListForAI(toolList)
             )
+        }
+
+        /**
+         * Format tool list with enhanced schema information for AI understanding
+         */
+        private fun formatToolListForAI(toolList: List<ExecutableTool<*, *>>): String {
+            if (toolList.isEmpty()) {
+                return "No tools available."
+            }
+
+            return toolList.joinToString("\n\n") { tool ->
+                buildString {
+                    // Tool header with name and description
+                    appendLine("<tool name=\"${tool.name}\">")
+                    appendLine("  <description>${tool.description}</description>")
+
+                    // Parameter schema information
+                    val paramClass = tool.getParameterClass()
+                    if (paramClass.isNotEmpty() && paramClass != "Unit") {
+                        appendLine("  <parameters>")
+                        appendLine("    <type>$paramClass</type>")
+                        appendLine("    <usage>/${tool.name} [parameters]</usage>")
+                        appendLine("  </parameters>")
+                    }
+
+                    // Add example if available (for built-in tools)
+                    val example = generateToolExample(tool)
+                    if (example.isNotEmpty()) {
+                        appendLine("  <example>")
+                        appendLine("    $example")
+                        appendLine("  </example>")
+                    }
+
+                    append("</tool>")
+                }
+            }
+        }
+
+        /**
+         * Generate example usage for a tool
+         */
+        private fun generateToolExample(tool: ExecutableTool<*, *>): String {
+            return when (tool.name) {
+                "read-file" -> "/${tool.name} path=\"src/main.kt\""
+                "write-file" -> "/${tool.name} path=\"output.txt\" content=\"Hello, World!\""
+                "grep" -> "/${tool.name} pattern=\"function.*main\" path=\"src\" include=\"*.kt\""
+                "glob" -> "/${tool.name} pattern=\"*.kt\" path=\"src\""
+                "shell" -> "/${tool.name} command=\"ls -la\""
+                else -> "/${tool.name} <parameters>"
+            }
         }
 
         interface Builder {

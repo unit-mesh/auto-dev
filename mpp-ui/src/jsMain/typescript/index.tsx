@@ -99,13 +99,14 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
     // Create CLI renderer
     const renderer = new CliRenderer();
 
-    // Create and run Kotlin CodingAgent with custom renderer and MCP servers
+    // Create and run Kotlin CodingAgent with custom renderer, MCP servers, and tool config
     const agent = new KotlinCC.unitmesh.agent.JsCodingAgent(
       resolvedPath,
       llmService,
       10, // maxIterations
       renderer, // custom renderer
-      Object.keys(enabledMcpServers).length > 0 ? enabledMcpServers : null // MCP servers
+      Object.keys(enabledMcpServers).length > 0 ? enabledMcpServers : null, // MCP servers
+      toolConfig // tool configuration
     );
 
     // Create task object

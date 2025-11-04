@@ -79,15 +79,22 @@ class CodingAgent(
         maxIterations = maxIterations
     )
 
+    // 标记 MCP 工具是否已初始化
+    private var mcpToolsInitialized = false
+
     init {
+        // 注册 SubAgents（作为 Tools）- 根据配置决定是否启用
         if (configService.isBuiltinToolEnabled("error-recovery")) {
             registerTool(errorRecoveryAgent)
+            toolRegistry.registerTool(errorRecoveryAgent)  // 同时注册到 ToolRegistry
         }
         if (configService.isBuiltinToolEnabled("log-summary")) {
             registerTool(logSummaryAgent)
+            toolRegistry.registerTool(logSummaryAgent)  // 同时注册到 ToolRegistry
         }
         if (configService.isBuiltinToolEnabled("codebase-investigator")) {
             registerTool(codebaseInvestigatorAgent)
+            toolRegistry.registerTool(codebaseInvestigatorAgent)  // 同时注册到 ToolRegistry
         }
     }
 
@@ -184,7 +191,13 @@ class CodingAgent(
         mcpToolsInitializer.shutdown()
     }
 
-    private fun buildContext(task: AgentTask): CodingAgentContext {
+    private suspend fun buildContext(task: AgentTask): CodingAgentContext {
+        // 确保 MCP 工具已初始化
+        if (!mcpToolsInitialized && mcpServers != null) {
+            initializeMcpTools(mcpServers)
+            mcpToolsInitialized = true
+        }
+
         return CodingAgentContext.fromTask(
             task,
             toolList = getAllTools()
