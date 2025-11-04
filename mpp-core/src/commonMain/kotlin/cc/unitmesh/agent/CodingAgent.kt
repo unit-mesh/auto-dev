@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.core.MainAgent
 import cc.unitmesh.agent.executor.CodingAgentExecutor
 import cc.unitmesh.agent.mcp.McpServerConfig
@@ -23,6 +24,10 @@ import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class CodingAgent(
     private val projectPath: String,
@@ -32,7 +37,7 @@ class CodingAgent(
     private val fileSystem: ToolFileSystem? = null,
     private val shellExecutor: ShellExecutor? = null,
     private val mcpServers: Map<String, McpServerConfig>? = null,
-    private val toolConfigService: cc.unitmesh.agent.config.ToolConfigService? = null
+    private val mcpToolConfigService: McpToolConfigService
 ) : MainAgent<AgentTask, ToolResult.AgentResult>(
     AgentDefinition(
         name = "CodingAgent",
@@ -54,7 +59,7 @@ class CodingAgent(
 
     private val promptRenderer = CodingAgentPromptRenderer()
     
-    private val configService = toolConfigService ?: cc.unitmesh.agent.config.ToolConfigService.default()
+    private val configService = mcpToolConfigService
 
     private val toolRegistry = ToolRegistry(
         fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
@@ -96,6 +101,10 @@ class CodingAgent(
         if (configService.isBuiltinToolEnabled("codebase-investigator")) {
             registerTool(codebaseInvestigatorAgent)
             toolRegistry.registerTool(codebaseInvestigatorAgent)  // 同时注册到 ToolRegistry
+        }
+
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            initializeWorkspace(projectPath)
         }
     }
 

@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.ui.compose.agent
 
 import cc.unitmesh.agent.CodingAgent
+import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.tool.filesystem.AndroidToolFileSystem
 import cc.unitmesh.devins.ui.platform.AndroidActivityProvider
@@ -13,11 +14,12 @@ actual fun createPlatformCodingAgent(
     projectPath: String,
     llmService: KoogLLMService,
     maxIterations: Int,
-    renderer: CodingAgentRenderer
+    renderer: CodingAgentRenderer,
+    mcpToolConfigService: McpToolConfigService
 ): CodingAgent {
     val activity = AndroidActivityProvider.getActivity()
     val context = activity?.applicationContext
-    
+
     return if (context != null) {
         val androidFileSystem = AndroidToolFileSystem(context, projectPath)
         CodingAgent(
@@ -25,16 +27,17 @@ actual fun createPlatformCodingAgent(
             llmService = llmService,
             maxIterations = maxIterations,
             renderer = renderer,
-            fileSystem = androidFileSystem
+            fileSystem = androidFileSystem,
+            mcpToolConfigService = mcpToolConfigService
         )
     } else {
-        // Fallback to default if no context available
         println("⚠️ Warning: No Android context available, using default file system")
         CodingAgent(
             projectPath = projectPath,
             llmService = llmService,
             maxIterations = maxIterations,
-            renderer = renderer
+            renderer = renderer,
+            mcpToolConfigService = mcpToolConfigService
         )
     }
 }

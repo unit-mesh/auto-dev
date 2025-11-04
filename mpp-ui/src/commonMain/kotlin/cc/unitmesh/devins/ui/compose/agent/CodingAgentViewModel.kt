@@ -5,6 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.AgentTask
 import cc.unitmesh.agent.CodingAgent
+import cc.unitmesh.agent.config.McpToolConfigManager
+import cc.unitmesh.agent.config.McpToolConfigService
+import cc.unitmesh.agent.config.PreloadingStatus
+import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 
@@ -23,16 +27,89 @@ class CodingAgentViewModel(
 
     val renderer = ComposeRenderer()
 
-    private val codingAgent = createPlatformCodingAgent(
-        projectPath = projectPath,
-        llmService = llmService,
-        maxIterations = maxIterations,
-        renderer = renderer
-    )
+    // Lazy initialization of CodingAgent to handle async tool config loading
+    private var _codingAgent: CodingAgent? = null
+    private var agentInitialized = false
 
     var isExecuting by mutableStateOf(false)
         private set
     private var currentExecutionJob: Job? = null
+
+    // MCP preloading state
+    var mcpPreloadingStatus by mutableStateOf(PreloadingStatus(false, emptyList(), 0))
+        private set
+    var mcpPreloadingMessage by mutableStateOf("")
+        private set
+
+    init {
+        // Start MCP preloading immediately when ViewModel is created
+        scope.launch {
+            startMcpPreloading()
+        }
+    }
+
+    /**
+     * Start MCP servers preloading in background
+     */
+    private suspend fun startMcpPreloading() {
+        try {
+            mcpPreloadingMessage = "Loading MCP servers configuration..."
+            val toolConfig = ConfigManager.loadToolConfig()
+
+            if (toolConfig.mcpServers.isEmpty()) {
+                mcpPreloadingMessage = "No MCP servers configured"
+                return
+            }
+
+            mcpPreloadingMessage = "Initializing ${toolConfig.mcpServers.size} MCP servers..."
+
+            // Initialize MCP servers (this will start background preloading)
+            McpToolConfigManager.init(toolConfig)
+
+            // Monitor preloading status
+            while (McpToolConfigManager.isPreloading()) {
+                mcpPreloadingStatus = McpToolConfigManager.getPreloadingStatus()
+                mcpPreloadingMessage = "Loading MCP servers... (${mcpPreloadingStatus.preloadedServers.size} completed)"
+                delay(500) // Update every 500ms
+            }
+
+            // Final status update
+            mcpPreloadingStatus = McpToolConfigManager.getPreloadingStatus()
+            val preloadedCount = mcpPreloadingStatus.preloadedServers.size
+            val totalCount = toolConfig.mcpServers.filter { !it.value.disabled }.size
+
+            mcpPreloadingMessage = if (preloadedCount > 0) {
+                "MCP servers loaded successfully ($preloadedCount/$totalCount servers)"
+            } else {
+                "MCP servers initialization completed (no tools loaded)"
+            }
+
+        } catch (e: Exception) {
+            mcpPreloadingMessage = "Failed to load MCP servers: ${e.message}"
+            println("Error during MCP preloading: ${e.message}")
+        }
+    }
+
+    /**
+     * Initialize the CodingAgent with tool configuration
+     * This must be called before executing any tasks
+     */
+    private suspend fun initializeCodingAgent(): CodingAgent {
+        if (_codingAgent == null || !agentInitialized) {
+            val toolConfig = ConfigManager.loadToolConfig()
+            val mcpToolConfigService = McpToolConfigService(toolConfig)
+
+            _codingAgent = createPlatformCodingAgent(
+                projectPath = projectPath,
+                llmService = llmService,
+                maxIterations = maxIterations,
+                renderer = renderer,
+                mcpToolConfigService = mcpToolConfigService
+            )
+            agentInitialized = true
+        }
+        return _codingAgent!!
+    }
 
     fun executeTask(task: String) {
         if (isExecuting) {
@@ -47,6 +124,9 @@ class CodingAgentViewModel(
         currentExecutionJob =
             scope.launch {
                 try {
+                    // Initialize agent if not already done
+                    val codingAgent = initializeCodingAgent()
+
                     val agentTask =
                         AgentTask(
                             requirement = task,
@@ -98,6 +178,11 @@ class CodingAgentViewModel(
     fun clearError() {
         renderer.clearError()
     }
+
+    /**
+     * Check if MCP servers are ready (preloading completed)
+     */
+    fun areMcpServersReady(): Boolean = !McpToolConfigManager.isPreloading()
 
     /**
      * Dispose resources

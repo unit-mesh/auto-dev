@@ -19,6 +19,12 @@ object McpToolConfigManager {
     private val cached = mutableMapOf<String, Map<String, List<ToolItem>>>()
     private val loadingStateCallbacks = mutableListOf<McpLoadingStateCallback>()
 
+    // Preloading state management
+    private var isPreloading = false
+    private var preloadingJob: Job? = null
+    private var preloadedServers = mutableSetOf<String>()
+    private val preloadingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -40,20 +46,16 @@ object McpToolConfigManager {
         // Create cache key from server configurations
         val cacheKey = createCacheKey(mcpServers)
 
-        // Check cache first
         cached[cacheKey]?.let { cachedTools ->
             return applyEnabledState(cachedTools, enabledMcpTools)
         }
 
         try {
-            // Initialize MCP client manager with configuration
             val mcpConfig = McpConfig(mcpServers = mcpServers)
             clientManager.initialize(mcpConfig)
 
-            // Discover tools from all servers
             val discoveredTools = clientManager.discoverAllTools()
 
-            // Convert to ToolItem format and cache
             val toolsByServer = convertMcpToolsToToolItems(discoveredTools)
             cached[cacheKey] = toolsByServer
 
@@ -62,6 +64,90 @@ object McpToolConfigManager {
             println("Error discovering MCP tools: ${e.message}")
             e.printStackTrace()
             return emptyMap()
+        }
+    }
+
+    /**
+     * Initialize MCP servers and preload tools in background
+     * This method starts preloading all configured MCP servers to avoid delays during actual usage
+     *
+     * @param toolConfig The tool configuration containing MCP server settings
+     */
+    fun init(toolConfig: ToolConfigFile) {
+        if (toolConfig.mcpServers.isEmpty()) {
+            println("No MCP servers configured, skipping initialization")
+            return
+        }
+
+        // Cancel any existing preloading job
+        preloadingJob?.cancel()
+
+        // Start background preloading
+        preloadingJob = preloadingScope.launch {
+            try {
+                isPreloading = true
+                preloadedServers.clear()
+
+                println("Starting MCP servers preloading for ${toolConfig.mcpServers.size} servers...")
+
+                // Initialize client manager with MCP config
+                val mcpConfig = McpConfig(mcpServers = toolConfig.mcpServers)
+                clientManager.initialize(mcpConfig)
+
+                // Create cache key for this configuration
+                val cacheKey = createCacheKey(toolConfig.mcpServers)
+
+                // Preload tools from all enabled servers concurrently
+                val enabledMcpTools = toolConfig.enabledMcpTools.toSet()
+                val preloadResults = mutableMapOf<String, List<ToolItem>>()
+
+                coroutineScope {
+                    val jobs = toolConfig.mcpServers.filter { !it.value.disabled }.map { (serverName, _) ->
+                        async {
+                            try {
+                                println("Preloading tools for MCP server: $serverName")
+                                val discoveredTools = clientManager.discoverServerTools(serverName)
+
+                                val tools = discoveredTools.map { toolInfo ->
+                                    ToolItem(
+                                        name = "${serverName}_${toolInfo.name}",
+                                        displayName = toolInfo.name,
+                                        description = toolInfo.description,
+                                        category = "MCP",
+                                        source = ToolSource.MCP,
+                                        enabled = "${serverName}_${toolInfo.name}" in enabledMcpTools,
+                                        serverName = serverName
+                                    )
+                                }
+
+                                preloadResults[serverName] = tools
+                                preloadedServers.add(serverName)
+                                println("Successfully preloaded ${tools.size} tools from MCP server: $serverName")
+
+                            } catch (e: Exception) {
+                                println("Failed to preload tools from MCP server '$serverName': ${e.message}")
+                            }
+                        }
+                    }
+
+                    // Wait for all preloading jobs to complete
+                    jobs.awaitAll()
+                }
+
+                // Cache the preloaded results
+                if (preloadResults.isNotEmpty()) {
+                    cached[cacheKey] = preloadResults
+                    println("MCP servers preloading completed. Cached tools from ${preloadedServers.size} servers.")
+                } else {
+                    println("MCP servers preloading completed but no tools were loaded.")
+                }
+
+            } catch (e: Exception) {
+                println("Error during MCP servers preloading: ${e.message}")
+                e.printStackTrace()
+            } finally {
+                isPreloading = false
+            }
         }
     }
 
@@ -180,44 +266,6 @@ object McpToolConfigManager {
         }
     }
 
-    /**
-     * Register a callback for loading state updates
-     */
-    fun addLoadingStateCallback(callback: McpLoadingStateCallback) {
-        loadingStateCallbacks.add(callback)
-    }
-
-    /**
-     * Unregister a callback for loading state updates
-     */
-    fun removeLoadingStateCallback(callback: McpLoadingStateCallback) {
-        loadingStateCallbacks.remove(callback)
-    }
-
-    /**
-     * Get enabled servers from configuration string
-     *
-     * @param configContent JSON configuration string
-     * @return Map of enabled server configurations
-     */
-    fun getEnabledServers(configContent: String): Map<String, McpServerConfig>? {
-        return try {
-            val mcpConfig = McpConfig.fromJson(configContent)
-            mcpConfig?.getEnabledServers()
-        } catch (e: Exception) {
-            println("Error parsing MCP configuration: ${e.message}")
-            null
-        }
-    }
-
-    /**
-     * Execute an MCP tool
-     *
-     * @param serverName Name of the MCP server
-     * @param toolName Name of the tool to execute
-     * @param arguments JSON string of tool arguments
-     * @return Tool execution result
-     */
     suspend fun executeTool(
         serverName: String,
         toolName: String,
@@ -230,35 +278,56 @@ object McpToolConfigManager {
         }
     }
 
-    /**
-     * Get server connection statuses
-     *
-     * @return Map of server name to connection status
-     */
     fun getServerStatuses(): Map<String, McpServerStatus> {
         return clientManager.getAllServerStatuses()
     }
 
     /**
-     * Shutdown MCP connections and clean up resources
+     * Check if MCP servers are currently being preloaded
      */
+    fun isPreloading(): Boolean = isPreloading
+
+    /**
+     * Get the set of successfully preloaded server names
+     */
+    fun getPreloadedServers(): Set<String> = preloadedServers.toSet()
+
+    /**
+     * Check if a specific server has been preloaded
+     */
+    fun isServerPreloaded(serverName: String): Boolean = serverName in preloadedServers
+
+    /**
+     * Wait for preloading to complete (useful for testing or when you need to ensure preloading is done)
+     */
+    suspend fun waitForPreloading() {
+        preloadingJob?.join()
+    }
+
+    /**
+     * Get preloading status information
+     */
+    fun getPreloadingStatus(): PreloadingStatus {
+        return PreloadingStatus(
+            isPreloading = isPreloading,
+            preloadedServers = preloadedServers.toList(),
+            totalCachedConfigurations = cached.size
+        )
+    }
+
     suspend fun shutdown() {
         try {
+            // Cancel preloading job if running
+            preloadingJob?.cancel()
+            preloadingScope.cancel()
+
             clientManager.shutdown()
             cached.clear()
+            preloadedServers.clear()
         } catch (e: Exception) {
             println("Error shutting down MCP client manager: ${e.message}")
         }
     }
-
-    /**
-     * Clear cached tool discoveries
-     */
-    fun clearCache() {
-        cached.clear()
-    }
-
-    // Private helper methods
 
     private fun createCacheKey(mcpServers: Map<String, McpServerConfig>): String {
         return json.encodeToString(McpConfig.serializer(), McpConfig(mcpServers))
@@ -293,3 +362,12 @@ object McpToolConfigManager {
         }
     }
 }
+
+/**
+ * Represents the current preloading status of MCP servers
+ */
+data class PreloadingStatus(
+    val isPreloading: Boolean,
+    val preloadedServers: List<String>,
+    val totalCachedConfigurations: Int
+)

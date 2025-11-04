@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.config.JsToolConfigFile
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
@@ -229,7 +230,7 @@ class JsCodingAgent(
     private val maxIterations: Int = 100,
     private val renderer: JsCodingAgentRenderer? = null,
     private val mcpServers: dynamic = null,  // JS object for MCP configuration
-    private val toolConfig: cc.unitmesh.agent.config.JsToolConfigFile? = null  // Tool configuration
+    private val toolConfig: JsToolConfigFile? = null  // Tool configuration
 ) {
     // 内部使用 Kotlin 的 CodingAgent
     private val agent: CodingAgent = CodingAgent(
@@ -238,17 +239,18 @@ class JsCodingAgent(
         maxIterations = maxIterations,
         renderer = if (renderer != null) JsRendererAdapter(renderer) else DefaultCodingAgentRenderer(),
         mcpServers = parseMcpServers(mcpServers),
-        toolConfigService = createToolConfigService(toolConfig)
+        mcpToolConfigService = createToolConfigService(toolConfig)
     )
     
     /**
      * Create tool config service from JS tool config
      */
-    private fun createToolConfigService(jsToolConfig: cc.unitmesh.agent.config.JsToolConfigFile?): cc.unitmesh.agent.config.ToolConfigService? {
+    private fun createToolConfigService(jsToolConfig: JsToolConfigFile?): cc.unitmesh.agent.config.McpToolConfigService {
         return if (jsToolConfig != null) {
-            cc.unitmesh.agent.config.ToolConfigService(jsToolConfig.toCommon())
+            cc.unitmesh.agent.config.McpToolConfigService(jsToolConfig.toCommon())
         } else {
-            null
+            // Create default tool config service with empty configuration
+            cc.unitmesh.agent.config.McpToolConfigService(cc.unitmesh.agent.config.ToolConfigFile())
         }
     }
 
