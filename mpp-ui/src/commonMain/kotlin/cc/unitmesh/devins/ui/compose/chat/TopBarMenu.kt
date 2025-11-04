@@ -63,7 +63,7 @@ fun TopBarMenu(
         ) {
             // 左侧：标题
             Text(
-                text = if (isAndroid) "AutoDev" else "AutoDev - DevIn AI",
+                text = if (isAndroid) "AutoDev" else "AutoDev",
                 style = if (isAndroid) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary
             )
