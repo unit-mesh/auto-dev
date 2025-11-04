@@ -47,18 +47,45 @@ class ToolCallParser {
 
     private fun parseToolCallFromDevinBlock(block: DevinBlock): ToolCall? {
         val lines = block.content.lines()
-        
-        for (line in lines) {
+        var toolCallLine: String? = null
+        var jsonStartIndex = -1
+
+        // Find the tool call line
+        for ((index, line) in lines.withIndex()) {
             val trimmed = line.trim()
             if (trimmed.isEmpty()) continue
-            
+
             // Check if this line starts with a tool call
             if (trimmed.startsWith("/")) {
-                return parseToolCallFromLine(trimmed)
+                toolCallLine = trimmed
+                jsonStartIndex = index + 1
+                break
             }
         }
-        
-        return null
+
+        if (toolCallLine == null) return null
+
+        // Check if there's JSON content after the tool call
+        val jsonLines = mutableListOf<String>()
+        var inJsonBlock = false
+
+        for (i in jsonStartIndex until lines.size) {
+            val line = lines[i].trim()
+            if (line == "```json") {
+                inJsonBlock = true
+                continue
+            } else if (line == "```") {
+                break
+            } else if (inJsonBlock) {
+                jsonLines.add(lines[i]) // Keep original indentation for JSON
+            }
+        }
+
+        return if (jsonLines.isNotEmpty()) {
+            parseToolCallWithJson(toolCallLine, jsonLines.joinToString("\n"))
+        } else {
+            parseToolCallFromLine(toolCallLine)
+        }
     }
 
     private fun parseDirectToolCall(response: String): ToolCall? {
@@ -83,15 +110,58 @@ class ToolCallParser {
         return ToolCall.create(toolName, params)
     }
 
+    /**
+     * Parse tool call with JSON parameters
+     */
+    private fun parseToolCallWithJson(toolCallLine: String, jsonContent: String): ToolCall? {
+        val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""")
+        val match = toolPattern.find(toolCallLine) ?: return null
+
+        val toolName = match.groups[1]?.value ?: return null
+
+        return try {
+            // Parse JSON content
+            val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+            val jsonElement = json.parseToJsonElement(jsonContent)
+            val params = mutableMapOf<String, Any>()
+
+            if (jsonElement is kotlinx.serialization.json.JsonObject) {
+                for ((key, value) in jsonElement) {
+                    params[key] = when (value) {
+                        is kotlinx.serialization.json.JsonPrimitive -> {
+                            when {
+                                value.isString -> value.content
+                                value.content == "true" -> true
+                                value.content == "false" -> false
+                                value.content.toIntOrNull() != null -> value.content.toInt()
+                                value.content.toDoubleOrNull() != null -> value.content.toDouble()
+                                else -> value.content
+                            }
+                        }
+                        is kotlinx.serialization.json.JsonArray -> value.toString()
+                        is kotlinx.serialization.json.JsonObject -> value.toString()
+                        else -> value.toString()
+                    }
+                }
+            }
+
+            ToolCall.create(toolName, params)
+        } catch (e: Exception) {
+            println("⚠️ Failed to parse JSON parameters for tool $toolName: ${e.message}")
+            // Fallback to line parsing
+            parseToolCallFromLine(toolCallLine)
+        }
+    }
+
     private fun parseParameters(toolName: String, rest: String): Map<String, Any> {
         val params = mutableMapOf<String, Any>()
-        
+
         if (rest.contains("=\"")) {
             parseKeyValueParameters(rest, params)
         } else if (rest.isNotEmpty()) {
             parseSimpleParameter(toolName, rest, params)
         }
-        
+
         return params
     }
 
