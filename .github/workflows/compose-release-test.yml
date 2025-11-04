@@ -35,6 +35,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Install pnpm
+        run: npm install -g pnpm@10.20.0
+        working-directory: mpp-ui
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: mpp-ui
+
       - name: Fix yarn lock issues
         run: ./gradlew kotlinUpgradeYarnLock || echo "Yarn lock upgrade failed, continuing..."
 
