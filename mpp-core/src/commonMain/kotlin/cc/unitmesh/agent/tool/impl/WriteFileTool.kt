@@ -2,6 +2,9 @@ package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import kotlinx.serialization.Serializable
 
 /**
@@ -34,6 +37,40 @@ data class WriteFileParams(
      */
     val append: Boolean = false
 )
+
+object WriteFileSchema : DeclarativeToolSchema(
+    description = "Write content to a file with various options",
+    properties = mapOf(
+        "path" to string(
+            description = "The file path to write to (relative to project root or absolute)",
+            required = true
+        ),
+        "content" to string(
+            description = "The content to write to the file",
+            required = true
+        ),
+        "createDirectories" to boolean(
+            description = "Whether to create parent directories if they don't exist",
+            required = false,
+            default = true
+        ),
+        "overwrite" to boolean(
+            description = "Whether to overwrite existing file",
+            required = false,
+            default = true
+        ),
+        "append" to boolean(
+            description = "Whether to append to existing file instead of overwriting",
+            required = false,
+            default = false
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName path=\"output.txt\" content=\"Hello, World!\" createDirectories=true"
+    }
+}
+
 
 /**
  * Tool invocation for writing files

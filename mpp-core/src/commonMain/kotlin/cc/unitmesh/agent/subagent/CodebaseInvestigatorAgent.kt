@@ -7,6 +7,11 @@ import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.model.ToolConfig
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.array
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
@@ -20,6 +25,48 @@ data class InvestigationContext(
     val projectPath: String,
     val scope: String = "all" // "classes", "methods", "dependencies", "all"
 )
+
+object CodebaseInvestigatorSchema : DeclarativeToolSchema(
+    description = "Investigate and analyze codebase structure, patterns, and issues",
+    properties = mapOf(
+        "query" to string(
+            description = "The investigation query or question about the codebase",
+            required = true
+        ),
+        "scope" to string(
+            description = "Scope of investigation",
+            required = false,
+            enum = listOf("architecture", "dependencies", "patterns", "issues", "performance", "security", "testing"),
+            default = "architecture"
+        ),
+        "path" to string(
+            description = "Specific path to focus the investigation on (optional)",
+            required = false
+        ),
+        "fileTypes" to array(
+            description = "File types to include in investigation",
+            itemType = string("File extension (e.g., 'kt', 'js', 'py')"),
+            required = false
+        ),
+        "maxDepth" to integer(
+            description = "Maximum directory depth to investigate",
+            required = false,
+            default = 5,
+            minimum = 1,
+            maximum = 20
+        ),
+        "includeTests" to boolean(
+            description = "Whether to include test files in investigation",
+            required = false,
+            default = true
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName query=\"find all REST endpoints\" scope=\"architecture\" path=\"src/main\" maxDepth=3"
+    }
+}
+
 
 /**
  * Result of codebase investigation

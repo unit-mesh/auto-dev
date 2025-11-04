@@ -6,12 +6,40 @@ import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.ToolResult
-import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+
+object ErrorRecoverySchema : DeclarativeToolSchema(
+    description = "Analyze and recover from errors in code or execution",
+    properties = mapOf(
+        "errorMessage" to string(
+            description = "The error message or stack trace to analyze",
+            required = true
+        ),
+        "context" to string(
+            description = "Additional context about when/where the error occurred",
+            required = false
+        ),
+        "codeSnippet" to string(
+            description = "The code snippet that caused the error (optional)",
+            required = false
+        ),
+        "errorType" to string(
+            description = "Type of error (compilation, runtime, test, etc.)",
+            required = false,
+            enum = listOf("compilation", "runtime", "test", "build", "dependency", "configuration")
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName errorMessage=\"Compilation failed: cannot find symbol\" context=\"building project\" errorType=\"compilation\""
+    }
+}
 
 /**
  * 错误恢复 SubAgent

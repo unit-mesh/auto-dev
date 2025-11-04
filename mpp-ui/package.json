@@ -23,6 +23,7 @@
     "publish:remote": "node scripts/publish-remote.js",
     "postinstall": "node scripts/check-mpp-core.js || echo 'Warning: mpp-core not found, run npm run build:kotlin first'"
   },
+  "packageManager": "pnpm@10.20.0",
   "keywords": [
     "ai",
     "cli",

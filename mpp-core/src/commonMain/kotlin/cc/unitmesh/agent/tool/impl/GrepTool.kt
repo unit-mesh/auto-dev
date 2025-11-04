@@ -2,6 +2,10 @@ package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import kotlinx.serialization.Serializable
 
 /**
@@ -49,6 +53,62 @@ data class GrepParams(
      */
     val recursive: Boolean = true
 )
+
+object GrepSchema : DeclarativeToolSchema(
+    description = "Search for patterns in file contents using regular expressions",
+    properties = mapOf(
+        "pattern" to string(
+            description = "The regular expression pattern to search for in file contents",
+            required = true
+        ),
+        "path" to string(
+            description = "The directory to search in (optional, defaults to project root)",
+            required = false
+        ),
+        "include" to string(
+            description = "File pattern to include in the search (e.g. '*.kt', '*.{ts,js}')",
+            required = false
+        ),
+        "exclude" to string(
+            description = "File pattern to exclude from the search",
+            required = false
+        ),
+        "caseSensitive" to boolean(
+            description = "Whether the search should be case-sensitive",
+            required = false,
+            default = false
+        ),
+        "maxMatches" to integer(
+            description = "Maximum number of matches to return",
+            required = false,
+            default = 100,
+            minimum = 1,
+            maximum = 1000
+        ),
+        "contextLines" to integer(
+            description = "Number of context lines to show before and after each match",
+            required = false,
+            default = 0,
+            minimum = 0,
+            maximum = 10
+        ),
+        "recursive" to boolean(
+            description = "Whether to search recursively in subdirectories",
+            required = false,
+            default = true
+        ),
+        "respectGitIgnore" to boolean(
+            description = "Whether to respect .gitignore patterns",
+            required = false,
+            default = true
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName pattern=\"function.*main\" path=\"src\" include=\"*.kt\" caseSensitive=false"
+    }
+}
+
 
 /**
  * Result object for a single grep match

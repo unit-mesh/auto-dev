@@ -86,7 +86,8 @@ data class ToolItem(
      * For MCP tools: the server name
      * For builtin tools: empty string
      */
-    val serverName: String = ""
+    val serverName: String = "",
+    val schema: String?
 )
 
 /**

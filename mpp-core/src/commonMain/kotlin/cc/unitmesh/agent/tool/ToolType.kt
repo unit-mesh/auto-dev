@@ -1,5 +1,11 @@
 package cc.unitmesh.agent.tool
 
+import cc.unitmesh.agent.subagent.CodebaseInvestigatorSchema
+import cc.unitmesh.agent.subagent.ErrorRecoverySchema
+import cc.unitmesh.agent.subagent.LogSummarySchema
+import cc.unitmesh.agent.tool.impl.*
+import cc.unitmesh.agent.tool.schema.ToolSchema
+
 /**
  * Sealed class representing all available tool types with their metadata
  *
@@ -9,20 +15,23 @@ package cc.unitmesh.agent.tool
  * - TUI emoji (for terminal rendering)
  * - Compose icon (for UI rendering)
  * - Category (for grouping)
+ * - Schema (for AI parameter understanding)
  */
 sealed class ToolType(
     val name: String,
     val displayName: String,
     val tuiEmoji: String,
     val composeIcon: String,
-    val category: ToolCategory
+    val category: ToolCategory,
+    val schema: ToolSchema
 ) {
     data object ReadFile : ToolType(
         name = "read-file",
         displayName = "Read File",
         tuiEmoji = "📄",
         composeIcon = "file_open",
-        category = ToolCategory.FileSystem
+        category = ToolCategory.FileSystem,
+        schema = ReadFileSchema
     )
 
     data object WriteFile : ToolType(
@@ -30,7 +39,8 @@ sealed class ToolType(
         displayName = "Write File",
         tuiEmoji = "✏️",
         composeIcon = "edit",
-        category = ToolCategory.FileSystem
+        category = ToolCategory.FileSystem,
+        schema = WriteFileSchema
     )
 
     data object ListFiles : ToolType(
@@ -38,17 +48,17 @@ sealed class ToolType(
         displayName = "List Files",
         tuiEmoji = "📁",
         composeIcon = "folder",
-        category = ToolCategory.FileSystem
+        category = ToolCategory.FileSystem,
+        schema = GlobSchema // ListFiles uses similar schema to Glob
     )
 
-
-    // Search Tools
     data object Grep : ToolType(
         name = "grep",
         displayName = "Search Content",
         tuiEmoji = "🔍",
         composeIcon = "search",
-        category = ToolCategory.Search
+        category = ToolCategory.Search,
+        schema = GrepSchema
     )
 
     data object Glob : ToolType(
@@ -56,7 +66,8 @@ sealed class ToolType(
         displayName = "Find Files",
         tuiEmoji = "🌐",
         composeIcon = "find_in_page",
-        category = ToolCategory.Search
+        category = ToolCategory.Search,
+        schema = GlobSchema
     )
 
     data object Shell : ToolType(
@@ -64,7 +75,8 @@ sealed class ToolType(
         displayName = "Shell Command",
         tuiEmoji = "💻",
         composeIcon = "terminal",
-        category = ToolCategory.Execution
+        category = ToolCategory.Execution,
+        schema = ShellSchema
     )
 
     data object ErrorRecovery : ToolType(
@@ -72,7 +84,8 @@ sealed class ToolType(
         displayName = "Error Recovery",
         tuiEmoji = "🚑",
         composeIcon = "healing",
-        category = ToolCategory.SubAgent
+        category = ToolCategory.SubAgent,
+        schema = ErrorRecoverySchema
     )
 
     data object LogSummary : ToolType(
@@ -80,7 +93,8 @@ sealed class ToolType(
         displayName = "Log Summary",
         tuiEmoji = "📋",
         composeIcon = "summarize",
-        category = ToolCategory.SubAgent
+        category = ToolCategory.SubAgent,
+        schema = LogSummarySchema
     )
 
     data object CodebaseInvestigator : ToolType(
@@ -88,7 +102,8 @@ sealed class ToolType(
         displayName = "Codebase Investigator",
         tuiEmoji = "🔬",
         composeIcon = "science",
-        category = ToolCategory.SubAgent
+        category = ToolCategory.SubAgent,
+        schema = CodebaseInvestigatorSchema
     )
 
     companion object {

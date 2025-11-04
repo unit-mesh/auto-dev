@@ -1,6 +1,8 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.tool.ExecutableTool
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.compiler.variable.VariableTable
 
 /**
@@ -87,34 +89,83 @@ data class CodingAgentContext(
                         ?: "Tool description not available"
                     appendLine("  <description>$description</description>")
 
-                    // Parameter schema information with improved handling
-                    val paramClass = tool.getParameterClass()
+                    // Get ToolType for schema information
+                    val toolType = tool.name.toToolType()
 
-                    when {
-                        paramClass.isBlank() -> {
-                            // No parameters - this is fine for some tools
+                    if (toolType != null) {
+                        // Use declarative schema for built-in tools
+                        appendLine("  <parameters>")
+                        appendLine("    <schema>")
+
+                        // Get parameter description from schema
+                        val parameterDescription = toolType.schema.getParameterDescription()
+                        val lines = parameterDescription.split("\n")
+
+                        // Skip the main description and "Parameters:" line, process parameter details
+                        var inParameters = false
+                        for (line in lines) {
+                            if (line.startsWith("Parameters:")) {
+                                inParameters = true
+                                continue
+                            }
+                            if (inParameters && line.startsWith("  - ")) {
+                                // Parse parameter line: "  - paramName: type (required/optional) [default: value] [enum] - description"
+                                val paramLine = line.substring(4) // Remove "  - "
+                                val colonIndex = paramLine.indexOf(':')
+                                if (colonIndex > 0) {
+                                    val paramName = paramLine.substring(0, colonIndex)
+                                    val rest = paramLine.substring(colonIndex + 1).trim()
+
+                                    // Extract type, required status, and description
+                                    val parts = rest.split(" - ", limit = 2)
+                                    val typeInfo = parts[0].trim()
+                                    val description = if (parts.size > 1) parts[1] else ""
+
+                                    appendLine("      <param name=\"$paramName\">")
+                                    appendLine("        <type>$typeInfo</type>")
+                                    if (description.isNotEmpty()) {
+                                        appendLine("        <description>$description</description>")
+                                    }
+                                    appendLine("      </param>")
+                                }
+                            }
                         }
-                        paramClass == "Unit" -> {
-                            // Unit type means no meaningful parameters
-                        }
-                        paramClass == "AgentInput" -> {
-                            // Generic agent input - provide more specific info for SubAgents
-                            appendLine("  <parameters>")
-                            appendLine("    <type>Map&lt;String, Any&gt;</type>")
-                            appendLine("    <usage>/${tool.name} [key-value parameters]</usage>")
-                            appendLine("  </parameters>")
-                        }
-                        else -> {
-                            // Valid parameter class
-                            appendLine("  <parameters>")
-                            appendLine("    <type>$paramClass</type>")
-                            appendLine("    <usage>/${tool.name} [parameters]</usage>")
-                            appendLine("  </parameters>")
+
+                        appendLine("    </schema>")
+                        appendLine("  </parameters>")
+                    } else {
+                        // Fallback for MCP tools or other tools
+                        val paramClass = tool.getParameterClass()
+                        when {
+                            paramClass.isBlank() || paramClass == "Unit" -> {
+                                // No parameters
+                            }
+                            paramClass == "AgentInput" -> {
+                                // Generic agent input - provide more specific info for SubAgents
+                                appendLine("  <parameters>")
+                                appendLine("    <type>Map&lt;String, Any&gt;</type>")
+                                appendLine("    <usage>/${tool.name} [key-value parameters]</usage>")
+                                appendLine("  </parameters>")
+                            }
+                            tool.name.contains("_") -> {
+                                // Likely an MCP tool
+                                appendLine("  <parameters>")
+                                appendLine("    <type>JSON object</type>")
+                                appendLine("    <usage>/${tool.name} arguments=\"{...}\"</usage>")
+                                appendLine("  </parameters>")
+                            }
+                            else -> {
+                                // Valid parameter class
+                                appendLine("  <parameters>")
+                                appendLine("    <type>$paramClass</type>")
+                                appendLine("    <usage>/${tool.name} [parameters]</usage>")
+                                appendLine("  </parameters>")
+                            }
                         }
                     }
 
-                    // Add example if available (for built-in tools)
-                    val example = generateToolExample(tool)
+                    // Add example if available
+                    val example = generateToolExample(tool, toolType)
                     if (example.isNotEmpty()) {
                         appendLine("  <example>")
                         appendLine("    $example")
@@ -127,25 +178,31 @@ data class CodingAgentContext(
         }
 
         /**
-         * Generate example usage for a tool
+         * Generate example usage for a tool with schema-based examples
          */
-        private fun generateToolExample(tool: ExecutableTool<*, *>): String {
-            return when (tool.name) {
-                "read-file" -> "/${tool.name} path=\"src/main.kt\""
-                "write-file" -> "/${tool.name} path=\"output.txt\" content=\"Hello, World!\""
-                "grep" -> "/${tool.name} pattern=\"function.*main\" path=\"src\" include=\"*.kt\""
-                "glob" -> "/${tool.name} pattern=\"*.kt\" path=\"src\""
-                "shell" -> "/${tool.name} command=\"ls -la\""
-                "error-recovery" -> "/${tool.name} command=\"gradle build\" errorMessage=\"Compilation failed\""
-                "log-summary" -> "/${tool.name} command=\"npm test\" output=\"[long test output...]\""
-                "codebase-investigator" -> "/${tool.name} query=\"find all REST endpoints\" scope=\"methods\""
-                else -> {
-                    // For MCP tools or other tools, provide a generic example
-                    if (tool.name.contains("_")) {
-                        // Likely an MCP tool with server_toolname format
-                        "/${tool.name} arguments=\"{}\""
-                    } else {
-                        "/${tool.name} <parameters>"
+        private fun generateToolExample(tool: ExecutableTool<*, *>, toolType: ToolType?): String {
+            return if (toolType != null) {
+                // Use schema-based example
+                toolType.schema.getExampleUsage(tool.name)
+            } else {
+                // Fallback for MCP tools or other tools
+                when (tool.name) {
+                    "read-file" -> "/${tool.name} path=\"src/main.kt\""
+                    "write-file" -> "/${tool.name} path=\"output.txt\" content=\"Hello, World!\""
+                    "grep" -> "/${tool.name} pattern=\"function.*main\" path=\"src\" include=\"*.kt\""
+                    "glob" -> "/${tool.name} pattern=\"*.kt\" path=\"src\""
+                    "shell" -> "/${tool.name} command=\"ls -la\""
+                    "error-recovery" -> "/${tool.name} errorMessage=\"Compilation failed\" context=\"building project\""
+                    "log-summary" -> "/${tool.name} logContent=\"[ERROR] Failed to start server...\" logType=\"error\""
+                    "codebase-investigator" -> "/${tool.name} query=\"find all REST endpoints\" scope=\"architecture\""
+                    else -> {
+                        // For MCP tools or other tools, provide a generic example
+                        if (tool.name.contains("_")) {
+                            // Likely an MCP tool with server_toolname format
+                            "/${tool.name} arguments=\"{\\\"path\\\": \\\"/tmp\\\"}\""
+                        } else {
+                            "/${tool.name} <parameters>"
+                        }
                     }
                 }
             }

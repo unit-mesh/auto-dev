@@ -116,7 +116,8 @@ object McpToolConfigManager {
                                         category = "MCP",
                                         source = ToolSource.MCP,
                                         enabled = toolInfo.name in enabledMcpTools, // Check by actual tool name
-                                        serverName = serverName
+                                        serverName = serverName,
+                                        schema = toolInfo.inputSchema
                                     )
                                 }
 
@@ -237,7 +238,8 @@ object McpToolConfigManager {
                     category = "MCP",
                     source = ToolSource.MCP,
                     enabled = toolInfo.name in enabledMcpTools, // Check by actual tool name
-                    serverName = serverName
+                    serverName = serverName,
+                    schema = toolInfo.inputSchema
                 )
             }
 
@@ -345,7 +347,8 @@ object McpToolConfigManager {
                     category = "MCP",
                     source = ToolSource.MCP,
                     enabled = toolInfo.enabled,
-                    serverName = serverName
+                    serverName = serverName,
+                    schema = toolInfo.inputSchema
                 )
             }
         }

@@ -27,7 +27,7 @@ object ToolConfigManager {
                 description = getToolDescription(toolType),
                 category = category.name,
                 source = ToolSource.BUILTIN,
-                enabled = false
+                schema = null
             )
 
             toolsByCategory.getOrPut(category) { mutableListOf() }.add(toolItem)

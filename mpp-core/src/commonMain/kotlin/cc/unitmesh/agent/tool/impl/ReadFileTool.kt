@@ -2,6 +2,9 @@ package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,6 +29,37 @@ data class ReadFileParams(
      */
     val maxLines: Int? = null
 )
+
+object ReadFileSchema : DeclarativeToolSchema(
+    description = "Read file content with optional line range filtering",
+    properties = mapOf(
+        "path" to string(
+            description = "The file path to read (relative to project root or absolute)",
+            required = true
+        ),
+        "startLine" to integer(
+            description = "The line number to start reading from (1-based, optional)",
+            required = false,
+            minimum = 1
+        ),
+        "endLine" to integer(
+            description = "The line number to end reading at (1-based, optional)",
+            required = false,
+            minimum = 1
+        ),
+        "maxLines" to integer(
+            description = "Maximum number of lines to read (optional)",
+            required = false,
+            minimum = 1,
+            maximum = 10000,
+            default = 1000
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName path=\"src/main.kt\" startLine=1 endLine=50"
+    }
+}
 
 /**
  * Tool invocation for reading files

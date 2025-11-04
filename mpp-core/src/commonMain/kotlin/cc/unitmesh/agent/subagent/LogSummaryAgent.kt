@@ -6,10 +6,52 @@ import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+
+object LogSummarySchema : DeclarativeToolSchema(
+    description = "Summarize and analyze log files or log content",
+    properties = mapOf(
+        "logContent" to string(
+            description = "The log content to summarize (can be file path or actual content)",
+            required = true
+        ),
+        "logType" to string(
+            description = "Type of log",
+            required = false,
+            enum = listOf("application", "error", "access", "build", "test", "deployment", "system"),
+            default = "application"
+        ),
+        "maxLines" to integer(
+            description = "Maximum number of log lines to process",
+            required = false,
+            default = 1000,
+            minimum = 10,
+            maximum = 10000
+        ),
+        "includeTimestamps" to boolean(
+            description = "Whether to include timestamp analysis",
+            required = false,
+            default = true
+        ),
+        "focusLevel" to string(
+            description = "Focus on specific log levels",
+            required = false,
+            enum = listOf("ERROR", "WARN", "INFO", "DEBUG", "TRACE", "ALL"),
+            default = "ALL"
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName logContent=\"[ERROR] Failed to start server...\" logType=\"error\" maxLines=500 focusLevel=\"ERROR\""
+    }
+}
 
 /**
  * 日志摘要 SubAgent

@@ -4,6 +4,10 @@ import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.FileInfo
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.gitignore.GitIgnoreParser
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,6 +21,56 @@ data class GlobParams(
     val includeFileInfo: Boolean = false,
     val respectGitIgnore: Boolean = true
 )
+
+object GlobSchema : DeclarativeToolSchema(
+    description = "Find files using glob patterns",
+    properties = mapOf(
+        "pattern" to string(
+            description = "The glob pattern to match files (e.g. '*.kt', '**/*.{ts,js}')",
+            required = true
+        ),
+        "path" to string(
+            description = "The directory to search in (optional, defaults to project root)",
+            required = false
+        ),
+        "includeDirectories" to boolean(
+            description = "Whether to include directories in results",
+            required = false,
+            default = false
+        ),
+        "includeHidden" to boolean(
+            description = "Whether to include hidden files and directories",
+            required = false,
+            default = false
+        ),
+        "maxResults" to integer(
+            description = "Maximum number of results to return",
+            required = false,
+            default = 1000,
+            minimum = 1,
+            maximum = 10000
+        ),
+        "sortByTime" to boolean(
+            description = "Whether to sort results by modification time",
+            required = false,
+            default = false
+        ),
+        "includeFileInfo" to boolean(
+            description = "Whether to include file size and modification time",
+            required = false,
+            default = false
+        ),
+        "respectGitIgnore" to boolean(
+            description = "Whether to respect .gitignore patterns",
+            required = false,
+            default = true
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName pattern=\"*.kt\" path=\"src\" includeFileInfo=true"
+    }
+}
 
 @Serializable
 data class GlobFileResult(

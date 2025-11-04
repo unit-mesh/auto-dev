@@ -1,6 +1,10 @@
 package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.tool.*
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.objectType
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.shell.ShellExecutor
@@ -42,6 +46,51 @@ data class ShellParams(
      */
     val shell: String? = null
 )
+
+object ShellSchema : DeclarativeToolSchema(
+    description = "Execute shell commands with various options",
+    properties = mapOf(
+        "command" to string(
+            description = "The shell command to execute",
+            required = true
+        ),
+        "workingDirectory" to string(
+            description = "Working directory for command execution (optional)",
+            required = false
+        ),
+        "environment" to objectType(
+            description = "Environment variables to set (optional)",
+            properties = mapOf(
+                "additionalProperties" to string(
+                    description = "Environment variable value"
+                )
+            ),
+            required = false,
+            additionalProperties = true
+        ),
+        "timeoutMs" to integer(
+            description = "Timeout in milliseconds",
+            required = false,
+            default = 30000,
+            minimum = 1000,
+            maximum = 300000
+        ),
+        "description" to string(
+            description = "Description of what the command does (for logging/confirmation)",
+            required = false
+        ),
+        "shell" to string(
+            description = "Specific shell to use (optional, uses system default if not specified)",
+            required = false,
+            enum = listOf("bash", "zsh", "sh", "cmd", "powershell")
+        )
+    )
+) {
+    override fun getExampleUsage(toolName: String): String {
+        return "/$toolName command=\"ls -la\" workingDirectory=\"/tmp\" timeoutMs=10000"
+    }
+}
+
 
 /**
  * Tool invocation for shell command execution
