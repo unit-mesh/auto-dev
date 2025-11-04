@@ -93,9 +93,6 @@ object ToolConfigManager {
         }
     }
 
-    /**
-     * Update tool configuration with new enabled tools
-     */
     fun updateToolConfig(
         currentConfig: ToolConfigFile,
         enabledBuiltinTools: List<String>,
@@ -107,9 +104,6 @@ object ToolConfigManager {
         )
     }
 
-    /**
-     * Get tool configuration summary for display
-     */
     fun getConfigSummary(config: ToolConfigFile): String {
         return buildString {
             appendLine("Built-in Tools: ${config.enabledBuiltinTools.size} enabled")
