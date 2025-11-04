@@ -29,11 +29,11 @@ kotlin {
     }
 
     js(IR) {
-        browser {
-            commonWebpackConfig {
-                outputFileName = "mpp-ui.js"
-            }
-        }
+//        browser {
+//            commonWebpackConfig {
+//                outputFileName = "mpp-ui.js"
+//            }
+//        }
         nodejs {
             // Configure Node.js target for CLI
         }
