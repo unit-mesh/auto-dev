@@ -2,7 +2,6 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.*
 import cc.unitmesh.agent.render.BaseRenderer
-import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.llm.Message
@@ -238,6 +237,18 @@ class ComposeRenderer : BaseRenderer() {
                     Message(
                         role = MessageRole.ASSISTANT,
                         content = "⚠️ Warning: Tool '$toolName' has been called $count times in a row"
+                    )
+            )
+        )
+    }
+
+    override fun renderRecoveryAdvice(recoveryAdvice: String) {
+        _timeline.add(
+            TimelineItem.MessageItem(
+                message =
+                    Message(
+                        role = MessageRole.ASSISTANT,
+                        content = "🔧 ERROR RECOVERY ADVICE:\n$recoveryAdvice"
                     )
             )
         )
