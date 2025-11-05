@@ -3,7 +3,6 @@ package cc.unitmesh.agent.tool.impl
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
 class UrlParserTest {
 
