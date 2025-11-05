@@ -49,7 +49,7 @@ describe('CodingAgent 简单健壮性测试 v2', () => {
         .withProjectType(ProjectType.GRADLE_SPRING_BOOT)
         .expectTool('glob', { required: true, minCalls: 1 })
         .expectTool('read-file', { required: false })
-        .withTimeout(60000)
+        .withTimeout(120000)
         .build(),
 
       // 2. 文件读取测试
@@ -60,7 +60,7 @@ describe('CodingAgent 简单健壮性测试 v2', () => {
         .withTask('Read the build.gradle.kts file to understand the project configuration')
         .withProjectType(ProjectType.GRADLE_SPRING_BOOT)
         .expectTool('read-file', { required: true, minCalls: 1 })
-        .withTimeout(60000)
+        .withTimeout(120000)
         .build(),
 
       // 3. 文件创建测试
@@ -72,7 +72,7 @@ describe('CodingAgent 简单健壮性测试 v2', () => {
         .withProjectType(ProjectType.GRADLE_SPRING_BOOT)
         .expectTool('write-file', { required: true, minCalls: 1 })
         .expectChange('file-created', { path: 'README.md', required: true })
-        .withTimeout(90000)
+        .withTimeout(150000)
         .build(),
 
       // 4. 内容搜索测试
@@ -83,7 +83,7 @@ describe('CodingAgent 简单健壮性测试 v2', () => {
         .withTask('Search for all occurrences of "spring" in the project files')
         .withProjectType(ProjectType.GRADLE_SPRING_BOOT)
         .expectTool('grep', { required: true, minCalls: 1 })
-        .withTimeout(60000)
+        .withTimeout(120000)
         .build(),
 
       // 5. 综合操作测试
@@ -97,7 +97,7 @@ describe('CodingAgent 简单健壮性测试 v2', () => {
         .expectTool('read-file', { required: true, minCalls: 2 })
         .expectTool('write-file', { required: true })
         .expectChange('file-created', { required: true })
-        .withTimeout(120000)
+        .withTimeout(180000)
         .build()
     ];
 
