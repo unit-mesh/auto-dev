@@ -83,8 +83,8 @@ data class DomainDictionary(
             "maxWeight" to maxWeight,
             "minWeight" to minWeight,
             "criticalCount" to allItems.count { it.weight >= 0.8f },
-            "highCount" to allItems.count { it.weight in 0.6f..0.8f },
-            "mediumCount" to allItems.count { it.weight in 0.4f..0.6f },
+            "highCount" to allItems.count { it.weight >= 0.6f && it.weight < 0.8f },
+            "mediumCount" to allItems.count { it.weight >= 0.4f && it.weight < 0.6f },
             "lowCount" to allItems.count { it.weight < 0.4f }
         )
     }

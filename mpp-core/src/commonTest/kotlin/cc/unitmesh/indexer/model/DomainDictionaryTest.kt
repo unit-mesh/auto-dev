@@ -98,9 +98,9 @@ class DomainDictionaryTest {
         assertEquals(0.8f, stats["maxWeight"] as Float)
         assertEquals(0.4f, stats["minWeight"] as Float)
         assertEquals(1, stats["criticalCount"] as Int) // User with 0.8
-        assertEquals(1, stats["highCount"] as Int) // Blog with 0.7
-        assertEquals(3, stats["mediumCount"] as Int) // Comment, createBlog, getUser
-        assertEquals(1, stats["lowCount"] as Int) // findComment with 0.4
+        assertEquals(3, stats["highCount"] as Int) // Blog with 0.7, Comment with 0.6, createBlog with 0.6
+        assertEquals(2, stats["mediumCount"] as Int) // getUser with 0.5, findComment with 0.4
+        assertEquals(0, stats["lowCount"] as Int) // No items < 0.4
     }
     
     @Test

@@ -5,6 +5,8 @@ import cc.unitmesh.devins.compiler.variable.VariableTable
 import cc.unitmesh.devins.compiler.variable.VariableScope
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
+import cc.unitmesh.agent.logging.getLogger
+import io.github.oshai.kotlinlogging.KLogger
 import kotlin.time.Clock
 
 /**
@@ -130,45 +132,50 @@ data class CompilerOptions(
 )
 
 /**
- * 简单的日志记录器
+ * 编译器日志记录器
+ * 使用 kotlin-logging 替代 println
  */
 class CompilerLogger {
-    
+
+    private val logger: KLogger = getLogger("DevInsCompiler")
     private val logs = mutableListOf<LogEntry>()
     var enableDebug: Boolean = false  // 默认关闭 debug 日志
     var minLevel: LogLevel = LogLevel.ERROR  // 最小日志级别，默认只显示错误
-    
+
     fun debug(message: String) {
         if (enableDebug && minLevel <= LogLevel.DEBUG) {
             logs.add(LogEntry(LogLevel.DEBUG, message))
-            println("[DEBUG] $message")
+            logger.debug { message }
         }
     }
-    
+
     fun info(message: String) {
         if (minLevel <= LogLevel.INFO) {
             logs.add(LogEntry(LogLevel.INFO, message))
-            println("[INFO] $message")
+            logger.info { message }
         }
     }
-    
+
     fun warn(message: String) {
         if (minLevel <= LogLevel.WARN) {
             logs.add(LogEntry(LogLevel.WARN, message))
-            println("[WARN] $message")
+            logger.warn { message }
         }
     }
-    
+
     fun error(message: String, throwable: Throwable? = null) {
         if (minLevel <= LogLevel.ERROR) {
             logs.add(LogEntry(LogLevel.ERROR, message, throwable))
-            println("[ERROR] $message")
-            throwable?.printStackTrace()
+            if (throwable != null) {
+                logger.error(throwable) { message }
+            } else {
+                logger.error { message }
+            }
         }
     }
-    
+
     fun getLogs(): List<LogEntry> = logs.toList()
-    
+
     fun clear() {
         logs.clear()
     }

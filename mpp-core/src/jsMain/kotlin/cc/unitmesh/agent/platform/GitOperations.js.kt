@@ -2,6 +2,7 @@ package cc.unitmesh.agent.platform
 
 import kotlinx.coroutines.await
 import kotlin.js.Promise
+import cc.unitmesh.agent.logging.getLogger
 
 /**
  * JS 平台的 Git 操作实现 (Node.js)
@@ -10,7 +11,9 @@ import kotlin.js.Promise
  * 移植自 TypeScript 版本的 ErrorRecoveryAgent
  */
 actual class GitOperations actual constructor(private val projectPath: String) {
-    
+
+    private val logger = getLogger("GitOperations")
+
     private val isNodeJs: Boolean by lazy {
         try {
             js("typeof process !== 'undefined' && process.versions && process.versions.node") as Boolean
@@ -21,24 +24,24 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     
     actual suspend fun getModifiedFiles(): List<String> {
         if (!isNodeJs) {
-            println("   ⚠️  Git operations require Node.js environment")
+            logger.warn { "Git operations require Node.js environment" }
             return emptyList()
         }
-        
+
         return try {
             val output = execGitCommand("git diff --name-only")
             val files = output.trim().split("\n").filter { it.isNotBlank() }
-            
+
             if (files.isNotEmpty()) {
                 val fileNames = files.map { it.split("/").last() }.joinToString(", ")
-                println("   📝 Modified: $fileNames")
+                logger.info { "Modified: $fileNames" }
             } else {
-                println("   ✓ No modifications detected")
+                logger.debug { "No modifications detected" }
             }
-            
+
             files
         } catch (e: Throwable) {
-            println("   ⚠️  Git check failed: ${e.message}")
+            logger.warn(e) { "Git check failed: ${e.message}" }
             emptyList()
         }
     }

@@ -15,6 +15,17 @@ expect object Platform {
     fun getCurrentTimestamp(): String
     fun getOSInfo(): String
     fun getOSVersion(): String
+
+    /**
+     * Get user home directory
+     */
+    fun getUserHomeDir(): String
+
+    /**
+     * Get platform-specific log directory
+     * Default: ~/.autodev/logs
+     */
+    fun getLogDir(): String
 }
 
 /**

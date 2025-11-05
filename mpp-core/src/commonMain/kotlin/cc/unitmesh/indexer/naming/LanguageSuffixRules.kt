@@ -41,8 +41,8 @@ interface LanguageSuffixRules {
 class CommonSuffixRules : LanguageSuffixRules {
     override val suffixMap: Map<String, String?> = linkedMapOf(
         // Framework and technical suffixes (ordered by length, longest first)
-        "Controller" to null,
         "RestController" to null,
+        "Controller" to null,
         "Service" to null,
         "Repository" to null,
         "Manager" to null,

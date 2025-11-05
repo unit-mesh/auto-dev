@@ -99,7 +99,8 @@ object CamelCaseSplitter {
             "validate", "convert", "parse", "format", "encode", "decode", "serialize",
             "deserialize", "load", "save", "read", "write", "open", "close", "start",
             "stop", "run", "execute", "process", "handle", "manage", "build", "init",
-            "destroy", "clear", "reset", "refresh", "reload", "sync", "async", "await"
+            "destroy", "clear", "reset", "refresh", "reload", "sync", "async", "await",
+            "by", "id", "to", "from", "with", "without", "for", "of", "in", "on", "at"
         )
     }
 }

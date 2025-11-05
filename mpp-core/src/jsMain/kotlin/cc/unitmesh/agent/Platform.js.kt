@@ -48,4 +48,18 @@ actual object Platform {
             js("navigator.appVersion || 'Unknown'") as String
         }
     }
+
+    actual fun getUserHomeDir(): String {
+        val isNode = js("typeof process !== 'undefined'") as Boolean
+        return if (isNode) {
+            js("require('os').homedir()") as String
+        } else {
+            // In browser environment, use a default path
+            "~"
+        }
+    }
+
+    actual fun getLogDir(): String {
+        return "${getUserHomeDir()}/.autodev/logs"
+    }
 }

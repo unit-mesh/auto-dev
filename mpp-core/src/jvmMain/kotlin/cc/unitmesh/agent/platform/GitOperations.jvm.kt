@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.platform
 
+import cc.unitmesh.agent.logging.getLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -10,7 +11,9 @@ import java.io.File
  * 使用 ProcessBuilder 调用系统 git 命令
  */
 actual class GitOperations actual constructor(private val projectPath: String) {
-    
+
+    private val logger = getLogger("GitOperations")
+
     actual suspend fun getModifiedFiles(): List<String> = withContext(Dispatchers.IO) {
         try {
             val process = ProcessBuilder("git", "diff", "--name-only")
@@ -22,16 +25,16 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             process.waitFor()
 
             val files = output.trim().split("\n").filter { it.isNotBlank() }
-            
+
             if (files.isNotEmpty()) {
-                println("   📝 Modified: ${files.map { it.split("/").last() }.joinToString(", ")}")
+                logger.info { "Modified: ${files.map { it.split("/").last() }.joinToString(", ")}" }
             } else {
-                println("   ✓ No modifications detected")
+                logger.debug { "No modifications detected" }
             }
-            
+
             files
         } catch (e: Exception) {
-            println("   ⚠️  Git check failed: ${e.message}")
+            logger.warn(e) { "Git check failed: ${e.message}" }
             emptyList()
         }
     }

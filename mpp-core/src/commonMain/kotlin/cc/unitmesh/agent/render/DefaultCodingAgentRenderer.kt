@@ -1,12 +1,17 @@
 package cc.unitmesh.agent.render
 
+import cc.unitmesh.agent.logging.getLogger
+
 /**
  * Default console renderer - simple text output
  * Suitable for basic console applications and testing
  */
 class DefaultCodingAgentRenderer : BaseRenderer() {
 
+    private val logger = getLogger("DefaultCodingAgentRenderer")
+
     override fun renderIterationHeader(current: Int, max: Int) {
+        logger.info { "\n[$current/$max] Analyzing and executing..." }
         println("\n[$current/$max] Analyzing and executing...")
     }
 
@@ -33,10 +38,12 @@ class DefaultCodingAgentRenderer : BaseRenderer() {
 
     override fun renderLLMResponseEnd() {
         super.renderLLMResponseEnd()
+        logger.debug { "LLM response ended" }
         println("\n")
     }
 
     override fun renderToolCall(toolName: String, paramsStr: String) {
+        logger.info { "Tool call: $toolName $paramsStr" }
         println("🔧 /$toolName $paramsStr")
     }
 
@@ -57,6 +64,7 @@ class DefaultCodingAgentRenderer : BaseRenderer() {
                 if (shouldTruncate && output.length > maxLength) print("...")
             }
         }
+        logger.debug { "Tool result: $toolName success=$success" }
         println()
     }
 

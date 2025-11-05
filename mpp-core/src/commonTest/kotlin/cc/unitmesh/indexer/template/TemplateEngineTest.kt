@@ -2,6 +2,7 @@ package cc.unitmesh.indexer.template
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Test for TemplateEngine

@@ -1,5 +1,7 @@
 package cc.unitmesh.agent.mcp
 
+import cc.unitmesh.agent.logging.getLogger
+
 /**
  * Android implementation of McpClientManager
  *
@@ -8,18 +10,19 @@ package cc.unitmesh.agent.mcp
 actual class McpClientManager {
     private var discoveryState = McpDiscoveryState.NOT_STARTED
     private val serverStatuses = mutableMapOf<String, McpServerStatus>()
+    private val logger = getLogger("McpClientManager")
 
     actual suspend fun initialize(config: McpConfig) {
-        println("McpClientManager.initialize() - Android implementation not yet available")
+        logger.warn { "McpClientManager.initialize() - Android implementation not yet available" }
     }
 
     actual suspend fun discoverAllTools(): Map<String, List<McpToolInfo>> {
-        println("McpClientManager.discoverAllTools() - Android implementation not yet available")
+        logger.warn { "McpClientManager.discoverAllTools() - Android implementation not yet available" }
         return emptyMap()
     }
 
     actual suspend fun discoverServerTools(serverName: String): List<McpToolInfo> {
-        println("McpClientManager.discoverServerTools() - Android implementation not yet available")
+        logger.warn { "McpClientManager.discoverServerTools() - Android implementation not yet available" }
         return emptyList()
     }
 
@@ -36,12 +39,12 @@ actual class McpClientManager {
         toolName: String,
         arguments: String
     ): String {
-        println("McpClientManager.executeTool() - Android implementation not yet available")
+        logger.warn { "McpClientManager.executeTool() - Android implementation not yet available" }
         throw UnsupportedOperationException("MCP tool execution not yet implemented for Android")
     }
 
     actual suspend fun shutdown() {
-        println("McpClientManager.shutdown() - Android implementation not yet available")
+        logger.warn { "McpClientManager.shutdown() - Android implementation not yet available" }
     }
 
     actual fun getDiscoveryState(): McpDiscoveryState {

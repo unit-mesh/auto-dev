@@ -23,6 +23,7 @@ export interface LLMConfig {
   baseUrl?: string;
   temperature?: number;
   maxTokens?: number;
+  logLevel?: string; // 新增日志级别配置
 }
 
 /**
@@ -48,6 +49,7 @@ export interface ConfigFile {
   active: string;  // Name of the active configuration
   configs: LLMConfig[];
   mcpServers?: Record<string, McpServerConfig>;  // MCP servers configuration
+  globalLogLevel?: string; // 全局日志级别配置
 }
 
 /**
@@ -60,6 +62,7 @@ export interface LegacyConfig {
   baseUrl?: string;
   temperature?: number;
   maxTokens?: number;
+  logLevel?: string;
 }
 
 export class ConfigManager {
@@ -308,6 +311,16 @@ export class AutoDevConfigWrapper {
 
   getMaxTokens(): number {
     return this.getActiveConfig()?.maxTokens ?? 4096;
+  }
+
+  /**
+   * Get log level from active config or global setting
+   */
+  getLogLevel(): string {
+    // 优先使用活动配置的日志级别，然后是全局设置，最后是默认值
+    return this.getActiveConfig()?.logLevel ??
+           this.configFile.globalLogLevel ??
+           'INFO';
   }
 
   /**

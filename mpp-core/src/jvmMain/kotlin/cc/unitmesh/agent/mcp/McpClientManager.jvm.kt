@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.mcp
 
 
+import cc.unitmesh.agent.logging.getLogger
 import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import io.modelcontextprotocol.kotlin.sdk.client.Client
@@ -22,6 +23,7 @@ import java.io.File
  * core/src/main/kotlin/cc/unitmesh/devti/mcp/client/CustomMcpServerManager.kt
  */
 actual class McpClientManager {
+    private val logger = getLogger("McpClientManager")
     private val clients = mutableMapOf<String, Client>()
     private val serverStatuses = mutableMapOf<String, McpServerStatus>()
     private val toolClientMap = mutableMapOf<Tool, Client>()
@@ -53,7 +55,7 @@ actual class McpClientManager {
                     result[serverName] = tools
                     serverStatuses[serverName] = McpServerStatus.CONNECTED
                 } catch (e: Exception) {
-                    println("Error connecting to MCP server '$serverName': ${e.message}")
+                    logger.error(e) { "Error connecting to MCP server '$serverName': ${e.message}" }
                     serverStatuses[serverName] = McpServerStatus.DISCONNECTED
                 }
             }
@@ -144,7 +146,7 @@ actual class McpClientManager {
         try {
             return@withContext connectAndDiscoverTools(serverName, serverConfig)
         } catch (e: Exception) {
-            println("Error discovering tools for server '$serverName': ${e.message}")
+            logger.error(e) { "Error discovering tools for server '$serverName': ${e.message}" }
             return@withContext emptyList()
         }
     }
@@ -193,7 +195,7 @@ actual class McpClientManager {
                 client.close()
                 serverStatuses[serverName] = McpServerStatus.DISCONNECTED
             } catch (e: Exception) {
-                println("Error closing client for server '$serverName': ${e.message}")
+                logger.error(e) { "Error closing client for server '$serverName': ${e.message}" }
             }
         }
         clients.clear()

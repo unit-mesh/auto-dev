@@ -35,5 +35,14 @@ actual object Platform {
     actual fun getOSVersion(): String {
         return "Android ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})"
     }
+
+    actual fun getUserHomeDir(): String {
+        // Android doesn't have a traditional home directory, use app data directory
+        return "/data/data"
+    }
+
+    actual fun getLogDir(): String {
+        return "${getUserHomeDir()}/.autodev/logs"
+    }
 }
 

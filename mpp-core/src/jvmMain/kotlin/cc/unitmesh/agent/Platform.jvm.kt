@@ -38,4 +38,12 @@ actual object Platform {
     actual fun getOSVersion(): String {
         return System.getProperty("os.version", "Unknown")
     }
+
+    actual fun getUserHomeDir(): String {
+        return System.getProperty("user.home", "~")
+    }
+
+    actual fun getLogDir(): String {
+        return "${getUserHomeDir()}/.autodev/logs"
+    }
 }
