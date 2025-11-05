@@ -37,6 +37,11 @@ class BuiltinCommandCompletionProvider : BaseCompletionProvider(setOf(Completion
             name = "model",
             description = "Change or view the current LLM model",
             icon = "🤖"
+        ),
+        BuiltinCommand(
+            name = "init",
+            description = "Initialize project domain dictionary",
+            icon = "🚀"
         )
     )
 

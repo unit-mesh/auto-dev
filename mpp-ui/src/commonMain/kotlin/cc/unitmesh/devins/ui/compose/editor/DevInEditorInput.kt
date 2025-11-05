@@ -424,7 +424,6 @@ fun DevInEditorInput(
                         }
                     },
                     onSlashClick = {
-                        // 插入 / 并触发命令补全
                         val current = textFieldValue
                         val newText = current.text + "/"
                         val newPosition = current.text.length + 1
@@ -435,7 +434,6 @@ fun DevInEditorInput(
                                 selection = androidx.compose.ui.text.TextRange(newPosition)
                             )
 
-                        // 立即触发补全
                         scope.launch {
                             delay(50) // 等待状态更新
                             val context =

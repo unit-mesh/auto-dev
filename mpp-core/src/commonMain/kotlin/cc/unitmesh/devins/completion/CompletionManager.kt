@@ -32,26 +32,20 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
         val provider = providers[context.triggerType] ?: return emptyList()
         val baseCompletions = provider.getCompletions(context)
 
-        // 对于 COMMAND 类型，同时包含 SpecKit 命令和 Builtin 命令
         val allCompletions = if (context.triggerType == CompletionTriggerType.COMMAND) {
-            // Order: Builtin commands first (for common operations), then tools, then SpecKit
-            builtinCommandProvider.getCompletions(context) + 
+            builtinCommandProvider.getCompletions(context) +
             baseCompletions + 
             specKitProvider.getCompletions(context)
         } else {
             baseCompletions
         }
 
-        // 缓存结果
         lastContext = context
         lastResults = allCompletions
 
         return allCompletions
     }
 
-    /**
-     * 基于查询文本过滤补全项（用于边输入边补全）
-     */
     fun getFilteredCompletions(context: CompletionContext): List<CompletionItem> {
         val allCompletions = getCompletions(context)
         val query = context.queryText
@@ -63,12 +57,9 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
         return allCompletions
             .filter { item -> matchesQuery(item, query) }
             .sortedWith(createQueryComparator(query))
-            .take(50) // 限制结果数量
+            .take(50)
     }
 
-    /**
-     * 检查补全项是否匹配查询
-     */
     private fun matchesQuery(item: CompletionItem, query: String): Boolean {
         val lowerQuery = query.lowercase()
 
@@ -77,76 +68,52 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
                item.description?.lowercase()?.contains(lowerQuery) == true
     }
 
-    /**
-     * 创建基于查询的比较器
-     */
     private fun createQueryComparator(query: String): Comparator<CompletionItem> {
         val lowerQuery = query.lowercase()
 
         return compareBy<CompletionItem> { item ->
-            // 1. 完全匹配优先
             when {
                 item.text.equals(query, ignoreCase = true) -> 0
                 item.displayText.equals(query, ignoreCase = true) -> 1
                 else -> 2
             }
         }.thenBy { item ->
-            // 2. 前缀匹配优先
             when {
                 item.text.startsWith(query, ignoreCase = true) -> 0
                 item.displayText.startsWith(query, ignoreCase = true) -> 1
                 else -> 2
             }
         }.thenBy { item ->
-            // 3. 匹配位置：越靠前越好
             minOf(
                 item.text.lowercase().indexOf(lowerQuery).takeIf { it >= 0 } ?: Int.MAX_VALUE,
                 item.displayText.lowercase().indexOf(lowerQuery).takeIf { it >= 0 } ?: Int.MAX_VALUE
             )
         }.thenBy { item ->
-            // 4. 文本长度：越短越好
             item.text.length
         }.thenBy { item ->
-            // 5. 字母顺序
             item.text.lowercase()
         }
     }
 
-    /**
-     * 刷新 SpecKit 命令（当项目路径改变时调用）
-     */
     fun refreshSpecKitCommands() {
         specKitProvider.refresh()
-        // 清除缓存
         lastContext = null
         lastResults = emptyList()
     }
 
-    /**
-     * 获取所有支持的触发类型
-     */
     fun getSupportedTriggerTypes(): Set<CompletionTriggerType> {
         return providers.keys.toSet()
     }
 
-    /**
-     * 检查是否支持指定的触发类型
-     */
     fun supports(triggerType: CompletionTriggerType): Boolean {
         return triggerType in providers
     }
 
-    /**
-     * 清除缓存
-     */
     fun clearCache() {
         lastContext = null
         lastResults = emptyList()
     }
 
-    /**
-     * 获取补全统计信息
-     */
     fun getCompletionStats(triggerType: CompletionTriggerType): CompletionStats? {
         val provider = providers[triggerType] ?: return null
 
@@ -168,9 +135,6 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
         )
     }
 
-    /**
-     * 将补全项分类
-     */
     private fun categorizeCompletions(completions: List<CompletionItem>): Map<String, Int> {
         return completions.groupBy { item ->
             when {
@@ -185,9 +149,6 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
     }
 }
 
-/**
- * 补全统计信息
- */
 data class CompletionStats(
     val triggerType: CompletionTriggerType,
     val totalItems: Int,
