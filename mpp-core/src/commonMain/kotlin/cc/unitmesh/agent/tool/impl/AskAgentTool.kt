@@ -1,10 +1,7 @@
 package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.core.SubAgentManager
-import cc.unitmesh.agent.tool.BaseExecutableTool
-import cc.unitmesh.agent.tool.ToolExecutionContext
-import cc.unitmesh.agent.tool.ToolInvocation
-import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import kotlinx.serialization.Serializable
@@ -55,6 +52,14 @@ class AskAgentTool(
 
     override val name: String = "ask-agent"
     override val description: String = "Ask a question to a specific Agent"
+
+    override val metadata: ToolMetadata = ToolMetadata(
+        displayName = "Ask Agent",
+        tuiEmoji = "💬",
+        composeIcon = "chat",
+        category = ToolCategory.Communication,
+        schema = AskSubAgentSchema
+    )
 
     override fun getParameterClass(): String = AskSubAgentParams::class.simpleName ?: "AskSubAgentParams"
 

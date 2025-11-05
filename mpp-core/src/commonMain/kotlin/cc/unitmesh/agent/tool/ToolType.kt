@@ -10,14 +10,32 @@ import cc.unitmesh.agent.tool.schema.ToolSchema
 /**
  * Sealed class representing all available tool types with their metadata
  *
- * This replaces the string-based tool names with a type-safe approach that includes:
- * - Tool name (for backward compatibility)
- * - Display name (human-readable)
- * - TUI emoji (for terminal rendering)
- * - Compose icon (for UI rendering)
- * - Category (for grouping)
- * - Schema (for AI parameter understanding)
+ * @deprecated This class is deprecated in favor of self-describing tools via ExecutableTool.metadata.
+ * Tools now carry their own metadata, eliminating the need for this parallel type system.
+ * 
+ * This class is kept for backward compatibility only. New code should use:
+ * - ExecutableTool.metadata for tool information
+ * - ToolProvider for tool discovery
+ * - ToolRegistry.getAllTools() for accessing tools
+ * 
+ * Migration path:
+ * ```
+ * // Old way (deprecated):
+ * val toolType = ToolType.ReadFile
+ * val name = toolType.name
+ * val displayName = toolType.displayName
+ * 
+ * // New way:
+ * val tool = toolRegistry.getTool("read-file")
+ * val name = tool.name
+ * val displayName = tool.metadata.displayName
+ * ```
  */
+@Deprecated(
+    message = "Use ExecutableTool.metadata instead. Tools are now self-describing.",
+    replaceWith = ReplaceWith("ExecutableTool.metadata"),
+    level = DeprecationLevel.WARNING
+)
 sealed class ToolType(
     val name: String,
     val displayName: String,

@@ -21,8 +21,7 @@ import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorAgent
 import cc.unitmesh.agent.subagent.AnalysisAgent
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
-import cc.unitmesh.agent.tool.ExecutableTool
-import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.registry.ToolRegistry
@@ -308,6 +307,19 @@ class CodingAgent(
         return object : BaseExecutableTool<Map<String, Any>, ToolResult.Success>() {
             override val name: String = toolItem.name
             override val description: String = toolItem.description
+            
+            override val metadata: ToolMetadata = ToolMetadata(
+                displayName = toolItem.displayName,
+                tuiEmoji = "🔌",
+                composeIcon = "extension",
+                category = ToolCategory.Utility,
+                schema = object : cc.unitmesh.agent.tool.schema.DeclarativeToolSchema(
+                    description = toolItem.description,
+                    properties = emptyMap()
+                ) {
+                    override fun getExampleUsage(toolName: String): String = "/$toolName"
+                }
+            )
 
             override fun getParameterClass(): String = "Map<String, Any>"
 

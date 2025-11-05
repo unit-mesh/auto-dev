@@ -158,13 +158,21 @@ class ReadFileInvocation(
 class ReadFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<ReadFileParams, ToolResult>() {
-    override val name: String = ToolType.ReadFile.name
+    override val name: String = "read-file"
     override val description: String = """
         Read and retrieve file content from project using relative or absolute path. 
         Supports line ranges for reading specific portions of files.
         Essential for examining existing code, configurations, or documentation before modifications.
         Returns complete file content with metadata including line numbers and file information.
     """.trimIndent()
+    
+    override val metadata: ToolMetadata = ToolMetadata(
+        displayName = "Read File",
+        tuiEmoji = "📄",
+        composeIcon = "file_open",
+        category = ToolCategory.FileSystem,
+        schema = ReadFileSchema
+    )
     
     override fun getParameterClass(): String = ReadFileParams::class.simpleName ?: "ReadFileParams"
     

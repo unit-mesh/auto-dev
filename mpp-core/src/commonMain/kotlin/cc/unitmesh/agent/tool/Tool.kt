@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool
 
+import cc.unitmesh.agent.tool.schema.ToolSchema
 import kotlinx.serialization.Serializable
 
 /**
@@ -17,6 +18,17 @@ interface Tool {
      */
     val description: String
 }
+
+/**
+ * Metadata for a tool including UI/display information
+ */
+data class ToolMetadata(
+    val displayName: String,
+    val tuiEmoji: String,
+    val composeIcon: String,
+    val category: ToolCategory,
+    val schema: ToolSchema
+)
 
 /**
  * Serializable representation of an agent tool with metadata
@@ -167,8 +179,16 @@ abstract class BaseToolInvocation<TParams : Any, TResult : ToolResult>(
 /**
  * A tool that can be executed with specific parameters.
  * Similar to Gemini CLI's DeclarativeTool concept.
+ * 
+ * Tools are now self-describing with metadata for UI/TUI display,
+ * categorization, and schema information.
  */
 interface ExecutableTool<TParams : Any, TResult : ToolResult> : Tool {
+    /**
+     * Tool metadata including display name, icon, category, and schema
+     */
+    val metadata: ToolMetadata
+    
     /**
      * Validates parameters and creates a tool invocation
      */
@@ -182,8 +202,17 @@ interface ExecutableTool<TParams : Any, TResult : ToolResult> : Tool {
 
 /**
  * Base implementation of ExecutableTool
+ * 
+ * Subclasses must provide tool metadata for self-description.
+ * This enables zero-configuration tool registration and discovery.
  */
 abstract class BaseExecutableTool<TParams : Any, TResult : ToolResult> : ExecutableTool<TParams, TResult> {
+    
+    /**
+     * Subclasses must provide metadata for the tool.
+     * This should be implemented as a property, not computed each time.
+     */
+    abstract override val metadata: ToolMetadata
     
     override fun createInvocation(params: TParams): ToolInvocation<TParams, TResult> {
         return createToolInvocation(params)

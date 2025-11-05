@@ -288,7 +288,7 @@ class GlobTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<GlobParams, ToolResult>() {
 
-    override val name: String = ToolType.Glob.name
+    override val name: String = "glob"
     override val description: String = """
         Find files and directories using glob patterns with wildcard support.
         Supports recursive search (**), character classes ([abc]), alternatives ({a,b}),
@@ -296,6 +296,14 @@ class GlobTool(
         Essential for discovering files by pattern, analyzing project structure,
         or finding files for batch operations.
     """.trimIndent()
+
+    override val metadata: ToolMetadata = ToolMetadata(
+        displayName = "Find Files",
+        tuiEmoji = "🌐",
+        composeIcon = "find_in_page",
+        category = ToolCategory.Search,
+        schema = GlobSchema
+    )
 
     override fun getParameterClass(): String = GlobParams::class.simpleName ?: "GlobParams"
 

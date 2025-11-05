@@ -219,7 +219,7 @@ class EditFileInvocation(
 class EditFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<EditFileParams, ToolResult>() {
-    override val name: String = ToolType.EditFile.name
+    override val name: String = "edit-file"
     override val description: String = """
         Edit files by replacing exact text matches with new text.
         Replaces one or more occurrences of oldString with newString in the specified file.
@@ -233,6 +233,14 @@ class EditFileTool(
         
         Always use read-file first to verify current content before editing.
     """.trimIndent()
+    
+    override val metadata: ToolMetadata = ToolMetadata(
+        displayName = "Edit File",
+        tuiEmoji = "🔧",
+        composeIcon = "edit_note",
+        category = ToolCategory.FileSystem,
+        schema = EditFileSchema
+    )
     
     override fun getParameterClass(): String = EditFileParams::class.simpleName ?: "EditFileParams"
     

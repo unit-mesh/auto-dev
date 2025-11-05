@@ -1,9 +1,8 @@
 package cc.unitmesh.agent.core
 
 import cc.unitmesh.agent.model.AgentDefinition
-import cc.unitmesh.agent.tool.ExecutableTool
-import cc.unitmesh.agent.tool.ToolInvocation
-import cc.unitmesh.agent.tool.ToolResult
+import cc.unitmesh.agent.tool.*
+import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 
 /**
  * Agent 基类 - 所有 Agent 的顶层抽象
@@ -36,6 +35,36 @@ abstract class Agent<TInput : Any, TOutput : ToolResult>(
 
     override val description: String
         get() = definition.description
+
+    /**
+     * Metadata for the agent as a tool
+     * Agents use their definition to provide metadata
+     * Subclasses should override this to provide specific metadata
+     */
+    override val metadata: ToolMetadata by lazy {
+        ToolMetadata(
+            displayName = definition.displayName,
+            tuiEmoji = "🤖", // Default emoji for agents
+            composeIcon = "smart_toy", // Default icon for agents
+            category = ToolCategory.SubAgent, // Default category for agents
+            schema = createAgentSchema()
+        )
+    }
+
+    /**
+     * Creates a schema for this agent
+     * Subclasses can override to provide more specific schema
+     */
+    protected open fun createAgentSchema(): cc.unitmesh.agent.tool.schema.ToolSchema {
+        return object : DeclarativeToolSchema(
+            description = description,
+            properties = emptyMap()
+        ) {
+            override fun getExampleUsage(toolName: String): String {
+                return "/$toolName"
+            }
+        }
+    }
 
     /**
      * 获取 Agent 显示名称

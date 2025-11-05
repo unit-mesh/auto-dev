@@ -338,13 +338,21 @@ class GrepTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<GrepParams, ToolResult>() {
     
-    override val name: String = ToolType.Grep.name
+    override val name: String = "grep"
     override val description: String = """
         Search for patterns in file contents using regular expressions.
         Supports file filtering with include/exclude patterns, case-sensitive/insensitive search,
         context lines around matches, and recursive directory traversal.
         Essential for finding specific code patterns, text, or analyzing codebase content.
     """.trimIndent()
+    
+    override val metadata: ToolMetadata = ToolMetadata(
+        displayName = "Search Content",
+        tuiEmoji = "🔍",
+        composeIcon = "search",
+        category = ToolCategory.Search,
+        schema = GrepSchema
+    )
     
     override fun getParameterClass(): String = GrepParams::class.simpleName ?: "GrepParams"
     

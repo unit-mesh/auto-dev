@@ -5,6 +5,8 @@ import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.impl.*
+import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
+import cc.unitmesh.agent.tool.provider.ToolProviderRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 import kotlinx.serialization.json.Json
@@ -182,24 +184,22 @@ class ToolRegistry(
     
     /**
      * Register all built-in tools (filtered by configuration if available)
+     * 
+     * Tools are now discovered through ToolProvider mechanism, making it easy
+     * to add new tools by just creating a new provider.
      */
     private fun registerBuiltinTools() {
-        val allBuiltinTools = listOf(
-            ReadFileTool(fileSystem),
-            WriteFileTool(fileSystem),
-            EditFileTool(fileSystem),
-            GrepTool(fileSystem),
-            GlobTool(fileSystem)
-        ).let { tools ->
-            val withShell = if (shellExecutor.isAvailable()) {
-                tools + ShellTool(shellExecutor)
-            } else tools
-
-            // 添加 AskAgentTool（如果有 SubAgentManager）
-            if (subAgentManager != null) {
-                withShell + AskAgentTool(subAgentManager)
-            } else withShell
+        // Ensure the builtin provider is registered
+        if (ToolProviderRegistry.getProviders().isEmpty()) {
+            ToolProviderRegistry.register(BuiltinToolsProvider())
         }
+        
+        // Discover all tools from registered providers
+        val allBuiltinTools = ToolProviderRegistry.discoverTools(
+            fileSystem = fileSystem,
+            shellExecutor = shellExecutor,
+            subAgentManager = subAgentManager
+        )
 
         println("🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}")
         println("🔧 [ToolRegistry] ConfigService available: ${configService != null}")

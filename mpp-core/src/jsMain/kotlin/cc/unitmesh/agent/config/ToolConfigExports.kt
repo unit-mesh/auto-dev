@@ -1,5 +1,8 @@
 package cc.unitmesh.agent.config
 
+import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
+import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
+import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import kotlinx.serialization.json.Json
@@ -55,7 +58,15 @@ object JsToolConfigManager {
      */
     @JsName("getBuiltinToolsByCategory")
     fun getBuiltinToolsByCategory(): dynamic {
-        val toolsByCategory = ToolConfigManager.getBuiltinToolsByCategory()
+        // Discover tools using the provider
+        val provider = BuiltinToolsProvider()
+        val tools = provider.provide(
+            fileSystem = DefaultToolFileSystem(),
+            shellExecutor = DefaultShellExecutor(),
+            subAgentManager = null
+        )
+        
+        val toolsByCategory = ToolConfigManager.getBuiltinToolsByCategory(tools)
 
         // Convert to JS object
         val result = js("{}")

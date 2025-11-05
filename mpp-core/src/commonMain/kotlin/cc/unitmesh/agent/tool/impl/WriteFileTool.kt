@@ -152,13 +152,21 @@ class WriteFileInvocation(
 class WriteFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<WriteFileParams, ToolResult>() {
-    override val name: String = ToolType.WriteFile.name
+    override val name: String = "write-file"
     override val description: String = """
         Create new files or write content to existing files using the provided content.
         Supports creating parent directories automatically and can append to existing files.
         Use for new file creation, content replacement, or appending to existing files.
         Always verify file existence with read-file first if needed.
     """.trimIndent()
+    
+    override val metadata: ToolMetadata = ToolMetadata(
+        displayName = "Write File",
+        tuiEmoji = "✏️",
+        composeIcon = "edit",
+        category = ToolCategory.FileSystem,
+        schema = WriteFileSchema
+    )
     
     override fun getParameterClass(): String = WriteFileParams::class.simpleName ?: "WriteFileParams"
     

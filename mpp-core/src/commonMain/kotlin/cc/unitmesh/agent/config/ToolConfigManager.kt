@@ -1,30 +1,40 @@
 package cc.unitmesh.agent.config
 
 import cc.unitmesh.agent.mcp.McpServerConfig
-import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.ToolCategory
 
 /**
  * Tool Configuration Manager
  *
  * Manages tool configurations including:
- * - Built-in tools (from ToolType)
+ * - Built-in tools (self-describing via metadata)
  * - MCP tools from external servers
+ * 
+ * Note: Tools are now self-describing. This manager no longer needs
+ * to hardcode tool information or maintain parallel metadata.
  */
 object ToolConfigManager {
 
     /**
      * Get all available built-in tools grouped by category
+     * 
+     * @param tools List of executable tools to organize by category
+     * @return Tools grouped by category
      */
-    fun getBuiltinToolsByCategory(): Map<ToolCategory, List<ToolItem>> {
+    fun getBuiltinToolsByCategory(
+        tools: List<ExecutableTool<*, *>>
+    ): Map<ToolCategory, List<ToolItem>> {
         val toolsByCategory = mutableMapOf<ToolCategory, MutableList<ToolItem>>()
 
-        ToolType.ALL_TOOLS.forEach { toolType ->
-            val category = toolType.category
+        tools.forEach { tool ->
+            val metadata = tool.metadata
+            val category = metadata.category
+            
             val toolItem = ToolItem(
-                name = toolType.name,
-                displayName = toolType.displayName,
-                description = getToolDescription(toolType),
+                name = tool.name,
+                displayName = metadata.displayName,
+                description = tool.description,
                 category = category.name,
                 source = ToolSource.BUILTIN,
                 schema = null
@@ -34,25 +44,6 @@ object ToolConfigManager {
         }
 
         return toolsByCategory
-    }
-
-    /**
-     * Get description for a tool type
-     */
-    private fun getToolDescription(toolType: ToolType): String {
-        return when (toolType) {
-            ToolType.ReadFile -> "Read file contents from the project"
-            ToolType.WriteFile -> "Create or overwrite files in the project"
-            ToolType.EditFile -> "Edit files by replacing text with exact matching"
-            ToolType.ListFiles -> "List files and directories"
-            ToolType.Grep -> "Search for content in files"
-            ToolType.Glob -> "Find files by pattern"
-            ToolType.Shell -> "Execute shell commands"
-            ToolType.ErrorAgent -> "Analyze and fix errors automatically"
-            ToolType.AnalysisAgent -> "Analyze and summarize any type of content intelligently"
-            ToolType.CodeAgent -> "Investigate codebase structure and dependencies"
-            ToolType.AskAgent -> "Ask questions to specific Agents"
-        }
     }
 
     /**

@@ -19,6 +19,21 @@ class McpToolAdapter(
     override val name: String = "${serverName}_${toolInfo.name}"
     override val description: String = toolInfo.description
     
+    override val metadata: ToolMetadata by lazy {
+        ToolMetadata(
+            displayName = toolInfo.name,
+            tuiEmoji = "🔌", // MCP tool emoji
+            composeIcon = "extension", // MCP tool icon
+            category = ToolCategory.Utility, // MCP tools are utilities
+            schema = object : cc.unitmesh.agent.tool.schema.DeclarativeToolSchema(
+                description = toolInfo.description,
+                properties = emptyMap()
+            ) {
+                override fun getExampleUsage(toolName: String): String = "/$toolName"
+            }
+        )
+    }
+    
     @Serializable
     data class Params(
         val arguments: String = "{}" // JSON string of arguments

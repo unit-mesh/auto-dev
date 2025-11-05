@@ -185,13 +185,21 @@ class ShellTool(
     private val shellExecutor: ShellExecutor = DefaultShellExecutor()
 ) : BaseExecutableTool<ShellParams, ToolResult>() {
     
-    override val name: String = ToolType.Shell.name
+    override val name: String = "shell"
     override val description: String = """
         Execute shell commands in the project environment with security controls.
         Use for system operations, build scripts, environment setup, or external tool execution.
         Commands run in specified working directory context with custom environment variables.
         Returns stdout, stderr, exit codes, and execution metadata. Handle with security considerations.
     """.trimIndent()
+    
+    override val metadata: ToolMetadata = ToolMetadata(
+        displayName = "Shell Command",
+        tuiEmoji = "💻",
+        composeIcon = "terminal",
+        category = ToolCategory.Execution,
+        schema = ShellSchema
+    )
     
     override fun getParameterClass(): String = ShellParams::class.simpleName ?: "ShellParams"
     
