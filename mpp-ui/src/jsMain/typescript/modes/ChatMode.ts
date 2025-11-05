@@ -1,6 +1,6 @@
 /**
  * Chat Mode - 聊天模式
- * 
+ *
  * 封装现有的聊天逻辑，支持与 LLM 的对话交互
  */
 
@@ -28,18 +28,18 @@ export class ChatMode implements Mode {
 
   async initialize(context: ModeContext): Promise<void> {
     context.logger.info('[ChatMode] Initializing chat mode...');
-    
+
     try {
       // 初始化 LLM 服务
       if (!context.llmConfig) {
         throw new Error('LLM configuration is required for chat mode');
       }
-      
+
       this.llmService = new LLMService(context.llmConfig);
 
       // 初始化输入路由器
       this.router = new InputRouter();
-      
+
       // 注册处理器（排除模式切换命令，因为它们由外部处理）
       const slashProcessor = new SlashCommandProcessor();
       this.router.register(slashProcessor, 100);
@@ -47,7 +47,7 @@ export class ChatMode implements Mode {
       this.router.register(new VariableProcessor(), 30);
 
       context.logger.info('[ChatMode] Chat mode initialized successfully');
-      
+
       // 显示欢迎消息
       const welcomeMessage: Message = {
         role: 'system',
@@ -55,7 +55,7 @@ export class ChatMode implements Mode {
         timestamp: Date.now(),
         showPrefix: true
       };
-      
+
       context.addMessage(welcomeMessage);
 
     } catch (error) {
@@ -81,7 +81,6 @@ export class ChatMode implements Mode {
     }
 
     try {
-      // 添加用户消息
       const userMessage: Message = {
         role: 'user',
         content: trimmedInput,
@@ -90,9 +89,8 @@ export class ChatMode implements Mode {
       };
       context.addMessage(userMessage);
 
-      // 处理 DevIns 命令编译
       let processedContent = trimmedInput;
-      
+
       if (hasDevInsCommands(trimmedInput)) {
         context.setIsCompiling(true);
         context.setPendingMessage({
@@ -103,11 +101,11 @@ export class ChatMode implements Mode {
         });
 
         const compileResult = await compileDevIns(trimmedInput);
-        
+
         if (compileResult) {
           if (compileResult.success) {
             processedContent = compileResult.output;
-            
+
             if (compileResult.hasCommand && compileResult.output !== trimmedInput) {
               const compileMessage: Message = {
                 role: 'system',
@@ -127,7 +125,7 @@ export class ChatMode implements Mode {
             context.addMessage(errorMessage);
           }
         }
-        
+
         context.setIsCompiling(false);
         context.setPendingMessage(null);
       }
@@ -186,7 +184,7 @@ export class ChatMode implements Mode {
 
     } catch (error) {
       context.logger.error('[ChatMode] Error handling input:', error);
-      
+
       const errorMessage: Message = {
         role: 'system',
         content: `❌ Error: ${error instanceof Error ? error.message : String(error)}`,
@@ -222,10 +220,10 @@ export class ChatMode implements Mode {
 
       await this.llmService.streamMessage(query, (chunk) => {
         assistantContent += chunk;
-        
+
         // 查找安全分割点
         const splitPoint = findLastSafeSplitPoint(assistantContent);
-        
+
         if (splitPoint === assistantContent.length) {
           // 没有完整块，只更新待处理消息
           context.setPendingMessage({
@@ -238,7 +236,7 @@ export class ChatMode implements Mode {
           // 找到完整块，分割处理
           const completedContent = assistantContent.substring(0, splitPoint);
           const pendingContent = assistantContent.substring(splitPoint);
-          
+
           // 移动完成的内容到历史
           context.addMessage({
             role: 'assistant',
@@ -246,7 +244,7 @@ export class ChatMode implements Mode {
             timestamp: startTimestamp,
             showPrefix: isFirstBlock,
           });
-          
+
           // 保留待处理内容
           context.setPendingMessage({
             role: 'assistant',
@@ -254,7 +252,7 @@ export class ChatMode implements Mode {
             timestamp: startTimestamp,
             showPrefix: false,
           });
-          
+
           assistantContent = pendingContent;
           isFirstBlock = false;
         }
@@ -262,7 +260,7 @@ export class ChatMode implements Mode {
 
       // 清除待处理消息
       context.setPendingMessage(null);
-      
+
       // 移动剩余内容到历史
       if (assistantContent.trim()) {
         context.addMessage({

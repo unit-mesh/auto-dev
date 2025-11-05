@@ -181,9 +181,9 @@ function registerCustomScenarios(): void {
         default: true
       }
     },
-    generate: (params) => {
-      const { TestCaseBuilder, TestCategory, ProjectType } = require('../framework');
-      
+    generate: async (params) => {
+      const { TestCaseBuilder, TestCategory, ProjectType } = await import('../framework/index.js');
+
       return TestCaseBuilder.create(`microservice-${Date.now()}`)
         .withName(`微服务设置: ${params.serviceName}`)
         .withDescription(`创建 ${params.serviceName} 微服务的完整项目结构`)

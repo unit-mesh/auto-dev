@@ -9,6 +9,9 @@ import type { Mode, ModeContext, ModeResult, ModeFactory } from './Mode.js';
 import type { Message } from '../ui/App.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { TuiRenderer } from '../agents/render/TuiRenderer.js';
+import { InputRouter } from '../processors/InputRouter.js';
+import { SlashCommandProcessor } from '../processors/SlashCommandProcessor.js';
+import { compileDevIns } from '../utils/commandUtils.js';
 import mppCore from '@autodev/mpp-core';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -26,6 +29,7 @@ export class AgentMode implements Mode {
 
   private agent: any = null;
   private renderer: TuiRenderer | null = null;
+  private router: InputRouter | null = null;
   private isExecuting = false;
   private projectPath = process.cwd();
 
@@ -53,6 +57,13 @@ export class AgentMode implements Mode {
 
       // 创建 TUI 渲染器
       this.renderer = new TuiRenderer(context);
+
+      // 初始化输入路由器
+      this.router = new InputRouter();
+
+      // 注册斜杠命令处理器（高优先级）
+      const slashProcessor = new SlashCommandProcessor();
+      this.router.register(slashProcessor, 100);
 
       // 创建 LLM 服务
       const llmService = new KotlinCC.unitmesh.llm.JsKoogLLMService(
@@ -112,17 +123,10 @@ export class AgentMode implements Mode {
   }
 
   async handleInput(input: string, context: ModeContext): Promise<ModeResult> {
-    if (!this.agent || !this.renderer) {
+    if (!this.agent || !this.renderer || !this.router) {
       return {
         success: false,
         error: 'Agent not initialized'
-      };
-    }
-
-    if (this.isExecuting) {
-      return {
-        success: false,
-        error: 'Agent is already executing a task. Please wait for completion.'
       };
     }
 
@@ -135,6 +139,79 @@ export class AgentMode implements Mode {
     }
 
     try {
+      // 首先尝试通过路由器处理输入（处理斜杠命令等）
+      const routerContext = {
+        clearMessages: context.clearMessages,
+        logger: context.logger,
+        addMessage: (role: string, content: string) => {
+          const message: Message = {
+            role: role as any,
+            content,
+            timestamp: Date.now(),
+            showPrefix: true
+          };
+          context.addMessage(message);
+        },
+        setLoading: (loading: boolean) => {
+          // TUI 模式下可以忽略加载状态
+        },
+        readFile: async (path: string) => {
+          const compileResult = await compileDevIns(`/file:${path}`);
+          if (compileResult?.success) {
+            return compileResult.output;
+          }
+          throw new Error(compileResult?.errorMessage || 'Failed to read file');
+        }
+      };
+
+      const routeResult = await this.router.route(trimmedInput, routerContext);
+
+      // 处理路由结果
+      switch (routeResult.type) {
+        case 'handled':
+          // 斜杠命令已处理
+          if (routeResult.output) {
+            const outputMessage: Message = {
+              role: 'system',
+              content: routeResult.output,
+              timestamp: Date.now(),
+              showPrefix: true
+            };
+            context.addMessage(outputMessage);
+          }
+          return { success: true };
+
+        case 'error':
+          const errorMessage: Message = {
+            role: 'system',
+            content: `❌ ${routeResult.message}`,
+            timestamp: Date.now(),
+            showPrefix: true
+          };
+          context.addMessage(errorMessage);
+          return { success: false, error: routeResult.message };
+
+        case 'compile':
+          // DevIns 编译命令，委托给 Agent 处理
+          break;
+
+        case 'llm-query':
+          // LLM 查询，委托给 Agent 处理
+          break;
+
+        case 'skip':
+          // 继续处理
+          break;
+      }
+
+      // 如果路由器没有处理，或者返回了需要 Agent 处理的结果，则使用 Agent
+      if (this.isExecuting) {
+        return {
+          success: false,
+          error: 'Agent is already executing a task. Please wait for completion.'
+        };
+      }
+
       this.isExecuting = true;
       context.logger.info(`[AgentMode] Executing task: ${trimmedInput}`);
 

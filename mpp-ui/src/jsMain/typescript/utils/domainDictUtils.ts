@@ -5,6 +5,8 @@
  */
 
 import type { LegacyConfig } from '../config/ConfigManager.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Import the compiled Kotlin/JS module
 // @ts-ignore - Kotlin/JS generated module
@@ -112,6 +114,9 @@ export class DomainDictService {
     config: LegacyConfig,
     maxTokenLength: number = 4096
   ): DomainDictService {
+    if (!isValidProjectPath(projectPath)) {
+      throw new Error(`Invalid project path: ${projectPath}`);
+    }
     return new DomainDictService(projectPath, config, maxTokenLength);
   }
 }
@@ -126,22 +131,19 @@ export function getCurrentProjectPath(): string {
 /**
  * Utility function to validate if a path looks like a valid project directory
  */
-export function isValidProjectPath(path: string): boolean {
+export function isValidProjectPath(projectPath: string): boolean {
   try {
-    const fs = require('fs');
-    const pathModule = require('path');
-    
     // Check if directory exists
-    if (!fs.existsSync(path)) {
+    if (!fs.existsSync(projectPath)) {
       return false;
     }
-    
+
     // Check if it's a directory
-    const stat = fs.statSync(path);
+    const stat = fs.statSync(projectPath);
     if (!stat.isDirectory()) {
       return false;
     }
-    
+
     // Check for common project indicators
     const projectIndicators = [
       'package.json',
@@ -153,9 +155,9 @@ export function isValidProjectPath(path: string): boolean {
       'requirements.txt',
       '.git'
     ];
-    
-    return projectIndicators.some(indicator => 
-      fs.existsSync(pathModule.join(path, indicator))
+
+    return projectIndicators.some(indicator =>
+      fs.existsSync(path.join(projectPath, indicator))
     );
   } catch (error) {
     return false;

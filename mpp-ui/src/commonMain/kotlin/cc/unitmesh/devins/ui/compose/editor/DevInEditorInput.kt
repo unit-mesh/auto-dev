@@ -168,7 +168,6 @@ fun DevInEditorInput(
         val trimmedText = result.newText.trim()
         if (currentTriggerType == CompletionTriggerType.COMMAND &&
             (trimmedText == "/init" || trimmedText == "/clear" || trimmedText == "/help")) {
-            // Auto-execute built-in commands
             scope.launch {
                 delay(100) // Small delay to ensure UI updates
                 callbacks?.onSubmit(trimmedText)
