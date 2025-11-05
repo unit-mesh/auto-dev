@@ -936,3 +936,110 @@ class JsChatCompressionInfo(
     }
 }
 
+// ============================================================================
+// Domain Dictionary Generation JS Exports
+// ============================================================================
+
+/**
+ * JavaScript-friendly wrapper for DomainDictGenerator
+ */
+@JsExport
+class JsDomainDictGenerator(
+    private val projectPath: String,
+    private val modelConfig: JsModelConfig,
+    private val maxTokenLength: Int = 4096
+) {
+    private val fileSystem = cc.unitmesh.devins.filesystem.DefaultProjectFileSystem(projectPath)
+    private val generator = cc.unitmesh.indexer.DomainDictGenerator(
+        fileSystem = fileSystem,
+        modelConfig = ModelConfig(
+            provider = when (this.modelConfig.providerName.lowercase()) {
+                "deepseek" -> LLMProviderType.DEEPSEEK
+                "openai" -> LLMProviderType.OPENAI
+                "anthropic" -> LLMProviderType.ANTHROPIC
+                "ollama" -> LLMProviderType.OLLAMA
+                else -> LLMProviderType.DEEPSEEK
+            },
+            modelName = this.modelConfig.modelName,
+            apiKey = this.modelConfig.apiKey,
+            temperature = this.modelConfig.temperature,
+            maxTokens = this.modelConfig.maxTokens,
+            baseUrl = this.modelConfig.baseUrl
+        ),
+        maxTokenLength = maxTokenLength
+    )
+
+    /**
+     * Generate domain dictionary and return complete result
+     */
+    @JsName("generate")
+    fun generate(): Promise<String> {
+        return GlobalScope.promise {
+            try {
+                generator.generate()
+            } catch (e: Exception) {
+                throw e
+            }
+        }
+    }
+
+    /**
+     * Generate and save domain dictionary to file
+     */
+    @JsName("generateAndSave")
+    fun generateAndSave(): Promise<JsDomainDictResult> {
+        return GlobalScope.promise {
+            try {
+                val result = generator.generateAndSave()
+                when (result) {
+                    is cc.unitmesh.indexer.GenerationResult.Success ->
+                        JsDomainDictResult(true, result.content, null)
+                    is cc.unitmesh.indexer.GenerationResult.Error ->
+                        JsDomainDictResult(false, "", result.message)
+                }
+            } catch (e: Exception) {
+                JsDomainDictResult(false, "", e.message ?: "Unknown error")
+            }
+        }
+    }
+
+    /**
+     * Check if domain dictionary file exists
+     */
+    @JsName("exists")
+    fun exists(): Promise<Boolean> {
+        return GlobalScope.promise {
+            try {
+                fileSystem.exists("prompts/domain.csv")
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    /**
+     * Load existing domain dictionary content
+     */
+    @JsName("loadContent")
+    fun loadContent(): Promise<String?> {
+        return GlobalScope.promise {
+            try {
+                val service = cc.unitmesh.indexer.DomainDictService(fileSystem)
+                service.loadContent()
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+}
+
+/**
+ * JavaScript-friendly result for domain dictionary generation
+ */
+@JsExport
+data class JsDomainDictResult(
+    val success: Boolean,
+    val content: String,
+    val errorMessage: String?
+)
+

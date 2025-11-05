@@ -96,6 +96,17 @@ export interface TranslationKeys {
       current: string;
       usage: string;
     };
+    init: {
+      description: string;
+      starting: string;
+      analyzing: string;
+      generating: string;
+      saving: string;
+      success: string;
+      error: string;
+      noCode: string;
+      usage: string;
+    };
     unknown: string;
     usage: string;
     executionError: string;

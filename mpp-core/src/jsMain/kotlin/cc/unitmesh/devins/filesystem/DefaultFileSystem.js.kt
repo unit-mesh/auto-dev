@@ -231,6 +231,21 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
         return resolvePathInternal(relativePath)
     }
 
+    actual override fun createDirectory(path: String): Boolean {
+        if (!requireNodeJs()) return false
+
+        return try {
+            val resolvedPath = resolvePathInternal(path)
+            if (!exists(resolvedPath)) {
+                fs.mkdirSync(resolvedPath, js("{ recursive: true }"))
+            }
+            true
+        } catch (e: Exception) {
+            console.error("Error creating directory: ${e.message}")
+            false
+        }
+    }
+
     /**
      * 解析路径为绝对路径
      */

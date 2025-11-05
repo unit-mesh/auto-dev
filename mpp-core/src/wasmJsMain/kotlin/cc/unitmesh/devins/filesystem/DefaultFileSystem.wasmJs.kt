@@ -43,5 +43,11 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             "$projectPath/$relativePath"
         }
     }
+
+    actual override fun createDirectory(path: String): Boolean {
+        // TODO: 实现 WASM 文件系统支持
+        println("File system not implemented for WASM platform")
+        return false
+    }
 }
 

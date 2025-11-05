@@ -131,7 +131,19 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     actual override fun resolvePath(relativePath: String): String {
         return resolvePathInternal(relativePath).toString()
     }
-    
+
+    actual override fun createDirectory(path: String): Boolean {
+        return try {
+            val resolvedPath = resolvePathInternal(path)
+            if (!resolvedPath.exists()) {
+                Files.createDirectories(resolvedPath)
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private fun resolvePathInternal(path: String): Path {
         val p = Path.of(path)
         return if (p.isAbsolute) {

@@ -61,6 +61,13 @@ interface ProjectFileSystem {
      * @return 绝对路径
      */
     fun resolvePath(relativePath: String): String
+
+    /**
+     * 创建目录
+     * @param path 目录路径
+     * @return 是否创建成功
+     */
+    fun createDirectory(path: String): Boolean = true
 }
 
 /**
@@ -75,6 +82,7 @@ class EmptyFileSystem : ProjectFileSystem {
     override fun listFiles(path: String, pattern: String?): List<String> = emptyList()
     override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String> = emptyList()
     override fun resolvePath(relativePath: String): String = relativePath
+    override fun createDirectory(path: String): Boolean = false
 }
 
 /**
@@ -90,5 +98,11 @@ expect class DefaultFileSystem(projectPath: String) : ProjectFileSystem {
     override fun listFiles(path: String, pattern: String?): List<String>
     override fun searchFiles(pattern: String, maxDepth: Int, maxResults: Int): List<String>
     override fun resolvePath(relativePath: String): String
+    override fun createDirectory(path: String): Boolean
 }
+
+/**
+ * Type alias for backward compatibility
+ */
+typealias DefaultProjectFileSystem = DefaultFileSystem
 

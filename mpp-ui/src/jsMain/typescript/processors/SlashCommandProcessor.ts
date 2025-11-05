@@ -8,6 +8,8 @@
 import type { InputProcessor, ProcessorContext, ProcessorResult } from './InputRouter.js';
 import { HELP_TEXT, GOODBYE_MESSAGE } from '../constants/asciiArt.js';
 import { t } from '../i18n/index.js';
+import { DomainDictService, getCurrentProjectPath, isValidProjectPath } from '../utils/domainDictUtils.js';
+import { ConfigManager } from '../config/ConfigManager.js';
 
 /**
  * 命令定义
@@ -89,6 +91,12 @@ export class SlashCommandProcessor implements InputProcessor {
         output: `${t('commands.model.available', { models: 'deepseek, claude, gpt' })}\n${t('commands.model.current', { model: 'deepseek' })}\n\n${t('commands.model.usage')}`
       })
     });
+
+    // /init - 初始化域字典
+    this.registerCommand('init', {
+      description: t('commands.init.description'),
+      action: async (context, args) => this.handleInitCommand(context, args)
+    });
   }
   
   /**
@@ -162,6 +170,76 @@ export class SlashCommandProcessor implements InputProcessor {
       return {
         type: 'error',
         message: t('commands.executionError', { error: error instanceof Error ? error.message : String(error) })
+      };
+    }
+  }
+
+  /**
+   * Handle /init command for domain dictionary generation
+   */
+  private async handleInitCommand(context: ProcessorContext, args: string): Promise<ProcessorResult> {
+    try {
+      const force = args.includes('--force');
+      const projectPath = getCurrentProjectPath();
+
+      // Validate project path
+      if (!isValidProjectPath(projectPath)) {
+        return {
+          type: 'error',
+          message: `❌ Current directory doesn't appear to be a valid project: ${projectPath}`
+        };
+      }
+
+      // Load configuration
+      const configWrapper = await ConfigManager.load();
+      const config = configWrapper.getActiveConfig();
+
+      if (!config) {
+        return {
+          type: 'error',
+          message: '❌ No LLM configuration found. Please run the setup first.'
+        };
+      }
+
+      // Create domain dictionary service
+      const domainDictService = DomainDictService.create(projectPath, config);
+
+      // Check if domain dictionary already exists
+      if (!force && await domainDictService.exists()) {
+        return {
+          type: 'handled',
+          output: '⚠️  Domain dictionary already exists at prompts/domain.csv\nUse /init --force to regenerate'
+        };
+      }
+
+      // Show progress messages
+      console.log(t('commands.init.starting'));
+      console.log(t('commands.init.analyzing'));
+
+      // Generate domain dictionary
+      console.log(t('commands.init.generating'));
+      const result = await domainDictService.generateAndSave();
+
+      if (result.success) {
+        console.log(t('commands.init.saving'));
+        return {
+          type: 'handled',
+          output: t('commands.init.success')
+        };
+      } else {
+        return {
+          type: 'error',
+          message: t('commands.init.error', { error: result.errorMessage || 'Unknown error' })
+        };
+      }
+
+    } catch (error) {
+      context.logger.error('[SlashCommandProcessor] Error in /init command:', error);
+      return {
+        type: 'error',
+        message: t('commands.init.error', {
+          error: error instanceof Error ? error.message : String(error)
+        })
       };
     }
   }
