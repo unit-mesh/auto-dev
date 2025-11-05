@@ -124,7 +124,7 @@ class CustomMcpServerManager(val project: Project) {
                         return@runBlocking future.complete("Invalid arguments: $e")
                     }
 
-                    val result = it.callTool(tool.name, arguments, true, null)
+                    val result = it.callTool(tool.name, arguments = arguments)
                     if (result?.content.isNullOrEmpty()) {
                         future.complete("No result from tool ${tool.name}")
                     } else {
