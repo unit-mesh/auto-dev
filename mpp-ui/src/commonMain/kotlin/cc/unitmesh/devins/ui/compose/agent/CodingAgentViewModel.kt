@@ -12,6 +12,8 @@ import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.KoogLLMService
+import cc.unitmesh.indexer.DomainDictGenerator
+import cc.unitmesh.devins.filesystem.DefaultProjectFileSystem
 import kotlinx.coroutines.*
 
 /**
@@ -139,6 +141,12 @@ class CodingAgentViewModel(
             return
         }
 
+        // Check if this is a built-in slash command
+        if (task.trim().startsWith("/")) {
+            handleBuiltinCommand(task.trim())
+            return
+        }
+
         isExecuting = true
         renderer.clearError()
         renderer.addUserMessage(task)
@@ -177,6 +185,56 @@ class CodingAgentViewModel(
     }
 
     /**
+     * Handle built-in slash commands
+     */
+    private fun handleBuiltinCommand(command: String) {
+        val parts = command.substring(1).trim().split("\\s+".toRegex())
+        val commandName = parts[0].lowercase()
+        val args = parts.drop(1).joinToString(" ")
+
+        renderer.addUserMessage(command)
+
+        when (commandName) {
+            "init" -> handleInitCommand(args)
+            "clear" -> {
+                renderer.clearMessages()
+                renderer.renderFinalResult(true, "✅ Chat history cleared", 0)
+            }
+            "help" -> {
+                val helpText = buildString {
+                    appendLine("📖 Available Commands:")
+                    appendLine("  /init [--force] - Initialize project domain dictionary")
+                    appendLine("  /clear - Clear chat history")
+                    appendLine("  /help - Show this help message")
+                    appendLine("")
+                    appendLine("💡 You can also use @ for agents and other DevIns commands")
+                }
+                renderer.renderFinalResult(true, helpText, 0)
+            }
+            else -> {
+                // Unknown command, let the agent handle it
+                isExecuting = true
+                currentExecutionJob = scope.launch {
+                    try {
+                        val codingAgent = initializeCodingAgent()
+                        val agentTask = AgentTask(
+                            requirement = command,
+                            projectPath = projectPath
+                        )
+                        codingAgent.executeTask(agentTask)
+                        isExecuting = false
+                        currentExecutionJob = null
+                    } catch (e: Exception) {
+                        renderer.renderError(e.message ?: "Unknown error")
+                        isExecuting = false
+                        currentExecutionJob = null
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Cancel current task
      */
     fun cancelTask() {
@@ -192,6 +250,74 @@ class CodingAgentViewModel(
      */
     fun clearHistory() {
         renderer.clearMessages()
+    }
+
+    /**
+     * Handle /init command for domain dictionary generation
+     */
+    private fun handleInitCommand(args: String) {
+        val force = args.contains("--force")
+
+        scope.launch {
+            try {
+                // Add messages to timeline using the renderer's message system
+                renderer.addUserMessage("/init $args")
+
+                // Start processing indicator
+                renderer.renderLLMResponseStart()
+                renderer.renderLLMResponseChunk("🚀 Starting domain dictionary generation...")
+                renderer.renderLLMResponseEnd()
+
+                // Load configuration
+                val configWrapper = ConfigManager.load()
+                val modelConfig = configWrapper.getActiveModelConfig()
+
+                if (modelConfig == null) {
+                    renderer.renderError("❌ No LLM configuration found. Please configure your model first.")
+                    return@launch
+                }
+
+                renderer.renderLLMResponseStart()
+                renderer.renderLLMResponseChunk("📊 Analyzing project code...")
+                renderer.renderLLMResponseEnd()
+
+                // Create domain dictionary generator
+                val fileSystem = DefaultProjectFileSystem(projectPath)
+                val generator = DomainDictGenerator(
+                    fileSystem = fileSystem,
+                    modelConfig = modelConfig,
+                    maxTokenLength = 4096
+                )
+
+                // Check if domain dictionary already exists
+                if (!force && fileSystem.exists("prompts/domain.csv")) {
+                    renderer.renderError("⚠️ Domain dictionary already exists at prompts/domain.csv\nUse /init --force to regenerate")
+                    return@launch
+                }
+
+                renderer.renderLLMResponseStart()
+                renderer.renderLLMResponseChunk("🤖 Generating domain dictionary with AI...")
+                renderer.renderLLMResponseEnd()
+
+                // Generate domain dictionary
+                val result = generator.generateAndSave()
+
+                when (result) {
+                    is cc.unitmesh.indexer.GenerationResult.Success -> {
+                        renderer.renderLLMResponseStart()
+                        renderer.renderLLMResponseChunk("💾 Saving domain dictionary to prompts/domain.csv...")
+                        renderer.renderLLMResponseEnd()
+                        renderer.renderFinalResult(true, "✅ Domain dictionary generated successfully! File saved to prompts/domain.csv", 1)
+                    }
+                    is cc.unitmesh.indexer.GenerationResult.Error -> {
+                        renderer.renderError("❌ Domain dictionary generation failed: ${result.message}")
+                    }
+                }
+
+            } catch (e: Exception) {
+                renderer.renderError("❌ Domain dictionary generation failed: ${e.message}")
+            }
+        }
     }
 
     /**

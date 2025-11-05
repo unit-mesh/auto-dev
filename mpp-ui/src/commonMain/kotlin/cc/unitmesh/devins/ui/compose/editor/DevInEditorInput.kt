@@ -164,6 +164,20 @@ fun DevInEditorInput(
                 selection = androidx.compose.ui.text.TextRange(result.newCursorPosition)
             )
 
+        // Check if this is a built-in command that should be auto-executed
+        val trimmedText = result.newText.trim()
+        if (currentTriggerType == CompletionTriggerType.COMMAND &&
+            (trimmedText == "/init" || trimmedText == "/clear" || trimmedText == "/help")) {
+            // Auto-execute built-in commands
+            scope.launch {
+                delay(100) // Small delay to ensure UI updates
+                callbacks?.onSubmit(trimmedText)
+                textFieldValue = TextFieldValue("")
+                showCompletion = false
+            }
+            return
+        }
+
         if (result.shouldTriggerNextCompletion) {
             // 延迟触发下一个补全
             scope.launch {
@@ -435,7 +449,7 @@ fun DevInEditorInput(
                             )
 
                         scope.launch {
-                            delay(50) // 等待状态更新
+                            delay(50)
                             val context =
                                 CompletionTrigger.buildContext(
                                     newText,
@@ -459,13 +473,11 @@ fun DevInEditorInput(
             }
         }
 
-        // Tool Configuration Dialog
         if (showToolConfig) {
-            cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
+            ToolConfigDialog(
                 onDismiss = { showToolConfig = false },
                 onSave = { toolConfigFile ->
                     scope.launch {
-                        // Update local state
                         mcpServers = toolConfigFile.mcpServers
 
                         println("✅ Tool configuration saved")
