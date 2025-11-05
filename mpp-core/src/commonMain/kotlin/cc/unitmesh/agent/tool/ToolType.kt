@@ -44,6 +44,15 @@ sealed class ToolType(
         schema = WriteFileSchema
     )
 
+    data object EditFile : ToolType(
+        name = "edit-file",
+        displayName = "Edit File",
+        tuiEmoji = "🔧",
+        composeIcon = "edit_note",
+        category = ToolCategory.FileSystem,
+        schema = EditFileSchema
+    )
+
     data object ListFiles : ToolType(
         name = "list-files",
         displayName = "List Files",
@@ -122,7 +131,7 @@ sealed class ToolType(
          */
         val ALL_TOOLS by lazy {
             listOf(
-                ReadFile, WriteFile, Grep, Glob,
+                ReadFile, WriteFile, EditFile, Grep, Glob,
                 Shell,
                 ErrorAgent, AnalysisAgent, CodeAgent,
                 AskAgent

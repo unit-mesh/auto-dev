@@ -187,6 +187,7 @@ class ToolRegistry(
         val allBuiltinTools = listOf(
             ReadFileTool(fileSystem),
             WriteFileTool(fileSystem),
+            EditFileTool(fileSystem),
             GrepTool(fileSystem),
             GlobTool(fileSystem)
         ).let { tools ->

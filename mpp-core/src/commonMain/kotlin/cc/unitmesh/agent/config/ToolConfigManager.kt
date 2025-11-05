@@ -43,6 +43,7 @@ object ToolConfigManager {
         return when (toolType) {
             ToolType.ReadFile -> "Read file contents from the project"
             ToolType.WriteFile -> "Create or overwrite files in the project"
+            ToolType.EditFile -> "Edit files by replacing text with exact matching"
             ToolType.ListFiles -> "List files and directories"
             ToolType.Grep -> "Search for content in files"
             ToolType.Glob -> "Find files by pattern"
