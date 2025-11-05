@@ -1,21 +1,21 @@
 package cc.unitmesh.devins.ui
 
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import cc.unitmesh.devins.ui.compose.HelloWorld
-import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.window.CanvasBasedWindow
+import cc.unitmesh.devins.ui.compose.AutoDevApp
+import org.jetbrains.skiko.wasm.onWasmReady
 
 /**
- * Simple Hello World Application for Web
- * A minimal Compose for Web application that displays "Hello, World!"
+ * Markdown 渲染演示应用 - Web 版本
  */
-fun main() = application {
-    Window(
-        title = "Hello World App",
-        onCloseRequest = ::exitApplication
-    ) {
-        AutoDevTheme {
-            HelloWorld()
+@OptIn(ExperimentalComposeUiApi::class)
+fun main() {
+    onWasmReady {
+        CanvasBasedWindow(
+            title = "Markdown Renderer Demo - Web",
+            canvasElementId = "ComposeTarget"
+        ) {
+            AutoDevApp()
         }
     }
 }
