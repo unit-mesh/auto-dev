@@ -109,6 +109,12 @@ export class TestCaseBuilder {
     expectedToolCalls: [],
     expectedChanges: [],
     tags: [],
+    expectedPromptBehavior: {
+      shouldFollowSystemPrompt: true,
+      shouldExploreProjectFirst: true,
+      shouldUseAppropriateTools: true,
+      shouldHandleErrorsGracefully: true
+    },
     qualityThresholds: {
       minToolAccuracy: 0.7,
       maxExecutionTime: 300000,

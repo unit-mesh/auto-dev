@@ -24,7 +24,7 @@ describe('CodingAgent 错误恢复测试 v2', () => {
   beforeAll(async () => {
     // 初始化测试引擎
     testEngine = new TestEngine({
-      agentPath: './dist/index.js',
+      agentPath: './dist/jsMain/typescript/index.js',
       outputDir: './test-results/error-recovery',
       reporters: ['console'],
       verbose: process.env.DEBUG === 'true',
