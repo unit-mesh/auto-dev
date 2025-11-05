@@ -187,10 +187,17 @@ class ShellTool(
     
     override val name: String = "shell"
     override val description: String = """
-        Execute shell commands in the project environment with security controls.
-        Use for system operations, build scripts, environment setup, or external tool execution.
-        Commands run in specified working directory context with custom environment variables.
-        Returns stdout, stderr, exit codes, and execution metadata. Handle with security considerations.
+  The following information is returned:
+
+  Command: Executed command.
+  Directory: Directory where command was executed, or \`(root)\`.
+  Stdout: Output on stdout stream. Can be \`(empty)\` or partial on error and for any unwaited background processes.
+  Stderr: Output on stderr stream. Can be \`(empty)\` or partial on error and for any unwaited background processes.
+  Error: Error or \`(none)\` if no error was reported for the subprocess.
+  Exit Code: Exit code or \`(none)\` if terminated by signal.
+  Signal: Signal number or \`(none)\` if no signal was received.
+  Background PIDs: List of background processes started or \`(none)\`.
+  Process Group PGID: Process group started or \`(none)\``
     """.trimIndent()
     
     override val metadata: ToolMetadata = ToolMetadata(

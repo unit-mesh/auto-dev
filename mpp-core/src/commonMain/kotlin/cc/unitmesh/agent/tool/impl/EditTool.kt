@@ -221,17 +221,17 @@ class EditFileTool(
 ) : BaseExecutableTool<EditFileParams, ToolResult>() {
     override val name: String = "edit-file"
     override val description: String = """
-        Edit files by replacing exact text matches with new text.
-        Replaces one or more occurrences of oldString with newString in the specified file.
-        Supports creating new files when oldString is empty.
-        
-        Key features:
-        - Exact text matching for precise replacements
-        - Multiple occurrence replacement support
-        - Validation of expected replacement count
-        - Context-aware error messages
-        
-        Always use read-file first to verify current content before editing.
+Replaces text within a file. By default, replaces a single occurrence, but can replace multiple occurrences when \`expected_replacements\` is specified. This tool requires providing significant context around the change to ensure precise targeting. Always use the ${'$'}{READ_FILE_TOOL_NAME} tool to examine the file's current content before attempting a text replacement.
+
+      The user has the ability to modify the \`new_string\` content. If modified, this will be stated in the response.
+
+Expectation for required parameters:
+1. \`file_path\` MUST be an absolute path; otherwise an error will be thrown.
+2. \`old_string\` MUST be the exact literal text to replace (including all whitespace, indentation, newlines, and surrounding code etc.).
+3. \`new_string\` MUST be the exact literal text to replace \`old_string\` with (also including all whitespace, indentation, newlines, and surrounding code etc.). Ensure the resulting code is correct and idiomatic.
+4. NEVER escape \`old_string\` or \`new_string\`, that would break the exact literal text requirement.
+**Important:** If ANY of the above are not satisfied, the tool will fail. CRITICAL for \`old_string\`: Must uniquely identify the single instance to change. Include at least 3 lines of context BEFORE and AFTER the target text, matching whitespace and indentation precisely. If this string matches multiple locations, or does not match exactly, the tool will fail.
+**Multiple replacements:** Set \`expected_replacements\` to the number of occurrences you want to replace. The tool will replace ALL occurrences that match \`old_string\` exactly. Ensure the number of replacements matches your expectation.
     """.trimIndent()
     
     override val metadata: ToolMetadata = ToolMetadata(

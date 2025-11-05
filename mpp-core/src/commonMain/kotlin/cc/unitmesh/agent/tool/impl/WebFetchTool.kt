@@ -75,27 +75,52 @@ object UrlParser {
      * Parses a prompt to extract valid URLs and identify malformed ones.
      */
     fun parsePrompt(text: String): ParsedUrls {
-        val tokens = text.split(Regex("\\s+"))
         val validUrls = mutableListOf<String>()
         val errors = mutableListOf<String>()
 
-        for (token in tokens) {
-            if (token.isBlank()) continue
+        // Use regex to find URLs in the text, even if they're embedded in other text
+        val urlPattern = Regex("""https?://[^\s\u4e00-\u9fff]+""")
+        val matches = urlPattern.findAll(text)
 
-            // Heuristic to check if the token appears to contain URL-like chars
-            if (token.contains("://")) {
-                try {
-                    // Basic URL validation
-                    val url = normalizeUrl(token)
-                    
-                    // Check protocol
-                    if (url.startsWith("http://") || url.startsWith("https://")) {
-                        validUrls.add(url)
-                    } else {
-                        errors.add("Unsupported protocol in URL: \"$token\". Only http and https are supported.")
+        for (match in matches) {
+            val potentialUrl = match.value
+            try {
+                // Clean up the URL (remove trailing punctuation that might not be part of URL)
+                val cleanUrl = potentialUrl.trimEnd('.', ',', ')', ']', '}', '!', '?', ';', ':')
+                val url = normalizeUrl(cleanUrl)
+
+                // Check protocol (should already be http/https from regex)
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    validUrls.add(url)
+                } else {
+                    errors.add("Unsupported protocol in URL: \"$cleanUrl\". Only http and https are supported.")
+                }
+            } catch (e: Exception) {
+                errors.add("Malformed URL detected: \"$potentialUrl\".")
+            }
+        }
+
+        // Fallback: if no URLs found with regex, try the old token-based approach
+        if (validUrls.isEmpty() && errors.isEmpty()) {
+            val tokens = text.split(Regex("\\s+"))
+            for (token in tokens) {
+                if (token.isBlank()) continue
+
+                // Heuristic to check if the token appears to contain URL-like chars
+                if (token.contains("://")) {
+                    try {
+                        // Basic URL validation
+                        val url = normalizeUrl(token)
+
+                        // Check protocol
+                        if (url.startsWith("http://") || url.startsWith("https://")) {
+                            validUrls.add(url)
+                        } else {
+                            errors.add("Unsupported protocol in URL: \"$token\". Only http and https are supported.")
+                        }
+                    } catch (e: Exception) {
+                        errors.add("Malformed URL detected: \"$token\".")
                     }
-                } catch (e: Exception) {
-                    errors.add("Malformed URL detected: \"$token\".")
                 }
             }
         }
@@ -108,14 +133,14 @@ object UrlParser {
      */
     private fun normalizeUrl(url: String): String {
         var normalized = url.trim()
-        
+
         // Convert GitHub blob URLs to raw URLs
         if (normalized.contains("github.com") && normalized.contains("/blob/")) {
             normalized = normalized
                 .replace("github.com", "raw.githubusercontent.com")
                 .replace("/blob/", "/")
         }
-        
+
         return normalized
     }
 }
@@ -147,7 +172,7 @@ class WebFetchInvocation(
     override suspend fun execute(context: ToolExecutionContext): ToolResult {
         return ToolErrorUtils.safeExecute(ToolErrorType.WEB_FETCH_PROCESSING_ERROR) {
             val parsedUrls = UrlParser.parsePrompt(params.prompt)
-            
+
             if (parsedUrls.validUrls.isEmpty()) {
                 throw ToolException(
                     "No valid URLs found in prompt. URLs must start with http:// or https://",
@@ -167,7 +192,7 @@ class WebFetchInvocation(
         try {
             // Fetch content from URL
             val fetchResult = httpFetcher.fetch(url, timeout = 10000)
-            
+
             if (!fetchResult.success) {
                 throw ToolException(
                     "Failed to fetch URL: ${fetchResult.error}",
@@ -222,7 +247,7 @@ class WebFetchInvocation(
 interface HttpFetcher {
     /**
      * Fetch content from a URL
-     * 
+     *
      * @param url The URL to fetch
      * @param timeout Timeout in milliseconds
      * @return FetchResult containing the content or error
@@ -243,40 +268,26 @@ data class FetchResult(
 
 /**
  * WebFetch tool for fetching and processing web content using AI
- * 
+ *
  * This tool combines web fetching with AI processing to:
  * 1. Fetch content from URLs
  * 2. Process the content according to user instructions
  * 3. Return AI-generated summaries or extractions
- * 
+ *
  * The tool automatically creates its own HttpFetcher using platform-specific engines.
  */
 class WebFetchTool(
     private val llmService: KoogLLMService
 ) : BaseExecutableTool<WebFetchParams, ToolResult>() {
-    
+
     // Create platform-specific HTTP fetcher internally
     private val httpFetcher: HttpFetcher by lazy {
         KtorHttpFetcher.create()
     }
-    
+
     override val name: String = "web-fetch"
-    override val description: String = """
-        Processes content from URL(s) embedded in a prompt using AI.
-        Fetches web content and uses AI to process it according to instructions.
-        
-        Key features:
-        - Fetches content from HTTP/HTTPS URLs
-        - Supports GitHub URLs (auto-converts to raw URLs)
-        - Uses AI to summarize, extract, or analyze content
-        - Handles HTML and plain text content
-        
-        Use this tool when you need to:
-        - Summarize web articles
-        - Extract specific information from web pages
-        - Analyze content from URLs
-        - Process documentation from the web
-    """.trimIndent()
+    override val description: String =
+        "Processes content from URL(s), including local and private network addresses (e.g., localhost), embedded in a prompt. Include up to 20 URLs and instructions (e.g., summarize, extract specific data) directly in the 'prompt' parameter.".trimIndent()
 
     override val metadata: ToolMetadata = ToolMetadata(
         displayName = "Web Fetch",

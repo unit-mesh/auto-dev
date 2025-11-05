@@ -159,12 +159,7 @@ class ReadFileTool(
     private val fileSystem: ToolFileSystem
 ) : BaseExecutableTool<ReadFileParams, ToolResult>() {
     override val name: String = "read-file"
-    override val description: String = """
-        Read and retrieve file content from project using relative or absolute path. 
-        Supports line ranges for reading specific portions of files.
-        Essential for examining existing code, configurations, or documentation before modifications.
-        Returns complete file content with metadata including line numbers and file information.
-    """.trimIndent()
+    override val description: String = """Reads and returns the content of a specified file. If the file is large, the content will be truncated. The tool's response will clearly indicate if truncation has occurred and will provide details on how to read more of the file using the 'offset' and 'limit' parameters. Handles text, images (PNG, JPG, GIF, WEBP, SVG, BMP), and PDF files. For text files, it can read specific line ranges.""".trimIndent()
     
     override val metadata: ToolMetadata = ToolMetadata(
         displayName = "Read File",

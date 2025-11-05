@@ -339,12 +339,7 @@ class GrepTool(
 ) : BaseExecutableTool<GrepParams, ToolResult>() {
     
     override val name: String = "grep"
-    override val description: String = """
-        Search for patterns in file contents using regular expressions.
-        Supports file filtering with include/exclude patterns, case-sensitive/insensitive search,
-        context lines around matches, and recursive directory traversal.
-        Essential for finding specific code patterns, text, or analyzing codebase content.
-    """.trimIndent()
+    override val description: String = """Searches for a regular expression pattern within the content of files in a specified directory (or current working directory). Can filter files by a glob pattern. Returns the lines containing matches, along with their file paths and line numbers.""".trimIndent()
     
     override val metadata: ToolMetadata = ToolMetadata(
         displayName = "Search Content",

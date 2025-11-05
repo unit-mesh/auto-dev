@@ -87,36 +87,36 @@ class GlobInvocation(
     private val fileSystem: ToolFileSystem,
     private val gitIgnoreParser: GitIgnoreParser? = null
 ) : BaseToolInvocation<GlobParams, ToolResult>(params, tool) {
-    
+
     override fun getDescription(): String {
         val searchPath = params.path ?: "project root"
         val typeDesc = if (params.includeDirectories) "files and directories" else "files"
         return "Find $typeDesc matching pattern '${params.pattern}' in $searchPath"
     }
-    
+
     override fun getToolLocations(): List<ToolLocation> {
         val searchPath = params.path ?: fileSystem.getProjectPath() ?: "."
         return listOf(ToolLocation(searchPath, LocationType.DIRECTORY))
     }
-    
+
     override suspend fun execute(context: ToolExecutionContext): ToolResult {
         return ToolErrorUtils.safeExecute(ToolErrorType.INVALID_PATTERN) {
             val searchPath = params.path ?: fileSystem.getProjectPath() ?: "."
-            
+
             if (!fileSystem.exists(searchPath)) {
                 throw ToolException("Search path not found: $searchPath", ToolErrorType.DIRECTORY_NOT_FOUND)
             }
-            
+
             val matches = findMatches(searchPath)
             val sortedMatches = if (params.sortByTime) {
                 matches.sortedByDescending { it.lastModified ?: 0L }
             } else {
                 matches.sortedBy { it.path }
             }
-            
+
             val limitedMatches = sortedMatches.take(params.maxResults)
             val resultText = formatResults(limitedMatches, matches.size)
-            
+
             val metadata = mapOf(
                 "pattern" to params.pattern,
                 "search_path" to searchPath,
@@ -127,11 +127,11 @@ class GlobInvocation(
                 "sort_by_time" to params.sortByTime.toString(),
                 "respect_gitignore" to params.respectGitIgnore.toString()
             )
-            
+
             ToolResult.Success(resultText, metadata)
         }
     }
-    
+
     private fun findMatches(searchPath: String): List<GlobFileResult> {
         val matches = mutableListOf<GlobFileResult>()
         val projectPath = fileSystem.getProjectPath()
@@ -183,14 +183,14 @@ class GlobInvocation(
         collectMatches(searchPath)
         return matches
     }
-    
+
     private fun createFileResult(filePath: String, fileInfo: FileInfo, projectPath: String?): GlobFileResult {
         val relativePath = if (projectPath != null && filePath.startsWith(projectPath)) {
             filePath.removePrefix(projectPath).removePrefix("/")
         } else {
             filePath
         }
-        
+
         return GlobFileResult(
             path = filePath,
             relativePath = relativePath,
@@ -199,17 +199,17 @@ class GlobInvocation(
             lastModified = if (params.includeFileInfo) fileInfo.lastModified else null
         )
     }
-    
+
     private fun matchesPattern(filePath: String, pattern: String): Boolean {
         val fileName = filePath.substringAfterLast('/')
-        
+
         return when {
             !pattern.contains('/') -> matchesGlobPattern(fileName, pattern)
             pattern.contains("**") -> matchesRecursivePattern(filePath, pattern)
             else -> matchesPathPattern(filePath, pattern)
         }
     }
-    
+
     private fun matchesGlobPattern(text: String, pattern: String): Boolean {
         val regexPattern = pattern
             .replace(".", "\\.")
@@ -218,62 +218,62 @@ class GlobInvocation(
             .replace("{", "(")
             .replace("}", ")")
             .replace(",", "|")
-        
+
         return text.matches(Regex(regexPattern))
     }
-    
+
     private fun matchesRecursivePattern(filePath: String, pattern: String): Boolean {
         val patternParts = pattern.split("**")
-        
+
         if (patternParts.size == 1) {
             return matchesGlobPattern(filePath, pattern)
         }
-        
+
         val prefix = patternParts[0].removeSuffix("/")
         val suffix = patternParts[1].removePrefix("/")
-        
+
         val prefixMatches = prefix.isEmpty() || filePath.startsWith(prefix)
         val suffixMatches = suffix.isEmpty() || matchesGlobPattern(filePath.substringAfterLast('/'), suffix)
-        
+
         return prefixMatches && suffixMatches
     }
-    
+
     private fun matchesPathPattern(filePath: String, pattern: String): Boolean {
         return matchesGlobPattern(filePath, pattern)
     }
-    
+
     private fun formatResults(matches: List<GlobFileResult>, totalMatches: Int): String {
         if (matches.isEmpty()) {
             return "No files found matching pattern '${params.pattern}'."
         }
-        
+
         val result = StringBuilder()
         result.appendLine("Found $totalMatches files matching pattern '${params.pattern}':")
-        
+
         if (totalMatches > matches.size) {
             result.appendLine("(Showing first ${matches.size} results)")
         }
-        
+
         result.appendLine()
-        
+
         for (match in matches) {
             val typeIndicator = if (match.isDirectory) "📁" else "📄"
             val path = match.relativePath.ifEmpty { match.path }
-            
+
             result.append("$typeIndicator $path")
-            
+
             if (params.includeFileInfo && !match.isDirectory) {
                 match.size?.let { size ->
                     result.append(" (${formatFileSize(size)})")
                 }
             }
-            
+
             result.appendLine()
         }
-        
+
         return result.toString().trim()
     }
-    
+
     private fun formatFileSize(bytes: Long): String {
         return when {
             bytes < 1024 -> "${bytes}B"
@@ -289,13 +289,8 @@ class GlobTool(
 ) : BaseExecutableTool<GlobParams, ToolResult>() {
 
     override val name: String = "glob"
-    override val description: String = """
-        Find files and directories using glob patterns with wildcard support.
-        Supports recursive search (**), character classes ([abc]), alternatives ({a,b}),
-        and standard wildcards (* and ?). Respects .gitignore rules by default.
-        Essential for discovering files by pattern, analyzing project structure,
-        or finding files for batch operations.
-    """.trimIndent()
+    override val description: String =
+        """Efficiently finds files matching specific glob patterns (e.g., `src/**/*.ts`, `**/*.md`), returning absolute paths sorted by modification time (newest first). Ideal for quickly locating files based on their name or path structure, especially in large codebases.""".trimIndent()
 
     override val metadata: ToolMetadata = ToolMetadata(
         displayName = "Find Files",
@@ -329,16 +324,16 @@ class GlobTool(
 
         return GlobInvocation(params, this, fileSystem, gitIgnoreParser)
     }
-    
+
     private fun validateParameters(params: GlobParams) {
         if (params.pattern.isBlank()) {
             throw ToolException("Glob pattern cannot be empty", ToolErrorType.MISSING_REQUIRED_PARAMETER)
         }
-        
+
         if (params.maxResults <= 0) {
             throw ToolException("Max results must be positive", ToolErrorType.PARAMETER_OUT_OF_RANGE)
         }
-        
+
         if (params.pattern.contains("..")) {
             throw ToolException("Path traversal not allowed in pattern: ${params.pattern}", ToolErrorType.PATH_INVALID)
         }
