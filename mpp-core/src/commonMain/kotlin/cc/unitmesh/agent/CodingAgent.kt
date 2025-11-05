@@ -19,9 +19,8 @@ import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorAgent
-import cc.unitmesh.agent.subagent.ContentHandlerAgent
+import cc.unitmesh.agent.subagent.AnalysisAgent
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
-import cc.unitmesh.agent.subagent.LogSummaryAgent
 import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
@@ -88,8 +87,7 @@ class CodingAgent(
     private val toolOrchestrator = ToolOrchestrator(toolRegistry, policyEngine, renderer, mcpConfigService = mcpToolConfigService)
 
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
-    private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
-    private val contentHandlerAgent = ContentHandlerAgent(llmService, contentThreshold = 5000)
+    private val analysisAgent = AnalysisAgent(llmService, contentThreshold = 5000)
     private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
     
     private val mcpToolsInitializer = McpToolsInitializer()
@@ -108,23 +106,18 @@ class CodingAgent(
     private var mcpToolsInitialized = false
 
     init {
-        // 注册 SubAgents（作为 Tools）- 根据配置决定是否启用
-        if (configService.isBuiltinToolEnabled("error-recovery")) {
+        // 注册 Agents（作为 Tools）- 根据配置决定是否启用
+        if (configService.isBuiltinToolEnabled("error-agent")) {
             registerTool(errorRecoveryAgent)
             toolRegistry.registerTool(errorRecoveryAgent)  // 同时注册到 ToolRegistry
             subAgentManager.registerSubAgent(errorRecoveryAgent)  // 注册到 SubAgentManager
         }
-        if (configService.isBuiltinToolEnabled("log-summary")) {
-            registerTool(logSummaryAgent)
-            toolRegistry.registerTool(logSummaryAgent)  // 同时注册到 ToolRegistry
-            subAgentManager.registerSubAgent(logSummaryAgent)  // 注册到 SubAgentManager
+        if (configService.isBuiltinToolEnabled("analysis-agent")) {
+            registerTool(analysisAgent)
+            toolRegistry.registerTool(analysisAgent)  // 同时注册到 ToolRegistry
+            subAgentManager.registerSubAgent(analysisAgent)  // 注册到 SubAgentManager
         }
-        if (configService.isBuiltinToolEnabled("content-handler")) {
-            registerTool(contentHandlerAgent)
-            toolRegistry.registerTool(contentHandlerAgent)  // 同时注册到 ToolRegistry
-            subAgentManager.registerSubAgent(contentHandlerAgent)  // 注册到 SubAgentManager
-        }
-        if (configService.isBuiltinToolEnabled("codebase-investigator")) {
+        if (configService.isBuiltinToolEnabled("code-agent")) {
             registerTool(codebaseInvestigatorAgent)
             toolRegistry.registerTool(codebaseInvestigatorAgent)  // 同时注册到 ToolRegistry
             subAgentManager.registerSubAgent(codebaseInvestigatorAgent)  // 注册到 SubAgentManager

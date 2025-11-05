@@ -194,9 +194,9 @@ class ToolRegistry(
                 tools + ShellTool(shellExecutor)
             } else tools
 
-            // 添加 AskSubAgentTool（如果有 SubAgentManager）
+            // 添加 AskAgentTool（如果有 SubAgentManager）
             if (subAgentManager != null) {
-                withShell + AskSubAgentTool(subAgentManager)
+                withShell + AskAgentTool(subAgentManager)
             } else withShell
         }
 

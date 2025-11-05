@@ -889,6 +889,7 @@ private fun getCategoryIcon(category: ToolCategory): ImageVector {
         ToolCategory.Information -> Icons.Default.Info
         ToolCategory.Utility -> Icons.Default.Build
         ToolCategory.SubAgent -> Icons.Default.SmartToy
+        ToolCategory.Communication -> Icons.Default.Chat
     }
 }
 

@@ -8,9 +8,9 @@ import kotlin.js.JsExport
 import kotlin.js.Promise
 
 /**
- * JS exports for SubAgents
- * 
- * Provides JavaScript-friendly exports for error recovery and log summary agents
+ * JS exports for Agents
+ *
+ * Provides JavaScript-friendly exports for error recovery and analysis agents
  * Now returns ToolResult.AgentResult directly for better interoperability
  */
 
@@ -35,20 +35,20 @@ data class JsErrorContext(
 }
 
 /**
- * JS-friendly LogSummaryContext
+ * JS-friendly AnalysisContext
  */
 @JsExport
-data class JsLogSummaryContext(
-    val command: String,
-    val output: String,
-    val exitCode: Int = 0,
-    val executionTime: Int = 0
+data class JsAnalysisContext(
+    val content: String,
+    val contentType: String = "text",
+    val source: String = "unknown",
+    val metadata: Map<String, String> = emptyMap()
 ) {
-    fun toCommon(): LogSummaryContext = LogSummaryContext(
-        command = command,
-        output = output,
-        exitCode = exitCode,
-        executionTime = executionTime
+    fun toCommon(): ContentHandlerContext = ContentHandlerContext(
+        content = content,
+        contentType = contentType,
+        source = source,
+        metadata = metadata
     )
 }
 
@@ -76,31 +76,31 @@ class JsErrorRecoveryAgent(
 }
 
 /**
- * JS-friendly LogSummaryAgent
+ * JS-friendly AnalysisAgent
  * Returns ToolResult directly
  */
 @JsExport
-class JsLogSummaryAgent(
+class JsAnalysisAgent(
     private val llmService: KoogLLMService,
-    private val threshold: Int = 2000
+    private val contentThreshold: Int = 5000
 ) {
-    private val agent = LogSummaryAgent(llmService, threshold)
-    
+    private val agent = AnalysisAgent(llmService, contentThreshold)
+
     /**
-     * Summarize long output
-     * Returns a ToolResult with summary and metadata
+     * Analyze content intelligently
+     * Returns a ToolResult with analysis and metadata
      */
-    fun execute(context: JsLogSummaryContext): Promise<ToolResult.AgentResult> {
+    fun execute(context: JsAnalysisContext): Promise<ToolResult.AgentResult> {
         return GlobalScope.promise {
             val commonContext = context.toCommon()
             agent.execute(commonContext) { /* ignore progress */ }
         }
     }
-    
+
     /**
-     * Check if output needs summarization
+     * Check if content needs analysis
      */
-    fun needsSummarization(output: String): Boolean {
-        return agent.needsSummarization(output)
+    fun needsHandling(content: String): Boolean {
+        return agent.needsHandling(content)
     }
 }

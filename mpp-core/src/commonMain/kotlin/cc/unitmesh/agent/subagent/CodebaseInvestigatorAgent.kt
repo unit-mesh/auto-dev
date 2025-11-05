@@ -95,7 +95,7 @@ class CodebaseInvestigatorAgent(
     private val llmService: KoogLLMService
 ) : SubAgent<InvestigationContext, ToolResult.AgentResult>(
     AgentDefinition(
-        name = ToolType.CodebaseInvestigator.name,
+        name = ToolType.CodeAgent.name,
         displayName = "Codebase Investigator",
         description = "Analyzes codebase structure and provides insights using code analysis",
         promptConfig = PromptConfig(

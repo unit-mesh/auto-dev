@@ -3,7 +3,6 @@ package cc.unitmesh.agent.tool
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorSchema
 import cc.unitmesh.agent.subagent.ContentHandlerSchema
 import cc.unitmesh.agent.subagent.ErrorRecoverySchema
-import cc.unitmesh.agent.subagent.LogSummarySchema
 import cc.unitmesh.agent.tool.impl.*
 import cc.unitmesh.agent.tool.impl.AskSubAgentSchema
 import cc.unitmesh.agent.tool.schema.ToolSchema
@@ -81,45 +80,36 @@ sealed class ToolType(
         schema = ShellSchema
     )
 
-    data object ErrorRecovery : ToolType(
-        name = "error-recovery",
-        displayName = "Error Recovery",
+    data object ErrorAgent : ToolType(
+        name = "error-agent",
+        displayName = "Error Agent",
         tuiEmoji = "🚑",
         composeIcon = "healing",
         category = ToolCategory.SubAgent,
         schema = ErrorRecoverySchema
     )
 
-    data object LogSummary : ToolType(
-        name = "log-summary",
-        displayName = "Log Summary",
-        tuiEmoji = "📋",
-        composeIcon = "summarize",
-        category = ToolCategory.SubAgent,
-        schema = LogSummarySchema
-    )
-
-    data object CodebaseInvestigator : ToolType(
-        name = "codebase-investigator",
-        displayName = "Codebase Investigator",
-        tuiEmoji = "🔬",
-        composeIcon = "science",
-        category = ToolCategory.SubAgent,
-        schema = CodebaseInvestigatorSchema
-    )
-
-    data object ContentHandler : ToolType(
-        name = "content-handler",
-        displayName = "Content Handler",
+    data object AnalysisAgent : ToolType(
+        name = "analysis-agent",
+        displayName = "Analysis Agent",
         tuiEmoji = "📊",
         composeIcon = "analytics",
         category = ToolCategory.SubAgent,
         schema = ContentHandlerSchema
     )
 
-    data object AskSubAgent : ToolType(
-        name = "ask-subagent",
-        displayName = "Ask SubAgent",
+    data object CodeAgent : ToolType(
+        name = "code-agent",
+        displayName = "Code Agent",
+        tuiEmoji = "🔬",
+        composeIcon = "science",
+        category = ToolCategory.SubAgent,
+        schema = CodebaseInvestigatorSchema
+    )
+
+    data object AskAgent : ToolType(
+        name = "ask-agent",
+        displayName = "Ask Agent",
         tuiEmoji = "💬",
         composeIcon = "chat",
         category = ToolCategory.Communication,
@@ -134,8 +124,8 @@ sealed class ToolType(
             listOf(
                 ReadFile, WriteFile, Grep, Glob,
                 Shell,
-                ErrorRecovery, LogSummary, CodebaseInvestigator, ContentHandler,
-                AskSubAgent
+                ErrorAgent, AnalysisAgent, CodeAgent,
+                AskAgent
             )
         }
 

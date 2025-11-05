@@ -47,11 +47,10 @@ object ToolConfigManager {
             ToolType.Grep -> "Search for content in files"
             ToolType.Glob -> "Find files by pattern"
             ToolType.Shell -> "Execute shell commands"
-            ToolType.ErrorRecovery -> "Analyze and fix errors automatically"
-            ToolType.LogSummary -> "Summarize large log files"
-            ToolType.CodebaseInvestigator -> "Investigate codebase structure and dependencies"
-            ToolType.ContentHandler -> "Handle and analyze long content with conversational access"
-            ToolType.AskSubAgent -> "Ask questions to specific SubAgents"
+            ToolType.ErrorAgent -> "Analyze and fix errors automatically"
+            ToolType.AnalysisAgent -> "Analyze and summarize any type of content intelligently"
+            ToolType.CodeAgent -> "Investigate codebase structure and dependencies"
+            ToolType.AskAgent -> "Ask questions to specific Agents"
         }
     }
 

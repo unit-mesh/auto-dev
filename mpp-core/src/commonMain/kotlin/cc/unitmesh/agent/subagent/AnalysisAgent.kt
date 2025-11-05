@@ -14,17 +14,17 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
- * ContentHandler Schema 定义
+ * AnalysisAgent Schema 定义
  */
 object ContentHandlerSchema : DeclarativeToolSchema(
-    description = "Handle and analyze long content with conversational access",
+    description = "Intelligently analyze and summarize any type of content",
     properties = mapOf(
         "content" to string(
-            description = "The long content to be processed and analyzed",
+            description = "The content to be analyzed and summarized",
             required = true
         ),
         "contentType" to string(
-            description = "Type of content: text, json, xml, log, code"
+            description = "Type of content: text, json, xml, log, code, error, file-list"
         ),
         "source" to string(
             description = "Source of the content (tool name or origin)"
@@ -35,25 +35,25 @@ object ContentHandlerSchema : DeclarativeToolSchema(
     )
 ) {
     override fun getExampleUsage(toolName: String): String {
-        return "/$toolName content=\"very long content...\" contentType=\"log\" source=\"shell\""
+        return "/$toolName content=\"content to analyze...\" contentType=\"log\" source=\"shell\""
     }
 }
 
 /**
- * 长内容处理上下文
+ * 内容分析上下文
  */
 @Serializable
 data class ContentHandlerContext(
     val content: String,
-    val contentType: String = "text", // text, json, xml, log, code
+    val contentType: String = "text", // text, json, xml, log, code, error, file-list
     val source: String = "unknown", // tool name or source
     val metadata: Map<String, String> = emptyMap()
 ) {
-    override fun toString(): String = "ContentHandlerContext(contentType=$contentType, source=$source, length=${content.length})"
+    override fun toString(): String = "AnalysisContext(contentType=$contentType, source=$source, length=${content.length})"
 }
 
 /**
- * 内容处理结果
+ * 内容分析结果
  */
 @Serializable
 data class ContentHandlerResult(
@@ -66,25 +66,29 @@ data class ContentHandlerResult(
 )
 
 /**
- * ContentHandlerAgent - 处理长内容的 SubAgent
- * 
- * 这个 SubAgent 专门处理长内容（如长日志、大文件内容、复杂输出等），
- * 并持有处理结果的实例状态，支持其他 Agent 对其进行问答。
- * 
+ * AnalysisAgent - 智能内容分析 Agent
+ *
+ * 这个 Agent 专门进行各种内容的智能分析，包括：
+ * - 长内容摘要（文件列表、日志输出等）
+ * - 错误信息分析（替代LogSummaryAgent的功能）
+ * - 代码内容分析
+ * - 结构化数据分析
+ *
  * 主要功能：
- * 1. 自动检测长内容（超过阈值）
- * 2. 智能分析和摘要长内容
- * 3. 持有内容处理的历史状态
- * 4. 支持其他 Agent 对历史内容的问答
- * 5. 提供内容结构化分析
- * 
+ * 1. 自动检测需要分析的内容（超过阈值或特定类型）
+ * 2. 智能分析和摘要任何类型的内容
+ * 3. 持有内容分析的历史状态
+ * 4. 支持其他 Agent 对历史分析的问答
+ * 5. 提供内容结构化分析和洞察
+ *
  * 使用场景：
  * - 处理 glob 工具返回的大量文件列表
- * - 分析长日志输出
+ * - 分析长日志输出和错误信息
  * - 处理大型代码文件内容
  * - 分析复杂的工具执行结果
+ * - 替代原有的LogSummaryAgent功能
  */
-class ContentHandlerAgent(
+class AnalysisAgent(
     private val llmService: KoogLLMService,
     private val contentThreshold: Int = 5000 // 内容长度阈值
 ) : SubAgent<ContentHandlerContext, ToolResult.AgentResult>(
@@ -102,9 +106,9 @@ class ContentHandlerAgent(
 
     companion object {
         private fun createDefinition() = AgentDefinition(
-            name = ToolType.ContentHandler.name,
-            displayName = "Content Handler",
-            description = "Handles long content analysis and provides conversational access to processed content",
+            name = ToolType.AnalysisAgent.name,
+            displayName = "Analysis Agent",
+            description = "Intelligently analyzes and summarizes any type of content with conversational access",
             promptConfig = PromptConfig(
                 systemPrompt = buildSystemPrompt(),
                 queryTemplate = null,
@@ -119,25 +123,27 @@ class ContentHandlerAgent(
         )
 
         private fun buildSystemPrompt(): String = """
-            You are a Content Handler Agent specialized in analyzing and summarizing long content.
-            
+            You are an Analysis Agent specialized in intelligently analyzing and summarizing any type of content.
+
             Your responsibilities:
-            1. Analyze long content and provide structured summaries
-            2. Extract key points and insights from complex data
-            3. Maintain conversation context about processed content
-            4. Answer questions about previously processed content
+            1. Analyze content of any type (logs, errors, file lists, code, data) and provide structured summaries
+            2. Extract key points and actionable insights from complex information
+            3. Maintain conversation context about analyzed content
+            4. Answer questions about previously analyzed content
             5. Provide intelligent content navigation and search
-            
-            When processing content:
-            - Identify the content type and structure
-            - Extract the most important information
-            - Provide actionable insights
+            6. Handle both long content and specific content types that need analysis
+
+            When analyzing content:
+            - Identify the content type and structure automatically
+            - Extract the most important and actionable information
+            - Provide relevant insights based on content type
             - Maintain context for future questions
-            
+            - Focus on what developers need to know
+
             When answering questions:
-            - Reference specific parts of the processed content
-            - Provide context-aware responses
-            - Help users navigate through large amounts of information
+            - Reference specific parts of the analyzed content
+            - Provide context-aware and actionable responses
+            - Help users understand and navigate complex information
         """.trimIndent()
     }
 
@@ -166,8 +172,8 @@ class ContentHandlerAgent(
         input: ContentHandlerContext,
         onProgress: (String) -> Unit
     ): ToolResult.AgentResult {
-        onProgress("🔍 Content Handler Agent started")
-        onProgress("Processing ${input.contentType} content from ${input.source} (${input.content.length} chars)")
+        onProgress("🔍 Analysis Agent started")
+        onProgress("Analyzing ${input.contentType} content from ${input.source} (${input.content.length} chars)")
 
         try {
             // 分析内容

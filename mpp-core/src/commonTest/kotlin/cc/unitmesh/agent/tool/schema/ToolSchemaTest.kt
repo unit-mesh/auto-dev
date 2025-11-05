@@ -1,7 +1,7 @@
 package cc.unitmesh.agent.tool.schema
 
 import cc.unitmesh.agent.subagent.ErrorRecoverySchema
-import cc.unitmesh.agent.subagent.LogSummarySchema
+import cc.unitmesh.agent.subagent.ContentHandlerSchema
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.impl.GrepSchema
 import cc.unitmesh.agent.tool.impl.ReadFileSchema
@@ -148,16 +148,15 @@ class ToolSchemaTest {
         assertTrue(errorTypeValues.contains("compilation"))
         assertTrue(errorTypeValues.contains("runtime"))
         
-        // Test LogSummary schema
-        val logSchema = LogSummarySchema
-        val logJsonSchema = logSchema.toJsonSchema() as JsonObject
-        val logProperties = logJsonSchema["properties"] as JsonObject
-        
-        assertTrue(logProperties.containsKey("logContent"))
-        assertTrue(logProperties.containsKey("logType"))
-        assertTrue(logProperties.containsKey("maxLines"))
-        assertTrue(logProperties.containsKey("includeTimestamps"))
-        assertTrue(logProperties.containsKey("focusLevel"))
+        // Test AnalysisAgent schema
+        val analysisSchema = ContentHandlerSchema
+        val analysisJsonSchema = analysisSchema.toJsonSchema() as JsonObject
+        val analysisProperties = analysisJsonSchema["properties"] as JsonObject
+
+        assertTrue(analysisProperties.containsKey("content"))
+        assertTrue(analysisProperties.containsKey("contentType"))
+        assertTrue(analysisProperties.containsKey("source"))
+        assertTrue(analysisProperties.containsKey("metadata"))
     }
 
     @Test
@@ -198,9 +197,9 @@ class ToolSchemaTest {
         assertNotNull(ToolType.Grep.schema)
         assertNotNull(ToolType.Glob.schema)
         assertNotNull(ToolType.Shell.schema)
-        assertNotNull(ToolType.ErrorRecovery.schema)
-        assertNotNull(ToolType.LogSummary.schema)
-        assertNotNull(ToolType.CodebaseInvestigator.schema)
+        assertNotNull(ToolType.ErrorAgent.schema)
+        assertNotNull(ToolType.AnalysisAgent.schema)
+        assertNotNull(ToolType.CodeAgent.schema)
         
         // Test schema consistency
         assertEquals(ReadFileSchema, ToolType.ReadFile.schema)

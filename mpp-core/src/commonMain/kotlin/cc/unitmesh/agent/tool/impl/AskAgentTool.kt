@@ -10,27 +10,27 @@ import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import kotlinx.serialization.Serializable
 
 /**
- * AskSubAgent 工具参数
+ * AskAgent 工具参数
  */
 @Serializable
 data class AskSubAgentParams(
-    val subAgentName: String,
+    val agentName: String,
     val question: String,
     val context: Map<String, String> = emptyMap()
 )
 
 /**
- * AskSubAgent 工具 Schema
+ * AskAgent 工具 Schema
  */
 object AskSubAgentSchema : DeclarativeToolSchema(
-    description = "Ask a question to a specific SubAgent that has processed content",
+    description = "Ask a question to a specific Agent that has analyzed content",
     properties = mapOf(
-        "subAgentName" to string(
-            description = "Name of the SubAgent to ask (e.g., 'content-handler', 'error-recovery')",
+        "agentName" to string(
+            description = "Name of the Agent to ask (e.g., 'analysis-agent', 'error-agent')",
             required = true
         ),
         "question" to string(
-            description = "The question to ask the SubAgent",
+            description = "The question to ask the Agent",
             required = true
         ),
         "context" to string(
@@ -39,22 +39,22 @@ object AskSubAgentSchema : DeclarativeToolSchema(
     )
 ) {
     override fun getExampleUsage(toolName: String): String {
-        return "/$toolName subAgentName=\"content-handler\" question=\"What were the main errors in the last processed log?\""
+        return "/$toolName agentName=\"analysis-agent\" question=\"What were the main insights from the last analysis?\""
     }
 }
 
 /**
- * AskSubAgent 工具
- * 
- * 允许 CodingAgent 向特定的 SubAgent 提问，实现 Agent 间的对话机制
+ * AskAgent 工具
+ *
+ * 允许 CodingAgent 向特定的 Agent 提问，实现 Agent 间的对话机制
  * 这是多Agent体系的核心通信工具
  */
-class AskSubAgentTool(
+class AskAgentTool(
     private val subAgentManager: SubAgentManager
 ) : BaseExecutableTool<AskSubAgentParams, ToolResult.AgentResult>() {
 
-    override val name: String = "ask-subagent"
-    override val description: String = "Ask a question to a specific SubAgent"
+    override val name: String = "ask-agent"
+    override val description: String = "Ask a question to a specific Agent"
 
     override fun getParameterClass(): String = AskSubAgentParams::class.simpleName ?: "AskSubAgentParams"
 
@@ -64,8 +64,8 @@ class AskSubAgentTool(
             override val params: AskSubAgentParams = params
             override val tool = outerTool
 
-            override fun getDescription(): String = 
-                "Ask '${params.question}' to SubAgent '${params.subAgentName}'"
+            override fun getDescription(): String =
+                "Ask '${params.question}' to Agent '${params.agentName}'"
 
             override fun getToolLocations(): List<cc.unitmesh.agent.tool.ToolLocation> = emptyList()
 
@@ -74,7 +74,7 @@ class AskSubAgentTool(
                 val questionContext = params.context.mapValues { it.value as Any }
                 
                 return subAgentManager.askSubAgent(
-                    subAgentName = params.subAgentName,
+                    subAgentName = params.agentName,
                     question = params.question,
                     context = questionContext
                 )

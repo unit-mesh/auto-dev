@@ -1,7 +1,7 @@
 package cc.unitmesh.agent.core
 
 import cc.unitmesh.agent.tool.ToolResult
-import cc.unitmesh.agent.subagent.ContentHandlerAgent
+import cc.unitmesh.agent.subagent.AnalysisAgent
 import cc.unitmesh.agent.subagent.ContentHandlerContext
 
 /**
@@ -73,11 +73,11 @@ class SubAgentManager {
             return null // 不需要特殊处理
         }
         
-        println("📊 Detected long content (${content.length} chars), delegating to ContentHandlerAgent")
-        
-        val contentHandler = getSubAgent<ContentHandlerContext, ToolResult.AgentResult>("content-handler")
-        if (contentHandler == null) {
-            println("⚠️ ContentHandlerAgent not registered, skipping long content handling")
+        println("📊 Detected long content (${content.length} chars), delegating to AnalysisAgent")
+
+        val analysisAgent = getSubAgent<ContentHandlerContext, ToolResult.AgentResult>("analysis-agent")
+        if (analysisAgent == null) {
+            println("⚠️ AnalysisAgent not registered, skipping long content handling")
             return null
         }
         
@@ -89,14 +89,14 @@ class SubAgentManager {
         )
         
         return try {
-            contentHandler.execute(context) { progress ->
-                println("📊 ContentHandler: $progress")
+            analysisAgent.execute(context) { progress ->
+                println("📊 AnalysisAgent: $progress")
             }
         } catch (e: Exception) {
-            println("❌ ContentHandler failed: ${e.message}")
+            println("❌ AnalysisAgent failed: ${e.message}")
             ToolResult.AgentResult(
                 success = false,
-                content = "Content handling failed: ${e.message}",
+                content = "Content analysis failed: ${e.message}",
                 metadata = mapOf("error" to e.message.orEmpty())
             )
         }
@@ -148,7 +148,7 @@ class SubAgentManager {
      */
     fun cleanup() {
         subAgents.values.forEach { agent ->
-            if (agent is ContentHandlerAgent) {
+            if (agent is AnalysisAgent) {
                 agent.cleanupHistory()
             }
         }

@@ -38,9 +38,9 @@ class ToolTypeTest {
         assertTrue(allTools.contains(ToolType.Shell))
         assertTrue(allTools.contains(ToolType.Glob))
         assertTrue(allTools.contains(ToolType.Grep))
-        assertTrue(allTools.contains(ToolType.ErrorRecovery))
-        assertTrue(allTools.contains(ToolType.LogSummary))
-        assertTrue(allTools.contains(ToolType.CodebaseInvestigator))
+        assertTrue(allTools.contains(ToolType.ErrorAgent))
+        assertTrue(allTools.contains(ToolType.AnalysisAgent))
+        assertTrue(allTools.contains(ToolType.CodeAgent))
     }
     
     @Test
@@ -51,9 +51,9 @@ class ToolTypeTest {
         assertTrue(allToolNames.contains("shell"))
         assertTrue(allToolNames.contains("glob"))
         assertTrue(allToolNames.contains("grep"))
-        assertTrue(allToolNames.contains("error-recovery"))
-        assertTrue(allToolNames.contains("log-summary"))
-        assertTrue(allToolNames.contains("codebase-investigator"))
+        assertTrue(allToolNames.contains("error-agent"))
+        assertTrue(allToolNames.contains("analysis-agent"))
+        assertTrue(allToolNames.contains("code-agent"))
     }
     
     @Test

@@ -410,7 +410,7 @@ $context
 
     companion object {
         private fun createDefinition() = AgentDefinition(
-            name = ToolType.ErrorRecovery.name,
+            name = ToolType.ErrorAgent.name,
             displayName = "Error Recovery SubAgent",
             description = "Analyzes command failures and provides recovery plans",
             promptConfig = PromptConfig(
