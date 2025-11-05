@@ -283,11 +283,7 @@ class CodingAgentViewModel(
 
                 // Create domain dictionary generator
                 val fileSystem = DefaultProjectFileSystem(projectPath)
-                val generator = DomainDictGenerator(
-                    fileSystem = fileSystem,
-                    modelConfig = modelConfig,
-                    maxTokenLength = 4096
-                )
+                val generator = DomainDictGenerator(fileSystem = fileSystem, modelConfig = modelConfig)
 
                 // Check if domain dictionary already exists
                 if (!force && fileSystem.exists("prompts/domain.csv")) {

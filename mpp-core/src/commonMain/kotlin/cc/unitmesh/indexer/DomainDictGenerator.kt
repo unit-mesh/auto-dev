@@ -15,8 +15,16 @@ import kotlinx.coroutines.flow.map
 class DomainDictGenerator(
     private val fileSystem: ProjectFileSystem,
     private val modelConfig: ModelConfig,
-    private val maxTokenLength: Int = 4096
+    private var maxTokenLength: Int = 8192
 ) {
+    init {
+        require(maxTokenLength <= modelConfig.maxTokens) {
+            "maxTokenLength ($maxTokenLength) cannot exceed model's max tokens (${modelConfig.maxTokens})"
+        }
+
+        maxTokenLength = modelConfig.maxTokens * 9 / 10  // Use 90% of model max tokens
+    }
+
     private val domainDictService = DomainDictService(fileSystem)
     private val templateManager = TemplateManager()
     private val llmService = KoogLLMService.create(modelConfig)
