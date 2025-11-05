@@ -222,3 +222,7 @@ mpp-core (多平台) ✅
 ├── exts:ext-database (JVM) - 依赖 mpp-core + core ✅
 └── exts:ext-git (JVM) - 依赖 mpp-core + core ✅
 ```
+
+## LICENSE
+
+- `@autodev/cli` Inspired and Tools system based on Google Gemini CLI withApache License 2.0

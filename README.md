@@ -151,6 +151,8 @@ Welcome to add your company here.
 
 ## License
 
+- `@autodev/cli` Inspired and Tools system based on Google Gemini CLI withApache License 2.0
+
 Inspired by:
 
 - Multiple target inspired
