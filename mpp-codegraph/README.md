@@ -75,7 +75,7 @@ Uses web-tree-sitter for browser and Node.js:
 
 - **Dependencies**:
   - `web-tree-sitter:0.22.2`
-  - `@unit-mesh/treesitter-artifacts:1.7.3`
+  - `@unit-mesh/treesitter-artifacts:1.7.4`
 
 - **Implementation**:
   - `JsCodeParser`: JavaScript-specific parser implementation
@@ -199,7 +199,7 @@ Run JS tests only:
 
 **JS (npm packages)**:
 - web-tree-sitter: 0.22.2
-- @unit-mesh/treesitter-artifacts: 1.7.3
+- @unit-mesh/treesitter-artifacts: 1.7.4
   - tree-sitter-java: 0.21.0
   - tree-sitter-kotlin: 0.3.8
   - tree-sitter-c-sharp: 0.20.0

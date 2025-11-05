@@ -147,10 +147,10 @@
   dependencies:
     undici-types "~7.16.0"
 
-"@unit-mesh/treesitter-artifacts@1.7.3":
-  version "1.7.3"
-  resolved "https://registry.yarnpkg.com/@unit-mesh/treesitter-artifacts/-/treesitter-artifacts-1.7.3.tgz#050cf2bc3e3754ed433e0aa763a01abbd7b60fae"
-  integrity sha512-wiICangD3q7o6PsLjvcYc0lQwN5S+7RWVA/wBSBNutUgROU8X8o0I4ClJiCy7AT3DKpYVZz1Aq5O8zq3kBxqrQ==
+"@unit-mesh/treesitter-artifacts@1.7.4":
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/@unit-mesh/treesitter-artifacts/-/treesitter-artifacts-1.7.4.tgz#cebbd2f0c070c65b20a39bdfa9780415f78b11e8"
+  integrity sha512-Uk8feakIlX/LqKzb9K8Dfq/3nAyCOoqhrT05clMmLYVjSVtQLM3E2emX5KU6vEj3pViktZJaEwvDjpwxOx8Xyg==
   dependencies:
     "@derekstride/tree-sitter-sql" "0.3.8"
     "@tlaplus/tree-sitter-tlaplus" "^1.2.4"
@@ -160,9 +160,9 @@
     tree-sitter-c "0.20.6"
     tree-sitter-c-sharp "0.20.0"
     tree-sitter-cli "^0.20.8"
-    tree-sitter-cobol "git://github.com/unit-mesh/tree-sitter-cobol#8ba6692"
-    tree-sitter-cpp "git://github.com/tree-sitter/tree-sitter-cpp#v0.20.5"
-    tree-sitter-go "git://github.com/tree-sitter/tree-sitter-go#05900fa"
+    tree-sitter-cobol "github:unit-mesh/tree-sitter-cobol#8ba6692"
+    tree-sitter-cpp "github:tree-sitter/tree-sitter-cpp#v0.20.5"
+    tree-sitter-go "github:tree-sitter/tree-sitter-go#05900fa"
     tree-sitter-java "0.21.0"
     tree-sitter-javascript "0.20.1"
     tree-sitter-kotlin "^0.3.8"
@@ -175,9 +175,9 @@
     tree-sitter-scala "^0.19.0"
     tree-sitter-swift "^0.4.0"
     tree-sitter-toml "0.5.1"
-    tree-sitter-typescript "git://github.com/tree-sitter/tree-sitter-typescript#v0.20.4"
+    tree-sitter-typescript "github:tree-sitter/tree-sitter-typescript#v0.20.4"
     tree-sitter-vue "https://github.com/tree-sitter-grammars/tree-sitter-vue#7e48557b903a9db9c38cea3b7839ef7e1f36c693"
-    tree-sitter-zig "git://github.com/GrayJack/tree-sitter-zig#8e970cb"
+    tree-sitter-zig "github:GrayJack/tree-sitter-zig#8e970cb"
 
 "@webassemblyjs/ast@1.14.1", "@webassemblyjs/ast@^1.12.1":
   version "1.14.1"
@@ -2597,21 +2597,21 @@ tree-sitter-cli@^0.20.8:
   resolved "https://registry.yarnpkg.com/tree-sitter-cli/-/tree-sitter-cli-0.20.8.tgz#06a81cea8d6d82f93d67eed7d28b6bc04a4a8916"
   integrity sha512-XjTcS3wdTy/2cc/ptMLc/WRyOLECRYcMTrSWyhZnj1oGSOWbHLTklgsgRICU3cPfb0vy+oZCC33M43u6R1HSCA==
 
-"tree-sitter-cobol@git://github.com/unit-mesh/tree-sitter-cobol#8ba6692":
+"tree-sitter-cobol@github:unit-mesh/tree-sitter-cobol#8ba6692":
   version "0.0.1"
-  resolved "git://github.com/unit-mesh/tree-sitter-cobol#8ba6692cc3c2bded0693d198936c6e26e6501230"
+  resolved "https://codeload.github.com/unit-mesh/tree-sitter-cobol/tar.gz/8ba6692cc3c2bded0693d198936c6e26e6501230"
   dependencies:
     nan "^2.17.0"
 
-"tree-sitter-cpp@git://github.com/tree-sitter/tree-sitter-cpp#v0.20.5":
+"tree-sitter-cpp@github:tree-sitter/tree-sitter-cpp#v0.20.5":
   version "0.20.5"
-  resolved "git://github.com/tree-sitter/tree-sitter-cpp#e0c1678a78731e78655b7d953efb4daecf58be46"
+  resolved "https://codeload.github.com/tree-sitter/tree-sitter-cpp/tar.gz/e0c1678a78731e78655b7d953efb4daecf58be46"
   dependencies:
     nan "^2.18.0"
 
-"tree-sitter-go@git://github.com/tree-sitter/tree-sitter-go#05900fa":
+"tree-sitter-go@github:tree-sitter/tree-sitter-go#05900fa":
   version "0.19.1"
-  resolved "git://github.com/tree-sitter/tree-sitter-go#05900faa3cdb5d2d8c8bd5e77ee698487e0a8611"
+  resolved "https://codeload.github.com/tree-sitter/tree-sitter-go/tar.gz/05900faa3cdb5d2d8c8bd5e77ee698487e0a8611"
   dependencies:
     nan "^2.14.0"
 
@@ -2706,22 +2706,22 @@ tree-sitter-toml@0.5.1:
   dependencies:
     nan "^2.14.0"
 
-"tree-sitter-typescript@git://github.com/tree-sitter/tree-sitter-typescript#v0.20.4":
+"tree-sitter-typescript@github:tree-sitter/tree-sitter-typescript#v0.20.4":
   version "0.20.4"
-  resolved "git://github.com/tree-sitter/tree-sitter-typescript#eb6b845dee9ee22987262699a152312604313662"
+  resolved "https://codeload.github.com/tree-sitter/tree-sitter-typescript/tar.gz/eb6b845dee9ee22987262699a152312604313662"
   dependencies:
     nan "^2.18.0"
     tree-sitter "^0.20.6"
 
-"tree-sitter-vue@https://github.com/tree-sitter-grammars/tree-sitter-vue#7e48557b903a9db9c38cea3b7839ef7e1f36c693":
+"tree-sitter-vue@git+https://github.com/tree-sitter-grammars/tree-sitter-vue.git#7e48557b903a9db9c38cea3b7839ef7e1f36c693":
   version "0.2.1"
-  resolved "https://github.com/tree-sitter-grammars/tree-sitter-vue#7e48557b903a9db9c38cea3b7839ef7e1f36c693"
+  resolved "git+https://github.com/tree-sitter-grammars/tree-sitter-vue.git#7e48557b903a9db9c38cea3b7839ef7e1f36c693"
   dependencies:
     nan "^2.14.0"
 
-"tree-sitter-zig@git://github.com/GrayJack/tree-sitter-zig#8e970cb":
+"tree-sitter-zig@github:GrayJack/tree-sitter-zig#8e970cb":
   version "0.2.0"
-  resolved "git://github.com/GrayJack/tree-sitter-zig#8e970cb01c22cf89b8f70231ed4eca8d6fad1d56"
+  resolved "https://codeload.github.com/GrayJack/tree-sitter-zig/tar.gz/8e970cb01c22cf89b8f70231ed4eca8d6fad1d56"
   dependencies:
     node-addon-api "^7.1.0"
     node-gyp-build "^4.8.0"
