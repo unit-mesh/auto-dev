@@ -9,13 +9,15 @@ import cc.unitmesh.llm.KoogLLMService
 
 /**
  * Dependencies required for tool creation
+ * 
+ * Tools that need platform-specific resources (like HTTP clients) should create
+ * them internally using expect/actual pattern, not through dependencies.
  */
 data class ToolDependencies(
     val fileSystem: ToolFileSystem,
     val shellExecutor: ShellExecutor,
     val subAgentManager: SubAgentManager? = null,
-    val llmService: KoogLLMService? = null,
-    val httpFetcher: HttpFetcher? = null
+    val llmService: KoogLLMService? = null
 )
 
 /**

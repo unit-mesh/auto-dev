@@ -123,6 +123,9 @@ kotlin {
                 
                 // AndroidX DocumentFile for SAF support
                 implementation("androidx.documentfile:documentfile:1.0.1")
+                
+                // Ktor CIO engine for Android
+                implementation("io.ktor:ktor-client-cio:3.2.2")
             }
         }
 

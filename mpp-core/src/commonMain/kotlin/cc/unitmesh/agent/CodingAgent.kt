@@ -78,7 +78,8 @@ class CodingAgent(
             fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
             shellExecutor = shellExecutor ?: DefaultShellExecutor(),
             configService = mcpToolConfigService,  // 直接传递构造函数参数
-            subAgentManager = subAgentManager  // 传递 SubAgentManager
+            subAgentManager = subAgentManager,      // 传递 SubAgentManager
+            llmService = llmService                 // 传递 LLM 服务（WebFetchTool 内部会创建 HttpFetcher）
         )
     }
 

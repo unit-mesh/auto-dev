@@ -143,6 +143,15 @@ sealed class ToolType(
         schema = AskSubAgentSchema
     )
 
+    data object WebFetch : ToolType(
+        name = "web-fetch",
+        displayName = "Web Fetch",
+        tuiEmoji = "🌐",
+        composeIcon = "language",
+        category = ToolCategory.Utility,
+        schema = WebFetchSchema
+    )
+
     companion object {
         /**
          * All available tool types
@@ -152,7 +161,8 @@ sealed class ToolType(
                 ReadFile, WriteFile, EditFile, Grep, Glob,
                 Shell,
                 ErrorAgent, AnalysisAgent, CodeAgent,
-                AskAgent
+                AskAgent,
+                WebFetch
             )
         }
 

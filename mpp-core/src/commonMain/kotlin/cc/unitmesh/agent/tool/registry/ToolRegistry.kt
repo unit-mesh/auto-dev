@@ -6,9 +6,11 @@ import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.impl.*
 import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
+import cc.unitmesh.agent.tool.provider.ToolDependencies
 import cc.unitmesh.agent.tool.provider.ToolProviderRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
+import cc.unitmesh.llm.KoogLLMService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 
@@ -19,7 +21,8 @@ class ToolRegistry(
     private val fileSystem: ToolFileSystem = DefaultToolFileSystem(),
     private val shellExecutor: ShellExecutor = DefaultShellExecutor(),
     private val configService: cc.unitmesh.agent.config.McpToolConfigService? = null,
-    private val subAgentManager: SubAgentManager? = null
+    private val subAgentManager: SubAgentManager? = null,
+    private val llmService: KoogLLMService? = null
 ) {
     private val tools = mutableMapOf<String, ExecutableTool<*, *>>()
     private val json = Json { ignoreUnknownKeys = true }
@@ -194,12 +197,16 @@ class ToolRegistry(
             ToolProviderRegistry.register(BuiltinToolsProvider())
         }
         
-        // Discover all tools from registered providers
-        val allBuiltinTools = ToolProviderRegistry.discoverTools(
+        // Create ToolDependencies with all available dependencies
+        val dependencies = ToolDependencies(
             fileSystem = fileSystem,
             shellExecutor = shellExecutor,
-            subAgentManager = subAgentManager
+            subAgentManager = subAgentManager,
+            llmService = llmService
         )
+        
+        // Discover all tools from registered providers
+        val allBuiltinTools = ToolProviderRegistry.discoverTools(dependencies)
 
         println("🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}")
         println("🔧 [ToolRegistry] ConfigService available: ${configService != null}")

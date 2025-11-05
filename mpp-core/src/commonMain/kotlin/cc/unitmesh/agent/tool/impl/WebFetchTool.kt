@@ -248,11 +248,17 @@ data class FetchResult(
  * 1. Fetch content from URLs
  * 2. Process the content according to user instructions
  * 3. Return AI-generated summaries or extractions
+ * 
+ * The tool automatically creates its own HttpFetcher using platform-specific engines.
  */
 class WebFetchTool(
-    private val llmService: KoogLLMService,
-    private val httpFetcher: HttpFetcher
+    private val llmService: KoogLLMService
 ) : BaseExecutableTool<WebFetchParams, ToolResult>() {
+    
+    // Create platform-specific HTTP fetcher internally
+    private val httpFetcher: HttpFetcher by lazy {
+        KtorHttpFetcher.create()
+    }
     
     override val name: String = "web-fetch"
     override val description: String = """

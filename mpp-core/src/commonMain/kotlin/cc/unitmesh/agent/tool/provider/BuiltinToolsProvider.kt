@@ -35,9 +35,10 @@ class BuiltinToolsProvider : ToolProvider {
             tools.add(AskAgentTool(dependencies.subAgentManager))
         }
         
-        // Web tools (only if LLM service and HTTP fetcher are available)
-        if (dependencies.llmService != null && dependencies.httpFetcher != null) {
-            tools.add(WebFetchTool(dependencies.llmService, dependencies.httpFetcher))
+        // Web tools (only if LLM service is available)
+        // HttpFetcher is created internally by WebFetchTool
+        if (dependencies.llmService != null) {
+            tools.add(WebFetchTool(dependencies.llmService))
         }
         
         return tools
