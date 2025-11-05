@@ -216,13 +216,28 @@ class WebFetchInvocation(
             """.trimIndent()
 
             // Use LLM to process the content
-            val result = llmService.streamPrompt(
-                userPrompt = fallbackPrompt,
-                compileDevIns = false
-            ).first()
+            val result = StringBuilder()
+            try {
+                llmService.streamPrompt(
+                    userPrompt = fallbackPrompt,
+                    compileDevIns = false
+                ).collect { chunk ->
+                    result.append(chunk)
+                }
+            } catch (e: Exception) {
+                // If streaming fails, we still want to return what we collected so far
+                if (result.isEmpty()) {
+                    throw ToolException(
+                        "Failed to process content with LLM: ${e.message}",
+                        ToolErrorType.WEB_FETCH_PROCESSING_ERROR
+                    )
+                }
+                // If we have some content, log the error but continue
+                println("Warning: LLM streaming was interrupted but partial content was collected: ${e.message}")
+            }
 
             return ToolResult.Success(
-                content = result,
+                content = result.toString(),
                 metadata = mapOf(
                     "url" to url,
                     "contentLength" to content.length.toString(),
