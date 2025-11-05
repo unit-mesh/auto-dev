@@ -99,6 +99,20 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
     
+    - name: Workaround for git:// protocol in treesitter dependencies
+      run: |
+        echo "📦 Pre-creating build/js directory with cached yarn.lock"
+        mkdir -p build/js
+        if [ -f kotlin-js-store/yarn.lock ]; then
+          cp kotlin-js-store/yarn.lock build/js/yarn.lock
+          echo "✅ Copied pre-cached yarn.lock from kotlin-js-store"
+        else
+          echo "⚠️ No pre-cached yarn.lock found, will proceed without it"
+        fi
+        # Configure git to use https:// instead of git://
+        git config --global url."https://github.com/".insteadOf git://github.com/
+        echo "✅ Configured git to rewrite git:// URLs to https://"
+    
     - name: Install mpp-ui dependencies
       working-directory: mpp-ui
       run: npm ci
