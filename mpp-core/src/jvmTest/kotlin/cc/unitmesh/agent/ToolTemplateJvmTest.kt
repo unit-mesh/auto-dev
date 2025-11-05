@@ -1,14 +1,16 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.config.McpToolConfigService
+import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
-import cc.unitmesh.agent.mcp.McpToolConfigService
 import cc.unitmesh.devins.compiler.template.TemplateCompiler
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Test JVM version of tool template generation with JSON Schema format
@@ -21,9 +23,9 @@ class ToolTemplateJvmTest {
         
         // Step 1: Create tool registry
         val projectPath = System.getProperty("java.io.tmpdir")
-        val fileSystem = DefaultToolFileSystem(projectPath, DefaultFileSystem())
+        val fileSystem = DefaultToolFileSystem(projectPath)
         val shellExecutor = DefaultShellExecutor()
-        val mcpService = McpToolConfigService()
+        val mcpService = McpToolConfigService(ToolConfigFile.default())
         val toolRegistry = ToolRegistry(fileSystem, shellExecutor, mcpService)
         
         val availableTools = toolRegistry.getAllTools().values.toList()
@@ -81,7 +83,7 @@ class ToolTemplateJvmTest {
         )
         
         val variableTable = context.toVariableTable()
-        val fileSystemForTemplate = DefaultFileSystem()
+        val fileSystemForTemplate = DefaultFileSystem(projectPath)
         val compiler = TemplateCompiler(variableTable, fileSystemForTemplate)
         val template = compiler.compile(CodingAgentTemplate.EN)
         
