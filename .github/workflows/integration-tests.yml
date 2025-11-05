@@ -1,4 +1,4 @@
-name: MPP Coding Agent Integration Tests v2
+name: MPP Coding Agent Integration
 
 on:
   push:
