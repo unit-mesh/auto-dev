@@ -7,6 +7,7 @@ import cc.unitmesh.agent.tool.BaseExecutableTool
 import cc.unitmesh.agent.tool.ToolExecutionContext
 import cc.unitmesh.agent.tool.ToolInvocation
 import cc.unitmesh.agent.core.MainAgent
+import cc.unitmesh.agent.core.SubAgentManager
 import cc.unitmesh.agent.executor.CodingAgentExecutor
 import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.agent.mcp.McpToolsInitializer
@@ -18,6 +19,7 @@ import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorAgent
+import cc.unitmesh.agent.subagent.ContentHandlerAgent
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.subagent.LogSummaryAgent
 import cc.unitmesh.agent.tool.ExecutableTool
@@ -66,6 +68,9 @@ class CodingAgent(
 
     private val configService = mcpToolConfigService
 
+    // SubAgent 管理器
+    private val subAgentManager = SubAgentManager()
+
     private val toolRegistry = run {
         println("🔧 [CodingAgent] Initializing ToolRegistry with configService: ${mcpToolConfigService != null}")
         if (mcpToolConfigService != null) {
@@ -74,7 +79,8 @@ class CodingAgent(
         ToolRegistry(
             fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
             shellExecutor = shellExecutor ?: DefaultShellExecutor(),
-            configService = mcpToolConfigService  // 直接传递构造函数参数
+            configService = mcpToolConfigService,  // 直接传递构造函数参数
+            subAgentManager = subAgentManager  // 传递 SubAgentManager
         )
     }
 
@@ -83,7 +89,7 @@ class CodingAgent(
 
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
     private val logSummaryAgent = LogSummaryAgent(llmService, threshold = 2000)
-
+    private val contentHandlerAgent = ContentHandlerAgent(llmService, contentThreshold = 5000)
     private val codebaseInvestigatorAgent = CodebaseInvestigatorAgent(projectPath, llmService)
     
     private val mcpToolsInitializer = McpToolsInitializer()
@@ -94,7 +100,8 @@ class CodingAgent(
         llmService = llmService,
         toolOrchestrator = toolOrchestrator,
         renderer = renderer,
-        maxIterations = maxIterations
+        maxIterations = maxIterations,
+        subAgentManager = subAgentManager
     )
 
     // 标记 MCP 工具是否已初始化
@@ -105,14 +112,22 @@ class CodingAgent(
         if (configService.isBuiltinToolEnabled("error-recovery")) {
             registerTool(errorRecoveryAgent)
             toolRegistry.registerTool(errorRecoveryAgent)  // 同时注册到 ToolRegistry
+            subAgentManager.registerSubAgent(errorRecoveryAgent)  // 注册到 SubAgentManager
         }
         if (configService.isBuiltinToolEnabled("log-summary")) {
             registerTool(logSummaryAgent)
             toolRegistry.registerTool(logSummaryAgent)  // 同时注册到 ToolRegistry
+            subAgentManager.registerSubAgent(logSummaryAgent)  // 注册到 SubAgentManager
+        }
+        if (configService.isBuiltinToolEnabled("content-handler")) {
+            registerTool(contentHandlerAgent)
+            toolRegistry.registerTool(contentHandlerAgent)  // 同时注册到 ToolRegistry
+            subAgentManager.registerSubAgent(contentHandlerAgent)  // 注册到 SubAgentManager
         }
         if (configService.isBuiltinToolEnabled("codebase-investigator")) {
             registerTool(codebaseInvestigatorAgent)
             toolRegistry.registerTool(codebaseInvestigatorAgent)  // 同时注册到 ToolRegistry
+            subAgentManager.registerSubAgent(codebaseInvestigatorAgent)  // 注册到 SubAgentManager
         }
 
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
@@ -335,4 +350,35 @@ class CodingAgent(
     override fun formatOutput(output: ToolResult.AgentResult): String {
         return output.content
     }
+
+    /**
+     * 向指定的 SubAgent 提问
+     * 这是新的多Agent体系的核心功能
+     */
+    suspend fun askSubAgent(
+        subAgentName: String,
+        question: String,
+        context: Map<String, Any> = emptyMap()
+    ): ToolResult.AgentResult {
+        return executor.askSubAgent(subAgentName, question, context)
+    }
+
+    /**
+     * 获取系统状态，包括所有 SubAgent 的状态
+     */
+    fun getSystemStatus(): Map<String, Any> {
+        return executor.getSystemStatus()
+    }
+
+    /**
+     * 清理 SubAgent 历史数据
+     */
+    fun cleanupSubAgents() {
+        subAgentManager.cleanup()
+    }
+
+    /**
+     * 获取 SubAgent 管理器（用于高级操作）
+     */
+    fun getSubAgentManager(): SubAgentManager = subAgentManager
 }

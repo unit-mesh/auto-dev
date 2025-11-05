@@ -1,9 +1,11 @@
 package cc.unitmesh.agent.tool
 
 import cc.unitmesh.agent.subagent.CodebaseInvestigatorSchema
+import cc.unitmesh.agent.subagent.ContentHandlerSchema
 import cc.unitmesh.agent.subagent.ErrorRecoverySchema
 import cc.unitmesh.agent.subagent.LogSummarySchema
 import cc.unitmesh.agent.tool.impl.*
+import cc.unitmesh.agent.tool.impl.AskSubAgentSchema
 import cc.unitmesh.agent.tool.schema.ToolSchema
 
 /**
@@ -106,6 +108,24 @@ sealed class ToolType(
         schema = CodebaseInvestigatorSchema
     )
 
+    data object ContentHandler : ToolType(
+        name = "content-handler",
+        displayName = "Content Handler",
+        tuiEmoji = "📊",
+        composeIcon = "analytics",
+        category = ToolCategory.SubAgent,
+        schema = ContentHandlerSchema
+    )
+
+    data object AskSubAgent : ToolType(
+        name = "ask-subagent",
+        displayName = "Ask SubAgent",
+        tuiEmoji = "💬",
+        composeIcon = "chat",
+        category = ToolCategory.Communication,
+        schema = AskSubAgentSchema
+    )
+
     companion object {
         /**
          * All available tool types
@@ -114,7 +134,8 @@ sealed class ToolType(
             listOf(
                 ReadFile, WriteFile, Grep, Glob,
                 Shell,
-                ErrorRecovery, LogSummary, CodebaseInvestigator
+                ErrorRecovery, LogSummary, CodebaseInvestigator, ContentHandler,
+                AskSubAgent
             )
         }
 

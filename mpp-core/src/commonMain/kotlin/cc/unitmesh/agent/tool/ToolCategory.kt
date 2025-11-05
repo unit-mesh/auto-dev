@@ -49,6 +49,13 @@ enum class ToolCategory(
         description = "Specialized sub-agents for complex tasks",
         tuiEmoji = "🤖",
         composeIcon = "smart_toy"
+    ),
+
+    Communication(
+        displayName = "Communication",
+        description = "Tools for inter-agent communication",
+        tuiEmoji = "💬",
+        composeIcon = "chat"
     );
     
     companion object {

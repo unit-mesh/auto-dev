@@ -50,6 +50,8 @@ object ToolConfigManager {
             ToolType.ErrorRecovery -> "Analyze and fix errors automatically"
             ToolType.LogSummary -> "Summarize large log files"
             ToolType.CodebaseInvestigator -> "Investigate codebase structure and dependencies"
+            ToolType.ContentHandler -> "Handle and analyze long content with conversational access"
+            ToolType.AskSubAgent -> "Ask questions to specific SubAgents"
         }
     }
 

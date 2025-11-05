@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool.registry
 
+import cc.unitmesh.agent.core.SubAgentManager
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
@@ -15,7 +16,8 @@ import kotlinx.serialization.json.JsonElement
 class ToolRegistry(
     private val fileSystem: ToolFileSystem = DefaultToolFileSystem(),
     private val shellExecutor: ShellExecutor = DefaultShellExecutor(),
-    private val configService: cc.unitmesh.agent.config.McpToolConfigService? = null
+    private val configService: cc.unitmesh.agent.config.McpToolConfigService? = null,
+    private val subAgentManager: SubAgentManager? = null
 ) {
     private val tools = mutableMapOf<String, ExecutableTool<*, *>>()
     private val json = Json { ignoreUnknownKeys = true }
@@ -188,9 +190,14 @@ class ToolRegistry(
             GrepTool(fileSystem),
             GlobTool(fileSystem)
         ).let { tools ->
-            if (shellExecutor.isAvailable()) {
+            val withShell = if (shellExecutor.isAvailable()) {
                 tools + ShellTool(shellExecutor)
             } else tools
+
+            // 添加 AskSubAgentTool（如果有 SubAgentManager）
+            if (subAgentManager != null) {
+                withShell + AskSubAgentTool(subAgentManager)
+            } else withShell
         }
 
         println("🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}")

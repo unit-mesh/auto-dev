@@ -2,6 +2,7 @@ package cc.unitmesh.agent.executor
 
 import cc.unitmesh.agent.*
 import cc.unitmesh.agent.conversation.ConversationManager
+import cc.unitmesh.agent.core.SubAgentManager
 import cc.unitmesh.agent.tool.ToolResultFormatter
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
@@ -24,7 +25,8 @@ class CodingAgentExecutor(
     private val llmService: KoogLLMService,
     private val toolOrchestrator: ToolOrchestrator,
     private val renderer: CodingAgentRenderer,
-    private val maxIterations: Int = 100
+    private val maxIterations: Int = 100,
+    private val subAgentManager: SubAgentManager? = null
 ) {
     private val toolCallParser = ToolCallParser()
     private val errorRecoveryManager = ErrorRecoveryManager(projectPath, llmService)
@@ -223,7 +225,11 @@ class CodingAgentExecutor(
                 else -> stepResult.result
             }
 
-            renderer.renderToolResult(toolName, stepResult.success, stepResult.result, fullOutput)
+            // 检查是否需要长内容处理
+            val contentHandlerResult = checkForLongContent(toolName, fullOutput ?: "", executionResult)
+            val displayOutput = contentHandlerResult?.content ?: fullOutput
+
+            renderer.renderToolResult(toolName, stepResult.success, stepResult.result, displayOutput)
 
             val currentToolType = toolName.toToolType()
             if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {
@@ -340,5 +346,82 @@ class CodingAgentExecutor(
             steps = steps,
             edits = edits
         )
+    }
+
+    /**
+     * 检查工具输出是否需要长内容处理
+     */
+    private suspend fun checkForLongContent(
+        toolName: String,
+        output: String,
+        executionResult: ToolExecutionResult
+    ): ToolResult.AgentResult? {
+
+        if (subAgentManager == null) {
+            return null
+        }
+
+        // 检测内容类型
+        val contentType = when {
+            toolName == "glob" -> "file-list"
+            toolName == "shell" -> "shell-output"
+            toolName == "grep" -> "search-results"
+            toolName == "read-file" -> "file-content"
+            output.startsWith("{") || output.startsWith("[") -> "json"
+            output.contains("<?xml") -> "xml"
+            else -> "text"
+        }
+
+        // 构建元数据
+        val metadata = mutableMapOf<String, String>()
+        metadata["toolName"] = toolName
+        metadata["executionId"] = executionResult.executionId
+        metadata["success"] = executionResult.isSuccess.toString()
+
+        executionResult.metadata.forEach { (key, value) ->
+            metadata["tool_$key"] = value
+        }
+
+        return subAgentManager.checkAndHandleLongContent(
+            content = output,
+            contentType = contentType,
+            source = toolName,
+            metadata = metadata
+        )
+    }
+
+    /**
+     * 向 SubAgent 提问
+     */
+    suspend fun askSubAgent(
+        subAgentName: String,
+        question: String,
+        context: Map<String, Any> = emptyMap()
+    ): ToolResult.AgentResult {
+        return subAgentManager?.askSubAgent(subAgentName, question, context)
+            ?: ToolResult.AgentResult(
+                success = false,
+                content = "SubAgentManager not available",
+                metadata = emptyMap()
+            )
+    }
+
+    /**
+     * 获取系统状态
+     */
+    fun getSystemStatus(): Map<String, Any> {
+        val baseStatus = mapOf(
+            "currentIteration" to currentIteration,
+            "maxIterations" to maxIterations,
+            "stepsCount" to steps.size,
+            "editsCount" to edits.size,
+            "recentToolCallsCount" to recentToolCalls.size
+        )
+
+        return if (subAgentManager != null) {
+            baseStatus + ("subAgentSystem" to subAgentManager.getSystemStatus())
+        } else {
+            baseStatus
+        }
     }
 }
