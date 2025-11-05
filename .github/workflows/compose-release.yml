@@ -2,11 +2,10 @@
 # Builds Android APK and Desktop packages for multiple platforms
 # Triggered by tags starting with 'compose-'
 
-name: Compose Release Test
+name: MPP Release
 on:
-  push:
-    tags:
-      - 'compose-*'
+  release:
+    types: [prereleased, released]
   workflow_dispatch:
     inputs:
       version:
