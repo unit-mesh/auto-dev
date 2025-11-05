@@ -8,7 +8,6 @@ import cc.unitmesh.agent.tool.shell.ShellResult
 import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.ToolException
-import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.completion.providers.ToolBasedCommandCompletionProvider
 import kotlinx.datetime.Clock
@@ -20,10 +19,6 @@ class ToolBasedCommandCompletionProviderTest {
 
     private class MockFileSystem : ToolFileSystem {
         private val files = mutableMapOf<String, String>()
-
-        fun addFile(path: String, content: String) {
-            files[path] = content
-        }
 
         override fun getProjectPath(): String = "/project"
 
@@ -135,9 +130,9 @@ class ToolBasedCommandCompletionProviderTest {
         val writeFileCompletion = completions.find { it.text == ToolType.WriteFile.name }
 
         assertTrue(writeFileCompletion != null, "Should find write-file completion")
-        assertEquals(ToolType.ReadFile.name, writeFileCompletion.text)
+        assertEquals(ToolType.WriteFile.name, writeFileCompletion.text)
         assertEquals(ToolType.WriteFile.name, writeFileCompletion.displayText)
-        assertTrue(writeFileCompletion.description?.contains("write") == true, "Description should mention writing")
+        assertEquals(writeFileCompletion.description?.contains("write"), true, "Description should mention writing")
         assertEquals("✏️", writeFileCompletion.icon)
         assertTrue(writeFileCompletion.insertHandler != null, "Should have insert handler")
     }

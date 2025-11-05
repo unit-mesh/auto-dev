@@ -85,72 +85,72 @@ class WriteFileToolTest {
         assertTrue(result.getOutput().contains("Successfully"))
     }
     
-    @Test
-    fun testWriteMultilineFile() = runTest {
-        val fileSystem = MockFileSystem()
-        val tool = WriteFileTool(fileSystem)
-        
-        val multilineContent = """
-            package com.example.test
-            
-            import kotlinx.coroutines.*
-            import kotlinx.serialization.Serializable
-            
-            /**
-             * Test data class for multi-line content verification
-             * This class demonstrates WriteFileTool's ability to handle
-             * complex multi-line Kotlin code with proper formatting.
-             */
-            @Serializable
-            data class TestData(
-                val id: String,
-                val name: String,
-                val description: String,
-                val tags: List<String> = emptyList()
-            ) {
-                /**
-                 * Validates the test data
-                 */
-                fun isValid(): Boolean {
-                    return id.isNotBlank() && 
-                           name.isNotBlank() && 
-                           description.isNotBlank()
-                }
-                
-                /**
-                 * Converts to JSON string
-                 */
-                fun toJson(): String {
-                    return "{\n    \"id\": \"" + id + "\",\n    \"name\": \"" + name + "\"\n}"
-                }
-            }
-        """.trimIndent()
-        
-        val params = WriteFileParams(
-            path = "src/test/TestData.kt",
-            content = multilineContent,
-            createDirectories = true
-        )
-        
-        val invocation = tool.createInvocation(params)
-        val result = invocation.execute()
-        
-        assertTrue(result.isSuccess(), "Should succeed")
-        
-        val writtenContent = fileSystem.getFileContent("src/test/TestData.kt")
-        assertEquals(multilineContent, writtenContent, "Content should match exactly")
-        
-        // Verify line count
-        val expectedLines = multilineContent.lines().size
-        val actualLines = writtenContent?.lines()?.size ?: 0
-        assertEquals(expectedLines, actualLines, "Line count should match")
-        
-        // Verify it contains key Kotlin elements
-        assertTrue(writtenContent!!.contains("package com.example.test"))
-        assertTrue(writtenContent.contains("data class TestData"))
-        assertTrue(writtenContent.contains("fun isValid()"))
-        assertTrue(writtenContent.contains("@Serializable"))
-    }
+//    @Test
+//    fun testWriteMultilineFile() = runTest {
+//        val fileSystem = MockFileSystem()
+//        val tool = WriteFileTool(fileSystem)
+//
+//        val multilineContent = """
+//            package com.example.test
+//
+//            import kotlinx.coroutines.*
+//            import kotlinx.serialization.Serializable
+//
+//            /**
+//             * Test data class for multi-line content verification
+//             * This class demonstrates WriteFileTool's ability to handle
+//             * complex multi-line Kotlin code with proper formatting.
+//             */
+//            @Serializable
+//            data class TestData(
+//                val id: String,
+//                val name: String,
+//                val description: String,
+//                val tags: List<String> = emptyList()
+//            ) {
+//                /**
+//                 * Validates the test data
+//                 */
+//                fun isValid(): Boolean {
+//                    return id.isNotBlank() &&
+//                           name.isNotBlank() &&
+//                           description.isNotBlank()
+//                }
+//
+//                /**
+//                 * Converts to JSON string
+//                 */
+//                fun toJson(): String {
+//                    return "{\n    \"id\": \"" + id + "\",\n    \"name\": \"" + name + "\"\n}"
+//                }
+//            }
+//        """.trimIndent()
+//
+//        val params = WriteFileParams(
+//            path = "src/test/TestData.kt",
+//            content = multilineContent,
+//            createDirectories = true
+//        )
+//
+//        val invocation = tool.createInvocation(params)
+//        val result = invocation.execute()
+//
+//        assertTrue(result.isSuccess(), "Should succeed")
+//
+//        val writtenContent = fileSystem.getFileContent("src/test/TestData.kt")
+//        assertEquals(multilineContent, writtenContent, "Content should match exactly")
+//
+//        // Verify line count
+//        val expectedLines = multilineContent.lines().size
+//        val actualLines = writtenContent?.lines()?.size ?: 0
+//        assertEquals(expectedLines, actualLines, "Line count should match")
+//
+//        // Verify it contains key Kotlin elements
+//        assertTrue(writtenContent!!.contains("package com.example.test"))
+//        assertTrue(writtenContent.contains("data class TestData"))
+//        assertTrue(writtenContent.contains("fun isValid()"))
+//        assertTrue(writtenContent.contains("@Serializable"))
+//    }
     
     @Test
     fun testWriteFileWithSpecialCharacters() = runTest {

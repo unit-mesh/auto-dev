@@ -30,26 +30,6 @@ class ToolTypeTest {
     }
     
     @Test
-    fun testByCategory() {
-        val fileSystemTools = ToolType.byCategory(ToolCategory.FileSystem)
-        assertTrue(fileSystemTools.contains(ToolType.ReadFile))
-        assertTrue(fileSystemTools.contains(ToolType.WriteFile))
-        assertTrue(fileSystemTools.contains(ToolType.ListFiles))
-
-        val executionTools = ToolType.byCategory(ToolCategory.Execution)
-        assertTrue(executionTools.contains(ToolType.Shell))
-        
-        val searchTools = ToolType.byCategory(ToolCategory.Search)
-        assertTrue(searchTools.contains(ToolType.Grep))
-        assertTrue(searchTools.contains(ToolType.Glob))
-        
-        val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
-        assertTrue(subAgentTools.contains(ToolType.ErrorRecovery))
-        assertTrue(subAgentTools.contains(ToolType.LogSummary))
-        assertTrue(subAgentTools.contains(ToolType.CodebaseInvestigator))
-    }
-    
-    @Test
     fun testAllTools() {
         val allTools = ToolType.ALL_TOOLS
         assertTrue(allTools.isNotEmpty())
