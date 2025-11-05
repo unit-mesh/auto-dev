@@ -15,19 +15,21 @@ import cc.unitmesh.devins.llm.MessageRole
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.serialization.json.Json
 
 class KoogLLMService(private val config: ModelConfig) {
-    private val executor: SingleLLMPromptExecutor by lazy { 
+    private val executor: SingleLLMPromptExecutor by lazy {
         ExecutorFactory.create(config)
     }
-    
+
     private val model: LLModel by lazy {
         ModelRegistry.createModel(config.provider, config.modelName)
             ?: ModelRegistry.createGenericModel(config.provider, config.modelName)
     }
 
     fun streamPrompt(
-        userPrompt: String, 
+        userPrompt: String,
         fileSystem: ProjectFileSystem = EmptyFileSystem(),
         historyMessages: List<Message> = emptyList(),
         compileDevIns: Boolean = true
@@ -37,15 +39,19 @@ class KoogLLMService(private val config: ModelConfig) {
         } else {
             userPrompt
         }
-        
+
         val prompt = buildPrompt(finalPrompt, historyMessages)
         executor.executeStreaming(prompt, model)
             .cancellable()
             .collect { frame ->
                 when (frame) {
                     is StreamFrame.Append -> emit(frame.text)
-                    is StreamFrame.End -> { /* Stream ended successfully */ }
-                    is StreamFrame.ToolCall -> { /* Tool calls (可以后续扩展) */ }
+                    is StreamFrame.End -> {
+                        println("StreamFrame.End -> finishReason=${frame.finishReason}, metaInfo=${frame.metaInfo}")
+                    }
+
+                    is StreamFrame.ToolCall -> { /* Tool calls (可以后续扩展) */
+                    }
                 }
             }
     }
