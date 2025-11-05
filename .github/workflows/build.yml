@@ -1,4 +1,4 @@
-\# GitHub Actions Workflow is created for testing and preparing the plugin release in the following steps:
+# GitHub Actions Workflow is created for testing and preparing the plugin release in the following steps:
 # - Validate Gradle Wrapper.
 # - Run 'test' and 'verifyPlugin' tasks.
 # - Run Qodana inspections.
