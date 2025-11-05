@@ -115,7 +115,7 @@ jobs:
     
     - name: Install mpp-ui dependencies
       working-directory: mpp-ui
-      run: npm ci
+      run: npm install
     
     - name: Build mpp-core
       run: ./gradlew :mpp-core:assembleJsPackage
