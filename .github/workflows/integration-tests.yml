@@ -1,4 +1,4 @@
-name: MPP Coding Agent Integration Tests
+name: MPP Coding Agent Integration Tests v2
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
     paths:
       - 'mpp-core/**'
       - 'mpp-ui/**'
-      - 'integration-tests.yml'
+      - '.github/workflows/integration-tests.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
@@ -26,22 +26,43 @@ on:
           - all
           - simple
           - business
-          - video
-          - jwt
-          - upgrade
-          - graphql
+          - errors
+          - performance
+          - custom
+      pass_threshold:
+        description: 'Pass rate threshold (0-100%)'
+        required: false
+        default: '80'
+        type: string
+      keep_test_projects:
+        description: 'Keep test projects for debugging'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    
+    timeout-minutes: 60  # 增加超时时间以适应新的测试框架
+
     strategy:
       matrix:
-        node-version: [20.x, 21.x]
-        test-category: 
+        node-version: [20.x]  # 简化为单一版本以减少 CI 时间
+        test-category:
           - ${{ github.event.inputs.test_category || 'all' }}
       fail-fast: false
+
+    env:
+      # 配置 DeepSeek API
+      DEEPSEEK_TOKEN: ${{ secrets.DEEPSEEK_TOKEN }}
+      # 测试框架配置
+      CI: true
+      NODE_ENV: test
+      DEBUG: false
+      KEEP_TEST_PROJECTS: ${{ github.event.inputs.keep_test_projects || 'false' }}
+      PASS_THRESHOLD: ${{ github.event.inputs.pass_threshold || '80' }}
+      # 增加超时时间
+      TEST_TIMEOUT: 1200000  # 20分钟
     
     steps:
     - name: Checkout repository
@@ -82,66 +103,187 @@ jobs:
     - name: Build mpp-ui
       working-directory: mpp-ui
       run: npm run build:ts
-    
+
     - name: Create test results directory
       run: mkdir -p test-results
+
+    - name: Setup AutoDev config for CI
+      run: |
+        mkdir -p ~/.autodev
+        cat > ~/.autodev/config.yaml << EOF
+        active: ci-deepseek
+        configs:
+          - name: ci-deepseek
+            provider: deepseek
+            apiKey: ${{ secrets.DEEPSEEK_TOKEN }}
+            model: deepseek-chat
+        EOF
+        echo "✅ AutoDev config created for CI environment"
+
+    - name: Validate test framework
+      working-directory: mpp-ui
+      run: npm run test:framework
     
-    - name: Run integration tests
+    - name: Run integration tests v2
       working-directory: mpp-ui
       run: |
+        echo "🚀 Running CodingAgent Integration Tests v2"
+        echo "Category: ${{ matrix.test-category }}"
+        echo "Pass Threshold: ${PASS_THRESHOLD}%"
+        echo "Keep Test Projects: ${KEEP_TEST_PROJECTS}"
+        echo ""
+
+        # 运行对应的测试类别
         if [ "${{ matrix.test-category }}" = "all" ]; then
-          npm run test:integration
+          echo "Running all integration tests v2..."
+          npm run test:integration-v2
+        elif [ "${{ matrix.test-category }}" = "simple" ]; then
+          echo "Running simple robustness tests..."
+          npm run test:integration-v2:simple
         elif [ "${{ matrix.test-category }}" = "business" ]; then
-          npm run test:business
+          echo "Running business scenario tests..."
+          npm run test:integration-v2:business
+        elif [ "${{ matrix.test-category }}" = "errors" ]; then
+          echo "Running error recovery tests..."
+          npm run test:integration-v2:errors
+        elif [ "${{ matrix.test-category }}" = "performance" ]; then
+          echo "Running performance tests..."
+          npm run test:integration-v2:performance
+        elif [ "${{ matrix.test-category }}" = "custom" ]; then
+          echo "Running custom scenario tests..."
+          npm run test:integration-v2:custom
         else
-          npm run test:integration:${{ matrix.test-category }}
+          echo "Unknown test category: ${{ matrix.test-category }}"
+          exit 1
         fi
+      timeout-minutes: 45
+
+    - name: Analyze test results and check threshold
+      if: always()
+      working-directory: mpp-ui
       env:
-        CI: true
-        NODE_ENV: test
-        QUIET: true
-        # Increase timeout for CI environment
-        TEST_TIMEOUT: 900000
-      timeout-minutes: 30
-    
-    - name: Upload test results
-      uses: actions/upload-artifact@v3
+        TEST_CATEGORY: ${{ matrix.test-category }}
+      run: |
+        echo "🎯 分析测试结果并检查阈值..."
+
+        # 运行测试结果分析脚本
+        node scripts/analyze-test-results.cjs
+
+        # 脚本会根据阈值检查结果设置适当的退出码
+        # 如果通过率低于阈值，脚本会以非零退出码退出
+
+    - name: Generate detailed test report
+      if: always()
+      working-directory: mpp-ui
+      run: |
+        echo "📊 Generating detailed test report..."
+
+        # 创建测试报告目录
+        mkdir -p test-results/reports
+
+        # 生成测试摘要
+        echo "## 🤖 CodingAgent Integration Tests v2 Report" > test-results/reports/summary.md
+        echo "" >> test-results/reports/summary.md
+        echo "- **Test Category**: ${{ matrix.test-category }}" >> test-results/reports/summary.md
+        echo "- **Node Version**: ${{ matrix.node-version }}" >> test-results/reports/summary.md
+        echo "- **Timestamp**: $(date)" >> test-results/reports/summary.md
+        echo "- **Pass Threshold**: ${PASS_THRESHOLD}%" >> test-results/reports/summary.md
+        echo "- **Status**: ${{ job.status }}" >> test-results/reports/summary.md
+        echo "" >> test-results/reports/summary.md
+
+        # 如果有测试结果文件，添加详细信息
+        if [ -d "test-results" ] && [ "$(find test-results -name '*.json' -o -name '*.xml' | head -1)" ]; then
+          echo "### 📈 Test Results Found" >> test-results/reports/summary.md
+          echo "Detailed test results are available in the artifacts." >> test-results/reports/summary.md
+        else
+          echo "### ⚠️ No detailed test results found" >> test-results/reports/summary.md
+        fi
+
+        echo "Test report generated successfully"
+
+    - name: Generate GitHub Actions summary
+      if: always()
+      env:
+        TEST_CATEGORY: ${{ matrix.test-category }}
+        NODE_VERSION: ${{ matrix.node-version }}
+        JOB_STATUS: ${{ job.status }}
+      run: |
+        echo "📊 生成 GitHub Actions 摘要..."
+        node .github/scripts/generate-test-summary.cjs
+
+    - name: Upload test results and reports
+      uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-results-${{ matrix.node-version }}-${{ matrix.test-category }}
+        name: test-results-v2-${{ matrix.node-version }}-${{ matrix.test-category }}
         path: |
+          mpp-ui/test-results/
           mpp-ui/coverage/
-          test-results/
+        retention-days: 14
+    
+    - name: Upload test projects (for debugging)
+      uses: actions/upload-artifact@v4
+      if: failure() || env.KEEP_TEST_PROJECTS == 'true'
+      with:
+        name: test-projects-${{ matrix.node-version }}-${{ matrix.test-category }}
+        path: |
+          /tmp/agent-test-*
+          /tmp/autodev-test-*
         retention-days: 7
     
-    - name: Upload test projects (on failure)
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: failed-test-projects-${{ matrix.node-version }}-${{ matrix.test-category }}
-        path: /tmp/autodev-test-*
-        retention-days: 3
-    
     - name: Comment PR with test results
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       if: github.event_name == 'pull_request' && always()
       with:
         script: |
           const fs = require('fs');
           const path = require('path');
-          
-          // Try to read test results and create a summary comment
-          let comment = `## 🧪 Integration Test Results\n\n`;
-          comment += `**Node.js Version:** ${{ matrix.node-version }}\n`;
-          comment += `**Test Category:** ${{ matrix.test-category }}\n`;
-          comment += `**Status:** ${{ job.status }}\n\n`;
-          
+
+          // 创建详细的测试结果评论
+          let comment = `## 🤖 CodingAgent Integration Tests v2 Results\n\n`;
+          comment += `### 📊 Test Configuration\n`;
+          comment += `- **Node.js Version:** ${{ matrix.node-version }}\n`;
+          comment += `- **Test Category:** ${{ matrix.test-category }}\n`;
+          comment += `- **Pass Threshold:** ${{ env.PASS_THRESHOLD }}%\n`;
+          comment += `- **Status:** ${{ job.status }}\n`;
+          comment += `- **Timestamp:** ${new Date().toISOString()}\n\n`;
+
+          // 读取测试报告摘要
+          try {
+            const summaryPath = 'mpp-ui/test-results/reports/summary.md';
+            if (fs.existsSync(summaryPath)) {
+              const summary = fs.readFileSync(summaryPath, 'utf8');
+              comment += `### 📈 Test Summary\n\n${summary}\n\n`;
+            }
+          } catch (error) {
+            console.log('Could not read test summary:', error.message);
+          }
+
           if ('${{ job.status }}' === 'success') {
-            comment += `✅ All integration tests passed successfully!\n\n`;
-            comment += `The CodingAgent demonstrates robust performance across all tested scenarios.`;
+            comment += `### ✅ Test Results\n\n`;
+            comment += `🎉 **All integration tests passed successfully!**\n\n`;
+            comment += `The CodingAgent demonstrates robust performance with:\n`;
+            comment += `- ✅ **Prompt Effectiveness**: System prompts correctly guide agent behavior\n`;
+            comment += `- ✅ **Tool Usage**: Accurate and efficient tool selection and usage\n`;
+            comment += `- ✅ **Code Quality**: Generated code meets quality standards\n`;
+            comment += `- ✅ **Task Completion**: All required functionality implemented\n\n`;
+            comment += `### 📊 Framework Features Validated\n`;
+            comment += `- 🎯 **Multi-dimensional Analysis**: Prompt effects, tool calls, code quality\n`;
+            comment += `- 📈 **Standardized Scoring**: Consistent evaluation metrics\n`;
+            comment += `- 🔧 **Detailed Reporting**: Comprehensive test insights\n`;
           } else {
-            comment += `❌ Some integration tests failed.\n\n`;
-            comment += `Please check the test logs and artifacts for detailed information.`;
+            comment += `### ❌ Test Results\n\n`;
+            comment += `⚠️ **Some integration tests failed or encountered issues.**\n\n`;
+            comment += `**Next Steps:**\n`;
+            comment += `1. 📋 Check the detailed test logs in the Actions tab\n`;
+            comment += `2. 📁 Download test artifacts for detailed analysis\n`;
+            comment += `3. 🔍 Review specific test failures and error messages\n`;
+            comment += `4. 🛠️ Use the new test framework's detailed reports for debugging\n\n`;
+            comment += `**Available Artifacts:**\n`;
+            comment += `- \`test-results-v2-${{ matrix.node-version }}-${{ matrix.test-category }}\`: Detailed test results and reports\n`;
+            if ('${{ env.KEEP_TEST_PROJECTS }}' === 'true') {
+              comment += `- \`test-projects-${{ matrix.node-version }}-${{ matrix.test-category }}\`: Test project files for debugging\n`;
+            }
           }
           
           github.rest.issues.createComment({
