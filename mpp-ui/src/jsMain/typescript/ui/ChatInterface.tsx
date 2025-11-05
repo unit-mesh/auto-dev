@@ -8,14 +8,9 @@ import { MessageBubble } from './MessageRenderer.js';
 import {
   getCompletionSuggestions,
   shouldTriggerCompletion,
-  applyCompletionItem,
-  compileDevIns
+  applyCompletionItem
 } from '../utils/commandUtils.js';
 import { GOODBYE_MESSAGE } from '../constants/asciiArt.js';
-import { InputRouter } from '../processors/InputRouter.js';
-import { SlashCommandProcessor } from '../processors/SlashCommandProcessor.js';
-import { AtCommandProcessor } from '../processors/AtCommandProcessor.js';
-import { VariableProcessor } from '../processors/VariableProcessor.js';
 import { t } from '../i18n/index.js';
 
 type CompletionItem = {
@@ -33,14 +28,18 @@ interface ChatInterfaceProps {
   isCompiling: boolean;
   onSendMessage: (content: string) => Promise<void>;
   onClearMessages?: () => void;
+  currentMode?: { name: string; displayName: string; description: string; icon: string } | null;
+  modeStatus?: string;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
-  messages, 
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  messages,
   pendingMessage,
   isCompiling,
   onSendMessage,
-  onClearMessages
+  onClearMessages,
+  currentMode,
+  modeStatus
 }) => {
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -49,18 +48,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [showBanner, setShowBanner] = useState(true);
   const [shouldPreventSubmit, setShouldPreventSubmit] = useState(false);
 
-  // Initialize input router with processors
-  const router = useMemo(() => {
-    const r = new InputRouter();
-    
-    // Register processors with priorities
-    // Higher priority = executed first
-    r.register(new SlashCommandProcessor(), 100);
-    r.register(new AtCommandProcessor(), 50);
-    r.register(new VariableProcessor(), 30);
-    
-    return r;
-  }, []);
+  // Router logic is now handled by the mode system
 
   // Sync isProcessing with external state
   useEffect(() => {
@@ -111,62 +99,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setIsProcessing(true);
 
     try {
-      // Route input through processor chain
-      const result = await router.route(message, {
-        clearMessages: onClearMessages || (() => {}),
-        logger: {
-          info: (msg) => console.log(`[INFO] ${msg}`),
-          warn: (msg) => console.warn(`[WARN] ${msg}`),
-          error: (msg, err) => console.error(`[ERROR] ${msg}`, err || '')
-        },
-        readFile: async (path) => {
-          // Read file through DevIns compiler
-          const compileResult = await compileDevIns(`/file:${path}`);
-          if (compileResult?.success) {
-            return compileResult.output;
-          }
-          throw new Error(compileResult?.errorMessage || 'Failed to read file');
-        }
-      });
-
-      // Handle result
-      switch (result.type) {
-        case 'handled':
-          // Command was handled, output already shown
-          break;
-        
-        case 'compile':
-          // Need to compile DevIns
-          await handleDevInsCompile(result.devins);
-          break;
-        
-        case 'llm-query':
-          // Send to LLM
-          await onSendMessage(result.query);
-          break;
-        
-        case 'error':
-          // Show error
-          console.error(result.message);
-          break;
-      }
+      // Send message directly to the mode system
+      await onSendMessage(message);
     } catch (error) {
       console.error('Error processing input:', error);
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-  const handleDevInsCompile = async (devins: string) => {
-    // Compile DevIns and send result to LLM
-    const compileResult = await compileDevIns(devins);
-    
-    if (compileResult?.success) {
-      // Send compiled output to LLM
-      await onSendMessage(compileResult.output);
-    } else {
-      // Show compilation error
-      console.error(`DevIns compilation error: ${compileResult?.errorMessage}`);
     }
   };
 
@@ -251,9 +189,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <Static items={[
         // Header as first item
         <Box key="header" borderStyle="single" borderColor="cyan" paddingX={1}>
-          <Text bold color="cyan">
-            {t('chat.title')}
-          </Text>
+          <Box flexDirection="row" justifyContent="space-between">
+            <Text bold color="cyan">
+              {t('chat.title')}
+            </Text>
+            {currentMode && (
+              <Text color="yellow">
+                {currentMode.icon} {currentMode.displayName}
+                {modeStatus && ` - ${modeStatus}`}
+              </Text>
+            )}
+          </Box>
         </Box>,
         // All completed messages
         ...messages.map((msg, idx) => (

@@ -4,14 +4,14 @@
   "description": "AutoDev CLI - Terminal UI for AI-powered development assistant",
   "type": "module",
   "bin": {
-    "autodev": "./dist/index.js"
+    "autodev": "./dist/jsMain/typescript/index.js"
   },
   "scripts": {
     "build:kotlin": "cd .. && ./gradlew :mpp-core:assembleJsPackage",
-    "build:ts": "tsc && chmod +x dist/index.js",
+    "build:ts": "tsc && chmod +x dist/jsMain/typescript/index.js",
     "build": "npm run build:kotlin && npm run build:ts",
     "dev": "tsc --watch",
-    "start": "node dist/index.js",
+    "start": "node dist/jsMain/typescript/index.js",
     "test": "vitest run",
     "test:unit": "vitest run src/jsMain/typescript/**/*.test.ts",
     "test:integration": "vitest run src/test/integration/**/*.test.ts",

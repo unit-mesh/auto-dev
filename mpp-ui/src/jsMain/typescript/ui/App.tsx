@@ -1,8 +1,9 @@
 /**
  * AutoDev CLI - Main App Component
- * 
+ *
  * This is the root component of the AutoDev CLI application.
- * It manages the overall application state and renders the chat interface.
+ * It manages the overall application state and renders the appropriate interface
+ * based on the current mode (Agent or Chat).
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -10,9 +11,9 @@ import { Box, Text, useApp, useInput } from 'ink';
 import { ChatInterface } from './ChatInterface.js';
 import { WelcomeScreen } from './WelcomeScreen.js';
 import { ConfigManager } from '../config/ConfigManager.js';
-import { LLMService } from '../agents/LLMService.js';
-import { compileDevIns, hasDevInsCommands } from '../utils/commandUtils.js';
-import { findLastSafeSplitPoint } from '../utils/markdownSplitter.js';
+import { ModeManager, AgentModeFactory, ChatModeFactory } from '../modes/index.js';
+import type { ModeContext } from '../modes/index.js';
+import { ModeCommandProcessor } from '../processors/ModeCommandProcessor.js';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system' | 'compiling';
@@ -30,22 +31,32 @@ export const App: React.FC = () => {
   const [isConfigured, setIsConfigured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [llmService, setLLMService] = useState<LLMService | null>(null);
   // Track if we're currently compiling DevIns
   const [isCompiling, setIsCompiling] = useState(false);
+  // Mode management
+  const [modeManager] = useState(() => new ModeManager());
+  const [currentModeType, setCurrentModeType] = useState<string>('agent'); // Default to agent mode
 
-  // Initialize configuration
+  // Initialize configuration and mode system
   useEffect(() => {
-    const initConfig = async () => {
+    const initApp = async () => {
       try {
         const config = await ConfigManager.load();
         const isValid = config.isValid();
         setIsConfigured(isValid);
 
         if (isValid) {
-          // Initialize LLM service with config
-          const service = new LLMService(config.toJSON());
-          setLLMService(service);
+          // Register mode factories
+          modeManager.registerMode(new AgentModeFactory());
+          modeManager.registerMode(new ChatModeFactory());
+
+          // Set up mode change listener
+          modeManager.onModeChange((event) => {
+            setCurrentModeType(event.currentMode);
+          });
+
+          // Initialize default mode (agent)
+          await initializeMode('agent', config.toJSON());
         }
 
         setIsLoading(false);
@@ -55,8 +66,33 @@ export const App: React.FC = () => {
       }
     };
 
-    initConfig();
-  }, []);
+    initApp();
+  }, [modeManager]);
+
+  // Initialize mode with context
+  const initializeMode = useCallback(async (modeType: string, llmConfig: any) => {
+    const modeContext: ModeContext = {
+      addMessage: (message: Message) => setMessages(prev => [...prev, message]),
+      setPendingMessage,
+      setIsCompiling,
+      clearMessages: () => {
+        setMessages([]);
+        setPendingMessage(null);
+      },
+      logger: {
+        info: (msg) => console.log(`[INFO] ${msg}`),
+        warn: (msg) => console.warn(`[WARN] ${msg}`),
+        error: (msg, err) => console.error(`[ERROR] ${msg}`, err || '')
+      },
+      projectPath: process.cwd(),
+      llmConfig
+    };
+
+    const success = await modeManager.switchToMode(modeType, modeContext);
+    if (!success) {
+      throw new Error(`Failed to initialize ${modeType} mode`);
+    }
+  }, [modeManager]);
 
   // Handle Ctrl+C to exit
   useInput((input, key) => {
@@ -66,140 +102,80 @@ export const App: React.FC = () => {
   });
 
   const handleSendMessage = useCallback(async (content: string) => {
-    if (!llmService) {
-      setError('LLM service not initialized');
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
       return;
     }
 
-    // Add user message to history
-    const userMessage: Message = {
-      role: 'user',
-      content,
-      timestamp: Date.now(),
-      showPrefix: true,
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-
     try {
-      // Check if the message contains DevIns commands that need compilation
-      let processedContent = content;
-      
-      if (hasDevInsCommands(content)) {
-        // Show compiling state as pending message
-        setIsCompiling(true);
-        setPendingMessage({
-          role: 'compiling',
-          content: '🔧 Compiling DevIns commands...',
-          timestamp: Date.now(),
-          showPrefix: true,
+      // Check if it's a mode switch command first
+      const modeCommandProcessor = new ModeCommandProcessor(modeManager, {
+        addMessage: (message: Message) => setMessages(prev => [...prev, message]),
+        setPendingMessage,
+        setIsCompiling,
+        clearMessages: () => {
+          setMessages([]);
+          setPendingMessage(null);
+        },
+        logger: {
+          info: (msg) => console.log(`[INFO] ${msg}`),
+          warn: (msg) => console.warn(`[WARN] ${msg}`),
+          error: (msg, err) => console.error(`[ERROR] ${msg}`, err || '')
+        },
+        projectPath: process.cwd(),
+        llmConfig: null // Will be set when needed
+      });
+
+      if (modeCommandProcessor.canHandle(trimmedContent)) {
+        const result = await modeCommandProcessor.process(trimmedContent, {
+          clearMessages: () => {
+            setMessages([]);
+            setPendingMessage(null);
+          },
+          logger: {
+            info: (msg) => console.log(`[INFO] ${msg}`),
+            warn: (msg) => console.warn(`[WARN] ${msg}`),
+            error: (msg, err) => console.error(`[ERROR] ${msg}`, err || '')
+          }
         });
 
-        const compileResult = await compileDevIns(content);
-        
-        if (compileResult) {
-          if (compileResult.success) {
-            // Use the compiled output instead of raw input
-            processedContent = compileResult.output;
-            
-            // Add a system message showing the compilation result if it processed commands
-            if (compileResult.hasCommand && compileResult.output !== content) {
-              const compileMessage: Message = {
-                role: 'system',
-                content: `📝 Compiled output:\n${compileResult.output}`,
-                timestamp: Date.now(),
-                showPrefix: true,
-              };
-              setMessages(prev => [...prev, compileMessage]);
-            }
-          } else {
-            // Compilation failed - show error but still send original to LLM
-            const errorMessage: Message = {
-              role: 'system',
-              content: `⚠️  DevIns compilation error: ${compileResult.errorMessage}`,
-              timestamp: Date.now(),
-              showPrefix: true,
-            };
-            setMessages(prev => [...prev, errorMessage]);
-          }
+        if (result.type === 'handled' && result.output) {
+          const outputMessage: Message = {
+            role: 'system',
+            content: result.output,
+            timestamp: Date.now(),
+            showPrefix: true
+          };
+          setMessages(prev => [...prev, outputMessage]);
+        } else if (result.type === 'error') {
+          const errorMessage: Message = {
+            role: 'system',
+            content: `❌ ${result.message}`,
+            timestamp: Date.now(),
+            showPrefix: true
+          };
+          setMessages(prev => [...prev, errorMessage]);
         }
-        
-        setIsCompiling(false);
-        setPendingMessage(null);
+        return;
       }
 
-      // Create pending assistant message for streaming
-      setPendingMessage({
-        role: 'assistant',
-        content: '',
-        timestamp: Date.now(),
-      });
-
-      // Stream response from LLM with block-level splitting
-      // Complete blocks are moved to Static to prevent scroll flicker
-      let assistantContent = '';
-      const startTimestamp = Date.now();
-      let isFirstBlock = true;  // Track if this is the first block (should show prefix)
-
-      await llmService.streamMessage(processedContent, (chunk) => {
-        assistantContent += chunk;
-        
-        // Find safe split point (end of complete block)
-        const splitPoint = findLastSafeSplitPoint(assistantContent);
-        
-        if (splitPoint === assistantContent.length) {
-          // No complete block yet, just update pending
-          setPendingMessage({
-            role: 'assistant',
-            content: assistantContent,
-            timestamp: startTimestamp,
-            showPrefix: isFirstBlock,
-          });
-        } else {
-          // Found complete block(s) - split it
-          const completedContent = assistantContent.substring(0, splitPoint);
-          const pendingContent = assistantContent.substring(splitPoint);
-          
-          // Move completed block to history (Static area)
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: completedContent,
-            timestamp: startTimestamp,
-            showPrefix: isFirstBlock,  // Only first block shows prefix
-          }]);
-          
-          // Keep only pending content
-          setPendingMessage({
-            role: 'assistant',
-            content: pendingContent,
-            timestamp: startTimestamp,
-            showPrefix: false,  // Continuation blocks don't show prefix
-          });
-          
-          // Update accumulator to only pending content
-          assistantContent = pendingContent;
-          isFirstBlock = false;  // Subsequent blocks are continuations
-        }
-      });
-
-      // Clear pending FIRST to avoid duplication
-      setPendingMessage(null);
-      
-      // Move any remaining content to history
-      if (assistantContent.trim()) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: assistantContent,
-          timestamp: startTimestamp,
-          showPrefix: isFirstBlock,  // Show prefix if this is the only block
-        }]);
+      // Handle input through current mode
+      const success = await modeManager.handleInput(trimmedContent);
+      if (!success) {
+        const errorMessage: Message = {
+          role: 'system',
+          content: '❌ Failed to process input',
+          timestamp: Date.now(),
+          showPrefix: true
+        };
+        setMessages(prev => [...prev, errorMessage]);
       }
 
     } catch (err) {
       // Clear pending state first
       setPendingMessage(null);
       setIsCompiling(false);
-      
+
       // Display error message in chat
       const errorMessage: Message = {
         role: 'system',
@@ -209,17 +185,26 @@ export const App: React.FC = () => {
       };
       setMessages(prev => [...prev, errorMessage]);
     }
-  }, [llmService]);
+  }, [modeManager]);
 
   const handleConfigured = useCallback(async (config: any) => {
     try {
-      const service = new LLMService(config);
-      setLLMService(service);
+      // Register mode factories
+      modeManager.registerMode(new AgentModeFactory());
+      modeManager.registerMode(new ChatModeFactory());
+
+      // Set up mode change listener
+      modeManager.onModeChange((event) => {
+        setCurrentModeType(event.currentMode);
+      });
+
+      // Initialize default mode (agent)
+      await initializeMode('agent', config);
       setIsConfigured(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to initialize LLM service');
+      setError(err instanceof Error ? err.message : 'Failed to initialize application');
     }
-  }, []);
+  }, [modeManager, initializeMode]);
 
   const handleClearMessages = useCallback(() => {
     setMessages([]);
@@ -248,13 +233,19 @@ export const App: React.FC = () => {
     return <WelcomeScreen onConfigured={handleConfigured} />;
   }
 
+  // Get current mode info for display
+  const currentMode = modeManager.getCurrentMode();
+  const modeInfo = currentMode ? modeManager.getModeInfo(currentMode.type) : null;
+
   return (
-    <ChatInterface 
-      messages={messages} 
+    <ChatInterface
+      messages={messages}
       pendingMessage={pendingMessage}
       isCompiling={isCompiling}
       onSendMessage={handleSendMessage}
       onClearMessages={handleClearMessages}
+      currentMode={modeInfo}
+      modeStatus={currentMode?.mode.getStatus()}
     />
   );
 };
