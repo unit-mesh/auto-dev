@@ -231,48 +231,35 @@ class CodingAgentViewModel(
     fun getToolLoadingStatus(): ToolLoadingStatus {
         val toolConfig = cachedToolConfig
 
-        // Get built-in tools from ToolType (excluding SubAgents)
         val allBuiltinTools = ToolType.ALL_TOOLS.filter { it.category != ToolCategory.SubAgent }
         val builtinToolsEnabled = if (toolConfig != null) {
             allBuiltinTools.count { toolType ->
                 toolType.name in toolConfig.enabledBuiltinTools
             }
         } else {
-            allBuiltinTools.size // Default: all enabled
+            allBuiltinTools.size
         }
 
-        // Get SubAgents from ToolType
         val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
         val subAgentsEnabled = if (toolConfig != null) {
             subAgentTools.count { toolType ->
                 toolType.name in toolConfig.enabledBuiltinTools
             }
         } else {
-            subAgentTools.size // Default: all enabled
+            subAgentTools.size
         }
 
-        // Get MCP tools information
         val mcpServersTotal = toolConfig?.mcpServers?.filter { !it.value.disabled }?.size ?: 0
         val mcpServersLoaded = mcpPreloadingStatus.preloadedServers.size
 
-        // Get actual MCP tools count from preloaded cache
         val mcpToolsEnabled = if (McpToolConfigManager.isPreloading()) {
-            0 // Still loading
+            0
         } else {
-            // Use the preloading status to get tool count
-            // This is an approximation based on preloaded servers
             val enabledMcpToolsCount = toolConfig?.enabledMcpTools?.size ?: 0
             if (enabledMcpToolsCount > 0) {
                 enabledMcpToolsCount
             } else {
-                // Estimate based on preloaded servers (14 tools per filesystem server, 2 per context7)
-                mcpPreloadingStatus.preloadedServers.sumOf { serverName ->
-                    when (serverName) {
-                        "filesystem" -> 14
-                        "context7" -> 2
-                        else -> 5 // Default estimate
-                    }
-                }
+                mcpPreloadingStatus.preloadedServers.sumOf { _ -> 0 }
             }
         }
 

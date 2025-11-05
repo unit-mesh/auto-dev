@@ -296,14 +296,7 @@ private fun ToolLoadingStatusBar(
         derivedStateOf { viewModel.getToolLoadingStatus() }
     }
 
-    // Show the status bar with a subtle design
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
+    Card(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

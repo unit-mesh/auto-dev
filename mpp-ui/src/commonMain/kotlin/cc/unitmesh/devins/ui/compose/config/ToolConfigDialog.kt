@@ -333,9 +333,8 @@ fun ToolConfigDialog(
                                         ConfigManager.saveToolConfig(updatedConfig)
                                         toolConfig = updatedConfig
 
-                                        // Discover MCP tools
                                         try {
-                                            val discoveredTools = ToolConfigManager.discoverMcpTools(
+                                            ToolConfigManager.discoverMcpTools(
                                                 newMcpServers,
                                                 toolConfig.enabledMcpTools.toSet()
                                             )
