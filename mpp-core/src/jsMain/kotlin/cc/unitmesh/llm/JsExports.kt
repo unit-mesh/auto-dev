@@ -32,10 +32,10 @@ import kotlin.js.Promise
  * This class is exported to JavaScript and provides a simpler API
  */
 @JsExport
-class JsKoogLLMService(config: JsModelConfig) {
+class JsKoogLLMService(config: JsModelConfig, compressionConfig: JsCompressionConfig? = null) {
     private val kotlinConfig: ModelConfig
     internal val service: KoogLLMService  // 改为 internal 以便在同一模块访问
-    
+
     init {
         // Convert string provider to LLMProviderType
         val provider = when (config.providerName.uppercase()) {
@@ -47,7 +47,7 @@ class JsKoogLLMService(config: JsModelConfig) {
             "OPENROUTER" -> LLMProviderType.OPENROUTER
             else -> throw IllegalArgumentException("Unknown provider: ${config.providerName}")
         }
-        
+
         kotlinConfig = ModelConfig(
             provider = provider,
             modelName = config.modelName,
@@ -56,8 +56,11 @@ class JsKoogLLMService(config: JsModelConfig) {
             maxTokens = config.maxTokens,
             baseUrl = config.baseUrl
         )
-        
-        service = KoogLLMService(kotlinConfig)
+
+        val kotlinCompressionConfig = compressionConfig?.toKotlin()
+            ?: cc.unitmesh.llm.compression.CompressionConfig()
+
+        service = KoogLLMService(kotlinConfig, kotlinCompressionConfig)
     }
     
     /**
@@ -116,18 +119,42 @@ class JsKoogLLMService(config: JsModelConfig) {
             }
         }
     }
-    
+
+    /**
+     * Get the maximum tokens for this model
+     */
+    @JsName("getMaxTokens")
+    fun getMaxTokens(): Int {
+        return service.getMaxTokens()
+    }
+
+    /**
+     * Get the last token information
+     */
+    @JsName("getLastTokenInfo")
+    fun getLastTokenInfo(): JsTokenInfo {
+        return JsTokenInfo.fromKotlin(service.getLastTokenInfo())
+    }
+
+    /**
+     * Reset compression state
+     */
+    @JsName("resetCompressionState")
+    fun resetCompressionState() {
+        service.resetCompressionState()
+    }
+
     // Note: suspend functions cannot be exported to JS directly
     // They need to be called from Kotlin coroutines
     // JavaScript code should use streamPrompt() instead
-    
+
     companion object {
         /**
          * Create a service with validation
          */
         @JsName("create")
-        fun create(config: JsModelConfig): JsKoogLLMService {
-            return JsKoogLLMService(config)
+        fun create(config: JsModelConfig, compressionConfig: JsCompressionConfig? = null): JsKoogLLMService {
+            return JsKoogLLMService(config, compressionConfig)
         }
     }
 }
@@ -802,6 +829,110 @@ private fun cc.unitmesh.agent.tool.ToolResult.toJsToolResult(): JsToolResult {
             errorMessage = if (!this.success) "Agent execution failed" else null,
             metadata = this.metadata
         )
+    }
+}
+
+// ============================================================================
+// 压缩功能相关的 JS 导出
+// ============================================================================
+
+/**
+ * JavaScript-friendly wrapper for CompressionConfig
+ */
+@JsExport
+class JsCompressionConfig(
+    val contextPercentageThreshold: Double = 0.7,
+    val preserveRecentRatio: Double = 0.3,
+    val autoCompressionEnabled: Boolean = true,
+    val retryAfterMessages: Int = 5
+) {
+    internal fun toKotlin(): cc.unitmesh.llm.compression.CompressionConfig {
+        return cc.unitmesh.llm.compression.CompressionConfig(
+            contextPercentageThreshold = contextPercentageThreshold,
+            preserveRecentRatio = preserveRecentRatio,
+            autoCompressionEnabled = autoCompressionEnabled,
+            retryAfterMessages = retryAfterMessages
+        )
+    }
+}
+
+/**
+ * JavaScript-friendly wrapper for TokenInfo
+ */
+@JsExport
+class JsTokenInfo(
+    val totalTokens: Int = 0,
+    val inputTokens: Int = 0,
+    val outputTokens: Int = 0,
+    val timestamp: Double = 0.0
+) {
+    @JsName("getUsagePercentage")
+    fun getUsagePercentage(maxTokens: Int): Double {
+        if (maxTokens <= 0) return 0.0
+        return (inputTokens.toDouble() / maxTokens.toDouble()) * 100.0
+    }
+
+    @JsName("needsCompression")
+    fun needsCompression(maxTokens: Int, threshold: Double): Boolean {
+        if (maxTokens <= 0) return false
+        val usage = inputTokens.toDouble() / maxTokens.toDouble()
+        return usage >= threshold
+    }
+
+    internal fun toKotlin(): cc.unitmesh.llm.compression.TokenInfo {
+        return cc.unitmesh.llm.compression.TokenInfo(
+            totalTokens = totalTokens,
+            inputTokens = inputTokens,
+            outputTokens = outputTokens,
+            timestamp = timestamp.toLong()
+        )
+    }
+
+    companion object {
+        internal fun fromKotlin(tokenInfo: cc.unitmesh.llm.compression.TokenInfo): JsTokenInfo {
+            return JsTokenInfo(
+                totalTokens = tokenInfo.totalTokens,
+                inputTokens = tokenInfo.inputTokens,
+                outputTokens = tokenInfo.outputTokens,
+                timestamp = tokenInfo.timestamp.toDouble()
+            )
+        }
+    }
+}
+
+/**
+ * JavaScript-friendly wrapper for ChatCompressionInfo
+ */
+@JsExport
+class JsChatCompressionInfo(
+    val originalTokenCount: Int,
+    val newTokenCount: Int,
+    val compressionStatus: String,
+    val errorMessage: String? = null
+) {
+    @JsName("getCompressionRatio")
+    fun getCompressionRatio(): Double {
+        return if (originalTokenCount > 0) {
+            1.0 - (newTokenCount.toDouble() / originalTokenCount.toDouble())
+        } else {
+            0.0
+        }
+    }
+
+    @JsName("getTokensSaved")
+    fun getTokensSaved(): Int {
+        return originalTokenCount - newTokenCount
+    }
+
+    companion object {
+        internal fun fromKotlin(info: cc.unitmesh.llm.compression.ChatCompressionInfo): JsChatCompressionInfo {
+            return JsChatCompressionInfo(
+                originalTokenCount = info.originalTokenCount,
+                newTokenCount = info.newTokenCount,
+                compressionStatus = info.compressionStatus.name,
+                errorMessage = info.errorMessage
+            )
+        }
     }
 }
 
