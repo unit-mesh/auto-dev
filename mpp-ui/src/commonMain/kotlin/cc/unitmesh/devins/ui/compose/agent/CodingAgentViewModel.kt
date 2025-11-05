@@ -263,6 +263,14 @@ class CodingAgentViewModel(
             }
         }
 
+        val mcpToolsTotal = if (McpToolConfigManager.isPreloading()) {
+            0
+        } else {
+            McpToolConfigManager.getTotalDiscoveredTools()
+        }
+
+
+
         return ToolLoadingStatus(
             builtinToolsEnabled = builtinToolsEnabled,
             builtinToolsTotal = allBuiltinTools.size,
@@ -271,6 +279,7 @@ class CodingAgentViewModel(
             mcpServersLoaded = mcpServersLoaded,
             mcpServersTotal = mcpServersTotal,
             mcpToolsEnabled = mcpToolsEnabled,
+            mcpToolsTotal = mcpToolsTotal,
             isLoading = McpToolConfigManager.isPreloading()
         )
     }
@@ -294,5 +303,6 @@ data class ToolLoadingStatus(
     val mcpServersLoaded: Int = 0,
     val mcpServersTotal: Int = 0,
     val mcpToolsEnabled: Int = 0,
+    val mcpToolsTotal: Int = 0,
     val isLoading: Boolean = false
 )
