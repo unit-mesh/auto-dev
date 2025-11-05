@@ -37,6 +37,9 @@ enum class ToolErrorType(val code: String, val description: String) {
     
     // Network/external errors
     NETWORK_ERROR("NETWORK_ERROR", "A network error occurred"),
+    WEB_FETCH_FAILED("WEB_FETCH_FAILED", "Failed to fetch content from URL"),
+    WEB_FETCH_PROCESSING_ERROR("WEB_FETCH_PROCESSING_ERROR", "Error processing web content"),
+    WEB_FETCH_FALLBACK_FAILED("WEB_FETCH_FALLBACK_FAILED", "Fallback fetch method failed"),
     EXTERNAL_SERVICE_ERROR("EXTERNAL_SERVICE_ERROR", "An external service error occurred");
     
     companion object {

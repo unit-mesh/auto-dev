@@ -1,10 +1,7 @@
 package cc.unitmesh.agent.tool.provider
 
-import cc.unitmesh.agent.core.SubAgentManager
 import cc.unitmesh.agent.tool.ExecutableTool
-import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.impl.*
-import cc.unitmesh.agent.tool.shell.ShellExecutor
 
 /**
  * Provider for built-in tools.
@@ -16,30 +13,31 @@ class BuiltinToolsProvider : ToolProvider {
     
     override fun priority(): Int = 100 // System provider, high priority
     
-    override fun provide(
-        fileSystem: ToolFileSystem,
-        shellExecutor: ShellExecutor,
-        subAgentManager: SubAgentManager?
-    ): List<ExecutableTool<*, *>> {
+    override fun provide(dependencies: ToolDependencies): List<ExecutableTool<*, *>> {
         val tools = mutableListOf<ExecutableTool<*, *>>()
         
         // File system tools
-        tools.add(ReadFileTool(fileSystem))
-        tools.add(WriteFileTool(fileSystem))
-        tools.add(EditFileTool(fileSystem))
+        tools.add(ReadFileTool(dependencies.fileSystem))
+        tools.add(WriteFileTool(dependencies.fileSystem))
+        tools.add(EditFileTool(dependencies.fileSystem))
         
         // Search tools
-        tools.add(GrepTool(fileSystem))
-        tools.add(GlobTool(fileSystem))
+        tools.add(GrepTool(dependencies.fileSystem))
+        tools.add(GlobTool(dependencies.fileSystem))
         
         // Execution tools (only if shell executor is available)
-        if (shellExecutor.isAvailable()) {
-            tools.add(ShellTool(shellExecutor))
+        if (dependencies.shellExecutor.isAvailable()) {
+            tools.add(ShellTool(dependencies.shellExecutor))
         }
         
         // Communication tools (only if SubAgentManager is available)
-        if (subAgentManager != null) {
-            tools.add(AskAgentTool(subAgentManager))
+        if (dependencies.subAgentManager != null) {
+            tools.add(AskAgentTool(dependencies.subAgentManager))
+        }
+        
+        // Web tools (only if LLM service and HTTP fetcher are available)
+        if (dependencies.llmService != null && dependencies.httpFetcher != null) {
+            tools.add(WebFetchTool(dependencies.llmService, dependencies.httpFetcher))
         }
         
         return tools

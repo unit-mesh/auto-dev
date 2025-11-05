@@ -3,7 +3,20 @@ package cc.unitmesh.agent.tool.provider
 import cc.unitmesh.agent.core.SubAgentManager
 import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
+import cc.unitmesh.agent.tool.impl.HttpFetcher
 import cc.unitmesh.agent.tool.shell.ShellExecutor
+import cc.unitmesh.llm.KoogLLMService
+
+/**
+ * Dependencies required for tool creation
+ */
+data class ToolDependencies(
+    val fileSystem: ToolFileSystem,
+    val shellExecutor: ShellExecutor,
+    val subAgentManager: SubAgentManager? = null,
+    val llmService: KoogLLMService? = null,
+    val httpFetcher: HttpFetcher? = null
+)
 
 /**
  * Provider interface for discovering and providing tools.
@@ -15,16 +28,21 @@ interface ToolProvider {
     /**
      * Provide a list of tools based on available dependencies
      * 
-     * @param fileSystem File system implementation for file-based tools
-     * @param shellExecutor Shell executor for command-based tools
-     * @param subAgentManager SubAgent manager for agent communication tools
+     * @param dependencies All available dependencies for tool creation
      * @return List of executable tools
+     */
+    fun provide(dependencies: ToolDependencies): List<ExecutableTool<*, *>>
+    
+    /**
+     * Legacy method for backward compatibility
      */
     fun provide(
         fileSystem: ToolFileSystem,
         shellExecutor: ShellExecutor,
         subAgentManager: SubAgentManager?
-    ): List<ExecutableTool<*, *>>
+    ): List<ExecutableTool<*, *>> {
+        return provide(ToolDependencies(fileSystem, shellExecutor, subAgentManager))
+    }
     
     /**
      * Priority of this provider (higher priority providers are loaded first)
@@ -63,12 +81,19 @@ object ToolProviderRegistry {
     /**
      * Discover all tools from registered providers
      */
+    fun discoverTools(dependencies: ToolDependencies): List<ExecutableTool<*, *>> {
+        return providers.flatMap { it.provide(dependencies) }
+    }
+    
+    /**
+     * Legacy method for backward compatibility
+     */
     fun discoverTools(
         fileSystem: ToolFileSystem,
         shellExecutor: ShellExecutor,
         subAgentManager: SubAgentManager?
     ): List<ExecutableTool<*, *>> {
-        return providers.flatMap { it.provide(fileSystem, shellExecutor, subAgentManager) }
+        return discoverTools(ToolDependencies(fileSystem, shellExecutor, subAgentManager))
     }
 }
 

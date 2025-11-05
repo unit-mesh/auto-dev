@@ -99,6 +99,9 @@ kotlin {
                 // kotlinx-io for cross-platform file system operations
                 implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.8.0")
 
+                // Ktor HTTP Client for web fetching (core only in common)
+                implementation("io.ktor:ktor-client-core:3.2.2")
+
                 // Koog AI Framework - JVM only for now
                 implementation("ai.koog:koog-agents:0.5.1")
                 // Koog needs these executors
@@ -127,6 +130,9 @@ kotlin {
             dependencies {
                 // SQLDelight - JVM SQLite driver
                 implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+                
+                // Ktor CIO engine for JVM
+                implementation("io.ktor:ktor-client-cio:3.2.2")
 
                 // MCP SDK for JVM
                 implementation("io.modelcontextprotocol:kotlin-sdk:0.7.4")
@@ -143,6 +149,9 @@ kotlin {
             dependencies {
                 // SQLDelight - JS driver
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
+                
+                // Ktor JS engine for JavaScript
+                implementation("io.ktor:ktor-client-js:3.2.2")
             }
         }
 
