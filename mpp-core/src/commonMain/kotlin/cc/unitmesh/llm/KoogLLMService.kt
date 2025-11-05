@@ -59,13 +59,11 @@ class KoogLLMService(
         val prompt = buildPrompt(finalPrompt, historyMessages)
         executor.executeStreaming(prompt, model)
             .cancellable()
-            .onCompletion {
-                println(Json.encodeToString(prompt))
-            }
             .collect { frame ->
                 when (frame) {
                     is StreamFrame.Append -> emit(frame.text)
                     is StreamFrame.End -> {
+                        println("StreamFrame.End -> finishReason=${frame.finishReason}, metaInfo=${frame.metaInfo}")
                         frame.metaInfo?.let { metaInfo ->
                             lastTokenInfo = TokenInfo(
                                 totalTokens = metaInfo.totalTokensCount ?: 0,

@@ -166,13 +166,13 @@ class ToolOrchestrator(
         if (tool != null) {
             // Convert orchestration context to basic tool context
             val basicContext = context.toBasicContext()
-            val toolType = toolName.toToolType()
-            return when (toolType) {
+            return when (val toolType = toolName.toToolType()) {
                 ToolType.Shell -> executeShellTool(tool, params, basicContext)
                 ToolType.ReadFile -> executeReadFileTool(tool, params, basicContext)
                 ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)
                 ToolType.Glob -> executeGlobTool(tool, params, basicContext)
                 ToolType.Grep -> executeGrepTool(tool, params, basicContext)
+                ToolType.WebFetch -> executeWebFetchTool(tool, params, basicContext)
                 else -> ToolResult.Error("Tool not implemented: ${toolType?.displayName ?: "unknown"}")
             }
         }
@@ -361,6 +361,37 @@ class ToolOrchestrator(
             recursive = params["recursive"] as? Boolean ?: true
         )
         val invocation = grepTool.createInvocation(grepParams)
+        return invocation.execute(context)
+    }
+
+    private suspend fun executeWebFetchTool(
+        tool: Tool,
+        params: Map<String, Any>,
+        context: cc.unitmesh.agent.tool.ToolExecutionContext
+    ): ToolResult {
+        val webFetchTool = tool as cc.unitmesh.agent.tool.impl.WebFetchTool
+        
+        // Handle both prompt-only and prompt+url cases
+        // If LLM provides both prompt and url, merge them
+        val originalPrompt = params["prompt"] as? String ?: ""
+        val url = params["url"] as? String
+        
+        val finalPrompt = if (url != null && url.isNotBlank()) {
+            // If url is provided separately, ensure it's included in the prompt
+            if (originalPrompt.contains(url)) {
+                originalPrompt
+            } else {
+                // Prepend the URL to the prompt
+                "$originalPrompt $url".trim()
+            }
+        } else {
+            originalPrompt
+        }
+        
+        val webFetchParams = cc.unitmesh.agent.tool.impl.WebFetchParams(
+            prompt = finalPrompt
+        )
+        val invocation = webFetchTool.createInvocation(webFetchParams)
         return invocation.execute(context)
     }
 

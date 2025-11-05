@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build:kotlin": "cd .. && ./gradlew :mpp-core:assembleJsPackage",
-    "build:ts": "tsc && chmod +x dist/jsMain/typescript/index.js",
+    "build:ts": "cd .. && ./gradlew :mpp-ui:assemble && tsc && chmod +x dist/jsMain/typescript/index.js",
     "build": "npm run build:kotlin && npm run build:ts",
     "dev": "tsc --watch",
     "start": "node dist/jsMain/typescript/index.js",

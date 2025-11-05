@@ -27,6 +27,10 @@ import cc.unitmesh.agent.config.ToolConfigManager
 import cc.unitmesh.agent.config.ToolItem
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
+import cc.unitmesh.agent.tool.provider.ToolDependencies
+import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
+import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.devins.ui.config.ConfigManager
 import kotlinx.coroutines.launch
 
@@ -101,7 +105,17 @@ fun ToolConfigDialog(
         scope.launch {
             try {
                 toolConfig = ConfigManager.loadToolConfig()
-                val allTools = ToolConfigManager.getBuiltinToolsByCategory()
+                // Discover tools using the provider
+                val provider = BuiltinToolsProvider()
+                val tools = provider.provide(
+                    ToolDependencies(
+                        fileSystem = DefaultToolFileSystem(),
+                        shellExecutor = DefaultShellExecutor(),
+                        subAgentManager = null,
+                        llmService = null
+                    )
+                )
+                val allTools = ToolConfigManager.getBuiltinToolsByCategory(tools)
                 builtinToolsByCategory = ToolConfigManager.applyEnabledTools(allTools, toolConfig)
 
                 // Serialize MCP config to JSON for editing

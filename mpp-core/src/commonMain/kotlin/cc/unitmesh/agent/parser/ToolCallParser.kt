@@ -253,6 +253,7 @@ class ToolCallParser {
                 val defaultParamName = when (toolName) {
                     ToolType.ReadFile.name -> "path"
                     ToolType.Glob.name, ToolType.Grep.name -> "pattern"
+                    ToolType.WebFetch.name -> "prompt"
                     else -> "content"
                 }
                 params[defaultParamName] = escapeProcessor.processEscapeSequences(firstLine)
