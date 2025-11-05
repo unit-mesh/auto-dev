@@ -66,9 +66,6 @@ class KoogLLMService(
                 when (frame) {
                     is StreamFrame.Append -> emit(frame.text)
                     is StreamFrame.End -> {
-                        println("StreamFrame.End -> finishReason=${frame.finishReason}, metaInfo=${frame.metaInfo}")
-                        
-                        // 更新 token 信息
                         frame.metaInfo?.let { metaInfo ->
                             lastTokenInfo = TokenInfo(
                                 totalTokens = metaInfo.totalTokensCount ?: 0,
@@ -77,10 +74,7 @@ class KoogLLMService(
                                 timestamp = Clock.System.now().toEpochMilliseconds()
                             )
                             
-                            // 回调：token 更新
                             onTokenUpdate?.invoke(lastTokenInfo)
-                            
-                            // 检查是否需要压缩
                             if (compressionConfig.autoCompressionEnabled) {
                                 val maxTokens = getMaxTokens()
                                 if (lastTokenInfo.needsCompression(maxTokens, compressionConfig.contextPercentageThreshold)) {

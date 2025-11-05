@@ -124,9 +124,8 @@ private fun AutoDevContent() {
                 currentStreamingOutput = output
             },
             onAssistantMessage = { assistantMsg ->
-                // AI 响应完成，添加到本地状态
                 messages = messages + assistantMsg
-                currentStreamingOutput = "" // 清空流式输出
+                currentStreamingOutput = ""
             },
             onProcessingChange = { isLLMProcessing = it },
             onError = {

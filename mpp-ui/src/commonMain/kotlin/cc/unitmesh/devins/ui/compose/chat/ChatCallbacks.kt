@@ -4,6 +4,7 @@ import cc.unitmesh.devins.compiler.DevInsCompilerFacade
 import cc.unitmesh.devins.compiler.context.CompilerContext
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
+import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.CoroutineScope
@@ -19,9 +20,9 @@ fun createChatCallbacks(
     chatHistoryManager: ChatHistoryManager,
     scope: CoroutineScope,
     onCompilerOutput: (String) -> Unit,
-    onUserMessage: (cc.unitmesh.devins.llm.Message) -> Unit,
+    onUserMessage: (Message) -> Unit,
     onStreamingOutput: (String) -> Unit,
-    onAssistantMessage: (cc.unitmesh.devins.llm.Message) -> Unit,
+    onAssistantMessage: (Message) -> Unit,
     onProcessingChange: (Boolean) -> Unit,
     onError: (String) -> Unit,
     onConfigWarning: () -> Unit
@@ -102,9 +103,9 @@ private fun sendToLLM(
     llmService: KoogLLMService,
     chatHistoryManager: ChatHistoryManager,
     scope: CoroutineScope,
-    onUserMessage: (cc.unitmesh.devins.llm.Message) -> Unit,
+    onUserMessage: (Message) -> Unit,
     onStreamingOutput: (String) -> Unit,
-    onAssistantMessage: (cc.unitmesh.devins.llm.Message) -> Unit,
+    onAssistantMessage: (Message) -> Unit,
     onProcessingChange: (Boolean) -> Unit,
     onError: (String) -> Unit
 ) {
@@ -113,7 +114,7 @@ private fun sendToLLM(
         try {
             // 1. 创建并添加用户消息
             val userMessage =
-                cc.unitmesh.devins.llm.Message(
+                Message(
                     role = cc.unitmesh.devins.llm.MessageRole.USER,
                     content = text
                 )
@@ -143,7 +144,7 @@ private fun sendToLLM(
             // 5. AI 响应完成，创建并添加助手消息
             if (currentOutput.isNotEmpty()) {
                 val assistantMessage =
-                    cc.unitmesh.devins.llm.Message(
+                    Message(
                         role = cc.unitmesh.devins.llm.MessageRole.ASSISTANT,
                         content = currentOutput
                     )
