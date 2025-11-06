@@ -1,7 +1,6 @@
 plugins {
     kotlin("multiplatform") version "2.2.0"
     kotlin("plugin.serialization") version "2.2.0"
-    id("app.cash.sqldelight") version "2.1.0"
     id("com.android.library") version "8.10.0"
 
     id("dev.petuska.npm.publish") version "3.5.3"
@@ -14,21 +13,12 @@ repositories {
 
 version = "0.1.4"
 
-sqldelight {
-    databases {
-        create("DevInsDatabase") {
-            packageName.set("cc.unitmesh.devins.db")
-        }
-    }
-}
-
 android {
     namespace = "cc.unitmesh.devins.core"
     compileSdk = 36
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 36
     }
 
     compileOptions {
@@ -49,18 +39,14 @@ dependencies {
 
 kotlin {
     androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 
     jvm {
-        compilations.all {
-//            kotlinOptions {
-//                jvmTarget = "17"
-//            }
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 
@@ -73,13 +59,11 @@ kotlin {
         // Generate TypeScript definitions for better interop
         generateTypeScriptDefinitions()
 
-        compilations.all {
-            kotlinOptions {
-                // UMD is the most compatible format for both Node.js and browser (with bundlers)
-                moduleKind = "umd"
-                sourceMap = true
-                sourceMapEmbedSources = "always"
-            }
+        compilerOptions {
+            // UMD is the most compatible format for both Node.js and browser (with bundlers)
+            moduleKind.set(org.jetbrains.kotlin.gradle.dsl.JsModuleKind.MODULE_UMD)
+            sourceMap.set(true)
+            sourceMapEmbedSources.set(org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
         }
     }
 
@@ -122,12 +106,9 @@ kotlin {
 
         androidMain {
             dependencies {
-                // SQLDelight - Android SQLite driver
-                implementation("app.cash.sqldelight:android-driver:2.1.0")
-                
                 // AndroidX DocumentFile for SAF support
                 implementation("androidx.documentfile:documentfile:1.0.1")
-                
+
                 // Ktor CIO engine for Android
                 implementation("io.ktor:ktor-client-cio:3.2.2")
             }
@@ -135,9 +116,6 @@ kotlin {
 
         jvmMain {
             dependencies {
-                // SQLDelight - JVM SQLite driver
-                implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
-
                 // Ktor CIO engine for JVM
                 implementation("io.ktor:ktor-client-cio:3.2.2")
 
@@ -157,9 +135,6 @@ kotlin {
 
         jsMain {
             dependencies {
-                // SQLDelight - JS driver
-                implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
-                
                 // Ktor JS engine for JavaScript
                 implementation("io.ktor:ktor-client-js:3.2.2")
             }

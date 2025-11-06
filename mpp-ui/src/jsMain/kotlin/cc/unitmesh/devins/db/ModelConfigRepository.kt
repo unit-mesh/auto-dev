@@ -3,13 +3,13 @@ package cc.unitmesh.devins.db
 import cc.unitmesh.llm.ModelConfig
 
 /**
- * ModelConfig 数据访问层 - Wasm 实现
+ * ModelConfig 数据访问层 - JS 实现
  * 目前提供空实现，未来可以基于 localStorage 或 IndexedDB 实现
  */
 actual class ModelConfigRepository {
     
     actual fun getAllConfigs(): List<ModelConfig> {
-        println("ModelConfigRepository not implemented for Wasm platform")
+        console.warn("ModelConfigRepository not implemented for JS platform")
         return emptyList()
     }
     
@@ -49,4 +49,3 @@ actual class ModelConfigRepository {
         }
     }
 }
-

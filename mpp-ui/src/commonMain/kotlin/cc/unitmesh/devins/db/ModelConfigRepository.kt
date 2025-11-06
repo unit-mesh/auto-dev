@@ -54,4 +54,3 @@ expect class ModelConfigRepository {
         fun getInstance(): ModelConfigRepository
     }
 }
-

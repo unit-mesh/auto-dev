@@ -56,9 +56,3 @@ DELETE FROM ModelConfig WHERE id = ?;
 -- 清空所有配置
 deleteAll:
 DELETE FROM ModelConfig;
-
-
-
-
-
-

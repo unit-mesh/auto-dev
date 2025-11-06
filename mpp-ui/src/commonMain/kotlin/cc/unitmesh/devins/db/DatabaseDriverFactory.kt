@@ -17,9 +17,3 @@ fun createDatabase(driverFactory: DatabaseDriverFactory): DevInsDatabase {
     val driver = driverFactory.createDriver()
     return DevInsDatabase(driver)
 }
-
-
-
-
-
-

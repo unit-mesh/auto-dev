@@ -129,4 +129,3 @@ actual class ModelConfigRepository(private val database: DevInsDatabase) {
         }
     }
 }
-

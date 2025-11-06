@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.android.application")
+    id("app.cash.sqldelight") version "2.1.0"
     alias(libs.plugins.ktlint)
 }
 
@@ -11,6 +12,14 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
+}
+
+sqldelight {
+    databases {
+        create("DevInsDatabase") {
+            packageName.set("cc.unitmesh.devins.db")
+        }
+    }
 }
 
 kotlin {
@@ -79,6 +88,9 @@ kotlin {
                 // Rich text editor for Compose Desktop
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")
 
+                // SQLDelight - JVM SQLite driver
+                implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+
                 // Multiplatform Markdown Renderer for JVM
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
@@ -103,6 +115,9 @@ kotlin {
                 implementation("androidx.appcompat:appcompat:1.6.1")
                 implementation("androidx.core:core-ktx:1.17.0")
 
+                // SQLDelight - Android SQLite driver
+                implementation("app.cash.sqldelight:android-driver:2.1.0")
+
                 // Multiplatform Markdown Renderer for Android
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
@@ -113,6 +128,9 @@ kotlin {
             dependencies {
                 // Node.js CLI dependencies
                 implementation(compose.html.core)
+
+                // SQLDelight - JS driver
+                implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
             }
         }
     }

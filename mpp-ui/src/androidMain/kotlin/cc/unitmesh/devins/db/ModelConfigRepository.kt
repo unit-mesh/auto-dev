@@ -4,7 +4,7 @@ import cc.unitmesh.llm.LLMProviderType
 import cc.unitmesh.llm.ModelConfig
 
 /**
- * ModelConfig 数据访问层 - JVM 实现
+ * ModelConfig 数据访问层 - Android 实现
  */
 actual class ModelConfigRepository(private val database: DevInsDatabase) {
     
@@ -129,4 +129,3 @@ actual class ModelConfigRepository(private val database: DevInsDatabase) {
         }
     }
 }
-
