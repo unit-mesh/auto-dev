@@ -213,7 +213,7 @@ class WebFetchTool(
 
     // Create platform-specific HTTP fetcher internally
     private val httpFetcher: HttpFetcher by lazy {
-        KtorHttpFetcher.create()
+        HttpFetcherFactory.create()
     }
 
     override val name: String = "web-fetch"
