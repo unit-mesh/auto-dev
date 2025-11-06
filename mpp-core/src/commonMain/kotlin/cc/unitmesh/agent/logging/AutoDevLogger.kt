@@ -48,20 +48,6 @@ object AutoDevLogger {
         val className = T::class.simpleName ?: "Unknown"
         return getLogger(className)
     }
-
-    /**
-     * 获取调用者类的日志器
-     */
-    fun getCallerLogger(): KLogger {
-        // 使用调用栈获取调用者类名
-        val stackTrace = Thread.currentThread().stackTrace
-        val callerClass = if (stackTrace.size > 2) {
-            stackTrace[2].className.substringAfterLast('.')
-        } else {
-            "AutoDev"
-        }
-        return getLogger(callerClass)
-    }
     
     /**
      * 获取日志目录路径（仅 JVM 平台）

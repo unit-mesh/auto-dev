@@ -172,6 +172,7 @@ class ToolOrchestrator(
                 ToolType.Shell -> executeShellTool(tool, params, basicContext)
                 ToolType.ReadFile -> executeReadFileTool(tool, params, basicContext)
                 ToolType.WriteFile -> executeWriteFileTool(tool, params, basicContext)
+                ToolType.EditFile -> executeEditFileTool(tool, params, basicContext)
                 ToolType.Glob -> executeGlobTool(tool, params, basicContext)
                 ToolType.Grep -> executeGrepTool(tool, params, basicContext)
                 ToolType.WebFetch -> executeWebFetchTool(tool, params, basicContext)
@@ -330,6 +331,39 @@ class ToolOrchestrator(
             append = params["append"] as? Boolean ?: false
         )
         val invocation = writeFileTool.createInvocation(writeFileParams)
+        return invocation.execute(context)
+    }
+
+    private suspend fun executeEditFileTool(
+        tool: Tool,
+        params: Map<String, Any>,
+        context: cc.unitmesh.agent.tool.ToolExecutionContext
+    ): ToolResult {
+        val editFileTool = tool as cc.unitmesh.agent.tool.impl.EditFileTool
+
+        val filePath = params["filePath"] as? String 
+            ?: params["path"] as? String 
+            ?: return ToolResult.Error("File path cannot be empty")
+        
+        val oldString = params["oldString"] as? String 
+            ?: params["old_string"] as? String 
+            ?: return ToolResult.Error("oldString parameter is required")
+        
+        val newString = params["newString"] as? String 
+            ?: params["new_string"] as? String 
+            ?: return ToolResult.Error("newString parameter is required")
+
+        val expectedReplacements = (params["expectedReplacements"] as? Number)?.toInt()
+            ?: (params["expected_replacements"] as? Number)?.toInt()
+            ?: 1
+
+        val editFileParams = cc.unitmesh.agent.tool.impl.EditFileParams(
+            filePath = filePath,
+            oldString = oldString,
+            newString = newString,
+            expectedReplacements = expectedReplacements
+        )
+        val invocation = editFileTool.createInvocation(editFileParams)
         return invocation.execute(context)
     }
 

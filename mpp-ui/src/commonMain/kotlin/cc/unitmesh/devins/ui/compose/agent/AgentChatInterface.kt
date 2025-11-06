@@ -81,13 +81,34 @@ fun AgentChatInterface(
             )
         }
 
-        AgentMessageList(
-            renderer = viewModel.renderer,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-        )
+        // Main content area with optional file viewer panel
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            // Message list (takes full width if no file viewer, or left side if viewer is open)
+            AgentMessageList(
+                renderer = viewModel.renderer,
+                modifier = Modifier
+                    .weight(if (viewModel.renderer.currentViewingFile != null) 0.5f else 1f)
+                    .fillMaxHeight(),
+                onOpenFileViewer = { filePath ->
+                    viewModel.renderer.openFileViewer(filePath)
+                }
+            )
+            
+            // File viewer panel (only show on JVM when a file is selected)
+            viewModel.renderer.currentViewingFile?.let { filePath ->
+                FileViewerPanelWrapper(
+                    filePath = filePath,
+                    onClose = { viewModel.renderer.closeFileViewer() },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .fillMaxHeight()
+                )
+            }
+        }
 
         val callbacks = remember(viewModel) {
             createAgentCallbacks(

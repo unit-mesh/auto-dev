@@ -29,7 +29,8 @@ import kotlinx.datetime.Clock
 @Composable
 fun AgentMessageList(
     renderer: ComposeRenderer,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOpenFileViewer: ((String) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -68,7 +69,8 @@ fun AgentMessageList(
                         details = timelineItem.details,
                         fullParams = timelineItem.fullParams,
                         filePath = timelineItem.filePath,
-                        toolType = timelineItem.toolType
+                        toolType = timelineItem.toolType,
+                        onOpenFileViewer = onOpenFileViewer
                     )
                 }
 
@@ -564,12 +566,12 @@ fun ToolCallItem(
     details: String?,
     fullParams: String? = null,
     filePath: String? = null,
-    toolType: cc.unitmesh.agent.tool.ToolType? = null
+    toolType: cc.unitmesh.agent.tool.ToolType? = null,
+    onOpenFileViewer: ((String) -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showFullParams by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
-    val fileViewer = remember { FileViewer() }
     
     // Determine which params to display
     val displayParams = if (showFullParams) fullParams else details
@@ -613,14 +615,10 @@ fun ToolCallItem(
                 )
                 
                 // Add "View File" button for file operations
-                if (isFileOperation && !filePath.isNullOrEmpty()) {
+                if (isFileOperation && !filePath.isNullOrEmpty() && onOpenFileViewer != null) {
                     IconButton(
                         onClick = { 
-                            try {
-                                fileViewer.showFile(filePath, readOnly = true)
-                            } catch (e: Exception) {
-                                println("Error viewing file: ${e.message}")
-                            }
+                            onOpenFileViewer(filePath)
                         },
                         modifier = Modifier.size(24.dp)
                     ) {

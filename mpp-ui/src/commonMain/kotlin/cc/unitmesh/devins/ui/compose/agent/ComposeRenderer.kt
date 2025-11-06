@@ -44,6 +44,10 @@ class ComposeRenderer : BaseRenderer() {
     private var _currentExecutionTime by mutableStateOf(0L)
     val currentExecutionTime: Long get() = _currentExecutionTime
 
+    // File viewer state
+    private var _currentViewingFile by mutableStateOf<String?>(null)
+    val currentViewingFile: String? get() = _currentViewingFile
+
     // Timeline data structures for chronological rendering
     sealed class TimelineItem(val timestamp: Long = Clock.System.now().toEpochMilliseconds()) {
         data class MessageItem(
@@ -298,6 +302,14 @@ class ComposeRenderer : BaseRenderer() {
 
     fun clearError() {
         _errorMessage = null
+    }
+
+    fun openFileViewer(filePath: String) {
+        _currentViewingFile = filePath
+    }
+
+    fun closeFileViewer() {
+        _currentViewingFile = null
     }
 
     fun forceStop() {
