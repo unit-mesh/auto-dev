@@ -1,20 +1,19 @@
 package cc.unitmesh.agent.orchestrator
 
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.mcp.McpServerConfig
-import cc.unitmesh.agent.orchestrator.ToolOrchestrator
-import cc.unitmesh.agent.orchestrator.ToolExecutionContext
 import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
-import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
+import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.assertFalse
-import kotlinx.coroutines.test.runTest
+import kotlin.test.assertTrue
 
 /**
  * Test MCP tool execution through ToolOrchestrator
@@ -34,9 +33,9 @@ class McpToolExecutionTest {
                 )
             )
         )
-        
+
         val mcpConfigService = McpToolConfigService(toolConfig)
-        
+
         // Verify that enabled MCP tools don't have server prefix
         val enabledMcpTools = toolConfig.enabledMcpTools
         assertTrue(enabledMcpTools.contains("list_directory"))
@@ -47,6 +46,12 @@ class McpToolExecutionTest {
 
     @Test
     fun testToolOrchestratorWithMcpSupport() = runTest {
+        // Skip MCP tests on JS platform as they require Node.js processes
+        if (Platform.isJs) {
+            println("Skipping MCP test on JS platform - requires Node.js processes")
+            return@runTest
+        }
+
         val toolConfig = ToolConfigFile(
             enabledBuiltinTools = listOf("read-file"),
             enabledMcpTools = listOf("list_directory"),
@@ -57,28 +62,28 @@ class McpToolExecutionTest {
                 )
             )
         )
-        
+
         val mcpConfigService = McpToolConfigService(toolConfig)
         val toolRegistry = ToolRegistry(
             fileSystem = DefaultToolFileSystem(),
             shellExecutor = DefaultShellExecutor(),
             configService = mcpConfigService
         )
-        
+
         val orchestrator = ToolOrchestrator(
             registry = toolRegistry,
             policyEngine = DefaultPolicyEngine(),
             renderer = DefaultCodingAgentRenderer(),
             mcpConfigService = mcpConfigService
         )
-        
+
         // Test built-in tool execution
         val builtinResult = orchestrator.executeToolCall(
             toolName = "read-file",
             params = mapOf("path" to "test.txt"),
             context = ToolExecutionContext()
         )
-        
+
         // Should find built-in tool
         assertTrue(builtinResult.isSuccess || builtinResult.result.toString().contains("not found"))
 
@@ -90,7 +95,9 @@ class McpToolExecutionTest {
         )
 
         // Should attempt MCP execution (may fail due to test environment)
-        assertTrue(mcpResult.result.toString().contains("MCP") || mcpResult.result.toString().contains("list_directory"))
+        assertTrue(
+            mcpResult.result.toString().contains("MCP") || mcpResult.result.toString().contains("list_directory")
+        )
     }
 
     @Test
@@ -108,17 +115,17 @@ class McpToolExecutionTest {
                 )
             )
         )
-        
+
         val mcpConfigService = McpToolConfigService(toolConfig)
-        
+
         // Test that tool names are resolved correctly
         val enabledTools = toolConfig.enabledMcpTools.toSet()
-        
+
         // These should be the actual tool names
         assertTrue(enabledTools.contains("list_directory"))
         assertTrue(enabledTools.contains("read_file"))
         assertTrue(enabledTools.contains("write_file"))
-        
+
         // These should NOT be in the enabled tools (no server prefix)
         assertFalse(enabledTools.contains("filesystem_list_directory"))
         assertFalse(enabledTools.contains("context7_read_file"))
@@ -126,12 +133,19 @@ class McpToolExecutionTest {
 
     @Test
     fun testJsonParameterConversion() {
+        // Skip this test on JS platform when running in browser environment
+        // as ToolRegistry initialization may trigger Node.js module loading
+        if (Platform.isJs) {
+            println("Skipping JSON parameter conversion test on JS platform - may require Node.js modules")
+            return
+        }
+
         val orchestrator = ToolOrchestrator(
             registry = ToolRegistry(),
             policyEngine = DefaultPolicyEngine(),
             renderer = DefaultCodingAgentRenderer()
         )
-        
+
         // Test parameter conversion (accessing private method via reflection would be complex in KMP)
         // Instead, we test the expected behavior through public interface
         val params = mapOf(
@@ -139,12 +153,12 @@ class McpToolExecutionTest {
             "recursive" to true,
             "maxDepth" to 3
         )
-        
+
         // The orchestrator should handle these parameters correctly
         assertTrue(params.containsKey("path"))
         assertTrue(params.containsKey("recursive"))
         assertTrue(params.containsKey("maxDepth"))
-        
+
         assertEquals("/tmp", params["path"])
         assertEquals(true, params["recursive"])
         assertEquals(3, params["maxDepth"])

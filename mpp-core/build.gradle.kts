@@ -51,7 +51,7 @@ kotlin {
     }
 
     js(IR) {
-        moduleName = "autodev-mpp-core"
+        outputModuleName = "autodev-mpp-core"
         // Support both browser and Node.js with UMD (for compatibility)
         browser()
         nodejs()
