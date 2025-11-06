@@ -50,12 +50,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # Create local.properties with Android SDK location
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          echo "Android SDK location: $ANDROID_SDK_ROOT"
+          ls -la $ANDROID_SDK_ROOT || echo "SDK directory not found"
+
       # Accept Android SDK licenses (SDK is pre-installed on ubuntu-latest)
       - name: Accept Android SDK licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
-      - name: Set up Android SDK
-        run: echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV # Adjust path as needed
+        run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       # Setup Gradle
       - name: Setup Gradle
@@ -119,9 +123,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # Create local.properties with Android SDK location
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          echo "Android SDK location: $ANDROID_SDK_ROOT"
+          ls -la $ANDROID_SDK_ROOT || echo "SDK directory not found"
+
       # Accept Android SDK licenses (SDK is pre-installed on ubuntu-latest)
       - name: Accept Android SDK licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       # Setup Gradle
       - name: Setup Gradle
