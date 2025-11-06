@@ -1,0 +1,201 @@
+# GitHub Actions Workflow for testing KMP projects (mpp-core and mpp-ui)
+# This workflow builds and tests the Kotlin Multiplatform modules
+# Triggered on push to master and pull requests
+
+name: KMP Test
+on:
+  # Trigger the workflow on pushes to the 'master' branch
+  push:
+    branches: [ master ]
+    paths:
+      - 'mpp-core/**'
+      - 'mpp-ui/**'
+      - '.github/workflows/kmp-test.yml'
+  # Trigger the workflow on any pull request
+  pull_request:
+    paths:
+      - 'mpp-core/**'
+      - 'mpp-ui/**'
+      - '.github/workflows/kmp-test.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Build and test mpp-core
+  test-mpp-core:
+    name: Test mpp-core (KMP)
+    runs-on: ubuntu-latest
+    steps:
+      # Free GitHub Actions Environment Disk Space
+      - name: Maximize Build Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
+
+      # Check out the current repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Validate wrapper
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v4
+
+      # Set up Java environment
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Setup Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Grant execute permission for gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Clean mpp-core module only (not the entire project)
+      - name: Clean mpp-core
+        run: ./gradlew :mpp-core:clean
+
+      # Build mpp-core for all targets (JVM, JS, Android)
+      - name: Build mpp-core
+        run: ./gradlew :mpp-core:assemble
+
+      # Test mpp-core for all targets
+      - name: Test mpp-core
+        run: ./gradlew :mpp-core:allTests
+
+      # Build JS package for CLI usage
+      - name: Build mpp-core JS package
+        run: ./gradlew :mpp-core:assembleJsPackage
+
+      # Upload build artifacts for debugging
+      - name: Upload mpp-core build artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpp-core-build-logs
+          path: |
+            mpp-core/build/reports/
+            mpp-core/build/test-results/
+
+  # Build and test mpp-ui (depends on mpp-core)
+  test-mpp-ui:
+    name: Test mpp-ui (KMP)
+    runs-on: ubuntu-latest
+    needs: test-mpp-core  # Ensure mpp-core builds successfully first
+    steps:
+      # Free GitHub Actions Environment Disk Space
+      - name: Maximize Build Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
+
+      # Check out the current repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Validate wrapper
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v4
+
+      # Set up Java environment
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Setup Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Grant execute permission for gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Install pnpm for JS dependencies
+      - name: Install pnpm
+        run: npm install -g pnpm@10.20.0
+
+      # Install mpp-ui JS dependencies
+      - name: Install mpp-ui dependencies
+        run: pnpm install
+        working-directory: mpp-ui
+
+      # Fix yarn lock issues (if any)
+      - name: Fix yarn lock issues
+        run: ./gradlew kotlinUpgradeYarnLock || echo "Yarn lock upgrade failed, continuing..."
+
+      # Build mpp-core dependency first
+      - name: Build mpp-core dependency
+        run: ./gradlew :mpp-core:assemble
+
+      # Clean mpp-ui module only
+      - name: Clean mpp-ui
+        run: ./gradlew :mpp-ui:clean
+
+      # Build mpp-ui for all targets (JVM, JS, Android)
+      - name: Build mpp-ui
+        run: ./gradlew :mpp-ui:assemble
+
+      # Test mpp-ui for all targets
+      - name: Test mpp-ui
+        run: ./gradlew :mpp-ui:allTests
+
+      # Build Android Debug APK
+      - name: Build Android Debug APK
+        run: ./gradlew :mpp-ui:assembleDebug
+
+      # Build Desktop distribution (JVM)
+      - name: Build Desktop package
+        run: ./gradlew :mpp-ui:packageDistributionForCurrentOS
+
+      # Build JS bundle
+      - name: Build mpp-ui JS bundle
+        run: ./gradlew :mpp-ui:jsBrowserDistribution
+
+      # Upload build artifacts for debugging
+      - name: Upload mpp-ui build artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpp-ui-build-logs
+          path: |
+            mpp-ui/build/reports/
+            mpp-ui/build/test-results/
+
+      # Upload successful build outputs
+      - name: Upload mpp-ui outputs
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpp-ui-outputs
+          path: |
+            mpp-ui/build/outputs/apk/debug/*.apk
+            mpp-ui/build/compose/binaries/main/app/
+
+  # Summary job to report overall status
+  kmp-test-summary:
+    name: KMP Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-mpp-core, test-mpp-ui]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [[ "${{ needs.test-mpp-core.result }}" == "success" ]] && [[ "${{ needs.test-mpp-ui.result }}" == "success" ]]; then
+            echo "✅ All KMP tests passed!"
+            exit 0
+          else
+            echo "❌ Some KMP tests failed:"
+            echo "  - mpp-core: ${{ needs.test-mpp-core.result }}"
+            echo "  - mpp-ui: ${{ needs.test-mpp-ui.result }}"
+            exit 1
+          fi
