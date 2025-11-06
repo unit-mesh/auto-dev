@@ -54,6 +54,9 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
+      - name: Set up Android SDK
+        run: echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV # Adjust path as needed
+
       # Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
