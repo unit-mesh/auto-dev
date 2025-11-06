@@ -1,9 +1,15 @@
 ## Core Rules
 
+- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, JVM, Android
+- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, JVM, Android
+- Current project is a Kotlin multiplatform project, always consider the multiplatform aspect, JS, JVM, Android
+
+Rest:
+
 - Always run the build and tests before completing a task, making sure they pass.
-- Put test scripts under `docs/test-scripts`.
 - If an existing request/solution does not work, preserve its intent.
 - Do not run `./gradlew clean`. Clean only the specific module, e.g., `./gradlew :mpp-core:clean`.
+- Put temporary test scripts under `docs/test-scripts`.
 
 ## Summary
 
