@@ -50,7 +50,10 @@ export const zh: TranslationKeys = {
       deepseek: '🔹 DeepSeek',
       ollama: '🔹 Ollama (本地)',
       openrouter: '🔹 OpenRouter',
-      customOpenAIBase: '🔹 自定义 OpenAI 兼容 (GLM 等)',
+      glm: '🔹 智谱AI (GLM-4)',
+      qwen: '🔹 阿里通义千问 (Qwen)',
+      kimi: '🔹 月之暗面 (Kimi)',
+      customOpenAIBase: '🔹 自定义 OpenAI 兼容',
     },
     fields: {
       provider: '提供商',

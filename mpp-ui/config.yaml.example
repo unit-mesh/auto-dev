@@ -54,12 +54,39 @@ configs:
     model: anthropic/claude-3.5-sonnet
     baseUrl: https://openrouter.ai/api/v1
 
-  # Configuration 7: ChatGLM (custom OpenAI-compatible)
+  # Configuration 7: ChatGLM (智谱AI)
   - name: glm-chat
-    provider: custom-openai-base
-    apiKey: 1234
+    provider: glm
+    apiKey: your-glm-api-key-here.xxxxx
     model: glm-4-plus
-    baseUrl: https://open.bigmodel.cn/api/paas/v4
+    baseUrl: https://open.bigmodel.cn/api/paas/v4/
+    temperature: 0.7
+    maxTokens: 128000
+
+  # Configuration 8: Qwen (阿里通义千问)
+  - name: qwen-max
+    provider: qwen
+    apiKey: sk-your-qwen-api-key-here
+    model: qwen-max
+    baseUrl: https://dashscope.aliyuncs.com/api/v1/
+    temperature: 0.7
+    maxTokens: 8000
+
+  # Configuration 9: Kimi (月之暗面)
+  - name: kimi-32k
+    provider: kimi
+    apiKey: sk-your-kimi-api-key-here
+    model: moonshot-v1-32k
+    baseUrl: https://api.moonshot.cn/v1/
+    temperature: 0.7
+    maxTokens: 8192
+
+  # Configuration 10: Custom OpenAI-compatible
+  - name: custom-api
+    provider: custom-openai-base
+    apiKey: your-api-key-here
+    model: your-model-name
+    baseUrl: https://api.example.com/v1/
     temperature: 0.7
     maxTokens: 8192
 
@@ -93,14 +120,25 @@ configs:
 #   - Access to multiple providers through one API
 #   - Models: anthropic/claude-3.5-sonnet, openai/gpt-4, etc.
 #
+# GLM (智谱AI):
+#   - Get API key from: https://open.bigmodel.cn/
+#   - Base URL: https://open.bigmodel.cn/api/paas/v4 (auto-filled)
+#   - Models: glm-4-plus, glm-4-air, glm-4-flash, glm-4, glm-3-turbo
+#
+# Qwen (阿里通义千问):
+#   - Get API key from: https://dashscope.console.aliyun.com/
+#   - Base URL: https://dashscope.aliyuncs.com/api/v1 (auto-filled)
+#   - Models: qwen-max, qwen-plus, qwen-turbo, qwen-long
+#
+# Kimi (月之暗面 Moonshot):
+#   - Get API key from: https://platform.moonshot.cn/
+#   - Base URL: https://api.moonshot.cn/v1 (auto-filled)
+#   - Models: moonshot-v1-8k, moonshot-v1-32k, moonshot-v1-128k
+#
 # Custom OpenAI-compatible (custom-openai-base):
-#   - For any OpenAI-compatible API (GLM, custom endpoints, etc.)
+#   - For any other OpenAI-compatible API
 #   - Requires: baseUrl, apiKey, and model name
-#   - GLM (ChatGLM):
-#     * Get API key from: https://open.bigmodel.cn/
-#     * Base URL: https://open.bigmodel.cn/api/paas/v4
-#     * Models: glm-4-plus, glm-4, glm-3-turbo, etc.
-#   - Other providers: Set baseUrl to your custom endpoint
+#   - Set baseUrl to your custom endpoint
 #
 # ============================================================================
 # Managing configurations:

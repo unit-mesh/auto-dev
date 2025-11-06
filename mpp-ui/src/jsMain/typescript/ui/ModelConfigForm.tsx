@@ -33,7 +33,10 @@ const PROVIDER_DEFAULTS: Record<string, { defaultModel: string; needsApiKey: boo
   deepseek: { defaultModel: 'deepseek-chat', needsApiKey: true },
   ollama: { defaultModel: 'llama2', needsApiKey: false, baseUrl: 'http://localhost:11434', requiresBaseUrl: true },
   openrouter: { defaultModel: 'openai/gpt-4', needsApiKey: true },
-  'custom-openai-base': { defaultModel: 'glm-4-plus', needsApiKey: true, baseUrl: 'https://open.bigmodel.cn/api/paas/v4', requiresBaseUrl: true },
+  glm: { defaultModel: 'glm-4-plus', needsApiKey: true, baseUrl: 'https://open.bigmodel.cn/api/paas/v4', requiresBaseUrl: true },
+  qwen: { defaultModel: 'qwen-max', needsApiKey: true, baseUrl: 'https://dashscope.aliyuncs.com/api/v1', requiresBaseUrl: true },
+  kimi: { defaultModel: 'moonshot-v1-32k', needsApiKey: true, baseUrl: 'https://api.moonshot.cn/v1', requiresBaseUrl: true },
+  'custom-openai-base': { defaultModel: 'model-name', needsApiKey: true, baseUrl: 'https://api.example.com/v1', requiresBaseUrl: true },
 };
 
 export const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ onSubmit, onCancel }) => {
@@ -53,6 +56,9 @@ export const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ onSubmit, onCa
     { label: t('modelConfig.providers.deepseek'), value: 'deepseek' },
     { label: t('modelConfig.providers.ollama'), value: 'ollama' },
     { label: t('modelConfig.providers.openrouter'), value: 'openrouter' },
+    { label: t('modelConfig.providers.glm'), value: 'glm' },
+    { label: t('modelConfig.providers.qwen'), value: 'qwen' },
+    { label: t('modelConfig.providers.kimi'), value: 'kimi' },
     { label: t('modelConfig.providers.customOpenAIBase'), value: 'custom-openai-base' },
   ];
 

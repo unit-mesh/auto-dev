@@ -52,6 +52,9 @@ export interface TranslationKeys {
       deepseek: string;
       ollama: string;
       openrouter: string;
+      glm: string;
+      qwen: string;
+      kimi: string;
       customOpenAIBase: string;
     };
     fields: {

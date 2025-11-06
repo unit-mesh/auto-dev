@@ -62,7 +62,7 @@ data class NamedModelConfig(
             apiKey = apiKey,
             temperature = temperature,
             maxTokens = maxTokens,
-            baseUrl = baseUrl.trimEnd('/') // Remove trailing slash
+            baseUrl = baseUrl.let { if (it.isNotEmpty() && !it.endsWith('/')) "$it/" else it } // Ensure trailing slash for Ktor URL joining
         )
     }
 
@@ -81,7 +81,7 @@ data class NamedModelConfig(
                 provider = providerName,
                 apiKey = config.apiKey,
                 model = config.modelName,
-                baseUrl = config.baseUrl.trimEnd('/'), // Remove trailing slash
+                baseUrl = config.baseUrl.trimEnd('/'), // Remove trailing slash for YAML readability
                 temperature = config.temperature,
                 maxTokens = config.maxTokens
             )

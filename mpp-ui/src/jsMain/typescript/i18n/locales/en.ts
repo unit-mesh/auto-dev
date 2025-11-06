@@ -50,7 +50,10 @@ export const en: TranslationKeys = {
       deepseek: '🔹 DeepSeek',
       ollama: '🔹 Ollama (Local)',
       openrouter: '🔹 OpenRouter',
-      customOpenAIBase: '🔹 Custom OpenAI-compatible (GLM, etc.)',
+      glm: '🔹 智谱AI (GLM)',
+      qwen: '🔹 阿里通义千问 (Qwen)',
+      kimi: '🔹 月之暗面 (Kimi)',
+      customOpenAIBase: '🔹 Custom OpenAI-compatible',
     },
     fields: {
       provider: 'Provider',

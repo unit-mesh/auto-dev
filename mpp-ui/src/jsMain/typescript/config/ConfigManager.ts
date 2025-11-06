@@ -10,7 +10,7 @@ import * as path from 'path';
 import * as os from 'os';
 import YAML from 'yaml';
 
-export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'deepseek' | 'ollama' | 'openrouter' | 'custom-openai-base';
+export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'deepseek' | 'ollama' | 'openrouter' | 'glm' | 'qwen' | 'kimi' | 'custom-openai-base';
 
 /**
  * Single LLM configuration
