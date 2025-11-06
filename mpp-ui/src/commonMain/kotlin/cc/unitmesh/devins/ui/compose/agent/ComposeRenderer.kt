@@ -56,6 +56,8 @@ class ComposeRenderer : BaseRenderer() {
             val description: String,
             val details: String? = null,
             val fullParams: String? = null, // 完整的原始参数，用于折叠展示
+            val filePath: String? = null, // 文件路径，用于点击查看
+            val toolType: ToolType? = null, // 工具类型，用于判断是否可点击
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
@@ -152,6 +154,14 @@ class ComposeRenderer : BaseRenderer() {
         paramsStr: String
     ) {
         val toolInfo = formatToolCallDisplay(toolName, paramsStr)
+        val params = parseParamsString(paramsStr)
+        val toolType = toolName.toToolType()
+        
+        // Extract file path for read/write operations
+        val filePath = when (toolType) {
+            ToolType.ReadFile, ToolType.WriteFile -> params["path"]
+            else -> null
+        }
 
         // Add tool call to timeline with full params for detailed inspection
         _timeline.add(
@@ -159,7 +169,9 @@ class ComposeRenderer : BaseRenderer() {
                 toolName = toolInfo.toolName,
                 description = toolInfo.description,
                 details = toolInfo.details,
-                fullParams = paramsStr // 保存完整的原始参数
+                fullParams = paramsStr, // 保存完整的原始参数
+                filePath = filePath, // 保存文件路径
+                toolType = toolType // 保存工具类型
             )
         )
 

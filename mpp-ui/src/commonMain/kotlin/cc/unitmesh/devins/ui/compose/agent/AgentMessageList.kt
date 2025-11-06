@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -65,7 +66,9 @@ fun AgentMessageList(
                         toolName = timelineItem.toolName,
                         description = timelineItem.description,
                         details = timelineItem.details,
-                        fullParams = timelineItem.fullParams
+                        fullParams = timelineItem.fullParams,
+                        filePath = timelineItem.filePath,
+                        toolType = timelineItem.toolType
                     )
                 }
 
@@ -559,15 +562,24 @@ fun ToolCallItem(
     toolName: String,
     description: String,
     details: String?,
-    fullParams: String? = null
+    fullParams: String? = null,
+    filePath: String? = null,
+    toolType: cc.unitmesh.agent.tool.ToolType? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showFullParams by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
+    val fileViewer = remember { FileViewer() }
     
     // Determine which params to display
     val displayParams = if (showFullParams) fullParams else details
     val hasFullParams = fullParams != null && fullParams != details
+    
+    // Check if this is a file operation that can be viewed
+    val isFileOperation = toolType in listOf(
+        cc.unitmesh.agent.tool.ToolType.ReadFile,
+        cc.unitmesh.agent.tool.ToolType.WriteFile
+    )
 
     Card(
         colors =
@@ -599,6 +611,27 @@ fun ToolCallItem(
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.bodyMedium
                 )
+                
+                // Add "View File" button for file operations
+                if (isFileOperation && !filePath.isNullOrEmpty()) {
+                    IconButton(
+                        onClick = { 
+                            try {
+                                fileViewer.showFile(filePath, readOnly = true)
+                            } catch (e: Exception) {
+                                println("Error viewing file: ${e.message}")
+                            }
+                        },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Visibility,
+                            contentDescription = "View File",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
 
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,

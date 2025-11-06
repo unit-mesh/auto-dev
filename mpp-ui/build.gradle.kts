@@ -87,6 +87,9 @@ kotlin {
 
                 // Logback for JVM logging backend with file storage
                 implementation("ch.qos.logback:logback-classic:1.5.19")
+                
+                // RSyntaxTextArea for syntax highlighting in JVM
+                implementation("com.fifesoft:rsyntaxtextarea:3.6.0")
             }
         }
 
