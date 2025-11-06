@@ -19,7 +19,7 @@ class CodingAgentViewModelTest {
             modelName = "deepseek-chat",
             apiKey = "test-key",
             temperature = 0.7,
-            maxTokens = 4096,
+            maxTokens = 8192,
             baseUrl = "https://api.deepseek.com"
         )
         return KoogLLMService.create(config)
@@ -87,7 +87,7 @@ class CodingAgentViewModelTest {
 
         // Should be executing for regular tasks
         assertTrue(viewModel.isExecuting, "Regular tasks should set isExecuting to true")
-        
+
         // Cancel the task to clean up
         viewModel.cancelTask()
         assertFalse(viewModel.isExecuting, "Task should be cancelled")
@@ -107,7 +107,7 @@ class CodingAgentViewModelTest {
 
         // Should be executing (unknown commands are delegated to agent)
         assertTrue(viewModel.isExecuting, "Unknown slash commands should be delegated to agent")
-        
+
         // Cancel the task to clean up
         viewModel.cancelTask()
         assertFalse(viewModel.isExecuting, "Task should be cancelled")

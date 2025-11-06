@@ -1,6 +1,6 @@
 /**
  * ConfigManager - Manages CLI configuration
- * 
+ *
  * Handles loading, saving, and validating configuration for the AutoDev CLI.
  * Supports multiple named configurations with active selection.
  */
@@ -91,16 +91,16 @@ export class ConfigManager {
   static async load(): Promise<AutoDevConfigWrapper> {
     try {
       await fs.mkdir(this.CONFIG_DIR, { recursive: true });
-      
+
       const content = await fs.readFile(this.CONFIG_FILE, 'utf-8');
       const parsed = YAML.parse(content);
-      
+
       // Check if it's the new format (has 'configs' array)
       if (parsed && Array.isArray(parsed.configs)) {
         const configFile = parsed as ConfigFile;
         return new AutoDevConfigWrapper(configFile);
       }
-      
+
       // Legacy format - convert to new format
       if (parsed && parsed.provider) {
         const legacy = parsed as LegacyConfig;
@@ -118,7 +118,7 @@ export class ConfigManager {
         };
         return new AutoDevConfigWrapper(migrated);
       }
-      
+
       // Empty config
       return this.createEmpty();
     } catch (error) {
@@ -135,7 +135,7 @@ export class ConfigManager {
    */
   static async save(configFile: ConfigFile): Promise<void> {
     await fs.mkdir(this.CONFIG_DIR, { recursive: true });
-    
+
     const content = YAML.stringify(configFile);
     await fs.writeFile(this.CONFIG_FILE, content, 'utf-8');
   }
@@ -146,10 +146,10 @@ export class ConfigManager {
   static async saveConfig(config: LLMConfig, setActive: boolean = true): Promise<void> {
     const wrapper = await this.load();
     const configFile = wrapper.getConfigFile();
-    
+
     // Check if config with this name exists
     const existingIndex = configFile.configs.findIndex(c => c.name === config.name);
-    
+
     if (existingIndex >= 0) {
       // Update existing
       configFile.configs[existingIndex] = config;
@@ -157,12 +157,12 @@ export class ConfigManager {
       // Add new
       configFile.configs.push(config);
     }
-    
+
     // Set as active if requested
     if (setActive) {
       configFile.active = config.name;
     }
-    
+
     await this.save(configFile);
   }
 
@@ -172,14 +172,14 @@ export class ConfigManager {
   static async deleteConfig(name: string): Promise<void> {
     const wrapper = await this.load();
     const configFile = wrapper.getConfigFile();
-    
+
     configFile.configs = configFile.configs.filter(c => c.name !== name);
-    
+
     // If we deleted the active config, switch to first available
     if (configFile.active === name && configFile.configs.length > 0) {
       configFile.active = configFile.configs[0].name;
     }
-    
+
     await this.save(configFile);
   }
 
@@ -189,12 +189,12 @@ export class ConfigManager {
   static async setActive(name: string): Promise<void> {
     const wrapper = await this.load();
     const configFile = wrapper.getConfigFile();
-    
+
     // Verify the config exists
     if (!configFile.configs.find(c => c.name === name)) {
       throw new Error(`Configuration '${name}' not found`);
     }
-    
+
     configFile.active = name;
     await this.save(configFile);
   }
@@ -237,7 +237,7 @@ export class AutoDevConfigWrapper {
     if (!this.configFile.active || this.configFile.configs.length === 0) {
       return null;
     }
-    
+
     const config = this.configFile.configs.find(c => c.name === this.configFile.active);
     return config || this.configFile.configs[0];
   }
@@ -279,12 +279,12 @@ export class AutoDevConfigWrapper {
   isValid(): boolean {
     const active = this.getActiveConfig();
     if (!active) return false;
-    
+
     // Ollama doesn't require API key
     if (active.provider === 'ollama') {
       return !!active.model;
     }
-    
+
     return !!active.provider && !!active.apiKey && !!active.model;
   }
 
@@ -310,7 +310,7 @@ export class AutoDevConfigWrapper {
   }
 
   getMaxTokens(): number {
-    return this.getActiveConfig()?.maxTokens ?? 4096;
+    return this.getActiveConfig()?.maxTokens ?? 8192;
   }
 
   /**
@@ -335,7 +335,7 @@ export class AutoDevConfigWrapper {
         model: 'gpt-4',
       };
     }
-    
+
     return {
       provider: active.provider,
       apiKey: active.apiKey,

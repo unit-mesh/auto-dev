@@ -1,6 +1,6 @@
 /**
  * Domain Dictionary Utilities
- * 
+ *
  * Provides TypeScript-friendly interface to the Kotlin domain dictionary generation functionality
  */
 
@@ -29,11 +29,11 @@ export interface DomainDictResult {
  */
 export class DomainDictService {
   private generator: any;
-  
+
   constructor(
     private projectPath: string,
     private config: LegacyConfig,
-    private maxTokenLength: number = 4096
+    private maxTokenLength: number = 8192
   ) {
     // Create Kotlin model config
     const modelConfig = new JsModelConfig(
@@ -41,10 +41,10 @@ export class DomainDictService {
       config.model,
       config.apiKey || '',
       config.temperature || 0.7,
-      config.maxTokens || 4096,
+      config.maxTokens || 8192,
       config.baseUrl || ''
     );
-    
+
     // Create domain dictionary generator
     this.generator = new JsDomainDictGenerator(
       projectPath,
@@ -52,7 +52,7 @@ export class DomainDictService {
       maxTokenLength
     );
   }
-  
+
   /**
    * Generate domain dictionary and return complete result
    */
@@ -63,7 +63,7 @@ export class DomainDictService {
       throw new Error(`Domain dictionary generation failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  
+
   /**
    * Generate and save domain dictionary to file
    */
@@ -83,7 +83,7 @@ export class DomainDictService {
       };
     }
   }
-  
+
   /**
    * Check if domain dictionary file exists
    */
@@ -94,7 +94,7 @@ export class DomainDictService {
       return false;
     }
   }
-  
+
   /**
    * Load existing domain dictionary content
    */
@@ -105,14 +105,14 @@ export class DomainDictService {
       return null;
     }
   }
-  
+
   /**
    * Create a domain dictionary service instance
    */
   static create(
     projectPath: string,
     config: LegacyConfig,
-    maxTokenLength: number = 4096
+    maxTokenLength: number = 8192
   ): DomainDictService {
     if (!isValidProjectPath(projectPath)) {
       throw new Error(`Invalid project path: ${projectPath}`);

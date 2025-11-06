@@ -15,7 +15,7 @@ vi.mock('../config/ConfigManager.js', () => ({
         model: 'deepseek-chat',
         apiKey: 'test-key',
         temperature: 0.7,
-        maxTokens: 4096,
+        maxTokens: 8192,
         baseUrl: 'https://api.deepseek.com'
       }),
       getMcpServers: vi.fn().mockReturnValue({})
@@ -219,7 +219,7 @@ describe('AgentMode', () => {
     it('should fail with invalid project path', async () => {
       const fs = await import('fs');
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      
+
       await expect(agentMode.initialize(mockContext)).rejects.toThrow(
         'Project path does not exist'
       );

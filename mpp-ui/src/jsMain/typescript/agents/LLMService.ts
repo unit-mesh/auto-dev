@@ -38,7 +38,7 @@ export class LLMService {
       this.config.model,
       this.config.apiKey,
       0.7, // temperature
-      4096, // maxTokens
+      8192, // maxTokens
       this.config.baseUrl || ''
     );
 
@@ -167,32 +167,32 @@ export class LLMService {
    */
   private formatLLMError(error: any): Error {
     const errorMessage = error?.message || String(error);
-    
+
     // Check for common error patterns
     if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
       return new Error(`❌ API Key 无效或已过期\n请检查配置文件 ~/.autodev/config.yaml 中的 apiKey`);
     }
-    
+
     if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
       return new Error(`❌ API 访问被拒绝\n请检查 API Key 权限或账户余额`);
     }
-    
+
     if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
       return new Error(`❌ API 请求频率超限\n请稍后再试或升级您的 API 配额`);
     }
-    
+
     if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')) {
       return new Error(`❌ 请求超时\n请检查网络连接或稍后再试`);
     }
-    
+
     if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('connection refused')) {
       return new Error(`❌ 无法连接到 API 服务器\n请检查网络连接${this.config.baseUrl ? ` 和 baseUrl: ${this.config.baseUrl}` : ''}`);
     }
-    
+
     if (errorMessage.includes('ENOTFOUND') || errorMessage.includes('getaddrinfo')) {
       return new Error(`❌ 无法解析 API 服务器地址\n请检查网络连接和 DNS 设置`);
     }
-    
+
     // Default error message
     return new Error(`❌ LLM 调用失败: ${errorMessage}\n\n提示：检查 ~/.autodev/config.yaml 中的配置\n- provider: ${this.config.provider}\n- model: ${this.config.model}\n- apiKey: ${this.config.apiKey.substring(0, 8)}...`);
   }

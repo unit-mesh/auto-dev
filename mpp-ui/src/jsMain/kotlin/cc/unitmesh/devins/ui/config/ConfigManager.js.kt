@@ -169,22 +169,22 @@ actual object ConfigManager {
             false
         }
     }
-    
+
     actual suspend fun saveMcpServers(mcpServers: Map<String, McpServerConfig>) {
         val wrapper = load()
         val configFile = wrapper.getConfigFile()
-        
+
         val updatedConfigFile = configFile.copy(mcpServers = mcpServers)
         save(updatedConfigFile)
     }
-    
+
     actual suspend fun loadToolConfig(): ToolConfigFile {
         return try {
             if (!isNodeJs) {
                 console.warn("Tool config loading not supported in browser environment")
                 return ToolConfigFile.default()
             }
-            
+
             // Check if file exists
             val exists =
                 try {
@@ -193,14 +193,14 @@ actual object ConfigManager {
                 } catch (e: dynamic) {
                     false
                 }
-            
+
             if (!exists) {
                 return ToolConfigFile.default()
             }
-            
+
             // Read file
             val content = fsPromises.readFile(toolConfigFilePath, "utf-8").await() as String
-            
+
             // Parse JSON
             json.decodeFromString<ToolConfigFile>(content)
         } catch (e: Throwable) {
@@ -208,21 +208,21 @@ actual object ConfigManager {
             ToolConfigFile.default()
         }
     }
-    
+
     actual suspend fun saveToolConfig(toolConfig: ToolConfigFile) {
         try {
             if (!isNodeJs) {
                 console.warn("Tool config saving not supported in browser environment")
                 return
             }
-            
+
             // Ensure directory exists
             try {
                 fsPromises.mkdir(configDir, js("{ recursive: true }")).await()
             } catch (e: dynamic) {
                 // Directory might already exist
             }
-            
+
             // Write JSON
             val jsonContent = json.encodeToString(ToolConfigFile.serializer(), toolConfig)
             fsPromises.writeFile(toolConfigFilePath, jsonContent, "utf-8").await()
@@ -231,7 +231,7 @@ actual object ConfigManager {
             throw e
         }
     }
-    
+
     actual fun getToolConfigPath(): String = toolConfigFilePath
 
     private fun createEmpty(): AutoDevConfigWrapper {
@@ -250,7 +250,7 @@ actual object ConfigManager {
         } catch (e: Exception) {
             // Fall through to YAML parsing
         }
-        
+
         val lines = content.lines().filter { it.isNotBlank() }
         var active = ""
         val configs = mutableListOf<NamedModelConfig>()
@@ -304,7 +304,7 @@ actual object ConfigManager {
                     // MCP server property
                     val key = trimmed.substringBefore(":").trim()
                     val value = trimmed.substringAfter(":").trim()
-                    
+
                     when (key) {
                         "args", "autoApprove" -> {
                             // Arrays - parse simple bracket notation
@@ -340,10 +340,10 @@ actual object ConfigManager {
             model = map["model"] ?: "",
             baseUrl = map["baseUrl"] ?: "",
             temperature = map["temperature"]?.toDoubleOrNull() ?: 0.7,
-            maxTokens = map["maxTokens"]?.toIntOrNull() ?: 4096
+            maxTokens = map["maxTokens"]?.toIntOrNull() ?: 8192
         )
     }
-    
+
     @Suppress("UNCHECKED_CAST")
     private fun mcpConfigMapToServerConfig(map: Map<String, Any>): McpServerConfig {
         return McpServerConfig(
@@ -374,11 +374,11 @@ actual object ConfigManager {
                 if (config.temperature != 0.7) {
                     appendLine("    temperature: ${config.temperature}")
                 }
-                if (config.maxTokens != 4096) {
+                if (config.maxTokens != 8192) {
                     appendLine("    maxTokens: ${config.maxTokens}")
                 }
             }
-            
+
             // Add MCP servers configuration
             if (configFile.mcpServers.isNotEmpty()) {
                 appendLine("mcpServers:")

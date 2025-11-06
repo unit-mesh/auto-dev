@@ -15,7 +15,7 @@ describe('ConfigManager', () => {
   beforeEach(async () => {
     // Set test directory
     ConfigManager.setConfigDir(testConfigDir);
-    
+
     // Clean up test directory
     try {
       await fs.rm(testConfigDir, { recursive: true, force: true });
@@ -31,7 +31,7 @@ describe('ConfigManager', () => {
     } catch (error) {
       // Ignore errors
     }
-    
+
     // Reset to default
     ConfigManager.resetConfigDir();
   });
@@ -111,7 +111,7 @@ describe('ConfigManager', () => {
     });
 
     expect(config.getTemperature()).toBe(0.7);
-    expect(config.getMaxTokens()).toBe(4096);
+    expect(config.getMaxTokens()).toBe(8192);
   });
 
   it('should handle multiple configs and switch active', async () => {

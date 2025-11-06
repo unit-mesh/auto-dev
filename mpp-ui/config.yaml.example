@@ -16,7 +16,7 @@ configs:
     apiKey: sk-your-openai-api-key-here
     model: gpt-4-turbo
     temperature: 0.7
-    maxTokens: 4096
+    maxTokens: 8192
     # baseUrl: https://api.openai.com/v1  # Optional: custom API endpoint
 
   # Configuration 2: Personal Claude
@@ -25,7 +25,7 @@ configs:
     apiKey: sk-ant-your-anthropic-api-key-here
     model: claude-3-5-sonnet-20241022
     temperature: 0.7
-    maxTokens: 4096
+    maxTokens: 8192
 
   # Configuration 3: DeepSeek
   - name: deepseek-chat

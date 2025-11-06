@@ -11,7 +11,7 @@ import java.io.File
 /**
  * Android implementation of ConfigManager
  * Uses Android Context for proper file storage location
- * 
+ *
  * Best Practice: Use app-specific internal storage
  * - Files are private to the app
  * - Automatically cleaned up when app is uninstalled
@@ -19,7 +19,7 @@ import java.io.File
  */
 actual object ConfigManager {
     private var appContext: Context? = null
-    
+
     /**
      * Initialize ConfigManager with Android Context
      * Should be called once in Application.onCreate()
@@ -27,16 +27,16 @@ actual object ConfigManager {
     fun initialize(context: Context) {
         appContext = context.applicationContext
     }
-    
+
     private fun getConfigDir(): File {
-        val context = appContext 
+        val context = appContext
             ?: throw IllegalStateException("ConfigManager not initialized. Call ConfigManager.initialize(context) first.")
-        
+
         // Use app-specific internal storage directory
         // Path: /data/data/your.package.name/files/.autodev/
         return File(context.filesDir, ".autodev")
     }
-    
+
     private fun getConfigFile(): File {
         return File(getConfigDir(), "config.yaml")
     }
@@ -44,7 +44,7 @@ actual object ConfigManager {
     private fun getToolConfigFile(): File {
         return File(getConfigDir(), "mcp.json")
     }
-    
+
     // JSON parser for potential JSON config support
     private val json = Json {
         prettyPrint = true
@@ -74,7 +74,7 @@ actual object ConfigManager {
             try {
                 val dir = getConfigDir()
                 dir.mkdirs()
-                
+
                 val file = getConfigFile()
                 val yamlContent = toYaml(configFile)
                 file.writeText(yamlContent)
@@ -141,7 +141,7 @@ actual object ConfigManager {
         withContext(Dispatchers.IO) {
             getConfigFile().exists()
         }
-    
+
     actual suspend fun saveMcpServers(mcpServers: Map<String, McpServerConfig>) {
         val wrapper = load()
         val configFile = wrapper.getConfigFile()
@@ -196,7 +196,7 @@ actual object ConfigManager {
         } catch (e: Exception) {
             // Fall through to YAML parsing
         }
-        
+
         val lines = content.lines().filter { it.isNotBlank() }
         var active = ""
         val configs = mutableListOf<NamedModelConfig>()
@@ -245,7 +245,7 @@ actual object ConfigManager {
                 parsingMode == "mcpServers" && trimmed.contains(":") && currentMcpConfig != null -> {
                     val key = trimmed.substringBefore(":").trim()
                     val value = trimmed.substringAfter(":").trim()
-                    
+
                     when (key) {
                         "args", "autoApprove" -> {
                             val arrayStr = value.removePrefix("[").removeSuffix("]")
@@ -279,10 +279,10 @@ actual object ConfigManager {
             model = map["model"] ?: "",
             baseUrl = map["baseUrl"] ?: "",
             temperature = map["temperature"]?.toDoubleOrNull() ?: 0.7,
-            maxTokens = map["maxTokens"]?.toIntOrNull() ?: 4096
+            maxTokens = map["maxTokens"]?.toIntOrNull() ?: 8192
         )
     }
-    
+
     @Suppress("UNCHECKED_CAST")
     private fun mcpConfigMapToServerConfig(map: Map<String, Any>): McpServerConfig {
         return McpServerConfig(
@@ -310,11 +310,11 @@ actual object ConfigManager {
                 if (config.temperature != 0.7) {
                     appendLine("    temperature: ${config.temperature}")
                 }
-                if (config.maxTokens != 4096) {
+                if (config.maxTokens != 8192) {
                     appendLine("    maxTokens: ${config.maxTokens}")
                 }
             }
-            
+
             // Add MCP servers configuration
             if (configFile.mcpServers.isNotEmpty()) {
                 appendLine("mcpServers:")

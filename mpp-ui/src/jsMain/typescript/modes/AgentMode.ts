@@ -1,6 +1,6 @@
 /**
  * Agent Mode - AI 代理模式
- * 
+ *
  * 集成 CodingAgent 逻辑，类似于 CLI 中的 runCodingAgent
  * 用户输入被视为开发任务，由 AI 代理自主完成
  */
@@ -35,7 +35,7 @@ export class AgentMode implements Mode {
 
   async initialize(context: ModeContext): Promise<void> {
     context.logger.info('[AgentMode] Initializing agent mode...');
-    
+
     try {
       // 设置项目路径
       if (context.projectPath) {
@@ -72,7 +72,7 @@ export class AgentMode implements Mode {
           activeConfig.model,
           activeConfig.apiKey || '',
           activeConfig.temperature || 0.7,
-          activeConfig.maxTokens || 4096,
+          activeConfig.maxTokens || 8192,
           activeConfig.baseUrl || ''
         )
       );
@@ -105,7 +105,7 @@ export class AgentMode implements Mode {
       );
 
       context.logger.info('[AgentMode] Agent mode initialized successfully');
-      
+
       // 显示欢迎消息
       const welcomeMessage: Message = {
         role: 'system',
@@ -113,7 +113,7 @@ export class AgentMode implements Mode {
         timestamp: Date.now(),
         showPrefix: true
       };
-      
+
       context.addMessage(welcomeMessage);
 
     } catch (error) {
@@ -236,8 +236,8 @@ export class AgentMode implements Mode {
       // 添加完成消息
       const completionMessage: Message = {
         role: 'system',
-        content: result.success 
-          ? '✅ **Task completed successfully**' 
+        content: result.success
+          ? '✅ **Task completed successfully**'
           : '❌ **Task failed**',
         timestamp: Date.now(),
         showPrefix: true
@@ -263,7 +263,7 @@ export class AgentMode implements Mode {
     } catch (error) {
       this.isExecuting = false;
       context.logger.error('[AgentMode] Task execution failed:', error);
-      
+
       const errorMessage: Message = {
         role: 'system',
         content: `❌ **Task execution failed**: ${error instanceof Error ? error.message : String(error)}`,

@@ -91,7 +91,7 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
         activeConfig.model,
         activeConfig.apiKey || '',
         activeConfig.temperature || 0.7,
-        activeConfig.maxTokens || 4096,
+        activeConfig.maxTokens || 8192,
         activeConfig.baseUrl || ''
       )
     );

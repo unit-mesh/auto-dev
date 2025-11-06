@@ -108,7 +108,7 @@ describe('ChatMode', () => {
         model: 'deepseek-chat',
         apiKey: 'test-key',
         temperature: 0.7,
-        maxTokens: 4096,
+        maxTokens: 8192,
         baseUrl: 'https://api.deepseek.com'
       }
     };
@@ -175,21 +175,21 @@ describe('ChatMode', () => {
 
     it('should handle clear command', async () => {
       const result = await chatMode.handleInput('/clear', mockContext);
-      
+
       expect(result.success).toBe(true);
       expect(mockContext.clearMessages).toHaveBeenCalled();
     });
 
     it('should reject empty input', async () => {
       const result = await chatMode.handleInput('', mockContext);
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toBe('Please enter a message');
     });
 
     it('should reject whitespace-only input', async () => {
       const result = await chatMode.handleInput('   ', mockContext);
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toBe('Please enter a message');
     });

@@ -43,7 +43,7 @@ data class NamedModelConfig(
     val model: String,
     val baseUrl: String = "",
     val temperature: Double = 0.7,
-    val maxTokens: Int = 4096
+    val maxTokens: Int = 8192
 ) {
     /**
      * Convert to ModelConfig for use with LLM services
