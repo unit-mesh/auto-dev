@@ -13,7 +13,7 @@ data class NamedModelConfig(
     val modelName: String = "",
     val apiKey: String = "",
     val temperature: Double = 0.7,
-    val maxTokens: Int = 4096,
+    val maxTokens: Int = 8192,
     val baseUrl: String = ""
 ) {
     /**

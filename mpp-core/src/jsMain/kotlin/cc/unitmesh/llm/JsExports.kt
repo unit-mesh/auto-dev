@@ -169,7 +169,7 @@ data class JsModelConfig(
     val modelName: String,
     val apiKey: String = "",
     val temperature: Double = 0.7,
-    val maxTokens: Int = 4096,
+    val maxTokens: Int = 8192,
     val baseUrl: String = ""
 ) {
     fun toKotlinConfig(): ModelConfig {
@@ -223,7 +223,7 @@ data class JsNamedModelConfig(
     val modelName: String,
     val apiKey: String = "",
     val temperature: Double = 0.7,
-    val maxTokens: Int = 4096,
+    val maxTokens: Int = 8192,
     val baseUrl: String = ""
 ) {
     fun toKotlin(): NamedModelConfig {
@@ -947,7 +947,7 @@ class JsChatCompressionInfo(
 class JsDomainDictGenerator(
     private val projectPath: String,
     private val modelConfig: JsModelConfig,
-    private val maxTokenLength: Int = 4096
+    private val maxTokenLength: Int = 8192
 ) {
     private val fileSystem = cc.unitmesh.devins.filesystem.DefaultProjectFileSystem(projectPath)
     private val generator = cc.unitmesh.indexer.DomainDictGenerator(
