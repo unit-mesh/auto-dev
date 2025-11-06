@@ -29,14 +29,12 @@ kotlin {
     }
 
     js(IR) {
-//        browser {
-//            commonWebpackConfig {
-//                outputFileName = "mpp-ui.js"
-//            }
-//        }
+        // Node.js CLI only - no browser compilation
+        // Web UI uses pure TypeScript/React + mpp-core (similar to CLI architecture)
         nodejs {
             // Configure Node.js target for CLI
         }
+        useCommonJs()
         binaries.executable()
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
@@ -87,7 +85,7 @@ kotlin {
 
                 // Logback for JVM logging backend with file storage
                 implementation("ch.qos.logback:logback-classic:1.5.19")
-                
+
                 // RSyntaxTextArea for syntax highlighting in JVM
                 implementation("com.fifesoft:rsyntaxtextarea:3.6.0")
             }
@@ -113,6 +111,7 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
+                // Node.js CLI dependencies
                 implementation(compose.html.core)
             }
         }
