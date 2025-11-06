@@ -23,10 +23,6 @@ object LoggingInitializer {
         }
         
         try {
-            // Update global config
-            GlobalLoggingConfig.updateConfig(config)
-            
-            // Platform-specific initialization
             initializePlatformSpecific(config)
             
             isInitialized = true
@@ -110,13 +106,6 @@ object LoggingInitializer {
         isInitialized = false
     }
     
-    /**
-     * Get current log file path
-     */
-    fun getCurrentLogFilePath(): String {
-        val config = GlobalLoggingConfig.config
-        return config.getLogFilePath(Platform.name.lowercase())
-    }
 }
 
 /**

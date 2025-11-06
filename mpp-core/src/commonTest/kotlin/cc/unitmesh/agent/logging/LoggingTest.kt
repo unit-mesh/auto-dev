@@ -31,23 +31,7 @@ class LoggingTest {
         assertFalse(config.enableConsoleLogging)
         assertTrue(config.enableFileLogging)
     }
-    
-    @Test
-    fun testGlobalConfigUpdate() {
-        // Reset to default
-        GlobalLoggingConfig.updateConfig(LoggingConfig.default())
-        assertEquals(Level.INFO, GlobalLoggingConfig.config.logLevel)
-        
-        // Update log level
-        GlobalLoggingConfig.updateLogLevel(Level.DEBUG)
-        assertEquals(Level.DEBUG, GlobalLoggingConfig.config.logLevel)
-        
-        // Update entire config
-        val newConfig = LoggingConfig.production()
-        GlobalLoggingConfig.updateConfig(newConfig)
-        assertEquals(Level.WARN, GlobalLoggingConfig.config.logLevel)
-    }
-    
+
     @Test
     fun testLoggerCreation() {
         val logger = getLogger("TestLogger")

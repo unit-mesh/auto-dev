@@ -86,29 +86,3 @@ data class LoggingConfig(
     }
 }
 
-/**
- * Global logging configuration instance
- */
-object GlobalLoggingConfig {
-    private var _config: LoggingConfig = LoggingConfig.default()
-    
-    /**
-     * Get current logging configuration
-     */
-    val config: LoggingConfig
-        get() = _config
-    
-    /**
-     * Update logging configuration
-     */
-    fun updateConfig(newConfig: LoggingConfig) {
-        _config = newConfig
-    }
-    
-    /**
-     * Update log level only
-     */
-    fun updateLogLevel(level: Level) {
-        _config = _config.copy(logLevel = level)
-    }
-}
