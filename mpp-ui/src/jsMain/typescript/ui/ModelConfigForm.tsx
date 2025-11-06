@@ -26,13 +26,14 @@ type FormStep = 'provider' | 'model' | 'apiKey' | 'baseUrl' | 'confirm';
 // Provider 选项 - will be generated dynamically with translations
 
 // 每个 provider 的默认模型和示例
-const PROVIDER_DEFAULTS: Record<string, { defaultModel: string; needsApiKey: boolean; baseUrl?: string }> = {
+const PROVIDER_DEFAULTS: Record<string, { defaultModel: string; needsApiKey: boolean; baseUrl?: string; requiresBaseUrl?: boolean }> = {
   openai: { defaultModel: 'gpt-4', needsApiKey: true },
   anthropic: { defaultModel: 'claude-3-5-sonnet-20241022', needsApiKey: true },
   google: { defaultModel: 'gemini-pro', needsApiKey: true },
   deepseek: { defaultModel: 'deepseek-chat', needsApiKey: true },
-  ollama: { defaultModel: 'llama2', needsApiKey: false, baseUrl: 'http://localhost:11434' },
+  ollama: { defaultModel: 'llama2', needsApiKey: false, baseUrl: 'http://localhost:11434', requiresBaseUrl: true },
   openrouter: { defaultModel: 'openai/gpt-4', needsApiKey: true },
+  'custom-openai-base': { defaultModel: 'glm-4-plus', needsApiKey: true, baseUrl: 'https://open.bigmodel.cn/api/paas/v4', requiresBaseUrl: true },
 };
 
 export const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ onSubmit, onCancel }) => {
@@ -52,6 +53,7 @@ export const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ onSubmit, onCa
     { label: t('modelConfig.providers.deepseek'), value: 'deepseek' },
     { label: t('modelConfig.providers.ollama'), value: 'ollama' },
     { label: t('modelConfig.providers.openrouter'), value: 'openrouter' },
+    { label: t('modelConfig.providers.customOpenAIBase'), value: 'custom-openai-base' },
   ];
 
   const handleProviderSelect = (item: { value: string }) => {
@@ -80,8 +82,8 @@ export const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ onSubmit, onCa
   const handleApiKeySubmit = (value: string) => {
     setApiKey(value);
     
-    // Ask for baseUrl if provider typically has one
-    if (provider === 'ollama' || provider === 'openrouter') {
+    // Ask for baseUrl if provider requires one
+    if (providerInfo.requiresBaseUrl) {
       setStep('baseUrl');
     } else {
       setStep('confirm');

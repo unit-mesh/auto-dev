@@ -54,6 +54,15 @@ configs:
     model: anthropic/claude-3.5-sonnet
     baseUrl: https://openrouter.ai/api/v1
 
+  # Configuration 7: ChatGLM (custom OpenAI-compatible)
+  - name: glm-chat
+    provider: custom-openai-base
+    apiKey: 1234
+    model: glm-4-plus
+    baseUrl: https://open.bigmodel.cn/api/paas/v4
+    temperature: 0.7
+    maxTokens: 8192
+
 # ============================================================================
 # Provider-specific notes:
 # ============================================================================
@@ -83,6 +92,15 @@ configs:
 #   - Get API key from: https://openrouter.ai/keys
 #   - Access to multiple providers through one API
 #   - Models: anthropic/claude-3.5-sonnet, openai/gpt-4, etc.
+#
+# Custom OpenAI-compatible (custom-openai-base):
+#   - For any OpenAI-compatible API (GLM, custom endpoints, etc.)
+#   - Requires: baseUrl, apiKey, and model name
+#   - GLM (ChatGLM):
+#     * Get API key from: https://open.bigmodel.cn/
+#     * Base URL: https://open.bigmodel.cn/api/paas/v4
+#     * Models: glm-4-plus, glm-4, glm-3-turbo, etc.
+#   - Other providers: Set baseUrl to your custom endpoint
 #
 # ============================================================================
 # Managing configurations:

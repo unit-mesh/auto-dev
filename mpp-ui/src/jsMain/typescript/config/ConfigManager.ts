@@ -10,7 +10,7 @@ import * as path from 'path';
 import * as os from 'os';
 import YAML from 'yaml';
 
-export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'deepseek' | 'ollama' | 'openrouter';
+export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'deepseek' | 'ollama' | 'openrouter' | 'custom-openai-base';
 
 /**
  * Single LLM configuration
@@ -283,6 +283,11 @@ export class AutoDevConfigWrapper {
     // Ollama doesn't require API key
     if (active.provider === 'ollama') {
       return !!active.model;
+    }
+
+    // Custom OpenAI-compatible providers require baseUrl, apiKey, and model
+    if (active.provider === 'custom-openai-base') {
+      return !!active.baseUrl && !!active.apiKey && !!active.model;
     }
 
     return !!active.provider && !!active.apiKey && !!active.model;

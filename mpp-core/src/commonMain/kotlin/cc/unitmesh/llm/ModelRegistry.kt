@@ -24,6 +24,7 @@ object ModelRegistry {
             LLMProviderType.DEEPSEEK -> DeepSeekModels.all
             LLMProviderType.OPENROUTER -> OpenRouterModels.all
             LLMProviderType.OLLAMA -> OllamaModels.all
+            LLMProviderType.CUSTOM_OPENAI_BASE -> emptyList() // Custom models are user-defined
         }
     }
 
@@ -43,6 +44,7 @@ object ModelRegistry {
             LLMProviderType.DEEPSEEK -> DeepSeekModels.create(modelName)
             LLMProviderType.OPENROUTER -> OpenRouterModels.create(modelName)
             LLMProviderType.OLLAMA -> OllamaModels.create(modelName)
+            LLMProviderType.CUSTOM_OPENAI_BASE -> null // Custom models use generic model
         }
     }
 
@@ -61,6 +63,7 @@ object ModelRegistry {
             LLMProviderType.DEEPSEEK -> LLMProvider.DeepSeek
             LLMProviderType.OLLAMA -> LLMProvider.Ollama
             LLMProviderType.OPENROUTER -> LLMProvider.OpenRouter
+            LLMProviderType.CUSTOM_OPENAI_BASE -> LLMProvider.OpenAI // Use OpenAI-compatible provider
         }
 
         return LLModel(

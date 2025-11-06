@@ -11,7 +11,8 @@ enum class LLMProviderType(val displayName: String) {
     GOOGLE("Google"),
     DEEPSEEK("DeepSeek"),
     OLLAMA("Ollama"),
-    OPENROUTER("OpenRouter");
+    OPENROUTER("OpenRouter"),
+    CUSTOM_OPENAI_BASE("custom-openai-base");
 
     companion object {
         fun fromDisplayName(name: String): LLMProviderType? {
@@ -42,6 +43,7 @@ data class ModelConfig(
     fun isValid(): Boolean {
         return when (provider) {
             LLMProviderType.OLLAMA -> modelName.isNotEmpty() && baseUrl.isNotEmpty()
+            LLMProviderType.CUSTOM_OPENAI_BASE -> apiKey.isNotEmpty() && modelName.isNotEmpty() && baseUrl.isNotEmpty()
             else -> apiKey.isNotEmpty() && modelName.isNotEmpty()
         }
     }

@@ -3,6 +3,7 @@ package cc.unitmesh.llm
 import ai.koog.prompt.executor.clients.deepseek.DeepSeekLLMClient
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import ai.koog.prompt.executor.llms.all.*
+import cc.unitmesh.llm.clients.CustomOpenAILLMClient
 
 /**
  * Executor 工厂 - 负责根据配置创建合适的 LLM Executor
@@ -24,6 +25,7 @@ object ExecutorFactory {
             LLMProviderType.DEEPSEEK -> createDeepSeek(config)
             LLMProviderType.OLLAMA -> createOllama(config)
             LLMProviderType.OPENROUTER -> createOpenRouter(config)
+            LLMProviderType.CUSTOM_OPENAI_BASE -> createCustomOpenAI(config)
         }
     }
 
@@ -50,5 +52,10 @@ object ExecutorFactory {
 
     private fun createOpenRouter(config: ModelConfig): SingleLLMPromptExecutor {
         return simpleOpenRouterExecutor(config.apiKey)
+    }
+
+    private fun createCustomOpenAI(config: ModelConfig): SingleLLMPromptExecutor {
+        require(config.baseUrl.isNotEmpty()) { "baseUrl is required for custom OpenAI provider" }
+        return SingleLLMPromptExecutor(CustomOpenAILLMClient(config.apiKey, config.baseUrl))
     }
 }

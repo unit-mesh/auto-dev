@@ -21,7 +21,8 @@ const ProviderTypes: Record<string, any> = {
   'google': 'GOOGLE',
   'deepseek': 'DEEPSEEK',
   'ollama': 'OLLAMA',
-  'openrouter': 'OPENROUTER'
+  'openrouter': 'OPENROUTER',
+  'custom-openai-base': 'CUSTOM_OPENAI_BASE'
 };
 
 /**
