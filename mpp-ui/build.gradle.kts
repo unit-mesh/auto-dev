@@ -84,6 +84,9 @@ kotlin {
                 // Multiplatform Markdown Renderer for JVM
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
+
+                // Logback for JVM logging backend with file storage
+                implementation("ch.qos.logback:logback-classic:1.5.19")
             }
         }
 

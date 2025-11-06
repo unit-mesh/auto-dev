@@ -143,8 +143,8 @@ kotlin {
                 // MCP SDK for JVM
                 implementation("io.modelcontextprotocol:kotlin-sdk:0.7.4")
 
-                // SLF4J for JVM logging backend
-                implementation("org.slf4j:slf4j-simple:2.0.16")
+                // Logback for JVM logging backend with file storage
+                implementation("ch.qos.logback:logback-classic:1.5.19")
             }
         }
 

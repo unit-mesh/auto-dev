@@ -5,6 +5,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.Level
 
 /**
+ * Platform-specific logging initialization
+ */
+expect fun initializePlatformLogging(config: LoggingConfig)
+
+/**
  * Logging initializer for mpp-core
  * Initializes kotlin-logging configuration with platform-specific settings
  */
@@ -62,7 +67,8 @@ object LoggingInitializer {
     }
 
     private fun initializeJvm(config: LoggingConfig) {
-        logger.debug { "JVM logging initialized with SLF4J backend" }
+        initializePlatformLogging(config)
+        logger.debug { "JVM logging initialized with Logback backend" }
     }
 
     private fun initializeJs(config: LoggingConfig) {

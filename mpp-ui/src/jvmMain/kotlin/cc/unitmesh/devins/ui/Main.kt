@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.ui.compose.AutoDevApp
@@ -20,6 +21,12 @@ import kotlinx.coroutines.runBlocking
  * 简洁的 AI 对话界面，支持主题切换
  */
 fun main(args: Array<String>) {
+    // Initialize logging system
+    AutoDevLogger.initialize()
+
+    AutoDevLogger.info("AutoDevMain") { "🚀 AutoDev Desktop starting..." }
+    AutoDevLogger.info("AutoDevMain") { "📁 Log files location: ${AutoDevLogger.getLogDirectory()}" }
+
     // Add a test for tool status bar
 //    if (args.contains("--test-status-bar")) {
 //        testToolStatusBar()
