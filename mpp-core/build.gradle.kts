@@ -66,7 +66,7 @@ kotlin {
 
     js(IR) {
         moduleName = "autodev-mpp-core"
-        useCommonJs() // 建议
+        // Support both browser and Node.js with UMD (for compatibility)
         browser()
         nodejs()
         binaries.library()
@@ -75,7 +75,8 @@ kotlin {
 
         compilations.all {
             kotlinOptions {
-                moduleKind = "es"
+                // UMD is the most compatible format for both Node.js and browser (with bundlers)
+                moduleKind = "umd"
                 sourceMap = true
                 sourceMapEmbedSources = "always"
             }
