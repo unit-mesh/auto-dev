@@ -24,7 +24,31 @@ object ModelRegistry {
             LLMProviderType.DEEPSEEK -> DeepSeekModels.all
             LLMProviderType.OPENROUTER -> OpenRouterModels.all
             LLMProviderType.OLLAMA -> OllamaModels.all
+            LLMProviderType.GLM -> GLMModels.all
+            LLMProviderType.QWEN -> QwenModels.all
+            LLMProviderType.KIMI -> KimiModels.all
             LLMProviderType.CUSTOM_OPENAI_BASE -> emptyList() // Custom models are user-defined
+        }
+    }
+    
+    /**
+     * 获取指定 Provider 的默认 baseUrl
+     * 
+     * IMPORTANT: baseUrl MUST end with "/" for correct URL joining in Ktor.
+     * Without trailing slash, Ktor will replace the last path segment.
+     * Example:
+     *   - baseUrl = "https://api.com/v1", path = "chat"
+     *   - Result: "https://api.com/chat" (v1 is lost!)
+     *   - baseUrl = "https://api.com/v1/", path = "chat"
+     *   - Result: "https://api.com/v1/chat" (correct!)
+     */
+    fun getDefaultBaseUrl(provider: LLMProviderType): String {
+        return when (provider) {
+            LLMProviderType.GLM -> "https://open.bigmodel.cn/api/paas/v4/"
+            LLMProviderType.QWEN -> "https://dashscope.aliyuncs.com/api/v1/"
+            LLMProviderType.KIMI -> "https://api.moonshot.cn/v1/"
+            LLMProviderType.OLLAMA -> "http://localhost:11434/"
+            else -> ""
         }
     }
 
@@ -44,6 +68,9 @@ object ModelRegistry {
             LLMProviderType.DEEPSEEK -> DeepSeekModels.create(modelName)
             LLMProviderType.OPENROUTER -> OpenRouterModels.create(modelName)
             LLMProviderType.OLLAMA -> OllamaModels.create(modelName)
+            LLMProviderType.GLM -> GLMModels.create(modelName)
+            LLMProviderType.QWEN -> QwenModels.create(modelName)
+            LLMProviderType.KIMI -> KimiModels.create(modelName)
             LLMProviderType.CUSTOM_OPENAI_BASE -> null // Custom models use generic model
         }
     }
@@ -63,7 +90,8 @@ object ModelRegistry {
             LLMProviderType.DEEPSEEK -> LLMProvider.DeepSeek
             LLMProviderType.OLLAMA -> LLMProvider.Ollama
             LLMProviderType.OPENROUTER -> LLMProvider.OpenRouter
-            LLMProviderType.CUSTOM_OPENAI_BASE -> LLMProvider.OpenAI // Use OpenAI-compatible provider
+            LLMProviderType.GLM, LLMProviderType.QWEN, LLMProviderType.KIMI, LLMProviderType.CUSTOM_OPENAI_BASE -> 
+                LLMProvider.OpenAI // Use OpenAI-compatible provider
         }
 
         return LLModel(
@@ -310,6 +338,110 @@ object ModelRegistry {
                     LLMCapability.Temperature
                 ),
                 contextLength = 128_000L,
+                maxOutputTokens = null
+            )
+        }
+    }
+
+    private object GLMModels {
+        val all = listOf(
+            "glm-4-plus",       // 智能体增强版
+            "glm-4-air",        // 高性价比
+            "glm-4-airx",       // 超高性价比
+            "glm-4-flash",      // 免费版
+            "glm-4-flashx",     // 超快版
+            "glm-4-long",       // 长文本
+            "glm-4",            // 标准版
+            "glm-3-turbo"       // 快速版
+        )
+
+        fun create(modelName: String): LLModel {
+            val (contextLength, maxOutputTokens) = when {
+                modelName.contains("long") -> 1_000_000L to 128_000L
+                modelName.contains("plus") -> 128_000L to 128_000L
+                else -> 128_000L to 8_192L
+            }
+
+            return LLModel(
+                provider = LLMProvider.OpenAI,
+                id = modelName,
+                capabilities = listOf(
+                    LLMCapability.Completion,
+                    LLMCapability.Temperature,
+                    LLMCapability.Tools,
+                    LLMCapability.ToolChoice,
+                    LLMCapability.Vision.Image,
+                    LLMCapability.MultipleChoices
+                ),
+                contextLength = contextLength,
+                maxOutputTokens = maxOutputTokens
+            )
+        }
+    }
+
+    private object QwenModels {
+        val all = listOf(
+            "qwen-max",              // 最强版本
+            "qwen-max-latest",       // 最新最强
+            "qwen-plus",             // 增强版
+            "qwen-plus-latest",      // 最新增强
+            "qwen-turbo",            // 快速版
+            "qwen-turbo-latest",     // 最新快速
+            "qwen-long",             // 长文本
+            "qwen2.5-72b-instruct",  // 开源最强
+            "qwen2.5-32b-instruct",  // 开源增强
+            "qwen2.5-14b-instruct",  // 开源标准
+            "qwen2.5-7b-instruct"    // 开源轻量
+        )
+
+        fun create(modelName: String): LLModel {
+            val (contextLength, maxOutputTokens) = when {
+                modelName.contains("long") -> 10_000_000L to 8_000L
+                modelName.contains("max") -> 8_000L to 8_000L
+                modelName.contains("72b") -> 131_072L to 8_192L
+                else -> 32_768L to 8_000L
+            }
+
+            return LLModel(
+                provider = LLMProvider.OpenAI,
+                id = modelName,
+                capabilities = listOf(
+                    LLMCapability.Completion,
+                    LLMCapability.Temperature,
+                    LLMCapability.Tools,
+                    LLMCapability.ToolChoice,
+                    LLMCapability.Vision.Image
+                ),
+                contextLength = contextLength,
+                maxOutputTokens = maxOutputTokens
+            )
+        }
+    }
+
+    private object KimiModels {
+        val all = listOf(
+            "moonshot-v1-8k",    // 8K 上下文
+            "moonshot-v1-32k",   // 32K 上下文
+            "moonshot-v1-128k"   // 128K 上下文
+        )
+
+        fun create(modelName: String): LLModel {
+            val contextLength = when {
+                modelName.contains("128k") -> 128_000L
+                modelName.contains("32k") -> 32_000L
+                else -> 8_000L
+            }
+
+            return LLModel(
+                provider = LLMProvider.OpenAI,
+                id = modelName,
+                capabilities = listOf(
+                    LLMCapability.Completion,
+                    LLMCapability.Temperature,
+                    LLMCapability.Tools,
+                    LLMCapability.ToolChoice
+                ),
+                contextLength = contextLength,
                 maxOutputTokens = null
             )
         }

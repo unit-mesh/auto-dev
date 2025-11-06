@@ -12,6 +12,9 @@ enum class LLMProviderType(val displayName: String) {
     DEEPSEEK("DeepSeek"),
     OLLAMA("Ollama"),
     OPENROUTER("OpenRouter"),
+    GLM("GLM"),           // 智谱AI (ChatGLM)
+    QWEN("Qwen"),         // 阿里通义千问
+    KIMI("Kimi"),         // 月之暗面 (Moonshot AI)
     CUSTOM_OPENAI_BASE("custom-openai-base");
 
     companion object {
@@ -42,9 +45,12 @@ data class ModelConfig(
      */
     fun isValid(): Boolean {
         return when (provider) {
-            LLMProviderType.OLLAMA -> modelName.isNotEmpty() && baseUrl.isNotEmpty()
-            LLMProviderType.CUSTOM_OPENAI_BASE -> apiKey.isNotEmpty() && modelName.isNotEmpty() && baseUrl.isNotEmpty()
-            else -> apiKey.isNotEmpty() && modelName.isNotEmpty()
+            LLMProviderType.OLLAMA -> 
+                modelName.isNotEmpty() && baseUrl.isNotEmpty()
+            LLMProviderType.GLM, LLMProviderType.QWEN, LLMProviderType.KIMI, LLMProviderType.CUSTOM_OPENAI_BASE -> 
+                apiKey.isNotEmpty() && modelName.isNotEmpty() && baseUrl.isNotEmpty()
+            else -> 
+                apiKey.isNotEmpty() && modelName.isNotEmpty()
         }
     }
 

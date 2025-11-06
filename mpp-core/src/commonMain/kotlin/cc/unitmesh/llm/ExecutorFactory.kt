@@ -25,6 +25,9 @@ object ExecutorFactory {
             LLMProviderType.DEEPSEEK -> createDeepSeek(config)
             LLMProviderType.OLLAMA -> createOllama(config)
             LLMProviderType.OPENROUTER -> createOpenRouter(config)
+            LLMProviderType.GLM -> createGLM(config)
+            LLMProviderType.QWEN -> createQwen(config)
+            LLMProviderType.KIMI -> createKimi(config)
             LLMProviderType.CUSTOM_OPENAI_BASE -> createCustomOpenAI(config)
         }
     }
@@ -52,6 +55,21 @@ object ExecutorFactory {
 
     private fun createOpenRouter(config: ModelConfig): SingleLLMPromptExecutor {
         return simpleOpenRouterExecutor(config.apiKey)
+    }
+
+    private fun createGLM(config: ModelConfig): SingleLLMPromptExecutor {
+        val baseUrl = config.baseUrl.ifEmpty { ModelRegistry.getDefaultBaseUrl(LLMProviderType.GLM) }
+        return SingleLLMPromptExecutor(CustomOpenAILLMClient(config.apiKey, baseUrl))
+    }
+
+    private fun createQwen(config: ModelConfig): SingleLLMPromptExecutor {
+        val baseUrl = config.baseUrl.ifEmpty { ModelRegistry.getDefaultBaseUrl(LLMProviderType.QWEN) }
+        return SingleLLMPromptExecutor(CustomOpenAILLMClient(config.apiKey, baseUrl))
+    }
+
+    private fun createKimi(config: ModelConfig): SingleLLMPromptExecutor {
+        val baseUrl = config.baseUrl.ifEmpty { ModelRegistry.getDefaultBaseUrl(LLMProviderType.KIMI) }
+        return SingleLLMPromptExecutor(CustomOpenAILLMClient(config.apiKey, baseUrl))
     }
 
     private fun createCustomOpenAI(config: ModelConfig): SingleLLMPromptExecutor {

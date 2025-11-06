@@ -23,12 +23,12 @@ import kotlinx.serialization.Serializable
  * Configuration settings for custom OpenAI-compatible APIs (like GLM, custom endpoints, etc.)
  *
  * @property baseUrl The base URL of the custom OpenAI-compatible API (without trailing slash)
- * @property chatCompletionsPath The path for chat completions endpoint (default: "/chat/completions")
+ * @property chatCompletionsPath The path for chat completions endpoint (default: "chat/completions", NO leading slash)
  * @property timeoutConfig Configuration for connection timeouts
  */
 class CustomOpenAIClientSettings(
     baseUrl: String,
-    chatCompletionsPath: String = "/chat/completions",
+    chatCompletionsPath: String = "chat/completions",
     timeoutConfig: ConnectionTimeoutConfig = ConnectionTimeoutConfig()
 ) : OpenAIBasedSettings(baseUrl, chatCompletionsPath, timeoutConfig)
 
@@ -104,9 +104,19 @@ data class CustomOpenAIChatCompletionStreamResponse(
  * Implementation of [LLMClient] for custom OpenAI-compatible APIs.
  * This client can be used with any OpenAI-compatible API like GLM, custom endpoints, etc.
  *
+ * **IMPORTANT URL Construction in Ktor**:
+ * - When using `defaultRequest { url(baseUrl) }` and then `post(path)`:
+ *   - If `path` starts with `/`, Ktor treats it as absolute and DISCARDS the baseUrl path
+ *   - If `path` does NOT start with `/`, Ktor appends it to baseUrl
+ * - Example:
+ *   - baseUrl = "https://api.example.com/v1", path = "/chat/completions"
+ *   - Result: https://api.example.com/chat/completions (WRONG - lost /v1)
+ *   - baseUrl = "https://api.example.com/v1", path = "chat/completions"
+ *   - Result: https://api.example.com/v1/chat/completions (CORRECT)
+ *
  * @param apiKey The API key for the custom API
  * @param baseUrl The base URL of the custom API (e.g., "https://open.bigmodel.cn/api/paas/v4", without trailing slash)
- * @param chatCompletionsPath The path for chat completions (default: "/chat/completions" with leading slash)
+ * @param chatCompletionsPath The path for chat completions (default: "chat/completions", NO leading slash)
  * @param timeoutConfig Configuration for connection timeouts
  * @param baseClient Optional custom HTTP client
  * @param clock Clock instance for tracking timestamps
@@ -114,7 +124,7 @@ data class CustomOpenAIChatCompletionStreamResponse(
 class CustomOpenAILLMClient(
     apiKey: String,
     baseUrl: String,
-    chatCompletionsPath: String = "/chat/completions",
+    chatCompletionsPath: String = "chat/completions",
     timeoutConfig: ConnectionTimeoutConfig = ConnectionTimeoutConfig(),
     baseClient: HttpClient = HttpClient(),
     clock: Clock = Clock.System
