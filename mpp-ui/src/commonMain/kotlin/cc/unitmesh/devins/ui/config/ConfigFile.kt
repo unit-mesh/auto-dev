@@ -49,9 +49,11 @@ data class NamedModelConfig(
      * Convert to ModelConfig for use with LLM services
      */
     fun toModelConfig(): ModelConfig {
+        // Try to match by enum name first, handling both underscore and hyphen
+        val normalizedProvider = provider.replace("-", "_").uppercase()
         val providerType =
             cc.unitmesh.llm.LLMProviderType.entries.find {
-                it.name.equals(provider, ignoreCase = true)
+                it.name == normalizedProvider
             } ?: cc.unitmesh.llm.LLMProviderType.OPENAI
 
         return ModelConfig(
@@ -60,7 +62,7 @@ data class NamedModelConfig(
             apiKey = apiKey,
             temperature = temperature,
             maxTokens = maxTokens,
-            baseUrl = baseUrl
+            baseUrl = baseUrl.trimEnd('/') // Remove trailing slash
         )
     }
 
@@ -72,12 +74,14 @@ data class NamedModelConfig(
             name: String,
             config: ModelConfig
         ): NamedModelConfig {
+            // Use lowercase with hyphens for better YAML readability
+            val providerName = config.provider.name.lowercase().replace("_", "-")
             return NamedModelConfig(
                 name = name,
-                provider = config.provider.name.lowercase(),
+                provider = providerName,
                 apiKey = config.apiKey,
                 model = config.modelName,
-                baseUrl = config.baseUrl,
+                baseUrl = config.baseUrl.trimEnd('/'), // Remove trailing slash
                 temperature = config.temperature,
                 maxTokens = config.maxTokens
             )

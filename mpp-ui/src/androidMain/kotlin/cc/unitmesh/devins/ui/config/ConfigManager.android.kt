@@ -183,6 +183,20 @@ actual object ConfigManager {
 
     actual fun getToolConfigPath(): String = getToolConfigFile().absolutePath
 
+    actual fun generateUniqueConfigName(baseName: String, existingNames: List<String>): String {
+        if (baseName !in existingNames) {
+            return baseName
+        }
+
+        var counter = 1
+        var uniqueName = "$baseName-$counter"
+        while (uniqueName in existingNames) {
+            counter++
+            uniqueName = "$baseName-$counter"
+        }
+        return uniqueName
+    }
+
     private fun createEmpty(): AutoDevConfigWrapper {
         return AutoDevConfigWrapper(ConfigFile(active = "", configs = emptyList()))
     }

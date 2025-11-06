@@ -83,6 +83,27 @@ actual object ConfigManager {
         save(updatedConfigFile)
     }
 
+    /**
+     * Generate a unique configuration name by appending -1, -2, etc. if the name already exists
+     * 
+     * @param baseName The desired configuration name
+     * @param existingNames List of existing configuration names
+     * @return A unique name (either baseName or baseName-1, baseName-2, etc.)
+     */
+    fun generateUniqueConfigName(baseName: String, existingNames: List<String>): String {
+        if (baseName !in existingNames) {
+            return baseName
+        }
+
+        var counter = 1
+        var uniqueName = "$baseName-$counter"
+        while (uniqueName in existingNames) {
+            counter++
+            uniqueName = "$baseName-$counter"
+        }
+        return uniqueName
+    }
+
     actual suspend fun deleteConfig(name: String) {
         val wrapper = load()
         val configFile = wrapper.getConfigFile()

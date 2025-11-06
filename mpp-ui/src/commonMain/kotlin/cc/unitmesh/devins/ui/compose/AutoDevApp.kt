@@ -297,13 +297,14 @@ private fun AutoDevContent() {
     if (showModelConfigDialog) {
         cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog(
             currentConfig = currentModelConfig ?: ModelConfig(),
+            currentConfigName = null, // Will prompt for new name
             onDismiss = { showModelConfigDialog = false },
-            onSave = { newConfig ->
+            onSave = { configName, newConfig ->
                 currentModelConfig = newConfig
                 if (newConfig.isValid()) {
                     try {
                         llmService = KoogLLMService.create(newConfig)
-                        println("✅ 模型配置已保存")
+                        println("✅ 模型配置已保存: $configName")
                     } catch (e: Exception) {
                         println("❌ 配置 LLM 服务失败: ${e.message}")
                         llmService = null

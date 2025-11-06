@@ -22,13 +22,13 @@ import kotlinx.serialization.Serializable
 /**
  * Configuration settings for custom OpenAI-compatible APIs (like GLM, custom endpoints, etc.)
  *
- * @property baseUrl The base URL of the custom OpenAI-compatible API
- * @property chatCompletionsPath The path for chat completions endpoint (default: "v1/chat/completions")
+ * @property baseUrl The base URL of the custom OpenAI-compatible API (without trailing slash)
+ * @property chatCompletionsPath The path for chat completions endpoint (default: "/chat/completions")
  * @property timeoutConfig Configuration for connection timeouts
  */
 class CustomOpenAIClientSettings(
     baseUrl: String,
-    chatCompletionsPath: String = "v1/chat/completions",
+    chatCompletionsPath: String = "/chat/completions",
     timeoutConfig: ConnectionTimeoutConfig = ConnectionTimeoutConfig()
 ) : OpenAIBasedSettings(baseUrl, chatCompletionsPath, timeoutConfig)
 
@@ -59,7 +59,7 @@ data class CustomOpenAIChatCompletionRequest(
 @Serializable
 data class CustomOpenAIChatCompletionResponse(
     override val id: String,
-    val `object`: String,
+    val `object`: String? = null, // Optional: Some OpenAI-compatible APIs (like GLM) may not include this
     override val created: Long,
     override val model: String,
     val choices: List<Choice>,
@@ -79,7 +79,7 @@ data class CustomOpenAIChatCompletionResponse(
 @Serializable
 data class CustomOpenAIChatCompletionStreamResponse(
     override val id: String,
-    val `object`: String,
+    val `object`: String? = null, // Optional: Some OpenAI-compatible APIs (like GLM) may not include this
     override val created: Long,
     override val model: String,
     val choices: List<StreamChoice>,
@@ -105,8 +105,8 @@ data class CustomOpenAIChatCompletionStreamResponse(
  * This client can be used with any OpenAI-compatible API like GLM, custom endpoints, etc.
  *
  * @param apiKey The API key for the custom API
- * @param baseUrl The base URL of the custom API (e.g., "https://open.bigmodel.cn/api/paas/v4")
- * @param chatCompletionsPath The path for chat completions (default: "v1/chat/completions")
+ * @param baseUrl The base URL of the custom API (e.g., "https://open.bigmodel.cn/api/paas/v4", without trailing slash)
+ * @param chatCompletionsPath The path for chat completions (default: "/chat/completions" with leading slash)
  * @param timeoutConfig Configuration for connection timeouts
  * @param baseClient Optional custom HTTP client
  * @param clock Clock instance for tracking timestamps
@@ -114,7 +114,7 @@ data class CustomOpenAIChatCompletionStreamResponse(
 class CustomOpenAILLMClient(
     apiKey: String,
     baseUrl: String,
-    chatCompletionsPath: String = "chat/completions",
+    chatCompletionsPath: String = "/chat/completions",
     timeoutConfig: ConnectionTimeoutConfig = ConnectionTimeoutConfig(),
     baseClient: HttpClient = HttpClient(),
     clock: Clock = Clock.System

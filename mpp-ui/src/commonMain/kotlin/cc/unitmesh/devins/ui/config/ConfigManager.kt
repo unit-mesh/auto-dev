@@ -87,4 +87,13 @@ expect object ConfigManager {
      * Get tool config file path
      */
     fun getToolConfigPath(): String
+
+    /**
+     * Generate a unique configuration name by appending -1, -2, etc. if the name already exists
+     * 
+     * @param baseName The desired configuration name
+     * @param existingNames List of existing configuration names
+     * @return A unique name (either baseName or baseName-1, baseName-2, etc.)
+     */
+    fun generateUniqueConfigName(baseName: String, existingNames: List<String>): String
 }

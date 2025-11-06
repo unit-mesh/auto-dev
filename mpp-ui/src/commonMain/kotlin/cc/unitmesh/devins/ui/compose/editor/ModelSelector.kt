@@ -165,17 +165,24 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
     if (showConfigDialog) {
         ModelConfigDialog(
             currentConfig = currentConfig?.toModelConfig() ?: ModelConfig(),
+            currentConfigName = currentConfigName,
             onDismiss = { showConfigDialog = false },
-            onSave = { newModelConfig ->
+            onSave = { configName, newModelConfig ->
                 scope.launch {
                     try {
-                        // Prompt for name if it's a new configuration
-                        val configName = currentConfigName ?: "default"
+                        // If creating a new config (not editing current), ensure unique name
+                        val existingNames = availableConfigs.map { it.name }
+                        val finalConfigName = if (currentConfigName != configName && configName in existingNames) {
+                            // Auto-increment: my-glm -> my-glm-1 -> my-glm-2, etc.
+                            ConfigManager.generateUniqueConfigName(configName, existingNames)
+                        } else {
+                            configName
+                        }
 
                         // Convert ModelConfig to NamedModelConfig
                         val namedConfig =
                             NamedModelConfig.fromModelConfig(
-                                name = configName,
+                                name = finalConfigName,
                                 config = newModelConfig
                             )
 
@@ -190,6 +197,10 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
                         // Notify parent
                         onConfigChange(newModelConfig)
                         showConfigDialog = false
+                        
+                        if (finalConfigName != configName) {
+                            println("✅ 配置名称已存在，自动重命名为: $finalConfigName")
+                        }
                     } catch (e: Exception) {
                         println("Failed to save config: ${e.message}")
                     }

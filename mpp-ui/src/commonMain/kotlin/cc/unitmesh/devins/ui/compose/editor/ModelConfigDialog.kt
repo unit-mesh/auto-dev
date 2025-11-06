@@ -29,9 +29,11 @@ import cc.unitmesh.llm.ModelRegistry
 @Composable
 fun ModelConfigDialog(
     currentConfig: ModelConfig,
+    currentConfigName: String? = null,
     onDismiss: () -> Unit,
-    onSave: (ModelConfig) -> Unit
+    onSave: (configName: String, config: ModelConfig) -> Unit
 ) {
+    var configName by remember { mutableStateOf(currentConfigName ?: "") }
     var provider by remember { mutableStateOf(currentConfig.provider) }
     var modelName by remember { mutableStateOf(currentConfig.modelName) }
     var apiKey by remember { mutableStateOf(currentConfig.apiKey) }
@@ -65,6 +67,28 @@ fun ModelConfigDialog(
                     text = Strings.modelConfigTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Configuration Name
+                Text(
+                    text = "配置名称",
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = configName,
+                    onValueChange = { configName = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("e.g., my-glm, work-gpt4, personal-claude") },
+                    supportingText = { 
+                        Text(
+                            "给配置起一个唯一的名称，便于识别和切换",
+                            style = MaterialTheme.typography.bodySmall
+                        ) 
+                    },
+                    singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -309,10 +333,10 @@ fun ModelConfigDialog(
                                     maxTokens = maxTokens.toIntOrNull() ?: 2000,
                                     baseUrl = baseUrl.trim()
                                 )
-                            onSave(config)
+                            onSave(configName.trim(), config)
                         },
                         enabled =
-                            when (provider) {
+                            configName.trim().isNotBlank() && when (provider) {
                                 LLMProviderType.OLLAMA -> 
                                     modelName.isNotBlank() && baseUrl.isNotBlank()
                                 LLMProviderType.CUSTOM_OPENAI_BASE -> 
