@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.parser
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.tool.ToolType
 
@@ -8,6 +9,7 @@ import cc.unitmesh.agent.tool.ToolType
  * Handles both DevIn blocks and direct tool call formats
  */
 class ToolCallParser {
+    private val logger = getLogger("ToolCallParser")
     private val devinParser = DevinBlockParser()
     private val escapeProcessor = EscapeSequenceProcessor
 
@@ -147,7 +149,7 @@ class ToolCallParser {
 
             ToolCall.create(toolName, params)
         } catch (e: Exception) {
-            println("⚠️ Failed to parse JSON parameters for tool $toolName: ${e.message}")
+            logger.warn(e) { "⚠️ Failed to parse JSON parameters for tool $toolName: ${e.message}" }
             // Fallback to line parsing
             parseToolCallFromLine(toolCallLine)
         }

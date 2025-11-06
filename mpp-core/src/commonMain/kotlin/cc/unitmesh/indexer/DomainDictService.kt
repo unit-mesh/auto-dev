@@ -1,5 +1,6 @@
 package cc.unitmesh.indexer
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.indexer.model.DomainDictionary
 import cc.unitmesh.indexer.model.SemanticName
 import cc.unitmesh.indexer.model.ElementType
@@ -17,6 +18,7 @@ class DomainDictService(
     private val fileSystem: ProjectFileSystem,
     private val baseDir: String = "prompts"
 ) {
+    private val logger = getLogger("DomainDictService")
     private val suffixRules = CommonSuffixRules()
     private val tokenCounter = TokenCounter.DEFAULT
     
@@ -52,7 +54,7 @@ class DomainDictService(
                 null
             }
         } catch (e: Exception) {
-            println("Error loading domain dictionary: ${e.message}")
+            logger.error(e) { "Error loading domain dictionary: ${e.message}" }
             null
         }
     }
@@ -71,7 +73,7 @@ class DomainDictService(
             fileSystem.writeFile(dictFile, content)
             true
         } catch (e: Exception) {
-            println("Error saving domain dictionary: ${e.message}")
+            logger.error(e) { "Error saving domain dictionary: ${e.message}" }
             false
         }
     }
@@ -84,7 +86,7 @@ class DomainDictService(
             val allFiles = fileSystem.searchFiles("*", maxDepth = 10, maxResults = 1000)
             allFiles.filter { shouldIncludeFile(it) }
         } catch (e: Exception) {
-            println("Error listing project files: ${e.message}")
+            logger.error(e) { "Error listing project files: ${e.message}" }
             emptyList()
         }
     }

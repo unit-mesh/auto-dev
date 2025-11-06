@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.parser
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.ast.*
 import cc.unitmesh.devins.lexer.DevInsLexer
 import cc.unitmesh.devins.token.DevInsToken
@@ -13,6 +14,7 @@ import cc.unitmesh.devins.token.TokenPosition
 class DevInsParser(
     private val tokens: List<DevInsToken>
 ) {
+    private val logger = getLogger("DevInsParser")
     private val state = ParserState()
     private val context = ParseContext()
     
@@ -452,9 +454,9 @@ class DevInsParser(
             identifier = identifierNode,
             children = children
         )
-        
-        println("🔍 [DevInsParser] Parsed Used node: type=$usedType, name='$name'")
-        
+
+        logger.debug { "🔍 [DevInsParser] Parsed Used node: type=$usedType, name='$name'" }
+
         return usedNode
     }
 

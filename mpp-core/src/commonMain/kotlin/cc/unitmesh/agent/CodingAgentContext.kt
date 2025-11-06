@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
@@ -69,14 +70,16 @@ data class CodingAgentContext(
          * Format tool list with enhanced schema information for AI understanding
          */
         fun formatToolListForAI(toolList: List<ExecutableTool<*, *>>): String {
+            val logger = getLogger("CodingAgentContext")
+
             // 🔍 调试：打印工具列表信息
-            println("🔍 [CodingAgentContext] 格式化工具列表，共 ${toolList.size} 个工具:")
+            logger.debug { "🔍 [CodingAgentContext] 格式化工具列表，共 ${toolList.size} 个工具:" }
             toolList.forEach { tool ->
-                println("  - ${tool.name} (${tool::class.simpleName}): ${tool.getParameterClass()}")
+                logger.debug { "  - ${tool.name} (${tool::class.simpleName}): ${tool.getParameterClass()}" }
             }
 
             if (toolList.isEmpty()) {
-                println("❌ [CodingAgentContext] 工具列表为空")
+                logger.warn { "❌ [CodingAgentContext] 工具列表为空" }
                 return "No tools available."
             }
 

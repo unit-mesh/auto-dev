@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.compiler.template.TemplateCompiler
 
 /**
@@ -18,6 +19,8 @@ class CodingAgentPromptRenderer {
      * @return The rendered system prompt
      */
     fun render(context: CodingAgentContext, language: String = "EN"): String {
+        val logger = getLogger("CodingAgentPromptRenderer")
+
         val template = when (language.uppercase()) {
             "ZH", "CN" -> CodingAgentTemplate.ZH
             else -> CodingAgentTemplate.EN
@@ -29,21 +32,21 @@ class CodingAgentPromptRenderer {
         val toolListVar = variableTable.getVariable("toolList")
         if (toolListVar != null) {
             val toolListContent = toolListVar.value.toString()
-            println("🔍 [CodingAgentPromptRenderer] 工具列表长度: ${toolListContent.length}")
+            logger.debug { "🔍 [CodingAgentPromptRenderer] 工具列表长度: ${toolListContent.length}" }
             val toolCount = toolListContent.split("<tool name=").size - 1
-            println("🔍 [CodingAgentPromptRenderer] 工具数量: $toolCount")
+            logger.debug { "🔍 [CodingAgentPromptRenderer] 工具数量: $toolCount" }
 
             // 检查是否包含内置工具
             val hasBuiltinTools = listOf("read-file", "write-file", "grep", "glob", "shell")
                 .any { toolListContent.contains("<tool name=\"$it\">") }
-            println("🔍 [CodingAgentPromptRenderer] 包含内置工具: $hasBuiltinTools")
+            logger.debug { "🔍 [CodingAgentPromptRenderer] 包含内置工具: $hasBuiltinTools" }
 
             // 检查是否包含 SubAgent
             val hasSubAgents = listOf("error-recovery", "log-summary", "codebase-investigator")
                 .any { toolListContent.contains("<tool name=\"$it\">") }
-            println("🔍 [CodingAgentPromptRenderer] 包含 SubAgent: $hasSubAgents")
+            logger.debug { "🔍 [CodingAgentPromptRenderer] 包含 SubAgent: $hasSubAgents" }
         } else {
-            println("❌ [CodingAgentPromptRenderer] 工具列表变量为空")
+            logger.warn { "❌ [CodingAgentPromptRenderer] 工具列表变量为空" }
         }
 
         val compiler = TemplateCompiler(variableTable)

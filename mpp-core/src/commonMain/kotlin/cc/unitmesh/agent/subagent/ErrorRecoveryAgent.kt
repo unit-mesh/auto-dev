@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.subagent
 
 import cc.unitmesh.agent.core.SubAgent
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
@@ -59,6 +60,7 @@ class ErrorRecoveryAgent(
 ) : SubAgent<ErrorContext, ToolResult.AgentResult>(
     definition = createDefinition()
 ) {
+    private val logger = getLogger("ErrorRecoveryAgent")
     private val gitOps = GitOperations(projectPath)
     private val json = Json {
         ignoreUnknownKeys = true
@@ -198,7 +200,7 @@ class ErrorRecoveryAgent(
         }
         
         if (diffs.isNotEmpty()) {
-            println("   📄 Collected ${diffs.size} diff(s)")
+            logger.info { "   📄 Collected ${diffs.size} diff(s)" }
         }
         
         return diffs
@@ -338,7 +340,7 @@ $context
             )
             parseRecoveryResponse(response)
         } catch (e: Exception) {
-            println("   ❌ LLM analysis failed: ${e.message}")
+            logger.error(e) { "   ❌ LLM analysis failed: ${e.message}" }
             RecoveryResult(
                 success = false,
                 analysis = "Failed to analyze error: ${e.message}",
@@ -378,7 +380,7 @@ $context
                 )
             }
         } catch (e: Exception) {
-            println("   ⚠️  Could not parse JSON response, using raw text")
+            logger.warn(e) { "   ⚠️  Could not parse JSON response, using raw text" }
             RecoveryResult(
                 success = true,
                 analysis = response,

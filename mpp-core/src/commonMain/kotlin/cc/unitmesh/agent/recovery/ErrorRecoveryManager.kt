@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.recovery
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.subagent.ErrorRecoveryAgent
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.llm.KoogLLMService
@@ -10,6 +11,7 @@ import cc.unitmesh.llm.KoogLLMService
  * 负责处理工具执行失败时的错误恢复逻辑
  */
 class ErrorRecoveryManager(private val projectPath: String, private val llmService: KoogLLMService) {
+    private val logger = getLogger("ErrorRecoveryManager")
     private val errorRecoveryAgent = ErrorRecoveryAgent(projectPath, llmService)
 
     /**
@@ -31,29 +33,29 @@ class ErrorRecoveryManager(private val projectPath: String, private val llmServi
             return null
         }
 
-        println("\n════════════════════════════════════════════════════════")
-        println("   🔧 ACTIVATING ERROR RECOVERY SUBAGENT")
-        println("   Tool: $toolName")
-        println("   Error: ${errorMessage.take(100)}${if (errorMessage.length > 100) "..." else ""}")
-        println("════════════════════════════════════════════════════════\n")
+        logger.info { "\n════════════════════════════════════════════════════════" }
+        logger.info { "   🔧 ACTIVATING ERROR RECOVERY SUBAGENT" }
+        logger.info { "   Tool: $toolName" }
+        logger.info { "   Error: ${errorMessage.take(100)}${if (errorMessage.length > 100) "..." else ""}" }
+        logger.info { "════════════════════════════════════════════════════════\n" }
 
         return try {
             val input = buildRecoveryInput(toolName, command, errorMessage, exitCode)
             val validatedInput = errorRecoveryAgent.validateInput(input)
 
             val result = errorRecoveryAgent.execute(validatedInput) { progress ->
-                println("   $progress")
+                logger.info { "   $progress" }
             }
 
             if (result.success) {
-                println("\n✓ Error Recovery completed successfully\n")
+                logger.info { "\n✓ Error Recovery completed successfully\n" }
                 result.content
             } else {
-                println("\n✗ Error Recovery failed: ${result.content}\n")
+                logger.error { "\n✗ Error Recovery failed: ${result.content}\n" }
                 null
             }
         } catch (e: Exception) {
-            println("\n✗ Error Recovery failed: ${e.message}\n")
+            logger.error(e) { "\n✗ Error Recovery failed: ${e.message}\n" }
             null
         }
     }

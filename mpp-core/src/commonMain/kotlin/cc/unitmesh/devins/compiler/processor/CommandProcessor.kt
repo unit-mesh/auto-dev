@@ -66,7 +66,7 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         if (specKitCommands == null) {
             specKitCommands = SpecKitCommand.loadAll(context.fileSystem)
             specKitCommands?.forEach { cmd ->
-                println("   - ${cmd.fullCommandName}: ${cmd.description}")
+                context.logger.debug("   - ${cmd.fullCommandName}: ${cmd.description}")
             }
             context.logger.info("[$name] Loaded ${specKitCommands?.size ?: 0} SpecKit commands")
         }

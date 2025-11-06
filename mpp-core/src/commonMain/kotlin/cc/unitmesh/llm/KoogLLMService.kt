@@ -6,6 +6,7 @@ import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.params.LLMParams
 import ai.koog.prompt.streaming.StreamFrame
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.compiler.DevInsCompilerFacade
 import cc.unitmesh.devins.compiler.context.CompilerContext
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
@@ -24,7 +25,9 @@ class KoogLLMService(
     private val config: ModelConfig,
     private val compressionConfig: CompressionConfig = CompressionConfig()
 ) {
-    private val executor: SingleLLMPromptExecutor by lazy { 
+    private val logger = getLogger("KoogLLMService")
+
+    private val executor: SingleLLMPromptExecutor by lazy {
         ExecutorFactory.create(config)
     }
     
@@ -63,7 +66,7 @@ class KoogLLMService(
                 when (frame) {
                     is StreamFrame.Append -> emit(frame.text)
                     is StreamFrame.End -> {
-                        println("StreamFrame.End -> finishReason=${frame.finishReason}, metaInfo=${frame.metaInfo}")
+                        logger.debug { "StreamFrame.End -> finishReason=${frame.finishReason}, metaInfo=${frame.metaInfo}" }
                         frame.metaInfo?.let { metaInfo ->
                             lastTokenInfo = TokenInfo(
                                 totalTokens = metaInfo.totalTokensCount ?: 0,
@@ -105,7 +108,7 @@ class KoogLLMService(
         val compiledResult = DevInsCompilerFacade.compile(userPrompt, context)
 
         if (compiledResult.hasError) {
-            println("⚠️ [KoogLLMService] 编译错误: ${compiledResult.errorMessage}")
+            logger.warn { "⚠️ [KoogLLMService] 编译错误: ${compiledResult.errorMessage}" }
         }
 
         return compiledResult.output

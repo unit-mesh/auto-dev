@@ -1,11 +1,14 @@
 package cc.unitmesh.devins.test
 
+import cc.unitmesh.agent.logging.getLogger
+
 /**
  * 测试运行器
  * 用于运行 DevIns 测试用例
  */
 class TestRunner {
-    
+
+    private val logger = getLogger("TestRunner")
     private val testCases = mutableListOf<DevInsTestCase>()
     
     /**
@@ -29,7 +32,7 @@ class TestRunner {
                 if (!result.passed) {
                     // 打印失败的详细信息
                     result.results.filter { !it.passed }.forEach { singleResult ->
-                        println("  - ${singleResult.name}: ${singleResult.message}")
+                        logger.error { "  - ${singleResult.name}: ${singleResult.message}" }
                     }
                 }
             } catch (e: Exception) {

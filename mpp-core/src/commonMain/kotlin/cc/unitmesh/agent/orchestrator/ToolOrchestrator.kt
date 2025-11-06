@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.orchestrator
 
 import cc.unitmesh.agent.config.McpToolConfigManager
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.policy.PolicyEngine
 import cc.unitmesh.agent.policy.PolicyDecision
@@ -29,6 +30,7 @@ class ToolOrchestrator(
     private val stateManager: ToolStateManager = ToolStateManager(),
     private val mcpConfigService: McpToolConfigService? = null
 ) {
+    private val logger = getLogger("ToolOrchestrator")
     
     /**
      * Execute a single tool call with full orchestration
@@ -232,7 +234,7 @@ class ToolOrchestrator(
 
             return null
         } catch (e: Exception) {
-            println("Error finding MCP server for tool '$toolName': ${e.message}")
+            logger.error(e) { "Error finding MCP server for tool '$toolName': ${e.message}" }
             return null
         }
     }

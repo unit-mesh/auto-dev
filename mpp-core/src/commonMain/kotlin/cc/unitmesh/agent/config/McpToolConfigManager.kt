@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.config
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.mcp.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
@@ -15,6 +16,7 @@ import kotlinx.serialization.json.Json
  * - MCP Kotlin SDK: https://github.com/modelcontextprotocol/kotlin-sdk
  */
 object McpToolConfigManager {
+    private val logger = getLogger("McpToolConfigManager")
     private val clientManager: McpClientManager by lazy { McpClientManagerFactory.create() }
     private val cached = mutableMapOf<String, Map<String, List<ToolItem>>>()
     private val loadingStateCallbacks = mutableListOf<McpLoadingStateCallback>()
@@ -62,8 +64,7 @@ object McpToolConfigManager {
 
             return applyEnabledState(toolsByServer, enabledMcpTools)
         } catch (e: Exception) {
-            println("Error discovering MCP tools: ${e.message}")
-            e.printStackTrace()
+            logger.error(e) { "Error discovering MCP tools: ${e.message}" }
             return emptyMap()
         }
     }
@@ -76,7 +77,7 @@ object McpToolConfigManager {
      */
     fun init(toolConfig: ToolConfigFile) {
         if (toolConfig.mcpServers.isEmpty()) {
-            println("No MCP servers configured, skipping initialization")
+            logger.info { "No MCP servers configured, skipping initialization" }
             return
         }
 
@@ -91,7 +92,7 @@ object McpToolConfigManager {
         try {
             preloadingJob = preloadingScope.launch {
                 try {
-                    println("Starting MCP servers preloading for ${toolConfig.mcpServers.size} servers...")
+                    logger.info { "Starting MCP servers preloading for ${toolConfig.mcpServers.size} servers..." }
 
                 // Initialize client manager with MCP config
                 val mcpConfig = McpConfig(mcpServers = toolConfig.mcpServers)
@@ -108,7 +109,7 @@ object McpToolConfigManager {
                     val jobs = toolConfig.mcpServers.filter { !it.value.disabled }.map { (serverName, _) ->
                         async {
                             try {
-                                println("Preloading tools for MCP server: $serverName")
+                                logger.info { "Preloading tools for MCP server: $serverName" }
                                 val discoveredTools = clientManager.discoverServerTools(serverName)
 
                                 val tools = discoveredTools.map { toolInfo ->
@@ -126,10 +127,10 @@ object McpToolConfigManager {
 
                                 preloadResults[serverName] = tools
                                 preloadedServers.add(serverName)
-                                println("Successfully preloaded ${tools.size} tools from MCP server: $serverName")
+                                logger.info { "Successfully preloaded ${tools.size} tools from MCP server: $serverName" }
 
                             } catch (e: Exception) {
-                                println("Failed to preload tools from MCP server '$serverName': ${e.message}")
+                                logger.error(e) { "Failed to preload tools from MCP server '$serverName': ${e.message}" }
                             }
                         }
                     }
@@ -142,21 +143,20 @@ object McpToolConfigManager {
                 if (preloadResults.isNotEmpty()) {
                     cached[cacheKey] = preloadResults
                     lastDiscoveredToolsCount = preloadResults.values.sumOf { it.size }
-                    println("MCP servers preloading completed. Cached tools from ${preloadedServers.size} servers.")
+                    logger.info { "MCP servers preloading completed. Cached tools from ${preloadedServers.size} servers." }
                 } else {
                     lastDiscoveredToolsCount = 0
-                    println("MCP servers preloading completed but no tools were loaded.")
+                    logger.info { "MCP servers preloading completed but no tools were loaded." }
                 }
 
             } catch (e: Exception) {
-                println("Error during MCP servers preloading: ${e.message}")
-                e.printStackTrace()
+                logger.error(e) { "Error during MCP servers preloading: ${e.message}" }
                 } finally {
                     isPreloading = false
                 }
             }
         } catch (e: Exception) {
-            println("Error starting MCP preloading job: ${e.message}")
+            logger.error(e) { "Error starting MCP preloading job: ${e.message}" }
             isPreloading = false
         }
     }
@@ -211,8 +211,7 @@ object McpToolConfigManager {
 
 
         } catch (e: Exception) {
-            println("Error initializing MCP client manager: ${e.message}")
-            e.printStackTrace()
+            logger.error(e) { "Error initializing MCP client manager: ${e.message}" }
         }
 
         return loadingState
@@ -263,7 +262,7 @@ object McpToolConfigManager {
             callback.onServerStateChanged(serverName, loadedState)
 
         } catch (e: Exception) {
-            println("Error loading tools for server '$serverName': ${e.message}")
+            logger.error(e) { "Error loading tools for server '$serverName': ${e.message}" }
 
             // Update status to error
             val errorState = McpServerState(
@@ -353,7 +352,7 @@ object McpToolConfigManager {
             cached.clear()
             preloadedServers.clear()
         } catch (e: Exception) {
-            println("Error shutting down MCP client manager: ${e.message}")
+            logger.error(e) { "Error shutting down MCP client manager: ${e.message}" }
         }
     }
 

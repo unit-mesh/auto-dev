@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.config
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.ToolType
 import kotlinx.coroutines.CoroutineScope
@@ -9,6 +10,8 @@ import kotlinx.coroutines.launch
 
 
 class McpToolConfigService(val toolConfig: ToolConfigFile) {
+    private val logger = getLogger("McpToolConfigService")
+
     init {
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             McpToolConfigManager.init(toolConfig)
@@ -50,24 +53,24 @@ class McpToolConfigService(val toolConfig: ToolConfigFile) {
 
     fun <T : ExecutableTool<*, *>> filterMcpTools(tools: List<T>): List<T> {
         if (toolConfig.enabledMcpTools.isNotEmpty()) {
-            println("   Configured enabled MCP tools:")
+            logger.info { "   Configured enabled MCP tools:" }
             toolConfig.enabledMcpTools.forEach { toolName ->
-                println("     - $toolName")
+                logger.info { "     - $toolName" }
             }
         }
 
         if (toolConfig.enabledMcpTools.isEmpty()) {
-            println("ℹ️  No MCP tools explicitly enabled, enabling all discovered tools by default")
+            logger.info { "ℹ️  No MCP tools explicitly enabled, enabling all discovered tools by default" }
             return tools
         }
 
         val filteredTools = tools.filter { tool ->
             val enabled = isMcpToolEnabled(tool.name)
-            println("   Tool '${tool.name}': ${if (enabled) "✓ enabled" else "✗ disabled"}")
+            logger.debug { "   Tool '${tool.name}': ${if (enabled) "✓ enabled" else "✗ disabled"}" }
             enabled
         }
 
-        println("🔧 Filtered result: ${filteredTools.size}/${tools.size} tools enabled")
+        logger.info { "🔧 Filtered result: ${filteredTools.size}/${tools.size} tools enabled" }
         return filteredTools
     }
 

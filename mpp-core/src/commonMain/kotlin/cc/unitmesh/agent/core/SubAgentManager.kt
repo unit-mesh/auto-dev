@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.core
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.subagent.AnalysisAgent
 import cc.unitmesh.agent.subagent.ContentHandlerContext
@@ -16,10 +17,12 @@ import cc.unitmesh.agent.subagent.ContentHandlerContext
  * 这个管理器实现了多Agent体系中的核心协调逻辑
  */
 class SubAgentManager {
-    
+
+    private val logger = getLogger("SubAgentManager")
+
     // 注册的 SubAgent 实例
     private val subAgents = mutableMapOf<String, SubAgent<*, *>>()
-    
+
     // 内容处理阈值
     private val contentThreshold = 5000
     
@@ -30,15 +33,15 @@ class SubAgentManager {
         subAgent: SubAgent<TInput, TOutput>
     ) {
         subAgents[subAgent.name] = subAgent
-        println("🤖 Registered SubAgent: ${subAgent.name}")
+        logger.info { "🤖 Registered SubAgent: ${subAgent.name}" }
     }
-    
+
     /**
      * 注销 SubAgent
      */
     fun unregisterSubAgent(name: String) {
         subAgents.remove(name)
-        println("🗑️ Unregistered SubAgent: $name")
+        logger.info { "🗑️ Unregistered SubAgent: $name" }
     }
     
     /**
@@ -72,12 +75,12 @@ class SubAgentManager {
         if (content.length <= contentThreshold) {
             return null // 不需要特殊处理
         }
-        
-        println("📊 Detected long content (${content.length} chars), delegating to AnalysisAgent")
+
+        logger.info { "📊 Detected long content (${content.length} chars), delegating to AnalysisAgent" }
 
         val analysisAgent = getSubAgent<ContentHandlerContext, ToolResult.AgentResult>("analysis-agent")
         if (analysisAgent == null) {
-            println("⚠️ AnalysisAgent not registered, skipping long content handling")
+            logger.warn { "⚠️ AnalysisAgent not registered, skipping long content handling" }
             return null
         }
         
@@ -90,10 +93,10 @@ class SubAgentManager {
         
         return try {
             analysisAgent.execute(context) { progress ->
-                println("📊 AnalysisAgent: $progress")
+                logger.info { "📊 AnalysisAgent: $progress" }
             }
         } catch (e: Exception) {
-            println("❌ AnalysisAgent failed: ${e.message}")
+            logger.error(e) { "❌ AnalysisAgent failed: ${e.message}" }
             ToolResult.AgentResult(
                 success = false,
                 content = "Content analysis failed: ${e.message}",
@@ -152,6 +155,6 @@ class SubAgentManager {
                 agent.cleanupHistory()
             }
         }
-        println("🧹 Cleaned up SubAgent histories")
+        logger.info { "🧹 Cleaned up SubAgent histories" }
     }
 }

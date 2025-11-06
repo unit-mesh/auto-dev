@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.mcp
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.ExecutableTool
 
 /**
@@ -12,6 +13,7 @@ import cc.unitmesh.agent.tool.ExecutableTool
  * 4. Create tool adapters for integration with the agent system
  */
 class McpToolsInitializer {
+    private val logger = getLogger("McpToolsInitializer")
     private var clientManager: McpClientManager? = null
     private val discoveredTools = mutableMapOf<String, List<McpToolInfo>>()
     
@@ -49,8 +51,7 @@ class McpToolsInitializer {
             // Create tool adapters
             return McpToolAdapterFactory.createAdapters(enabledTools, clientManager!!)
         } catch (e: Exception) {
-            println("Error initializing MCP tools: ${e.message}")
-            e.printStackTrace()
+            logger.error(e) { "Error initializing MCP tools: ${e.message}" }
             return emptyList()
         }
     }
@@ -76,7 +77,7 @@ class McpToolsInitializer {
         try {
             clientManager?.shutdown()
         } catch (e: Exception) {
-            println("Error shutting down MCP client manager: ${e.message}")
+            logger.error(e) { "Error shutting down MCP client manager: ${e.message}" }
         } finally {
             clientManager = null
             discoveredTools.clear()

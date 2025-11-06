@@ -1,5 +1,6 @@
 package cc.unitmesh.indexer
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.indexer.template.TemplateManager
 import cc.unitmesh.indexer.template.DomainDictTemplateContext
 import cc.unitmesh.llm.KoogLLMService
@@ -17,6 +18,7 @@ class DomainDictGenerator(
     private val modelConfig: ModelConfig,
     private var maxTokenLength: Int = 8192
 ) {
+    private val logger = getLogger("DomainDictGenerator")
     init {
         require(maxTokenLength <= modelConfig.maxTokens) {
             "maxTokenLength ($maxTokenLength) cannot exceed model's max tokens (${modelConfig.maxTokens})"
@@ -104,15 +106,15 @@ class DomainDictGenerator(
         }
         
         // Log generation info
-        println("Domain Dictionary Generation:")
-        println("- Level 1 count: ${domainDict.metadata["level1_count"]}")
-        println("- Level 2 count: ${domainDict.metadata["level2_count"]}")
-        println("- Total tokens: $codeTokens")
-        println("- README included: ${readme.isNotEmpty()}")
-        
+        logger.info { "Domain Dictionary Generation:" }
+        logger.info { "- Level 1 count: ${domainDict.metadata["level1_count"]}" }
+        logger.info { "- Level 2 count: ${domainDict.metadata["level2_count"]}" }
+        logger.info { "- Total tokens: $codeTokens" }
+        logger.info { "- README included: ${readme.isNotEmpty()}" }
+
         val weightStats = domainDict.getWeightStatistics()
-        println("- Weight stats: Avg=${weightStats["averageWeight"]}, " +
-                "Critical=${weightStats["criticalCount"]}, High=${weightStats["highCount"]}")
+        logger.info { "- Weight stats: Avg=${weightStats["averageWeight"]}, " +
+                "Critical=${weightStats["criticalCount"]}, High=${weightStats["highCount"]}" }
         
         // Create template context
         val context = DomainDictTemplateContext(codeContext, readme)

@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.tool.registry
 
 import cc.unitmesh.agent.core.SubAgentManager
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
@@ -24,6 +25,7 @@ class ToolRegistry(
     private val subAgentManager: SubAgentManager? = null,
     private val llmService: KoogLLMService? = null
 ) {
+    private val logger = getLogger("ToolRegistry")
     private val tools = mutableMapOf<String, ExecutableTool<*, *>>()
     private val json = Json { ignoreUnknownKeys = true }
     
@@ -208,16 +210,16 @@ class ToolRegistry(
         // Discover all tools from registered providers
         val allBuiltinTools = ToolProviderRegistry.discoverTools(dependencies)
 
-        println("🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}")
-        println("🔧 [ToolRegistry] ConfigService available: ${configService != null}")
+        logger.debug { "🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}" }
+        logger.debug { "🔧 [ToolRegistry] ConfigService available: ${configService != null}" }
 
         // Filter tools based on configuration if available
         val toolsToRegister = if (configService != null) {
             val filtered = configService.filterBuiltinTools(allBuiltinTools)
-            println("🔧 [ToolRegistry] Filtered tools: ${filtered.map { it.name }}")
+            logger.debug { "🔧 [ToolRegistry] Filtered tools: ${filtered.map { it.name }}" }
             filtered
         } else {
-            println("🔧 [ToolRegistry] No config service, registering all tools")
+            logger.debug { "🔧 [ToolRegistry] No config service, registering all tools" }
             allBuiltinTools
         }
 
@@ -225,9 +227,9 @@ class ToolRegistry(
             registerTool(tool)
         }
 
-        println("🔧 Registered ${toolsToRegister.size}/${allBuiltinTools.size} built-in tools")
+        logger.info { "🔧 Registered ${toolsToRegister.size}/${allBuiltinTools.size} built-in tools" }
         toolsToRegister.forEach { tool ->
-            println("   Built-in tool: ${tool.name}")
+            logger.debug { "   Built-in tool: ${tool.name}" }
         }
     }
 }

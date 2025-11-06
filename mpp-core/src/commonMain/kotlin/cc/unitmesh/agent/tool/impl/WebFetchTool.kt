@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool.impl
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
@@ -67,6 +68,8 @@ class WebFetchInvocation(
     private val llmService: KoogLLMService,
     private val httpFetcher: HttpFetcher
 ) : BaseToolInvocation<WebFetchParams, ToolResult>(params, tool) {
+
+    private val logger = getLogger("WebFetchInvocation")
 
     override fun getDescription(): String {
         val displayPrompt = if (params.prompt.length > 100) {
@@ -146,7 +149,7 @@ class WebFetchInvocation(
                     )
                 }
                 // If we have some content, log the error but continue
-                println("Warning: LLM streaming was interrupted but partial content was collected: ${e.message}")
+                logger.warn(e) { "Warning: LLM streaming was interrupted but partial content was collected: ${e.message}" }
             }
 
             return ToolResult.Success(

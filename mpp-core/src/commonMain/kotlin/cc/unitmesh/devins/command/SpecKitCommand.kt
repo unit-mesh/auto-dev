@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.command
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.yaml.YamlUtils
 
@@ -17,6 +18,7 @@ data class SpecKitCommand(
     val fullCommandName: String get() = "speckit.$subcommand"
 
     companion object {
+        private val logger = getLogger("SpecKitCommand")
         private const val PROMPTS_DIR = ".github/prompts"
         private const val SPECKIT_PREFIX = "speckit."
         private const val PROMPT_SUFFIX = ".prompt.md"
@@ -32,45 +34,45 @@ data class SpecKitCommand(
             }
             
             val promptsDir = "$PROMPTS_DIR"
-            println("🔍 [SpecKitCommand] Looking for prompts in: $promptsDir")
+            logger.debug { "🔍 [SpecKitCommand] Looking for prompts in: $promptsDir" }
 
             if (!fileSystem.exists(promptsDir)) {
-                println("⚠️ [SpecKitCommand] Prompts directory does not exist: $promptsDir")
+                logger.warn { "⚠️ [SpecKitCommand] Prompts directory does not exist: $promptsDir" }
                 return emptyList()
             }
-            
-            println("✅ [SpecKitCommand] Prompts directory exists!")
+
+            logger.debug { "✅ [SpecKitCommand] Prompts directory exists!" }
 
             return try {
                 val pattern = "$SPECKIT_PREFIX*$PROMPT_SUFFIX"
-                println("🔍 [SpecKitCommand] Looking for files matching: $pattern")
+                logger.debug { "🔍 [SpecKitCommand] Looking for files matching: $pattern" }
                 val files = fileSystem.listFiles(promptsDir, pattern)
-                println("🔍 [SpecKitCommand] Found ${files.size} matching files: $files")
+                logger.debug { "🔍 [SpecKitCommand] Found ${files.size} matching files: $files" }
 
                 files.mapNotNull { fileName ->
                         try {
-                            println("🔍 [SpecKitCommand] Processing file: $fileName")
+                            logger.debug { "🔍 [SpecKitCommand] Processing file: $fileName" }
                             val subcommand = fileName
                                 .removePrefix(SPECKIT_PREFIX)
                                 .removeSuffix(PROMPT_SUFFIX)
-                            
-                            println("🔍 [SpecKitCommand] Extracted subcommand: $subcommand")
+
+                            logger.debug { "🔍 [SpecKitCommand] Extracted subcommand: $subcommand" }
 
                             if (subcommand.isEmpty()) {
-                                println("⚠️ [SpecKitCommand] Subcommand is empty, skipping")
+                                logger.warn { "⚠️ [SpecKitCommand] Subcommand is empty, skipping" }
                                 return@mapNotNull null
                             }
 
                             val filePath = "$promptsDir/$fileName"
-                            println("🔍 [SpecKitCommand] Reading file: $filePath")
+                            logger.debug { "🔍 [SpecKitCommand] Reading file: $filePath" }
                             val template = fileSystem.readFile(filePath)
-                            
+
                             if (template == null) {
-                                println("⚠️ [SpecKitCommand] Failed to read file: $filePath")
+                                logger.warn { "⚠️ [SpecKitCommand] Failed to read file: $filePath" }
                                 return@mapNotNull null
                             }
-                            
-                            println("✅ [SpecKitCommand] Successfully read file (${template.length} chars)")
+
+                            logger.debug { "✅ [SpecKitCommand] Successfully read file (${template.length} chars)" }
                             val description = extractDescription(template, subcommand)
 
                             val cmd = SpecKitCommand(
@@ -78,11 +80,10 @@ data class SpecKitCommand(
                                 description = description,
                                 template = template
                             )
-                            println("✅ [SpecKitCommand] Created command: ${cmd.fullCommandName}")
+                            logger.debug { "✅ [SpecKitCommand] Created command: ${cmd.fullCommandName}" }
                             cmd
                         } catch (e: Exception) {
-                            println("❌ [SpecKitCommand] Error processing file $fileName: ${e.message}")
-                            e.printStackTrace()
+                            logger.error(e) { "❌ [SpecKitCommand] Error processing file $fileName: ${e.message}" }
                             null
                         }
                     }
