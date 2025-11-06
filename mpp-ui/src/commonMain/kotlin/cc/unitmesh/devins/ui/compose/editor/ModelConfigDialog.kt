@@ -123,35 +123,69 @@ fun ModelConfigDialog(
                     style = MaterialTheme.typography.labelLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                ExposedDropdownMenuBox(
-                    expanded = expandedModel,
-                    onExpandedChange = { expandedModel = it }
-                ) {
+                
+                // Get available models for this provider
+                val availableModels = remember(provider) { ModelRegistry.getAvailableModels(provider) }
+                
+                if (availableModels.isNotEmpty()) {
+                    // Show dropdown with predefined models + allow custom input
+                    ExposedDropdownMenuBox(
+                        expanded = expandedModel,
+                        onExpandedChange = { expandedModel = it }
+                    ) {
+                        OutlinedTextField(
+                            value = modelName,
+                            onValueChange = { modelName = it },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedModel) },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(),
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                            placeholder = { Text(Strings.enterModel) },
+                            supportingText = { Text(Strings.modelHint, style = MaterialTheme.typography.bodySmall) }
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedModel,
+                            onDismissRequest = { expandedModel = false }
+                        ) {
+                            availableModels.forEach { model ->
+                                DropdownMenuItem(
+                                    text = { Text(model) },
+                                    onClick = {
+                                        modelName = model
+                                        expandedModel = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    // For custom providers (CUSTOM_OPENAI_BASE, etc.), show plain text input
                     OutlinedTextField(
                         value = modelName,
                         onValueChange = { modelName = it },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedModel) },
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(),
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                        placeholder = { Text(Strings.enterModel) }
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { 
+                            Text(
+                                if (provider == LLMProviderType.CUSTOM_OPENAI_BASE) 
+                                    "e.g., glm-4-plus, deepseek-chat" 
+                                else 
+                                    Strings.enterModel
+                            ) 
+                        },
+                        supportingText = { 
+                            Text(
+                                when (provider) {
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> 
+                                        "输入 OpenAI 兼容模型名称（如 glm-4-plus）"
+                                    else -> Strings.modelHint
+                                },
+                                style = MaterialTheme.typography.bodySmall
+                            ) 
+                        },
+                        singleLine = true
                     )
-                    ExposedDropdownMenu(
-                        expanded = expandedModel,
-                        onDismissRequest = { expandedModel = false }
-                    ) {
-                        ModelRegistry.getAvailableModels(provider).forEach { model ->
-                            DropdownMenuItem(
-                                text = { Text(model) },
-                                onClick = {
-                                    modelName = model
-                                    expandedModel = false
-                                }
-                            )
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -182,8 +216,8 @@ fun ModelConfigDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Base URL (for Ollama and custom endpoints)
-                if (provider == LLMProviderType.OLLAMA) {
+                // Base URL (for Ollama and Custom OpenAI-compatible providers)
+                if (provider == LLMProviderType.OLLAMA || provider == LLMProviderType.CUSTOM_OPENAI_BASE) {
                     Text(
                         text = Strings.baseUrl,
                         style = MaterialTheme.typography.labelLarge
@@ -193,7 +227,25 @@ fun ModelConfigDialog(
                         value = baseUrl,
                         onValueChange = { baseUrl = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("http://localhost:11434") },
+                        placeholder = { 
+                            Text(
+                                when (provider) {
+                                    LLMProviderType.OLLAMA -> "http://localhost:11434"
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> "https://open.bigmodel.cn/api/paas/v4"
+                                    else -> "https://api.example.com"
+                                }
+                            ) 
+                        },
+                        supportingText = {
+                            Text(
+                                when (provider) {
+                                    LLMProviderType.OLLAMA -> "Ollama 服务器地址"
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> "OpenAI 兼容 API 地址（不含 /chat/completions）"
+                                    else -> ""
+                                },
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        },
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -261,8 +313,12 @@ fun ModelConfigDialog(
                         },
                         enabled =
                             when (provider) {
-                                LLMProviderType.OLLAMA -> modelName.isNotBlank() && baseUrl.isNotBlank()
-                                else -> apiKey.isNotBlank() && modelName.isNotBlank()
+                                LLMProviderType.OLLAMA -> 
+                                    modelName.isNotBlank() && baseUrl.isNotBlank()
+                                LLMProviderType.CUSTOM_OPENAI_BASE -> 
+                                    modelName.isNotBlank() && baseUrl.isNotBlank() && apiKey.isNotBlank()
+                                else -> 
+                                    apiKey.isNotBlank() && modelName.isNotBlank()
                             }
                     ) {
                         Text(Strings.save)

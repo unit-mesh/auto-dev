@@ -72,6 +72,7 @@ object Strings {
     val modelConfigTitle: String get() = get("modelConfig.title")
     val provider: String get() = get("modelConfig.provider")
     val model: String get() = get("modelConfig.model")
+    val modelHint: String get() = get("modelConfig.modelHint")
     val apiKey: String get() = get("modelConfig.apiKey")
     val baseUrl: String get() = get("modelConfig.baseUrl")
     val temperature: String get() = get("modelConfig.temperature")
@@ -122,6 +123,7 @@ private object EnglishStrings : Map<String, String> by mapOf(
     "modelConfig.configureModel" to "Configure Model...",
     "modelConfig.noSavedConfigs" to "No saved configurations",
     "modelConfig.enterModel" to "Enter or select model name",
+    "modelConfig.modelHint" to "Select from list or type custom model name",
     "modelConfig.enterApiKey" to "Enter your API key",
     "modelConfig.showApiKey" to "Show API key",
     "modelConfig.hideApiKey" to "Hide API key",
@@ -159,6 +161,7 @@ private object ChineseStrings : Map<String, String> by mapOf(
     "modelConfig.configureModel" to "配置模型...",
     "modelConfig.noSavedConfigs" to "没有保存的配置",
     "modelConfig.enterModel" to "输入或选择模型名称",
+    "modelConfig.modelHint" to "从列表中选择或输入自定义模型名称",
     "modelConfig.enterApiKey" to "输入您的 API Key",
     "modelConfig.showApiKey" to "显示 API Key",
     "modelConfig.hideApiKey" to "隐藏 API Key",
