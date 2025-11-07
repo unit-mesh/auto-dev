@@ -13,23 +13,26 @@ class ToolCallParser {
     private val devinParser = DevinBlockParser()
     private val escapeProcessor = EscapeSequenceProcessor
 
+    /**
+     * Parse all tool calls from LLM response
+     * Now supports multiple tool calls for parallel execution
+     */
     fun parseToolCalls(llmResponse: String): List<ToolCall> {
         val toolCalls = mutableListOf<ToolCall>()
 
         val devinBlocks = devinParser.extractDevinBlocks(llmResponse)
 
         if (devinBlocks.isEmpty()) {
-            val directCall = parseDirectToolCall(llmResponse)
-            if (directCall != null) {
-                toolCalls.add(directCall)
-            }
+            // Try to parse multiple direct tool calls
+            val directCalls = parseAllDirectToolCalls(llmResponse)
+            toolCalls.addAll(directCalls)
         } else {
-            val firstBlock = devinBlocks.firstOrNull()
-            if (firstBlock != null) {
-                val toolCall = parseToolCallFromDevinBlock(firstBlock)
+            // Parse all devin blocks (not just the first one)
+            for (block in devinBlocks) {
+                val toolCall = parseToolCallFromDevinBlock(block)
                 if (toolCall != null) {
                     if (toolCall.toolName == ToolType.WriteFile.name && !toolCall.params.containsKey("content")) {
-                        val contentFromContext = extractContentFromContext(llmResponse, firstBlock)
+                        val contentFromContext = extractContentFromContext(llmResponse, block)
                         if (contentFromContext != null) {
                             val updatedParams = toolCall.params.toMutableMap()
                             updatedParams["content"] = contentFromContext
@@ -44,6 +47,35 @@ class ToolCallParser {
             }
         }
 
+        logger.debug { "Parsed ${toolCalls.size} tool call(s) from LLM response" }
+        return toolCalls
+    }
+    
+    /**
+     * Parse all direct tool calls (without devin blocks)
+     * Supports multiple tool calls in a single response
+     */
+    private fun parseAllDirectToolCalls(response: String): List<ToolCall> {
+        val toolCalls = mutableListOf<ToolCall>()
+        val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""", RegexOption.MULTILINE)
+        
+        // Find all tool call matches
+        val matches = toolPattern.findAll(response)
+        
+        for (match in matches) {
+            val toolName = match.groups[1]?.value ?: continue
+            val rest = match.groups[2]?.value?.trim() ?: ""
+            
+            try {
+                val toolCall = parseToolCallFromLine("/$toolName $rest")
+                if (toolCall != null) {
+                    toolCalls.add(toolCall)
+                }
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to parse tool call: /$toolName $rest" }
+            }
+        }
+        
         return toolCalls
     }
 

@@ -17,6 +17,9 @@ import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.yield
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.Clock
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
 
@@ -127,26 +130,39 @@ class CodingAgentExecutor(
                 "Use additional tools if needed, or summarize if the task is complete."
     }
 
-    private suspend fun executeToolCalls(toolCalls: List<ToolCall>): List<Triple<String, Map<String, Any>, ToolExecutionResult>> {
-        val results =
-            mutableListOf<Triple<String, Map<String, Any>, ToolExecutionResult>>()
-
-        for ((index, toolCall) in toolCalls.withIndex()) {
+    /**
+     * 并行执行多个工具调用
+     * 
+     * 策略：
+     * 1. 预先检查所有工具是否重复
+     * 2. 并行启动所有工具执行
+     * 3. 等待所有工具完成后统一处理结果
+     * 4. 按顺序渲染和处理错误恢复
+     */
+    private suspend fun executeToolCalls(toolCalls: List<ToolCall>): List<Triple<String, Map<String, Any>, ToolExecutionResult>> = coroutineScope {
+        val results = mutableListOf<Triple<String, Map<String, Any>, ToolExecutionResult>>()
+        
+        // 预检查阶段：检查所有工具是否重复
+        val toolsToExecute = mutableListOf<ToolCall>()
+        var hasRepeatError = false
+        
+        for (toolCall in toolCalls) {
+            if (hasRepeatError) break
+            
             val toolName = toolCall.toolName
             val params = toolCall.params.mapValues { it.value as Any }
-
             val paramsStr = params.entries.joinToString(" ") { (key, value) ->
                 "$key=\"$value\""
             }
-
             val toolSignature = "$toolName:$paramsStr"
+            
+            // 更新最近调用历史
             recentToolCalls.add(toolSignature)
             if (recentToolCalls.size > 10) {
                 recentToolCalls.removeAt(0)
             }
-
+            
             val exactMatches = recentToolCalls.takeLast(MAX_REPEAT_COUNT).count { it == toolSignature }
-
             val toolType = toolName.toToolType()
             val maxAllowedRepeats = when (toolType) {
                 ToolType.ReadFile, ToolType.WriteFile -> 3
@@ -157,7 +173,7 @@ class CodingAgentExecutor(
                     else -> 2
                 }
             }
-
+            
             if (exactMatches >= maxAllowedRepeats) {
                 renderer.renderRepeatWarning(toolName, exactMatches)
                 val currentTime = Clock.System.now().toEpochMilliseconds()
@@ -174,24 +190,55 @@ class CodingAgentExecutor(
                     )
                 )
                 results.add(Triple(toolName, params, errorResult))
+                hasRepeatError = true
                 break
             }
-
-            renderer.renderToolCall(toolName, paramsStr)
-            yield()
-
-            // 执行工具
-            val executionContext = OrchestratorContext(
-                workingDirectory = projectPath,
-                environment = emptyMap()
-            )
-            val executionResult = toolOrchestrator.executeToolCall(
-                toolName,
-                params,
-                executionContext
-            )
-
-            results.add(Triple(toolName, params, executionResult))
+            
+            toolsToExecute.add(toolCall)
+        }
+        
+        // 如果有重复错误，直接返回
+        if (hasRepeatError) {
+            return@coroutineScope results
+        }
+        
+        // 并行执行阶段：同时启动所有工具
+        if (toolsToExecute.size > 1) {
+            println("🔄 Executing ${toolsToExecute.size} tools in parallel...")
+        }
+        
+        val executionJobs = toolsToExecute.map { toolCall ->
+            val toolName = toolCall.toolName
+            val params = toolCall.params.mapValues { it.value as Any }
+            val paramsStr = params.entries.joinToString(" ") { (key, value) ->
+                "$key=\"$value\""
+            }
+            
+            async {
+                renderer.renderToolCall(toolName, paramsStr)
+                yield()
+                
+                val executionContext = OrchestratorContext(
+                    workingDirectory = projectPath,
+                    environment = emptyMap()
+                )
+                
+                val executionResult = toolOrchestrator.executeToolCall(
+                    toolName,
+                    params,
+                    executionContext
+                )
+                
+                Triple(toolName, params, executionResult)
+            }
+        }
+        
+        // 等待所有工具执行完成
+        val executionResults = executionJobs.awaitAll()
+        results.addAll(executionResults)
+        
+        // 结果处理阶段：按顺序处理每个工具的结果
+        for ((toolName, params, executionResult) in executionResults) {
             val stepResult = AgentStep(
                 step = currentIteration,
                 action = toolName,
@@ -201,6 +248,7 @@ class CodingAgentExecutor(
                 success = executionResult.isSuccess
             )
             steps.add(stepResult)
+            
             val fullOutput = when (val result = executionResult.result) {
                 is ToolResult.Error -> {
                     buildString {
@@ -220,39 +268,37 @@ class CodingAgentExecutor(
                         }
                     }
                 }
-
                 is ToolResult.AgentResult -> if (!result.success) result.content else stepResult.result
                 else -> stepResult.result
             }
-
+            
             // 检查是否需要长内容处理
             val contentHandlerResult = checkForLongContent(toolName, fullOutput ?: "", executionResult)
             val displayOutput = contentHandlerResult?.content ?: fullOutput
-
+            
             renderer.renderToolResult(toolName, stepResult.success, stepResult.result, displayOutput)
-
+            
             val currentToolType = toolName.toToolType()
             if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {
                 recordFileEdit(params)
             }
-
+            
+            // 错误恢复处理
             if (!executionResult.isSuccess) {
                 val command = if (toolName == "shell") params["command"] as? String else null
                 val errorMessage = executionResult.content ?: "Unknown error"
-
+                
                 renderer.renderError("Tool execution failed: $errorMessage")
-
+                
                 val recoveryResult = errorRecoveryManager.handleToolError(
                     toolName = toolName,
                     command = command,
                     errorMessage = errorMessage
                 )
-
+                
                 if (recoveryResult != null) {
-                    // 显示恢复建议
                     renderer.renderRecoveryAdvice(recoveryResult)
-
-                    // 将恢复建议添加到工具结果中，这样 LLM 可以看到并采取行动
+                    
                     val enhancedResult = buildString {
                         appendLine("Tool execution failed with error:")
                         appendLine(errorMessage)
@@ -260,8 +306,7 @@ class CodingAgentExecutor(
                         appendLine("Error Recovery Analysis:")
                         appendLine(recoveryResult)
                     }
-
-                    // 创建增强的错误结果
+                    
                     val enhancedExecutionResult = ToolExecutionResult(
                         executionId = executionResult.executionId,
                         toolName = executionResult.toolName,
@@ -275,23 +320,24 @@ class CodingAgentExecutor(
                             "originalError" to errorMessage
                         )
                     )
-
-                    // 更新 results 中的最后一个条目
-                    if (results.isNotEmpty()) {
-                        val lastIndex = results.size - 1
-                        val (lastToolName, lastParams, _) = results[lastIndex]
-                        results[lastIndex] = Triple(lastToolName, lastParams, enhancedExecutionResult)
+                    
+                    // 更新结果中的对应条目
+                    val resultIndex = results.indexOfFirst { 
+                        it.first == toolName && it.second == params 
+                    }
+                    if (resultIndex != -1) {
+                        results[resultIndex] = Triple(toolName, params, enhancedExecutionResult)
                     }
                 }
-
+                
                 if (errorRecoveryManager.isFatalError(toolName, errorMessage)) {
                     renderer.renderError("Fatal error encountered. Stopping execution.")
                     break
                 }
             }
         }
-
-        return results
+        
+        results
     }
 
     private fun recordFileEdit(params: Map<String, Any>) {
