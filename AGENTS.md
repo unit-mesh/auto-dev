@@ -26,6 +26,13 @@ Rest:
 - Check export first, if some functions not working well with CLI (TypeScript)
 - JS exports: Use `String`, not `Char`, Convert enums to strings, Avoid `Flow`; use `Promise` and callbacks.
 
+## Design System \(Color & Theme\)
+
+- **CLI/TUI (TypeScript)**: Use `mpp-ui/src/jsMain/typescript/design-system/` → Import `semanticInk` / `semanticChalk`
+- **Compose (Desktop/Android)**: Use `AutoDevColors` from `cc.unitmesh.devins.ui.compose.theme` → Or `MaterialTheme.colorScheme`
+- **DO NOT hardcode colors** \(e.g., `Color(0xFF...)` or `#hex`\). Always use design tokens for consistency across platforms.
+- **Docs**: See `docs/design-system-color.md` (TypeScript) and `docs/design-system-compose.md` (Kotlin Compose)
+
 ## AutoDev CLI Quick Test
 
 1. Build MPP Core: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
