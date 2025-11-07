@@ -21,9 +21,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.agent.tool.tracking.FileChange
 import cc.unitmesh.agent.tool.tracking.FileChangeTracker
+import cc.unitmesh.agent.util.DiffUtils
+import cc.unitmesh.devins.ui.compose.sketch.DiffSketchRenderer
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import kotlinx.coroutines.launch
 
@@ -39,6 +42,7 @@ fun FileChangeSummary(
 ) {
     val changes by FileChangeTracker.changes.collectAsState()
     var isExpanded by remember { mutableStateOf(false) }
+    var selectedChange by remember { mutableStateOf<FileChange?>(null) }
     val scope = rememberCoroutineScope()
     
     // Get workspace file system for undo operations
@@ -48,6 +52,41 @@ fun FileChangeSummary(
     // Only show if there are changes
     if (changes.isEmpty()) {
         return
+    }
+    
+    // Show diff dialog if a file is selected
+    selectedChange?.let { change ->
+        DiffViewDialog(
+            change = change,
+            onDismiss = { selectedChange = null },
+            onUndo = {
+                scope.launch {
+                    fileSystem?.let { fs ->
+                        try {
+                            val original = change.originalContent
+                            when {
+                                change.changeType == ChangeType.CREATE -> {
+                                    if (fs.exists(change.filePath)) {
+                                        fs.writeFile(change.filePath, "")
+                                    }
+                                }
+                                original != null -> {
+                                    fs.writeFile(change.filePath, original)
+                                }
+                            }
+                            FileChangeTracker.removeChange(change)
+                            selectedChange = null
+                        } catch (e: Exception) {
+                            println("Failed to undo change: ${e.message}")
+                        }
+                    }
+                }
+            },
+            onKeep = {
+                FileChangeTracker.removeChange(change)
+                selectedChange = null
+            }
+        )
     }
     
     Surface(
@@ -182,6 +221,10 @@ fun FileChangeSummary(
                         items(changes, key = { it.timestamp }) { change ->
                             FileChangeItem(
                                 change = change,
+                                onClick = {
+                                    // Show diff view when clicked
+                                    selectedChange = change
+                                },
                                 onUndo = {
                                     scope.launch {
                                         fileSystem?.let { fs ->
@@ -225,12 +268,15 @@ fun FileChangeSummary(
 @Composable
 private fun FileChangeItem(
     change: FileChange,
+    onClick: () -> Unit,
     onUndo: () -> Unit,
     onKeep: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick), // Make the entire item clickable
         shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
@@ -298,30 +344,37 @@ private fun FileChangeItem(
                     )
                 }
                 
-                // Size diff indicator
-                val sizeDiff = change.getSizeDiff()
-                if (sizeDiff != 0) {
-                    Text(
-                        text = if (sizeDiff > 0) "+$sizeDiff" else "$sizeDiff",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (sizeDiff > 0) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.error
-                        },
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 10.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(
-                                if (sizeDiff > 0) {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.errorContainer
-                                }
-                            )
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    )
+                // Accurate diff stats indicator (using LCS algorithm)
+                val diffStats = change.getDiffStats()
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (diffStats.addedLines > 0) {
+                        Text(
+                            text = "+${diffStats.addedLines}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        )
+                    }
+                    if (diffStats.deletedLines > 0) {
+                        Text(
+                            text = "-${diffStats.deletedLines}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        )
+                    }
                 }
             }
             
@@ -353,6 +406,147 @@ private fun FileChangeItem(
                         modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Dialog to show diff view for a file change
+ */
+@Composable
+private fun DiffViewDialog(
+    change: FileChange,
+    onDismiss: () -> Unit,
+    onUndo: () -> Unit,
+    onKeep: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.9f),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Header with file info and actions
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = change.getFileName(),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Text(
+                            text = change.filePath,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = {
+                            onUndo()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Undo",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Undo")
+                        }
+                        
+                        Button(onClick = {
+                            onKeep()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Keep",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Keep")
+                        }
+                        
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close"
+                            )
+                        }
+                    }
+                }
+                
+                HorizontalDivider()
+                
+                // Diff content
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    // Generate unified diff format
+                    val diffContent = remember(change) {
+                        DiffUtils.generateUnifiedDiff(
+                            change.originalContent,
+                            change.newContent,
+                            change.filePath
+                        )
+                    }
+                    
+                    if (diffContent.isNotBlank()) {
+                        DiffSketchRenderer.RenderDiff(
+                            diffContent = diffContent,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        // Fallback for new files or empty diffs
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = when (change.changeType) {
+                                    ChangeType.CREATE -> Icons.Default.Add
+                                    ChangeType.DELETE -> Icons.Default.Delete
+                                    else -> Icons.Default.Edit
+                                },
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = when (change.changeType) {
+                                    ChangeType.CREATE -> "New file created"
+                                    ChangeType.DELETE -> "File deleted"
+                                    else -> "File modified"
+                                },
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            val stats = change.getDiffStats()
+                            Text(
+                                text = "+${stats.addedLines} -${stats.deletedLines} lines",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }

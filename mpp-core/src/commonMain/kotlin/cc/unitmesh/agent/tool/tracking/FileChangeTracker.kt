@@ -21,15 +21,53 @@ object FileChangeTracker {
     
     /**
      * Record a new file change
+     * If the same file has been changed before, merge the changes
      */
     fun recordChange(change: FileChange) {
         val currentChanges = _changes.value.toMutableList()
-        currentChanges.add(change)
-        _changes.value = currentChanges
         
-        // Notify all listeners
-        listeners.forEach { listener ->
-            listener.onFileChanged(change)
+        // Find if this file was already changed
+        val existingIndex = currentChanges.indexOfFirst { it.filePath == change.filePath }
+        
+        if (existingIndex >= 0) {
+            // Merge: keep the original content from the first change, use new content from latest change
+            val existingChange = currentChanges[existingIndex]
+            val mergedChange = FileChange(
+                filePath = change.filePath,
+                changeType = determineChangeType(existingChange.originalContent, change.newContent),
+                originalContent = existingChange.originalContent, // Keep the FIRST original
+                newContent = change.newContent, // Use the LATEST new content
+                timestamp = change.timestamp, // Use latest timestamp
+                metadata = change.metadata + mapOf("merged" to "true", "previousChanges" to "1")
+            )
+            currentChanges[existingIndex] = mergedChange
+            _changes.value = currentChanges
+            
+            // Notify with merged change
+            listeners.forEach { listener ->
+                listener.onFileChanged(mergedChange)
+            }
+        } else {
+            // New file change
+            currentChanges.add(change)
+            _changes.value = currentChanges
+            
+            // Notify all listeners
+            listeners.forEach { listener ->
+                listener.onFileChanged(change)
+            }
+        }
+    }
+    
+    /**
+     * Determine the appropriate change type when merging changes
+     */
+    private fun determineChangeType(originalContent: String?, newContent: String?): ChangeType {
+        return when {
+            originalContent == null && newContent != null -> ChangeType.CREATE
+            originalContent != null && newContent == null -> ChangeType.DELETE
+            originalContent == null && newContent == null -> ChangeType.DELETE
+            else -> ChangeType.EDIT
         }
     }
     
