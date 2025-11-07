@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import com.jediterm.terminal.TtyConnector
+import com.jediterm.terminal.model.CharBuffer
 import com.jediterm.terminal.ui.JediTermWidget
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider
 import java.awt.Dimension
@@ -76,9 +77,7 @@ fun TerminalOutputDisplay(
             widget.preferredSize = Dimension(800, 300)
             widget.minimumSize = Dimension(400, 150)
 
-            // Display the output in the terminal
-//            widget.terminalTextBuffer.writeString(0, 0, CharBuffer.wrap(output))
-
+            widget.terminalTextBuffer.writeString(0, 0, CharBuffer(output))
             widget
         }
     )
