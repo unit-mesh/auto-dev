@@ -18,7 +18,7 @@ class JsFileSystemFactory {
          * @return A new DefaultFileSystem instance
          */
         @JsName("createFileSystem")
-        fun createFileSystem(projectPath: String): ProjectFileSystem {
+        fun createFileSystem(projectPath: String): DefaultFileSystem {
             return DefaultFileSystem(projectPath)
         }
         
@@ -27,7 +27,7 @@ class JsFileSystemFactory {
          * @return An empty file system instance
          */
         @JsName("createEmptyFileSystem")
-        fun createEmptyFileSystem(): ProjectFileSystem {
+        fun createEmptyFileSystem(): EmptyFileSystem {
             return EmptyFileSystem()
         }
     }

@@ -8,10 +8,17 @@ package cc.unitmesh.devins.filesystem
 actual class DefaultFileSystem actual constructor(private val projectPath: String) : ProjectFileSystem {
 
     // Check if we're in Node.js environment
-    private val isNodeJs: Boolean = js("typeof process !== 'undefined' && process.versions && process.versions.node") as Boolean
+    private val isNodeJs: Boolean = run {
+        try {
+            val check: dynamic = js("typeof process !== 'undefined' && process.versions && process.versions.node")
+            check != null && check != false
+        } catch (e: Exception) {
+            false
+        }
+    }
 
-    private val fs = if (isNodeJs) js("require('fs')") else null
-    private val path = if (isNodeJs) js("require('path')") else null
+    private val fs: dynamic = if (isNodeJs) js("require('fs')") else null
+    private val path: dynamic = if (isNodeJs) js("require('path')") else null
 
     private fun requireNodeJs(): Boolean {
         if (!isNodeJs) {

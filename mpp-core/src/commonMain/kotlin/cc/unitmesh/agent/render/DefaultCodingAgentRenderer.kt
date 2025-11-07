@@ -17,7 +17,7 @@ class DefaultCodingAgentRenderer : BaseRenderer() {
 
     override fun renderLLMResponseStart() {
         super.renderLLMResponseStart()
-        print("💭 ")
+//        print("💭 ")
     }
 
     override fun renderLLMResponseChunk(chunk: String) {

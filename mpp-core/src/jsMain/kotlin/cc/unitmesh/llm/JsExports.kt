@@ -10,6 +10,7 @@ import cc.unitmesh.agent.tool.impl.ShellParams
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.JsShellExecutor
 import cc.unitmesh.devins.compiler.DevInsCompilerFacade
+import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.Message
@@ -1052,7 +1053,7 @@ data class JsDomainDictResult(
  */
 @JsExport
 class JsDomainDictService(
-    private val fileSystem: ProjectFileSystem
+    private val fileSystem: DefaultFileSystem
 ) {
     private val service = cc.unitmesh.indexer.DomainDictService(fileSystem)
 
@@ -1082,7 +1083,7 @@ class JsDomainDictService(
 @JsExport
 class JsPromptEnhancer(
     private val llmService: KoogLLMService,
-    private val fileSystem: ProjectFileSystem,
+    private val fileSystem: DefaultFileSystem,
     private val jsDomainDictService: JsDomainDictService
 ) {
     private val enhancer = PromptEnhancer(llmService, fileSystem, cc.unitmesh.indexer.DomainDictService(fileSystem))
@@ -1108,7 +1109,7 @@ class JsPromptEnhancer(
 @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
 fun createPromptEnhancer(
     llmService: KoogLLMService,
-    fileSystem: ProjectFileSystem,
+    fileSystem: DefaultFileSystem,
     jsDomainDictService: JsDomainDictService
 ): JsPromptEnhancer {
     return JsPromptEnhancer(llmService, fileSystem, jsDomainDictService)

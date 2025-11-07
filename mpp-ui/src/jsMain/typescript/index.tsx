@@ -98,37 +98,11 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
 
     // Enhance the task prompt automatically in CLI mode
     let enhancedTask = task;
-    try {
-      if (!quiet) {
-        console.log('🔍 Enhancing task prompt...');
-      }
-
-      // Create file system
-      const fileSystem = KotlinCC.unitmesh.devins.filesystem.JsFileSystemFactory.Companion.createFileSystem(resolvedPath);
-
-      // Create domain dict service
-      const domainDictService = new KotlinCC.unitmesh.llm.JsDomainDictService(fileSystem);
-
-      // Create prompt enhancer
-      const enhancer = new KotlinCC.unitmesh.llm.JsPromptEnhancer(
-        llmService,
-        fileSystem,
-        domainDictService
-      );
-
-      // Enhance the task - CLI mode uses Chinese template for English translation but Chinese response
-      enhancedTask = await enhancer.enhance(task, 'zh');
-
-      if (enhancedTask !== task && !quiet) {
-        console.log(`✨ Enhanced task: ${enhancedTask}`);
-        console.log();
-      }
-
-    } catch (error) {
-      if (!quiet) {
-        console.warn('⚠️ Failed to enhance task prompt, using original:', error);
-      }
-      // Continue with original task on error
+    
+    // Temporarily disable prompt enhancement due to cross-platform issues
+    // TODO: Re-enable after fixing Kotlin/JS interface type handling
+    if (!quiet) {
+      console.log('📝 Using original task prompt (enhancement temporarily disabled)');
     }
 
     // Create CLI renderer

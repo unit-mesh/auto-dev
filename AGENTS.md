@@ -24,7 +24,10 @@ Rest:
 
 - Use `expect`/`actual` for platform-specific code \(e.g., file I/O on JVM/JS/Wasm\).
 - Check export first, if some functions not working well with CLI (TypeScript)
-- JS exports: Use `String`, not `Char`, Convert enums to strings, Avoid `Flow`; use `Promise` and callbacks.
+- 在 Kotlin/JS 的 @JsExport 中：
+    - Avoid `Flow`, use `Promise`
+    - ✅ 使用具体类作为返回类型和参数类型
+    - ❌ 避免使用接口类型（JS 端无法正确处理接口的类型转换）
 
 ## Design System \(Color & Theme\)
 
@@ -37,4 +40,3 @@ Rest:
 
 1. Build MPP Core: `cd /Volumes/source/ai/autocrud && ./gradlew :mpp-core:assembleJsPackage`
 2. Build and run MPP CLI: `cd mpp-ui && npm run build && npm run start`
- 
