@@ -5,6 +5,9 @@ import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.agent.tool.tracking.ChangeType
+import cc.unitmesh.agent.tool.tracking.FileChange
+import cc.unitmesh.agent.tool.tracking.FileChangeTracker
 import kotlinx.serialization.Serializable
 
 /**
@@ -176,6 +179,20 @@ class EditFileInvocation(
             
             // Write the modified content back
             fileSystem.writeFile(params.filePath, newContent, createDirectories = true)
+            
+            // Track the file change
+            FileChangeTracker.recordChange(
+                FileChange(
+                    filePath = params.filePath,
+                    changeType = ChangeType.EDIT,
+                    originalContent = currentContent,
+                    newContent = newContent,
+                    metadata = mapOf(
+                        "tool" to "edit-file",
+                        "replacements" to occurrences.toString()
+                    )
+                )
+            )
             
             val metadata = mapOf(
                 "file_path" to params.filePath,

@@ -72,10 +72,6 @@ kotlin {
 
                 // JSON 处理
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-
-                // Bonsai Tree View
-                implementation("cafe.adriel.bonsai:bonsai-core:1.2.0")
-                implementation("cafe.adriel.bonsai:bonsai-file-system:1.2.0")
             }
         }
 
@@ -91,6 +87,10 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 // Rich text editor for Compose Desktop
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")
+
+                // Bonsai Tree View (JVM only)
+                implementation("cafe.adriel.bonsai:bonsai-core:1.2.0")
+                implementation("cafe.adriel.bonsai:bonsai-file-system:1.2.0")
 
                 // SQLDelight - JVM SQLite driver
                 implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
@@ -118,6 +118,10 @@ kotlin {
                 implementation("androidx.activity:activity-compose:1.11.0")
                 implementation("androidx.appcompat:appcompat:1.6.1")
                 implementation("androidx.core:core-ktx:1.17.0")
+
+                // Bonsai Tree View (Android)
+                implementation("cafe.adriel.bonsai:bonsai-core:1.2.0")
+                implementation("cafe.adriel.bonsai:bonsai-file-system:1.2.0")
 
                 // SQLDelight - Android SQLite driver
                 implementation("app.cash.sqldelight:android-driver:2.1.0")

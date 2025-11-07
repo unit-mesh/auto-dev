@@ -5,6 +5,9 @@ import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.agent.tool.tracking.ChangeType
+import cc.unitmesh.agent.tool.tracking.FileChange
+import cc.unitmesh.agent.tool.tracking.FileChangeTracker
 import kotlinx.serialization.Serializable
 
 /**
@@ -100,6 +103,9 @@ class WriteFileInvocation(
         return ToolErrorUtils.safeExecute(ToolErrorType.FILE_ACCESS_DENIED) {
             val fileExists = fileSystem.exists(params.path)
             
+            // Read original content for tracking
+            val originalContent = if (fileExists) fileSystem.readFile(params.path) else null
+            
             // Check if we should overwrite
             if (fileExists && !params.overwrite && !params.append) {
                 throw ToolException(
@@ -110,7 +116,7 @@ class WriteFileInvocation(
             
             // Prepare content to write
             val contentToWrite = if (params.append && fileExists) {
-                val existingContent = fileSystem.readFile(params.path) ?: ""
+                val existingContent = originalContent ?: ""
                 existingContent + params.content
             } else {
                 params.content
@@ -118,6 +124,28 @@ class WriteFileInvocation(
             
             // Write the file
             fileSystem.writeFile(params.path, contentToWrite, params.createDirectories)
+            
+            // Determine change type
+            val changeType = when {
+                params.append -> ChangeType.EDIT
+                fileExists -> ChangeType.OVERWRITE
+                else -> ChangeType.CREATE
+            }
+            
+            // Track the file change
+            FileChangeTracker.recordChange(
+                FileChange(
+                    filePath = params.path,
+                    changeType = changeType,
+                    originalContent = originalContent,
+                    newContent = contentToWrite,
+                    metadata = mapOf(
+                        "tool" to "write-file",
+                        "append" to params.append.toString(),
+                        "overwrite" to params.overwrite.toString()
+                    )
+                )
+            )
             
             // Get file info for metadata
             val fileInfo = fileSystem.getFileInfo(params.path)

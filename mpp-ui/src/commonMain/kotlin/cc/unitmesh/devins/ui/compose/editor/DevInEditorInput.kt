@@ -349,10 +349,16 @@ fun DevInEditorInput(
     val isAndroid = Platform.isAndroid
 
     // 统一边框容器，无阴影
-    Box(
+    Column(
         modifier = modifier,
-        contentAlignment = if (isAndroid && isCompactMode) Alignment.Center else Alignment.TopStart
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // File Change Summary - shown above the editor
+        FileChangeSummary()
+        
+        Box(
+            contentAlignment = if (isAndroid && isCompactMode) Alignment.Center else Alignment.TopStart
+        ) {
         Surface(
             modifier =
                 if (isAndroid && isCompactMode) {
@@ -592,6 +598,7 @@ fun DevInEditorInput(
                     showCompletion = false
                 }
             )
+        }
         }
     }
 
