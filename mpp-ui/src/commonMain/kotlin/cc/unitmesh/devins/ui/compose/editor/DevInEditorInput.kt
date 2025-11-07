@@ -492,6 +492,9 @@ fun DevInEditorInput(
 
                 // 底部工具栏
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                
+                val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
+                
                 BottomToolbar(
                     onSendClick = {
                         if (textFieldValue.text.isNotBlank()) {
@@ -501,6 +504,7 @@ fun DevInEditorInput(
                         }
                     },
                     sendEnabled = textFieldValue.text.isNotBlank(),
+                    workspacePath = currentWorkspace?.rootPath,
                     onAtClick = {
                         // 插入 @ 并触发 Agent 补全
                         val current = textFieldValue

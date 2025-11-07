@@ -12,7 +12,7 @@ import cc.unitmesh.llm.ModelConfig
 
 /**
  * 底部工具栏（重新设计版）
- * 布局：Agent - Model Selector - @ Symbol - / Symbol - Settings - Send Button
+ * 布局：Workspace - Agent - Model Selector - @ Symbol - / Symbol - Settings - Send Button
  * - 移动端：通过顶部菜单控制 Agent，底部显示当前选择
  * - Desktop：完整显示所有功能
  *
@@ -26,6 +26,7 @@ fun BottomToolbar(
     onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     selectedAgent: String = "Default",
+    workspacePath: String? = null,
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
@@ -39,11 +40,42 @@ fun BottomToolbar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 左侧：Agent + Model Selector
+        // 左侧：Workspace + Agent + Model Selector
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f, fill = false)
         ) {
+            // Workspace 指示器（显示项目名称）
+            if (!workspacePath.isNullOrEmpty()) {
+                val projectName = workspacePath.substringAfterLast('/')
+                    .ifEmpty { workspacePath.substringAfterLast('\\') }
+                    .ifEmpty { "Project" }
+                
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Folder,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = projectName,
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1,
+                            modifier = Modifier.widthIn(max = if (isAndroid) 80.dp else 120.dp)
+                        )
+                    }
+                }
+            }
             // Agent 显示（只读，点击打开顶部菜单配置）
             if (!isAndroid || selectedAgent != "Default") {
                 Surface(
