@@ -81,7 +81,7 @@ data class NamedModelConfig(
                 provider = providerName,
                 apiKey = config.apiKey,
                 model = config.modelName,
-                baseUrl = config.baseUrl.trimEnd('/'), // Remove trailing slash for YAML readability
+                baseUrl = config.baseUrl.trimEnd('/'),
                 temperature = config.temperature,
                 maxTokens = config.maxTokens
             )
@@ -89,18 +89,9 @@ data class NamedModelConfig(
     }
 }
 
-/**
- * Wrapper class for configuration with validation and convenience methods
- */
 class AutoDevConfigWrapper(private val configFile: ConfigFile) {
-    /**
-     * Get the entire config file structure
-     */
     fun getConfigFile(): ConfigFile = configFile
 
-    /**
-     * Get the active configuration
-     */
     fun getActiveConfig(): NamedModelConfig? {
         if (configFile.active.isEmpty() || configFile.configs.isEmpty()) {
             return null
@@ -110,23 +101,13 @@ class AutoDevConfigWrapper(private val configFile: ConfigFile) {
             ?: configFile.configs.firstOrNull()
     }
 
-    /**
-     * Get all configurations
-     */
     fun getAllConfigs(): List<NamedModelConfig> = configFile.configs
 
-    /**
-     * Get active config name
-     */
     fun getActiveName(): String = configFile.active
 
-    /**
-     * Check if any valid configuration exists
-     */
     fun isValid(): Boolean {
         val active = getActiveConfig() ?: return false
 
-        // Ollama doesn't require API key
         if (active.provider.equals("ollama", ignoreCase = true)) {
             return active.model.isNotEmpty()
         }
@@ -136,23 +117,15 @@ class AutoDevConfigWrapper(private val configFile: ConfigFile) {
             active.model.isNotEmpty()
     }
 
-    /**
-     * Get the active config as ModelConfig
-     */
+
     fun getActiveModelConfig(): ModelConfig? {
         return getActiveConfig()?.toModelConfig()
     }
 
-    /**
-     * Get MCP server configurations
-     */
     fun getMcpServers(): Map<String, McpServerConfig> {
         return configFile.mcpServers
     }
 
-    /**
-     * Get enabled MCP servers
-     */
     fun getEnabledMcpServers(): Map<String, McpServerConfig> {
         return configFile.mcpServers.filter { !it.value.disabled && it.value.validate() }
     }
