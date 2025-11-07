@@ -3,14 +3,11 @@ package cc.unitmesh.devins.ui.compose.editor
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.config.NamedModelConfig
 import cc.unitmesh.devins.ui.i18n.Strings
@@ -81,7 +78,7 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
             maxLines = 1
         )
         Icon(
-            imageVector = Icons.Default.ArrowDropDown,
+            imageVector = AutoDevComposeIcons.ArrowDropDown,
             contentDescription = null,
             modifier = Modifier.size(18.dp)
         )
@@ -117,7 +114,7 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
                         // 如果是当前选中的配置，显示对勾
                         if (config.name == currentConfigName) {
                             Icon(
-                                imageVector = Icons.Default.Check,
+                                imageVector = AutoDevComposeIcons.Check,
                                 contentDescription = Strings.selected,
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.primary
@@ -154,7 +151,7 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Settings,
+                    imageVector = AutoDevComposeIcons.Settings,
                     contentDescription = Strings.configure,
                     modifier = Modifier.size(18.dp)
                 )

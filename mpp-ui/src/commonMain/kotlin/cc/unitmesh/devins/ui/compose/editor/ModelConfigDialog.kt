@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +14,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.i18n.Strings
 import cc.unitmesh.llm.LLMProviderType
 import cc.unitmesh.llm.ModelConfig
@@ -238,7 +236,7 @@ fun ModelConfigDialog(
                         trailingIcon = {
                             IconButton(onClick = { showApiKey = !showApiKey }) {
                                 Icon(
-                                    imageVector = if (showApiKey) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    imageVector = if (showApiKey) AutoDevComposeIcons.Visibility else AutoDevComposeIcons.VisibilityOff,
                                     contentDescription = if (showApiKey) Strings.hideApiKey else Strings.showApiKey
                                 )
                             }

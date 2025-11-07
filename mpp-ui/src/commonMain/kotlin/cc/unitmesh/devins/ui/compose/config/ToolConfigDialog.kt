@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.agent.config.McpLoadingState
 import cc.unitmesh.agent.config.McpLoadingStateCallback
 import cc.unitmesh.agent.config.McpServerLoadingStatus
@@ -217,7 +216,7 @@ fun ToolConfigDialog(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Icon(
-                                        Icons.Default.Schedule,
+                                        AutoDevComposeIcons.Schedule,
                                         contentDescription = "Auto-saving",
                                         modifier = Modifier.size(14.dp),
                                         tint = MaterialTheme.colorScheme.primary
@@ -232,7 +231,7 @@ fun ToolConfigDialog(
                         }
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
+                        Icon(AutoDevComposeIcons.Close, contentDescription = "Close")
                     }
                 }
 
@@ -275,7 +274,7 @@ fun ToolConfigDialog(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.Error,
+                                    AutoDevComposeIcons.Error,
                                     contentDescription = "Error",
                                     tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(18.dp)
@@ -584,7 +583,7 @@ private fun McpServerConfigTab(
                     )
                 } else if (errorMessage != null) {
                     Icon(
-                        Icons.Default.Error,
+                        AutoDevComposeIcons.Error,
                         contentDescription = "Error",
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(16.dp)
@@ -596,7 +595,7 @@ private fun McpServerConfigTab(
                     )
                 } else if (mcpConfigJson.isNotBlank()) {
                     Icon(
-                        Icons.Default.CheckCircle,
+                        AutoDevComposeIcons.CheckCircle,
                         contentDescription = "Valid",
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(16.dp)
@@ -624,7 +623,7 @@ private fun McpServerConfigTab(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        Icons.Default.Error,
+                        AutoDevComposeIcons.Error,
                         contentDescription = "Error",
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(18.dp)
@@ -680,7 +679,7 @@ private fun McpServerConfigTab(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(AutoDevComposeIcons.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
                 }
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(if (isReloading) "Loading..." else "Save & Reload")
@@ -713,11 +712,11 @@ private fun McpServerHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val (statusIcon, statusColor) = when (serverState.status) {
-                McpServerLoadingStatus.LOADING -> Icons.Default.Refresh to MaterialTheme.colorScheme.primary
-                McpServerLoadingStatus.LOADED -> Icons.Default.Cloud to MaterialTheme.colorScheme.primary
-                McpServerLoadingStatus.ERROR -> Icons.Default.Error to MaterialTheme.colorScheme.error
-                McpServerLoadingStatus.DISABLED -> Icons.Default.CloudOff to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                McpServerLoadingStatus.AVAILABLE -> Icons.Default.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                McpServerLoadingStatus.LOADING -> AutoDevComposeIcons.Refresh to MaterialTheme.colorScheme.primary
+                McpServerLoadingStatus.LOADED -> AutoDevComposeIcons.Cloud to MaterialTheme.colorScheme.primary
+                McpServerLoadingStatus.ERROR -> AutoDevComposeIcons.Error to MaterialTheme.colorScheme.error
+                McpServerLoadingStatus.DISABLED -> AutoDevComposeIcons.CloudOff to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                McpServerLoadingStatus.AVAILABLE -> AutoDevComposeIcons.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             }
 
             Icon(
@@ -756,7 +755,7 @@ private fun McpServerHeader(
             }
 
             Icon(
-                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                imageVector = if (isExpanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
                 contentDescription = if (isExpanded) "Collapse" else "Expand",
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -788,7 +787,7 @@ private fun CollapsibleCategoryHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                if (isExpanded) Icons.Default.ExpandMore else Icons.Default.ChevronRight,
+                if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
                 contentDescription = if (isExpanded) "Collapse" else "Expand",
                 modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -896,13 +895,13 @@ private fun CompactToolItemRow(
 
 private fun getCategoryIcon(category: ToolCategory): ImageVector {
     return when (category) {
-        ToolCategory.FileSystem -> Icons.Default.Folder
-        ToolCategory.Search -> Icons.Default.Search
-        ToolCategory.Execution -> Icons.Default.PlayArrow
-        ToolCategory.Information -> Icons.Default.Info
-        ToolCategory.Utility -> Icons.Default.Build
-        ToolCategory.SubAgent -> Icons.Default.SmartToy
-        ToolCategory.Communication -> Icons.Default.Chat
+        ToolCategory.FileSystem -> AutoDevComposeIcons.Folder
+        ToolCategory.Search -> AutoDevComposeIcons.Search
+        ToolCategory.Execution -> AutoDevComposeIcons.PlayArrow
+        ToolCategory.Information -> AutoDevComposeIcons.Info
+        ToolCategory.Utility -> AutoDevComposeIcons.Build
+        ToolCategory.SubAgent -> AutoDevComposeIcons.SmartToy
+        ToolCategory.Communication -> AutoDevComposeIcons.Chat
     }
 }
 

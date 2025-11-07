@@ -7,11 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +17,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.llm.MessageRole
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -181,7 +177,7 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ContentCopy,
+                                imageVector = AutoDevComposeIcons.ContentCopy,
                                 contentDescription = "Copy message",
                                 tint =
                                     if (isUser) {
@@ -306,7 +302,7 @@ fun ToolResultItem(
                 // Show expand icon only if there's output to show
                 if (displayOutput != null) {
                     Icon(
-                        imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
                         contentDescription = if (expanded) "Collapse" else "Expand",
                         tint =
                             if (success) {
@@ -363,7 +359,7 @@ fun ToolResultItem(
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ContentCopy,
+                                imageVector = AutoDevComposeIcons.ContentCopy,
                                 contentDescription = "Copy output",
                                 tint =
                                     if (success) {
@@ -390,7 +386,7 @@ fun ToolResultItem(
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ContentCopy,
+                                imageVector = AutoDevComposeIcons.ContentCopy,
                                 contentDescription = "Copy entire block",
                                 tint =
                                     if (success) {
@@ -623,7 +619,7 @@ fun ToolCallItem(
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Visibility,
+                            imageVector = AutoDevComposeIcons.Visibility,
                             contentDescription = "View File",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
@@ -632,7 +628,7 @@ fun ToolCallItem(
                 }
 
                 Icon(
-                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
                     contentDescription = if (expanded) "Collapse" else "Expand",
                     tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                     modifier = Modifier.size(20.dp)
@@ -677,7 +673,7 @@ fun ToolCallItem(
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ContentCopy,
+                                imageVector = AutoDevComposeIcons.ContentCopy,
                                 contentDescription = "Copy parameters",
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                                 modifier = Modifier.size(16.dp)
@@ -698,7 +694,7 @@ fun ToolCallItem(
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ContentCopy,
+                                imageVector = AutoDevComposeIcons.ContentCopy,
                                 contentDescription = "Copy entire block",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)

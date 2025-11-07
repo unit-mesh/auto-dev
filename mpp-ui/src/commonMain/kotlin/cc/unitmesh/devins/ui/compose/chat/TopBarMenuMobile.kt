@@ -1,17 +1,12 @@
 package cc.unitmesh.devins.ui.compose.chat
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.Brightness4
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.settings.LanguageSwitcher
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.llm.ModelConfig
@@ -67,7 +62,7 @@ fun TopBarMenuMobile(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.MoreVert,
+                        imageVector = AutoDevComposeIcons.MoreVert,
                         contentDescription = "Menu",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
@@ -99,7 +94,7 @@ fun TopBarMenuMobile(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Settings,
+                                imageVector = AutoDevComposeIcons.Settings,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -122,7 +117,7 @@ fun TopBarMenuMobile(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Build,
+                                imageVector = AutoDevComposeIcons.Build,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -151,14 +146,14 @@ fun TopBarMenuMobile(
                             onClick = { agentMenuExpanded = !agentMenuExpanded },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.SmartToy,
+                                    imageVector = AutoDevComposeIcons.SmartToy,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )
                             },
                             trailingIcon = {
                                 Icon(
-                                    imageVector = if (agentMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    imageVector = if (agentMenuExpanded) AutoDevComposeIcons.KeyboardArrowUp else AutoDevComposeIcons.KeyboardArrowDown,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -180,7 +175,7 @@ fun TopBarMenuMobile(
                                     trailingIcon = {
                                         if (agent == selectedAgent) {
                                             Icon(
-                                                imageVector = Icons.Default.Check,
+                                                imageVector = AutoDevComposeIcons.Check,
                                                 contentDescription = "Selected",
                                                 modifier = Modifier.size(16.dp),
                                                 tint = MaterialTheme.colorScheme.primary
@@ -215,7 +210,7 @@ fun TopBarMenuMobile(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = if (useAgentMode) Icons.Default.SmartToy else Icons.Default.Chat,
+                                imageVector = if (useAgentMode) AutoDevComposeIcons.SmartToy else AutoDevComposeIcons.Chat,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -246,9 +241,9 @@ fun TopBarMenuMobile(
                                 Icon(
                                     imageVector =
                                         when (currentTheme) {
-                                            ThemeManager.ThemeMode.LIGHT -> Icons.Default.LightMode
-                                            ThemeManager.ThemeMode.DARK -> Icons.Default.DarkMode
-                                            ThemeManager.ThemeMode.SYSTEM -> Icons.Default.Brightness4
+                                            ThemeManager.ThemeMode.LIGHT -> AutoDevComposeIcons.LightMode
+                                            ThemeManager.ThemeMode.DARK -> AutoDevComposeIcons.DarkMode
+                                            ThemeManager.ThemeMode.SYSTEM -> AutoDevComposeIcons.Brightness4
                                         },
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
@@ -256,7 +251,7 @@ fun TopBarMenuMobile(
                             },
                             trailingIcon = {
                                 Icon(
-                                    imageVector = if (themeMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    imageVector = if (themeMenuExpanded) AutoDevComposeIcons.KeyboardArrowUp else AutoDevComposeIcons.KeyboardArrowDown,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -278,7 +273,7 @@ fun TopBarMenuMobile(
                                     trailingIcon = {
                                         if (mode == currentTheme) {
                                             Icon(
-                                                imageVector = Icons.Default.Check,
+                                                imageVector = AutoDevComposeIcons.Check,
                                                 contentDescription = "Selected",
                                                 modifier = Modifier.size(16.dp),
                                                 tint = MaterialTheme.colorScheme.primary
@@ -316,7 +311,7 @@ fun TopBarMenuMobile(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.FolderOpen,
+                                imageVector = AutoDevComposeIcons.FolderOpen,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -333,7 +328,7 @@ fun TopBarMenuMobile(
                             },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.Add,
+                                    imageVector = AutoDevComposeIcons.Add,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -352,7 +347,7 @@ fun TopBarMenuMobile(
                             },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Outlined.BugReport,
+                                    imageVector = AutoDevComposeIcons.BugReport,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )

@@ -6,11 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +15,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
 /**
@@ -136,7 +132,7 @@ object DiffSketchRenderer {
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.CheckCircle,
+                                imageVector = AutoDevComposeIcons.CheckCircle,
                                 contentDescription = "接受修改",
                                 tint = Color(0xFF2EA043)
                             )
@@ -149,7 +145,7 @@ object DiffSketchRenderer {
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Close,
+                                imageVector = AutoDevComposeIcons.Close,
                                 contentDescription = "拒绝修改",
                                 tint = Color(0xFFDA3633)
                             )
@@ -359,7 +355,7 @@ object DiffSketchRenderer {
                             color = MaterialTheme.colorScheme.primary
                         )
                         Icon(
-                            imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            imageVector = if (expanded) AutoDevComposeIcons.KeyboardArrowUp else AutoDevComposeIcons.KeyboardArrowDown,
                             contentDescription = if (expanded) "折叠" else "展开",
                             modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.primary

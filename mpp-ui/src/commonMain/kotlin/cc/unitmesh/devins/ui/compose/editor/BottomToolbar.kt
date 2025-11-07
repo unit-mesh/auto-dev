@@ -1,14 +1,13 @@
 package cc.unitmesh.devins.ui.compose.editor
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.llm.ModelConfig
 
 /**
@@ -58,7 +57,7 @@ fun BottomToolbar(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.SmartToy,
+                            imageVector = AutoDevComposeIcons.SmartToy,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp)
                         )
@@ -89,7 +88,7 @@ fun BottomToolbar(
                 modifier = Modifier.size(36.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.AlternateEmail,
+                    imageVector = AutoDevComposeIcons.AlternateEmail,
                     contentDescription = "@ Agent",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
@@ -114,7 +113,7 @@ fun BottomToolbar(
                 modifier = Modifier.size(36.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
+                    imageVector = AutoDevComposeIcons.Settings,
                     contentDescription = "MCP Settings",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
@@ -129,7 +128,7 @@ fun BottomToolbar(
                 contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Send,
+                    imageVector = AutoDevComposeIcons.Send,
                     contentDescription = "Send",
                     modifier = Modifier.size(18.dp)
                 )

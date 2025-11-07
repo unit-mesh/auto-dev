@@ -1,17 +1,12 @@
 package cc.unitmesh.devins.ui.compose.chat
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.Brightness4
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.settings.LanguageSwitcher
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.llm.ModelConfig
@@ -78,7 +73,7 @@ fun TopBarMenuDesktop(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
+                        imageVector = AutoDevComposeIcons.Settings,
                         contentDescription = "Model Configuration",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -90,7 +85,7 @@ fun TopBarMenuDesktop(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Build,
+                        imageVector = AutoDevComposeIcons.Build,
                         contentDescription = "Tool Configuration",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
@@ -103,7 +98,7 @@ fun TopBarMenuDesktop(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.SmartToy,
+                            imageVector = AutoDevComposeIcons.SmartToy,
                             contentDescription = "Select Agent",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
@@ -130,7 +125,7 @@ fun TopBarMenuDesktop(
                                 trailingIcon = {
                                     if (agent == selectedAgent) {
                                         Icon(
-                                            imageVector = Icons.Default.Check,
+                                            imageVector = AutoDevComposeIcons.Check,
                                             contentDescription = "Selected",
                                             modifier = Modifier.size(16.dp),
                                             tint = MaterialTheme.colorScheme.primary
@@ -148,7 +143,7 @@ fun TopBarMenuDesktop(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = if (useAgentMode) Icons.Default.SmartToy else Icons.Default.Chat,
+                        imageVector = if (useAgentMode) AutoDevComposeIcons.Custom.AI else AutoDevComposeIcons.Chat,
                         contentDescription = if (useAgentMode) "Switch to Chat Mode" else "Switch to Agent Mode",
                         tint = if (useAgentMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
@@ -163,9 +158,9 @@ fun TopBarMenuDesktop(
                         Icon(
                             imageVector =
                                 when (currentTheme) {
-                                    ThemeManager.ThemeMode.LIGHT -> Icons.Default.LightMode
-                                    ThemeManager.ThemeMode.DARK -> Icons.Default.DarkMode
-                                    ThemeManager.ThemeMode.SYSTEM -> Icons.Default.Brightness4
+                                    ThemeManager.ThemeMode.LIGHT -> AutoDevComposeIcons.LightMode
+                                    ThemeManager.ThemeMode.DARK -> AutoDevComposeIcons.DarkMode
+                                    ThemeManager.ThemeMode.SYSTEM -> AutoDevComposeIcons.Brightness4
                                 },
                             contentDescription = "Theme",
                             tint = MaterialTheme.colorScheme.onSurface
@@ -193,9 +188,9 @@ fun TopBarMenuDesktop(
                                 leadingIcon = {
                                     Icon(
                                         imageVector = when (mode) {
-                                            ThemeManager.ThemeMode.LIGHT -> Icons.Default.LightMode
-                                            ThemeManager.ThemeMode.DARK -> Icons.Default.DarkMode
-                                            ThemeManager.ThemeMode.SYSTEM -> Icons.Default.Brightness4
+                                            ThemeManager.ThemeMode.LIGHT -> AutoDevComposeIcons.LightMode
+                                            ThemeManager.ThemeMode.DARK -> AutoDevComposeIcons.DarkMode
+                                            ThemeManager.ThemeMode.SYSTEM -> AutoDevComposeIcons.Brightness4
                                         },
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp)
@@ -204,7 +199,7 @@ fun TopBarMenuDesktop(
                                 trailingIcon = {
                                     if (mode == currentTheme) {
                                         Icon(
-                                            imageVector = Icons.Default.Check,
+                                            imageVector = AutoDevComposeIcons.Check,
                                             contentDescription = "Selected",
                                             modifier = Modifier.size(16.dp),
                                             tint = MaterialTheme.colorScheme.primary
@@ -222,7 +217,7 @@ fun TopBarMenuDesktop(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FolderOpen,
+                        imageVector = AutoDevComposeIcons.FolderOpen,
                         contentDescription = "Open Project",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
@@ -235,7 +230,7 @@ fun TopBarMenuDesktop(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = AutoDevComposeIcons.Add,
                             contentDescription = "New Chat",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
@@ -249,7 +244,7 @@ fun TopBarMenuDesktop(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.BugReport,
+                            imageVector = AutoDevComposeIcons.BugReport,
                             contentDescription = "Debug Info",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
