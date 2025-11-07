@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 
 /**
  * File Change Summary Component
- * 
+ *
  * Displays a collapsible summary of all file changes made by the AI Agent.
  * Similar to AutoDev IDEA's PlannerResultSummary.
  */
@@ -44,16 +44,16 @@ fun FileChangeSummary(
     var isExpanded by remember { mutableStateOf(false) }
     var selectedChange by remember { mutableStateOf<FileChange?>(null) }
     val scope = rememberCoroutineScope()
-    
+
     // Get workspace file system for undo operations
     val workspace = WorkspaceManager.currentWorkspace
     val fileSystem = workspace?.fileSystem
-    
+
     // Only show if there are changes
     if (changes.isEmpty()) {
         return
     }
-    
+
     // Show diff dialog if a file is selected
     selectedChange?.let { change ->
         DiffViewDialog(
@@ -88,24 +88,22 @@ fun FileChangeSummary(
             }
         )
     }
-    
+
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(topEnd = 4.dp, topStart = 4.dp, bottomEnd = 0.dp, bottomStart = 0.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         tonalElevation = 0.dp,
         shadowElevation = 0.dp
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             // Collapsed header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { isExpanded = !isExpanded }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 4.dp, vertical = 0.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -128,8 +126,7 @@ fun FileChangeSummary(
                         fontSize = 13.sp
                     )
                 }
-                
-                // Action buttons
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -177,7 +174,7 @@ fun FileChangeSummary(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Undo All", fontSize = 12.sp)
                     }
-                    
+
                     // Keep All button
                     TextButton(
                         onClick = {
@@ -199,7 +196,7 @@ fun FileChangeSummary(
                     }
                 }
             }
-            
+
             // Expanded content
             AnimatedVisibility(
                 visible = isExpanded,
@@ -210,13 +207,13 @@ fun FileChangeSummary(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(max = 300.dp)
                             .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         items(changes, key = { it.timestamp }) { change ->
                             FileChangeItem(
@@ -311,7 +308,7 @@ private fun FileChangeItem(
                         ChangeType.OVERWRITE -> MaterialTheme.colorScheme.secondary
                     }
                 )
-                
+
                 // File name and path - single line compact version
                 Row(
                     modifier = Modifier.weight(1f),
@@ -343,7 +340,7 @@ private fun FileChangeItem(
                         modifier = Modifier.weight(1f, fill = true)
                     )
                 }
-                
+
                 // Accurate diff stats indicator (using LCS algorithm)
                 val diffStats = change.getDiffStats()
                 Row(
@@ -377,7 +374,7 @@ private fun FileChangeItem(
                     }
                 }
             }
-            
+
             // Action buttons - more compact
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
@@ -394,7 +391,7 @@ private fun FileChangeItem(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                
+
                 // Undo button
                 IconButton(
                     onClick = onUndo,
@@ -455,7 +452,7 @@ private fun DiffViewDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
+
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = {
                             onUndo()
@@ -468,7 +465,7 @@ private fun DiffViewDialog(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Undo")
                         }
-                        
+
                         Button(onClick = {
                             onKeep()
                         }) {
@@ -480,7 +477,7 @@ private fun DiffViewDialog(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Keep")
                         }
-                        
+
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Default.Close,
@@ -489,9 +486,9 @@ private fun DiffViewDialog(
                         }
                     }
                 }
-                
+
                 HorizontalDivider()
-                
+
                 // Diff content
                 Box(
                     modifier = Modifier
@@ -506,7 +503,7 @@ private fun DiffViewDialog(
                             change.filePath
                         )
                     }
-                    
+
                     if (diffContent.isNotBlank()) {
                         DiffSketchRenderer.RenderDiff(
                             diffContent = diffContent,
