@@ -86,11 +86,11 @@ fun AgentChatInterface(
                         style = MaterialTheme.typography.headlineSmall
                     )
                     Text(
-                        text = "Please configure your LLM model and select a workspace to use the Coding Agent.",
+                        text = "Please configure your LLM model to use the Coding Agent.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Button(onClick = onConfigWarning) {
-                        Text("Configure Now")
+                        Text("Configure Model")
                     }
                 }
             }

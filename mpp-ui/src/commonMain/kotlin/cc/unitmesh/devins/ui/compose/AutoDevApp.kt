@@ -133,7 +133,7 @@ private fun AutoDevContent() {
                 errorMessage = it
                 showErrorDialog = true
             },
-            onConfigWarning = { showConfigWarning = true }
+            onConfigWarning = { showModelConfigDialog = true }
         )
 
     // 打开目录选择器
@@ -219,7 +219,7 @@ private fun AutoDevContent() {
                 AgentChatInterface(
                     llmService = llmService,
                     isTreeViewVisible = isTreeViewVisible,
-                    onConfigWarning = { showConfigWarning = true },
+                    onConfigWarning = { showModelConfigDialog = true },
                     onToggleTreeView = { isTreeViewVisible = it },
                     // TopBar 参数
                     hasHistory = messages.isNotEmpty(),
@@ -388,15 +388,23 @@ private fun AutoDevContent() {
                     Text("请先配置 LLM 模型才能使用 AI 功能。")
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "点击右下角的模型选择器进行配置。",
+                        "点击下方按钮打开配置界面。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
             confirmButton = {
+                Button(onClick = {
+                    showConfigWarning = false
+                    showModelConfigDialog = true
+                }) {
+                    Text("配置模型")
+                }
+            },
+            dismissButton = {
                 TextButton(onClick = { showConfigWarning = false }) {
-                    Text("知道了")
+                    Text("稍后")
                 }
             }
         )
