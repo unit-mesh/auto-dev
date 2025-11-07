@@ -202,20 +202,23 @@ class CodingAgentExecutor(
             return@coroutineScope results
         }
         
-        // 并行执行阶段：同时启动所有工具
-        if (toolsToExecute.size > 1) {
-            println("🔄 Executing ${toolsToExecute.size} tools in parallel...")
-        }
-        
-        val executionJobs = toolsToExecute.map { toolCall ->
+                // 并行执行阶段：先渲染工具调用信息，再并行执行
+        // Step 1: 先渲染所有工具调用（顺序显示）
+        for (toolCall in toolsToExecute) {
             val toolName = toolCall.toolName
             val params = toolCall.params.mapValues { it.value as Any }
             val paramsStr = params.entries.joinToString(" ") { (key, value) ->
                 "$key=\"$value\""
             }
+            renderer.renderToolCall(toolName, paramsStr)
+        }
+        
+        // Step 2: 并行执行所有工具（不输出日志）
+        val executionJobs = toolsToExecute.map { toolCall ->
+            val toolName = toolCall.toolName
+            val params = toolCall.params.mapValues { it.value as Any }
             
             async {
-                renderer.renderToolCall(toolName, paramsStr)
                 yield()
                 
                 val executionContext = OrchestratorContext(
@@ -233,7 +236,7 @@ class CodingAgentExecutor(
             }
         }
         
-        // 等待所有工具执行完成
+        // Step 3: 等待所有工具执行完成
         val executionResults = executionJobs.awaitAll()
         results.addAll(executionResults)
         

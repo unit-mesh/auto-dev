@@ -76,11 +76,11 @@ class SubAgentManager {
             return null // 不需要特殊处理
         }
 
-        logger.info { "📊 Detected long content (${content.length} chars), delegating to AnalysisAgent" }
+        logger.debug { "📊 Detected long content (${content.length} chars), delegating to AnalysisAgent" }
 
         val analysisAgent = getSubAgent<ContentHandlerContext, ToolResult.AgentResult>("analysis-agent")
         if (analysisAgent == null) {
-            logger.warn { "⚠️ AnalysisAgent not registered, skipping long content handling" }
+            logger.debug { "⚠️ AnalysisAgent not registered, skipping long content handling" }
             return null
         }
         
