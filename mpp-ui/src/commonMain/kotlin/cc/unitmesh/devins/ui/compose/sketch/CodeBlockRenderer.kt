@@ -10,12 +10,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 
 /**
  * 渲染代码块
+ * 在 JVM 和 Android 平台使用 FiraCode 字体
  */
 @Composable
 fun CodeBlockRenderer(
@@ -23,6 +25,14 @@ fun CodeBlockRenderer(
     language: String,
     displayName: String = language
 ) {
+    // Load FiraCode font with fallback to default monospace
+    val codeFontFamily = remember { 
+        try {
+            getFiraCodeFontFamily()
+        } catch (e: Exception) {
+            FontFamily.Monospace
+        }
+    }
     Card(
         modifier = Modifier.Companion.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -51,7 +61,7 @@ fun CodeBlockRenderer(
                     text = code,
                     style =
                         MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = FontFamily.Companion.Monospace
+                            fontFamily = codeFontFamily
                         ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.Companion.fillMaxWidth()
