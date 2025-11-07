@@ -45,6 +45,10 @@ class JsKoogLLMService(config: JsModelConfig, compressionConfig: JsCompressionCo
             "DEEPSEEK" -> LLMProviderType.DEEPSEEK
             "OLLAMA" -> LLMProviderType.OLLAMA
             "OPENROUTER" -> LLMProviderType.OPENROUTER
+            "GLM" -> LLMProviderType.GLM
+            "QWEN" -> LLMProviderType.QWEN
+            "KIMI" -> LLMProviderType.KIMI
+            "CUSTOM-OPENAI-BASE", "CUSTOM_OPENAI_BASE" -> LLMProviderType.CUSTOM_OPENAI_BASE
             else -> throw IllegalArgumentException("Unknown provider: ${config.providerName}")
         }
 

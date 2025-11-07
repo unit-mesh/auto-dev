@@ -7,7 +7,7 @@
 
 import type { InputProcessor, ProcessorContext, ProcessorResult } from './InputRouter.js';
 import { HELP_TEXT, GOODBYE_MESSAGE } from '../constants/asciiArt.js';
-import { t } from '../i18n';
+import { t } from '../i18n/index.js';
 import { DomainDictService, getCurrentProjectPath, isValidProjectPath } from '../utils/domainDictUtils.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 

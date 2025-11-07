@@ -8,10 +8,11 @@
   },
   "scripts": {
     "build:kotlin": "cd .. && ./gradlew :mpp-core:assembleJsPackage",
-    "build:ts": "cd .. && ./gradlew :mpp-ui:assemble && tsc && chmod +x dist/jsMain/typescript/index.js",
+    "build:ts": "cd .. && ./gradlew :mpp-ui:assemble && cd mpp-ui && tsc && chmod +x dist/jsMain/typescript/index.js",
     "build": "npm run build:kotlin && npm run build:ts",
     "dev": "tsc --watch",
     "start": "node dist/jsMain/typescript/index.js",
+    "code": "node dist/jsMain/typescript/index.js code",
     "test": "vitest run",
     "test:unit": "vitest run src/jsMain/typescript/**/*.test.ts",
     "test:cli": "node test-cli-completion.js",

@@ -216,7 +216,32 @@ export const darkTheme = {
 // ============================================================================
 
 export type ThemeMode = 'light' | 'dark';
-export type ColorTheme = typeof lightTheme;
+export type ColorTheme = {
+  readonly primary: string;
+  readonly primaryHover: string;
+  readonly primaryActive: string;
+  readonly accent: string;
+  readonly accentHover: string;
+  readonly textPrimary: string;
+  readonly textSecondary: string;
+  readonly textTertiary: string;
+  readonly textInverse: string;
+  readonly surfaceBg: string;
+  readonly surfaceCard: string;
+  readonly surfaceHover: string;
+  readonly surfaceActive: string;
+  readonly border: string;
+  readonly borderHover: string;
+  readonly borderFocus: string;
+  readonly success: string;
+  readonly successLight: string;
+  readonly warning: string;
+  readonly warningLight: string;
+  readonly error: string;
+  readonly errorLight: string;
+  readonly info: string;
+  readonly infoLight: string;
+};
 
 // ============================================================================
 // Theme Context and Utilities
