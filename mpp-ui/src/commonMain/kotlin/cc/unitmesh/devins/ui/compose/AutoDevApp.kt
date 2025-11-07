@@ -171,45 +171,49 @@ private fun AutoDevContent() {
                     .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TopBarMenu(
-                hasHistory = messages.isNotEmpty(),
-                hasDebugInfo = compilerOutput.isNotEmpty(),
-                currentModelConfig = currentModelConfig,
-                selectedAgent = selectedAgent,
-                availableAgents = availableAgents,
-                useAgentMode = useAgentMode,
-                isTreeViewVisible = isTreeViewVisible,
-                onOpenDirectory = { openDirectoryChooser() },
-                onClearHistory = {
-                    chatHistoryManager.clearCurrentSession()
-                    messages = emptyList()
-                    currentStreamingOutput = ""
-                    println("🗑️ [SimpleAIChat] 聊天历史已清空")
-                },
-                onShowDebug = { showDebugDialog = true },
-                onModelConfigChange = { config ->
-                    currentModelConfig = config
-                    if (config.isValid()) {
-                        try {
-                            llmService = KoogLLMService.create(config)
-                            println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
-                        } catch (e: Exception) {
-                            println("❌ 切换模型失败: ${e.message}")
+            // Agent 模式：TopBar 在左侧列
+            // Chat 模式：TopBar 占据全宽
+            if (!useAgentMode) {
+                TopBarMenu(
+                    hasHistory = messages.isNotEmpty(),
+                    hasDebugInfo = compilerOutput.isNotEmpty(),
+                    currentModelConfig = currentModelConfig,
+                    selectedAgent = selectedAgent,
+                    availableAgents = availableAgents,
+                    useAgentMode = useAgentMode,
+                    isTreeViewVisible = isTreeViewVisible,
+                    onOpenDirectory = { openDirectoryChooser() },
+                    onClearHistory = {
+                        chatHistoryManager.clearCurrentSession()
+                        messages = emptyList()
+                        currentStreamingOutput = ""
+                        println("🗑️ [SimpleAIChat] 聊天历史已清空")
+                    },
+                    onShowDebug = { showDebugDialog = true },
+                    onModelConfigChange = { config ->
+                        currentModelConfig = config
+                        if (config.isValid()) {
+                            try {
+                                llmService = KoogLLMService.create(config)
+                                println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
+                            } catch (e: Exception) {
+                                println("❌ 切换模型失败: ${e.message}")
+                            }
                         }
-                    }
-                },
-                onAgentChange = { agent ->
-                    selectedAgent = agent
-                    println("🤖 切换 Agent: $agent")
-                },
-                onModeToggle = { useAgentMode = !useAgentMode },
-                onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
-                onShowModelConfig = { showModelConfigDialog = true },
-                onShowToolConfig = { showToolConfigDialog = true },
-                modifier =
-                    Modifier
-                        .statusBarsPadding() // 添加状态栏边距
-            )
+                    },
+                    onAgentChange = { agent ->
+                        selectedAgent = agent
+                        println("🤖 切换 Agent: $agent")
+                    },
+                    onModeToggle = { useAgentMode = !useAgentMode },
+                    onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
+                    onShowModelConfig = { showModelConfigDialog = true },
+                    onShowToolConfig = { showToolConfigDialog = true },
+                    modifier =
+                        Modifier
+                            .statusBarsPadding() // 添加状态栏边距
+                )
+            }
 
             if (useAgentMode) {
                 AgentChatInterface(
@@ -217,6 +221,39 @@ private fun AutoDevContent() {
                     isTreeViewVisible = isTreeViewVisible,
                     onConfigWarning = { showConfigWarning = true },
                     onToggleTreeView = { isTreeViewVisible = it },
+                    // TopBar 参数
+                    hasHistory = messages.isNotEmpty(),
+                    hasDebugInfo = compilerOutput.isNotEmpty(),
+                    currentModelConfig = currentModelConfig,
+                    selectedAgent = selectedAgent,
+                    availableAgents = availableAgents,
+                    useAgentMode = useAgentMode,
+                    onOpenDirectory = { openDirectoryChooser() },
+                    onClearHistory = {
+                        chatHistoryManager.clearCurrentSession()
+                        messages = emptyList()
+                        currentStreamingOutput = ""
+                        println("🗑️ [SimpleAIChat] 聊天历史已清空")
+                    },
+                    onShowDebug = { showDebugDialog = true },
+                    onModelConfigChange = { config ->
+                        currentModelConfig = config
+                        if (config.isValid()) {
+                            try {
+                                llmService = KoogLLMService.create(config)
+                                println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
+                            } catch (e: Exception) {
+                                println("❌ 切换模型失败: ${e.message}")
+                            }
+                        }
+                    },
+                    onAgentChange = { agent ->
+                        selectedAgent = agent
+                        println("🤖 切换 Agent: $agent")
+                    },
+                    onModeToggle = { useAgentMode = !useAgentMode },
+                    onShowModelConfig = { showModelConfigDialog = true },
+                    onShowToolConfig = { showToolConfigDialog = true },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {

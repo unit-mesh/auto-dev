@@ -110,17 +110,65 @@ actual fun FileSystemTreeView(
 }
 
 /**
- * Check if a file is a code file
+ * Check if a file is a code/text file that should be opened
  */
 private fun isCodeFile(path: String): Boolean {
-    val extension = path.substringAfterLast('.', "")
-    val codeExtensions = setOf(
-        "kt", "java", "js", "ts", "tsx", "jsx", "py", "go", "rs",
-        "c", "cpp", "h", "hpp", "cs", "swift", "rb", "php",
-        "html", "css", "scss", "sass", "json", "xml", "yaml", "yml",
-        "md", "txt", "sh", "bash", "sql", "gradle", "properties", "kts"
+    val fileName = path.substringAfterLast('/')
+    val extension = fileName.substringAfterLast('.', "").lowercase()
+    
+    // 二进制文件扩展名 - 不应该打开
+    val binaryExtensions = setOf(
+        // 编译产物
+        "class", "jar", "war", "ear", "zip", "tar", "gz", "bz2", "7z", "rar",
+        // 可执行文件
+        "exe", "dll", "so", "dylib", "bin", "app",
+        // 图片
+        "png", "jpg", "jpeg", "gif", "bmp", "ico", "svg", "webp", "tiff",
+        // 视频
+        "mp4", "avi", "mov", "mkv", "wmv", "flv", "webm",
+        // 音频
+        "mp3", "wav", "ogg", "flac", "aac", "wma",
+        // 字体
+        "ttf", "otf", "woff", "woff2", "eot",
+        // 数据库
+        "db", "sqlite", "sqlite3",
+        // 其他
+        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"
     )
-    return extension.lowercase() in codeExtensions
+    
+    // 检查是否是二进制文件
+    if (extension in binaryExtensions) {
+        return false
+    }
+    
+    // 可以打开的代码/文本文件扩展名
+    val codeExtensions = setOf(
+        "kt", "kts", "java", "js", "ts", "tsx", "jsx", "py", "go", "rs",
+        "c", "cpp", "h", "hpp", "cc", "cxx", "cs", "swift", "rb", "php",
+        "html", "htm", "css", "scss", "sass", "less", "json", "xml", "yaml", "yml",
+        "md", "markdown", "txt", "sh", "bash", "zsh", "fish", "sql", 
+        "gradle", "properties", "toml", "ini", "conf", "config",
+        "proto", "graphql", "vue", "svelte", "astro"
+    )
+    
+    if (extension in codeExtensions) {
+        return true
+    }
+    
+    // 无扩展名文件 - 检查文件名
+    if (extension.isEmpty() || extension == fileName.lowercase()) {
+        val noExtensionFiles = setOf(
+            "dockerfile", "makefile", "rakefile", "gemfile", "vagrantfile",
+            "jenkinsfile", "podfile", "cartfile", "brewfile",
+            "gradlew", "gradlew.bat", "mvnw", "mvnw.cmd",
+            ".gitignore", ".dockerignore", ".npmignore", ".editorconfig",
+            ".eslintrc", ".prettierrc", ".babelrc", ".travis.yml",
+            "cmakelists.txt", "license", "readme", "changelog", "contributing"
+        )
+        return fileName.lowercase() in noExtensionFiles
+    }
+    
+    return false
 }
 
 /**

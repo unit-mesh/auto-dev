@@ -43,6 +43,12 @@ fun FileViewerPanel(
                 
                 fileName = file.name
                 
+                // 检查是否是二进制文件
+                if (isBinaryFile(file)) {
+                    errorMessage = "Cannot open binary file: ${file.name}"
+                    return@withContext
+                }
+                
                 // 检查文件大小（限制 10MB）
                 val maxSize = 10 * 1024 * 1024 // 10MB
                 if (file.length() > maxSize) {
@@ -51,7 +57,11 @@ fun FileViewerPanel(
                 }
                 
                 // 异步读取文件
-                fileContent = file.readText()
+                try {
+                    fileContent = file.readText()
+                } catch (e: java.nio.charset.MalformedInputException) {
+                    errorMessage = "Cannot decode file (likely binary): ${file.name}"
+                }
             } catch (e: Exception) {
                 errorMessage = "Error loading file: ${e.message}"
                 fileName = filePath
@@ -185,31 +195,100 @@ fun FileViewerPanel(
     }
 }
 
+/**
+ * Check if a file is likely a binary file
+ */
+private fun isBinaryFile(file: File): Boolean {
+    val extension = file.extension.lowercase()
+    
+    // 常见的二进制文件扩展名
+    val binaryExtensions = setOf(
+        // 编译产物
+        "class", "jar", "war", "ear", "zip", "tar", "gz", "bz2", "7z", "rar",
+        // 可执行文件
+        "exe", "dll", "so", "dylib", "bin", "app",
+        // 图片
+        "png", "jpg", "jpeg", "gif", "bmp", "ico", "webp", "tiff",
+        // 视频
+        "mp4", "avi", "mov", "mkv", "wmv", "flv", "webm",
+        // 音频
+        "mp3", "wav", "ogg", "flac", "aac", "wma",
+        // 字体
+        "ttf", "otf", "woff", "woff2", "eot",
+        // 数据库
+        "db", "sqlite", "sqlite3",
+        // 其他
+        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"
+    )
+    
+    if (extension in binaryExtensions) {
+        return true
+    }
+    
+    // 对于无扩展名或未知扩展名的文件，检查前 512 字节是否包含二进制字符
+    if (file.length() > 0) {
+        try {
+            val bytesToCheck = minOf(512, file.length().toInt())
+            val bytes = file.inputStream().use { it.readNBytes(bytesToCheck) }
+            
+            // 检查是否包含 NULL 字节或其他控制字符（除了常见的如 \n, \r, \t）
+            val binaryThreshold = 0.3 // 如果超过 30% 是非文本字符，认为是二进制
+            var nonTextCount = 0
+            
+            for (byte in bytes) {
+                val b = byte.toInt() and 0xFF
+                // NULL 字节或其他控制字符（除了 \n=10, \r=13, \t=9）
+                if (b == 0 || (b < 32 && b != 9 && b != 10 && b != 13)) {
+                    nonTextCount++
+                }
+            }
+            
+            return (nonTextCount.toDouble() / bytes.size) > binaryThreshold
+        } catch (e: Exception) {
+            // 读取失败，保守起见认为是二进制
+            return true
+        }
+    }
+    
+    return false
+}
+
 private fun getSyntaxStyleForFile(file: File): String {
-    return when (file.extension.lowercase()) {
-        "java" -> SyntaxConstants.SYNTAX_STYLE_JAVA
-        "kt", "kts" -> SyntaxConstants.SYNTAX_STYLE_KOTLIN
-        "js" -> SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT
-        "ts" -> SyntaxConstants.SYNTAX_STYLE_TYPESCRIPT
-        "py" -> SyntaxConstants.SYNTAX_STYLE_PYTHON
-        "xml" -> SyntaxConstants.SYNTAX_STYLE_XML
-        "html", "htm" -> SyntaxConstants.SYNTAX_STYLE_HTML
-        "css" -> SyntaxConstants.SYNTAX_STYLE_CSS
-        "json" -> SyntaxConstants.SYNTAX_STYLE_JSON
-        "yaml", "yml" -> SyntaxConstants.SYNTAX_STYLE_YAML
-        "md" -> SyntaxConstants.SYNTAX_STYLE_MARKDOWN
-        "sql" -> SyntaxConstants.SYNTAX_STYLE_SQL
-        "sh", "bash" -> SyntaxConstants.SYNTAX_STYLE_UNIX_SHELL
-        "c", "h" -> SyntaxConstants.SYNTAX_STYLE_C
-        "cpp", "hpp", "cc", "cxx" -> SyntaxConstants.SYNTAX_STYLE_CPLUSPLUS
-        "go" -> SyntaxConstants.SYNTAX_STYLE_GO
-        "rs" -> SyntaxConstants.SYNTAX_STYLE_RUST
-        "rb" -> SyntaxConstants.SYNTAX_STYLE_RUBY
-        "php" -> SyntaxConstants.SYNTAX_STYLE_PHP
-        "cs" -> SyntaxConstants.SYNTAX_STYLE_CSHARP
-        "scala" -> SyntaxConstants.SYNTAX_STYLE_SCALA
-        "gradle" -> SyntaxConstants.SYNTAX_STYLE_GROOVY
-        "dockerfile" -> SyntaxConstants.SYNTAX_STYLE_DOCKERFILE
+    val extension = file.extension.lowercase()
+    val fileName = file.name.lowercase()
+    
+    return when {
+        // 基于扩展名
+        extension == "java" -> SyntaxConstants.SYNTAX_STYLE_JAVA
+        extension in setOf("kt", "kts") -> SyntaxConstants.SYNTAX_STYLE_KOTLIN
+        extension == "js" -> SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT
+        extension == "ts" || extension == "tsx" -> SyntaxConstants.SYNTAX_STYLE_TYPESCRIPT
+        extension == "py" -> SyntaxConstants.SYNTAX_STYLE_PYTHON
+        extension == "xml" -> SyntaxConstants.SYNTAX_STYLE_XML
+        extension in setOf("html", "htm") -> SyntaxConstants.SYNTAX_STYLE_HTML
+        extension == "css" || extension == "scss" || extension == "sass" -> SyntaxConstants.SYNTAX_STYLE_CSS
+        extension == "json" -> SyntaxConstants.SYNTAX_STYLE_JSON
+        extension in setOf("yaml", "yml") -> SyntaxConstants.SYNTAX_STYLE_YAML
+        extension in setOf("md", "markdown") -> SyntaxConstants.SYNTAX_STYLE_MARKDOWN
+        extension == "sql" -> SyntaxConstants.SYNTAX_STYLE_SQL
+        extension in setOf("sh", "bash", "zsh") -> SyntaxConstants.SYNTAX_STYLE_UNIX_SHELL
+        extension in setOf("c", "h") -> SyntaxConstants.SYNTAX_STYLE_C
+        extension in setOf("cpp", "hpp", "cc", "cxx") -> SyntaxConstants.SYNTAX_STYLE_CPLUSPLUS
+        extension == "go" -> SyntaxConstants.SYNTAX_STYLE_GO
+        extension == "rs" -> SyntaxConstants.SYNTAX_STYLE_RUST
+        extension == "rb" -> SyntaxConstants.SYNTAX_STYLE_RUBY
+        extension == "php" -> SyntaxConstants.SYNTAX_STYLE_PHP
+        extension == "cs" -> SyntaxConstants.SYNTAX_STYLE_CSHARP
+        extension == "scala" -> SyntaxConstants.SYNTAX_STYLE_SCALA
+        extension == "gradle" -> SyntaxConstants.SYNTAX_STYLE_GROOVY
+        extension in setOf("properties", "ini", "conf", "toml") -> SyntaxConstants.SYNTAX_STYLE_PROPERTIES_FILE
+        
+        // 基于文件名（无扩展名文件）
+        fileName == "dockerfile" -> SyntaxConstants.SYNTAX_STYLE_DOCKERFILE
+        fileName == "makefile" || fileName == "rakefile" -> SyntaxConstants.SYNTAX_STYLE_MAKEFILE
+        fileName in setOf("gradlew", "gradlew.bat") -> SyntaxConstants.SYNTAX_STYLE_UNIX_SHELL
+        fileName.startsWith(".") -> SyntaxConstants.SYNTAX_STYLE_PROPERTIES_FILE
+        
         else -> SyntaxConstants.SYNTAX_STYLE_NONE
     }
 }

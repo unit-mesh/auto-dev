@@ -22,6 +22,21 @@ fun AgentChatInterface(
     isTreeViewVisible: Boolean = false,
     onConfigWarning: () -> Unit,
     onToggleTreeView: (Boolean) -> Unit = {},
+    // TopBar 参数
+    hasHistory: Boolean = false,
+    hasDebugInfo: Boolean = false,
+    currentModelConfig: cc.unitmesh.llm.ModelConfig? = null,
+    selectedAgent: String = "Default",
+    availableAgents: List<String> = listOf("Default"),
+    useAgentMode: Boolean = true,
+    onOpenDirectory: () -> Unit = {},
+    onClearHistory: () -> Unit = {},
+    onShowDebug: () -> Unit = {},
+    onModelConfigChange: (cc.unitmesh.llm.ModelConfig) -> Unit = {},
+    onAgentChange: (String) -> Unit = {},
+    onModeToggle: () -> Unit = {},
+    onShowModelConfig: () -> Unit = {},
+    onShowToolConfig: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
@@ -91,8 +106,29 @@ fun AgentChatInterface(
             minRatio = 0.3f,
             maxRatio = 0.8f,
             first = {
-                // 左侧：Chat + Input 完整区域
+                // 左侧：TopBar + Chat + Input 完整区域
                 Column(modifier = Modifier.fillMaxSize()) {
+                    // TopBar 放在左侧列顶部
+                    cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
+                        hasHistory = hasHistory,
+                        hasDebugInfo = hasDebugInfo,
+                        currentModelConfig = currentModelConfig,
+                        selectedAgent = selectedAgent,
+                        availableAgents = availableAgents,
+                        useAgentMode = useAgentMode,
+                        isTreeViewVisible = isTreeViewVisible,
+                        onOpenDirectory = onOpenDirectory,
+                        onClearHistory = onClearHistory,
+                        onShowDebug = onShowDebug,
+                        onModelConfigChange = onModelConfigChange,
+                        onAgentChange = onAgentChange,
+                        onModeToggle = onModeToggle,
+                        onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+                        onShowModelConfig = onShowModelConfig,
+                        onShowToolConfig = onShowToolConfig,
+                        modifier = Modifier.statusBarsPadding()
+                    )
+                    
                     if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
                         AgentStatusBar(
                             isExecuting = viewModel.isExecuting,
@@ -190,6 +226,27 @@ fun AgentChatInterface(
     } else {
         // TreeView 未打开时的布局
         Column(modifier = modifier.fillMaxSize()) {
+            // TopBar
+            cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
+                hasHistory = hasHistory,
+                hasDebugInfo = hasDebugInfo,
+                currentModelConfig = currentModelConfig,
+                selectedAgent = selectedAgent,
+                availableAgents = availableAgents,
+                useAgentMode = useAgentMode,
+                isTreeViewVisible = isTreeViewVisible,
+                onOpenDirectory = onOpenDirectory,
+                onClearHistory = onClearHistory,
+                onShowDebug = onShowDebug,
+                onModelConfigChange = onModelConfigChange,
+                onAgentChange = onAgentChange,
+                onModeToggle = onModeToggle,
+                onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+                onShowModelConfig = onShowModelConfig,
+                onShowToolConfig = onShowToolConfig,
+                modifier = Modifier.statusBarsPadding()
+            )
+            
             if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
                 AgentStatusBar(
                     isExecuting = viewModel.isExecuting,
