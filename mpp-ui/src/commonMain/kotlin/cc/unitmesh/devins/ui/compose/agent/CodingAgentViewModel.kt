@@ -45,6 +45,17 @@ class CodingAgentViewModel(
     var mcpPreloadingMessage by mutableStateOf("")
         private set
 
+    // TreeView state
+    var isTreeViewVisible by mutableStateOf(false)
+
+    fun toggleTreeView() {
+        isTreeViewVisible = !isTreeViewVisible
+    }
+
+    fun closeTreeView() {
+        isTreeViewVisible = false
+    }
+
     // Cached tool configuration for UI display
     private var cachedToolConfig: cc.unitmesh.agent.config.ToolConfigFile? = null
 

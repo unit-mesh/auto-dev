@@ -72,6 +72,10 @@ kotlin {
 
                 // JSON 处理
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+
+                // Bonsai Tree View
+                implementation("cafe.adriel.bonsai:bonsai-core:1.2.0")
+                implementation("cafe.adriel.bonsai:bonsai-file-system:1.2.0")
             }
         }
 

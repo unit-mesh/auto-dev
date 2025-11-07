@@ -65,6 +65,7 @@ private fun AutoDevContent() {
     var showToolConfigDialog by remember { mutableStateOf(false) }
     var selectedAgent by remember { mutableStateOf("Default") }
     var useAgentMode by remember { mutableStateOf(true) } // New: toggle between chat and agent mode
+    var isTreeViewVisible by remember { mutableStateOf(false) } // TreeView visibility for agent mode
 
     val availableAgents = listOf("Default")
 
@@ -177,6 +178,7 @@ private fun AutoDevContent() {
                 selectedAgent = selectedAgent,
                 availableAgents = availableAgents,
                 useAgentMode = useAgentMode,
+                isTreeViewVisible = isTreeViewVisible,
                 onOpenDirectory = { openDirectoryChooser() },
                 onClearHistory = {
                     chatHistoryManager.clearCurrentSession()
@@ -201,6 +203,7 @@ private fun AutoDevContent() {
                     println("🤖 切换 Agent: $agent")
                 },
                 onModeToggle = { useAgentMode = !useAgentMode },
+                onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
                 onShowModelConfig = { showModelConfigDialog = true },
                 onShowToolConfig = { showToolConfigDialog = true },
                 modifier =
@@ -211,7 +214,9 @@ private fun AutoDevContent() {
             if (useAgentMode) {
                 AgentChatInterface(
                     llmService = llmService,
+                    isTreeViewVisible = isTreeViewVisible,
                     onConfigWarning = { showConfigWarning = true },
+                    onToggleTreeView = { isTreeViewVisible = it },
                     modifier = Modifier.fillMaxSize()
                 )
             } else {

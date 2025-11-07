@@ -23,12 +23,14 @@ fun TopBarMenuDesktop(
     selectedAgent: String,
     availableAgents: List<String>,
     useAgentMode: Boolean = true,
+    isTreeViewVisible: Boolean = false,
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
     onModelConfigChange: (ModelConfig) -> Unit,
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
+    onToggleTreeView: () -> Unit = {},
     onShowModelConfig: () -> Unit,
     onShowToolConfig: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -247,6 +249,24 @@ fun TopBarMenuDesktop(
                             imageVector = AutoDevComposeIcons.BugReport,
                             contentDescription = "Debug Info",
                             tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                // Project Explorer Toggle (只在 Agent 模式下显示，放在最右边)
+                if (useAgentMode) {
+                    IconButton(
+                        onClick = onToggleTreeView,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                            contentDescription = if (isTreeViewVisible) "Hide Explorer" else "Show Explorer",
+                            tint = if (isTreeViewVisible) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            }
                         )
                     }
                 }

@@ -19,7 +19,9 @@ import cc.unitmesh.llm.KoogLLMService
 @Composable
 fun AgentChatInterface(
     llmService: KoogLLMService?,
+    isTreeViewVisible: Boolean = false,
     onConfigWarning: () -> Unit,
+    onToggleTreeView: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
@@ -37,6 +39,22 @@ fun AgentChatInterface(
                 null
             }
         }
+
+    // 同步外部 TreeView 状态到 ViewModel
+    LaunchedEffect(isTreeViewVisible) {
+        viewModel?.let {
+            if (it.isTreeViewVisible != isTreeViewVisible) {
+                it.isTreeViewVisible = isTreeViewVisible
+            }
+        }
+    }
+
+    // 监听 ViewModel 状态变化并通知外部
+    LaunchedEffect(viewModel?.isTreeViewVisible) {
+        viewModel?.let {
+            onToggleTreeView(it.isTreeViewVisible)
+        }
+    }
 
     if (viewModel == null) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -65,77 +83,98 @@ fun AgentChatInterface(
         return
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
-            AgentStatusBar(
-                isExecuting = viewModel.isExecuting,
-                currentIteration = viewModel.renderer.currentIteration,
-                maxIterations = viewModel.renderer.maxIterations,
-                executionTime = viewModel.renderer.currentExecutionTime,
-                viewModel = viewModel,
-                onCancel = { viewModel.cancelTask() }
-            )
-        }
-
-        // Main content area with optional file viewer panel
-        Row(
+    Row(modifier = modifier.fillMaxSize()) {
+        // 左侧：Chat + Input 完整区域
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
                 .weight(1f)
+                .fillMaxHeight()
         ) {
-            // Message list (takes full width if no file viewer, or left side if viewer is open)
+            if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
+                AgentStatusBar(
+                    isExecuting = viewModel.isExecuting,
+                    currentIteration = viewModel.renderer.currentIteration,
+                    maxIterations = viewModel.renderer.maxIterations,
+                    executionTime = viewModel.renderer.currentExecutionTime,
+                    viewModel = viewModel,
+                    onCancel = { viewModel.cancelTask() }
+                )
+            }
+
+            // Chat 消息列表
             AgentMessageList(
                 renderer = viewModel.renderer,
                 modifier = Modifier
-                    .weight(if (viewModel.renderer.currentViewingFile != null) 0.5f else 1f)
-                    .fillMaxHeight(),
+                    .fillMaxWidth()
+                    .weight(1f),
                 onOpenFileViewer = { filePath ->
                     viewModel.renderer.openFileViewer(filePath)
                 }
             )
-            
-            // File viewer panel (only show on JVM when a file is selected)
-            viewModel.renderer.currentViewingFile?.let { filePath ->
-                FileViewerPanelWrapper(
-                    filePath = filePath,
-                    onClose = { viewModel.renderer.closeFileViewer() },
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .fillMaxHeight()
+
+            val callbacks = remember(viewModel) {
+                createAgentCallbacks(
+                    viewModel = viewModel,
+                    onConfigWarning = onConfigWarning
                 )
             }
-        }
 
-        val callbacks = remember(viewModel) {
-            createAgentCallbacks(
+            // 输入框
+            DevInEditorInput(
+                initialText = "",
+                placeholder = "Describe your coding task...",
+                callbacks = callbacks,
+                completionManager = currentWorkspace?.completionManager,
+                isCompactMode = true,
+                onModelConfigChange = { /* Handle model config change if needed */ },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .imePadding()
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+            )
+
+            ToolLoadingStatusBar(
                 viewModel = viewModel,
-                onConfigWarning = onConfigWarning
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
             )
         }
 
-        DevInEditorInput(
-            initialText = "",
-            placeholder = "Describe your coding task...",
-            callbacks = callbacks,
-            completionManager = currentWorkspace?.completionManager,
-            isCompactMode = true,
-            onModelConfigChange = { /* Handle model config change if needed */ },
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-        )
+        // 右侧：TreeView + FileViewer（左右分割）
+        if (viewModel.isTreeViewVisible) {
+            Row(
+                modifier = Modifier
+                    .fillMaxHeight()
+            ) {
+                // TreeView
+                FileSystemTreeView(
+                    rootPath = currentWorkspace?.rootPath ?: "",
+                    onFileClick = { filePath ->
+                        viewModel.renderer.openFileViewer(filePath)
+                    },
+                    onClose = { viewModel.closeTreeView() },
+                    modifier = Modifier
+                        .width(280.dp)
+                        .fillMaxHeight()
+                )
 
-        ToolLoadingStatusBar(
-            viewModel = viewModel,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 4.dp)
-        )
+                // FileViewer（可选）
+                viewModel.renderer.currentViewingFile?.let { filePath ->
+                    VerticalDivider()
+                    FileViewerPanelWrapper(
+                        filePath = filePath,
+                        onClose = { viewModel.renderer.closeFileViewer() },
+                        modifier = Modifier
+                            .width(400.dp)
+                            .fillMaxHeight()
+                    )
+                }
+            }
+        }
     }
+
 }
 
 @Composable

@@ -13,6 +13,8 @@ object AutoDevComposeIcons {
     // Navigation & Layout
     val FolderOpen: ImageVector get() = Icons.Default.FolderOpen
     val Folder: ImageVector get() = Icons.Default.Folder
+    val Menu: ImageVector get() = Icons.Default.Menu
+    val MenuOpen: ImageVector get() = Icons.Default.MenuOpen
     val Add: ImageVector get() = Icons.Default.Add
     val Close: ImageVector get() = Icons.Default.Close
     val ExpandMore: ImageVector get() = Icons.Default.ExpandMore

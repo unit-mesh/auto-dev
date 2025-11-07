@@ -23,12 +23,14 @@ fun TopBarMenuMobile(
     selectedAgent: String,
     availableAgents: List<String>,
     useAgentMode: Boolean = true,
+    isTreeViewVisible: Boolean = false,
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
     onModelConfigChange: (ModelConfig) -> Unit,
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
+    onToggleTreeView: () -> Unit = {},
     onShowModelConfig: () -> Unit,
     onShowToolConfig: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -302,7 +304,42 @@ fun TopBarMenuMobile(
 
                     HorizontalDivider()
 
-                    // 6. Open Directory
+                    // 6. Project Explorer Toggle (只在 Agent 模式下显示)
+                    if (useAgentMode) {
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(
+                                        "Project Explorer",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        if (isTreeViewVisible) "Hide Sidebar" else "Show Sidebar",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onToggleTreeView()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                                    contentDescription = null,
+                                    tint = if (isTreeViewVisible) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        )
+                    }
+
+                    // 7. Open Directory
                     DropdownMenuItem(
                         text = { Text("Open Project") },
                         onClick = {
@@ -318,7 +355,7 @@ fun TopBarMenuMobile(
                         }
                     )
 
-                    // 7. New Chat
+                    // 8. New Chat
                     if (hasHistory) {
                         DropdownMenuItem(
                             text = { Text("New Chat") },
@@ -336,7 +373,7 @@ fun TopBarMenuMobile(
                         )
                     }
 
-                    // 8. Debug Info
+                    // 9. Debug Info
                     if (hasDebugInfo) {
                         HorizontalDivider()
                         DropdownMenuItem(
