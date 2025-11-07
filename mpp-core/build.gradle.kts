@@ -124,6 +124,9 @@ kotlin {
 
                 // Logback for JVM logging backend with file storage
                 implementation("ch.qos.logback:logback-classic:1.5.19")
+                
+                // Pty4J for better terminal output handling
+                implementation("org.jetbrains.pty4j:pty4j:0.13.10")
             }
         }
 
