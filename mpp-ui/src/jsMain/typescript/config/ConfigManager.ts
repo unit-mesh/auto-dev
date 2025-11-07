@@ -311,11 +311,11 @@ export class AutoDevConfigWrapper {
   }
 
   getTemperature(): number {
-    return this.getActiveConfig()?.temperature ?? 0.7;
+    return this.getActiveConfig()?.temperature ?? 0.0;
   }
 
   getMaxTokens(): number {
-    return this.getActiveConfig()?.maxTokens ?? 8192;
+    return this.getActiveConfig()?.maxTokens ?? 128000;
   }
 
   /**

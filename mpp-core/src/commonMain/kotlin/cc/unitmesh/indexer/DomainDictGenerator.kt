@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.map
 class DomainDictGenerator(
     private val fileSystem: ProjectFileSystem,
     private val modelConfig: ModelConfig,
-    private var maxTokenLength: Int = 8192
+    private var maxTokenLength: Int = 128000
 ) {
     private val logger = getLogger("DomainDictGenerator")
     init {

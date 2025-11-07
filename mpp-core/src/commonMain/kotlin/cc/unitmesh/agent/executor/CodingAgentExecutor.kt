@@ -169,7 +169,7 @@ class CodingAgentExecutor(
                 ToolType.Shell -> 2
                 else -> when (toolName) {
                     ToolType.ReadFile.name, ToolType.WriteFile.name -> 3
-                    "shell" -> 2
+                    ToolType.Shell.name -> 2
                     else -> 2
                 }
             }

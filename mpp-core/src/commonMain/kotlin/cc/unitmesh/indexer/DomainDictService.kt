@@ -26,7 +26,7 @@ class DomainDictService(
      * Collect semantic names from the project files
      * Simplified implementation that extracts names from file paths
      */
-    suspend fun collectSemanticNames(maxTokenLength: Int = 8192): DomainDictionary {
+    suspend fun collectSemanticNames(maxTokenLength: Int = 128000): DomainDictionary {
         val files = getProjectFiles()
 
         val level1 = collectLevel1Names(files, maxTokenLength / 2)

@@ -19,7 +19,7 @@ class CodingAgentViewModelTest {
             modelName = "deepseek-chat",
             apiKey = "test-key",
             temperature = 0.7,
-            maxTokens = 8192,
+            maxTokens = 128000,
             baseUrl = "https://api.deepseek.com"
         )
         return KoogLLMService.create(config)

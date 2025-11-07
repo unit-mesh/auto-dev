@@ -283,8 +283,8 @@ actual object ConfigManager {
             apiKey = map["apiKey"] ?: "",
             model = map["model"] ?: "",
             baseUrl = map["baseUrl"] ?: "",
-            temperature = map["temperature"]?.toDoubleOrNull() ?: 0.7,
-            maxTokens = map["maxTokens"]?.toIntOrNull() ?: 8192
+            temperature = map["temperature"]?.toDoubleOrNull() ?: 0.0,
+            maxTokens = map["maxTokens"]?.toIntOrNull() ?: 128000
         )
     }
 
@@ -315,10 +315,10 @@ actual object ConfigManager {
                 if (config.baseUrl.isNotEmpty()) {
                     appendLine("    baseUrl: ${config.baseUrl}")
                 }
-                if (config.temperature != 0.7) {
+                if (config.temperature != 0.0) {
                     appendLine("    temperature: ${config.temperature}")
                 }
-                if (config.maxTokens != 8192) {
+                if (config.maxTokens != 128000) {
                     appendLine("    maxTokens: ${config.maxTokens}")
                 }
             }

@@ -68,7 +68,7 @@ data class ToolConfigFile(
 data class ChatConfig(
     val temperature: Double = 0.7,
     val systemPrompt: String = "",
-    val maxTokens: Int = 8192
+    val maxTokens: Int = 128000
 )
 
 /**

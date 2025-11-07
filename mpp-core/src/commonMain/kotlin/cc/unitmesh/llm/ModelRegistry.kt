@@ -61,7 +61,7 @@ object ModelRegistry {
             return null
         }
 
-        return when (provider) {
+        val model = when (provider) {
             LLMProviderType.OPENAI -> OpenAIModels.create(modelName)
             LLMProviderType.ANTHROPIC -> AnthropicModels.create(modelName)
             LLMProviderType.GOOGLE -> GoogleModels.create(modelName)
@@ -73,6 +73,8 @@ object ModelRegistry {
             LLMProviderType.KIMI -> KimiModels.create(modelName)
             LLMProviderType.CUSTOM_OPENAI_BASE -> null // Custom models use generic model
         }
+
+        return model
     }
 
     /**
@@ -243,7 +245,7 @@ object ModelRegistry {
                     LLMCapability.MultipleChoices
                 ),
                 contextLength = contextLength,
-                maxOutputTokens = maxOutputTokens
+                maxOutputTokens = maxOutputTokens,
             )
         }
     }

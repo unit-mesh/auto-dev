@@ -174,7 +174,7 @@ data class JsModelConfig(
     val modelName: String,
     val apiKey: String = "",
     val temperature: Double = 0.7,
-    val maxTokens: Int = 8192,
+    val maxTokens: Int = 128000,
     val baseUrl: String = ""
 ) {
     fun toKotlinConfig(): ModelConfig {
@@ -228,7 +228,7 @@ data class JsNamedModelConfig(
     val modelName: String,
     val apiKey: String = "",
     val temperature: Double = 0.7,
-    val maxTokens: Int = 8192,
+    val maxTokens: Int = 128000,
     val baseUrl: String = ""
 ) {
     fun toKotlin(): NamedModelConfig {
@@ -269,40 +269,6 @@ data class JsNamedModelConfig(
     }
 }
 
-/**
- * JavaScript-friendly ConfigFile
- */
-@JsExport
-data class JsConfigFile(
-    val active: String,
-    val configs: Array<JsNamedModelConfig>
-) {
-    fun toKotlin(): ConfigFile {
-        return ConfigFile(
-            active = active,
-            configs = configs.map { it.toKotlin() }
-        )
-    }
-    
-    companion object {
-        @JsName("fromKotlin")
-        fun fromKotlin(configFile: ConfigFile): JsConfigFile {
-            return JsConfigFile(
-                active = configFile.active,
-                configs = configFile.configs.map { JsNamedModelConfig.fromKotlin(it) }.toTypedArray()
-            )
-        }
-        
-        @JsName("empty")
-        fun empty(): JsConfigFile {
-            return JsConfigFile(active = "", configs = emptyArray())
-        }
-    }
-}
-
-/**
- * JavaScript-friendly result wrapper
- */
 @JsExport
 data class JsResult(
     val success: Boolean,
@@ -952,7 +918,7 @@ class JsChatCompressionInfo(
 class JsDomainDictGenerator(
     private val projectPath: String,
     private val modelConfig: JsModelConfig,
-    private val maxTokenLength: Int = 8192
+    private val maxTokenLength: Int = 128000
 ) {
     private val fileSystem = cc.unitmesh.devins.filesystem.DefaultProjectFileSystem(projectPath)
     private val generator = cc.unitmesh.indexer.DomainDictGenerator(
