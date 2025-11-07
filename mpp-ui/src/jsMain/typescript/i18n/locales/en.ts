@@ -18,14 +18,14 @@ export const en: TranslationKeys = {
     continue: 'Continue',
     exit: 'Exit',
   },
-  
+
   welcome: {
     title: '🚀 Welcome to AutoDev CLI!',
     subtitle: "Let's set up your AI configuration. You can add more later in ~/.autodev/config.yaml",
     configPrompt: 'Configure your LLM model to get started',
     exitHint: 'Press Ctrl+C to exit',
   },
-  
+
   modelConfig: {
     title: '🤖 Configure LLM Model',
     stepInfo: 'Step 1/2',
@@ -62,7 +62,7 @@ export const en: TranslationKeys = {
       baseUrl: 'Base URL',
     },
   },
-  
+
   chat: {
     title: '🤖 AutoDev CLI - AI Coding Assistant',
     emptyHint: '💬 Type your message to start coding',
@@ -76,7 +76,7 @@ export const en: TranslationKeys = {
       system: 'ℹ️  System',
     },
   },
-  
+
   commands: {
     help: {
       description: 'Show help information',
@@ -113,7 +113,7 @@ export const en: TranslationKeys = {
     usage: 'Command name is required. Usage: /command [args]',
     executionError: 'Command execution failed: {{error}}',
   },
-  
+
   messages: {
     configSaving: '⏳ Saving configuration...',
     configSaved: '✓ Configuration saved!',
