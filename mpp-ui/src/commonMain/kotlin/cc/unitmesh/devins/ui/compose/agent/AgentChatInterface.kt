@@ -128,17 +128,6 @@ fun AgentChatInterface(
                         onShowToolConfig = onShowToolConfig,
                         modifier = Modifier.statusBarsPadding()
                     )
-                    
-                    if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
-                        AgentStatusBar(
-                            isExecuting = viewModel.isExecuting,
-                            currentIteration = viewModel.renderer.currentIteration,
-                            maxIterations = viewModel.renderer.maxIterations,
-                            executionTime = viewModel.renderer.currentExecutionTime,
-                            viewModel = viewModel,
-                            onCancel = { viewModel.cancelTask() }
-                        )
-                    }
 
                     // Chat 消息列表
                     AgentMessageList(
@@ -165,6 +154,8 @@ fun AgentChatInterface(
                         callbacks = callbacks,
                         completionManager = currentWorkspace?.completionManager,
                         isCompactMode = true,
+                        isExecuting = viewModel.isExecuting,
+                        onStopClick = { viewModel.cancelTask() },
                         onModelConfigChange = { /* Handle model config change if needed */ },
                         modifier =
                             Modifier
@@ -246,18 +237,8 @@ fun AgentChatInterface(
                 onShowToolConfig = onShowToolConfig,
                 modifier = Modifier.statusBarsPadding()
             )
-            
-            if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
-                AgentStatusBar(
-                    isExecuting = viewModel.isExecuting,
-                    currentIteration = viewModel.renderer.currentIteration,
-                    maxIterations = viewModel.renderer.maxIterations,
-                    executionTime = viewModel.renderer.currentExecutionTime,
-                    viewModel = viewModel,
-                    onCancel = { viewModel.cancelTask() }
-                )
-            }
 
+            // Chat 消息列表
             AgentMessageList(
                 renderer = viewModel.renderer,
                 modifier = Modifier
@@ -281,6 +262,8 @@ fun AgentChatInterface(
                 callbacks = callbacks,
                 completionManager = currentWorkspace?.completionManager,
                 isCompactMode = true,
+                isExecuting = viewModel.isExecuting,
+                onStopClick = { viewModel.cancelTask() },
                 onModelConfigChange = { /* Handle model config change if needed */ },
                 modifier =
                     Modifier
@@ -298,162 +281,6 @@ fun AgentChatInterface(
         }
     }
 
-}
-
-@Composable
-private fun AgentStatusBar(
-    isExecuting: Boolean,
-    currentIteration: Int,
-    maxIterations: Int,
-    executionTime: Long,
-    viewModel: CodingAgentViewModel,
-    onCancel: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (isExecuting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
-                    )
-                }
-                Column {
-                    Text(
-                        text = if (isExecuting) "Executing..." else "Ready",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (currentIteration > 0) {
-                            Text(
-                                text = "($currentIteration/$maxIterations)",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                            )
-                        }
-
-                        if (executionTime > 0) {
-                            Text(
-                                text = "• ${formatExecutionTime(executionTime)}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Copy All button
-                if (!isExecuting) {
-                    CopyAllButton(viewModel = viewModel)
-                }
-
-                // Stop button
-                if (isExecuting) {
-                    Button(
-                        onClick = onCancel,
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
-                    ) {
-                        Icon(
-                            imageVector = AutoDevComposeIcons.Stop,
-                            contentDescription = "Stop",
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Stop")
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CopyAllButton(viewModel: CodingAgentViewModel) {
-    val clipboardManager = LocalClipboardManager.current
-
-    OutlinedButton(
-        onClick = {
-            val allText =
-                buildString {
-                    viewModel.renderer.timeline.forEach { item ->
-                        when (item) {
-                            is ComposeRenderer.TimelineItem.MessageItem -> {
-                                val role = if (item.message.role == MessageRole.USER) "User" else "Assistant"
-                                appendLine("[$role]: ${item.message.content}")
-                                appendLine()
-                            }
-
-                            is ComposeRenderer.TimelineItem.ToolCallItem -> {
-                                appendLine("[Tool Call]: ${item.toolName}")
-                                appendLine("Description: ${item.description}")
-                                item.details?.let { appendLine("Parameters: $it") }
-                                appendLine()
-                            }
-
-                            is ComposeRenderer.TimelineItem.ToolResultItem -> {
-                                val status = if (item.success) "SUCCESS" else "FAILED"
-                                appendLine("[Tool Result]: ${item.toolName} - $status")
-                                appendLine("Summary: ${item.summary}")
-                                item.output?.let { appendLine("Output: $it") }
-                                appendLine()
-                            }
-
-                            is ComposeRenderer.TimelineItem.ErrorItem -> {
-                                appendLine("[Error]: ${item.error}")
-                                appendLine()
-                            }
-
-                            is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
-                                val status = if (item.success) "COMPLETED" else "FAILED"
-                                appendLine("[Task $status]: ${item.message}")
-                                appendLine()
-                            }
-                        }
-                    }
-
-                    if (viewModel.renderer.currentStreamingOutput.isNotEmpty()) {
-                        appendLine("[Assistant - Streaming]: ${viewModel.renderer.currentStreamingOutput}")
-                    }
-                }
-            clipboardManager.setText(AnnotatedString(allText))
-        }
-    ) {
-        Icon(
-            imageVector = AutoDevComposeIcons.ContentCopy,
-            contentDescription = "Copy all",
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text("Copy All")
-    }
 }
 
 private fun formatExecutionTime(timeMs: Long): String {

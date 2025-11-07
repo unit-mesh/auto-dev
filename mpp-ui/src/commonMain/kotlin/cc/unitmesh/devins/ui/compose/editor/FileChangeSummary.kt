@@ -231,14 +231,14 @@ private fun FileChangeItem(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -246,7 +246,7 @@ private fun FileChangeItem(
             Row(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // Change type icon
                 Icon(
@@ -257,7 +257,7 @@ private fun FileChangeItem(
                         ChangeType.OVERWRITE -> Icons.Default.Create
                     },
                     contentDescription = change.changeType.name,
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(16.dp),
                     tint = when (change.changeType) {
                         ChangeType.CREATE -> MaterialTheme.colorScheme.primary
                         ChangeType.EDIT -> MaterialTheme.colorScheme.tertiary
@@ -266,26 +266,35 @@ private fun FileChangeItem(
                     }
                 )
                 
-                // File name and path
-                Column(
-                    modifier = Modifier.weight(1f)
+                // File name and path - single line compact version
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = change.getFileName(),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    Text(
+                        text = "·",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = change.filePath,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = true)
                     )
                 }
                 
@@ -301,9 +310,9 @@ private fun FileChangeItem(
                             MaterialTheme.colorScheme.error
                         },
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(3.dp))
                             .background(
                                 if (sizeDiff > 0) {
                                     MaterialTheme.colorScheme.primaryContainer
@@ -311,24 +320,24 @@ private fun FileChangeItem(
                                     MaterialTheme.colorScheme.errorContainer
                                 }
                             )
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
                     )
                 }
             }
             
-            // Action buttons
+            // Action buttons - more compact
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 // Keep button
                 IconButton(
                     onClick = onKeep,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Keep",
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -336,12 +345,12 @@ private fun FileChangeItem(
                 // Undo button
                 IconButton(
                     onClick = onUndo,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Undo",
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }

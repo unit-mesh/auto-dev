@@ -22,6 +22,8 @@ import cc.unitmesh.llm.ModelConfig
 fun BottomToolbar(
     onSendClick: () -> Unit,
     sendEnabled: Boolean,
+    isExecuting: Boolean = false,
+    onStopClick: () -> Unit = {},
     onAtClick: () -> Unit = {},
     onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
@@ -152,23 +154,48 @@ fun BottomToolbar(
                 )
             }
 
-            // 发送按钮
-            FilledTonalButton(
-                onClick = onSendClick,
-                enabled = sendEnabled,
-                modifier = Modifier.height(if (isAndroid) 40.dp else 38.dp),
-                contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Send,
-                    contentDescription = "Send",
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Send",
-                    style = MaterialTheme.typography.labelMedium
-                )
+            // 发送按钮 / 停止按钮
+            if (isExecuting) {
+                // 执行中显示 Stop 按钮
+                FilledTonalButton(
+                    onClick = onStopClick,
+                    modifier = Modifier.height(if (isAndroid) 40.dp else 38.dp),
+                    contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Stop,
+                        contentDescription = "Stop",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Stop",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            } else {
+                // 未执行时显示 Send 按钮
+                FilledTonalButton(
+                    onClick = onSendClick,
+                    enabled = sendEnabled,
+                    modifier = Modifier.height(if (isAndroid) 40.dp else 38.dp),
+                    contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Send,
+                        contentDescription = "Send",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Send",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             }
         }
     }

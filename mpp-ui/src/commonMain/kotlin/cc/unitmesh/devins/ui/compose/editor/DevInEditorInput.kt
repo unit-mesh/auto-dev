@@ -53,6 +53,8 @@ fun DevInEditorInput(
     callbacks: EditorCallbacks? = null,
     completionManager: CompletionManager? = null,
     isCompactMode: Boolean = false,
+    isExecuting: Boolean = false,
+    onStopClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     // Model config change callback
     onModelConfigChange: (ModelConfig) -> Unit = {}
@@ -504,6 +506,8 @@ fun DevInEditorInput(
                         }
                     },
                     sendEnabled = textFieldValue.text.isNotBlank(),
+                    isExecuting = isExecuting,
+                    onStopClick = onStopClick,
                     workspacePath = currentWorkspace?.rootPath,
                     onAtClick = {
                         // 插入 @ 并触发 Agent 补全
