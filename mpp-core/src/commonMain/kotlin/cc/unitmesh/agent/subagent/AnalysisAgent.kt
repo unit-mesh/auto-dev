@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.subagent
 
 import cc.unitmesh.agent.core.SubAgent
+import cc.unitmesh.agent.logging.logger
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
@@ -183,7 +184,7 @@ class AnalysisAgent(
             contentHistory.add(input to result)
             updateConversationContext(input, result)
             
-            onProgress("✅ Content analysis completed")
+            logger().info { "Analysis completed: $result" }
             
             return ToolResult.AgentResult(
                 success = true,
