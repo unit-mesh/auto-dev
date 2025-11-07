@@ -8,6 +8,7 @@ import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
 import { parseCodeBlocksSync } from '../utils/renderUtils.js';
 import { t } from '../i18n/index.js';
+import { semanticInk } from '../design-system/theme-helpers.js';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system' | 'compiling';
@@ -28,7 +29,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending
   if (message.role === 'compiling') {
     return (
       <Box marginBottom={1}>
-        <Text color="yellow">
+        <Text color={semanticInk.warning}>
           <Spinner type="dots" /> {message.content}
         </Text>
       </Box>
@@ -39,7 +40,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending
     return (
       <Box flexDirection="column" marginBottom={1}>
         <Box>
-          <Text bold color="blue">
+          <Text bold color={semanticInk.primary}>
             {t('chat.prefixes.system')}:
           </Text>
         </Box>
@@ -51,7 +52,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending
   }
 
   const isUser = message.role === 'user';
-  const color = isUser ? 'green' : 'cyan';
+  const color = isUser ? semanticInk.success : semanticInk.accent;
   const prefix = isUser ? t('chat.prefixes.you') : t('chat.prefixes.ai');
   
   // Check if we should show prefix (defaults to true for backward compatibility)
@@ -65,7 +66,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isPending
           <Text bold color={color}>
             {prefix}:
             {isPending && !isUser && (
-              <Text color="cyan"> <Spinner type="dots" /></Text>
+              <Text color={semanticInk.accent}> <Spinner type="dots" /></Text>
             )}
           </Text>
         </Box>
@@ -151,7 +152,7 @@ export const ContentBlocks: React.FC<ContentBlocksProps> = ({ content, isPending
                 <Text dimColor>{`[${block.languageId}]`}</Text>
               )}
               {/* Code content with border */}
-              <Box borderStyle="round" borderColor="gray" paddingX={1} flexDirection="column">
+              <Box borderStyle="round" borderColor={semanticInk.muted} paddingX={1} flexDirection="column">
                 {codeLines.map((line, lineIdx) => (
                   <Text key={lineIdx}>{line || ' '}</Text>
                 ))}

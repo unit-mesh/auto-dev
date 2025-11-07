@@ -14,6 +14,7 @@ import { ConfigManager } from '../config/ConfigManager.js';
 import { ModeManager, AgentModeFactory, ChatModeFactory } from '../modes/index.js';
 import type { ModeContext } from '../modes/index.js';
 import { ModeCommandProcessor } from '../processors/ModeCommandProcessor.js';
+import { semanticInk } from '../design-system/theme-helpers.js';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system' | 'compiling';
@@ -223,7 +224,7 @@ export const App: React.FC = () => {
   if (error) {
     return (
       <Box flexDirection="column" padding={1}>
-        <Text color="red">Error: {error}</Text>
+        <Text color={semanticInk.error}>Error: {error}</Text>
         <Text dimColor>Press Ctrl+C to exit</Text>
       </Box>
     );

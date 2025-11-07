@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { Box, Text } from 'ink';
+import { semanticInk } from '../design-system/theme-helpers.js';
 
 type CompletionItem = {
   text: string;
@@ -44,7 +45,7 @@ export const CommandSuggestions: React.FC<CommandSuggestionsProps> = ({
 
   return (
     <Box flexDirection="column" marginTop={1} marginBottom={1}>
-      <Box borderStyle="round" borderColor="cyan" paddingX={1} paddingY={0}>
+      <Box borderStyle="round" borderColor={semanticInk.accent} paddingX={1} paddingY={0}>
         <Box flexDirection="column" width="100%">
           {items.map((item, index) => {
             const isSelected = index === selectedIndex;
@@ -54,11 +55,11 @@ export const CommandSuggestions: React.FC<CommandSuggestionsProps> = ({
             
             return (
               <Box key={index} paddingY={0}>
-                <Text color={isSelected ? 'cyan' : 'gray'} bold={isSelected}>
+                <Text color={isSelected ? semanticInk.accent : semanticInk.muted} bold={isSelected}>
                   {item.icon ? `${item.icon} ` : ''}
                   {item.displayText || item.text}
                   {truncatedDescription ? (
-                    <Text color="gray" dimColor> - {truncatedDescription}</Text>
+                    <Text color={semanticInk.muted} dimColor> - {truncatedDescription}</Text>
                   ) : null}
                 </Text>
               </Box>
@@ -67,7 +68,7 @@ export const CommandSuggestions: React.FC<CommandSuggestionsProps> = ({
         </Box>
       </Box>
       <Box marginTop={1}>
-        <Text color="gray" dimColor>
+        <Text color={semanticInk.muted} dimColor>
           ↑/↓ Navigate • Tab/Enter Complete • Esc Cancel
         </Text>
       </Box>

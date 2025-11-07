@@ -4,6 +4,7 @@
  */
 
 import chalk from 'chalk';
+import { semanticChalk, dividers, coloredStatus } from '../design-system/theme-helpers.js';
 import * as diff from 'diff';
 
 export interface FileChange {
@@ -90,8 +91,8 @@ export class OutputFormatter {
     // File header with operation type
     const opIcon = change.operation === 'create' ? '✨' : 
                    change.operation === 'update' ? '📝' : '🗑️';
-    const opColor = change.operation === 'create' ? chalk.green : 
-                    change.operation === 'update' ? chalk.yellow : chalk.red;
+    const opColor = change.operation === 'create' ? semanticChalk.success : 
+                    change.operation === 'update' ? semanticChalk.warning : semanticChalk.error;
     
     console.log(opColor(opIcon + ' ' + change.operation.toUpperCase()) + ' ' + 
                 chalk.bold(change.file));
@@ -146,12 +147,12 @@ export class OutputFormatter {
   }): void {
     this.header('Summary');
     
-    console.log(chalk.bold('Iterations:  ') + chalk.cyan(stats.iterations.toString()));
-    console.log(chalk.bold('Total Edits: ') + chalk.cyan(stats.edits.toString()));
-    console.log('  ' + chalk.green('✨ Creates:  ') + stats.creates);
-    console.log('  ' + chalk.yellow('📝 Updates:  ') + stats.updates);
-    console.log('  ' + chalk.red('🗑️  Deletes:  ') + stats.deletes);
-    console.log(chalk.bold('Duration:    ') + chalk.cyan(`${(stats.duration / 1000).toFixed(2)}s`));
+    console.log(chalk.bold('Iterations:  ') + semanticChalk.accent(stats.iterations.toString()));
+    console.log(chalk.bold('Total Edits: ') + semanticChalk.accent(stats.edits.toString()));
+    console.log('  ' + semanticChalk.success('✨ Creates:  ') + stats.creates);
+    console.log('  ' + semanticChalk.warning('📝 Updates:  ') + stats.updates);
+    console.log('  ' + semanticChalk.error('🗑️  Deletes:  ') + stats.deletes);
+    console.log(chalk.bold('Duration:    ') + semanticChalk.accent(`${(stats.duration / 1000).toFixed(2)}s`));
   }
 
   /**
@@ -163,7 +164,7 @@ export class OutputFormatter {
     const filledLength = Math.floor((barLength * current) / total);
     const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
     
-    process.stdout.write('\r' + chalk.cyan(`[${bar}]`) + ` ${percentage}% ${label}`);
+    process.stdout.write('\r' + semanticChalk.accent(`[${bar}]`) + ` ${percentage}% ${label}`);
     
     if (current === total) {
       console.log(); // New line when complete

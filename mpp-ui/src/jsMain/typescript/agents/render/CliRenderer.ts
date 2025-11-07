@@ -5,6 +5,7 @@
 
 import chalk from 'chalk';
 import hljs from 'highlight.js';
+import { semanticChalk, dividers } from '../../design-system/theme-helpers.js';
 
 export class CliRenderer {
   readonly __doNotUseOrImplementIt: any = {};
@@ -23,7 +24,7 @@ export class CliRenderer {
     this.reasoningBuffer = '';
     this.isInDevinBlock = false;
     this.lastOutputLength = 0;
-    process.stdout.write(chalk.gray('💭 '));
+    process.stdout.write(semanticChalk.muted('💭 '));
   }
 
   renderLLMResponseChunk(chunk: string): void {
@@ -103,7 +104,7 @@ export class CliRenderer {
     if (similarity > 0.8 && this.lastIterationReasoning.length > 0) {
       this.consecutiveRepeats++;
       if (this.consecutiveRepeats >= 2) {
-        console.log(chalk.yellow('\n  ⚠️  Agent appears to be repeating similar analysis...'));
+        console.log(semanticChalk.warning('\n  ⚠️  Agent appears to be repeating similar analysis...'));
       }
     } else {
       this.consecutiveRepeats = 0;
@@ -133,9 +134,9 @@ export class CliRenderer {
 
   renderToolCall(toolName: string, paramsStr: string): void {
     const toolInfo = this.formatToolCallDisplay(toolName, paramsStr);
-    console.log(chalk.bold('● ') + chalk.bold(toolInfo.name) + chalk.gray(' - ' + toolInfo.description));
+    console.log(chalk.bold('● ') + chalk.bold(toolInfo.name) + semanticChalk.muted(' - ' + toolInfo.description));
     if (toolInfo.details) {
-      console.log('  ⎿ ' + chalk.gray(toolInfo.details));
+      console.log('  ⎿ ' + semanticChalk.muted(toolInfo.details));
     }
   }
 
@@ -202,14 +203,14 @@ export class CliRenderer {
   renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput: string | null): void {
     if (success && output) {
       const summary = this.generateToolSummary(toolName, output);
-      console.log('  ⎿ ' + chalk.green(summary));
+      console.log('  ⎿ ' + semanticChalk.success(summary));
 
       if (toolName === 'read-file') {
         // For read-file, show formatted code content with syntax highlighting
         this.displayCodeContent(output, this.getFileExtension(output));
       }
     } else if (!success && output) {
-      console.log('  ⎿ ' + chalk.red(`Error: ${output.substring(0, 200)}`));
+      console.log('  ⎿ ' + semanticChalk.error(`Error: ${output.substring(0, 200)}`));
     }
   }
 
@@ -234,7 +235,7 @@ export class CliRenderer {
           // Try to extract diff information if available
           const diffInfo = this.extractDiffInfo(output);
           if (diffInfo) {
-            return `Edited with ${chalk.green(diffInfo.additions + ' additions')} and ${chalk.red(diffInfo.deletions + ' deletions')}`;
+            return `Edited with ${semanticChalk.success(diffInfo.additions + ' additions')} and ${semanticChalk.error(diffInfo.deletions + ' deletions')}`;
           }
           return 'File updated successfully';
         }
@@ -257,19 +258,19 @@ export class CliRenderer {
     const maxLines = 15; // Show first 15 lines to avoid overwhelming output
     const displayLines = lines.slice(0, maxLines);
 
-    console.log(chalk.gray('────────────────────────────────────────────────────────────'));
+    console.log(dividers.solid(60));
 
     displayLines.forEach((line, index) => {
       const lineNumber = (index + 1).toString().padStart(3, ' ');
       const highlightedLine = this.highlightCode(line, fileExtension);
-      console.log(chalk.gray(`${lineNumber} │ `) + highlightedLine);
+      console.log(semanticChalk.muted(`${lineNumber} │ `) + highlightedLine);
     });
 
     if (lines.length > maxLines) {
-      console.log(chalk.gray(`... (${lines.length - maxLines} more lines)`));
+      console.log(semanticChalk.muted(`... (${lines.length - maxLines} more lines)`));
     }
 
-    console.log(chalk.gray('────────────────────────────────────────────────────────────'));
+    console.log(dividers.solid(60));
   }
 
   private highlightCode(code: string, fileExtension: string): string {
@@ -324,10 +325,10 @@ export class CliRenderer {
     // Simple conversion of highlight.js HTML to colored text
     // This is a basic implementation - you might want to use a proper HTML-to-ANSI converter
     return highlighted
-      .replace(/<span class="hljs-keyword">/g, chalk.blue(''))
-      .replace(/<span class="hljs-string">/g, chalk.green(''))
-      .replace(/<span class="hljs-comment">/g, chalk.gray(''))
-      .replace(/<span class="hljs-number">/g, chalk.yellow(''))
+      .replace(/<span class="hljs-keyword">/g, semanticChalk.primary(''))
+      .replace(/<span class="hljs-string">/g, semanticChalk.success(''))
+      .replace(/<span class="hljs-comment">/g, semanticChalk.muted(''))
+      .replace(/<span class="hljs-number">/g, semanticChalk.warning(''))
       .replace(/<\/span>/g, chalk.reset(''))
       .replace(/<[^>]*>/g, ''); // Remove any remaining HTML tags
   }
@@ -361,32 +362,32 @@ export class CliRenderer {
   }
 
   renderTaskComplete(): void {
-    console.log(chalk.green('\n✓ Task marked as complete\n'));
+    console.log(semanticChalk.successBold('\n✓ Task marked as complete\n'));
   }
 
   renderFinalResult(success: boolean, message: string, iterations: number): void {
     console.log();
     if (success) {
-      console.log(chalk.green('✅ Task completed successfully'));
+      console.log(semanticChalk.successBold('✅ Task completed successfully'));
     } else {
-      console.log(chalk.yellow('⚠️  Task incomplete'));
+      console.log(semanticChalk.warningBold('⚠️  Task incomplete'));
     }
-    console.log(chalk.gray(`Task completed after ${iterations} iterations`));
+    console.log(semanticChalk.muted(`Task completed after ${iterations} iterations`));
   }
 
   renderError(message: string): void {
-    console.log(chalk.red('❌ ') + message);
+    console.log(semanticChalk.errorBold('❌ ') + message);
   }
 
   renderRepeatWarning(toolName: string, count: number): void {
-    console.log(chalk.yellow(`⚠️  Warning: Tool '${toolName}' has been called ${count} times in a row`));
-    console.log(chalk.yellow(`   This may indicate the agent is stuck in a loop. Stopping execution.`));
+    console.log(semanticChalk.warning(`⚠️  Warning: Tool '${toolName}' has been called ${count} times in a row`));
+    console.log(semanticChalk.warning(`   This may indicate the agent is stuck in a loop. Stopping execution.`));
   }
 
   renderRecoveryAdvice(recoveryAdvice: string): void {
     console.log();
-    console.log(chalk.cyan('🔧 ERROR RECOVERY ADVICE:'));
-    console.log(chalk.cyan('─'.repeat(50)));
+    console.log(semanticChalk.accentBold('🔧 ERROR RECOVERY ADVICE:'));
+    console.log(semanticChalk.accent(dividers.solid(50)));
 
     // Split by lines and add proper indentation with colors
     const lines = recoveryAdvice.split('\n');
@@ -394,29 +395,29 @@ export class CliRenderer {
       if (line.trim().length > 0) {
         // Color different sections differently
         if (line.includes('Analysis:')) {
-          console.log(chalk.blue(`   ${line}`));
+          console.log(semanticChalk.primary(`   ${line}`));
         } else if (line.includes('Recommended Actions:')) {
-          console.log(chalk.green(`   ${line}`));
+          console.log(semanticChalk.success(`   ${line}`));
         } else if (line.includes('Recovery Commands:')) {
-          console.log(chalk.yellow(`   ${line}`));
+          console.log(semanticChalk.warning(`   ${line}`));
         } else if (line.includes('Next Steps:')) {
           console.log(chalk.magenta(`   ${line}`));
         } else if (line.trim().startsWith('$')) {
           // Command lines in cyan
-          console.log(chalk.cyan(`   ${line}`));
+          console.log(semanticChalk.accent(`   ${line}`));
         } else if (line.trim().match(/^\d+\./)) {
           // Numbered items in white
           console.log(chalk.white(`   ${line}`));
         } else {
           // Regular text in gray
-          console.log(chalk.gray(`   ${line}`));
+          console.log(semanticChalk.muted(`   ${line}`));
         }
       } else {
         console.log();
       }
     }
 
-    console.log(chalk.cyan('─'.repeat(50)));
+    console.log(semanticChalk.accent(dividers.solid(50)));
     console.log();
   }
 }

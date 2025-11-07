@@ -12,6 +12,7 @@ import {
 } from '../utils/commandUtils.js';
 import { GOODBYE_MESSAGE } from '../constants/asciiArt.js';
 import { t } from '../i18n/index.js';
+import { semanticInk } from '../design-system/theme-helpers.js';
 
 type CompletionItem = {
   text: string;
@@ -188,13 +189,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {/* Static area - includes Header and all completed messages */}
       <Static items={[
         // Header as first item
-        <Box key="header" borderStyle="single" borderColor="cyan" paddingX={1}>
+        <Box key="header" borderStyle="single" borderColor={semanticInk.accent} paddingX={1}>
           <Box flexDirection="row" justifyContent="space-between">
-            <Text bold color="cyan">
+            <Text bold color={semanticInk.accent}>
               {t('chat.title')}
             </Text>
             {currentMode && (
-              <Text color="yellow">
+              <Text color={semanticInk.warning}>
                 {currentMode.icon} {currentMode.displayName}
                 {modeStatus && ` - ${modeStatus}`}
               </Text>
@@ -239,8 +240,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       />
 
       {/* Input */}
-      <Box borderStyle="single" borderColor="gray" paddingX={1}>
-        <Text color="green">{'> '}</Text>
+      <Box borderStyle="single" borderColor={semanticInk.muted} paddingX={1}>
+        <Text color={semanticInk.success}>{'> '}</Text>
         <TextInput
           value={input}
           onChange={setInput}

@@ -10,6 +10,7 @@ import TextInput from 'ink-text-input';
 import { ConfigManager, LLMProvider, LLMConfig } from '../config/ConfigManager.js';
 import { ModelConfigForm } from './ModelConfigForm.js';
 import { t } from '../i18n/index.js';
+import { semanticInk } from '../design-system/theme-helpers.js';
 
 interface WelcomeScreenProps {
   onConfigured: (config: any) => void;
@@ -69,7 +70,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
   if (saved) {
     return (
       <Box flexDirection="column" padding={2}>
-        <Text color="green">{t('messages.configSaved')}</Text>
+        <Text color={semanticInk.success}>{t('messages.configSaved')}</Text>
         <Text dimColor>{t('messages.starting')}</Text>
       </Box>
     );
@@ -78,7 +79,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
   if (saving) {
     return (
       <Box flexDirection="column" padding={2}>
-        <Text color="yellow">{t('messages.configSaving')}</Text>
+        <Text color={semanticInk.warning}>{t('messages.configSaving')}</Text>
       </Box>
     );
   }
@@ -87,7 +88,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
     return (
       <Box flexDirection="column" padding={2}>
         <Box marginBottom={1}>
-          <Text bold color="cyan">
+          <Text bold color={semanticInk.accent}>
             {t('modelConfig.nameConfig')}
           </Text>
         </Box>
@@ -100,15 +101,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
 
         <Box marginBottom={1}>
           <Text>
-            <Text color="green">✓</Text> {t('modelConfig.fields.provider')}: <Text bold>{pendingConfig.provider}</Text>
+            <Text color={semanticInk.success}>✓</Text> {t('modelConfig.fields.provider')}: <Text bold>{pendingConfig.provider}</Text>
           </Text>
           <Text>
-            <Text color="green">✓</Text> {t('modelConfig.fields.model')}: <Text bold>{pendingConfig.model}</Text>
+            <Text color={semanticInk.success}>✓</Text> {t('modelConfig.fields.model')}: <Text bold>{pendingConfig.model}</Text>
           </Text>
         </Box>
 
         <Box>
-          <Text color="cyan">{t('modelConfig.fields.provider')}: </Text>
+          <Text color={semanticInk.accent}>{t('modelConfig.fields.provider')}: </Text>
           <TextInput
             value={configName}
             onChange={setConfigName}
@@ -128,7 +129,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onConfigured }) =>
     <Box flexDirection="column" padding={1}>
       {/* Header */}
       <Box marginBottom={1}>
-        <Text bold color="cyan">
+        <Text bold color={semanticInk.accent}>
           {t('welcome.title')}
         </Text>
       </Box>
