@@ -133,7 +133,6 @@ kotlin {
 
                 // JediTerm for terminal emulation (uses pty4j under the hood)
                 implementation("org.jetbrains.pty4j:pty4j:0.13.10")
-//                implementation("org.jetbrains.jediterm:jediterm-ui:3.57")
             }
         }
 

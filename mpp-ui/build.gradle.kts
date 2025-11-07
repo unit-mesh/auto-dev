@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
+    kotlin("plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.android.application")
     id("app.cash.sqldelight") version "2.1.0"
@@ -12,6 +13,7 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/")
 }
 
 sqldelight {
@@ -51,7 +53,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(project(":mpp-core"))
                 implementation(compose.runtime)
@@ -69,6 +71,8 @@ kotlin {
 
                 // DateTime for KMP
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+
+                implementation("com.charleskorn.kaml:kaml:0.61.0")
 
                 // JSON 处理
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
@@ -104,6 +108,9 @@ kotlin {
 
                 // RSyntaxTextArea for syntax highlighting in JVM
                 implementation("com.fifesoft:rsyntaxtextarea:3.6.0")
+
+                implementation("org.jetbrains.jediterm:jediterm-core:3.57")
+                implementation("org.jetbrains.jediterm:jediterm-ui:3.57")
             }
         }
 

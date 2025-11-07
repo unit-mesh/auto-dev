@@ -27,11 +27,11 @@ import kotlinx.serialization.Serializable
  * ```
  */
 @Serializable
-data class ConfigFile(
+public data class ConfigFile(
     val active: String = "",
     val configs: List<NamedModelConfig> = emptyList(),
-    val mcpServers: Map<String, McpServerConfig> = emptyMap(),
-    val language: String = "en"  // Language preference: "en" or "zh"
+    val mcpServers: Map<String, McpServerConfig>? = emptyMap(),
+    val language: String? = "en"  // Language preference: "en" or "zh"
 )
 
 class AutoDevConfigWrapper(val configFile: ConfigFile) {
@@ -66,10 +66,10 @@ class AutoDevConfigWrapper(val configFile: ConfigFile) {
     }
 
     fun getMcpServers(): Map<String, McpServerConfig> {
-        return configFile.mcpServers
+        return configFile.mcpServers ?: emptyMap()
     }
 
     fun getEnabledMcpServers(): Map<String, McpServerConfig> {
-        return configFile.mcpServers.filter { !it.value.disabled && it.value.validate() }
+        return configFile.mcpServers?.filter { !it.value.disabled && it.value.validate() } ?: emptyMap()
     }
 }
