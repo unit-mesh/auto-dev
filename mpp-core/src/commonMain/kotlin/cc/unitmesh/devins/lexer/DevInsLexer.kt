@@ -137,7 +137,9 @@ class DevInsLexer(
             return tokenizeContentComment()
         }
 
-        // 检查第一个字符
+        // 关键修复：根据 flex 规则 TEXT_SEGMENT = [^$/@#\n]+
+        // 只有当字符是 $/@#\n 之一时才识别为特殊字符
+        // 否则先消费 TEXT_SEGMENT
         when (char) {
             '@' -> {
                 advance()
@@ -154,8 +156,13 @@ class DevInsLexer(
                 context.switchTo(LexerState.VARIABLE_BLOCK)
                 return createToken(DevInsTokenType.VARIABLE_START, "$", startPos, startLine, startColumn)
             }
+            '#' -> {
+                // # 是 Velocity 表达式的开始
+                // 这里我们暂时当作文本处理，因为没有实现 Velocity 表达式的处理
+                return consumeTextSegment(startPos, startLine, startColumn)
+            }
             else -> {
-                // 消费文本段直到遇到特殊字符或换行符
+                // 其他所有字符都作为 TEXT_SEGMENT 消费
                 return consumeTextSegment(startPos, startLine, startColumn)
             }
         }

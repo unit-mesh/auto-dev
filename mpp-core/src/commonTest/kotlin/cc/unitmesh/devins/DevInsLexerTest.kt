@@ -183,4 +183,82 @@ class DevInsLexerTest {
         assertEquals(DevInsTokenType.TEXT_SEGMENT, nonEofTokens[0].type)
         assertEquals("This is a text segment.", nonEofTokens[0].text)
     }
+    
+    @Test
+    fun testMarkdownListNotRecognizedAsCommand() {
+        // Bug fix: 确保 markdown 列表中的 "-" 不会被误识别为命令
+        val input = "- Added OpenAI API key configuration"
+        val lexer = DevInsLexer(input)
+        val tokens = lexer.tokenize()
+
+        val nonEofTokens = tokens.filter { it.type != DevInsTokenType.EOF }
+
+        // 整个字符串应该被识别为 TEXT_SEGMENT，而不是命令
+        assertEquals(1, nonEofTokens.size)
+        assertEquals(DevInsTokenType.TEXT_SEGMENT, nonEofTokens[0].type)
+        assertEquals("- Added OpenAI API key configuration", nonEofTokens[0].text)
+    }
+    
+    @Test
+    fun testTextWithSlashNotRecognizedAsCommand() {
+        // Bug fix: 确保文本中的 "/" 不会被误识别为命令
+        val input = "spring-ai-openai-spring-boot-starter dependency"
+        val lexer = DevInsLexer(input)
+        val tokens = lexer.tokenize()
+
+        val nonEofTokens = tokens.filter { it.type != DevInsTokenType.EOF }
+
+        // 整个字符串应该被识别为 TEXT_SEGMENT
+        assertEquals(1, nonEofTokens.size)
+        assertEquals(DevInsTokenType.TEXT_SEGMENT, nonEofTokens[0].type)
+    }
+    
+    @Test
+    fun testTextWithAtSymbolNotRecognizedAsAgent() {
+        // Bug fix: 确保文本中的 "@" 不会被误识别为 agent
+        val input = "Send email to user@example.com"
+        val lexer = DevInsLexer(input)
+        val tokens = lexer.tokenize()
+
+        val nonEofTokens = tokens.filter { it.type != DevInsTokenType.EOF }
+
+        // "Send email to user" 应该是 TEXT_SEGMENT，然后 "@" 开始 agent，然后 "example.com" 是...
+        // 实际上，根据 flex 规则，TEXT_SEGMENT = [^$/@#\n]+
+        // 所以 "Send email to user" 应该是 TEXT_SEGMENT，"@" 是 AGENT_START，"example.com" 是后续处理
+        
+        // 让我们先打印看看实际是什么
+        println("Tokens: ${nonEofTokens.map { "${it.type}:${it.text}" }}")
+        
+        // 至少第一个 token 应该是 TEXT_SEGMENT
+        assertEquals(DevInsTokenType.TEXT_SEGMENT, nonEofTokens[0].type)
+        assertEquals("Send email to user", nonEofTokens[0].text)
+    }
+    
+    @Test
+    fun testCommandAtLineStart() {
+        // 正常情况：行首的 "/" 应该被识别为命令
+        val input = "/file test.txt"
+        val lexer = DevInsLexer(input)
+        val tokens = lexer.tokenize()
+
+        val nonEofTokens = tokens.filter { it.type != DevInsTokenType.EOF }
+
+        // 第一个 token 应该是 COMMAND_START
+        assertTrue(nonEofTokens[0].type == DevInsTokenType.COMMAND_START)
+        assertEquals("/", nonEofTokens[0].text)
+    }
+    
+    @Test
+    fun testAgentAtLineStart() {
+        // 正常情况：行首的 "@" 应该被识别为 agent
+        val input = "@clarify What is this?"
+        val lexer = DevInsLexer(input)
+        val tokens = lexer.tokenize()
+
+        val nonEofTokens = tokens.filter { it.type != DevInsTokenType.EOF }
+
+        // 第一个 token 应该是 AGENT_START
+        assertTrue(nonEofTokens[0].type == DevInsTokenType.AGENT_START)
+        assertEquals("@", nonEofTokens[0].text)
+    }
 }

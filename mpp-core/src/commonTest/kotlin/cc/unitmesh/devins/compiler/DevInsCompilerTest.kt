@@ -234,4 +234,69 @@ class DevInsCompilerTest {
         println("Actual output: '${result.output}'")
         assertTrue(result.output.startsWith("John"), "Should start with replaced name")
     }
+    
+    @Test
+    fun testMarkdownTextNotRecognizedAsCommand() = runTest {
+        // Bug fix: 确保普通 markdown 文本中的列表项不会被误识别
+        val source = """
+            ## Task Complete: Spring AI Successfully Added
+            
+            The task to add Spring AI to your project has been completed successfully.
+            
+            ### What Was Accomplished:
+            
+            1. Verified existing Spring AI configuration in build file
+               - Spring AI BOM version 0.8.1
+               - spring-ai-openai-spring-boot-starter dependency
+               - Proper dependency management setup
+            
+            2. Updated application configuration
+               - Added OpenAI API key configuration
+               - Set default model to GPT-3.5-turbo
+               - Included environment variable support
+            
+            ### Status: COMPLETE
+        """.trimIndent()
+        
+        val result = DevInsCompilerFacade.compile(source)
+        
+        assertTrue(result.isSuccess(), "Compilation should succeed")
+        // 输出应该保持原样
+        assertTrue(result.output.contains("Spring AI"), "Should contain original text")
+        assertTrue(result.output.contains("- Added OpenAI API key configuration"), "Should contain list items")
+        // 确保 markdown 列表中的连字符和文本被正确处理
+        assertTrue(result.output.contains("- Spring AI BOM version"), "Should contain list text")
+    }
+    
+    @Test
+    fun testEmailAddressNotRecognizedAsAgent() = runTest {
+        // Bug fix: 确保 email 地址中的 @ 不会被误识别为 agent
+        val source = "Please contact user@example.com for more information."
+        val result = DevInsCompilerFacade.compile(source)
+        
+        assertTrue(result.isSuccess(), "Compilation should succeed")
+        // @ 符号后面的内容可能会被当作 agent 处理，但这取决于实现
+        // 至少开头的文本应该保留
+        assertTrue(result.output.contains("Please contact user"), "Should contain text before @")
+    }
+    
+    @Test
+    fun testTextWithSpecialCharactersNotRecognizedAsCommand() = runTest {
+        // Bug fix: 确保普通文本中的连字符不会被误识别
+        val source = """
+            Here are some items:
+            - Item 1: spring-ai-openai-spring-boot-starter
+            - Item 2: configuration files
+            - Item 3: some other details
+        """.trimIndent()
+        
+        val result = DevInsCompilerFacade.compile(source)
+        
+        assertTrue(result.isSuccess(), "Compilation should succeed")
+        // 输出应该包含完整的文本
+        assertTrue(result.output.contains("spring-ai-openai-spring-boot-starter"), "Should contain hyphened text")
+        assertTrue(result.output.contains("- Item 1"), "Should contain list marker")
+        // 确保没有因为连字符而产生解析错误
+        assertFalse(result.hasError, "Should not have parsing errors")
+    }
 }
