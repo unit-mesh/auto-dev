@@ -27,37 +27,26 @@ class ConversationManager(
 ) {
     private val conversationHistory = mutableListOf<Message>()
     
-    // 压缩相关回调
     var onTokenUpdate: ((TokenInfo) -> Unit)? = null
     var onCompressionNeeded: ((currentTokens: Int, maxTokens: Int) -> Unit)? = null
     var onCompressionCompleted: ((CompressionResult) -> Unit)? = null
     
     init {
-        // 添加系统消息作为对话的开始
         conversationHistory.add(Message(MessageRole.SYSTEM, systemPrompt))
     }
-    
-    /**
-     * 发送用户消息并获取流式响应
-     * 
-     * @param userMessage 用户消息内容
-     * @return 流式响应
-     */
-    suspend fun sendMessage(userMessage: String): Flow<String> {
-        // 添加用户消息到历史
+
+    suspend fun sendMessage(userMessage: String, compileDevIns: Boolean = false): Flow<String> {
         conversationHistory.add(Message(MessageRole.USER, userMessage))
         
-        // 检查是否需要自动压缩
         if (autoCompress && needsCompression()) {
             tryAutoCompress()
         }
         
-        // 调用 LLM 服务，传入完整的对话历史
         return llmService.streamPrompt(
             userPrompt = userMessage,
             fileSystem = EmptyFileSystem(),
-            historyMessages = conversationHistory.dropLast(1), // 排除当前用户消息，因为它会在 buildPrompt 中添加
-            compileDevIns = false, // Agent 自己处理 DevIns
+            historyMessages = conversationHistory.dropLast(1),
+            compileDevIns = compileDevIns,
             onTokenUpdate = { tokenInfo ->
                 onTokenUpdate?.invoke(tokenInfo)
             },

@@ -67,20 +67,20 @@ class CodingAgentExecutor(
             try {
                 renderer.renderLLMResponseStart()
 
-                val messageToSend = if (currentIteration == 1) {
-                    initialUserMessage
+                if (currentIteration == 1) {
+                    conversationManager.sendMessage(initialUserMessage, compileDevIns = true).cancellable().collect { chunk ->
+                        llmResponse.append(chunk)
+                        renderer.renderLLMResponseChunk(chunk)
+                    }
                 } else {
-                    buildContinuationMessage()
-                }
-
-                conversationManager.sendMessage(messageToSend).cancellable().collect { chunk ->
-                    llmResponse.append(chunk)
-                    renderer.renderLLMResponseChunk(chunk)
+                    conversationManager.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
+                        llmResponse.append(chunk)
+                        renderer.renderLLMResponseChunk(chunk)
+                    }
                 }
 
                 renderer.renderLLMResponseEnd()
                 conversationManager.addAssistantResponse(llmResponse.toString())
-
             } catch (e: Exception) {
                 renderer.renderError("LLM call failed: ${e.message}")
                 break
@@ -142,7 +142,6 @@ class CodingAgentExecutor(
     private suspend fun executeToolCalls(toolCalls: List<ToolCall>): List<Triple<String, Map<String, Any>, ToolExecutionResult>> = coroutineScope {
         val results = mutableListOf<Triple<String, Map<String, Any>, ToolExecutionResult>>()
         
-        // 预检查阶段：检查所有工具是否重复
         val toolsToExecute = mutableListOf<ToolCall>()
         var hasRepeatError = false
         
@@ -156,7 +155,6 @@ class CodingAgentExecutor(
             }
             val toolSignature = "$toolName:$paramsStr"
             
-            // 更新最近调用历史
             recentToolCalls.add(toolSignature)
             if (recentToolCalls.size > 10) {
                 recentToolCalls.removeAt(0)
@@ -197,12 +195,10 @@ class CodingAgentExecutor(
             toolsToExecute.add(toolCall)
         }
         
-        // 如果有重复错误，直接返回
         if (hasRepeatError) {
             return@coroutineScope results
         }
         
-                // 并行执行阶段：先渲染工具调用信息，再并行执行
         // Step 1: 先渲染所有工具调用（顺序显示）
         for (toolCall in toolsToExecute) {
             val toolName = toolCall.toolName
