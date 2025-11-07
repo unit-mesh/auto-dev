@@ -49,7 +49,6 @@ object DiffSketchRenderer {
             }
 
         Column(modifier = modifier) {
-            // 如果有多个文件或有操作按钮，显示头部
             if (fileDiffs.isNotEmpty() && (onAccept != null || onReject != null)) {
                 DiffHeader(
                     fileCount = fileDiffs.size,
@@ -59,13 +58,11 @@ object DiffSketchRenderer {
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // 渲染每个文件的 diff
             fileDiffs.forEach { fileDiff ->
                 FileDiffView(fileDiff)
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // 如果没有解析到任何 diff，显示原始内容
             if (fileDiffs.isEmpty()) {
                 Text(
                     text = "无法解析 diff 内容",
@@ -74,7 +71,6 @@ object DiffSketchRenderer {
                     modifier = Modifier.padding(8.dp)
                 )
 
-                // 显示原始内容以便调试
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
@@ -170,7 +166,6 @@ object DiffSketchRenderer {
                 )
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                // 文件头部
                 FileHeader(fileDiff)
 
                 Divider()
@@ -324,7 +319,6 @@ object DiffSketchRenderer {
         val hasMoreLines = hunk.lines.size > defaultVisibleLines
 
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Hunk 头部（可点击折叠/展开）
             Row(
                 modifier =
                     Modifier

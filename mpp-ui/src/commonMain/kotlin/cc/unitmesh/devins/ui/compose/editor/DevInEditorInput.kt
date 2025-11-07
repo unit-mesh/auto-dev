@@ -29,6 +29,7 @@ import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.editor.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.config.ToolConfigDialog
+import cc.unitmesh.devins.ui.compose.editor.changes.FileChangeSummary
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
@@ -357,7 +358,7 @@ fun DevInEditorInput(
     ) {
         // File Change Summary - shown above the editor
         FileChangeSummary()
-        
+
         Box(
             contentAlignment = if (isAndroid && isCompactMode) Alignment.Center else Alignment.TopStart
         ) {
@@ -494,9 +495,9 @@ fun DevInEditorInput(
 
                 // 底部工具栏
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                
+
                 val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
-                
+
                 BottomToolbar(
                     onSendClick = {
                         if (textFieldValue.text.isNotBlank()) {

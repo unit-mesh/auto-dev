@@ -160,14 +160,14 @@ class ComposeRenderer : BaseRenderer() {
         val toolInfo = formatToolCallDisplay(toolName, paramsStr)
         val params = parseParamsString(paramsStr)
         val toolType = toolName.toToolType()
-        
+
         // Extract file path for read/write operations
         val filePath = when (toolType) {
             ToolType.ReadFile, ToolType.WriteFile -> params["path"]
             else -> null
         }
 
-        // Add tool call to timeline with full params for detailed inspection
+        /// todo add check for debug mode
         _timeline.add(
             TimelineItem.ToolCallItem(
                 toolName = toolInfo.toolName,
@@ -179,7 +179,6 @@ class ComposeRenderer : BaseRenderer() {
             )
         )
 
-        // Keep current tool call for status display
         _currentToolCall =
             ToolCallInfo(
                 toolName = toolInfo.toolName,
