@@ -149,7 +149,18 @@ data class LexerContext(
     /**
      * 模式动作大括号嵌套级别
      */
-    var patternActionBraceLevel: Int = 0
+    var patternActionBraceLevel: Int = 0,
+    
+    /**
+     * 上一个字符（用于判断是否应该识别特殊字符）
+     * 修复：只在行首或空白后识别 @/$/#
+     */
+    var lastChar: Char? = null,
+    
+    /**
+     * 当前行是否在行首
+     */
+    var isAtLineStart: Boolean = true
 ) {
     /**
      * 推入状态到栈中
@@ -192,6 +203,28 @@ data class LexerContext(
         hasFrontMatter = false
         patternActionBraceStart = false
         patternActionBraceLevel = 0
+        lastChar = null
+        isAtLineStart = true
+    }
+    
+    /**
+     * 记录刚处理的字符（用于上下文判断）
+     */
+    fun recordChar(char: Char) {
+        lastChar = char
+        if (char == '\n') {
+            isAtLineStart = true
+        } else if (!char.isWhitespace()) {
+            isAtLineStart = false
+        }
+    }
+    
+    /**
+     * 检查是否应该识别特殊字符（@/$/#）
+     * 只在行首或上一个字符是空白时才识别
+     */
+    fun shouldRecognizeSpecialChar(): Boolean {
+        return isAtLineStart || lastChar == null || lastChar!!.isWhitespace()
     }
     
     /**
@@ -207,7 +240,9 @@ data class LexerContext(
             isInsideFrontMatter = isInsideFrontMatter,
             hasFrontMatter = hasFrontMatter,
             patternActionBraceStart = patternActionBraceStart,
-            patternActionBraceLevel = patternActionBraceLevel
+            patternActionBraceLevel = patternActionBraceLevel,
+            lastChar = lastChar,
+            isAtLineStart = isAtLineStart
         )
     }
 }

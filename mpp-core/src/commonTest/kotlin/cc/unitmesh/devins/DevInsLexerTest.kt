@@ -216,22 +216,19 @@ class DevInsLexerTest {
     @Test
     fun testTextWithAtSymbolNotRecognizedAsAgent() {
         // Bug fix: 确保文本中的 "@" 不会被误识别为 agent
+        // 方案 1 实现：只在行首或空白后才识别 @/$/#
         val input = "Send email to user@example.com"
         val lexer = DevInsLexer(input)
         val tokens = lexer.tokenize()
 
         val nonEofTokens = tokens.filter { it.type != DevInsTokenType.EOF }
 
-        // "Send email to user" 应该是 TEXT_SEGMENT，然后 "@" 开始 agent，然后 "example.com" 是...
-        // 实际上，根据 flex 规则，TEXT_SEGMENT = [^$/@#\n]+
-        // 所以 "Send email to user" 应该是 TEXT_SEGMENT，"@" 是 AGENT_START，"example.com" 是后续处理
-        
-        // 让我们先打印看看实际是什么
+        // 修复后：整个字符串应该是一个 TEXT_SEGMENT，因为 @ 不在空白后
         println("Tokens: ${nonEofTokens.map { "${it.type}:${it.text}" }}")
         
-        // 至少第一个 token 应该是 TEXT_SEGMENT
+        assertEquals(1, nonEofTokens.size, "Should be one TEXT_SEGMENT")
         assertEquals(DevInsTokenType.TEXT_SEGMENT, nonEofTokens[0].type)
-        assertEquals("Send email to user", nonEofTokens[0].text)
+        assertEquals("Send email to user@example.com", nonEofTokens[0].text)
     }
     
     @Test

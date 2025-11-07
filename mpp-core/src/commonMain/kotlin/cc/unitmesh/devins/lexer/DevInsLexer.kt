@@ -137,29 +137,50 @@ class DevInsLexer(
             return tokenizeContentComment()
         }
 
-        // 关键修复：根据 flex 规则 TEXT_SEGMENT = [^$/@#\n]+
-        // 只有当字符是 $/@#\n 之一时才识别为特殊字符
-        // 否则先消费 TEXT_SEGMENT
+        // 关键修复：只在行首或空白字符后识别 @/$/#
+        // 避免误识别 email 地址(user@example.com)、路径(/home/user)等普通文本
         when (char) {
             '@' -> {
-                advance()
-                context.switchTo(LexerState.AGENT_BLOCK)
-                return createToken(DevInsTokenType.AGENT_START, "@", startPos, startLine, startColumn)
+                // 只有在行首或空白后才识别为 AGENT_START
+                if (context.shouldRecognizeSpecialChar()) {
+                    advance()
+                    context.switchTo(LexerState.AGENT_BLOCK)
+                    return createToken(DevInsTokenType.AGENT_START, "@", startPos, startLine, startColumn)
+                } else {
+                    // 否则当作普通文本处理
+                    return consumeTextSegment(startPos, startLine, startColumn)
+                }
             }
             '/' -> {
-                advance()
-                context.switchTo(LexerState.COMMAND_BLOCK)
-                return createToken(DevInsTokenType.COMMAND_START, "/", startPos, startLine, startColumn)
+                // 只有在行首或空白后才识别为 COMMAND_START
+                if (context.shouldRecognizeSpecialChar()) {
+                    advance()
+                    context.switchTo(LexerState.COMMAND_BLOCK)
+                    return createToken(DevInsTokenType.COMMAND_START, "/", startPos, startLine, startColumn)
+                } else {
+                    // 否则当作普通文本处理（如路径 /home/user）
+                    return consumeTextSegment(startPos, startLine, startColumn)
+                }
             }
             '$' -> {
-                advance()
-                context.switchTo(LexerState.VARIABLE_BLOCK)
-                return createToken(DevInsTokenType.VARIABLE_START, "$", startPos, startLine, startColumn)
+                // 只有在行首或空白后才识别为 VARIABLE_START
+                if (context.shouldRecognizeSpecialChar()) {
+                    advance()
+                    context.switchTo(LexerState.VARIABLE_BLOCK)
+                    return createToken(DevInsTokenType.VARIABLE_START, "$", startPos, startLine, startColumn)
+                } else {
+                    // 否则当作普通文本处理（如价格 $100）
+                    return consumeTextSegment(startPos, startLine, startColumn)
+                }
             }
             '#' -> {
-                // # 是 Velocity 表达式的开始
-                // 这里我们暂时当作文本处理，因为没有实现 Velocity 表达式的处理
-                return consumeTextSegment(startPos, startLine, startColumn)
+                // # 是 Velocity 表达式的开始，也需要上下文判断
+                if (context.shouldRecognizeSpecialChar()) {
+                    // TODO: 实现 Velocity 表达式的处理
+                    return consumeTextSegment(startPos, startLine, startColumn)
+                } else {
+                    return consumeTextSegment(startPos, startLine, startColumn)
+                }
             }
             else -> {
                 // 其他所有字符都作为 TEXT_SEGMENT 消费
@@ -177,10 +198,39 @@ class DevInsLexer(
 
         while (position < input.length) {
             val char = peek()
-            if (char in "@/$#\n" || matchString("```")) {
+            
+            // 检查是否遇到换行符或代码块
+            if (char == '\n' || matchString("```")) {
                 break
             }
-            advance()
+            
+            // 修复：只有在适当上下文才把 @/$# 作为边界
+            // 否则它们是普通文本的一部分
+            if (char in "@/$#") {
+                // 检查下一个位置是否应该识别为特殊字符
+                // 需要先 advance 到下一个字符来检查上下文
+                val savedPos = position
+                val savedLine = line
+                val savedColumn = column
+                val savedContext = context.copy()
+                
+                advance() // 临时消费这个字符
+                
+                // 如果这个字符后面应该被识别为特殊字符，就停止
+                if (savedContext.shouldRecognizeSpecialChar()) {
+                    // 回退
+                    position = savedPos
+                    line = savedLine
+                    column = savedColumn
+                    context.currentState = savedContext.currentState
+                    context.isAtLineStart = savedContext.isAtLineStart
+                    context.lastChar = savedContext.lastChar
+                    break
+                }
+                // 否则继续，这个字符已经被 advance() 消费了
+            } else {
+                advance()
+            }
         }
 
         val text = input.substring(startPos, position)
@@ -374,6 +424,9 @@ class DevInsLexer(
         
         val char = input[position]
         position++
+        
+        // 记录字符用于上下文判断（修复：只在行首或空白后识别特殊字符）
+        context.recordChar(char)
         
         if (char == '\n') {
             line++
