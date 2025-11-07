@@ -172,3 +172,5 @@ kotlin-js-store/*
 node_modules
 package-lock.json
 local.properties
+docs
+Samples
