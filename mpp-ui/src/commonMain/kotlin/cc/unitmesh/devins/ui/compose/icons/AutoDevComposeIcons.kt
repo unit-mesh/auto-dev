@@ -71,22 +71,21 @@ object AutoDevComposeIcons {
     val Language: ImageVector get() = Icons.Default.Language
     
     /**
-     * Custom SVG-based icons loaded from resources
-     * Note: SVG loading in Compose Multiplatform requires proper resource configuration
-     * For now, these are placeholders that can be implemented when SVG resources are properly set up
+     * Custom icons converted from SVG resources
+     * These icons are converted from ai.svg and mcp.svg to Compose ImageVector format
      */
     object Custom {
         /**
-         * AI icon placeholder - should load from resources/ai.svg
-         * TODO: Implement proper SVG resource loading when needed
+         * AI icon - a sparkle/star representing AI functionality
+         * Converted from resources/ai.svg
          */
-        val AI: ImageVector get() = Icons.Default.SmartToy
+        val AI: ImageVector get() = CustomIcons.AI
         
         /**
-         * MCP (Model Context Protocol) icon placeholder - should load from resources/mcp.svg  
-         * TODO: Implement proper SVG resource loading when needed
+         * MCP (Model Context Protocol) icon - representing MCP integration
+         * Converted from resources/mcp.svg
          */
-        val MCP: ImageVector get() = Icons.Default.Cloud
+        val MCP: ImageVector get() = CustomIcons.MCP
     }
 }
 
