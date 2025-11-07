@@ -6,6 +6,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import cc.unitmesh.devins.lexer.DevInsLexer
 import cc.unitmesh.devins.token.DevInsTokenType
 import cc.unitmesh.devins.ui.compose.editor.model.HighlightStyle
+import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
 /**
  * DevIn 语法高亮器
@@ -52,29 +53,33 @@ class DevInSyntaxHighlighter {
      * 采用高对比度、易区分的现代配色方案
      */
     private fun getStyleForTokenType(type: DevInsTokenType): HighlightStyle? {
+        // 使用 AutoDev 设计系统颜色
+        // TODO: 根据实际主题模式动态切换颜色（暗色/亮色）
+        val colors = AutoDevColors.Syntax.Dark
+        
         return when (type) {
             // Agent 相关 - 使用醒目的青色（类似 Slack 提及）
             DevInsTokenType.AGENT_START ->
                 HighlightStyle(
-                    color = Color(0xFF00D9FF), // 亮青色 #00D9FF
+                    color = colors.agent,
                     bold = true
                 )
 
             // Command 相关 - 使用鲜艳的绿色（类似终端命令）
             DevInsTokenType.COMMAND_START ->
                 HighlightStyle(
-                    color = Color(0xFF00FF88), // 亮绿色 #00FF88
+                    color = colors.command,
                     bold = true
                 )
             DevInsTokenType.COMMAND_PROP ->
                 HighlightStyle(
-                    color = Color(0xFF88DD88) // 柔和绿色
+                    color = colors.command.copy(alpha = 0.8f)
                 )
 
             // Variable 相关 - 使用洋红色/粉紫色（区别于其他）
             DevInsTokenType.VARIABLE_START ->
                 HighlightStyle(
-                    color = Color(0xFFFF6EC7), // 洋红色 #FF6EC7
+                    color = colors.variable,
                     bold = true
                 )
 
@@ -82,21 +87,21 @@ class DevInSyntaxHighlighter {
             DevInsTokenType.CODE_BLOCK_START,
             DevInsTokenType.CODE_BLOCK_END ->
                 HighlightStyle(
-                    color = Color(0xFFCC7832) // 橙色
+                    color = colors.keyword
                 )
             DevInsTokenType.LANGUAGE_ID ->
                 HighlightStyle(
-                    color = Color(0xFF6897BB) // 蓝色
+                    color = colors.number
                 )
             DevInsTokenType.CODE_CONTENT ->
                 HighlightStyle(
-                    color = Color(0xFFA9B7C6) // 浅灰
+                    color = colors.identifier
                 )
 
             // 字符串
             DevInsTokenType.QUOTE_STRING ->
                 HighlightStyle(
-                    color = Color(0xFF6A8759) // 绿色
+                    color = colors.string
                 )
 
             // 注释
@@ -104,27 +109,27 @@ class DevInSyntaxHighlighter {
             DevInsTokenType.CONTENT_COMMENTS,
             DevInsTokenType.BLOCK_COMMENT ->
                 HighlightStyle(
-                    color = Color(0xFF808080), // 灰色
+                    color = colors.comment,
                     italic = true
                 )
 
             // 数字
             DevInsTokenType.NUMBER ->
                 HighlightStyle(
-                    color = Color(0xFF6897BB) // 蓝色
+                    color = colors.number
                 )
 
             // 布尔值
             DevInsTokenType.BOOLEAN ->
                 HighlightStyle(
-                    color = Color(0xFFCC7832) // 橙色
+                    color = colors.keyword
                 )
 
             // FrontMatter
             DevInsTokenType.FRONTMATTER_START,
             DevInsTokenType.FRONTMATTER_END ->
                 HighlightStyle(
-                    color = Color(0xFF9876AA), // 紫色
+                    color = AutoDevColors.Indigo.c300,
                     bold = true
                 )
 
@@ -135,14 +140,14 @@ class DevInSyntaxHighlighter {
             DevInsTokenType.AFTER_STREAMING,
             DevInsTokenType.ON_STREAMING_END ->
                 HighlightStyle(
-                    color = Color(0xFFCC7832), // 橙色
+                    color = colors.keyword,
                     bold = true
                 )
 
             // 标识符
             DevInsTokenType.IDENTIFIER ->
                 HighlightStyle(
-                    color = Color(0xFFA9B7C6) // 浅灰
+                    color = colors.identifier
                 )
 
             // 其他不着色

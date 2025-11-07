@@ -20,18 +20,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
 /**
  * Diff Sketch 渲染器 - 渲染 AI 生成的代码差异
  * 参考 AutoDev IDEA 版本的 DiffLangSketch 设计
  */
 object DiffSketchRenderer {
-    // 颜色定义
-    val AddedLineBackground = Color(0xFF2EA043).copy(alpha = 0.15f)
-    val AddedLineBorder = Color(0xFF2EA043).copy(alpha = 0.3f)
-    val DeletedLineBackground = Color(0xFFDA3633).copy(alpha = 0.15f)
-    val DeletedLineBorder = Color(0xFFDA3633).copy(alpha = 0.3f)
-    val LineNumberColor = Color(0xFF6E7781)
+    // 颜色定义 - 使用 AutoDev 设计系统
+    // 注意：这里使用暗色主题颜色，因为大多数开发者偏好暗色主题
+    // TODO: 根据实际主题模式动态切换颜色
+    val AddedLineBackground = AutoDevColors.Diff.Dark.addedBg
+    val AddedLineBorder = AutoDevColors.Diff.Dark.addedBorder
+    val DeletedLineBackground = AutoDevColors.Diff.Dark.deletedBg
+    val DeletedLineBorder = AutoDevColors.Diff.Dark.deletedBorder
+    val LineNumberColor = AutoDevColors.Diff.Dark.lineNumber
     val ContextLineBackground = Color.Transparent
 
     /**
