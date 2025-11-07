@@ -10,6 +10,7 @@ import { HELP_TEXT, GOODBYE_MESSAGE } from '../constants/asciiArt.js';
 import { t } from '../i18n/index.js';
 import { DomainDictService, getCurrentProjectPath, isValidProjectPath } from '../utils/domainDictUtils.js';
 import { ConfigManager } from '../config/ConfigManager.js';
+import * as mppCore from '@autodev/mpp-core';
 
 /**
  * 命令定义
@@ -96,6 +97,12 @@ export class SlashCommandProcessor implements InputProcessor {
     this.registerCommand('init', {
       description: t('commands.init.description'),
       action: async (context, args) => this.handleInitCommand(context, args)
+    });
+
+    // /enhance - 增强提示词
+    this.registerCommand('enhance', {
+      description: 'Enhance a prompt using AI',
+      action: async (context, args) => this.handleEnhanceCommand(context, args)
     });
   }
 
@@ -240,6 +247,100 @@ export class SlashCommandProcessor implements InputProcessor {
         message: t('commands.init.error', {
           error: error instanceof Error ? error.message : String(error)
         })
+      };
+    }
+  }
+
+  /**
+   * Handle /enhance command for prompt enhancement
+   */
+  private async handleEnhanceCommand(context: ProcessorContext, args: string): Promise<ProcessorResult> {
+    try {
+      if (!args.trim()) {
+        return {
+          type: 'handled',
+          output: '❌ 请提供要增强的提示词。用法：/enhance <your prompt>'
+        };
+      }
+
+      const projectPath = getCurrentProjectPath();
+      if (!projectPath) {
+        return {
+          type: 'handled',
+          output: '❌ 无法获取项目路径'
+        };
+      }
+
+      const config = await ConfigManager.load();
+      const activeConfig = config.getActiveConfig();
+      if (!activeConfig) {
+        return {
+          type: 'handled',
+          output: '❌ 没有可用的 LLM 配置'
+        };
+      }
+
+      context.logger.info(`[SlashCommandProcessor] Enhancing prompt: "${args}"`);
+
+      // 显示增强过程
+      console.log('🔍 正在增强您的提示词...');
+
+      // Create KoogLLMService
+      const modelConfig = new mppCore.cc.unitmesh.llm.JsModelConfig(
+        activeConfig.provider,
+        activeConfig.model,
+        activeConfig.apiKey,
+        activeConfig.temperature || 0.7,
+        activeConfig.maxTokens || 4096,
+        activeConfig.baseUrl || ''
+      );
+
+      const llmService = mppCore.cc.unitmesh.llm.JsKoogLLMService.Companion.create(modelConfig);
+
+      // Create file system
+      const fileSystem = mppCore.cc.unitmesh.devins.filesystem.JsFileSystemFactory.Companion.createFileSystem(projectPath);
+
+      // Create domain dict service
+      const domainDictService = new mppCore.cc.unitmesh.llm.JsDomainDictService(fileSystem);
+
+      // Create prompt enhancer
+      const enhancer = new mppCore.cc.unitmesh.llm.JsPromptEnhancer(
+        llmService,
+        fileSystem,
+        domainDictService
+      );
+
+      // Enhance the prompt
+      const enhanced = await enhancer.enhance(args.trim(), 'zh');
+
+      // Check if enhancement was successful
+      if (enhanced && enhanced !== args.trim() && enhanced.length > args.trim().length) {
+        context.logger.info(`[SlashCommandProcessor] Enhanced: "${args.trim()}" -> "${enhanced}"`);
+
+        // Show enhancement result and send to LLM
+        const output = `✨ 原始提示词：\n${args.trim()}\n\n✨ 增强后的提示词：\n${enhanced}`;
+        console.log(output);
+
+        // Return enhanced query for LLM
+        return {
+          type: 'llm-query',
+          query: enhanced
+        };
+      } else {
+        context.logger.info('[SlashCommandProcessor] No enhancement needed or failed');
+
+        // No enhancement, use original prompt
+        return {
+          type: 'llm-query',
+          query: args.trim()
+        };
+      }
+
+    } catch (error) {
+      context.logger.error('[SlashCommandProcessor] Error in /enhance command:', error);
+      return {
+        type: 'handled',
+        output: `⚠️ 提示词增强失败：${error instanceof Error ? error.message : String(error)}`
       };
     }
   }

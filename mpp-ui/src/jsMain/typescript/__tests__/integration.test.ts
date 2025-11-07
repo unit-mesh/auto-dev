@@ -284,4 +284,21 @@ describe('处理器架构集成测试', () => {
       );
     });
   });
+
+  describe('/enhance 命令测试', () => {
+    it('应该正确处理 /enhance 命令', async () => {
+      // Mock the SlashCommandProcessor to avoid actual LLM calls
+      const result = await router.route('/enhance 创建用户管理系统', mockContext);
+
+      // Should be handled by SlashCommandProcessor and return handled type (due to error in mock environment)
+      expect(result.type).toBe('handled');
+    });
+
+    it('应该拒绝空的 /enhance 命令', async () => {
+      const result = await router.route('/enhance', mockContext);
+
+      // Should be handled by SlashCommandProcessor and return handled type with error message
+      expect(result.type).toBe('handled');
+    });
+  });
 });

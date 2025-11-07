@@ -104,7 +104,7 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       }
 
       // Create file system
-      const fileSystem = new KotlinCC.unitmesh.devins.filesystem.FileSystem(resolvedPath);
+      const fileSystem = KotlinCC.unitmesh.devins.filesystem.JsFileSystemFactory.Companion.createFileSystem(resolvedPath);
 
       // Create domain dict service
       const domainDictService = new KotlinCC.unitmesh.llm.JsDomainDictService(fileSystem);

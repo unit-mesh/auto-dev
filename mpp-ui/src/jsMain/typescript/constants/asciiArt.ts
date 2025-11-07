@@ -29,6 +29,7 @@ Commands:
   /exit       - Exit the application
   /config     - Show current configuration
   /model      - Change AI model
+  /enhance    - Enhance a prompt using AI
 
 Agents (use @ to invoke):
   @code       - Code generation and refactoring

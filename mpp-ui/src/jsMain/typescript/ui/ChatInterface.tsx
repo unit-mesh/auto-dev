@@ -86,7 +86,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         const llmService = KotlinCC.unitmesh.llm.JsKoogLLMService.Companion.create(modelConfig);
 
         // Create file system
-        const fileSystem = new KotlinCC.unitmesh.devins.filesystem.FileSystem(projectPath);
+        const fileSystem = KotlinCC.unitmesh.devins.filesystem.JsFileSystemFactory.Companion.createFileSystem(projectPath);
 
         // Create domain dict service
         const domainDictService = new KotlinCC.unitmesh.llm.JsDomainDictService(fileSystem);
