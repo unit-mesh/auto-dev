@@ -3,17 +3,15 @@ package cc.unitmesh.agent.tool.shell
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.ToolException
 import com.pty4j.PtyProcessBuilder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.*
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
- * JVM implementation of shell executor using Pty4J for better terminal output handling.
+ * JVM implementation of shell executor using JediTerm for better terminal output handling.
  * Provides pseudo-terminal (PTY) capabilities for more accurate terminal emulation.
+ *
+ * Note: This still uses pty4j for process creation but integrates with JediTerm for terminal handling.
  */
 class PtyShellExecutor : ShellExecutor {
 

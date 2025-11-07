@@ -115,6 +115,12 @@ kotlin {
         }
 
         jvmMain {
+            repositories {
+                google()
+                mavenCentral()
+                maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/")
+            }
+
             dependencies {
                 // Ktor CIO engine for JVM
                 implementation("io.ktor:ktor-client-cio:3.2.2")
@@ -124,9 +130,10 @@ kotlin {
 
                 // Logback for JVM logging backend with file storage
                 implementation("ch.qos.logback:logback-classic:1.5.19")
-                
-                // Pty4J for better terminal output handling
+
+                // JediTerm for terminal emulation (uses pty4j under the hood)
                 implementation("org.jetbrains.pty4j:pty4j:0.13.10")
+//                implementation("org.jetbrains.jediterm:jediterm-ui:3.57")
             }
         }
 

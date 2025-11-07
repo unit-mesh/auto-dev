@@ -84,6 +84,14 @@ class ComposeRenderer : BaseRenderer() {
             val message: String,
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
+
+        data class TerminalOutputItem(
+            val command: String,
+            val output: String,
+            val exitCode: Int,
+            val executionTimeMs: Long,
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
+        ) : TimelineItem(itemTimestamp)
     }
 
     // Legacy data classes for compatibility
@@ -194,24 +202,45 @@ class ComposeRenderer : BaseRenderer() {
         fullOutput: String?
     ) {
         val summary = formatToolResultSummary(toolName, success, output)
-        _timeline.add(
-            TimelineItem.ToolResultItem(
-                toolName = toolName,
-                success = success,
-                summary = summary,
-                output =
-                    if (success && output != null) {
-                        // For file search tools, keep full output; for others, limit to 2000 chars for direct display
-                        when (toolName) {
-                            "glob", "grep" -> output
-                            else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated - click to view full]"
-                        }
-                    } else {
-                        null
-                    },
-                fullOutput = fullOutput // 保存完整的输出，用于查看完整日志和错误诊断
+
+        // For shell commands, use special terminal output rendering
+        val toolType = toolName.toToolType()
+        if (toolType == ToolType.Shell && output != null) {
+            // Try to extract shell result information
+            val exitCode = if (success) 0 else 1
+            val executionTime = 0L // We don't have this info in the current flow
+
+            // Extract command from the last tool call if available
+            val command = _currentToolCall?.details?.removePrefix("Executing: ") ?: "unknown"
+
+            _timeline.add(
+                TimelineItem.TerminalOutputItem(
+                    command = command,
+                    output = fullOutput ?: output,
+                    exitCode = exitCode,
+                    executionTimeMs = executionTime
+                )
             )
-        )
+        } else {
+            _timeline.add(
+                TimelineItem.ToolResultItem(
+                    toolName = toolName,
+                    success = success,
+                    summary = summary,
+                    output =
+                        if (success && output != null) {
+                            // For file search tools, keep full output; for others, limit to 2000 chars for direct display
+                            when (toolName) {
+                                "glob", "grep" -> output
+                                else -> if (output.length <= 2000) output else "${output.take(2000)}...\n[Output truncated - click to view full]"
+                            }
+                        } else {
+                            null
+                        },
+                    fullOutput = fullOutput // 保存完整的输出，用于查看完整日志和错误诊断
+                )
+            )
+        }
 
         _currentToolCall = null
     }

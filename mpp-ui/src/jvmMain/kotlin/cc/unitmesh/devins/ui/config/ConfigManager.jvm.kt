@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.config
 
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.llm.NamedModelConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json

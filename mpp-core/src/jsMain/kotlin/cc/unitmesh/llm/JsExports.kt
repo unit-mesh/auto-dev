@@ -10,22 +10,18 @@ import cc.unitmesh.agent.tool.impl.ShellParams
 import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.JsShellExecutor
 import cc.unitmesh.devins.compiler.DevInsCompilerFacade
+import cc.unitmesh.devins.completion.CompletionContext
+import cc.unitmesh.devins.completion.CompletionItem
+import cc.unitmesh.devins.completion.CompletionManager
+import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
-import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
-import cc.unitmesh.devins.completion.CompletionManager
-import cc.unitmesh.devins.completion.CompletionContext
-import cc.unitmesh.devins.completion.CompletionTriggerType
-import cc.unitmesh.devins.completion.CompletionItem
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.promise
-import kotlin.js.JsExport
-import kotlin.js.JsName
 import kotlin.js.Promise
 
 /**
@@ -244,8 +240,8 @@ data class JsNamedModelConfig(
         
         return NamedModelConfig(
             name = name,
-            provider = provider,
-            modelName = modelName,
+            provider = provider.toString(),
+            model = modelName,
             apiKey = apiKey,
             temperature = temperature,
             maxTokens = maxTokens,
@@ -258,8 +254,8 @@ data class JsNamedModelConfig(
         fun fromKotlin(config: NamedModelConfig): JsNamedModelConfig {
             return JsNamedModelConfig(
                 name = config.name,
-                providerName = config.provider.name,
-                modelName = config.modelName,
+                providerName = config.provider,
+                modelName = config.model,
                 apiKey = config.apiKey,
                 temperature = config.temperature,
                 maxTokens = config.maxTokens,

@@ -81,21 +81,21 @@ object ToolErrorUtils {
         errorType: ToolErrorType = ToolErrorType.UNKNOWN,
         operation: () -> T
     ): ToolResult {
-//        return try {
-        val result = operation()
-        return when (result) {
-            is ToolResult -> result
-            is String -> ToolResult.Success(result)
-            else -> ToolResult.Success(result.toString())
+        return try {
+            val result = operation()
+            when (result) {
+                is ToolResult -> result
+                is String -> ToolResult.Success(result)
+                else -> ToolResult.Success(result.toString())
+            }
+        } catch (e: ToolException) {
+            e.toToolResult()
+        } catch (e: Exception) {
+            ToolResult.Error(
+                message = e.message ?: "Unknown error occurred",
+                errorType = errorType.code
+            )
         }
-//        } catch (e: ToolException) {
-//            e.toToolResult()
-//        } catch (e: Exception) {
-//            ToolResult.Error(
-//                message = e.message ?: "Unknown error occurred",
-//                errorType = errorType.code
-//            )
-//        }
     }
 
     /**

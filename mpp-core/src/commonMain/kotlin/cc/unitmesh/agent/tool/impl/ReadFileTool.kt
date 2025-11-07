@@ -87,12 +87,10 @@ class ReadFileInvocation(
     
     override suspend fun execute(context: ToolExecutionContext): ToolResult {
         return ToolErrorUtils.safeExecute(ToolErrorType.FILE_NOT_FOUND) {
-            // Check if file exists
             if (!fileSystem.exists(params.path)) {
                 throw ToolException("File not found: ${params.path}", ToolErrorType.FILE_NOT_FOUND)
             }
 
-            // Read file content
             val content = fileSystem.readFile(params.path)
                 ?: throw ToolException("Could not read file: ${params.path}", ToolErrorType.FILE_NOT_FOUND)
             

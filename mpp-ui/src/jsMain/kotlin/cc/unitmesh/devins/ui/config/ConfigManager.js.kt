@@ -2,7 +2,7 @@ package cc.unitmesh.devins.ui.config
 
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.mcp.McpServerConfig
-import kotlinx.coroutines.await
+import cc.unitmesh.llm.NamedModelConfig
 import kotlinx.serialization.json.Json
 
 // Check if we're in Node.js environment

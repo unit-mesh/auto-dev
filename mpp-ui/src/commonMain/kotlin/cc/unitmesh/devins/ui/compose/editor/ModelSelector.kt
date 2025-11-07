@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
-import cc.unitmesh.devins.ui.config.NamedModelConfig
+import cc.unitmesh.llm.NamedModelConfig
 import cc.unitmesh.devins.ui.i18n.Strings
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.launch
@@ -194,7 +194,7 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
                         // Notify parent
                         onConfigChange(newModelConfig)
                         showConfigDialog = false
-                        
+
                         if (finalConfigName != configName) {
                             println("✅ 配置名称已存在，自动重命名为: $finalConfigName")
                         }

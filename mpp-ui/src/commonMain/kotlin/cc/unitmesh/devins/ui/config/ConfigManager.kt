@@ -1,5 +1,7 @@
 package cc.unitmesh.devins.ui.config
 
+import cc.unitmesh.llm.NamedModelConfig
+
 /**
  * Configuration Manager - File-based configuration management
  *
@@ -64,25 +66,25 @@ expect object ConfigManager {
      * Check if configuration file exists
      */
     suspend fun exists(): Boolean
-    
+
     /**
      * Save MCP servers configuration
-     * 
+     *
      * @param mcpServers Map of server name to server configuration
      */
     suspend fun saveMcpServers(mcpServers: Map<String, cc.unitmesh.agent.mcp.McpServerConfig>)
-    
+
     /**
      * Load tool configuration from file (~/.autodev/mcp.json)
      * Returns default config if file doesn't exist
      */
     suspend fun loadToolConfig(): cc.unitmesh.agent.config.ToolConfigFile
-    
+
     /**
      * Save tool configuration to file (~/.autodev/mcp.json)
      */
     suspend fun saveToolConfig(toolConfig: cc.unitmesh.agent.config.ToolConfigFile)
-    
+
     /**
      * Get tool config file path
      */
@@ -90,7 +92,7 @@ expect object ConfigManager {
 
     /**
      * Generate a unique configuration name by appending -1, -2, etc. if the name already exists
-     * 
+     *
      * @param baseName The desired configuration name
      * @param existingNames List of existing configuration names
      * @return A unique name (either baseName or baseName-1, baseName-2, etc.)

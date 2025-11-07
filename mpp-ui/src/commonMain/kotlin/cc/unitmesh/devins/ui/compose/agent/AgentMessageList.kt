@@ -90,6 +90,15 @@ fun AgentMessageList(
                         message = timelineItem.message
                     )
                 }
+
+                is ComposeRenderer.TimelineItem.TerminalOutputItem -> {
+                    TerminalOutputItem(
+                        command = timelineItem.command,
+                        output = timelineItem.output,
+                        exitCode = timelineItem.exitCode,
+                        executionTimeMs = timelineItem.executionTimeMs
+                    )
+                }
             }
         }
 
@@ -243,7 +252,7 @@ fun ToolResultItem(
     var expanded by remember { mutableStateOf(!success) }
     var showFullOutput by remember { mutableStateOf(!success) }
     val clipboardManager = LocalClipboardManager.current
-    
+
     // Determine which output to display
     val displayOutput = if (showFullOutput) fullOutput else output
     val hasFullOutput = fullOutput != null && fullOutput != output
@@ -336,7 +345,7 @@ fun ToolResultItem(
                                 },
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        
+
                         // Show toggle button if there's a full output different from truncated output
                         if (hasFullOutput) {
                             TextButton(
@@ -568,11 +577,11 @@ fun ToolCallItem(
     var expanded by remember { mutableStateOf(false) }
     var showFullParams by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
-    
+
     // Determine which params to display
     val displayParams = if (showFullParams) fullParams else details
     val hasFullParams = fullParams != null && fullParams != details
-    
+
     // Check if this is a file operation that can be viewed
     val isFileOperation = toolType in listOf(
         cc.unitmesh.agent.tool.ToolType.ReadFile,
@@ -609,11 +618,11 @@ fun ToolCallItem(
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.bodyMedium
                 )
-                
+
                 // Add "View File" button for file operations
                 if (isFileOperation && !filePath.isNullOrEmpty() && onOpenFileViewer != null) {
                     IconButton(
-                        onClick = { 
+                        onClick = {
                             onOpenFileViewer(filePath)
                         },
                         modifier = Modifier.size(24.dp)
@@ -650,7 +659,7 @@ fun ToolCallItem(
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        
+
                         // Show toggle button if there are full params different from formatted details
                         if (hasFullParams) {
                             TextButton(
@@ -777,5 +786,154 @@ fun formatTimestamp(timestamp: Long): String {
         diff < 3600_000 -> "${diff / 60_000}m ago"
         diff < 86400_000 -> "${diff / 3600_000}h ago"
         else -> "${diff / 86400_000}d ago"
+    }
+}
+
+@Composable
+private fun TerminalOutputItem(
+    command: String,
+    output: String,
+    exitCode: Int,
+    executionTimeMs: Long
+) {
+    var expanded by remember { mutableStateOf(exitCode != 0) } // Auto-expand on error
+    val clipboardManager = LocalClipboardManager.current
+    val isSuccess = exitCode == 0
+
+    Card(
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+        shape = RoundedCornerShape(4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            // Header row
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = !expanded },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "💻",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Shell",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = if (isSuccess) "✓ Exit 0" else "✗ Exit $exitCode",
+                    color =
+                        if (isSuccess) {
+                            Color(0xFF4CAF50)
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "${executionTimeMs}ms",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Icon(
+                    imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Command display
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "$ $command",
+                modifier = Modifier.padding(start = 28.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace
+            )
+
+            // Expandable output
+            if (expanded && output.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = "Output:",
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Row {
+                        // Copy output button
+                        IconButton(
+                            onClick = { clipboardManager.setText(AnnotatedString(output)) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.ContentCopy,
+                                contentDescription = "Copy output",
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Copy entire block button
+                        IconButton(
+                            onClick = {
+                                val blockText =
+                                    buildString {
+                                        appendLine("[Shell Command]")
+                                        appendLine("Command: $command")
+                                        appendLine("Exit Code: $exitCode")
+                                        appendLine("Execution Time: ${executionTimeMs}ms")
+                                        appendLine("Output:")
+                                        appendLine(output)
+                                    }
+                                clipboardManager.setText(AnnotatedString(blockText))
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.ContentCopy,
+                                contentDescription = "Copy entire block",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+
+                Card(
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = output,
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            }
+        }
     }
 }
