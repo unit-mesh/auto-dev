@@ -10,11 +10,39 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
- * JVM implementation of shell executor using ProcessBuilder
+ * JVM implementation of shell executor using ProcessBuilder or Pty4J
  */
 actual class DefaultShellExecutor : ShellExecutor {
+    
+    // Lazy initialization of Pty4J executor
+    private val ptyExecutor: PtyShellExecutor? by lazy {
+        try {
+            val executor = PtyShellExecutor()
+            if (executor.isAvailable() && !isHeadless()) {
+                executor
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     actual override suspend fun execute(
+        command: String,
+        config: ShellExecutionConfig
+    ): ShellResult {
+        // Use Pty4J for better terminal output if available on desktop
+        val usePty = ptyExecutor != null && !config.inheritIO
+        
+        return if (usePty) {
+            ptyExecutor!!.execute(command, config)
+        } else {
+            executeWithProcessBuilder(command, config)
+        }
+    }
+    
+    private suspend fun executeWithProcessBuilder(
         command: String,
         config: ShellExecutionConfig
     ): ShellResult = withContext(Dispatchers.IO) {
@@ -73,38 +101,82 @@ actual class DefaultShellExecutor : ShellExecutor {
         }
     }
     
+    /**
+     * Check if running in headless mode (e.g., server, CI/CD)
+     */
+    private fun isHeadless(): Boolean {
+        return try {
+            System.getProperty("java.awt.headless")?.lowercase() == "true"
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
     private suspend fun executeProcess(
         processBuilder: ProcessBuilder,
         config: ShellExecutionConfig
     ): ShellResult = withContext(Dispatchers.IO) {
         val process = processBuilder.start()
+        var timedOut = false
         
         try {
-            // Read output streams
-            val stdout = if (config.inheritIO) {
-                ""
-            } else {
-                process.inputStream.bufferedReader().use { it.readText() }
-            }
+            // Read output streams in separate threads to avoid blocking
+            val stdoutBuilder = StringBuilder()
+            val stderrBuilder = StringBuilder()
             
-            val stderr = if (config.inheritIO) {
-                ""
-            } else {
-                process.errorStream.bufferedReader().use { it.readText() }
-            }
+            val stdoutReader = if (!config.inheritIO) {
+                Thread {
+                    try {
+                        process.inputStream.bufferedReader().use { reader ->
+                            reader.forEachLine { line ->
+                                stdoutBuilder.appendLine(line)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Stream closed, ignore
+                    }
+                }.apply { start() }
+            } else null
             
-            // Wait for process to complete
-            val exitCode = if (process.waitFor(config.timeoutMs, TimeUnit.MILLISECONDS)) {
-                process.exitValue()
-            } else {
+            val stderrReader = if (!config.inheritIO) {
+                Thread {
+                    try {
+                        process.errorStream.bufferedReader().use { reader ->
+                            reader.forEachLine { line ->
+                                stderrBuilder.appendLine(line)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Stream closed, ignore
+                    }
+                }.apply { start() }
+            } else null
+            
+            // Wait for process to complete with timeout
+            val completed = process.waitFor(config.timeoutMs, TimeUnit.MILLISECONDS)
+            
+            if (!completed) {
+                timedOut = true
+                // Kill the process
                 process.destroyForcibly()
+                // Give it a moment to clean up
+                process.waitFor(1000, TimeUnit.MILLISECONDS)
+            }
+            
+            // Wait for readers to finish (with timeout)
+            stdoutReader?.join(1000)
+            stderrReader?.join(1000)
+            
+            val exitCode = if (completed) process.exitValue() else -1
+            
+            if (timedOut) {
                 throw ToolException("Process timed out", ToolErrorType.TIMEOUT)
             }
             
             ShellResult(
                 exitCode = exitCode,
-                stdout = stdout.trim(),
-                stderr = stderr.trim(),
+                stdout = stdoutBuilder.toString().trim(),
+                stderr = stderrBuilder.toString().trim(),
                 command = "",
                 workingDirectory = null,
                 executionTimeMs = 0
@@ -114,6 +186,7 @@ actual class DefaultShellExecutor : ShellExecutor {
             // Ensure process is cleaned up
             if (process.isAlive) {
                 process.destroyForcibly()
+                process.waitFor(500, TimeUnit.MILLISECONDS)
             }
         }
     }
