@@ -83,13 +83,113 @@ fun AgentChatInterface(
         return
     }
 
-    Row(modifier = modifier.fillMaxSize()) {
-        // 左侧：Chat + Input 完整区域
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-        ) {
+    // 使用 ResizableSplitPane 分割 Chat 区域和 TreeView 区域
+    if (viewModel.isTreeViewVisible) {
+        ResizableSplitPane(
+            modifier = modifier.fillMaxSize(),
+            initialSplitRatio = 0.6f,
+            minRatio = 0.3f,
+            maxRatio = 0.8f,
+            first = {
+                // 左侧：Chat + Input 完整区域
+                Column(modifier = Modifier.fillMaxSize()) {
+                    if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
+                        AgentStatusBar(
+                            isExecuting = viewModel.isExecuting,
+                            currentIteration = viewModel.renderer.currentIteration,
+                            maxIterations = viewModel.renderer.maxIterations,
+                            executionTime = viewModel.renderer.currentExecutionTime,
+                            viewModel = viewModel,
+                            onCancel = { viewModel.cancelTask() }
+                        )
+                    }
+
+                    // Chat 消息列表
+                    AgentMessageList(
+                        renderer = viewModel.renderer,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        onOpenFileViewer = { filePath ->
+                            viewModel.renderer.openFileViewer(filePath)
+                        }
+                    )
+
+                    val callbacks = remember(viewModel) {
+                        createAgentCallbacks(
+                            viewModel = viewModel,
+                            onConfigWarning = onConfigWarning
+                        )
+                    }
+
+                    // 输入框
+                    DevInEditorInput(
+                        initialText = "",
+                        placeholder = "Describe your coding task...",
+                        callbacks = callbacks,
+                        completionManager = currentWorkspace?.completionManager,
+                        isCompactMode = true,
+                        onModelConfigChange = { /* Handle model config change if needed */ },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .imePadding()
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+
+                    ToolLoadingStatusBar(
+                        viewModel = viewModel,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
+            },
+            second = {
+                // 右侧：TreeView + FileViewer（也使用 ResizableSplitPane）
+                val hasFileViewer = viewModel.renderer.currentViewingFile != null
+                if (hasFileViewer) {
+                    ResizableSplitPane(
+                        modifier = Modifier.fillMaxSize(),
+                        initialSplitRatio = 0.4f,
+                        minRatio = 0.2f,
+                        maxRatio = 0.6f,
+                        first = {
+                            FileSystemTreeView(
+                                rootPath = currentWorkspace?.rootPath ?: "",
+                                onFileClick = { filePath ->
+                                    viewModel.renderer.openFileViewer(filePath)
+                                },
+                                onClose = { viewModel.closeTreeView() },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        },
+                        second = {
+                            viewModel.renderer.currentViewingFile?.let { filePath ->
+                                FileViewerPanelWrapper(
+                                    filePath = filePath,
+                                    onClose = { viewModel.renderer.closeFileViewer() },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                    )
+                } else {
+                    // 只有 TreeView
+                    FileSystemTreeView(
+                        rootPath = currentWorkspace?.rootPath ?: "",
+                        onFileClick = { filePath ->
+                            viewModel.renderer.openFileViewer(filePath)
+                        },
+                        onClose = { viewModel.closeTreeView() },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        )
+    } else {
+        // TreeView 未打开时的布局
+        Column(modifier = modifier.fillMaxSize()) {
             if (viewModel.isExecuting || viewModel.renderer.currentIteration > 0) {
                 AgentStatusBar(
                     isExecuting = viewModel.isExecuting,
@@ -101,7 +201,6 @@ fun AgentChatInterface(
                 )
             }
 
-            // Chat 消息列表
             AgentMessageList(
                 renderer = viewModel.renderer,
                 modifier = Modifier
@@ -119,7 +218,6 @@ fun AgentChatInterface(
                 )
             }
 
-            // 输入框
             DevInEditorInput(
                 initialText = "",
                 placeholder = "Describe your coding task...",
@@ -140,38 +238,6 @@ fun AgentChatInterface(
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             )
-        }
-
-        // 右侧：TreeView + FileViewer（左右分割）
-        if (viewModel.isTreeViewVisible) {
-            Row(
-                modifier = Modifier
-                    .fillMaxHeight()
-            ) {
-                // TreeView
-                FileSystemTreeView(
-                    rootPath = currentWorkspace?.rootPath ?: "",
-                    onFileClick = { filePath ->
-                        viewModel.renderer.openFileViewer(filePath)
-                    },
-                    onClose = { viewModel.closeTreeView() },
-                    modifier = Modifier
-                        .width(280.dp)
-                        .fillMaxHeight()
-                )
-
-                // FileViewer（可选）
-                viewModel.renderer.currentViewingFile?.let { filePath ->
-                    VerticalDivider()
-                    FileViewerPanelWrapper(
-                        filePath = filePath,
-                        onClose = { viewModel.renderer.closeFileViewer() },
-                        modifier = Modifier
-                            .width(400.dp)
-                            .fillMaxHeight()
-                    )
-                }
-            }
         }
     }
 

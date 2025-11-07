@@ -23,20 +23,41 @@ fun FileViewerPanel(
     var textArea by remember { mutableStateOf<RSyntaxTextArea?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var fileName by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(true) }
+    var fileContent by remember { mutableStateOf<String?>(null) }
 
+    // 异步加载文件内容
     LaunchedEffect(filePath) {
-        try {
-            val file = File(filePath)
-            if (file.exists()) {
+        isLoading = true
+        errorMessage = null
+        fileContent = null
+        
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val file = File(filePath)
+                if (!file.exists()) {
+                    errorMessage = "File not found: $filePath"
+                    fileName = filePath
+                    return@withContext
+                }
+                
                 fileName = file.name
-                errorMessage = null
-            } else {
-                errorMessage = "File not found: $filePath"
+                
+                // 检查文件大小（限制 10MB）
+                val maxSize = 10 * 1024 * 1024 // 10MB
+                if (file.length() > maxSize) {
+                    errorMessage = "File too large (${file.length() / 1024 / 1024}MB). Maximum size is 10MB."
+                    return@withContext
+                }
+                
+                // 异步读取文件
+                fileContent = file.readText()
+            } catch (e: Exception) {
+                errorMessage = "Error loading file: ${e.message}"
                 fileName = filePath
+            } finally {
+                isLoading = false
             }
-        } catch (e: Exception) {
-            errorMessage = "Error: ${e.message}"
-            fileName = filePath
         }
     }
 
@@ -82,60 +103,83 @@ fun FileViewerPanel(
 
         // Content
         Box(modifier = Modifier.fillMaxSize()) {
-            if (errorMessage != null) {
-                // Error state
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "❌ Error",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = errorMessage!!,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+            when {
+                isLoading -> {
+                    // Loading state
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Loading file...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
-            } else {
-                // RSyntaxTextArea content
-                SwingPanel(
-                    background = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier.fillMaxSize(),
-                    factory = {
-                        val file = File(filePath)
-                        val area = RSyntaxTextArea().apply {
-                            text = if (file.exists()) file.readText() else ""
-                            isEditable = false
-                            syntaxEditingStyle = getSyntaxStyleForFile(file)
-                            isCodeFoldingEnabled = true
-                            antiAliasingEnabled = true
-                            tabSize = 4
-                            margin = java.awt.Insets(5, 5, 5, 5)
-                        }
-                        textArea = area
-                        
-                        RTextScrollPane(area).apply {
-                            isFoldIndicatorEnabled = true
-                        }
-                    },
-                    update = {
-                        // Update text if file path changes
-                        textArea?.let { area ->
+                errorMessage != null -> {
+                    // Error state
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "❌ Error",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = errorMessage!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+                fileContent != null -> {
+                    // RSyntaxTextArea content
+                    SwingPanel(
+                        background = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier.fillMaxSize(),
+                        factory = {
                             val file = File(filePath)
-                            if (file.exists()) {
-                                area.text = file.readText()
-                                area.syntaxEditingStyle = getSyntaxStyleForFile(file)
+                            val area = RSyntaxTextArea().apply {
+                                text = fileContent ?: ""
+                                isEditable = false
+                                syntaxEditingStyle = getSyntaxStyleForFile(file)
+                                isCodeFoldingEnabled = true
+                                antiAliasingEnabled = true
+                                tabSize = 4
+                                margin = java.awt.Insets(5, 5, 5, 5)
+                            }
+                            textArea = area
+                            
+                            RTextScrollPane(area).apply {
+                                isFoldIndicatorEnabled = true
+                            }
+                        },
+                        update = {
+                            // Update text if content changes
+                            textArea?.let { area ->
+                                if (area.text != fileContent) {
+                                    val file = File(filePath)
+                                    area.text = fileContent ?: ""
+                                    area.syntaxEditingStyle = getSyntaxStyleForFile(file)
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
