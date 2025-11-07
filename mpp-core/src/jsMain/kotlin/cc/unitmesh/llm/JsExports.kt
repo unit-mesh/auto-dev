@@ -1047,3 +1047,70 @@ data class JsDomainDictResult(
     val errorMessage: String?
 )
 
+/**
+ * JavaScript-friendly wrapper for DomainDictService
+ */
+@JsExport
+class JsDomainDictService(
+    private val fileSystem: ProjectFileSystem
+) {
+    private val service = cc.unitmesh.indexer.DomainDictService(fileSystem)
+
+    /**
+     * Load domain dictionary content
+     */
+    @JsName("loadContent")
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+    fun loadContent(): Promise<String?> {
+        return kotlinx.coroutines.GlobalScope.promise {
+            service.loadContent()
+        }
+    }
+
+    /**
+     * Check if domain dictionary exists
+     */
+    @JsName("exists")
+    fun exists(): Boolean {
+        return fileSystem.exists("prompts/domain.csv")
+    }
+}
+
+/**
+ * JavaScript-friendly PromptEnhancer wrapper
+ */
+@JsExport
+class JsPromptEnhancer(
+    private val llmService: KoogLLMService,
+    private val fileSystem: ProjectFileSystem,
+    private val jsDomainDictService: JsDomainDictService
+) {
+    private val enhancer = PromptEnhancer(llmService, fileSystem, cc.unitmesh.indexer.DomainDictService(fileSystem))
+
+    /**
+     * Enhance a prompt with context information
+     * @param userInput The user's input to enhance
+     * @param language The language for enhancement template ("zh" for Chinese, "en" for English)
+     * @return Promise that resolves to the enhanced prompt
+     */
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+    fun enhance(userInput: String, language: String): Promise<String> {
+        return kotlinx.coroutines.GlobalScope.promise {
+            enhancer.enhance(userInput, language)
+        }
+    }
+}
+
+/**
+ * Create a PromptEnhancer instance for JavaScript
+ */
+@JsExport
+@OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+fun createPromptEnhancer(
+    llmService: KoogLLMService,
+    fileSystem: ProjectFileSystem,
+    jsDomainDictService: JsDomainDictService
+): JsPromptEnhancer {
+    return JsPromptEnhancer(llmService, fileSystem, jsDomainDictService)
+}
+

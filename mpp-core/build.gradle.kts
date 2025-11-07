@@ -1,7 +1,7 @@
 plugins {
-    kotlin("multiplatform") version "2.2.0"
-    kotlin("plugin.serialization") version "2.2.0"
-    id("com.android.library") version "8.10.0"
+    kotlin("multiplatform")
+    kotlin("plugin.serialization")
+    id("com.android.library")
 
     id("dev.petuska.npm.publish") version "3.5.3"
 }
@@ -15,7 +15,7 @@ version = "0.1.4"
 
 android {
     namespace = "cc.unitmesh.devins.core"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24

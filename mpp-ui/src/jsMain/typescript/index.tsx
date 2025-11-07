@@ -84,8 +84,8 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       console.log();
     }
 
-    // Create Kotlin LLM service
-    const llmService = new KotlinCC.unitmesh.llm.JsKoogLLMService(
+    // Create Kotlin LLM service first
+    const llmService = KotlinCC.unitmesh.llm.JsKoogLLMService.Companion.create(
       new KotlinCC.unitmesh.llm.JsModelConfig(
         activeConfig.provider,
         activeConfig.model,
@@ -95,6 +95,41 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
         activeConfig.baseUrl || ''
       )
     );
+
+    // Enhance the task prompt automatically in CLI mode
+    let enhancedTask = task;
+    try {
+      if (!quiet) {
+        console.log('🔍 Enhancing task prompt...');
+      }
+
+      // Create file system
+      const fileSystem = new KotlinCC.unitmesh.devins.filesystem.FileSystem(resolvedPath);
+
+      // Create domain dict service
+      const domainDictService = new KotlinCC.unitmesh.llm.JsDomainDictService(fileSystem);
+
+      // Create prompt enhancer
+      const enhancer = new KotlinCC.unitmesh.llm.JsPromptEnhancer(
+        llmService,
+        fileSystem,
+        domainDictService
+      );
+
+      // Enhance the task - CLI mode uses Chinese template for English translation but Chinese response
+      enhancedTask = await enhancer.enhance(task, 'zh');
+
+      if (enhancedTask !== task && !quiet) {
+        console.log(`✨ Enhanced task: ${enhancedTask}`);
+        console.log();
+      }
+
+    } catch (error) {
+      if (!quiet) {
+        console.warn('⚠️ Failed to enhance task prompt, using original:', error);
+      }
+      // Continue with original task on error
+    }
 
     // Create CLI renderer
     const renderer = new CliRenderer();
@@ -109,9 +144,9 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       toolConfig // tool configuration
     );
 
-    // Create task object
+    // Create task object with enhanced task
     const taskObj = new KotlinCC.unitmesh.agent.JsAgentTask(
-      task,
+      enhancedTask,
       resolvedPath
     );
 

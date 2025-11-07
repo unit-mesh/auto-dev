@@ -1,10 +1,12 @@
 package cc.unitmesh.devins.ui.compose.editor
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,12 +28,15 @@ import cc.unitmesh.devins.completion.CompletionItem
 import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.completion.CompletionTriggerType
 import cc.unitmesh.devins.editor.EditorCallbacks
+import cc.unitmesh.devins.ui.compose.config.ToolConfigDialog
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionPopup
 import cc.unitmesh.devins.ui.compose.editor.completion.CompletionTrigger
 import cc.unitmesh.devins.ui.compose.editor.highlighting.DevInSyntaxHighlighter
-import cc.unitmesh.devins.ui.compose.config.ToolConfigDialog
 import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.devins.workspace.WorkspaceManager
+import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.llm.PromptEnhancer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -61,6 +66,10 @@ fun DevInEditorInput(
     var selectedCompletionIndex by remember { mutableStateOf(0) }
     var currentTriggerType by remember { mutableStateOf(CompletionTriggerType.NONE) }
 
+    // 提示词增强相关状态
+    var isEnhancing by remember { mutableStateOf(false) }
+    var enhancer by remember { mutableStateOf<Any?>(null) }
+
     // Tool Configuration 对话框状态
     var showToolConfig by remember { mutableStateOf(false) }
     var mcpServers by remember { mutableStateOf<Map<String, McpServerConfig>>(emptyMap()) }
@@ -77,6 +86,32 @@ fun DevInEditorInput(
         mcpServers = configWrapper.getMcpServers()
         if (mcpServers.isNotEmpty()) {
             mcpClientManager.initialize(McpConfig(mcpServers = mcpServers))
+        }
+    }
+
+    // Initialize prompt enhancer
+    LaunchedEffect(Unit) {
+        try {
+            val workspace = WorkspaceManager.currentWorkspace
+            val projectPath = workspace?.rootPath
+            if (projectPath != null) {
+                val configWrapper = ConfigManager.load()
+                val activeConfig = configWrapper.getActiveModelConfig()
+                if (activeConfig != null && activeConfig.isValid()) {
+                    val llmService = KoogLLMService.create(activeConfig)
+
+                    // Use workspace file system
+                    val fileSystem = workspace.fileSystem
+
+                    // Create domain dict service
+                    val domainDictService = cc.unitmesh.indexer.DomainDictService(fileSystem)
+
+                    // Create prompt enhancer
+                    enhancer = PromptEnhancer(llmService, fileSystem, domainDictService)
+                }
+            }
+        } catch (e: Exception) {
+            println("Failed to initialize prompt enhancer: ${e.message}")
         }
     }
 
@@ -213,6 +248,38 @@ fun DevInEditorInput(
         focusRequester.requestFocus()
     }
 
+    // 增强当前输入的函数
+    fun enhanceCurrentInput() {
+        val currentEnhancer = enhancer
+        if (currentEnhancer == null || textFieldValue.text.isBlank() || isEnhancing) {
+            return
+        }
+
+        scope.launch {
+            try {
+                isEnhancing = true
+                println("🔍 Enhancing current input...")
+
+                val enhanced = (currentEnhancer as PromptEnhancer).enhance(textFieldValue.text.trim(), "zh")
+
+                if (enhanced.isNotEmpty() && enhanced != textFieldValue.text.trim() && enhanced.length > textFieldValue.text.trim().length) {
+                    textFieldValue = TextFieldValue(
+                        text = enhanced,
+                        selection = androidx.compose.ui.text.TextRange(enhanced.length)
+                    )
+                    println("✨ Enhanced: \"${textFieldValue.text.trim()}\" -> \"$enhanced\"")
+                } else {
+                    println("ℹ️ No enhancement needed or failed")
+                }
+
+            } catch (e: Exception) {
+                println("❌ Enhancement failed: ${e.message}")
+            } finally {
+                isEnhancing = false
+            }
+        }
+    }
+
     fun handleKeyEvent(event: KeyEvent): Boolean {
         if (event.type != KeyEventType.KeyDown) return false
 
@@ -265,6 +332,12 @@ fun DevInEditorInput(
                     textFieldValue = TextFieldValue("")
                     showCompletion = false
                 }
+                true
+            }
+
+            // Ctrl+P 增强提示词
+            event.key == Key.P && event.isCtrlPressed -> {
+                enhanceCurrentInput()
                 true
             }
 
@@ -393,6 +466,22 @@ fun DevInEditorInput(
                             }
                         }
                     )
+                }
+
+                // 提示文本
+                if (!isAndroid) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = if (isEnhancing) "🔍 Enhancing..." else "Ctrl+P to enhance prompt",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
                 }
 
                 // 底部工具栏

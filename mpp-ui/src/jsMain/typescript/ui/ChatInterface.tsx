@@ -48,6 +48,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showBanner, setShowBanner] = useState(true);
   const [shouldPreventSubmit, setShouldPreventSubmit] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancer, setEnhancer] = useState<any>(null);
 
   // Router logic is now handled by the mode system
 
@@ -55,6 +57,56 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     setIsProcessing(isCompiling || pendingMessage !== null);
   }, [isCompiling, pendingMessage]);
+
+  // Initialize prompt enhancer
+  useEffect(() => {
+    const initializeEnhancer = async () => {
+      try {
+        const { ConfigManager } = await import('../config/ConfigManager.js');
+        const { getCurrentProjectPath } = await import('../utils/domainDictUtils.js');
+        const KotlinCC = (await import('@autodev/mpp-core')).default.cc;
+
+        const projectPath = getCurrentProjectPath();
+        if (!projectPath) return;
+
+        const config = await ConfigManager.load();
+        const activeConfig = config.getActiveConfig();
+        if (!activeConfig) return;
+
+        // Create KoogLLMService
+        const modelConfig = new KotlinCC.unitmesh.llm.JsModelConfig(
+          activeConfig.provider,
+          activeConfig.model,
+          activeConfig.apiKey,
+          activeConfig.temperature || 0.7,
+          activeConfig.maxTokens || 4096,
+          activeConfig.baseUrl || ''
+        );
+
+        const llmService = KotlinCC.unitmesh.llm.JsKoogLLMService.Companion.create(modelConfig);
+
+        // Create file system
+        const fileSystem = new KotlinCC.unitmesh.devins.filesystem.FileSystem(projectPath);
+
+        // Create domain dict service
+        const domainDictService = new KotlinCC.unitmesh.llm.JsDomainDictService(fileSystem);
+
+        // Create prompt enhancer
+        const promptEnhancer = new KotlinCC.unitmesh.llm.JsPromptEnhancer(
+          llmService,
+          fileSystem,
+          domainDictService
+        );
+
+        setEnhancer(promptEnhancer);
+
+      } catch (error) {
+        console.warn('Failed to initialize prompt enhancer:', error);
+      }
+    };
+
+    initializeEnhancer();
+  }, []);
 
   // Update completions when input changes
   useEffect(() => {
@@ -106,6 +158,30 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       console.error('Error processing input:', error);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  // Enhance current input with Ctrl+P
+  const enhanceCurrentInput = async () => {
+    if (!enhancer || !input.trim() || isEnhancing) return;
+
+    try {
+      setIsEnhancing(true);
+      console.log('🔍 Enhancing current input...');
+
+      const enhanced = await enhancer.enhance(input.trim(), 'zh');
+
+      if (enhanced && enhanced !== input.trim() && enhanced.length > input.trim().length) {
+        setInput(enhanced);
+        console.log(`✨ Enhanced: "${input.trim()}" -> "${enhanced}"`);
+      } else {
+        console.log('ℹ️ No enhancement needed or failed');
+      }
+
+    } catch (error) {
+      console.error('❌ Enhancement failed:', error);
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -170,6 +246,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       }
     }
     
+    // Handle Ctrl+P for prompt enhancement
+    if (key.ctrl && input === 'p') {
+      enhanceCurrentInput();
+      return;
+    }
+
     if (key.ctrl && input === 'c') {
       console.log(GOODBYE_MESSAGE);
       process.exit(0);
@@ -253,7 +335,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {/* Footer */}
       <Box paddingX={1}>
         <Text dimColor>
-          {t('chat.exitHint')} | {t('chat.helpHint')}
+          {t('chat.exitHint')} | {t('chat.helpHint')} | Ctrl+P to enhance prompt
+          {isEnhancing && ' | 🔍 Enhancing...'}
         </Text>
       </Box>
     </Box>
