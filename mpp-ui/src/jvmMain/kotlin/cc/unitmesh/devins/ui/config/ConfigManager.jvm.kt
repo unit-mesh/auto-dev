@@ -63,7 +63,7 @@ actual object ConfigManager {
         setActive: Boolean
     ) {
         val wrapper = load()
-        val configFile = wrapper.getConfigFile()
+        val configFile = wrapper.configFile
 
         val existingIndex = configFile.configs.indexOfFirst { it.name == config.name }
 
@@ -106,7 +106,7 @@ actual object ConfigManager {
 
     actual suspend fun deleteConfig(name: String) {
         val wrapper = load()
-        val configFile = wrapper.getConfigFile()
+        val configFile = wrapper.configFile
 
         val updatedConfigs = configFile.configs.filter { it.name != name }
         val updatedActive =
@@ -121,7 +121,7 @@ actual object ConfigManager {
 
     actual suspend fun setActive(name: String) {
         val wrapper = load()
-        val configFile = wrapper.getConfigFile()
+        val configFile = wrapper.configFile
 
         if (configFile.configs.none { it.name == name }) {
             throw IllegalArgumentException("Configuration '$name' not found")
@@ -139,7 +139,7 @@ actual object ConfigManager {
 
     actual suspend fun saveMcpServers(mcpServers: Map<String, McpServerConfig>) {
         val wrapper = load()
-        val configFile = wrapper.getConfigFile()
+        val configFile = wrapper.configFile
 
         val updatedConfigFile = configFile.copy(mcpServers = mcpServers)
         save(updatedConfigFile)

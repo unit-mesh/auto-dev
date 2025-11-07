@@ -6,22 +6,25 @@ package cc.unitmesh.devins.ui.config
 
 /**
  * Get language from config file
- * Returns null if language not set (will fall back to system language)
+ * Returns the saved language preference or null if not set (will fall back to system language)
  */
 fun AutoDevConfigWrapper.getLanguage(): String? {
-    return null
+    return configFile.language.takeIf { it.isNotEmpty() }
 }
 
 /**
  * Save language preference to config file
- *
- * Note: This is a placeholder implementation.
- * In a real implementation, we would add a 'language' field to ConfigFile.
+ * 
+ * This updates the language field in the config file and persists it.
  */
 suspend fun saveLanguagePreference(languageCode: String) {
     try {
-        println("Language preference set to: $languageCode")
+        val currentConfig = ConfigManager.load()
+        val updatedConfig = currentConfig.configFile.copy(language = languageCode)
+        ConfigManager.save(updatedConfig)
+        println("Language preference saved: $languageCode")
     } catch (e: Exception) {
         println("Failed to save language preference: ${e.message}")
+        throw e
     }
 }

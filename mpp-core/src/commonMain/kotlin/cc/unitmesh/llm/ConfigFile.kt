@@ -61,7 +61,8 @@ data class NamedModelConfig(
 @Serializable
 data class ConfigFile(
     val active: String = "",
-    val configs: List<NamedModelConfig> = emptyList()
+    val configs: List<NamedModelConfig> = emptyList(),
+    val language: String = "en"  // Language preference: "en" or "zh"
 ) {
     /**
      * 获取当前激活的配置

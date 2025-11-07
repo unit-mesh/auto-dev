@@ -29,7 +29,8 @@ import kotlinx.serialization.Serializable
 data class ConfigFile(
     val active: String = "",
     val configs: List<NamedModelConfig> = emptyList(),
-    val mcpServers: Map<String, McpServerConfig> = emptyMap()
+    val mcpServers: Map<String, McpServerConfig> = emptyMap(),
+    val language: String = "en"  // Language preference: "en" or "zh"
 )
 
 /**
@@ -89,9 +90,7 @@ data class NamedModelConfig(
     }
 }
 
-class AutoDevConfigWrapper(private val configFile: ConfigFile) {
-    fun getConfigFile(): ConfigFile = configFile
-
+class AutoDevConfigWrapper(val configFile: ConfigFile) {
     fun getActiveConfig(): NamedModelConfig? {
         if (configFile.active.isEmpty() || configFile.configs.isEmpty()) {
             return null
