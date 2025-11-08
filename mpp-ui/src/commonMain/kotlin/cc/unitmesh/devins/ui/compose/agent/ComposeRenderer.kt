@@ -92,7 +92,7 @@ class ComposeRenderer : BaseRenderer() {
             val executionTimeMs: Long,
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
-        
+
         /**
          * Live terminal session - connected to a PTY process for real-time output
          * This is only used on platforms that support PTY (JVM with JediTerm)
@@ -351,7 +351,7 @@ class ComposeRenderer : BaseRenderer() {
     fun closeFileViewer() {
         _currentViewingFile = null
     }
-    
+
     /**
      * Adds a live terminal session to the timeline.
      * This is called when a Shell tool is executed with PTY support.
@@ -367,7 +367,7 @@ class ComposeRenderer : BaseRenderer() {
         println("   command: $command")
         println("   workingDirectory: $workingDirectory")
         println("   ptyHandle type: ${ptyHandle?.let { it::class.simpleName }}")
-        
+
         _timeline.add(
             TimelineItem.LiveTerminalItem(
                 sessionId = sessionId,
@@ -376,7 +376,7 @@ class ComposeRenderer : BaseRenderer() {
                 ptyHandle = ptyHandle
             )
         )
-        
+
         println("   ✅ LiveTerminalItem added to timeline (count: ${_timeline.size})")
     }
 
