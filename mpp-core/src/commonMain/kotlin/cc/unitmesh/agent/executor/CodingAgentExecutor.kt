@@ -32,13 +32,14 @@ class CodingAgentExecutor(
     private val subAgentManager: SubAgentManager? = null
 ) {
     private val toolCallParser = ToolCallParser()
-    private val errorRecoveryManager = ErrorRecoveryManager(projectPath, llmService)
     private var currentIteration = 0
     private val steps = mutableListOf<AgentStep>()
     private val edits = mutableListOf<AgentEdit>()
 
     private val recentToolCalls = mutableListOf<String>()
     private val MAX_REPEAT_COUNT = 3
+
+    private var conversationManager: ConversationManager? = null
 
     /**
      * 执行 Agent 任务
@@ -49,7 +50,7 @@ class CodingAgentExecutor(
         onProgress: (String) -> Unit = {}
     ): AgentResult {
         resetExecution()
-        val conversationManager = ConversationManager(llmService, systemPrompt)
+        conversationManager = ConversationManager(llmService, systemPrompt)
         val initialUserMessage = buildInitialUserMessage(task)
 
         onProgress("🚀 CodingAgent started")
@@ -68,19 +69,19 @@ class CodingAgentExecutor(
                 renderer.renderLLMResponseStart()
 
                 if (currentIteration == 1) {
-                    conversationManager.sendMessage(initialUserMessage, compileDevIns = true).cancellable().collect { chunk ->
+                    conversationManager!!.sendMessage(initialUserMessage, compileDevIns = true).cancellable().collect { chunk ->
                         llmResponse.append(chunk)
                         renderer.renderLLMResponseChunk(chunk)
                     }
                 } else {
-                    conversationManager.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
+                    conversationManager!!.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
                         llmResponse.append(chunk)
                         renderer.renderLLMResponseChunk(chunk)
                     }
                 }
 
                 renderer.renderLLMResponseEnd()
-                conversationManager.addAssistantResponse(llmResponse.toString())
+                conversationManager!!.addAssistantResponse(llmResponse.toString())
             } catch (e: Exception) {
                 renderer.renderError("LLM call failed: ${e.message}")
                 break
@@ -94,7 +95,7 @@ class CodingAgentExecutor(
 
             val toolResults = executeToolCalls(toolCalls)
             val toolResultsText = ToolResultFormatter.formatMultipleToolResults(toolResults)
-            conversationManager.addToolResults(toolResultsText)
+            conversationManager!!.addToolResults(toolResultsText)
 
             if (isTaskComplete(llmResponse.toString())) {
                 renderer.renderTaskComplete()
@@ -132,7 +133,7 @@ class CodingAgentExecutor(
 
     /**
      * 并行执行多个工具调用
-     * 
+     *
      * 策略：
      * 1. 预先检查所有工具是否重复
      * 2. 并行启动所有工具执行
@@ -141,25 +142,25 @@ class CodingAgentExecutor(
      */
     private suspend fun executeToolCalls(toolCalls: List<ToolCall>): List<Triple<String, Map<String, Any>, ToolExecutionResult>> = coroutineScope {
         val results = mutableListOf<Triple<String, Map<String, Any>, ToolExecutionResult>>()
-        
+
         val toolsToExecute = mutableListOf<ToolCall>()
         var hasRepeatError = false
-        
+
         for (toolCall in toolCalls) {
             if (hasRepeatError) break
-            
+
             val toolName = toolCall.toolName
             val params = toolCall.params.mapValues { it.value as Any }
             val paramsStr = params.entries.joinToString(" ") { (key, value) ->
                 "$key=\"$value\""
             }
             val toolSignature = "$toolName:$paramsStr"
-            
+
             recentToolCalls.add(toolSignature)
             if (recentToolCalls.size > 10) {
                 recentToolCalls.removeAt(0)
             }
-            
+
             val exactMatches = recentToolCalls.takeLast(MAX_REPEAT_COUNT).count { it == toolSignature }
             val toolType = toolName.toToolType()
             val maxAllowedRepeats = when (toolType) {
@@ -171,7 +172,7 @@ class CodingAgentExecutor(
                     else -> 2
                 }
             }
-            
+
             if (exactMatches >= maxAllowedRepeats) {
                 renderer.renderRepeatWarning(toolName, exactMatches)
                 val currentTime = Clock.System.now().toEpochMilliseconds()
@@ -191,53 +192,36 @@ class CodingAgentExecutor(
                 hasRepeatError = true
                 break
             }
-            
+
             toolsToExecute.add(toolCall)
         }
-        
+
         if (hasRepeatError) {
             return@coroutineScope results
         }
-        
-        // Step 1: 先渲染所有工具调用（顺序显示）
+
         for (toolCall in toolsToExecute) {
             val toolName = toolCall.toolName
             val params = toolCall.params.mapValues { it.value as Any }
             val paramsStr = params.entries.joinToString(" ") { (key, value) ->
                 "$key=\"$value\""
             }
+
             renderer.renderToolCall(toolName, paramsStr)
-        }
-        
-        // Step 2: 并行执行所有工具（不输出日志）
-        val executionJobs = toolsToExecute.map { toolCall ->
-            val toolName = toolCall.toolName
-            val params = toolCall.params.mapValues { it.value as Any }
-            
-            async {
-                yield()
-                
-                val executionContext = OrchestratorContext(
-                    workingDirectory = projectPath,
-                    environment = emptyMap()
-                )
-                
-                val executionResult = toolOrchestrator.executeToolCall(
-                    toolName,
-                    params,
-                    executionContext
-                )
-                
-                Triple(toolName, params, executionResult)
-            }
-        }
-        
-        // Step 3: 等待所有工具执行完成
-        val executionResults = executionJobs.awaitAll()
-        results.addAll(executionResults)
-        
-        // 结果处理阶段：按顺序处理每个工具的结果
-        for ((toolName, params, executionResult) in executionResults) {
+
+            val executionContext = OrchestratorContext(
+                workingDirectory = projectPath,
+                environment = emptyMap()
+            )
+
+            val executionResult = toolOrchestrator.executeToolCall(
+                toolName,
+                params,
+                executionContext
+            )
+
+            results.add(Triple(toolName, params, executionResult))
+
             val stepResult = AgentStep(
                 step = currentIteration,
                 action = toolName,
@@ -247,7 +231,7 @@ class CodingAgentExecutor(
                 success = executionResult.isSuccess
             )
             steps.add(stepResult)
-            
+
             val fullOutput = when (val result = executionResult.result) {
                 is ToolResult.Error -> {
                     buildString {
@@ -270,79 +254,32 @@ class CodingAgentExecutor(
                 is ToolResult.AgentResult -> if (!result.success) result.content else stepResult.result
                 else -> stepResult.result
             }
-            
-            // 检查是否需要长内容处理
+
             val contentHandlerResult = checkForLongContent(toolName, fullOutput ?: "", executionResult)
             val displayOutput = contentHandlerResult?.content ?: fullOutput
-            
-            // **关键改动**: 传递 metadata 给 renderer，用于检查是否是 live session
+
             renderer.renderToolResult(
-                toolName, 
-                stepResult.success, 
-                stepResult.result, 
+                toolName,
+                stepResult.success,
+                stepResult.result,
                 displayOutput,
                 executionResult.metadata
             )
-            
+
             val currentToolType = toolName.toToolType()
             if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {
                 recordFileEdit(params)
             }
-            
+
             // 错误恢复处理
             if (!executionResult.isSuccess) {
                 val command = if (toolName == "shell") params["command"] as? String else null
                 val errorMessage = executionResult.content ?: "Unknown error"
-                
+
                 renderer.renderError("Tool execution failed: $errorMessage")
-                
-                val recoveryResult = errorRecoveryManager.handleToolError(
-                    toolName = toolName,
-                    command = command,
-                    errorMessage = errorMessage
-                )
-                
-                if (recoveryResult != null) {
-                    renderer.renderRecoveryAdvice(recoveryResult)
-                    
-                    val enhancedResult = buildString {
-                        appendLine("Tool execution failed with error:")
-                        appendLine(errorMessage)
-                        appendLine()
-                        appendLine("Error Recovery Analysis:")
-                        appendLine(recoveryResult)
-                    }
-                    
-                    val enhancedExecutionResult = ToolExecutionResult(
-                        executionId = executionResult.executionId,
-                        toolName = executionResult.toolName,
-                        result = ToolResult.Error(enhancedResult, "tool_execution_with_recovery"),
-                        startTime = executionResult.startTime,
-                        endTime = executionResult.endTime,
-                        retryCount = executionResult.retryCount,
-                        state = executionResult.state,
-                        metadata = executionResult.metadata + mapOf(
-                            "hasRecoveryAdvice" to "true",
-                            "originalError" to errorMessage
-                        )
-                    )
-                    
-                    // 更新结果中的对应条目
-                    val resultIndex = results.indexOfFirst { 
-                        it.first == toolName && it.second == params 
-                    }
-                    if (resultIndex != -1) {
-                        results[resultIndex] = Triple(toolName, params, enhancedExecutionResult)
-                    }
-                }
-                
-                if (errorRecoveryManager.isFatalError(toolName, errorMessage)) {
-                    renderer.renderError("Fatal error encountered. Stopping execution.")
-                    break
-                }
             }
         }
-        
+
         results
     }
 
@@ -475,5 +412,12 @@ class CodingAgentExecutor(
         } else {
             baseStatus
         }
+    }
+
+    /**
+     * 获取对话历史
+     */
+    fun getConversationHistory(): List<cc.unitmesh.devins.llm.Message> {
+        return conversationManager?.getHistory() ?: emptyList()
     }
 }
