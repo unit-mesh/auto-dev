@@ -362,12 +362,6 @@ class ComposeRenderer : BaseRenderer() {
         workingDirectory: String?,
         ptyHandle: Any?
     ) {
-        println("🎨 ComposeRenderer.addLiveTerminal called")
-        println("   sessionId: $sessionId")
-        println("   command: $command")
-        println("   workingDirectory: $workingDirectory")
-        println("   ptyHandle type: ${ptyHandle?.let { it::class.simpleName }}")
-
         _timeline.add(
             TimelineItem.LiveTerminalItem(
                 sessionId = sessionId,
@@ -376,8 +370,6 @@ class ComposeRenderer : BaseRenderer() {
                 ptyHandle = ptyHandle
             )
         )
-
-        println("   ✅ LiveTerminalItem added to timeline (count: ${_timeline.size})")
     }
 
     fun forceStop() {

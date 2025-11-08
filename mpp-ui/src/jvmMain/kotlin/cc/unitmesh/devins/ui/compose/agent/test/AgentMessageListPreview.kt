@@ -27,6 +27,7 @@ import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
+import com.pty4j.PtyProcessBuilder
 
 fun main() = application {
     val windowState = rememberWindowState(
@@ -80,11 +81,15 @@ fun AgentMessageListPreview(modifier: Modifier = Modifier) {
  */
 private fun createMockRenderer(): ComposeRenderer {
     val renderer = ComposeRenderer()
+    val ptyHandle = PtyProcessBuilder().setCommand(arrayOf("echo", "Hello, World!")).start()
 
-    // Simulate user message
-    simulateUserMessage(renderer)
+    renderer.addLiveTerminal(
+        sessionId = "preview-terminal-${System.currentTimeMillis()}",
+        command = "echo 'hello'",
+        workingDirectory = "/project/root",
+        ptyHandle = ptyHandle
+    )
 
-    // Iteration 1: Read existing code
     simulateAgentReasoning(renderer, """I'll help you add a sum calculation feature to the MathUtils class. Let me start by:
 
 1. First, I'll read the existing MathUtils.kt file to understand its current structure
@@ -216,27 +221,16 @@ MathUtilsTest > testSum() PASSED
 - ✓ Added `sum(a: Int, b: Int): Int` function to MathUtils
 - ✓ Fixed incorrect test assertion in MathUtilsTest
 - ✓ All tests passing (3/3)
+- ✓ Live terminal session demonstrated
 
 The implementation is complete and working correctly!""")
 
     // Task complete
-    renderer.renderFinalResult(true, "Task completed successfully after 5 iterations", 5)
+    renderer.renderFinalResult(true, "Task completed successfully after 6 iterations", 6)
 
     return renderer
 }
 
-/**
- * Helper to simulate user message (uses internal timeline manipulation)
- */
-private fun simulateUserMessage(renderer: ComposeRenderer) {
-    // We'll use renderLLMResponseStart/Chunk/End to add assistant messages
-    // For user messages, we need to access the timeline directly via reflection or a workaround
-    // Since there's no public API for user messages, we'll just start with assistant responses
-}
-
-/**
- * Helper to simulate agent reasoning (assistant message)
- */
 private fun simulateAgentReasoning(renderer: ComposeRenderer, content: String) {
     renderer.renderLLMResponseStart()
     renderer.renderLLMResponseChunk(content)

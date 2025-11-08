@@ -109,6 +109,7 @@ kotlin {
                 // RSyntaxTextArea for syntax highlighting in JVM
                 implementation("com.fifesoft:rsyntaxtextarea:3.6.0")
 
+                implementation("org.jetbrains.pty4j:pty4j:0.13.10")
                 implementation("org.jetbrains.jediterm:jediterm-core:3.57")
                 implementation("org.jetbrains.jediterm:jediterm-ui:3.57")
             }

@@ -24,8 +24,6 @@ actual fun LiveTerminalItem(
     ptyHandle: Any?
 ) {
     var expanded by remember { mutableStateOf(true) } // Auto-expand live terminal
-    
-    // Convert ptyHandle to Process if available
     val process = remember(ptyHandle) {
         if (ptyHandle is Process) {
             ptyHandle
@@ -33,12 +31,12 @@ actual fun LiveTerminalItem(
             null
         }
     }
-    
+
     // Create TtyConnector from the process
     val ttyConnector = remember(process) {
         process?.let { ProcessTtyConnector(it) }
     }
-    
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -64,7 +62,7 @@ actual fun LiveTerminalItem(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 // Status indicator
                 if (process?.isAlive == true) {
                     Card(
@@ -98,8 +96,7 @@ actual fun LiveTerminalItem(
                     }
                 }
             }
-            
-            // Command display
+
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "$ $command",
@@ -108,7 +105,7 @@ actual fun LiveTerminalItem(
                 style = MaterialTheme.typography.bodySmall,
                 fontFamily = FontFamily.Monospace
             )
-            
+
             if (workingDirectory != null) {
                 Text(
                     text = "Working directory: $workingDirectory",
@@ -118,11 +115,10 @@ actual fun LiveTerminalItem(
                     fontFamily = FontFamily.Monospace
                 )
             }
-            
-            // Terminal widget
+
             if (expanded) {
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 if (ttyConnector != null) {
                     // Render JediTerm widget
                     TerminalWidget(
@@ -132,7 +128,6 @@ actual fun LiveTerminalItem(
                             .height(400.dp)
                     )
                 } else {
-                    // Fallback: show error message
                     Card(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer

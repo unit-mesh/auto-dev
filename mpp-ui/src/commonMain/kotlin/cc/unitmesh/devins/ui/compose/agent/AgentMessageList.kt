@@ -100,7 +100,7 @@ fun AgentMessageList(
                         executionTimeMs = timelineItem.executionTimeMs
                     )
                 }
-                
+
                 is ComposeRenderer.TimelineItem.LiveTerminalItem -> {
                     LiveTerminalItem(
                         sessionId = timelineItem.sessionId,
