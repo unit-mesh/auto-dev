@@ -16,9 +16,10 @@ data class TerminalScrollbarColors(
 
 /**
  * A modern, minimal scrollbar inspired by IntelliJ's JBScrollBar styling.
- * - Rounded thumb
- * - Themed colors
+ * - Ultra-thin design (6px width)
+ * - Rounded thumb with transparency
  * - Hover & press feedback
+ * - Auto-hide track (only thumb visible)
  *
  * Note: This class is open to allow anonymous subclass creation like IDEA's JBScrollBar.
  */
@@ -47,14 +48,14 @@ open class ModernTerminalScrollBar(
                     }
                 }
 
-                override fun getMaximumThumbSize(): Dimension = Dimension(16, 16)
+                // Ultra-thin scrollbar (6px width)
+                override fun getMaximumThumbSize(): Dimension = Dimension(6, 6)
 
-                override fun getMinimumThumbSize(): Dimension = Dimension(16, 16)
+                override fun getMinimumThumbSize(): Dimension = Dimension(6, 6)
 
                 override fun paintTrack(g: Graphics, c: JComponent, trackBounds: Rectangle) {
-                    val g2 = g as Graphics2D
-                    g2.color = colors?.track ?: trackColor
-                    g2.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height)
+                    // Don't paint track - auto-hide for cleaner look
+                    // Only thumb will be visible
                 }
 
                 override fun paintThumb(g: Graphics, c: JComponent, thumbBounds: Rectangle) {
@@ -63,15 +64,39 @@ open class ModernTerminalScrollBar(
 
                     val g2 = g as Graphics2D
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+
+                    // Calculate thumb color with transparency
                     val baseColor =
                         when {
                             pressing && thumbColors.thumbPressed != null -> thumbColors.thumbPressed
                             hovering && thumbColors.thumbHover != null -> thumbColors.thumbHover
                             else -> thumbColors.thumb
                         }
-                    g2.color = baseColor
-                    val arc = 8
-                    g2.fillRoundRect(thumbBounds.x, thumbBounds.y, thumbBounds.width, thumbBounds.height, arc, arc)
+
+                    // Apply transparency: more opaque on hover/press
+                    val alpha =
+                        when {
+                            pressing -> 200
+                            hovering -> 160
+                            else -> 100
+                        }
+
+                    g2.color = Color(baseColor.red, baseColor.green, baseColor.blue, alpha)
+
+                    // Draw ultra-thin rounded thumb (4px width with 1px margin on each side)
+                    val arc = 4
+                    val margin = 1
+                    val thumbWidth = 4
+                    val thumbX = thumbBounds.x + (thumbBounds.width - thumbWidth) / 2
+
+                    g2.fillRoundRect(
+                        thumbX,
+                        thumbBounds.y + margin,
+                        thumbWidth,
+                        thumbBounds.height - margin * 2,
+                        arc,
+                        arc
+                    )
                 }
 
                 override fun createTrackListener(): TrackListener {

@@ -390,7 +390,7 @@ class CodingAgentExecutor(
             "Task incomplete after $currentIteration iterations"
         }
 
-        renderer.renderFinalResult(success, message, currentIteration)
+//        renderer.renderFinalResult(success, message, currentIteration)
 
         return AgentResult(
             success = success,

@@ -120,30 +120,30 @@ actual fun LiveTerminalItem(
                 )
 
                 // Status badge - compact
-                Surface(
-                    color =
-                        if (isRunning) {
-                            AutoDevColors.Green.c400.copy(alpha = 0.15f)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        },
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.height(20.dp)
-                ) {
-                    Text(
-                        text = if (isRunning) "RUNNING" else "DONE",
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        color =
-                            if (isRunning) {
-                                AutoDevColors.Green.c400
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+//                Surface(
+//                    color =
+//                        if (isRunning) {
+//                            AutoDevColors.Green.c400.copy(alpha = 0.15f)
+//                        } else {
+//                            MaterialTheme.colorScheme.surfaceVariant
+//                        },
+//                    shape = RoundedCornerShape(10.dp),
+//                    modifier = Modifier.height(20.dp)
+//                ) {
+//                    Text(
+//                        text = if (isRunning) "RUNNING" else "DONE",
+//                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+//                        color =
+//                            if (isRunning) {
+//                                AutoDevColors.Green.c400
+//                            } else {
+//                                MaterialTheme.colorScheme.onSurfaceVariant
+//                            },
+//                        style = MaterialTheme.typography.labelSmall,
+//                        fontSize = 10.sp,
+//                        fontWeight = FontWeight.Bold
+//                    )
+//                }
             }
 
             // Working directory - only show when expanded and exists

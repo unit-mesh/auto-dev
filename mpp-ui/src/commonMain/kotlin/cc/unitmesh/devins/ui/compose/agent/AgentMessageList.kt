@@ -48,7 +48,6 @@ fun AgentMessageList(
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
-        // Match CLI background
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp), // Reduce padding
         verticalArrangement = Arrangement.spacedBy(6.dp) // Reduce spacing
     ) {
@@ -154,32 +153,15 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
                 Modifier
                     .fillMaxWidth()
                     .clickable { expanded = !expanded },
-            colors =
-                CardDefaults.cardColors(
-                    containerColor =
-                        if (isUser) {
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        }
-                ),
             shape = RoundedCornerShape(4.dp), // Smaller radius for CLI-like appearance
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Remove shadow
         ) {
             Column(modifier = Modifier.padding(8.dp)) { // Reduce padding
-                // Message content
                 Text(
                     text = message.content,
-                    color =
-                        if (isUser) {
-                            MaterialTheme.colorScheme.onPrimary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-                // Copy button and timestamp row (show when expanded or for AI messages)
                 if (expanded || !isUser) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
@@ -191,19 +173,12 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
                         if (!isUser) {
                             Text(
                                 text = formatTimestamp(Clock.System.now().toEpochMilliseconds()),
-                                color =
-                                    if (isUser) {
-                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                    },
                                 style = MaterialTheme.typography.labelSmall
                             )
                         } else {
                             Spacer(modifier = Modifier.width(1.dp))
                         }
 
-                        // Copy button (always show for easy access)
                         IconButton(
                             onClick = { clipboardManager.setText(AnnotatedString(message.content)) },
                             modifier = Modifier.size(24.dp)
@@ -230,27 +205,10 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
 @Composable
 private fun StreamingMessageItem(content: String) {
     Card(
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-        shape = RoundedCornerShape(12.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(4.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "💭",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    strokeWidth = 2.dp
-                )
-            }
-
             if (content.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -271,7 +229,6 @@ fun ToolResultItem(
     output: String?,
     fullOutput: String? = null
 ) {
-    // 失败的工具调用默认展开，并显示完整输出
     var expanded by remember { mutableStateOf(!success) }
     var showFullOutput by remember { mutableStateOf(!success) }
     val clipboardManager = LocalClipboardManager.current

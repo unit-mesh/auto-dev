@@ -17,6 +17,7 @@ import com.jediterm.terminal.TtyConnector
 import com.jediterm.terminal.ui.JediTermWidget
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider
 import java.awt.Dimension
+import java.awt.Font
 import java.io.IOException
 import java.nio.charset.Charset
 import java.util.function.Supplier
@@ -25,12 +26,14 @@ import javax.swing.JScrollBar
 /**
  * Custom JediTerm settings provider that integrates with Compose Material Theme.
  * Inspired by IDEA's JBTerminalSystemSettingsProvider implementation.
+ * Uses FiraCode font for better code readability.
  */
 class ComposeTerminalSettingsProvider(
     private val backgroundColor: Color,
     private val foregroundColor: Color,
     private val selectionColor: Color,
-    private val cursorColor: Color = Color(0xFF64B5F6) // Material blue by default
+    private val cursorColor: Color = Color(0xFF64B5F6), // Material blue by default
+    private val terminalFont: Font? = null
 ) : DefaultSettingsProvider() {
     // Convert Compose Color to JediTerm Color supplier
     private fun Color.toJediColorSupplier(): Supplier<com.jediterm.core.Color> {
@@ -63,6 +66,11 @@ class ComposeTerminalSettingsProvider(
             com.jediterm.terminal.TerminalColor(foregroundColor.toJediColorSupplier()),
             com.jediterm.terminal.TerminalColor(selectionColor.toJediColorSupplier())
         )
+    }
+
+    // Use FiraCode font with smaller size (12pt instead of default 14pt)
+    override fun getTerminalFont(): Font {
+        return terminalFont ?: Font("Monospaced", Font.PLAIN, 12)
     }
 
     // Use the same font settings as IDEA
@@ -165,6 +173,7 @@ class ProcessTtyConnector(
  * Custom JediTermWidget that overrides scrollbar creation like IDEA's JBTerminalWidget.
  * Following IDEA's pattern: createScrollBar() is called during parent constructor,
  * so we use a lazy approach to access terminal panel colors after initialization.
+ * Uses ultra-thin, semi-transparent scrollbar for modern look.
  */
 class AutoDevTerminalWidget(
     settingsProvider: ComposeTerminalSettingsProvider
@@ -176,9 +185,10 @@ class AutoDevTerminalWidget(
             object : ModernTerminalScrollBar(
                 VERTICAL,
                 TerminalScrollbarColors(
-                    track = java.awt.Color(30, 30, 30, 20),
-                    thumb = java.awt.Color(100, 181, 246, 140),
-                    thumbHover = java.awt.Color(100, 181, 246)
+                    track = java.awt.Color(0, 0, 0, 0), // Fully transparent track
+                    thumb = java.awt.Color(128, 128, 128), // Gray thumb (alpha applied in paint)
+                    thumbHover = java.awt.Color(160, 160, 160), // Lighter gray on hover
+                    thumbPressed = java.awt.Color(180, 180, 180) // Even lighter when pressed
                 )
             ) {
                 override fun getBackground(): java.awt.Color {
@@ -187,10 +197,32 @@ class AutoDevTerminalWidget(
                 }
             }
 
-        bar.isOpaque = true
+        bar.isOpaque = false // Make scrollbar non-opaque for transparency
         bar.unitIncrement = 10
         bar.blockIncrement = 48
         return bar
+    }
+}
+
+/**
+ * Load FiraCode font for terminal use.
+ * Falls back to Monospaced if FiraCode is not available.
+ */
+private fun loadTerminalFont(): Font {
+    return try {
+        // Try to load FiraCode from resources
+        val fontStream = object {}.javaClass.getResourceAsStream("/fonts/FiraCode-Regular.ttf")
+        if (fontStream != null) {
+            val baseFont = Font.createFont(Font.TRUETYPE_FONT, fontStream)
+            // Use smaller font size (12pt) for better terminal density
+            baseFont.deriveFont(12f)
+        } else {
+            // Fallback to system monospaced font
+            Font("Monospaced", Font.PLAIN, 12)
+        }
+    } catch (e: Exception) {
+        println("Failed to load FiraCode font for terminal: ${e.message}, using Monospaced")
+        Font("Monospaced", Font.PLAIN, 12)
     }
 }
 
@@ -200,7 +232,8 @@ class AutoDevTerminalWidget(
  *
  * Features:
  * - Material3 color scheme integration
- * - Custom styled scrollbar via createScrollBar() override
+ * - FiraCode font with smaller size (12pt)
+ * - Ultra-thin, auto-hide scrollbar
  * - Antialiasing and modern rendering
  * - Copy on select and paste on middle click
  */
@@ -219,6 +252,9 @@ fun TerminalWidget(
     val cursorColor = MaterialTheme.colorScheme.primary
     val primaryColor = MaterialTheme.colorScheme.primary
 
+    // Load FiraCode font
+    val terminalFont = remember { loadTerminalFont() }
+
     DisposableEffect(Unit) {
         onDispose {
             terminalWidget?.close()
@@ -234,7 +270,8 @@ fun TerminalWidget(
                     backgroundColor = backgroundColor,
                     foregroundColor = foregroundColor,
                     selectionColor = selectionColor,
-                    cursorColor = cursorColor
+                    cursorColor = cursorColor,
+                    terminalFont = terminalFont
                 )
 
             // Create custom terminal widget with overridden createScrollBar()
