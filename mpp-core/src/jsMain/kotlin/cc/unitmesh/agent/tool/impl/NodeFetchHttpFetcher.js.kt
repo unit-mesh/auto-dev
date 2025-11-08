@@ -1,5 +1,7 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.http
 
+import cc.unitmesh.agent.tool.impl.FetchResult
+import cc.unitmesh.agent.tool.impl.HttpFetcher
 import kotlinx.coroutines.await
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume

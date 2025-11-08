@@ -1,6 +1,6 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.http
 
-import cc.unitmesh.agent.tool.impl.http.KtorHttpFetcher
+import cc.unitmesh.agent.tool.impl.HttpFetcher
 
 /**
  * JVM implementation - uses Ktor with CIO engine

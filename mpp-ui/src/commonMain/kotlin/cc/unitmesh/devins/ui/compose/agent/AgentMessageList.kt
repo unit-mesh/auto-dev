@@ -58,6 +58,23 @@ fun AgentMessageList(
                     MessageItem(message = timelineItem.message)
                 }
 
+                is ComposeRenderer.TimelineItem.CombinedToolItem -> {
+                    CombinedToolItem(
+                        toolName = timelineItem.toolName,
+                        description = timelineItem.description,
+                        details = timelineItem.details,
+                        fullParams = timelineItem.fullParams,
+                        filePath = timelineItem.filePath,
+                        toolType = timelineItem.toolType,
+                        success = timelineItem.success,
+                        summary = timelineItem.summary,
+                        output = timelineItem.output,
+                        fullOutput = timelineItem.fullOutput,
+                        executionTimeMs = timelineItem.executionTimeMs,
+                        onOpenFileViewer = onOpenFileViewer
+                    )
+                }
+
                 is ComposeRenderer.TimelineItem.ToolCallItem -> {
                     ToolCallItem(
                         toolName = timelineItem.toolName,
@@ -539,6 +556,271 @@ fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
                     style = MaterialTheme.typography.bodyMedium,
                     fontFamily = FontFamily.Monospace
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Combined tool call and result display - shows both in a single compact row
+ * Similar to TerminalOutputItem but for general tools (ReadFile, WriteFile, Glob, etc.)
+ */
+@Composable
+fun CombinedToolItem(
+    toolName: String,
+    description: String,
+    details: String?,
+    fullParams: String? = null,
+    filePath: String? = null,
+    toolType: cc.unitmesh.agent.tool.ToolType? = null,
+    success: Boolean? = null, // null means still executing
+    summary: String? = null,
+    output: String? = null,
+    fullOutput: String? = null,
+    executionTimeMs: Long? = null,
+    onOpenFileViewer: ((String) -> Unit)? = null
+) {
+    var expanded by remember { mutableStateOf(success == false) } // Auto-expand on error
+    var showFullParams by remember { mutableStateOf(false) }
+    var showFullOutput by remember { mutableStateOf(success == false) }
+    val clipboardManager = LocalClipboardManager.current
+
+    // Determine which params/output to display
+    val displayParams = if (showFullParams) fullParams else details
+    val hasFullParams = fullParams != null && fullParams != details
+    val displayOutput = if (showFullOutput) fullOutput else output
+    val hasFullOutput = fullOutput != null && fullOutput != output
+
+    // Check if this is a file operation that can be viewed
+    val isFileOperation =
+        toolType in
+            listOf(
+                cc.unitmesh.agent.tool.ToolType.ReadFile,
+                cc.unitmesh.agent.tool.ToolType.WriteFile
+            )
+
+    val isExecuting = success == null
+
+    Card(
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+        shape = RoundedCornerShape(4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            // Header row - shows tool name, description, and result in one line
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { if (displayParams != null || displayOutput != null) expanded = !expanded },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Status indicator
+                Text(
+                    text = when {
+                        isExecuting -> "●"
+                        success == true -> "✓"
+                        else -> "✗"
+                    },
+                    color = when {
+                        isExecuting -> MaterialTheme.colorScheme.primary
+                        success == true -> Color(0xFF4CAF50)
+                        else -> MaterialTheme.colorScheme.error
+                    },
+                    fontWeight = FontWeight.Bold
+                )
+
+                // Tool name
+                Text(
+                    text = toolName,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // Description
+                Text(
+                    text = "- $description",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                // Result summary (if available)
+                if (summary != null) {
+                    Text(
+                        text = "→ $summary",
+                        color = when {
+                            success == true -> Color(0xFF4CAF50)
+                            success == false -> MaterialTheme.colorScheme.error
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                // Execution time (if available)
+                if (executionTimeMs != null && executionTimeMs > 0) {
+                    Text(
+                        text = "${executionTimeMs}ms",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+
+                // Add "View File" button for file operations
+                if (isFileOperation && !filePath.isNullOrEmpty() && onOpenFileViewer != null) {
+                    IconButton(
+                        onClick = { onOpenFileViewer(filePath) },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Visibility,
+                            contentDescription = "View File",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                // Expand/collapse icon (if there's content to show)
+                if (displayParams != null || displayOutput != null) {
+                    Icon(
+                        imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            // Expandable content
+            if (expanded) {
+                // Show parameters if available
+                if (displayParams != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Column {
+                            Text(
+                                text = "Parameters:",
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            if (hasFullParams) {
+                                TextButton(
+                                    onClick = { showFullParams = !showFullParams },
+                                    modifier = Modifier.height(32.dp)
+                                ) {
+                                    Text(
+                                        text = if (showFullParams) "Show Formatted" else "Show Raw Params",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+
+                        IconButton(
+                            onClick = { clipboardManager.setText(AnnotatedString(displayParams)) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.ContentCopy,
+                                contentDescription = "Copy parameters",
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    Card(
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = if (showFullParams) (displayParams) else formatToolParameters(displayParams),
+                            modifier = Modifier.padding(8.dp),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                }
+
+                // Show output if available
+                if (displayOutput != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Column {
+                            Text(
+                                text = "Output:",
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            if (hasFullOutput) {
+                                TextButton(
+                                    onClick = { showFullOutput = !showFullOutput },
+                                    modifier = Modifier.height(32.dp)
+                                ) {
+                                    Text(
+                                        text = if (showFullOutput) "Show Less" else "Show Full Output",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+
+                        IconButton(
+                            onClick = { clipboardManager.setText(AnnotatedString(displayOutput)) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.ContentCopy,
+                                contentDescription = "Copy output",
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    Card(
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = formatOutput(displayOutput),
+                            modifier = Modifier.padding(8.dp),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                }
             }
         }
     }

@@ -55,6 +55,27 @@ class ComposeRenderer : BaseRenderer() {
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
+        /**
+         * Combined tool call and result item - displays both in a single compact row
+         * This replaces the separate ToolCallItem and ToolResultItem for better space efficiency
+         */
+        data class CombinedToolItem(
+            val toolName: String,
+            val description: String,
+            val details: String? = null,
+            val fullParams: String? = null, // 完整的原始参数，用于折叠展示
+            val filePath: String? = null, // 文件路径，用于点击查看
+            val toolType: ToolType? = null, // 工具类型，用于判断是否可点击
+            // Result fields
+            val success: Boolean? = null, // null means still executing
+            val summary: String? = null,
+            val output: String? = null, // 截断的输出用于直接展示
+            val fullOutput: String? = null, // 完整的输出，用于折叠展示或错误诊断
+            val executionTimeMs: Long? = null, // 执行时间
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
+        ) : TimelineItem(itemTimestamp)
+
+        @Deprecated("Use CombinedToolItem instead")
         data class ToolCallItem(
             val toolName: String,
             val description: String,
@@ -65,6 +86,7 @@ class ComposeRenderer : BaseRenderer() {
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
+        @Deprecated("Use CombinedToolItem instead")
         data class ToolResultItem(
             val toolName: String,
             val success: Boolean,
@@ -188,15 +210,20 @@ class ComposeRenderer : BaseRenderer() {
                 else -> null
             }
 
-        // / todo add check for debug mode
+        // Create a combined tool item with only call information (result will be added later)
         _timeline.add(
-            TimelineItem.ToolCallItem(
+            TimelineItem.CombinedToolItem(
                 toolName = toolInfo.toolName,
                 description = toolInfo.description,
                 details = toolInfo.details,
                 fullParams = paramsStr, // 保存完整的原始参数
                 filePath = filePath, // 保存文件路径
-                toolType = toolType // 保存工具类型
+                toolType = toolType, // 保存工具类型
+                success = null, // null indicates still executing
+                summary = null,
+                output = null,
+                fullOutput = null,
+                executionTimeMs = null
             )
         )
 
@@ -230,10 +257,16 @@ class ComposeRenderer : BaseRenderer() {
         if (toolType == ToolType.Shell && output != null) {
             // Try to extract shell result information
             val exitCode = if (success) 0 else 1
-            val executionTime = 0L // We don't have this info in the current flow
+            val executionTime = metadata["execution_time_ms"]?.toLongOrNull() ?: 0L
 
             // Extract command from the last tool call if available
             val command = _currentToolCall?.details?.removePrefix("Executing: ") ?: "unknown"
+
+            // Remove the last CombinedToolItem if it's a Shell command (we'll replace it with TerminalOutputItem)
+            val lastItem = _timeline.lastOrNull()
+            if (lastItem is TimelineItem.CombinedToolItem && lastItem.toolType == ToolType.Shell) {
+                _timeline.removeAt(_timeline.size - 1)
+            }
 
             _timeline.add(
                 TimelineItem.TerminalOutputItem(
@@ -244,13 +277,20 @@ class ComposeRenderer : BaseRenderer() {
                 )
             )
         } else {
-            _timeline.add(
-                TimelineItem.ToolResultItem(
-                    toolName = toolName,
-                    success = success,
-                    summary = summary,
-                    output =
-                        if (success && output != null) {
+            // Update the last CombinedToolItem with result information
+            val lastItem = _timeline.lastOrNull()
+            if (lastItem is TimelineItem.CombinedToolItem && lastItem.success == null) {
+                // Remove the incomplete item
+                _timeline.removeAt(_timeline.size - 1)
+
+                // Add the complete item with result
+                val executionTime = metadata["execution_time_ms"]?.toLongOrNull()
+
+                _timeline.add(
+                    lastItem.copy(
+                        success = success,
+                        summary = summary,
+                        output = if (success && output != null) {
                             // For file search tools, keep full output; for others, limit to 2000 chars for direct display
                             when (toolName) {
                                 "glob", "grep" -> output
@@ -259,9 +299,11 @@ class ComposeRenderer : BaseRenderer() {
                         } else {
                             null
                         },
-                    fullOutput = fullOutput // 保存完整的输出，用于查看完整日志和错误诊断
+                        fullOutput = fullOutput,
+                        executionTimeMs = executionTime
+                    )
                 )
-            )
+            }
         }
 
         _currentToolCall = null
