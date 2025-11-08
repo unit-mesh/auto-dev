@@ -1,6 +1,6 @@
 {
   "name": "@autodev/cli",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "AutoDev CLI - Terminal UI for AI-powered development assistant",
   "type": "module",
   "bin": {
