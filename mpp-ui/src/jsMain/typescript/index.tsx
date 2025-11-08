@@ -146,7 +146,7 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
     const agent = new KotlinCC.unitmesh.agent.JsCodingAgent(
       resolvedPath,
       llmService,
-      10, // maxIterations
+      100,
       renderer, // custom renderer
       Object.keys(enabledMcpServers).length > 0 ? enabledMcpServers : null, // MCP servers
       toolConfig // tool configuration
