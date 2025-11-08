@@ -1,0 +1,51 @@
+{
+  "id": "business-scenario-add-redis-cache-001",
+  "name": "Add Redis cache to Spring Boot project with example service",
+  "description": "Test scenario for: Add Redis cache to Spring Boot project with example service",
+  "category": "business-scenario",
+  "task": {
+    "description": "Add Redis cache to Spring Boot project with example service",
+    "context": "This is a gradle-spring-boot project. Add Redis cache to Spring Boot project with example service",
+    "documentation": []
+  },
+  "project": {
+    "type": "gradle-spring-boot"
+  },
+  "expectedTools": [
+    {
+      "tool": "read-file",
+      "required": true,
+      "minCalls": 1,
+      "description": "Read existing files to understand project structure",
+      "order": 1
+    },
+    {
+      "tool": "write-file",
+      "required": true,
+      "minCalls": 2,
+      "description": "Create new files",
+      "order": 3
+    }
+  ],
+  "expectedChanges": [
+    {
+      "type": "file-created",
+      "pattern": ".*Service\\.java",
+      "required": true,
+      "description": "Service class should be created"
+    }
+  ],
+  "quality": {
+    "minToolAccuracy": 0.7,
+    "maxExecutionTime": 600000,
+    "minTaskCompletion": 0.8,
+    "maxCodeIssues": 3
+  },
+  "config": {
+    "timeout": 600000,
+    "maxIterations": 15,
+    "retryCount": 1,
+    "keepTestProject": false,
+    "quiet": false
+  }
+}

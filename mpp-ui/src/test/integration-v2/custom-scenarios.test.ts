@@ -1,16 +1,16 @@
 /**
  * 自定义场景测试 - 使用新测试框架的场景模板
- * 
+ *
  * 展示如何使用场景模板系统创建可复用的测试场景
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { 
-  TestEngine, 
+import {
+  TestEngine,
   ScenarioBuilder,
   TestCategory,
   ConsoleReporter,
-  TestSuiteResult 
+  TestSuiteResult
 } from '../framework';
 
 describe('CodingAgent 自定义场景测试 v2', () => {
@@ -56,10 +56,10 @@ describe('CodingAgent 自定义场景测试 v2', () => {
     ];
 
     const results = await testEngine.runScenarios(testCases);
-    
+
     expect(results.totalTests).toBe(3);
     expect(results.passedTests).toBeGreaterThanOrEqual(2); // 至少67%通过率
-    
+
     console.log(`✅ 基础文件操作场景完成: ${results.passedTests}/${results.totalTests} 通过`);
   }, 300000); // 5分钟超时
 
@@ -80,10 +80,10 @@ describe('CodingAgent 自定义场景测试 v2', () => {
     ];
 
     const results = await testEngine.runScenarios(testCases);
-    
+
     expect(results.totalTests).toBe(2);
     expect(results.passedTests).toBeGreaterThanOrEqual(1); // 至少50%通过率（业务场景较复杂）
-    
+
     console.log(`✅ 业务功能实现场景完成: ${results.passedTests}/${results.totalTests} 通过`);
   }, 600000); // 10分钟超时
 
@@ -103,11 +103,11 @@ describe('CodingAgent 自定义场景测试 v2', () => {
     ];
 
     const results = await testEngine.runScenarios(testCases);
-    
+
     expect(results.totalTests).toBe(2);
     // 错误恢复场景通过率可能较低，但至少应该能执行
     expect(results.errorTests).toBeLessThan(results.totalTests); // 不是所有测试都出错
-    
+
     console.log(`✅ 错误恢复场景完成: ${results.passedTests}/${results.totalTests} 通过`);
   }, 480000); // 8分钟超时
 
@@ -128,10 +128,10 @@ describe('CodingAgent 自定义场景测试 v2', () => {
     ];
 
     const results = await testEngine.runScenarios(testCases);
-    
+
     expect(results.totalTests).toBe(2);
     expect(results.passedTests).toBeGreaterThanOrEqual(1); // 至少50%通过率
-    
+
     console.log(`✅ 自定义场景完成: ${results.passedTests}/${results.totalTests} 通过`);
   }, 720000); // 12分钟超时
 
@@ -157,7 +157,7 @@ describe('CodingAgent 自定义场景测试 v2', () => {
  */
 function registerCustomScenarios(): void {
   // 微服务设置场景
-  ScenarioBuilder.registerTemplate({
+    ScenarioBuilder.registerTemplate({
     id: 'microservice-setup',
     name: '微服务项目设置',
     description: '创建一个完整的微服务项目结构',
@@ -181,6 +181,7 @@ function registerCustomScenarios(): void {
         default: true
       }
     },
+    // @ts-ignore
     generate: async (params) => {
       const { TestCaseBuilder, TestCategory, ProjectType } = await import('../framework/index.js');
 
@@ -220,7 +221,7 @@ function registerCustomScenarios(): void {
     },
     generate: (params) => {
       const { TestCaseBuilder, TestCategory, ProjectType } = require('../framework');
-      
+
       return TestCaseBuilder.create(`api-docs-${Date.now()}`)
         .withName(`API 文档生成: ${params.apiType.toUpperCase()}`)
         .withDescription(`为 ${params.apiType} API 生成完整的文档和${params.includeExamples ? '使用示例' : '基础说明'}`)

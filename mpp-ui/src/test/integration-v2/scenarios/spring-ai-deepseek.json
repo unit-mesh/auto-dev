@@ -1,0 +1,120 @@
+{
+  "id": "spring-ai-deepseek-001",
+  "name": "Add Spring AI with DeepSeek to Project",
+  "description": "Add Spring AI integration to the project with DeepSeek provider, including a service example that demonstrates chat completion functionality",
+  "category": "business-scenario",
+
+  "task": {
+    "description": "Add Spring AI to the project with DeepSeek provider. Create a service example that demonstrates how to use DeepSeek for chat completions. Follow the official Spring AI documentation for DeepSeek integration.",
+    "context": "The project is a Spring Boot application. We need to add Spring AI dependencies, configure DeepSeek API credentials, and create a working service example.",
+    "documentation": [
+      "https://docs.spring.io/spring-ai/reference/api/chat/deepseek-chat.html"
+    ]
+  },
+
+  "project": {
+    "type": "gradle-spring-boot"
+  },
+
+  "expectedTools": [
+    {
+      "tool": "read-file",
+      "required": true,
+      "minCalls": 2,
+      "order": 1,
+      "description": "Read build.gradle.kts and existing configuration files to understand project structure"
+    },
+    {
+      "tool": "web-fetch",
+      "required": false,
+      "minCalls": 1,
+      "order": 2,
+      "description": "Fetch Spring AI DeepSeek documentation if needed"
+    },
+    {
+      "tool": "edit-file",
+      "required": true,
+      "minCalls": 1,
+      "order": 3,
+      "description": "Edit build.gradle.kts to add Spring AI dependencies"
+    },
+    {
+      "tool": "write-file",
+      "required": true,
+      "minCalls": 3,
+      "order": 4,
+      "description": "Create DeepSeek configuration, service, and controller files"
+    },
+    {
+      "tool": "shell",
+      "required": false,
+      "minCalls": 1,
+      "order": 5,
+      "description": "Run build to verify dependencies are resolved correctly"
+    }
+  ],
+  "expectedChanges": [
+    {
+      "type": "file-modified",
+      "path": "build.gradle.kts",
+      "content": "spring-ai-deepseek",
+      "required": true,
+      "description": "build.gradle.kts should contain Spring AI DeepSeek dependency"
+    },
+    {
+      "type": "file-created",
+      "pattern": ".*DeepSeek.*Service\\.java",
+      "required": true,
+      "description": "A service class for DeepSeek integration should be created"
+    },
+    {
+      "type": "file-created",
+      "pattern": ".*DeepSeek.*Controller\\.java",
+      "required": false,
+      "description": "A controller class to expose DeepSeek functionality via REST API"
+    },
+    {
+      "type": "file-created",
+      "pattern": "application.*\\.(properties|yml|yaml)",
+      "required": false,
+      "description": "Configuration file for DeepSeek API credentials"
+    },
+    {
+      "type": "file-created",
+      "pattern": ".*DeepSeek.*Config\\.java",
+      "required": false,
+      "description": "Configuration class for DeepSeek client setup"
+    }
+  ],
+
+  "quality": {
+    "minToolAccuracy": 0.7,
+    "maxExecutionTime": 600000,
+    "minTaskCompletion": 0.8,
+    "maxCodeIssues": 3
+  },
+
+  "config": {
+    "timeout": 600000,
+    "maxIterations": 15,
+    "retryCount": 1,
+    "keepTestProject": false,
+    "quiet": false
+  },
+
+  "customValidations": [
+    {
+      "name": "verify-deepseek-dependency",
+      "description": "Verify that Spring AI DeepSeek dependency is correctly added to build.gradle.kts"
+    },
+    {
+      "name": "verify-service-implementation",
+      "description": "Verify that the DeepSeek service contains proper chat completion implementation"
+    },
+    {
+      "name": "verify-configuration",
+      "description": "Verify that DeepSeek API configuration is properly set up"
+    }
+  ]
+}
+

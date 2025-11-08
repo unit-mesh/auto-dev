@@ -17,7 +17,6 @@
 ```
 integration-v2/
 ├── README.md                    # 本文档
-├── simple-robustness.test.ts    # 基础健壮性测试
 ├── business-scenarios.test.ts   # 业务场景测试
 ├── error-recovery.test.ts       # 错误恢复测试
 ├── performance.test.ts          # 性能测试

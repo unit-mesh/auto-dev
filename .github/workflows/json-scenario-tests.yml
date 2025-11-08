@@ -1,0 +1,209 @@
+name: JSON Scenario Tests
+
+on:
+  push:
+    branches: [ master, main, develop ]
+    paths:
+      - 'mpp-ui/src/test/integration-v2/scenarios/**/*.json'
+      - 'mpp-ui/src/test/integration-v2/json-scenarios.test.ts'
+      - 'mpp-ui/src/test/framework/**'
+      - '.github/workflows/json-scenario-tests.yml'
+  pull_request:
+    branches: [ master, main, develop ]
+    paths:
+      - 'mpp-ui/src/test/integration-v2/scenarios/**/*.json'
+      - 'mpp-ui/src/test/integration-v2/json-scenarios.test.ts'
+      - 'mpp-ui/src/test/framework/**'
+  workflow_dispatch:
+    inputs:
+      scenario_filter:
+        description: 'Filter scenarios by name pattern (optional)'
+        required: false
+        default: ''
+      keep_test_projects:
+        description: 'Keep test projects after execution'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  validate-scenarios:
+    name: Validate JSON Scenarios
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mpp-ui/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: mpp-ui
+        run: npm ci
+      
+      - name: Validate JSON scenario files
+        working-directory: mpp-ui
+        run: |
+          echo "🔍 Validating JSON scenario files..."
+          for file in src/test/integration-v2/scenarios/*.json; do
+            if [ -f "$file" ]; then
+              echo "Validating: $file"
+              node -e "
+                const fs = require('fs');
+                const content = fs.readFileSync('$file', 'utf-8');
+                try {
+                  const json = JSON.parse(content);
+                  console.log('✅ Valid JSON: $file');
+                  
+                  // Basic validation
+                  if (!json.id || !json.name || !json.task || !json.expectedTools) {
+                    console.error('❌ Missing required fields in $file');
+                    process.exit(1);
+                  }
+                } catch (e) {
+                  console.error('❌ Invalid JSON in $file:', e.message);
+                  process.exit(1);
+                }
+              "
+            fi
+          done
+          echo "✅ All JSON scenarios are valid"
+
+  run-json-scenarios:
+    name: Run JSON Scenario Tests
+    runs-on: ubuntu-latest
+    needs: validate-scenarios
+    timeout-minutes: 60
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: ['21']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mpp-ui/package-lock.json
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      
+      - name: Build mpp-core
+        run: ./gradlew :mpp-core:assembleJsPackage --no-daemon
+      
+      - name: Install mpp-ui dependencies
+        working-directory: mpp-ui
+        run: npm ci
+      
+      - name: Build mpp-ui
+        working-directory: mpp-ui
+        run: npm run build:ts
+      
+      - name: List available scenarios
+        working-directory: mpp-ui
+        run: |
+          echo "📋 Available JSON scenarios:"
+          ls -la src/test/integration-v2/scenarios/*.json || echo "No scenarios found"
+      
+      - name: Run JSON scenario tests
+        working-directory: mpp-ui
+        env:
+          KEEP_TEST_PROJECTS: ${{ github.event.inputs.keep_test_projects || 'false' }}
+          DEBUG: ${{ runner.debug == '1' && 'true' || 'false' }}
+        run: npm run test:json-scenarios
+        continue-on-error: true
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: json-scenario-test-results-java-${{ matrix.java-version }}
+          path: |
+            mpp-ui/test-results/
+            mpp-ui/test-output/
+          retention-days: 7
+      
+      - name: Upload test projects (if kept)
+        if: always() && github.event.inputs.keep_test_projects == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-projects-java-${{ matrix.java-version }}
+          path: /tmp/autodev-test-*
+          retention-days: 3
+      
+      - name: Generate test summary
+        if: always()
+        working-directory: mpp-ui
+        run: |
+          echo "## 📊 JSON Scenario Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d "test-results/json-scenarios" ]; then
+            echo "### Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Count scenarios
+            TOTAL_SCENARIOS=$(find src/test/integration-v2/scenarios -name "*.json" | wc -l)
+            echo "- **Total Scenarios**: $TOTAL_SCENARIOS" >> $GITHUB_STEP_SUMMARY
+            
+            # Add more detailed summary if available
+            if [ -f "test-results/json-scenarios/summary.json" ]; then
+              echo "- **Test Results**: See artifacts for detailed results" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ No test results found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  report-results:
+    name: Report Test Results
+    runs-on: ubuntu-latest
+    needs: run-json-scenarios
+    if: always()
+    
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: json-scenario-test-results-*
+          merge-multiple: true
+          path: test-results
+      
+      - name: Generate summary report
+        run: |
+          echo "# 📊 JSON Scenario Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Execution" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow**: ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d "test-results" ]; then
+            echo "## 📁 Test Artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Test results have been uploaded as artifacts." >> $GITHUB_STEP_SUMMARY
+            echo "Download them from the workflow run page." >> $GITHUB_STEP_SUMMARY
+          fi
+

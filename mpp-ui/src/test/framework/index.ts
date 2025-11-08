@@ -1,6 +1,6 @@
 /**
  * AI Agent 健壮性测试框架 - 主入口文件
- * 
+ *
  * 导出所有核心组件，提供统一的 API 接口
  */
 
@@ -40,6 +40,9 @@ export { CodeChangeAnalyzer } from './analyzers/CodeChangeAnalyzer';
 
 // 场景构建器
 export { ScenarioBuilder, ScenarioTemplate } from './scenarios/ScenarioBuilder';
+
+// JSON 场景加载器
+export { JsonScenarioLoader, JsonScenarioConfig } from './loaders/JsonScenarioLoader';
 
 // 报告生成器
 export { ConsoleReporter } from './reporters/ConsoleReporter';
