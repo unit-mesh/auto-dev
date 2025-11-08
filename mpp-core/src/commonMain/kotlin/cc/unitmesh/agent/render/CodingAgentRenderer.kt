@@ -26,6 +26,19 @@ interface CodingAgentRenderer {
 
     // Policy and permission methods
     fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>)
+    
+    /**
+     * Add live terminal session (optional, for PTY-enabled platforms)
+     * Default implementation does nothing - override in renderers that support live terminals
+     */
+    fun addLiveTerminal(
+        sessionId: String,
+        command: String,
+        workingDirectory: String?,
+        ptyHandle: Any?
+    ) {
+        // Default: no-op for renderers that don't support live terminals
+    }
 }
 
 /**

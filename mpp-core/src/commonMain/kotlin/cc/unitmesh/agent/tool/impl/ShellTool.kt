@@ -236,4 +236,10 @@ class ShellTool(
     fun isAvailable(): Boolean = shellExecutor.isAvailable()
 
     fun getDefaultShell(): String? = shellExecutor.getDefaultShell()
+    
+    /**
+     * Get the underlying shell executor
+     * Used by ToolOrchestrator to check for PTY support
+     */
+    fun getExecutor(): ShellExecutor = shellExecutor
 }

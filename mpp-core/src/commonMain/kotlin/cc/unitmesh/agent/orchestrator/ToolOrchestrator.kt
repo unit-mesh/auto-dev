@@ -13,10 +13,19 @@ import cc.unitmesh.agent.tool.Tool
 import cc.unitmesh.agent.tool.ToolNames
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.ToolException
+import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.agent.tool.impl.WriteFileTool
 import cc.unitmesh.agent.config.McpToolConfigService
+import cc.unitmesh.agent.tool.shell.LiveShellExecutor
+import cc.unitmesh.agent.tool.shell.LiveShellSession
+import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
+import cc.unitmesh.agent.tool.shell.ShellExecutor
 import kotlinx.coroutines.yield
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.datetime.Clock
 
 /**
@@ -73,8 +82,73 @@ class ToolOrchestrator(
             // Check for cancellation
             yield()
             
-            // Execute the tool
-            val result = executeToolInternal(toolName, params, context)
+            // **关键改动**: 检查是否是 Shell 工具且支持 PTY
+            val toolType = toolName.toToolType()
+            val isShellTool = toolType == ToolType.Shell
+            var liveSession: LiveShellSession? = null
+            
+            logger.info { "🔍 Checking tool: $toolName, isShellTool: $isShellTool" }
+            
+            if (isShellTool) {
+                // 尝试使用 PTY 执行
+                val tool = registry.getTool(toolName)
+                logger.info { "🔧 Got tool: ${tool?.let { it::class.simpleName }}" }
+                
+                if (tool is cc.unitmesh.agent.tool.impl.ShellTool) {
+                    val shellExecutor = getShellExecutor(tool)
+                    logger.info { "🎯 Shell executor: ${shellExecutor::class.simpleName}" }
+                    logger.info { "✅ Is LiveShellExecutor: ${shellExecutor is LiveShellExecutor}" }
+                    
+                    if (shellExecutor is LiveShellExecutor) {
+                        val supportsLive = shellExecutor.supportsLiveExecution()
+                        logger.info { "🚀 Supports live execution: $supportsLive" }
+                        
+                        if (supportsLive) {
+                            // 准备 shell 执行配置
+                            val command = params["command"] as? String
+                                ?: params["cmd"] as? String
+                                ?: return ToolExecutionResult.failure(
+                                    context.executionId, toolName, "Shell command cannot be empty", 
+                                    startTime, Clock.System.now().toEpochMilliseconds()
+                                )
+                            
+                            logger.info { "📝 Starting live execution for command: $command" }
+                            
+                            val shellConfig = ShellExecutionConfig(
+                                workingDirectory = params["workingDirectory"] as? String ?: context.workingDirectory,
+                                environment = (params["environment"] as? Map<*, *>)?.mapKeys { it.key.toString() }?.mapValues { it.value.toString() } ?: context.environment,
+                                timeoutMs = (params["timeoutMs"] as? Number)?.toLong() ?: context.timeout,
+                                shell = params["shell"] as? String
+                            )
+                            
+                            // 启动 PTY 会话
+                            liveSession = shellExecutor.startLiveExecution(command, shellConfig)
+                            logger.info { "🎬 Live session started: ${liveSession.sessionId}" }
+                            
+                            // 立即通知 renderer 添加 LiveTerminal（在执行之前！）
+                            logger.info { "🖥️ Adding LiveTerminal to renderer" }
+                            renderer.addLiveTerminal(
+                                sessionId = liveSession.sessionId,
+                                command = liveSession.command,
+                                workingDirectory = liveSession.workingDirectory,
+                                ptyHandle = liveSession.ptyHandle
+                            )
+                            logger.info { "✨ LiveTerminal added successfully!" }
+                        }
+                    }
+                }
+            }
+            
+            // Execute the tool (如果已经启动了 PTY，这里需要等待完成)
+            val result = if (liveSession != null) {
+                // 等待 PTY 进程完成
+                val shellExecutor = getShellExecutor(registry.getTool(toolName) as cc.unitmesh.agent.tool.impl.ShellTool)
+                waitForLiveSession(liveSession, shellExecutor, context)
+            } else {
+                // 普通执行
+                executeToolInternal(toolName, params, context)
+            }
+            
             val endTime = Clock.System.now().toEpochMilliseconds()
             
             // Update final state
@@ -89,6 +163,13 @@ class ToolOrchestrator(
             // 从 ToolResult 中提取 metadata
             val metadata = result.extractMetadata()
             
+            // 如果是 live session，添加标记以便跳过输出渲染
+            val finalMetadata = if (liveSession != null) {
+                metadata + mapOf("isLiveSession" to "true", "sessionId" to liveSession.sessionId)
+            } else {
+                metadata
+            }
+            
             return ToolExecutionResult(
                 executionId = context.executionId,
                 toolName = toolName,
@@ -97,7 +178,7 @@ class ToolOrchestrator(
                 endTime = endTime,
                 retryCount = context.currentRetry,
                 state = finalState,
-                metadata = metadata
+                metadata = finalMetadata
             )
             
         } catch (e: Exception) {
@@ -109,6 +190,40 @@ class ToolOrchestrator(
                 context.executionId, toolName, error, startTime, endTime, context.currentRetry
             )
         }
+    }
+    
+    /**
+     * 等待 LiveShellSession 完成
+     */
+    private suspend fun waitForLiveSession(
+        session: LiveShellSession,
+        executor: ShellExecutor,
+        context: ToolExecutionContext
+    ): ToolResult {
+        return try {
+            val exitCode = if (executor is LiveShellExecutor) {
+                executor.waitForSession(session, context.timeout)
+            } else {
+                throw ToolException("Executor does not support live sessions", ToolErrorType.NOT_SUPPORTED)
+            }
+            
+            if (exitCode == 0) {
+                ToolResult.Success("Command executed successfully (live terminal)")
+            } else {
+                ToolResult.Error("Command failed with exit code: $exitCode")
+            }
+        } catch (e: ToolException) {
+            ToolResult.Error("Command execution error: ${e.message}")
+        } catch (e: Exception) {
+            ToolResult.Error("Command execution error: ${e.message}")
+        }
+    }
+    
+    /**
+     * 获取 ShellTool 的执行器
+     */
+    private fun getShellExecutor(tool: cc.unitmesh.agent.tool.impl.ShellTool): ShellExecutor {
+        return tool.getExecutor()
     }
     
     /**

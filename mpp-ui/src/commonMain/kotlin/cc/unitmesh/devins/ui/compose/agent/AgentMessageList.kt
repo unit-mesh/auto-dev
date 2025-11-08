@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.compose.terminal.PlatformTerminalDisplay
 import cc.unitmesh.devins.llm.MessageRole
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -99,6 +100,15 @@ fun AgentMessageList(
                         executionTimeMs = timelineItem.executionTimeMs
                     )
                 }
+                
+                is ComposeRenderer.TimelineItem.LiveTerminalItem -> {
+                    LiveTerminalItem(
+                        sessionId = timelineItem.sessionId,
+                        command = timelineItem.command,
+                        workingDirectory = timelineItem.workingDirectory,
+                        ptyHandle = timelineItem.ptyHandle
+                    )
+                }
             }
         }
 
@@ -115,6 +125,19 @@ fun AgentMessageList(
         }
     }
 }
+
+/**
+ * Platform-specific live terminal display.
+ * On JVM with PTY support: Renders an interactive terminal widget
+ * On other platforms: Shows a message that live terminal is not available
+ */
+@Composable
+expect fun LiveTerminalItem(
+    sessionId: String,
+    command: String,
+    workingDirectory: String?,
+    ptyHandle: Any?
+)
 
 @Composable
 private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
@@ -925,12 +948,9 @@ private fun TerminalOutputItem(
                         ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = output,
-                        modifier = Modifier.padding(8.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace
+                    PlatformTerminalDisplay(
+                        output = output,
+                        modifier = Modifier.padding(8.dp)
                     )
                 }
             }

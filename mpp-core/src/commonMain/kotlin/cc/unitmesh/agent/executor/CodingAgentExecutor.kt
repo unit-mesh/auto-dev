@@ -275,7 +275,11 @@ class CodingAgentExecutor(
             val contentHandlerResult = checkForLongContent(toolName, fullOutput ?: "", executionResult)
             val displayOutput = contentHandlerResult?.content ?: fullOutput
             
-            renderer.renderToolResult(toolName, stepResult.success, stepResult.result, displayOutput)
+            // **关键改动**: 检查是否是 live session，如果是则跳过渲染 (输出已经在 LiveTerminal 中显示)
+            val isLiveSession = executionResult.metadata["isLiveSession"] == "true"
+            if (!isLiveSession) {
+                renderer.renderToolResult(toolName, stepResult.success, stepResult.result, displayOutput)
+            }
             
             val currentToolType = toolName.toToolType()
             if ((currentToolType == ToolType.WriteFile) && executionResult.isSuccess) {

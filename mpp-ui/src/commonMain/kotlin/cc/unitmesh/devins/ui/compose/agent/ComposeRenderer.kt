@@ -92,6 +92,18 @@ class ComposeRenderer : BaseRenderer() {
             val executionTimeMs: Long,
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
+        
+        /**
+         * Live terminal session - connected to a PTY process for real-time output
+         * This is only used on platforms that support PTY (JVM with JediTerm)
+         */
+        data class LiveTerminalItem(
+            val sessionId: String,
+            val command: String,
+            val workingDirectory: String?,
+            val ptyHandle: Any?, // Platform-specific: on JVM this is a PtyProcess
+            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
+        ) : TimelineItem(itemTimestamp)
     }
 
     // Legacy data classes for compatibility
@@ -338,6 +350,34 @@ class ComposeRenderer : BaseRenderer() {
 
     fun closeFileViewer() {
         _currentViewingFile = null
+    }
+    
+    /**
+     * Adds a live terminal session to the timeline.
+     * This is called when a Shell tool is executed with PTY support.
+     */
+    override fun addLiveTerminal(
+        sessionId: String,
+        command: String,
+        workingDirectory: String?,
+        ptyHandle: Any?
+    ) {
+        println("🎨 ComposeRenderer.addLiveTerminal called")
+        println("   sessionId: $sessionId")
+        println("   command: $command")
+        println("   workingDirectory: $workingDirectory")
+        println("   ptyHandle type: ${ptyHandle?.let { it::class.simpleName }}")
+        
+        _timeline.add(
+            TimelineItem.LiveTerminalItem(
+                sessionId = sessionId,
+                command = command,
+                workingDirectory = workingDirectory,
+                ptyHandle = ptyHandle
+            )
+        )
+        
+        println("   ✅ LiveTerminalItem added to timeline (count: ${_timeline.size})")
     }
 
     fun forceStop() {

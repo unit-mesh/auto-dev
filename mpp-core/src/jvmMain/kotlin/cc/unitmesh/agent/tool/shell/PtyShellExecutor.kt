@@ -6,6 +6,7 @@ import cc.unitmesh.agent.tool.ToolException
 import com.pty4j.PtyProcessBuilder
 import kotlinx.coroutines.*
 import java.io.File
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 /**
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit
  *
  * Note: This still uses pty4j for process creation but integrates with JediTerm for terminal handling.
  */
-class PtyShellExecutor : ShellExecutor {
+class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
 
     override suspend fun execute(
         command: String,
@@ -210,6 +211,83 @@ class PtyShellExecutor : ShellExecutor {
         val commandLower = command.lowercase()
         return jvmDangerousCommands.none { dangerous ->
             commandLower.contains(dangerous)
+        }
+    }
+    
+    // LiveShellExecutor implementation
+    
+    override fun supportsLiveExecution(): Boolean {
+        return isAvailable()
+    }
+    
+    override suspend fun startLiveExecution(
+        command: String,
+        config: ShellExecutionConfig
+    ): LiveShellSession = withContext(Dispatchers.IO) {
+        if (!validateCommand(command)) {
+            throw ToolException("Command not allowed: $command", ToolErrorType.PERMISSION_DENIED)
+        }
+        
+        val sessionId = UUID.randomUUID().toString()
+        val processCommand = prepareCommand(command, config.shell)
+        
+        val environment = HashMap<String, String>(System.getenv())
+        environment.putAll(config.environment)
+        // Ensure TERM is set for proper terminal behavior
+        if (!environment.containsKey("TERM")) {
+            environment["TERM"] = "xterm-256color"
+        }
+        
+        val ptyProcessBuilder = PtyProcessBuilder()
+            .setCommand(processCommand.toTypedArray())
+            .setEnvironment(environment)
+            .setConsole(false)
+            .setCygwin(false)
+        
+        config.workingDirectory?.let { workDir ->
+            ptyProcessBuilder.setDirectory(workDir)
+        }
+        
+        val ptyProcess = ptyProcessBuilder.start()
+        
+        LiveShellSession(
+            sessionId = sessionId,
+            command = command,
+            workingDirectory = config.workingDirectory,
+            ptyHandle = ptyProcess,
+            isLiveSupported = true
+        )
+    }
+    
+    override suspend fun waitForSession(
+        session: LiveShellSession,
+        timeoutMs: Long
+    ): Int = withContext(Dispatchers.IO) {
+        val ptyHandle = session.ptyHandle
+        if (ptyHandle !is Process) {
+            throw ToolException("Invalid PTY handle", ToolErrorType.INTERNAL_ERROR)
+        }
+        
+        try {
+            val exitCode = withTimeoutOrNull(timeoutMs) {
+                while (ptyHandle.isAlive) {
+                    yield()
+                    delay(100)
+                }
+                ptyHandle.exitValue()
+            }
+            
+            if (exitCode == null) {
+                ptyHandle.destroyForcibly()
+                ptyHandle.waitFor(3000, TimeUnit.MILLISECONDS)
+                throw ToolException("Command timed out after ${timeoutMs}ms", ToolErrorType.TIMEOUT)
+            }
+            
+            session.markCompleted(exitCode)
+            exitCode
+        } catch (e: Exception) {
+            logger().error(e) { "Error waiting for PTY process: ${e.message}" }
+            throw e
         }
     }
 }
