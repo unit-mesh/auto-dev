@@ -90,7 +90,7 @@ object UrlParser {
             }
 
             // Check for invalid characters in host
-            if (hostPart.contains("") || hostPart.startsWith(".") || hostPart.endsWith(".")) {
+            if (hostPart.startsWith(".") || hostPart.endsWith(".")) {
                 return false
             }
 

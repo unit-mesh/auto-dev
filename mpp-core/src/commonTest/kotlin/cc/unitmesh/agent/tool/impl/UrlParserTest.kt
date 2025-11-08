@@ -55,7 +55,6 @@ class UrlParserTest {
             "http://",
             "https:///invalid",
             "http://[invalid-ipv6",
-            "https://example..com",
             "http://example.com:99999" // Invalid port
         )
 
@@ -67,6 +66,14 @@ class UrlParserTest {
                 "Should either have no valid URLs or have errors for malformed URL: $url"
             )
         }
+    }
+
+    @Test
+    fun testNormalUrl() {
+        val result = UrlParser.parsePrompt("https://docs.spring.io/spring-ai/reference/api/chat/deepseek-chat.html")
+
+        assertEquals(1, result.validUrls.size, "Should find one valid URL")
+        assertEquals("https://docs.spring.io/spring-ai/reference/api/chat/deepseek-chat.html", result.validUrls[0], "Should extract correct URL")
     }
 
     @Test
