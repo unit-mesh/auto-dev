@@ -73,14 +73,6 @@ fun AgentMessageListPreview(modifier: Modifier = Modifier) {
  */
 private fun createMockRenderer(): ComposeRenderer {
     val renderer = ComposeRenderer()
-    val ptyHandle = PtyProcessBuilder().setCommand(arrayOf("echo", "Hello, World!")).start()
-
-    renderer.addLiveTerminal(
-        sessionId = "preview-terminal-${System.currentTimeMillis()}",
-        command = "echo 'hello'",
-        workingDirectory = "/project/root",
-        ptyHandle = ptyHandle
-    )
 
     simulateAgentReasoning(
         renderer,
@@ -138,100 +130,6 @@ Now I'll add a new `sum` function that follows the same pattern. The function wi
         fullOutput = "✓ Updated src/main/kotlin/utils/MathUtils.kt (30 lines)"
     )
 
-    // Iteration 3: Run tests (with error)
-    simulateAgentReasoning(renderer, """Great! I've successfully added the `sum` function. Now let me run the tests to make sure everything is working correctly.""")
-
-    renderer.renderToolCall("shell", """command="./gradlew test --tests MathUtilsTest" workingDir="/project/root"""")
-    renderer.renderToolResult(
-        "shell",
-        false,
-        "Test failed (exit code: 1)",
-        fullOutput = """> Task :test
-
-MathUtilsTest > testDivide() PASSED
-MathUtilsTest > testMultiply() PASSED
-MathUtilsTest > testSum() FAILED
-    java.lang.AssertionError: expected:<5> but was:<6>
-        at org.junit.Assert.fail(Assert.java:89)
-        at org.junit.Assert.failNotEquals(Assert.java:835)
-        at MathUtilsTest.testSum(MathUtilsTest.kt:15)
-
-3 tests completed, 1 failed
-
-BUILD FAILED in 2s
-3 actionable tasks: 2 executed, 1 up-to-date
-
-FAILURE: Build failed with an exception."""
-    )
-
-    // Show error and recovery
-    renderer.renderError(
-        """Test execution failed: MathUtilsTest > testSum() FAILED
-
-Error Recovery Analysis:
-The test is expecting 5 but getting 6. This suggests the test case itself might have an incorrect assertion.
-Let me read the test file to investigate the issue."""
-    )
-
-    // Iteration 4: Debug test file
-    renderer.renderToolCall("read-file", """path="src/test/kotlin/MathUtilsTest.kt" startLine=1 endLine=30""")
-    renderer.renderToolResult(
-        "read-file",
-        true,
-        "Read 18 lines",
-        fullOutput = """12 │ @Test
-13 │ fun testSum() {
-14 │     val result = MathUtils.sum(2, 3)
-15 │     assertEquals(6, result) // BUG: Should be 5, not 6!
-16 │ }"""
-    )
-
-    simulateAgentReasoning(
-        renderer,
-        """Found the issue! The test has an incorrect assertion. Line 15 expects 6, but 2 + 3 = 5.
-
-I'll fix the test case now."""
-    )
-
-    // Iteration 5: Fix test and re-run
-    renderer.renderToolCall("write-file", """path="src/test/kotlin/MathUtilsTest.kt" mode="update" content="<fixed test>"""")
-    renderer.renderToolResult(
-        "write-file",
-        true,
-        "Test file updated",
-        fullOutput = "✓ Updated src/test/kotlin/MathUtilsTest.kt"
-    )
-
-    renderer.renderToolCall("shell", """command="./gradlew test --tests MathUtilsTest"""")
-    renderer.renderToolResult(
-        "shell",
-        true,
-        "All tests passed ✓",
-        fullOutput = """BUILD SUCCESSFUL in 2s
-3 actionable tasks: 2 executed, 1 up-to-date
-
-MathUtilsTest > testDivide() PASSED
-MathUtilsTest > testMultiply() PASSED
-MathUtilsTest > testSum() PASSED
-
-3 tests completed, 0 failed"""
-    )
-
-    // Final message
-    simulateAgentReasoning(
-        renderer,
-        """Perfect! All tests are now passing. ✅
-
-**Summary of changes:**
-- ✓ Added `sum(a: Int, b: Int): Int` function to MathUtils
-- ✓ Fixed incorrect test assertion in MathUtilsTest
-- ✓ All tests passing (3/3)
-- ✓ Live terminal session demonstrated
-
-The implementation is complete and working correctly!"""
-    )
-
-    // Task complete
     renderer.renderFinalResult(true, "Task completed successfully after 6 iterations", 6)
 
     return renderer
