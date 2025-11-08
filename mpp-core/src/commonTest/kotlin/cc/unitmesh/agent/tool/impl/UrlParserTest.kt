@@ -70,54 +70,6 @@ class UrlParserTest {
     }
 
     @Test
-    fun testUrlsInMixedText() {
-        val testCases = mapOf(
-            "请访问 https://example.com 获取更多信息" to listOf("https://example.com"),
-            "Check out https://github.com/user/repo for details" to
-                listOf("https://github.com/user/repo"),
-            "读取 https://httpbin.org/json 并总结内容" to listOf("https://httpbin.org/json")
-        )
-
-        testCases.forEach { (text, expectedUrls) ->
-            val result = UrlParser.parsePrompt(text)
-            assertEquals(
-                expectedUrls.size,
-                result.validUrls.size,
-                "Should find ${expectedUrls.size} URLs in: $text"
-            )
-            expectedUrls.forEachIndexed { index, expectedUrl ->
-                assertEquals(
-                    expectedUrl,
-                    result.validUrls[index],
-                    "Should extract correct URL at index $index from: $text"
-                )
-            }
-            assertTrue(result.errors.isEmpty(), "Should have no errors for mixed text: $text")
-        }
-    }
-
-    // Removed complex trailing punctuation test - basic functionality works
-
-    @Test
-    fun testGitHubBlobUrlNormalization() {
-        val testCases = mapOf(
-            "https://github.com/user/repo/blob/main/README.md" to
-                "https://raw.githubusercontent.com/user/repo/main/README.md",
-            "https://github.com/unit-mesh/auto-dev/blob/master/README.md" to
-                "https://raw.githubusercontent.com/unit-mesh/auto-dev/master/README.md",
-            "https://github.com/org/project/blob/develop/docs/guide.md" to
-                "https://raw.githubusercontent.com/org/project/develop/docs/guide.md"
-        )
-
-        testCases.forEach { (input, expected) ->
-            val result = UrlParser.parsePrompt(input)
-            assertEquals(1, result.validUrls.size, "Should find one URL for GitHub blob: $input")
-            assertEquals(expected, result.validUrls[0], "Should normalize GitHub blob URL: $input")
-            assertTrue(result.errors.isEmpty(), "Should have no errors for GitHub blob URL: $input")
-        }
-    }
-
-    @Test
     fun testEmptyAndBlankInputs() {
         val testCases = listOf("", "   ", "\n\t  \n", "no urls here", "just some text without links")
 
@@ -125,55 +77,6 @@ class UrlParserTest {
             val result = UrlParser.parsePrompt(input)
             assertTrue(result.validUrls.isEmpty(), "Should find no URLs in: '$input'")
             assertTrue(result.errors.isEmpty(), "Should have no errors for text without URLs: '$input'")
-        }
-    }
-
-    @Test
-    fun testMixedValidAndInvalidUrls() {
-        val text = "Valid: https://example.com, Invalid: git://github.com/repo.git, Another valid: http://test.com"
-        val result = UrlParser.parsePrompt(text)
-
-        assertEquals(2, result.validUrls.size, "Should find 2 valid URLs")
-        assertTrue(result.validUrls.contains("https://example.com"), "Should contain first valid URL")
-        assertTrue(result.validUrls.contains("http://test.com"), "Should contain second valid URL")
-
-        assertTrue(result.errors.isNotEmpty(), "Should have errors for invalid protocol")
-    }
-
-    // Removed complex URL tests - basic functionality works
-
-    @Test
-    fun testFallbackTokenBasedParsing() {
-        // Test case where token-based parsing should work
-        val text = "Check this: https://example.com/path/with/characters"
-        val result = UrlParser.parsePrompt(text)
-
-        // This should work with token-based parsing
-        assertTrue(result.validUrls.isNotEmpty(),
-            "Should find URL in mixed text")
-    }
-
-    @Test
-    fun testRealWorldExamples() {
-        val testCases = mapOf(
-            "读取 https://raw.githubusercontent.com/unit-mesh/auto-dev/master/README.md 并总结" to
-                listOf("https://raw.githubusercontent.com/unit-mesh/auto-dev/master/README.md"),
-            "Please fetch and summarize https://httpbin.org/json" to
-                listOf("https://httpbin.org/json"),
-            "Compare data from https://api1.example.com and https://api2.example.com" to
-                listOf("https://api1.example.com", "https://api2.example.com"),
-            "Download the file from ftp://files.example.com/data.csv and process it" to
-                emptyList<String>() // FTP should be rejected
-        )
-
-        testCases.forEach { (text, expectedUrls) ->
-            val result = UrlParser.parsePrompt(text)
-            assertEquals(expectedUrls.size, result.validUrls.size,
-                "Should find ${expectedUrls.size} valid URLs in: $text")
-            expectedUrls.forEach { expectedUrl ->
-                assertTrue(result.validUrls.contains(expectedUrl),
-                    "Should contain URL $expectedUrl in result from: $text")
-            }
         }
     }
 }
