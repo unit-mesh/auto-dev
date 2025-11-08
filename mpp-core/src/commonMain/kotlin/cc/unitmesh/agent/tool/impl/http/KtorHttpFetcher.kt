@@ -1,9 +1,12 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.http
 
+import cc.unitmesh.agent.tool.impl.FetchResult
+import cc.unitmesh.agent.tool.impl.HttpFetcher
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 
 /**
@@ -53,7 +56,7 @@ class KtorHttpFetcher(
                     statusCode = statusCode
                 )
             }
-        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+        } catch (e: TimeoutCancellationException) {
             FetchResult(
                 success = false,
                 content = "",

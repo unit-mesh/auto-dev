@@ -2,6 +2,8 @@ package cc.unitmesh.agent.tool.impl
 
 import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.*
+import cc.unitmesh.agent.tool.impl.http.HttpFetcherFactory
+import cc.unitmesh.agent.tool.impl.http.UrlParser
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.llm.KoogLLMService

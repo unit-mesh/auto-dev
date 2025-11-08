@@ -1,5 +1,7 @@
 package cc.unitmesh.agent.tool.impl
 
+import cc.unitmesh.agent.tool.impl.http.KtorHttpFetcher
+
 /**
  * Android implementation - uses Ktor with CIO engine
  */

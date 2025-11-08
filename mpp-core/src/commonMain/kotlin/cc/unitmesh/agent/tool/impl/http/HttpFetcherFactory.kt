@@ -1,4 +1,6 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.http
+
+import cc.unitmesh.agent.tool.impl.HttpFetcher
 
 /**
  * Platform-specific HttpFetcher factory

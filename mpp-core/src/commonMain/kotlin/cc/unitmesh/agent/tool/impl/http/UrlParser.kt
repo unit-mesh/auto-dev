@@ -1,4 +1,4 @@
-package cc.unitmesh.agent.tool.impl
+package cc.unitmesh.agent.tool.impl.http
 
 /**
  * Result of URL parsing from a prompt
@@ -90,7 +90,7 @@ object UrlParser {
             }
 
             // Check for invalid characters in host
-            if (hostPart.contains("..") || hostPart.startsWith(".") || hostPart.endsWith(".")) {
+            if (hostPart.contains("") || hostPart.startsWith(".") || hostPart.endsWith(".")) {
                 return false
             }
 
