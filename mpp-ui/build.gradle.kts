@@ -62,6 +62,8 @@ kotlin {
                 implementation(compose.materialIconsExtended)
                 implementation(compose.ui)
                 implementation(compose.components.resources)
+                // Animation (needed for animateContentSize in LiveTerminalItem)
+                implementation(compose.animation)
 
                 // Rich text editor for Compose
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")

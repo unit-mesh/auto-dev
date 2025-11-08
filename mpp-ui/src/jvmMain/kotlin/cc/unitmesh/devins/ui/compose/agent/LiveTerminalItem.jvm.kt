@@ -1,6 +1,8 @@
 package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.animation.animateContentSize
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,7 +46,11 @@ actual fun LiveTerminalItem(
         shape = RoundedCornerShape(4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .animateContentSize() // Smooth height changes
+        ) {
             // Header row
             Row(
                 modifier = Modifier
@@ -120,13 +126,16 @@ actual fun LiveTerminalItem(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (ttyConnector != null) {
-                    // Render JediTerm widget
-                    TerminalWidget(
-                        ttyConnector = ttyConnector,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(400.dp)
-                    )
+                    // Adaptive height: occupy at most 55% of available parent height, minimum 200.dp
+                    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                        val maxAdaptive: Dp = (maxHeight * 0.55f).coerceIn(200.dp, 600.dp)
+                        TerminalWidget(
+                            ttyConnector = ttyConnector,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(maxAdaptive)
+                        )
+                    }
                 } else {
                     Card(
                         colors = CardDefaults.cardColors(
