@@ -3,6 +3,7 @@ package cc.unitmesh.devins.ui.compose.agent
 import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.render.CodingAgentRenderer
+import cc.unitmesh.agent.tool.shell.PtyShellExecutor
 import cc.unitmesh.llm.KoogLLMService
 
 /**
@@ -21,7 +22,8 @@ actual fun createPlatformCodingAgent(
         llmService = llmService,
         maxIterations = maxIterations,
         renderer = renderer,
-        mcpToolConfigService = mcpToolConfigService
+        mcpToolConfigService = mcpToolConfigService,
+        shellExecutor = PtyShellExecutor()
     )
 }
 
