@@ -13,7 +13,7 @@ interface CodingAgentRenderer {
 
     // Tool execution methods
     fun renderToolCall(toolName: String, paramsStr: String)
-    fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?)
+    fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?, metadata: Map<String, String> = emptyMap())
 
     // Status and completion methods
     fun renderTaskComplete()

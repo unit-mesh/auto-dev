@@ -47,7 +47,7 @@ class DefaultCodingAgentRenderer : BaseRenderer() {
         println("🔧 /$toolName $paramsStr")
     }
 
-    override fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?) {
+    override fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?, metadata: Map<String, String>) {
         val icon = if (success) "✓" else "✗"
         print("   $icon $toolName")
 

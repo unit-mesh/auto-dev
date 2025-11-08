@@ -211,9 +211,18 @@ class ComposeRenderer : BaseRenderer() {
         toolName: String,
         success: Boolean,
         output: String?,
-        fullOutput: String?
+        fullOutput: String?,
+        metadata: Map<String, String>
     ) {
         val summary = formatToolResultSummary(toolName, success, output)
+
+        // Check if this was a live terminal session - skip rendering if so
+        val isLiveSession = metadata["isLiveSession"] == "true"
+        if (isLiveSession) {
+            // Live terminal already rendered - just mark tool call as complete
+            _currentToolCall = null
+            return
+        }
 
         // For shell commands, use special terminal output rendering
         val toolType = toolName.toToolType()

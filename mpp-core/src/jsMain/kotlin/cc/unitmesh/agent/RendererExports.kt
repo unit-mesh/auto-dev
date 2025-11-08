@@ -75,7 +75,7 @@ class JsRendererAdapter(private val jsRenderer: JsCodingAgentRenderer) : CodingA
         jsRenderer.renderToolCall(toolName, paramsStr)
     }
 
-    override fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?) {
+    override fun renderToolResult(toolName: String, success: Boolean, output: String?, fullOutput: String?, metadata: Map<String, String>) {
         jsRenderer.renderToolResult(toolName, success, output, fullOutput)
     }
 
