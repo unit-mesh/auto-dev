@@ -50,10 +50,11 @@ fun BottomToolbar(
         ) {
             // Workspace 指示器（显示项目名称）
             if (!workspacePath.isNullOrEmpty()) {
-                val projectName = workspacePath.substringAfterLast('/')
-                    .ifEmpty { workspacePath.substringAfterLast('\\') }
-                    .ifEmpty { "Project" }
-                
+                val projectName =
+                    workspacePath.substringAfterLast('/')
+                        .ifEmpty { workspacePath.substringAfterLast('\\') }
+                        .ifEmpty { "Project" }
+
                 Surface(
                     shape = MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
@@ -161,10 +162,11 @@ fun BottomToolbar(
                     onClick = onStopClick,
                     modifier = Modifier.height(if (isAndroid) 40.dp else 38.dp),
                     contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp),
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer
-                    )
+                    colors =
+                        ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
                 ) {
                     Icon(
                         imageVector = AutoDevComposeIcons.Stop,

@@ -30,4 +30,3 @@ actual fun getFiraCodeFontFamily(): FontFamily {
         FontFamily.Monospace
     }
 }
-

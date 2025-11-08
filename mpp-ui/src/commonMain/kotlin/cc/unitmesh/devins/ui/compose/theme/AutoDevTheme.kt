@@ -16,19 +16,16 @@ private val DarkColorScheme =
         onPrimary = AutoDevColors.Neutral.c900,
         primaryContainer = AutoDevColors.Indigo.c800,
         onPrimaryContainer = AutoDevColors.Indigo.c100,
-        
         // 辅色 - Spark Cyan
         secondary = AutoDevColors.Cyan.c400,
         onSecondary = AutoDevColors.Neutral.c900,
         secondaryContainer = AutoDevColors.Cyan.c800,
         onSecondaryContainer = AutoDevColors.Cyan.c100,
-        
         // 第三色
         tertiary = AutoDevColors.Green.c300,
         onTertiary = AutoDevColors.Neutral.c900,
         tertiaryContainer = AutoDevColors.Green.c800,
         onTertiaryContainer = AutoDevColors.Green.c100,
-        
         // 背景和表面
         background = AutoDevColors.Neutral.c900,
         onBackground = AutoDevColors.Neutral.c100,
@@ -36,13 +33,11 @@ private val DarkColorScheme =
         onSurface = AutoDevColors.Neutral.c100,
         surfaceVariant = AutoDevColors.Neutral.c700,
         onSurfaceVariant = AutoDevColors.Neutral.c300,
-        
         // 错误
         error = AutoDevColors.Red.c300,
         onError = AutoDevColors.Neutral.c900,
         errorContainer = AutoDevColors.Red.c900,
         onErrorContainer = AutoDevColors.Red.c100,
-        
         // 轮廓
         outline = AutoDevColors.Neutral.c700,
         outlineVariant = AutoDevColors.Neutral.c800,
@@ -59,19 +54,16 @@ private val LightColorScheme =
         onPrimary = Color.White,
         primaryContainer = AutoDevColors.Indigo.c100,
         onPrimaryContainer = AutoDevColors.Indigo.c900,
-        
         // 辅色 - Spark Cyan
         secondary = AutoDevColors.Cyan.c500,
         onSecondary = Color.White,
         secondaryContainer = AutoDevColors.Cyan.c100,
         onSecondaryContainer = AutoDevColors.Cyan.c900,
-        
         // 第三色
         tertiary = AutoDevColors.Green.c600,
         onTertiary = Color.White,
         tertiaryContainer = AutoDevColors.Green.c100,
         onTertiaryContainer = AutoDevColors.Green.c900,
-        
         // 背景和表面
         background = AutoDevColors.Neutral.c50,
         onBackground = AutoDevColors.Neutral.c900,
@@ -79,13 +71,11 @@ private val LightColorScheme =
         onSurface = AutoDevColors.Neutral.c900,
         surfaceVariant = AutoDevColors.Neutral.c100,
         onSurfaceVariant = AutoDevColors.Neutral.c700,
-        
         // 错误
         error = AutoDevColors.Red.c600,
         onError = Color.White,
         errorContainer = AutoDevColors.Red.c100,
         onErrorContainer = AutoDevColors.Red.c900,
-        
         // 轮廓
         outline = AutoDevColors.Neutral.c300,
         outlineVariant = AutoDevColors.Neutral.c200,

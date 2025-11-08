@@ -44,17 +44,20 @@ fun FileChangeItem(
     modifier: Modifier = Modifier.Companion
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick), // Make the entire item clickable
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
+        // Make the entire item clickable
         shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
-            modifier = Modifier.Companion
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier =
+                Modifier.Companion
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Companion.CenterVertically
         ) {
@@ -66,20 +69,22 @@ fun FileChangeItem(
             ) {
                 // Change type icon
                 Icon(
-                    imageVector = when (change.changeType) {
-                        ChangeType.CREATE -> Icons.Default.Add
-                        ChangeType.EDIT -> Icons.Default.Edit
-                        ChangeType.DELETE -> Icons.Default.Delete
-                        ChangeType.OVERWRITE -> Icons.Default.Create
-                    },
+                    imageVector =
+                        when (change.changeType) {
+                            ChangeType.CREATE -> Icons.Default.Add
+                            ChangeType.EDIT -> Icons.Default.Edit
+                            ChangeType.DELETE -> Icons.Default.Delete
+                            ChangeType.OVERWRITE -> Icons.Default.Create
+                        },
                     contentDescription = change.changeType.name,
                     modifier = Modifier.Companion.size(16.dp),
-                    tint = when (change.changeType) {
-                        ChangeType.CREATE -> MaterialTheme.colorScheme.primary
-                        ChangeType.EDIT -> MaterialTheme.colorScheme.tertiary
-                        ChangeType.DELETE -> MaterialTheme.colorScheme.error
-                        ChangeType.OVERWRITE -> MaterialTheme.colorScheme.secondary
-                    }
+                    tint =
+                        when (change.changeType) {
+                            ChangeType.CREATE -> MaterialTheme.colorScheme.primary
+                            ChangeType.EDIT -> MaterialTheme.colorScheme.tertiary
+                            ChangeType.DELETE -> MaterialTheme.colorScheme.error
+                            ChangeType.OVERWRITE -> MaterialTheme.colorScheme.secondary
+                        }
                 )
 
                 // File name and path - single line compact version
@@ -126,10 +131,11 @@ fun FileChangeItem(
                             color = MaterialTheme.colorScheme.primary,
                             fontFamily = FontFamily.Companion.Monospace,
                             fontSize = 10.sp,
-                            modifier = Modifier.Companion
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
-                                .background(MaterialTheme.colorScheme.primaryContainer)
-                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                            modifier =
+                                Modifier.Companion
+                                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
                         )
                     }
                     if (diffStats.deletedLines > 0) {
@@ -139,10 +145,11 @@ fun FileChangeItem(
                             color = MaterialTheme.colorScheme.error,
                             fontFamily = FontFamily.Companion.Monospace,
                             fontSize = 10.sp,
-                            modifier = Modifier.Companion
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
-                                .background(MaterialTheme.colorScheme.errorContainer)
-                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                            modifier =
+                                Modifier.Companion
+                                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
+                                    .background(MaterialTheme.colorScheme.errorContainer)
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
                         )
                     }
                 }

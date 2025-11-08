@@ -9,9 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
-import cc.unitmesh.llm.NamedModelConfig
 import cc.unitmesh.devins.ui.i18n.Strings
 import cc.unitmesh.llm.ModelConfig
+import cc.unitmesh.llm.NamedModelConfig
 import kotlinx.coroutines.launch
 
 /**
@@ -169,12 +169,13 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
                     try {
                         // If creating a new config (not editing current), ensure unique name
                         val existingNames = availableConfigs.map { it.name }
-                        val finalConfigName = if (currentConfigName != configName && configName in existingNames) {
-                            // Auto-increment: my-glm -> my-glm-1 -> my-glm-2, etc.
-                            ConfigManager.generateUniqueConfigName(configName, existingNames)
-                        } else {
-                            configName
-                        }
+                        val finalConfigName =
+                            if (currentConfigName != configName && configName in existingNames) {
+                                // Auto-increment: my-glm -> my-glm-1 -> my-glm-2, etc.
+                                ConfigManager.generateUniqueConfigName(configName, existingNames)
+                            } else {
+                                configName
+                            }
 
                         // Convert ModelConfig to NamedModelConfig
                         val namedConfig =

@@ -15,4 +15,3 @@ actual fun FileViewerPanelWrapper(
         modifier = modifier
     )
 }
-

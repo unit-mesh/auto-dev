@@ -56,7 +56,7 @@ class DevInSyntaxHighlighter {
         // 使用 AutoDev 设计系统颜色
         // TODO: 根据实际主题模式动态切换颜色（暗色/亮色）
         val colors = AutoDevColors.Syntax.Dark
-        
+
         return when (type) {
             // Agent 相关 - 使用醒目的青色（类似 Slack 提及）
             DevInsTokenType.AGENT_START ->

@@ -32,15 +32,15 @@ class ComposeTerminalSettingsProvider(
     private val selectionColor: Color,
     private val cursorColor: Color = Color(0xFF64B5F6) // Material blue by default
 ) : DefaultSettingsProvider() {
-
     // Convert Compose Color to JediTerm Color supplier
     private fun Color.toJediColorSupplier(): Supplier<com.jediterm.core.Color> {
         val argb = this.toArgb()
-        val jediColor = com.jediterm.core.Color(
-            (argb shr 16) and 0xFF,  // red
-            (argb shr 8) and 0xFF,   // green
-            argb and 0xFF             // blue
-        )
+        val jediColor =
+            com.jediterm.core.Color(
+                (argb shr 16) and 0xFF, // red
+                (argb shr 8) and 0xFF, // green
+                argb and 0xFF // blue
+            )
         return Supplier { jediColor }
     }
 
@@ -76,7 +76,9 @@ class ComposeTerminalSettingsProvider(
     override fun copyOnSelect(): Boolean = true
 
     override fun pasteOnMiddleMouseClick(): Boolean = true
-}/**
+}
+
+/**
  * TtyConnector implementation that wraps a Process (typically from Pty4J).
  * This bridges Pty4J processes to JediTerm's terminal widget.
  */
@@ -84,7 +86,6 @@ class ProcessTtyConnector(
     private val process: Process,
     private val charset: Charset = Charsets.UTF_8
 ) : TtyConnector {
-
     @Volatile
     private var closed = false
 
@@ -159,6 +160,7 @@ class ProcessTtyConnector(
  * Compose wrapper for JediTerm terminal widget.
  * Bridges Swing-based JediTerm to Compose UI.
  */
+
 /**
  * Custom JediTermWidget that overrides scrollbar creation like IDEA's JBTerminalWidget.
  * Following IDEA's pattern: createScrollBar() is called during parent constructor,
@@ -167,23 +169,23 @@ class ProcessTtyConnector(
 class AutoDevTerminalWidget(
     settingsProvider: ComposeTerminalSettingsProvider
 ) : JediTermWidget(settingsProvider) {
-
     override fun createScrollBar(): JScrollBar {
         // Like JBTerminalWidget, create scrollbar that adapts to terminal panel background
         // Use anonymous class like IDEA does to access terminalPanel after initialization
-        val bar = object : ModernTerminalScrollBar(
-            VERTICAL,
-            TerminalScrollbarColors(
-                track = java.awt.Color(30, 30, 30, 20),
-                thumb = java.awt.Color(100, 181, 246, 140),
-                thumbHover = java.awt.Color(100, 181, 246)
-            )
-        ) {
-            override fun getBackground(): java.awt.Color {
-                // Return terminal panel background like JBScrollBar does
-                return terminalPanel?.background ?: super.getBackground()
+        val bar =
+            object : ModernTerminalScrollBar(
+                VERTICAL,
+                TerminalScrollbarColors(
+                    track = java.awt.Color(30, 30, 30, 20),
+                    thumb = java.awt.Color(100, 181, 246, 140),
+                    thumbHover = java.awt.Color(100, 181, 246)
+                )
+            ) {
+                override fun getBackground(): java.awt.Color {
+                    // Return terminal panel background like JBScrollBar does
+                    return terminalPanel?.background ?: super.getBackground()
+                }
             }
-        }
 
         bar.isOpaque = true
         bar.unitIncrement = 10
@@ -227,12 +229,13 @@ fun TerminalWidget(
         modifier = modifier,
         background = backgroundColor,
         factory = {
-            val settingsProvider = ComposeTerminalSettingsProvider(
-                backgroundColor = backgroundColor,
-                foregroundColor = foregroundColor,
-                selectionColor = selectionColor,
-                cursorColor = cursorColor
-            )
+            val settingsProvider =
+                ComposeTerminalSettingsProvider(
+                    backgroundColor = backgroundColor,
+                    foregroundColor = foregroundColor,
+                    selectionColor = selectionColor,
+                    cursorColor = cursorColor
+                )
 
             // Create custom terminal widget with overridden createScrollBar()
             // No need to pass colors - widget will extract from settingsProvider
@@ -262,7 +265,9 @@ fun TerminalWidget(
             }
         }
     )
-}/**
+}
+
+/**
  * Simple terminal output display for showing command results.
  * This is a read-only terminal view for displaying shell command output.
  *
@@ -277,10 +282,11 @@ fun TerminalOutputDisplay(
     // For now, use simple text display instead of JediTerm
     // JediTerm requires more complex setup for read-only output
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(8.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                .padding(8.dp)
     ) {
         Text(
             text = output,
@@ -301,4 +307,3 @@ actual fun PlatformTerminalDisplay(
 ) {
     TerminalOutputDisplay(output, modifier)
 }
-

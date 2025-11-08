@@ -182,12 +182,13 @@ class ComposeRenderer : BaseRenderer() {
         val toolType = toolName.toToolType()
 
         // Extract file path for read/write operations
-        val filePath = when (toolType) {
-            ToolType.ReadFile, ToolType.WriteFile -> params["path"]
-            else -> null
-        }
+        val filePath =
+            when (toolType) {
+                ToolType.ReadFile, ToolType.WriteFile -> params["path"]
+                else -> null
+            }
 
-        /// todo add check for debug mode
+        // / todo add check for debug mode
         _timeline.add(
             TimelineItem.ToolCallItem(
                 toolName = toolInfo.toolName,
@@ -364,6 +365,9 @@ class ComposeRenderer : BaseRenderer() {
     /**
      * Adds a live terminal session to the timeline.
      * This is called when a Shell tool is executed with PTY support.
+     *
+     * Note: This also removes the last ToolCallItem if it was a Shell command,
+     * since LiveTerminalItem already displays the command in its header.
      */
     override fun addLiveTerminal(
         sessionId: String,
@@ -371,6 +375,13 @@ class ComposeRenderer : BaseRenderer() {
         workingDirectory: String?,
         ptyHandle: Any?
     ) {
+        // Remove the last ToolCallItem if it's a Shell command
+        // LiveTerminalItem will show the command, so we don't need the duplicate ToolCallItem
+        val lastItem = _timeline.lastOrNull()
+        if (lastItem is TimelineItem.ToolCallItem && lastItem.toolType == ToolType.Shell) {
+            _timeline.removeAt(_timeline.size - 1)
+        }
+
         _timeline.add(
             TimelineItem.LiveTerminalItem(
                 sessionId = sessionId,

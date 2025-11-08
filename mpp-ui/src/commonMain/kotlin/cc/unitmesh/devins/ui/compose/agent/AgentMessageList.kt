@@ -17,9 +17,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.terminal.PlatformTerminalDisplay
-import cc.unitmesh.devins.llm.MessageRole
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
@@ -606,10 +606,12 @@ fun ToolCallItem(
     val hasFullParams = fullParams != null && fullParams != details
 
     // Check if this is a file operation that can be viewed
-    val isFileOperation = toolType in listOf(
-        cc.unitmesh.agent.tool.ToolType.ReadFile,
-        cc.unitmesh.agent.tool.ToolType.WriteFile
-    )
+    val isFileOperation =
+        toolType in
+            listOf(
+                cc.unitmesh.agent.tool.ToolType.ReadFile,
+                cc.unitmesh.agent.tool.ToolType.WriteFile
+            )
 
     Card(
         colors =

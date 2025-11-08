@@ -80,11 +80,11 @@ fun ModelConfigDialog(
                     onValueChange = { configName = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("e.g., my-glm, work-gpt4, personal-claude") },
-                    supportingText = { 
+                    supportingText = {
                         Text(
                             "给配置起一个唯一的名称，便于识别和切换",
                             style = MaterialTheme.typography.bodySmall
-                        ) 
+                        )
                     },
                     singleLine = true
                 )
@@ -145,10 +145,10 @@ fun ModelConfigDialog(
                     style = MaterialTheme.typography.labelLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 // Get available models for this provider
                 val availableModels = remember(provider) { ModelRegistry.getAvailableModels(provider) }
-                
+
                 if (availableModels.isNotEmpty()) {
                     // Show dropdown with predefined models + allow custom input
                     ExposedDropdownMenuBox(
@@ -188,32 +188,32 @@ fun ModelConfigDialog(
                         value = modelName,
                         onValueChange = { modelName = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { 
-                                    Text(
-                                        when (provider) {
-                                            LLMProviderType.GLM -> "e.g., glm-4-plus, glm-4-air"
-                                            LLMProviderType.QWEN -> "e.g., qwen-max, qwen-plus"
-                                            LLMProviderType.KIMI -> "e.g., moonshot-v1-32k"
-                                            LLMProviderType.CUSTOM_OPENAI_BASE -> "e.g., model-name"
-                                            else -> Strings.enterModel
-                                        }
-                                    )
-                        },
-                        supportingText = { 
+                        placeholder = {
                             Text(
                                 when (provider) {
-                                    LLMProviderType.GLM -> 
+                                    LLMProviderType.GLM -> "e.g., glm-4-plus, glm-4-air"
+                                    LLMProviderType.QWEN -> "e.g., qwen-max, qwen-plus"
+                                    LLMProviderType.KIMI -> "e.g., moonshot-v1-32k"
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> "e.g., model-name"
+                                    else -> Strings.enterModel
+                                }
+                            )
+                        },
+                        supportingText = {
+                            Text(
+                                when (provider) {
+                                    LLMProviderType.GLM ->
                                         "输入 GLM 模型名称（如 glm-4-plus）"
-                                    LLMProviderType.QWEN -> 
+                                    LLMProviderType.QWEN ->
                                         "输入 Qwen 模型名称（如 qwen-max）"
-                                    LLMProviderType.KIMI -> 
+                                    LLMProviderType.KIMI ->
                                         "输入 Kimi 模型名称（如 moonshot-v1-32k）"
-                                    LLMProviderType.CUSTOM_OPENAI_BASE -> 
+                                    LLMProviderType.CUSTOM_OPENAI_BASE ->
                                         "输入 OpenAI 兼容模型名称"
                                     else -> Strings.modelHint
                                 },
                                 style = MaterialTheme.typography.bodySmall
-                            ) 
+                            )
                         },
                         singleLine = true
                     )
@@ -248,25 +248,26 @@ fun ModelConfigDialog(
                 }
 
                 // Base URL (for Ollama, GLM, Qwen, Kimi and Custom OpenAI-compatible providers)
-                if (provider == LLMProviderType.OLLAMA || provider == LLMProviderType.GLM || 
-                    provider == LLMProviderType.QWEN || provider == LLMProviderType.KIMI || 
-                    provider == LLMProviderType.CUSTOM_OPENAI_BASE) {
+                if (provider == LLMProviderType.OLLAMA || provider == LLMProviderType.GLM ||
+                    provider == LLMProviderType.QWEN || provider == LLMProviderType.KIMI ||
+                    provider == LLMProviderType.CUSTOM_OPENAI_BASE
+                ) {
                     Text(
                         text = Strings.baseUrl,
                         style = MaterialTheme.typography.labelLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     // Pre-fill baseUrl if empty
                     if (baseUrl.isEmpty()) {
                         baseUrl = ModelRegistry.getDefaultBaseUrl(provider)
                     }
-                    
+
                     OutlinedTextField(
                         value = baseUrl,
                         onValueChange = { baseUrl = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { 
+                        placeholder = {
                             Text(
                                 when (provider) {
                                     LLMProviderType.OLLAMA -> "http://localhost:11434"
@@ -276,7 +277,7 @@ fun ModelConfigDialog(
                                     LLMProviderType.CUSTOM_OPENAI_BASE -> "https://api.example.com/v1"
                                     else -> "https://api.example.com"
                                 }
-                            ) 
+                            )
                         },
                         supportingText = {
                             Text(
@@ -357,14 +358,15 @@ fun ModelConfigDialog(
                             onSave(configName.trim(), config)
                         },
                         enabled =
-                            configName.trim().isNotBlank() && when (provider) {
-                                LLMProviderType.OLLAMA -> 
-                                    modelName.isNotBlank() && baseUrl.isNotBlank()
-                                LLMProviderType.GLM, LLMProviderType.QWEN, LLMProviderType.KIMI, LLMProviderType.CUSTOM_OPENAI_BASE -> 
-                                    modelName.isNotBlank() && baseUrl.isNotBlank() && apiKey.isNotBlank()
-                                else -> 
-                                    apiKey.isNotBlank() && modelName.isNotBlank()
-                            }
+                            configName.trim().isNotBlank() &&
+                                when (provider) {
+                                    LLMProviderType.OLLAMA ->
+                                        modelName.isNotBlank() && baseUrl.isNotBlank()
+                                    LLMProviderType.GLM, LLMProviderType.QWEN, LLMProviderType.KIMI, LLMProviderType.CUSTOM_OPENAI_BASE ->
+                                        modelName.isNotBlank() && baseUrl.isNotBlank() && apiKey.isNotBlank()
+                                    else ->
+                                        apiKey.isNotBlank() && modelName.isNotBlank()
+                                }
                     ) {
                         Text(Strings.save)
                     }

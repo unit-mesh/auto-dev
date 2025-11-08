@@ -204,4 +204,3 @@ actual object ConfigManager {
         return YamlUtils.dump(configFile, kotlinx.serialization.serializer())
     }
 }
-

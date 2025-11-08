@@ -16,4 +16,3 @@ expect fun createPlatformCodingAgent(
     renderer: CodingAgentRenderer,
     mcpToolConfigService: McpToolConfigService
 ): CodingAgent
-

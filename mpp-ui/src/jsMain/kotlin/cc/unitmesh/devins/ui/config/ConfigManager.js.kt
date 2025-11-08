@@ -21,29 +21,33 @@ private val osModule: dynamic = if (isNodeJs) js("require('os')") else null
  * This implementation is called by TypeScript code
  */
 actual object ConfigManager {
-    private val homeDir: String = if (isNodeJs) {
-        osModule.homedir() as String
-    } else {
-        "/tmp" // Fallback for browser environment
-    }
+    private val homeDir: String =
+        if (isNodeJs) {
+            osModule.homedir() as String
+        } else {
+            "/tmp" // Fallback for browser environment
+        }
 
-    private val configDir: String = if (isNodeJs) {
-        pathModule.join(homeDir, ".autodev") as String
-    } else {
-        "/tmp/.autodev" // Fallback for browser environment
-    }
+    private val configDir: String =
+        if (isNodeJs) {
+            pathModule.join(homeDir, ".autodev") as String
+        } else {
+            "/tmp/.autodev" // Fallback for browser environment
+        }
 
-    private val configFilePath: String = if (isNodeJs) {
-        pathModule.join(configDir, "config.yaml") as String
-    } else {
-        "/tmp/.autodev/config.yaml" // Fallback for browser environment
-    }
+    private val configFilePath: String =
+        if (isNodeJs) {
+            pathModule.join(configDir, "config.yaml") as String
+        } else {
+            "/tmp/.autodev/config.yaml" // Fallback for browser environment
+        }
 
-    private val toolConfigFilePath: String = if (isNodeJs) {
-        pathModule.join(configDir, "mcp.json") as String
-    } else {
-        "/tmp/.autodev/mcp.json" // Fallback for browser environment
-    }
+    private val toolConfigFilePath: String =
+        if (isNodeJs) {
+            pathModule.join(configDir, "mcp.json") as String
+        } else {
+            "/tmp/.autodev/mcp.json" // Fallback for browser environment
+        }
 
     private val json =
         Json {

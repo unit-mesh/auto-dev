@@ -8,12 +8,12 @@ import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.PreloadingStatus
-import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.ToolCategory
-import cc.unitmesh.devins.ui.config.ConfigManager
-import cc.unitmesh.llm.KoogLLMService
-import cc.unitmesh.indexer.DomainDictGenerator
+import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.filesystem.DefaultProjectFileSystem
+import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.indexer.DomainDictGenerator
+import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 
 /**
@@ -106,11 +106,12 @@ class CodingAgentViewModel(
             val preloadedCount = mcpPreloadingStatus.preloadedServers.size
             val totalCount = toolConfig.mcpServers.filter { !it.value.disabled }.size
 
-            mcpPreloadingMessage = if (preloadedCount > 0) {
-                "MCP servers loaded successfully ($preloadedCount/$totalCount servers)"
-            } else {
-                "MCP servers initialization completed (no tools loaded)"
-            }
+            mcpPreloadingMessage =
+                if (preloadedCount > 0) {
+                    "MCP servers loaded successfully ($preloadedCount/$totalCount servers)"
+                } else {
+                    "MCP servers initialization completed (no tools loaded)"
+                }
 
             // Debug: Print final status
             println("🔍 [CodingAgentViewModel] Final MCP status:")
@@ -118,7 +119,6 @@ class CodingAgentViewModel(
             println("   Total cached: ${mcpPreloadingStatus.totalCachedConfigurations}")
             println("   Is preloading: ${McpToolConfigManager.isPreloading()}")
             println("   Message: $mcpPreloadingMessage")
-
         } catch (e: Exception) {
             mcpPreloadingMessage = "Failed to load MCP servers: ${e.message}"
             println("Error during MCP preloading: ${e.message}")
@@ -134,13 +134,14 @@ class CodingAgentViewModel(
             val toolConfig = ConfigManager.loadToolConfig()
             val mcpToolConfigService = McpToolConfigService(toolConfig)
 
-            _codingAgent = createPlatformCodingAgent(
-                projectPath = projectPath,
-                llmService = llmService,
-                maxIterations = maxIterations,
-                renderer = renderer,
-                mcpToolConfigService = mcpToolConfigService
-            )
+            _codingAgent =
+                createPlatformCodingAgent(
+                    projectPath = projectPath,
+                    llmService = llmService,
+                    maxIterations = maxIterations,
+                    renderer = renderer,
+                    mcpToolConfigService = mcpToolConfigService
+                )
             agentInitialized = true
         }
         return _codingAgent!!
@@ -212,35 +213,38 @@ class CodingAgentViewModel(
                 renderer.renderFinalResult(true, "✅ Chat history cleared", 0)
             }
             "help" -> {
-                val helpText = buildString {
-                    appendLine("📖 Available Commands:")
-                    appendLine("  /init [--force] - Initialize project domain dictionary")
-                    appendLine("  /clear - Clear chat history")
-                    appendLine("  /help - Show this help message")
-                    appendLine("")
-                    appendLine("💡 You can also use @ for agents and other DevIns commands")
-                }
+                val helpText =
+                    buildString {
+                        appendLine("📖 Available Commands:")
+                        appendLine("  /init [--force] - Initialize project domain dictionary")
+                        appendLine("  /clear - Clear chat history")
+                        appendLine("  /help - Show this help message")
+                        appendLine("")
+                        appendLine("💡 You can also use @ for agents and other DevIns commands")
+                    }
                 renderer.renderFinalResult(true, helpText, 0)
             }
             else -> {
                 // Unknown command, let the agent handle it
                 isExecuting = true
-                currentExecutionJob = scope.launch {
-                    try {
-                        val codingAgent = initializeCodingAgent()
-                        val agentTask = AgentTask(
-                            requirement = command,
-                            projectPath = projectPath
-                        )
-                        codingAgent.executeTask(agentTask)
-                        isExecuting = false
-                        currentExecutionJob = null
-                    } catch (e: Exception) {
-                        renderer.renderError(e.message ?: "Unknown error")
-                        isExecuting = false
-                        currentExecutionJob = null
+                currentExecutionJob =
+                    scope.launch {
+                        try {
+                            val codingAgent = initializeCodingAgent()
+                            val agentTask =
+                                AgentTask(
+                                    requirement = command,
+                                    projectPath = projectPath
+                                )
+                            codingAgent.executeTask(agentTask)
+                            isExecuting = false
+                            currentExecutionJob = null
+                        } catch (e: Exception) {
+                            renderer.renderError(e.message ?: "Unknown error")
+                            isExecuting = false
+                            currentExecutionJob = null
+                        }
                     }
-                }
             }
         }
     }
@@ -320,7 +324,6 @@ class CodingAgentViewModel(
                         renderer.renderError("❌ Domain dictionary generation failed: ${result.message}")
                     }
                 }
-
             } catch (e: Exception) {
                 renderer.renderError("❌ Domain dictionary generation failed: ${e.message}")
             }
@@ -365,44 +368,46 @@ class CodingAgentViewModel(
         val toolConfig = cachedToolConfig
 
         val allBuiltinTools = ToolType.ALL_TOOLS.filter { it.category != ToolCategory.SubAgent }
-        val builtinToolsEnabled = if (toolConfig != null) {
-            allBuiltinTools.count { toolType ->
-                toolType.name in toolConfig.enabledBuiltinTools
+        val builtinToolsEnabled =
+            if (toolConfig != null) {
+                allBuiltinTools.count { toolType ->
+                    toolType.name in toolConfig.enabledBuiltinTools
+                }
+            } else {
+                allBuiltinTools.size
             }
-        } else {
-            allBuiltinTools.size
-        }
 
         val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
-        val subAgentsEnabled = if (toolConfig != null) {
-            subAgentTools.count { toolType ->
-                toolType.name in toolConfig.enabledBuiltinTools
+        val subAgentsEnabled =
+            if (toolConfig != null) {
+                subAgentTools.count { toolType ->
+                    toolType.name in toolConfig.enabledBuiltinTools
+                }
+            } else {
+                subAgentTools.size
             }
-        } else {
-            subAgentTools.size
-        }
 
         val mcpServersTotal = toolConfig?.mcpServers?.filter { !it.value.disabled }?.size ?: 0
         val mcpServersLoaded = mcpPreloadingStatus.preloadedServers.size
 
-        val mcpToolsEnabled = if (McpToolConfigManager.isPreloading()) {
-            0
-        } else {
-            val enabledMcpToolsCount = toolConfig?.enabledMcpTools?.size ?: 0
-            if (enabledMcpToolsCount > 0) {
-                enabledMcpToolsCount
+        val mcpToolsEnabled =
+            if (McpToolConfigManager.isPreloading()) {
+                0
             } else {
-                mcpPreloadingStatus.preloadedServers.sumOf { _ -> 0 }
+                val enabledMcpToolsCount = toolConfig?.enabledMcpTools?.size ?: 0
+                if (enabledMcpToolsCount > 0) {
+                    enabledMcpToolsCount
+                } else {
+                    mcpPreloadingStatus.preloadedServers.sumOf { _ -> 0 }
+                }
             }
-        }
 
-        val mcpToolsTotal = if (McpToolConfigManager.isPreloading()) {
-            0
-        } else {
-            McpToolConfigManager.getTotalDiscoveredTools()
-        }
-
-
+        val mcpToolsTotal =
+            if (McpToolConfigManager.isPreloading()) {
+                0
+            } else {
+                McpToolConfigManager.getTotalDiscoveredTools()
+            }
 
         return ToolLoadingStatus(
             builtinToolsEnabled = builtinToolsEnabled,

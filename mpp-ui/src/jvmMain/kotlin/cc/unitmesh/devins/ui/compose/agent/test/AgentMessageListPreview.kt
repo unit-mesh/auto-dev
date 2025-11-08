@@ -1,22 +1,12 @@
 package cc.unitmesh.devins.ui.compose.agent.test
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,27 +19,29 @@ import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import com.pty4j.PtyProcessBuilder
 
-fun main() = application {
-    val windowState = rememberWindowState(
-        width = 1000.dp,
-        height = 800.dp
-    )
+fun main() =
+    application {
+        val windowState =
+            rememberWindowState(
+                width = 1000.dp,
+                height = 800.dp
+            )
 
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "AgentMessageList Preview Test",
-        state = windowState
-    ) {
-        AutoDevTheme(themeMode = ThemeManager.ThemeMode.SYSTEM) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                AgentMessageListPreviewScreen()
+        Window(
+            onCloseRequest = ::exitApplication,
+            title = "AgentMessageList Preview Test",
+            state = windowState
+        ) {
+            AutoDevTheme(themeMode = ThemeManager.ThemeMode.SYSTEM) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AgentMessageListPreviewScreen()
+                }
             }
         }
     }
-}
 
 @Composable
 @Preview
@@ -90,13 +82,16 @@ private fun createMockRenderer(): ComposeRenderer {
         ptyHandle = ptyHandle
     )
 
-    simulateAgentReasoning(renderer, """I'll help you add a sum calculation feature to the MathUtils class. Let me start by:
+    simulateAgentReasoning(
+        renderer,
+        """I'll help you add a sum calculation feature to the MathUtils class. Let me start by:
 
 1. First, I'll read the existing MathUtils.kt file to understand its current structure
 2. Then, I'll add the new sum function
 3. Finally, I'll run the tests to ensure everything works
 
-Let's begin!""")
+Let's begin!"""
+    )
 
     renderer.renderToolCall("read-file", """path="src/main/kotlin/utils/MathUtils.kt" startLine=1 endLine=50""")
     renderer.renderToolResult(
@@ -128,9 +123,12 @@ Let's begin!""")
     )
 
     // Iteration 2: Add sum function
-    simulateAgentReasoning(renderer, """Perfect! I can see the MathUtils class currently has `multiply` and `divide` functions.
+    simulateAgentReasoning(
+        renderer,
+        """Perfect! I can see the MathUtils class currently has `multiply` and `divide` functions.
 
-Now I'll add a new `sum` function that follows the same pattern. The function will be simple and clean.""")
+Now I'll add a new `sum` function that follows the same pattern. The function will be simple and clean."""
+    )
 
     renderer.renderToolCall("write-file", """path="src/main/kotlin/utils/MathUtils.kt" mode="update" content="<content>"""")
     renderer.renderToolResult(
@@ -167,11 +165,13 @@ FAILURE: Build failed with an exception."""
     )
 
     // Show error and recovery
-    renderer.renderError("""Test execution failed: MathUtilsTest > testSum() FAILED
+    renderer.renderError(
+        """Test execution failed: MathUtilsTest > testSum() FAILED
 
 Error Recovery Analysis:
 The test is expecting 5 but getting 6. This suggests the test case itself might have an incorrect assertion.
-Let me read the test file to investigate the issue.""")
+Let me read the test file to investigate the issue."""
+    )
 
     // Iteration 4: Debug test file
     renderer.renderToolCall("read-file", """path="src/test/kotlin/MathUtilsTest.kt" startLine=1 endLine=30""")
@@ -186,9 +186,12 @@ Let me read the test file to investigate the issue.""")
 16 │ }"""
     )
 
-    simulateAgentReasoning(renderer, """Found the issue! The test has an incorrect assertion. Line 15 expects 6, but 2 + 3 = 5.
+    simulateAgentReasoning(
+        renderer,
+        """Found the issue! The test has an incorrect assertion. Line 15 expects 6, but 2 + 3 = 5.
 
-I'll fix the test case now.""")
+I'll fix the test case now."""
+    )
 
     // Iteration 5: Fix test and re-run
     renderer.renderToolCall("write-file", """path="src/test/kotlin/MathUtilsTest.kt" mode="update" content="<fixed test>"""")
@@ -215,7 +218,9 @@ MathUtilsTest > testSum() PASSED
     )
 
     // Final message
-    simulateAgentReasoning(renderer, """Perfect! All tests are now passing. ✅
+    simulateAgentReasoning(
+        renderer,
+        """Perfect! All tests are now passing. ✅
 
 **Summary of changes:**
 - ✓ Added `sum(a: Int, b: Int): Int` function to MathUtils
@@ -223,7 +228,8 @@ MathUtilsTest > testSum() PASSED
 - ✓ All tests passing (3/3)
 - ✓ Live terminal session demonstrated
 
-The implementation is complete and working correctly!""")
+The implementation is complete and working correctly!"""
+    )
 
     // Task complete
     renderer.renderFinalResult(true, "Task completed successfully after 6 iterations", 6)

@@ -31,7 +31,7 @@ public data class ConfigFile(
     val active: String = "",
     val configs: List<NamedModelConfig> = emptyList(),
     val mcpServers: Map<String, McpServerConfig>? = emptyMap(),
-    val language: String? = "en"  // Language preference: "en" or "zh"
+    val language: String? = "en" // Language preference: "en" or "zh"
 )
 
 class AutoDevConfigWrapper(val configFile: ConfigFile) {
@@ -59,7 +59,6 @@ class AutoDevConfigWrapper(val configFile: ConfigFile) {
             active.apiKey.isNotEmpty() &&
             active.model.isNotEmpty()
     }
-
 
     fun getActiveModelConfig(): ModelConfig? {
         return getActiveConfig()?.toModelConfig()

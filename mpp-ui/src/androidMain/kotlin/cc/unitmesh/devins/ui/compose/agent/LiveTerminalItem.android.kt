@@ -22,9 +22,10 @@ actual fun LiveTerminalItem(
     ptyHandle: Any?
 ) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
         shape = RoundedCornerShape(4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -45,7 +46,7 @@ actual fun LiveTerminalItem(
                     modifier = Modifier.weight(1f)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "$ $command",
@@ -54,7 +55,7 @@ actual fun LiveTerminalItem(
                 style = MaterialTheme.typography.bodySmall,
                 fontFamily = FontFamily.Monospace
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "ℹ️ Live terminal output is not available on Android. The command output will appear after completion.",
@@ -65,4 +66,3 @@ actual fun LiveTerminalItem(
         }
     }
 }
-

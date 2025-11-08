@@ -26,4 +26,3 @@ actual fun createPlatformCodingAgent(
         shellExecutor = PtyShellExecutor()
     )
 }
-

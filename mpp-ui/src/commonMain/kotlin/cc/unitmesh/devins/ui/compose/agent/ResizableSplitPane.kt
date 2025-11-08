@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
 
 /**
  * A resizable split pane that divides two composables horizontally
- * 
+ *
  * @param modifier The modifier to apply to this layout
  * @param initialSplitRatio The initial split ratio (0.0 to 1.0) for the first pane
  * @param minRatio The minimum split ratio for the first pane
@@ -43,24 +43,25 @@ fun ResizableSplitPane(
             Box(modifier = Modifier.fillMaxHeight()) {
                 first()
             }
-            
+
             // Divider with drag handle
             Box(
-                modifier = Modifier
-                    .width(dividerWidth.dp)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.outlineVariant)
-                    .pointerHoverIcon(PointerIcon.Hand)
-                    .pointerInput(Unit) {
-                        detectDragGestures { change, dragAmount ->
-                            change.consume()
-                            val totalWidth = size.width
-                            val delta = dragAmount.x / totalWidth
-                            splitRatio = (splitRatio + delta).coerceIn(minRatio, maxRatio)
+                modifier =
+                    Modifier
+                        .width(dividerWidth.dp)
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
+                                val totalWidth = size.width
+                                val delta = dragAmount.x / totalWidth
+                                splitRatio = (splitRatio + delta).coerceIn(minRatio, maxRatio)
+                            }
                         }
-                    }
             )
-            
+
             Box(modifier = Modifier.fillMaxHeight()) {
                 second()
             }
@@ -68,22 +69,25 @@ fun ResizableSplitPane(
     ) { measurables, constraints ->
         val dividerWidthPx = dividerWidth.dp.roundToPx()
         val availableWidth = constraints.maxWidth - dividerWidthPx
-        
+
         val firstWidth = (availableWidth * splitRatio).roundToInt()
         val secondWidth = availableWidth - firstWidth
-        
-        val firstPlaceable = measurables[0].measure(
-            Constraints.fixed(firstWidth, constraints.maxHeight)
-        )
-        
-        val dividerPlaceable = measurables[1].measure(
-            Constraints.fixed(dividerWidthPx, constraints.maxHeight)
-        )
-        
-        val secondPlaceable = measurables[2].measure(
-            Constraints.fixed(secondWidth, constraints.maxHeight)
-        )
-        
+
+        val firstPlaceable =
+            measurables[0].measure(
+                Constraints.fixed(firstWidth, constraints.maxHeight)
+            )
+
+        val dividerPlaceable =
+            measurables[1].measure(
+                Constraints.fixed(dividerWidthPx, constraints.maxHeight)
+            )
+
+        val secondPlaceable =
+            measurables[2].measure(
+                Constraints.fixed(secondWidth, constraints.maxHeight)
+            )
+
         layout(constraints.maxWidth, constraints.maxHeight) {
             firstPlaceable.placeRelative(0, 0)
             dividerPlaceable.placeRelative(firstWidth, 0)
@@ -91,4 +95,3 @@ fun ResizableSplitPane(
         }
     }
 }
-

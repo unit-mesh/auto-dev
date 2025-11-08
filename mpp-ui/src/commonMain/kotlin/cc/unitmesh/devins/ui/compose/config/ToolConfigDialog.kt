@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.agent.config.McpLoadingState
 import cc.unitmesh.agent.config.McpLoadingStateCallback
 import cc.unitmesh.agent.config.McpServerLoadingStatus
@@ -24,12 +23,13 @@ import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.config.ToolConfigManager
 import cc.unitmesh.agent.config.ToolItem
-import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.agent.tool.ToolCategory
+import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
 import cc.unitmesh.agent.tool.provider.ToolDependencies
-import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
 import kotlinx.coroutines.launch
 
@@ -65,38 +65,42 @@ fun ToolConfigDialog(
     fun scheduleAutoSave() {
         hasUnsavedChanges = true
         autoSaveJob?.cancel()
-        autoSaveJob = scope.launch {
-            kotlinx.coroutines.delay(2000) // Wait 2 seconds before auto-saving
-            try {
-                val enabledBuiltinTools = builtinToolsByCategory.values
-                    .flatten()
-                    .filter { it.enabled }
-                    .map { it.name }
+        autoSaveJob =
+            scope.launch {
+                kotlinx.coroutines.delay(2000) // Wait 2 seconds before auto-saving
+                try {
+                    val enabledBuiltinTools =
+                        builtinToolsByCategory.values
+                            .flatten()
+                            .filter { it.enabled }
+                            .map { it.name }
 
-                val enabledMcpTools = mcpTools.values
-                    .flatten()
-                    .filter { it.enabled }
-                    .map { it.name }
+                    val enabledMcpTools =
+                        mcpTools.values
+                            .flatten()
+                            .filter { it.enabled }
+                            .map { it.name }
 
-                // Parse MCP config from JSON
-                val result = deserializeMcpConfig(mcpConfigJson)
-                if (result.isSuccess) {
-                    val newMcpServers = result.getOrThrow()
-                    val updatedConfig = toolConfig.copy(
-                        enabledBuiltinTools = enabledBuiltinTools,
-                        enabledMcpTools = enabledMcpTools,
-                        mcpServers = newMcpServers
-                    )
+                    // Parse MCP config from JSON
+                    val result = deserializeMcpConfig(mcpConfigJson)
+                    if (result.isSuccess) {
+                        val newMcpServers = result.getOrThrow()
+                        val updatedConfig =
+                            toolConfig.copy(
+                                enabledBuiltinTools = enabledBuiltinTools,
+                                enabledMcpTools = enabledMcpTools,
+                                mcpServers = newMcpServers
+                            )
 
-                    ConfigManager.saveToolConfig(updatedConfig)
-                    toolConfig = updatedConfig
-                    hasUnsavedChanges = false
-                    println("✅ Auto-saved tool configuration")
+                        ConfigManager.saveToolConfig(updatedConfig)
+                        toolConfig = updatedConfig
+                        hasUnsavedChanges = false
+                        println("✅ Auto-saved tool configuration")
+                    }
+                } catch (e: Exception) {
+                    println("❌ Auto-save failed: ${e.message}")
                 }
-            } catch (e: Exception) {
-                println("❌ Auto-save failed: ${e.message}")
             }
-        }
     }
 
     // Load configuration on start
@@ -106,14 +110,15 @@ fun ToolConfigDialog(
                 toolConfig = ConfigManager.loadToolConfig()
                 // Discover tools using the provider
                 val provider = BuiltinToolsProvider()
-                val tools = provider.provide(
-                    ToolDependencies(
-                        fileSystem = DefaultToolFileSystem(),
-                        shellExecutor = DefaultShellExecutor(),
-                        subAgentManager = null,
-                        llmService = null
+                val tools =
+                    provider.provide(
+                        ToolDependencies(
+                            fileSystem = DefaultToolFileSystem(),
+                            shellExecutor = DefaultShellExecutor(),
+                            subAgentManager = null,
+                            llmService = null
+                        )
                     )
-                )
                 val allTools = ToolConfigManager.getBuiltinToolsByCategory(tools)
                 builtinToolsByCategory = ToolConfigManager.applyEnabledTools(allTools, toolConfig)
 
@@ -124,32 +129,34 @@ fun ToolConfigDialog(
                 if (toolConfig.mcpServers.isNotEmpty()) {
                     scope.launch {
                         // Create callback for incremental loading
-                        val callback = object : McpLoadingStateCallback {
-                            override fun onServerStateChanged(serverName: String, state: McpServerState) {
-                                mcpLoadingState = mcpLoadingState.updateServerState(serverName, state)
+                        val callback =
+                            object : McpLoadingStateCallback {
+                                override fun onServerStateChanged(serverName: String, state: McpServerState) {
+                                    mcpLoadingState = mcpLoadingState.updateServerState(serverName, state)
 
-                                // Update tools when server is loaded
-                                if (state.isLoaded) {
-                                    mcpTools = mcpTools + (serverName to state.tools)
+                                    // Update tools when server is loaded
+                                    if (state.isLoaded) {
+                                        mcpTools = mcpTools + (serverName to state.tools)
+                                    }
+                                }
+
+                                override fun onLoadingStateChanged(loadingState: McpLoadingState) {
+                                    mcpLoadingState = loadingState
+                                }
+
+                                override fun onBuiltinToolsLoaded(tools: List<ToolItem>) {
+                                    mcpLoadingState = mcpLoadingState.copy(builtinToolsLoaded = true)
                                 }
                             }
 
-                            override fun onLoadingStateChanged(loadingState: McpLoadingState) {
-                                mcpLoadingState = loadingState
-                            }
-
-                            override fun onBuiltinToolsLoaded(tools: List<ToolItem>) {
-                                mcpLoadingState = mcpLoadingState.copy(builtinToolsLoaded = true)
-                            }
-                        }
-
                         try {
                             // Use incremental loading
-                            mcpLoadingState = McpToolConfigManager.discoverMcpToolsIncremental(
-                                toolConfig.mcpServers,
-                                toolConfig.enabledMcpTools.toSet(),
-                                callback
-                            )
+                            mcpLoadingState =
+                                McpToolConfigManager.discoverMcpToolsIncremental(
+                                    toolConfig.mcpServers,
+                                    toolConfig.enabledMcpTools.toSet(),
+                                    callback
+                                )
                             mcpLoadError = null
                         } catch (e: Exception) {
                             mcpLoadError = "Failed to load MCP tools: ${e.message}"
@@ -176,17 +183,19 @@ fun ToolConfigDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            modifier = Modifier
-                .width(850.dp)
-                .height(650.dp),
+            modifier =
+                Modifier
+                    .width(850.dp)
+                    .height(650.dp),
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
             ) {
                 // Header
                 Row(
@@ -289,83 +298,90 @@ fun ToolConfigDialog(
                     }
 
                     when (selectedTab) {
-                        0 -> ToolSelectionTab(
-                            builtinToolsByCategory = builtinToolsByCategory,
-                            mcpTools = mcpTools,
-                            mcpLoadingState = mcpLoadingState,
-                            onBuiltinToolToggle = { category, toolName, enabled ->
-                                builtinToolsByCategory = builtinToolsByCategory.mapValues { (cat, toolsList) ->
-                                    if (cat == category) {
-                                        toolsList.map {
-                                            if (it.name == toolName) it.copy(enabled = enabled) else it
+                        0 ->
+                            ToolSelectionTab(
+                                builtinToolsByCategory = builtinToolsByCategory,
+                                mcpTools = mcpTools,
+                                mcpLoadingState = mcpLoadingState,
+                                onBuiltinToolToggle = { category, toolName, enabled ->
+                                    builtinToolsByCategory =
+                                        builtinToolsByCategory.mapValues { (cat, toolsList) ->
+                                            if (cat == category) {
+                                                toolsList.map {
+                                                    if (it.name == toolName) it.copy(enabled = enabled) else it
+                                                }
+                                            } else {
+                                                toolsList
+                                            }
                                         }
-                                    } else toolsList
+                                    scheduleAutoSave()
+                                },
+                                onMcpToolToggle = { toolName, enabled ->
+                                    mcpTools =
+                                        mcpTools.mapValues { (_, tools) ->
+                                            tools.map { tool ->
+                                                if (tool.name == toolName) tool.copy(enabled = enabled) else tool
+                                            }
+                                        }
+                                    scheduleAutoSave()
                                 }
-                                scheduleAutoSave()
-                            },
-                            onMcpToolToggle = { toolName, enabled ->
-                                mcpTools = mcpTools.mapValues { (_, tools) ->
-                                    tools.map { tool ->
-                                        if (tool.name == toolName) tool.copy(enabled = enabled) else tool
-                                    }
-                                }
-                                scheduleAutoSave()
-                            }
-                        )
+                            )
 
-                        1 -> McpServerConfigTab(
-                            mcpConfigJson = mcpConfigJson,
-                            errorMessage = mcpConfigError,
-                            isReloading = isReloading,
-                            onMcpConfigChange = { newJson ->
-                                mcpConfigJson = newJson
-                                // Real-time JSON validation
-                                val result = deserializeMcpConfig(newJson)
-                                mcpConfigError = if (result.isFailure) {
-                                    result.exceptionOrNull()?.message
-                                } else {
-                                    null
-                                }
-                            },
-                            onReloadMcpTools = {
-                                scope.launch {
-                                    try {
-                                        isReloading = true
-                                        mcpConfigError = null
-                                        mcpLoadError = null
-
-                                        // Validate JSON first
-                                        val result = deserializeMcpConfig(mcpConfigJson)
+                        1 ->
+                            McpServerConfigTab(
+                                mcpConfigJson = mcpConfigJson,
+                                errorMessage = mcpConfigError,
+                                isReloading = isReloading,
+                                onMcpConfigChange = { newJson ->
+                                    mcpConfigJson = newJson
+                                    // Real-time JSON validation
+                                    val result = deserializeMcpConfig(newJson)
+                                    mcpConfigError =
                                         if (result.isFailure) {
-                                            mcpConfigError = result.exceptionOrNull()?.message ?: "Invalid JSON format"
-                                            return@launch
+                                            result.exceptionOrNull()?.message
+                                        } else {
+                                            null
                                         }
-
-                                        val newMcpServers = result.getOrThrow()
-                                        val updatedConfig = toolConfig.copy(mcpServers = newMcpServers)
-                                        ConfigManager.saveToolConfig(updatedConfig)
-                                        toolConfig = updatedConfig
-
+                                },
+                                onReloadMcpTools = {
+                                    scope.launch {
                                         try {
-                                            ToolConfigManager.discoverMcpTools(
-                                                newMcpServers,
-                                                toolConfig.enabledMcpTools.toSet()
-                                            )
-                                            val totalTools = mcpTools.values.sumOf { it.size }
-                                            println("✅ Reloaded $totalTools MCP tools from ${newMcpServers.size} servers")
+                                            isReloading = true
+                                            mcpConfigError = null
+                                            mcpLoadError = null
+
+                                            // Validate JSON first
+                                            val result = deserializeMcpConfig(mcpConfigJson)
+                                            if (result.isFailure) {
+                                                mcpConfigError = result.exceptionOrNull()?.message ?: "Invalid JSON format"
+                                                return@launch
+                                            }
+
+                                            val newMcpServers = result.getOrThrow()
+                                            val updatedConfig = toolConfig.copy(mcpServers = newMcpServers)
+                                            ConfigManager.saveToolConfig(updatedConfig)
+                                            toolConfig = updatedConfig
+
+                                            try {
+                                                ToolConfigManager.discoverMcpTools(
+                                                    newMcpServers,
+                                                    toolConfig.enabledMcpTools.toSet()
+                                                )
+                                                val totalTools = mcpTools.values.sumOf { it.size }
+                                                println("✅ Reloaded $totalTools MCP tools from ${newMcpServers.size} servers")
+                                            } catch (e: Exception) {
+                                                mcpLoadError = "Failed to load MCP tools: ${e.message}"
+                                                println("❌ Error loading MCP tools: ${e.message}")
+                                            }
                                         } catch (e: Exception) {
-                                            mcpLoadError = "Failed to load MCP tools: ${e.message}"
-                                            println("❌ Error loading MCP tools: ${e.message}")
+                                            mcpConfigError = "Error reloading MCP tools: ${e.message}"
+                                            println("❌ Error reloading MCP tools: ${e.message}")
+                                        } finally {
+                                            isReloading = false
                                         }
-                                    } catch (e: Exception) {
-                                        mcpConfigError = "Error reloading MCP tools: ${e.message}"
-                                        println("❌ Error reloading MCP tools: ${e.message}")
-                                    } finally {
-                                        isReloading = false
                                     }
                                 }
-                            }
-                        )
+                            )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -417,15 +433,17 @@ fun ToolConfigDialog(
                                         // Cancel any pending auto-save
                                         autoSaveJob?.cancel()
 
-                                        val enabledBuiltinTools = builtinToolsByCategory.values
-                                            .flatten()
-                                            .filter { it.enabled }
-                                            .map { it.name }
+                                        val enabledBuiltinTools =
+                                            builtinToolsByCategory.values
+                                                .flatten()
+                                                .filter { it.enabled }
+                                                .map { it.name }
 
-                                        val enabledMcpTools = mcpTools.values
-                                            .flatten()
-                                            .filter { it.enabled }
-                                            .map { it.name }
+                                        val enabledMcpTools =
+                                            mcpTools.values
+                                                .flatten()
+                                                .filter { it.enabled }
+                                                .map { it.name }
 
                                         // Parse MCP config from JSON
                                         val result = deserializeMcpConfig(mcpConfigJson)
@@ -437,11 +455,12 @@ fun ToolConfigDialog(
 
                                         val newMcpServers = result.getOrThrow()
 
-                                        val updatedConfig = toolConfig.copy(
-                                            enabledBuiltinTools = enabledBuiltinTools,
-                                            enabledMcpTools = enabledMcpTools,
-                                            mcpServers = newMcpServers
-                                        )
+                                        val updatedConfig =
+                                            toolConfig.copy(
+                                                enabledBuiltinTools = enabledBuiltinTools,
+                                                enabledMcpTools = enabledMcpTools,
+                                                mcpServers = newMcpServers
+                                            )
 
                                         ConfigManager.saveToolConfig(updatedConfig)
                                         onSave(updatedConfig)
@@ -640,12 +659,14 @@ private fun McpServerConfigTab(
         OutlinedTextField(
             value = mcpConfigJson,
             onValueChange = onMcpConfigChange,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            textStyle = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-            ),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+            textStyle =
+                MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                ),
             placeholder = {
                 Text(
                     text = getDefaultMcpConfigTemplate(),
@@ -697,27 +718,31 @@ private fun McpServerHeader(
     onToggle: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp)
-            .clickable { onToggle() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        )
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 2.dp)
+                .clickable { onToggle() },
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val (statusIcon, statusColor) = when (serverState.status) {
-                McpServerLoadingStatus.LOADING -> AutoDevComposeIcons.Refresh to MaterialTheme.colorScheme.primary
-                McpServerLoadingStatus.LOADED -> AutoDevComposeIcons.Cloud to MaterialTheme.colorScheme.primary
-                McpServerLoadingStatus.ERROR -> AutoDevComposeIcons.Error to MaterialTheme.colorScheme.error
-                McpServerLoadingStatus.DISABLED -> AutoDevComposeIcons.CloudOff to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                McpServerLoadingStatus.AVAILABLE -> AutoDevComposeIcons.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            }
+            val (statusIcon, statusColor) =
+                when (serverState.status) {
+                    McpServerLoadingStatus.LOADING -> AutoDevComposeIcons.Refresh to MaterialTheme.colorScheme.primary
+                    McpServerLoadingStatus.LOADED -> AutoDevComposeIcons.Cloud to MaterialTheme.colorScheme.primary
+                    McpServerLoadingStatus.ERROR -> AutoDevComposeIcons.Error to MaterialTheme.colorScheme.error
+                    McpServerLoadingStatus.DISABLED -> AutoDevComposeIcons.CloudOff to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    McpServerLoadingStatus.AVAILABLE -> AutoDevComposeIcons.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                }
 
             Icon(
                 imageVector = statusIcon,
@@ -774,16 +799,18 @@ private fun CollapsibleCategoryHeader(
     onToggle: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onToggle() },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { onToggle() },
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         shape = RoundedCornerShape(4.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -824,22 +851,24 @@ private fun CompactToolItemRow(
     var isChecked by remember { mutableStateOf(tool.enabled) }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 1.dp)
-            .background(
-                color = if (isChecked) {
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
-                } else {
-                    Color.Transparent
-                },
-                shape = RoundedCornerShape(4.dp)
-            )
-            .clickable {
-                isChecked = !isChecked
-                onToggle(isChecked)
-            }
-            .padding(horizontal = 4.dp, vertical = 4.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 1.dp)
+                .background(
+                    color =
+                        if (isChecked) {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                        } else {
+                            Color.Transparent
+                        },
+                    shape = RoundedCornerShape(4.dp)
+                )
+                .clickable {
+                    isChecked = !isChecked
+                    onToggle(isChecked)
+                }
+                .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
@@ -930,11 +959,12 @@ private fun deserializeMcpConfig(json: String): Result<Map<String, McpServerConf
     }
 
     return try {
-        val jsonParser = kotlinx.serialization.json.Json {
-            prettyPrint = true
-            ignoreUnknownKeys = true
-            isLenient = true
-        }
+        val jsonParser =
+            kotlinx.serialization.json.Json {
+                prettyPrint = true
+                ignoreUnknownKeys = true
+                isLenient = true
+            }
 
         val servers = jsonParser.decodeFromString<Map<String, McpServerConfig>>(json.trim())
 
@@ -967,6 +997,5 @@ private fun getDefaultMcpConfigTemplate(): String {
     }
   }
 }
-    """.trimIndent()
+        """.trimIndent()
 }
-

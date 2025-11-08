@@ -24,4 +24,3 @@ actual fun createPlatformCodingAgent(
         mcpToolConfigService = mcpToolConfigService
     )
 }
-

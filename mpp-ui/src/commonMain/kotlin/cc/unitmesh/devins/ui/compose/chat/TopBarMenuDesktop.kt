@@ -189,11 +189,12 @@ fun TopBarMenuDesktop(
                                 },
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = when (mode) {
-                                            ThemeManager.ThemeMode.LIGHT -> AutoDevComposeIcons.LightMode
-                                            ThemeManager.ThemeMode.DARK -> AutoDevComposeIcons.DarkMode
-                                            ThemeManager.ThemeMode.SYSTEM -> AutoDevComposeIcons.Brightness4
-                                        },
+                                        imageVector =
+                                            when (mode) {
+                                                ThemeManager.ThemeMode.LIGHT -> AutoDevComposeIcons.LightMode
+                                                ThemeManager.ThemeMode.DARK -> AutoDevComposeIcons.DarkMode
+                                                ThemeManager.ThemeMode.SYSTEM -> AutoDevComposeIcons.Brightness4
+                                            },
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -262,11 +263,12 @@ fun TopBarMenuDesktop(
                         Icon(
                             imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
                             contentDescription = if (isTreeViewVisible) "Hide Explorer" else "Show Explorer",
-                            tint = if (isTreeViewVisible) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            }
+                            tint =
+                                if (isTreeViewVisible) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                }
                         )
                     }
                 }
@@ -274,4 +276,3 @@ fun TopBarMenuDesktop(
         }
     }
 }
-

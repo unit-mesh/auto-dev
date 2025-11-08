@@ -94,10 +94,11 @@ fun FileChangeSummary(
         Column(modifier = Modifier.fillMaxWidth()) {
             // Collapsed header
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded }
-                    .padding(horizontal = 4.dp, vertical = 0.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { isExpanded = !isExpanded }
+                        .padding(horizontal = 4.dp, vertical = 0.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -155,9 +156,10 @@ fun FileChangeSummary(
                                 FileChangeTracker.clearChanges()
                             }
                         },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        ),
+                        colors =
+                            ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            ),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(
@@ -175,9 +177,10 @@ fun FileChangeSummary(
                             // Just clear the change tracking (keep the files as they are)
                             FileChangeTracker.clearChanges()
                         },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
+                        colors =
+                            ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            ),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(
@@ -203,10 +206,11 @@ fun FileChangeSummary(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 300.dp)
-                            .padding(8.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 300.dp)
+                                .padding(8.dp),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         items(changes, key = { it.timestamp }) { change ->
@@ -252,4 +256,3 @@ fun FileChangeSummary(
         }
     }
 }
-

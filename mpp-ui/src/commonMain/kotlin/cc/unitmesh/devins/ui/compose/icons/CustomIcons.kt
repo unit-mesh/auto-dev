@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
  * Custom icons for AutoDev
  */
 object CustomIcons {
-    
     /**
      * AI Star icon (256x256)
      * A sparkle/star icon representing AI functionality
@@ -53,7 +52,7 @@ object CustomIcons {
                 lineTo(230.05859f, 143.03711f)
                 arcToRelative(16.001f, 16.001f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0f, -30.07422f)
                 close()
-                
+
                 // Inner hollow part
                 moveTo(160.77637f, 151.20605f)
                 arcToRelative(15.95685f, 15.95685f, 0f, isMoreThanHalf = false, isPositiveArc = false, -9.57032f, 9.57032f)
@@ -71,7 +70,7 @@ object CustomIcons {
             }
         }.build()
     }
-    
+
     /**
      * MCP (Model Context Protocol) icon (24x24)
      * Represents the Model Context Protocol integration
@@ -127,7 +126,7 @@ object CustomIcons {
                 arcToRelative(2.47f, 2.47f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.003f, -3.537f)
                 close()
             }
-            
+
             // Second path
             path(
                 fill = SolidColor(Color(0xFF000000)),
@@ -158,4 +157,3 @@ object CustomIcons {
         }.build()
     }
 }
-

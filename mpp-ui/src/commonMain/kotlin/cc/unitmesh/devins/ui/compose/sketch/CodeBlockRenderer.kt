@@ -26,13 +26,14 @@ fun CodeBlockRenderer(
     displayName: String = language
 ) {
     // Load FiraCode font with fallback to default monospace
-    val codeFontFamily = remember { 
-        try {
-            getFiraCodeFontFamily()
-        } catch (e: Exception) {
-            FontFamily.Monospace
+    val codeFontFamily =
+        remember {
+            try {
+                getFiraCodeFontFamily()
+            } catch (e: Exception) {
+                FontFamily.Monospace
+            }
         }
-    }
     Card(
         modifier = Modifier.Companion.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),

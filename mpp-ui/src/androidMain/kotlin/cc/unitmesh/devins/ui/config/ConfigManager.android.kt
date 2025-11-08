@@ -1,8 +1,8 @@
 package cc.unitmesh.devins.ui.config
 
 import android.content.Context
-import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.agent.config.ToolConfigFile
+import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.llm.NamedModelConfig
 import cc.unitmesh.yaml.YamlUtils
 import kotlinx.coroutines.Dispatchers
@@ -31,8 +31,9 @@ actual object ConfigManager {
     }
 
     private fun getConfigDir(): File {
-        val context = appContext
-            ?: throw IllegalStateException("ConfigManager not initialized. Call ConfigManager.initialize(context) first.")
+        val context =
+            appContext
+                ?: throw IllegalStateException("ConfigManager not initialized. Call ConfigManager.initialize(context) first.")
 
         // Use app-specific internal storage directory
         // Path: /data/data/your.package.name/files/.autodev/
@@ -48,10 +49,11 @@ actual object ConfigManager {
     }
 
     // JSON parser for potential JSON config support
-    private val json = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-    }
+    private val json =
+        Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+        }
 
     actual suspend fun load(): AutoDevConfigWrapper =
         withContext(Dispatchers.IO) {

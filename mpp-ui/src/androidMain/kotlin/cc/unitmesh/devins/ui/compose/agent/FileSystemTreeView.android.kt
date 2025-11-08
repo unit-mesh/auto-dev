@@ -12,8 +12,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import cafe.adriel.bonsai.core.Bonsai
 import cafe.adriel.bonsai.core.node.BranchNode
-import cafe.adriel.bonsai.core.node.Leaf
-import cafe.adriel.bonsai.core.tree.Tree
 import cafe.adriel.bonsai.filesystem.FileSystemBonsaiStyle
 import cafe.adriel.bonsai.filesystem.FileSystemTree
 import java.io.File
@@ -28,15 +26,17 @@ actual fun FileSystemTreeView(
     onClose: () -> Unit,
     modifier: Modifier
 ) {
-    val tree = FileSystemTree(
-        rootPath = File(rootPath),
-        selfInclude = false
-    )
-    
+    val tree =
+        FileSystemTree(
+            rootPath = File(rootPath),
+            selfInclude = false
+        )
+
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         // Header
         Surface(
@@ -44,9 +44,10 @@ actual fun FileSystemTreeView(
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -63,14 +64,15 @@ actual fun FileSystemTreeView(
                 )
             }
         }
-        
+
         HorizontalDivider()
-        
+
         // Tree view with custom styling
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
         ) {
             Bonsai(
                 tree = tree,
@@ -84,26 +86,29 @@ actual fun FileSystemTreeView(
                         }
                     }
                 },
-                style = FileSystemBonsaiStyle().copy(
-                    nodeIconSize = 18.dp,
-                    nodeNameTextStyle = MaterialTheme.typography.bodyMedium,
-                    nodeCollapsedIcon = { node ->
-                        val icon = if (node is BranchNode) {
-                            Icons.Default.Folder
-                        } else {
-                            getFileIcon(node.content.name)
+                style =
+                    FileSystemBonsaiStyle().copy(
+                        nodeIconSize = 18.dp,
+                        nodeNameTextStyle = MaterialTheme.typography.bodyMedium,
+                        nodeCollapsedIcon = { node ->
+                            val icon =
+                                if (node is BranchNode) {
+                                    Icons.Default.Folder
+                                } else {
+                                    getFileIcon(node.content.name)
+                                }
+                            rememberVectorPainter(icon)
+                        },
+                        nodeExpandedIcon = { node ->
+                            val icon =
+                                if (node is BranchNode) {
+                                    Icons.Default.FolderOpen
+                                } else {
+                                    getFileIcon(node.content.name)
+                                }
+                            rememberVectorPainter(icon)
                         }
-                        rememberVectorPainter(icon)
-                    },
-                    nodeExpandedIcon = { node ->
-                        val icon = if (node is BranchNode) {
-                            Icons.Default.FolderOpen
-                        } else {
-                            getFileIcon(node.content.name)
-                        }
-                        rememberVectorPainter(icon)
-                    }
-                )
+                    )
             )
         }
     }
@@ -114,12 +119,13 @@ actual fun FileSystemTreeView(
  */
 private fun isCodeFile(path: String): Boolean {
     val extension = path.substringAfterLast('.', "")
-    val codeExtensions = setOf(
-        "kt", "java", "js", "ts", "tsx", "jsx", "py", "go", "rs",
-        "c", "cpp", "h", "hpp", "cs", "swift", "rb", "php",
-        "html", "css", "scss", "sass", "json", "xml", "yaml", "yml",
-        "md", "txt", "sh", "bash", "sql", "gradle", "properties", "kts"
-    )
+    val codeExtensions =
+        setOf(
+            "kt", "java", "js", "ts", "tsx", "jsx", "py", "go", "rs",
+            "c", "cpp", "h", "hpp", "cs", "swift", "rb", "php",
+            "html", "css", "scss", "sass", "json", "xml", "yaml", "yml",
+            "md", "txt", "sh", "bash", "sql", "gradle", "properties", "kts"
+        )
     return extension.lowercase() in codeExtensions
 }
 

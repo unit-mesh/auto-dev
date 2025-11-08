@@ -10,8 +10,9 @@ import app.cash.sqldelight.driver.android.AndroidSqliteDriver
  */
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
-        val context = applicationContext
-            ?: throw IllegalStateException("DatabaseDriverFactory not initialized. Call DatabaseDriverFactory.init(context) first.")
+        val context =
+            applicationContext
+                ?: throw IllegalStateException("DatabaseDriverFactory not initialized. Call DatabaseDriverFactory.init(context) first.")
 
         return AndroidSqliteDriver(
             schema = DevInsDatabase.Schema,

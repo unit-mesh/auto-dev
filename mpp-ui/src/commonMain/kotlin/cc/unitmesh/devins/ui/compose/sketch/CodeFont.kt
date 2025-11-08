@@ -12,4 +12,3 @@ expect fun getFiraCodeFontFamily(): FontFamily
  * Get default monospace font family as fallback
  */
 fun getDefaultMonospaceFontFamily(): FontFamily = FontFamily.Monospace
-

@@ -205,7 +205,8 @@ fun DevInEditorInput(
         // Check if this is a built-in command that should be auto-executed
         val trimmedText = result.newText.trim()
         if (currentTriggerType == CompletionTriggerType.COMMAND &&
-            (trimmedText == "/init" || trimmedText == "/clear" || trimmedText == "/help")) {
+            (trimmedText == "/init" || trimmedText == "/clear" || trimmedText == "/help")
+        ) {
             scope.launch {
                 delay(100) // Small delay to ensure UI updates
                 callbacks?.onSubmit(trimmedText)
@@ -266,15 +267,15 @@ fun DevInEditorInput(
                 val enhanced = (currentEnhancer as PromptEnhancer).enhance(textFieldValue.text.trim(), "zh")
 
                 if (enhanced.isNotEmpty() && enhanced != textFieldValue.text.trim() && enhanced.length > textFieldValue.text.trim().length) {
-                    textFieldValue = TextFieldValue(
-                        text = enhanced,
-                        selection = androidx.compose.ui.text.TextRange(enhanced.length)
-                    )
+                    textFieldValue =
+                        TextFieldValue(
+                            text = enhanced,
+                            selection = androidx.compose.ui.text.TextRange(enhanced.length)
+                        )
                     println("✨ Enhanced: \"${textFieldValue.text.trim()}\" -> \"$enhanced\"")
                 } else {
                     println("ℹ️ No enhancement needed or failed")
                 }
-
             } catch (e: Exception) {
                 println("❌ Enhancement failed: ${e.message}")
             } finally {
@@ -362,252 +363,253 @@ fun DevInEditorInput(
         Box(
             contentAlignment = if (isAndroid && isCompactMode) Alignment.Center else Alignment.TopStart
         ) {
-        Surface(
-            modifier =
-                if (isAndroid && isCompactMode) {
-                    Modifier.fillMaxWidth() // Android 紧凑模式：full width
-                } else {
-                    Modifier.fillMaxWidth()
-                },
-            shape = RoundedCornerShape(if (isAndroid && isCompactMode) 12.dp else 16.dp),
-            border =
-                androidx.compose.foundation.BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                ),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 0.dp, // 无叠影
-            shadowElevation = 0.dp // 无阴影
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
+            Surface(
+                modifier =
+                    if (isAndroid && isCompactMode) {
+                        Modifier.fillMaxWidth() // Android 紧凑模式：full width
+                    } else {
+                        Modifier.fillMaxWidth()
+                    },
+                shape = RoundedCornerShape(if (isAndroid && isCompactMode) 12.dp else 16.dp),
+                border =
+                    androidx.compose.foundation.BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    ),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 0.dp, // 无叠影
+                shadowElevation = 0.dp // 无阴影
             ) {
-                // 编辑器区域 - 根据模式和平台调整高度
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(
-                                min =
-                                    if (isCompactMode) {
-                                        if (isAndroid) 48.dp else 56.dp
-                                    } else {
-                                        80.dp
-                                    },
-                                max =
-                                    if (isCompactMode) {
-                                        // 移动端紧凑模式：允许自动扩展到 3 行
-                                        if (isAndroid) 120.dp else 96.dp
-                                    } else {
-                                        160.dp
-                                    }
-                            )
-                            .padding(
-                                if (isCompactMode) {
-                                    if (isAndroid) 12.dp else 12.dp
-                                } else {
-                                    20.dp
-                                }
-                            )
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = { handleTextChange(it) },
+                    // 编辑器区域 - 根据模式和平台调整高度
+                    Box(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .wrapContentHeight() // 允许高度自动撑开
-                                .focusRequester(focusRequester)
-                                .onPreviewKeyEvent { handleKeyEvent(it) },
-                        textStyle =
-                            TextStyle(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp, // 移动端更大
-                                color = MaterialTheme.colorScheme.onSurface,
-                                lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp // 增加行高
-                            ),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        maxLines = if (isAndroid && isCompactMode) 5 else 8, // 限制最大行数
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                            ) {
-                                // 显示带高亮的文本
-                                if (highlightedText.isNotEmpty()) {
-                                    Text(
-                                        text = highlighter.highlight(highlightedText),
-                                        style =
-                                            TextStyle(
-                                                fontFamily = FontFamily.Monospace,
-                                                fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
-                                                lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
-                                            ),
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-
-                                // 占位符
-                                if (textFieldValue.text.isEmpty()) {
-                                    Text(
-                                        text = placeholder,
-                                        style =
-                                            TextStyle(
-                                                fontFamily = FontFamily.Monospace,
-                                                fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                                lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
-                                            )
-                                    )
-                                }
-
-                                // 实际的输入框（透明）
+                                .heightIn(
+                                    min =
+                                        if (isCompactMode) {
+                                            if (isAndroid) 48.dp else 56.dp
+                                        } else {
+                                            80.dp
+                                        },
+                                    max =
+                                        if (isCompactMode) {
+                                            // 移动端紧凑模式：允许自动扩展到 3 行
+                                            if (isAndroid) 120.dp else 96.dp
+                                        } else {
+                                            160.dp
+                                        }
+                                )
+                                .padding(
+                                    if (isCompactMode) {
+                                        if (isAndroid) 12.dp else 12.dp
+                                    } else {
+                                        20.dp
+                                    }
+                                )
+                    ) {
+                        BasicTextField(
+                            value = textFieldValue,
+                            onValueChange = { handleTextChange(it) },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight() // 允许高度自动撑开
+                                    .focusRequester(focusRequester)
+                                    .onPreviewKeyEvent { handleKeyEvent(it) },
+                            textStyle =
+                                TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp, // 移动端更大
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp // 增加行高
+                                ),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            maxLines = if (isAndroid && isCompactMode) 5 else 8, // 限制最大行数
+                            decorationBox = { innerTextField ->
                                 Box(
                                     modifier =
                                         Modifier
                                             .fillMaxWidth()
                                             .wrapContentHeight()
                                 ) {
-                                    innerTextField()
+                                    // 显示带高亮的文本
+                                    if (highlightedText.isNotEmpty()) {
+                                        Text(
+                                            text = highlighter.highlight(highlightedText),
+                                            style =
+                                                TextStyle(
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
+                                                    lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
+                                                ),
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+
+                                    // 占位符
+                                    if (textFieldValue.text.isEmpty()) {
+                                        Text(
+                                            text = placeholder,
+                                            style =
+                                                TextStyle(
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                                    lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
+                                                )
+                                        )
+                                    }
+
+                                    // 实际的输入框（透明）
+                                    Box(
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .wrapContentHeight()
+                                    ) {
+                                        innerTextField()
+                                    }
                                 }
                             }
-                        }
-                    )
-                }
-
-                // 提示文本
-                if (!isAndroid) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(
-                            text = if (isEnhancing) "🔍 Enhancing..." else "Ctrl+P to enhance prompt",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
+
+                    // 提示文本
+                    if (!isAndroid) {
+                        Row(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(
+                                text = if (isEnhancing) "🔍 Enhancing..." else "Ctrl+P to enhance prompt",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+
+                    // 底部工具栏
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                    val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
+
+                    BottomToolbar(
+                        onSendClick = {
+                            if (textFieldValue.text.isNotBlank()) {
+                                callbacks?.onSubmit(textFieldValue.text)
+                                textFieldValue = TextFieldValue("")
+                                showCompletion = false
+                            }
+                        },
+                        sendEnabled = textFieldValue.text.isNotBlank(),
+                        isExecuting = isExecuting,
+                        onStopClick = onStopClick,
+                        workspacePath = currentWorkspace?.rootPath,
+                        onAtClick = {
+                            // 插入 @ 并触发 Agent 补全
+                            val current = textFieldValue
+                            val newText = current.text + "@"
+                            val newPosition = current.text.length + 1
+
+                            textFieldValue =
+                                TextFieldValue(
+                                    text = newText,
+                                    selection = androidx.compose.ui.text.TextRange(newPosition)
+                                )
+
+                            // 立即触发补全
+                            scope.launch {
+                                delay(50) // 等待状态更新
+                                val context =
+                                    CompletionTrigger.buildContext(
+                                        newText,
+                                        newPosition,
+                                        CompletionTriggerType.AGENT
+                                    )
+                                if (context != null && manager != null) {
+                                    currentTriggerType = CompletionTriggerType.AGENT
+                                    completionItems = manager.getFilteredCompletions(context)
+                                    selectedCompletionIndex = 0
+                                    showCompletion = completionItems.isNotEmpty()
+                                    println("🔍 @ 补全触发: items=${completionItems.size}")
+                                }
+                            }
+                        },
+                        onSlashClick = {
+                            val current = textFieldValue
+                            val newText = current.text + "/"
+                            val newPosition = current.text.length + 1
+
+                            textFieldValue =
+                                TextFieldValue(
+                                    text = newText,
+                                    selection = androidx.compose.ui.text.TextRange(newPosition)
+                                )
+
+                            scope.launch {
+                                delay(50)
+                                val context =
+                                    CompletionTrigger.buildContext(
+                                        newText,
+                                        newPosition,
+                                        CompletionTriggerType.COMMAND
+                                    )
+                                if (context != null) {
+                                    currentTriggerType = CompletionTriggerType.COMMAND
+                                    completionItems = manager.getFilteredCompletions(context)
+                                    selectedCompletionIndex = 0
+                                    showCompletion = completionItems.isNotEmpty()
+                                }
+                            }
+                        },
+                        onSettingsClick = {
+                            showToolConfig = true
+                        },
+                        selectedAgent = "Default", // TODO: 从 state 获取
+                        onModelConfigChange = onModelConfigChange
+                    )
                 }
+            }
 
-                // 底部工具栏
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
-
-                BottomToolbar(
-                    onSendClick = {
-                        if (textFieldValue.text.isNotBlank()) {
-                            callbacks?.onSubmit(textFieldValue.text)
-                            textFieldValue = TextFieldValue("")
-                            showCompletion = false
-                        }
-                    },
-                    sendEnabled = textFieldValue.text.isNotBlank(),
-                    isExecuting = isExecuting,
-                    onStopClick = onStopClick,
-                    workspacePath = currentWorkspace?.rootPath,
-                    onAtClick = {
-                        // 插入 @ 并触发 Agent 补全
-                        val current = textFieldValue
-                        val newText = current.text + "@"
-                        val newPosition = current.text.length + 1
-
-                        textFieldValue =
-                            TextFieldValue(
-                                text = newText,
-                                selection = androidx.compose.ui.text.TextRange(newPosition)
-                            )
-
-                        // 立即触发补全
+            if (showToolConfig) {
+                ToolConfigDialog(
+                    onDismiss = { showToolConfig = false },
+                    onSave = { toolConfigFile ->
                         scope.launch {
-                            delay(50) // 等待状态更新
-                            val context =
-                                CompletionTrigger.buildContext(
-                                    newText,
-                                    newPosition,
-                                    CompletionTriggerType.AGENT
-                                )
-                            if (context != null && manager != null) {
-                                currentTriggerType = CompletionTriggerType.AGENT
-                                completionItems = manager.getFilteredCompletions(context)
-                                selectedCompletionIndex = 0
-                                showCompletion = completionItems.isNotEmpty()
-                                println("🔍 @ 补全触发: items=${completionItems.size}")
-                            }
-                        }
-                    },
-                    onSlashClick = {
-                        val current = textFieldValue
-                        val newText = current.text + "/"
-                        val newPosition = current.text.length + 1
+                            mcpServers = toolConfigFile.mcpServers
 
-                        textFieldValue =
-                            TextFieldValue(
-                                text = newText,
-                                selection = androidx.compose.ui.text.TextRange(newPosition)
-                            )
-
-                        scope.launch {
-                            delay(50)
-                            val context =
-                                CompletionTrigger.buildContext(
-                                    newText,
-                                    newPosition,
-                                    CompletionTriggerType.COMMAND
-                                )
-                            if (context != null) {
-                                currentTriggerType = CompletionTriggerType.COMMAND
-                                completionItems = manager.getFilteredCompletions(context)
-                                selectedCompletionIndex = 0
-                                showCompletion = completionItems.isNotEmpty()
-                            }
+                            println("✅ Tool configuration saved")
+                            println("   Enabled built-in tools: ${toolConfigFile.enabledBuiltinTools.size}")
+                            println("   Enabled MCP tools: ${toolConfigFile.enabledMcpTools.size}")
+                            println("   MCP servers: ${toolConfigFile.mcpServers.size}")
                         }
-                    },
-                    onSettingsClick = {
-                        showToolConfig = true
-                    },
-                    selectedAgent = "Default", // TODO: 从 state 获取
-                    onModelConfigChange = onModelConfigChange
+                    }
                 )
             }
-        }
 
-        if (showToolConfig) {
-            ToolConfigDialog(
-                onDismiss = { showToolConfig = false },
-                onSave = { toolConfigFile ->
-                    scope.launch {
-                        mcpServers = toolConfigFile.mcpServers
-
-                        println("✅ Tool configuration saved")
-                        println("   Enabled built-in tools: ${toolConfigFile.enabledBuiltinTools.size}")
-                        println("   Enabled MCP tools: ${toolConfigFile.enabledMcpTools.size}")
-                        println("   MCP servers: ${toolConfigFile.mcpServers.size}")
+            if (showCompletion && completionItems.isNotEmpty()) {
+                CompletionPopup(
+                    items = completionItems,
+                    selectedIndex = selectedCompletionIndex,
+                    offset = IntOffset(12, if (isCompactMode) 60 else 120),
+                    onItemSelected = { item ->
+                        applyCompletion(item)
+                    },
+                    onSelectedIndexChanged = { index ->
+                        selectedCompletionIndex = index
+                    },
+                    onDismiss = {
+                        showCompletion = false
                     }
-                }
-            )
-        }
-
-        if (showCompletion && completionItems.isNotEmpty()) {
-            CompletionPopup(
-                items = completionItems,
-                selectedIndex = selectedCompletionIndex,
-                offset = IntOffset(12, if (isCompactMode) 60 else 120),
-                onItemSelected = { item ->
-                    applyCompletion(item)
-                },
-                onSelectedIndexChanged = { index ->
-                    selectedCompletionIndex = index
-                },
-                onDismiss = {
-                    showCompletion = false
-                }
-            )
-        }
+                )
+            }
         }
     }
 

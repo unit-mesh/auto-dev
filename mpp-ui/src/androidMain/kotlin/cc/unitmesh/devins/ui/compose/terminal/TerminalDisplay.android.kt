@@ -24,10 +24,11 @@ actual fun PlatformTerminalDisplay(
     modifier: Modifier
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(8.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                .padding(8.dp)
     ) {
         Text(
             text = output,
@@ -37,4 +38,3 @@ actual fun PlatformTerminalDisplay(
         )
     }
 }
-

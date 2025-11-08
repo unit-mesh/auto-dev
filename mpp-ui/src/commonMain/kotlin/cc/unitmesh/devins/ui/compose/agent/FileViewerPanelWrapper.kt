@@ -12,4 +12,3 @@ expect fun FileViewerPanelWrapper(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 )
-

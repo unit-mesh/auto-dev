@@ -23,9 +23,10 @@ actual fun FileSystemTreeView(
         color = MaterialTheme.colorScheme.surface
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -47,4 +48,3 @@ actual fun FileSystemTreeView(
         }
     }
 }
-

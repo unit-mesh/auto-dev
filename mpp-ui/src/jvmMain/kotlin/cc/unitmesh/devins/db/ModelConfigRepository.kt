@@ -7,16 +7,15 @@ import cc.unitmesh.llm.ModelConfig
  * ModelConfig 数据访问层 - JVM 实现
  */
 actual class ModelConfigRepository(private val database: DevInsDatabase) {
-    
     private val queries = database.modelConfigQueries
-    
+
     /**
      * 获取所有配置
      */
     actual fun getAllConfigs(): List<ModelConfig> {
         return queries.selectAll().executeAsList().map { it.toModelConfig() }
     }
-    
+
     /**
      * 获取默认配置
      */
@@ -36,7 +35,7 @@ actual class ModelConfigRepository(private val database: DevInsDatabase) {
      */
     actual fun saveConfig(config: ModelConfig, setAsDefault: Boolean): Long {
         val now = System.currentTimeMillis()
-        
+
         queries.insert(
             provider = config.provider.name,
             modelName = config.modelName,
@@ -48,22 +47,22 @@ actual class ModelConfigRepository(private val database: DevInsDatabase) {
             updatedAt = now,
             isDefault = if (setAsDefault) 1 else 0
         )
-        
+
         // 如果设置为默认，清除其他配置的默认标记
         if (setAsDefault) {
             val lastInsertedId = queries.selectAll().executeAsList().maxByOrNull { it.id }?.id ?: 0
             setDefaultConfig(lastInsertedId)
         }
-        
+
         return queries.selectAll().executeAsList().maxByOrNull { it.id }?.id ?: 0
     }
-    
+
     /**
      * 更新配置
      */
     actual fun updateConfig(id: Long, config: ModelConfig) {
         val now = System.currentTimeMillis()
-        
+
         queries.update(
             provider = config.provider.name,
             modelName = config.modelName,
@@ -75,7 +74,7 @@ actual class ModelConfigRepository(private val database: DevInsDatabase) {
             id = id
         )
     }
-    
+
     /**
      * 设置默认配置
      */
@@ -97,7 +96,7 @@ actual class ModelConfigRepository(private val database: DevInsDatabase) {
     actual fun deleteAllConfigs() {
         queries.deleteAll()
     }
-    
+
     /**
      * 数据库模型转换为领域模型
      */
@@ -111,7 +110,7 @@ actual class ModelConfigRepository(private val database: DevInsDatabase) {
             maxTokens = this.maxTokens.toInt()
         )
     }
-    
+
     actual companion object {
         private var instance: ModelConfigRepository? = null
 

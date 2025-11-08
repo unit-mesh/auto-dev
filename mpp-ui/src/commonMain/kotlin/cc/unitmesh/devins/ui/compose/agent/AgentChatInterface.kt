@@ -7,11 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
-import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
@@ -132,20 +128,22 @@ fun AgentChatInterface(
                     // Chat 消息列表
                     AgentMessageList(
                         renderer = viewModel.renderer,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
                         onOpenFileViewer = { filePath ->
                             viewModel.renderer.openFileViewer(filePath)
                         }
                     )
 
-                    val callbacks = remember(viewModel) {
-                        createAgentCallbacks(
-                            viewModel = viewModel,
-                            onConfigWarning = onConfigWarning
-                        )
-                    }
+                    val callbacks =
+                        remember(viewModel) {
+                            createAgentCallbacks(
+                                viewModel = viewModel,
+                                onConfigWarning = onConfigWarning
+                            )
+                        }
 
                     // 输入框
                     DevInEditorInput(
@@ -166,9 +164,10 @@ fun AgentChatInterface(
 
                     ToolLoadingStatusBar(
                         viewModel = viewModel,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
             },
@@ -241,20 +240,22 @@ fun AgentChatInterface(
             // Chat 消息列表
             AgentMessageList(
                 renderer = viewModel.renderer,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                 onOpenFileViewer = { filePath ->
                     viewModel.renderer.openFileViewer(filePath)
                 }
             )
 
-            val callbacks = remember(viewModel) {
-                createAgentCallbacks(
-                    viewModel = viewModel,
-                    onConfigWarning = onConfigWarning
-                )
-            }
+            val callbacks =
+                remember(viewModel) {
+                    createAgentCallbacks(
+                        viewModel = viewModel,
+                        onConfigWarning = onConfigWarning
+                    )
+                }
 
             DevInEditorInput(
                 initialText = "",
@@ -274,13 +275,13 @@ fun AgentChatInterface(
 
             ToolLoadingStatusBar(
                 viewModel = viewModel,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
             )
         }
     }
-
 }
 
 private fun formatExecutionTime(timeMs: Long): String {
@@ -306,9 +307,10 @@ private fun ToolLoadingStatusBar(
 
     Card(modifier = modifier) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -338,11 +340,12 @@ private fun ToolLoadingStatusBar(
                 count = toolStatus.mcpToolsEnabled,
                 total = if (toolStatus.isLoading) "∞" else toolStatus.mcpToolsEnabled.toString(),
                 isLoading = toolStatus.isLoading,
-                color = if (!toolStatus.isLoading && toolStatus.mcpToolsEnabled > 0) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.outline
-                },
+                color =
+                    if (!toolStatus.isLoading && toolStatus.mcpToolsEnabled > 0) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.outline
+                    },
                 tooltip = "External tools from MCP servers (${toolStatus.mcpServersLoaded}/${toolStatus.mcpServersTotal} servers)"
             )
 
@@ -397,23 +400,25 @@ private fun ToolStatusChip(
     ) {
         // Status indicator with better visual feedback
         Box(
-            modifier = Modifier
-                .size(10.dp)
-                .background(
-                    color = if (isLoading) MaterialTheme.colorScheme.outline.copy(alpha = 0.6f) else color,
-                    shape = CircleShape
-                )
+            modifier =
+                Modifier
+                    .size(10.dp)
+                    .background(
+                        color = if (isLoading) MaterialTheme.colorScheme.outline.copy(alpha = 0.6f) else color,
+                        shape = CircleShape
+                    )
         ) {
             // Add a subtle inner glow for loaded tools
             if (!isLoading && count > 0) {
                 Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .align(Alignment.Center)
-                        .background(
-                            color = color.copy(alpha = 0.3f),
-                            shape = CircleShape
-                        )
+                    modifier =
+                        Modifier
+                            .size(6.dp)
+                            .align(Alignment.Center)
+                            .background(
+                                color = color.copy(alpha = 0.3f),
+                                shape = CircleShape
+                            )
                 )
             }
         }
@@ -422,11 +427,12 @@ private fun ToolStatusChip(
         Text(
             text = "$label ($count/$total)",
             style = MaterialTheme.typography.labelMedium,
-            color = if (isLoading) {
-                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            color =
+                if (isLoading) {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
         )
 
         // Loading indicator - smaller and more subtle
@@ -439,5 +445,3 @@ private fun ToolStatusChip(
         }
     }
 }
-
-

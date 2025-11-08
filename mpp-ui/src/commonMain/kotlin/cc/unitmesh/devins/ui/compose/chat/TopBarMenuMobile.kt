@@ -328,11 +328,12 @@ fun TopBarMenuMobile(
                                 Icon(
                                     imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
                                     contentDescription = null,
-                                    tint = if (isTreeViewVisible) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurface
-                                    },
+                                    tint =
+                                        if (isTreeViewVisible) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface
+                                        },
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -396,4 +397,3 @@ fun TopBarMenuMobile(
         }
     }
 }
-

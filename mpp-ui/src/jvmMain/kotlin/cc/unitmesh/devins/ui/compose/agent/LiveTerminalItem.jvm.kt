@@ -1,9 +1,12 @@
 package cc.unitmesh.devins.ui.compose.agent
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.animation.animateContentSize
-import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,38 +29,51 @@ actual fun LiveTerminalItem(
     ptyHandle: Any?
 ) {
     var expanded by remember { mutableStateOf(true) } // Auto-expand live terminal
-    val process = remember(ptyHandle) {
-        if (ptyHandle is Process) {
-            ptyHandle
-        } else {
-            null
+    val process =
+        remember(ptyHandle) {
+            if (ptyHandle is Process) {
+                ptyHandle
+            } else {
+                null
+            }
         }
-    }
 
     // Create TtyConnector from the process
-    val ttyConnector = remember(process) {
-        process?.let { ProcessTtyConnector(it) }
-    }
+    val ttyConnector =
+        remember(process) {
+            process?.let { ProcessTtyConnector(it) }
+        }
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
         shape = RoundedCornerShape(4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .animateContentSize() // Smooth height changes
+            modifier =
+                Modifier
+                    .padding(8.dp)
+                    .animateContentSize() // Smooth height changes
         ) {
-            // Header row
+            // Header row with collapse button
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Collapse/Expand icon
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
                 Text(
                     text = "💻",
                     style = MaterialTheme.typography.bodyMedium
@@ -72,9 +88,10 @@ actual fun LiveTerminalItem(
                 // Status indicator
                 if (process?.isAlive == true) {
                     Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
@@ -87,9 +104,10 @@ actual fun LiveTerminalItem(
                     }
                 } else {
                     Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ),
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
@@ -126,21 +144,24 @@ actual fun LiveTerminalItem(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (ttyConnector != null) {
-                    // Adaptive height: occupy at most 55% of available parent height, minimum 200.dp
-                    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                        val maxAdaptive: Dp = (maxHeight * 0.55f).coerceIn(200.dp, 600.dp)
-                        TerminalWidget(
-                            ttyConnector = ttyConnector,
-                            modifier = Modifier
+                    // Dynamic height based on content, similar to IDEA's terminal implementation
+                    // Minimum: ~4 lines (100dp), Maximum: ~20 lines (400dp)
+                    // This provides a better UX than full-height terminal
+                    val terminalHeight = 300.dp // Default to ~15 lines, good balance for most commands
+
+                    TerminalWidget(
+                        ttyConnector = ttyConnector,
+                        modifier =
+                            Modifier
                                 .fillMaxWidth()
-                                .height(maxAdaptive)
-                        )
-                    }
+                                .height(terminalHeight)
+                    )
                 } else {
                     Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        ),
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
@@ -155,4 +176,3 @@ actual fun LiveTerminalItem(
         }
     }
 }
-

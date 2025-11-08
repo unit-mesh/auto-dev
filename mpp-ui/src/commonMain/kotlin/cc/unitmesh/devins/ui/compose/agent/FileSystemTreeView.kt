@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 
 /**
  * File system tree view - platform-specific implementation
- * 
+ *
  * JVM/Android: Uses Bonsai library for rich tree view
  * JS: Provides a simplified placeholder (Bonsai doesn't support JS)
  */

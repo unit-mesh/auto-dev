@@ -52,19 +52,21 @@ fun DiffViewDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp
         ) {
             Column(modifier = Modifier.Companion.fillMaxSize()) {
                 Row(
-                    modifier = Modifier.Companion
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
+                    modifier =
+                        Modifier.Companion
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -119,17 +121,19 @@ fun DiffViewDialog(
 
                 // Diff content
                 Box(
-                    modifier = Modifier.Companion
-                        .fillMaxSize()
-                        .padding(16.dp)
+                    modifier =
+                        Modifier.Companion
+                            .fillMaxSize()
+                            .padding(16.dp)
                 ) {
-                    val diffContent = remember(change) {
-                        DiffUtils.generateUnifiedDiff(
-                            change.originalContent,
-                            change.newContent,
-                            change.filePath
-                        )
-                    }
+                    val diffContent =
+                        remember(change) {
+                            DiffUtils.generateUnifiedDiff(
+                                change.originalContent,
+                                change.newContent,
+                                change.filePath
+                            )
+                        }
 
                     if (diffContent.isNotBlank()) {
                         DiffSketchRenderer.RenderDiff(
@@ -143,22 +147,24 @@ fun DiffViewDialog(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = when (change.changeType) {
-                                    ChangeType.CREATE -> Icons.Default.Add
-                                    ChangeType.DELETE -> Icons.Default.Delete
-                                    else -> Icons.Default.Edit
-                                },
+                                imageVector =
+                                    when (change.changeType) {
+                                        ChangeType.CREATE -> Icons.Default.Add
+                                        ChangeType.DELETE -> Icons.Default.Delete
+                                        else -> Icons.Default.Edit
+                                    },
                                 contentDescription = null,
                                 modifier = Modifier.Companion.size(48.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.Companion.height(16.dp))
                             Text(
-                                text = when (change.changeType) {
-                                    ChangeType.CREATE -> "New file created"
-                                    ChangeType.DELETE -> "File deleted"
-                                    else -> "File modified"
-                                },
+                                text =
+                                    when (change.changeType) {
+                                        ChangeType.CREATE -> "New file created"
+                                        ChangeType.DELETE -> "File deleted"
+                                        else -> "File modified"
+                                    },
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Spacer(modifier = Modifier.Companion.height(8.dp))
