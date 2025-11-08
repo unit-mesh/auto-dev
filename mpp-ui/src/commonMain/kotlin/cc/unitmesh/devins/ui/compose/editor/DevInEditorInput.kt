@@ -352,10 +352,9 @@ fun DevInEditorInput(
 
     val isAndroid = Platform.isAndroid
 
-    // 统一边框容器，无阴影
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         // File Change Summary - shown above the editor
         FileChangeSummary()
@@ -370,7 +369,7 @@ fun DevInEditorInput(
                     } else {
                         Modifier.fillMaxWidth()
                     },
-                shape = RoundedCornerShape(if (isAndroid && isCompactMode) 12.dp else 16.dp),
+                shape = RoundedCornerShape(if (isAndroid && isCompactMode) 12.dp else 4.dp),
                 border =
                     androidx.compose.foundation.BorderStroke(
                         width = 1.dp,
@@ -383,7 +382,6 @@ fun DevInEditorInput(
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // 编辑器区域 - 根据模式和平台调整高度
                     Box(
                         modifier =
                             Modifier

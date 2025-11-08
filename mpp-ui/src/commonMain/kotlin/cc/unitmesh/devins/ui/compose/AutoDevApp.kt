@@ -307,7 +307,7 @@ private fun AutoDevContent() {
                             Modifier
                                 .fillMaxSize()
                                 .imePadding()
-                                .padding(if (isAndroid) 16.dp else 32.dp),
+                                .padding(if (isAndroid) 16.dp else 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         DevInEditorInput(
