@@ -141,9 +141,43 @@ class ToolOrchestrator(
             
             // Execute the tool (如果已经启动了 PTY，这里需要等待完成)
             val result = if (liveSession != null) {
-                // 等待 PTY 进程完成
+                // 对于 Live PTY，等待完成并从 session 获取输出
                 val shellExecutor = getShellExecutor(registry.getTool(toolName) as cc.unitmesh.agent.tool.impl.ShellTool)
-                waitForLiveSession(liveSession, shellExecutor, context)
+                
+                // 等待 PTY 进程完成
+                val exitCode = try {
+                    if (shellExecutor is LiveShellExecutor) {
+                        shellExecutor.waitForSession(liveSession, context.timeout)
+                    } else {
+                        throw ToolException("Executor does not support live sessions", ToolErrorType.NOT_SUPPORTED)
+                    }
+                } catch (e: ToolException) {
+                    return ToolExecutionResult.failure(
+                        context.executionId, toolName, "Command execution error: ${e.message}",
+                        startTime, Clock.System.now().toEpochMilliseconds()
+                    )
+                } catch (e: Exception) {
+                    return ToolExecutionResult.failure(
+                        context.executionId, toolName, "Command execution error: ${e.message}",
+                        startTime, Clock.System.now().toEpochMilliseconds()
+                    )
+                }
+                
+                // 从 session 获取输出
+                val stdout = liveSession.getStdout()
+                val metadata = mapOf(
+                    "exit_code" to exitCode.toString(),
+                    "execution_time_ms" to (Clock.System.now().toEpochMilliseconds() - startTime).toString(),
+                    "shell" to (shellExecutor.getDefaultShell() ?: "unknown"),
+                    "stdout" to stdout,
+                    "stderr" to ""
+                )
+                
+                if (exitCode == 0) {
+                    ToolResult.Success(stdout, metadata)
+                } else {
+                    ToolResult.Error("Command failed with exit code: $exitCode", metadata = metadata)
+                }
             } else {
                 // 普通执行
                 executeToolInternal(toolName, params, context)
@@ -189,33 +223,6 @@ class ToolOrchestrator(
             return ToolExecutionResult.failure(
                 context.executionId, toolName, error, startTime, endTime, context.currentRetry
             )
-        }
-    }
-    
-    /**
-     * 等待 LiveShellSession 完成
-     */
-    private suspend fun waitForLiveSession(
-        session: LiveShellSession,
-        executor: ShellExecutor,
-        context: ToolExecutionContext
-    ): ToolResult {
-        return try {
-            val exitCode = if (executor is LiveShellExecutor) {
-                executor.waitForSession(session, context.timeout)
-            } else {
-                throw ToolException("Executor does not support live sessions", ToolErrorType.NOT_SUPPORTED)
-            }
-            
-            if (exitCode == 0) {
-                ToolResult.Success("Command executed successfully (live terminal)")
-            } else {
-                ToolResult.Error("Command failed with exit code: $exitCode")
-            }
-        } catch (e: ToolException) {
-            ToolResult.Error("Command execution error: ${e.message}")
-        } catch (e: Exception) {
-            ToolResult.Error("Command execution error: ${e.message}")
         }
     }
     

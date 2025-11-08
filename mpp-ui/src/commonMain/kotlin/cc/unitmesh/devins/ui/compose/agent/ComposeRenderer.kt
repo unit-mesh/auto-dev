@@ -244,38 +244,48 @@ class ComposeRenderer : BaseRenderer() {
     ) {
         val summary = formatToolResultSummary(toolName, success, output)
 
-        // Check if this was a live terminal session - skip rendering if so
+        // Check if this was a live terminal session
         val isLiveSession = metadata["isLiveSession"] == "true"
-        if (isLiveSession) {
-            // Live terminal already rendered - just mark tool call as complete
-            _currentToolCall = null
-            return
-        }
+        val liveExitCode = metadata["live_exit_code"]?.toIntOrNull()
 
         // For shell commands, use special terminal output rendering
         val toolType = toolName.toToolType()
         if (toolType == ToolType.Shell && output != null) {
             // Try to extract shell result information
-            val exitCode = if (success) 0 else 1
+            val exitCode = liveExitCode ?: (if (success) 0 else 1)
             val executionTime = metadata["execution_time_ms"]?.toLongOrNull() ?: 0L
 
             // Extract command from the last tool call if available
             val command = _currentToolCall?.details?.removePrefix("Executing: ") ?: "unknown"
 
-            // Remove the last CombinedToolItem if it's a Shell command (we'll replace it with TerminalOutputItem)
-            val lastItem = _timeline.lastOrNull()
-            if (lastItem is TimelineItem.CombinedToolItem && lastItem.toolType == ToolType.Shell) {
-                _timeline.removeAt(_timeline.size - 1)
-            }
-
-            _timeline.add(
-                TimelineItem.TerminalOutputItem(
-                    command = command,
-                    output = fullOutput ?: output,
-                    exitCode = exitCode,
-                    executionTimeMs = executionTime
+            // For Live sessions, we show both the terminal widget and the result summary
+            // Don't remove anything, just add a result item after the live terminal
+            if (isLiveSession) {
+                // Add a summary result item after the live terminal
+                _timeline.add(
+                    TimelineItem.TerminalOutputItem(
+                        command = command,
+                        output = fullOutput ?: output,
+                        exitCode = exitCode,
+                        executionTimeMs = executionTime
+                    )
                 )
-            )
+            } else {
+                // For non-live sessions, replace the combined tool item with terminal output
+                val lastItem = _timeline.lastOrNull()
+                if (lastItem is TimelineItem.CombinedToolItem && lastItem.toolType == ToolType.Shell) {
+                    _timeline.removeAt(_timeline.size - 1)
+                }
+
+                _timeline.add(
+                    TimelineItem.TerminalOutputItem(
+                        command = command,
+                        output = fullOutput ?: output,
+                        exitCode = exitCode,
+                        executionTimeMs = executionTime
+                    )
+                )
+            }
         } else {
             // Update the last CombinedToolItem with result information
             val lastItem = _timeline.lastOrNull()
@@ -408,8 +418,8 @@ class ComposeRenderer : BaseRenderer() {
      * Adds a live terminal session to the timeline.
      * This is called when a Shell tool is executed with PTY support.
      *
-     * Note: This also removes the last ToolCallItem if it was a Shell command,
-     * since LiveTerminalItem already displays the command in its header.
+     * Note: We keep the ToolCallItem so the user can see both the command call
+     * and the live terminal output side by side.
      */
     override fun addLiveTerminal(
         sessionId: String,
@@ -417,13 +427,8 @@ class ComposeRenderer : BaseRenderer() {
         workingDirectory: String?,
         ptyHandle: Any?
     ) {
-        // Remove the last ToolCallItem if it's a Shell command
-        // LiveTerminalItem will show the command, so we don't need the duplicate ToolCallItem
-        val lastItem = _timeline.lastOrNull()
-        if (lastItem is TimelineItem.ToolCallItem && lastItem.toolType == ToolType.Shell) {
-            _timeline.removeAt(_timeline.size - 1)
-        }
-
+        // Add the live terminal item to the timeline
+        // We no longer remove the ToolCallItem - both should be shown for complete visibility
         _timeline.add(
             TimelineItem.LiveTerminalItem(
                 sessionId = sessionId,

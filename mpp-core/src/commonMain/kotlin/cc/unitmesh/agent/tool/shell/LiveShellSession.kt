@@ -27,6 +27,33 @@ data class LiveShellSession(
     private val _exitCode = MutableStateFlow<Int?>(null)
     val exitCode: StateFlow<Int?> = _exitCode.asStateFlow()
     
+    private val _stdout = StringBuilder()
+    private val _stderr = StringBuilder()
+    
+    /**
+     * Get the captured stdout output
+     */
+    fun getStdout(): String = _stdout.toString()
+    
+    /**
+     * Get the captured stderr output
+     */
+    fun getStderr(): String = _stderr.toString()
+    
+    /**
+     * Append output to stdout (called by executor)
+     */
+    internal fun appendStdout(text: String) {
+        _stdout.append(text)
+    }
+    
+    /**
+     * Append output to stderr (called by executor)
+     */
+    internal fun appendStderr(text: String) {
+        _stderr.append(text)
+    }
+    
     fun markCompleted(exitCode: Int) {
         _exitCode.value = exitCode
         _isCompleted.value = true
