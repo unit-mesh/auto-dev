@@ -66,14 +66,19 @@ interface ShellExecutor {
      */
     fun getDefaultShell(): String?
     fun validateCommand(command: String): Boolean {
-        // Basic validation - can be overridden by implementations
-        val dangerousCommands = setOf(
-            "rm -rf /", "del /f /s /q C:\\", "format", "fdisk",
-            "dd if=/dev/zero", ":(){ :|:& };:", "sudo rm -rf"
-        )
-        
-        return dangerousCommands.none { dangerous ->
-            command.contains(dangerous, ignoreCase = true)
+        return ShellExecutor.validateCommand(command)
+    }
+
+    companion object {
+        fun validateCommand(command: String): Boolean {
+            val dangerousCommands = setOf(
+                "rm -rf /", "del /f /s /q C:\\", "format", "fdisk",
+                "dd if=/dev/zero", ":(){ :|:& };:", "sudo rm -rf"
+            )
+
+            return dangerousCommands.none { dangerous ->
+                command.contains(dangerous, ignoreCase = true)
+            }
         }
     }
 }

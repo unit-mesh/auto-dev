@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool.shell
 
+import cc.unitmesh.agent.logging.logger
 import cc.unitmesh.agent.tool.ToolErrorType
 import cc.unitmesh.agent.tool.ToolException
 import com.pty4j.PtyProcessBuilder
@@ -52,7 +53,7 @@ class PtyShellExecutor : ShellExecutor {
         if (result == null) {
             // Timeout occurred - terminate process
             ptyProcess.destroyForcibly()
-            ptyProcess.waitFor(1000, TimeUnit.MILLISECONDS)
+            ptyProcess.waitFor(3000000, TimeUnit.MILLISECONDS)
             throw ToolException("Command timed out after ${config.timeoutMs}ms", ToolErrorType.TIMEOUT)
         }
 
@@ -83,24 +84,22 @@ class PtyShellExecutor : ShellExecutor {
                         }
                     }
                 } catch (e: Exception) {
-                    // Stream closed or cancelled, ignore
+                    logger().error(e) { "Failed to read output from PTY process: ${e.message}" }
                 }
             }
         } else null
 
-        // Wait for process to complete with timeout
         val completed = withTimeoutOrNull(config.timeoutMs) {
             while (ptyProcess.isAlive && isActive) {
-                kotlinx.coroutines.delay(100)
+                delay(100)
             }
             true
         }
 
         if (completed == null) {
-            // Timeout - cleanup
             outputJob?.cancel()
             ptyProcess.destroyForcibly()
-            ptyProcess.waitFor(1000, TimeUnit.MILLISECONDS)
+            ptyProcess.waitFor(3000000, TimeUnit.MILLISECONDS)
             throw ToolException("Process timed out", ToolErrorType.TIMEOUT)
         }
 
@@ -197,10 +196,7 @@ class PtyShellExecutor : ShellExecutor {
     }
 
     override fun validateCommand(command: String): Boolean {
-        // Enhanced validation
-        if (!ShellExecutor::class.java.getMethod("validateCommand", String::class.java).let { method ->
-                method.invoke(this, command) as Boolean
-            }) {
+        if (!ShellExecutor.validateCommand(command)) {
             return false
         }
 
