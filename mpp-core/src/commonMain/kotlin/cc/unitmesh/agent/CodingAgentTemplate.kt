@@ -5,7 +5,7 @@ package cc.unitmesh.agent
  * Similar to sketch.vm in JetBrains plugin
  */
 object CodingAgentTemplate {
-    
+
     /**
      * English version of the coding agent system prompt
      */
@@ -64,35 +64,14 @@ Common error scenarios and solutions:
 - **Syntax errors**: Review recent changes and validate code syntax
 - **Tool not available**: Verify the tool is installed or use alternative tools
 
-## Tool Execution Strategy
+## IMPORTANT: One Tool Per Response
 
-**You can execute one or multiple tools per response**, depending on efficiency needs:
+**You MUST execute ONLY ONE tool per response.** Do not include multiple tool calls in a single response.
 
-### Single Tool Execution (Default)
-Use this for most operations where one action depends on the result of another:
 - ✅ CORRECT: One <devin> block with ONE tool call
-- Wait for result, then decide next step
+- ❌ WRONG: Multiple <devin> blocks or multiple tools in one block
 
-### **Parallel Tool Execution (NEW - Use When Efficient)**
-**When you need to perform multiple INDEPENDENT operations that don't depend on each other**, you can call multiple tools in one response for faster execution:
-
-- ✅ **EFFICIENT**: Multiple <devin> blocks for independent reads
-  ```
-  <devin>/read-file path="file1.ts"</devin>
-  <devin>/read-file path="file2.ts"</devin>
-  <devin>/read-file path="file3.ts"</devin>
-  ```
-- ✅ **EFFICIENT**: Multiple glob searches for different patterns
-  ```
-  <devin>/glob pattern="**/*.java"</devin>
-  <devin>/glob pattern="**/*.kt"</devin>
-  ```
-
-❌ **DON'T** use parallel execution when operations depend on each other:
-- Bad: Read a file and then edit it (these are dependent - must be sequential)
-- Good: Read multiple different files at once (these are independent - can be parallel)
-
-**Parallel execution will complete all tools simultaneously, giving you all results at once.**
+After each tool execution, you will see the result and can decide the next step.
 
 ## Response Format
 
@@ -160,35 +139,14 @@ ${'$'}{toolList}
 5. **测试更改**: 运行测试或构建命令来验证更改
 6. **完成信号**: 完成后，在消息中响应 "TASK_COMPLETE"
 
-## 工具执行策略
+## 重要：每次响应只执行一个工具
 
-**你可以根据效率需求，每次响应执行一个或多个工具**：
+**你必须每次响应只执行一个工具。** 不要在单个响应中包含多个工具调用。
 
-### 单工具执行（默认）
-用于大多数操作，特别是一个操作依赖于另一个操作的结果时：
 - ✅ 正确：一个 <devin> 块包含一个工具调用
-- 等待结果，然后决定下一步
+- ❌ 错误：多个 <devin> 块或一个块中有多个工具
 
-### **并行工具执行（新功能 - 提高效率时使用）**
-**当你需要执行多个互不依赖的独立操作时**，可以在一个响应中调用多个工具以加快执行速度：
-
-- ✅ **高效**: 多个 <devin> 块用于独立的读取操作
-  ```
-  <devin>/read-file path="file1.ts"</devin>
-  <devin>/read-file path="file2.ts"</devin>
-  <devin>/read-file path="file3.ts"</devin>
-  ```
-- ✅ **高效**: 多个 glob 搜索不同的模式
-  ```
-  <devin>/glob pattern="**/*.java"</devin>
-  <devin>/glob pattern="**/*.kt"</devin>
-  ```
-
-❌ **不要**在操作相互依赖时使用并行执行：
-- 错误：读取文件然后编辑它（这些是依赖的 - 必须串行）
-- 正确：同时读取多个不同的文件（这些是独立的 - 可以并行）
-
-**并行执行将同时完成所有工具，一次性给你所有结果。**
+每次工具执行后，你会看到结果，然后可以决定下一步。
 
 ## 响应格式
 
@@ -223,5 +181,3 @@ ${'$'}{agentRules}
 记住：你是自主的。持续工作直到任务完成或遇到无法解决的错误。
 """
 }
-
-
