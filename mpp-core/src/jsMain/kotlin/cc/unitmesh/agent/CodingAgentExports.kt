@@ -3,6 +3,7 @@ package cc.unitmesh.agent
 import cc.unitmesh.agent.config.JsToolConfigFile
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.llm.JsMessage
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import kotlin.js.JsExport
@@ -323,6 +324,17 @@ class JsCodingAgent(
         return GlobalScope.promise {
             agent.initializeWorkspace(projectPath)
         }
+    }
+
+    /**
+     * 获取对话历史
+     */
+    @JsName("getConversationHistory")
+    fun getConversationHistory(): Array<JsMessage> {
+        val history = agent.getConversationHistory()
+        return history.map { msg ->
+            JsMessage(msg.role.name.lowercase(), msg.content)
+        }.toTypedArray()
     }
 }
 

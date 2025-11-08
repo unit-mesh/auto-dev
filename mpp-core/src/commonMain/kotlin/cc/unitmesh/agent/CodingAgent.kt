@@ -388,4 +388,11 @@ class CodingAgent(
      * 获取 SubAgent 管理器（用于高级操作）
      */
     fun getSubAgentManager(): SubAgentManager = subAgentManager
+
+    /**
+     * 获取对话历史
+     */
+    fun getConversationHistory(): List<cc.unitmesh.devins.llm.Message> {
+        return executor.getConversationHistory()
+    }
 }

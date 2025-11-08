@@ -16,8 +16,42 @@ import { CliRenderer } from './agents/render/CliRenderer.js';
 import mppCore from '@autodev/mpp-core';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 const { cc: KotlinCC } = mppCore;
+
+/**
+ * Save chat history to log file
+ */
+async function saveChatHistoryToLog(conversationHistory: any[]): Promise<void> {
+  try {
+    // Create log directory if it doesn't exist
+    const logDir = path.join(os.homedir(), '.autodev', 'logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    // Generate timestamp for filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const logFilePath = path.join(logDir, `chat-history-${timestamp}.json`);
+
+    // Format conversation history
+    const formattedHistory = {
+      timestamp: new Date().toISOString(),
+      messages: conversationHistory.map((msg: any) => ({
+        role: msg.role,
+        content: msg.content
+      }))
+    };
+
+    // Write to file
+    fs.writeFileSync(logFilePath, JSON.stringify(formattedHistory, null, 2), 'utf-8');
+    console.log(`💾 Chat history saved to: ${logFilePath}`);
+  } catch (error) {
+    console.error('Failed to save chat history:', error);
+    throw error;
+  }
+}
 
 /**
  * Run in coding agent mode
@@ -98,7 +132,7 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
 
     // Enhance the task prompt automatically in CLI mode
     let enhancedTask = task;
-    
+
     // Temporarily disable prompt enhancement due to cross-platform issues
     // TODO: Re-enable after fixing Kotlin/JS interface type handling
     if (!quiet) {
@@ -130,6 +164,14 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       console.log(result.success ? '✅ Task completed successfully' : '❌ Task failed');
       if (result.message) {
         console.log(result.message);
+      }
+
+      // Save conversation history to log file
+      try {
+        const conversationHistory = agent.getConversationHistory();
+        await saveChatHistoryToLog(conversationHistory);
+      } catch (error) {
+        console.error('⚠️  Failed to save chat history:', error);
       }
     }
 
