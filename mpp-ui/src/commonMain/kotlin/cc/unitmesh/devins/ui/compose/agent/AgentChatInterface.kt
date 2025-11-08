@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
@@ -39,7 +40,8 @@ fun AgentChatInterface(
     val viewModel =
         remember(llmService, currentWorkspace?.rootPath) {
             val workspace = currentWorkspace
-            val rootPath = workspace?.rootPath ?: return@remember null
+            val rootPath = workspace?.rootPath ?: Platform.getUserHomeDir()
+
             if (llmService != null) {
                 CodingAgentViewModel(
                     llmService = llmService,
