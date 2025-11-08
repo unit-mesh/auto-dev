@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import cc.unitmesh.devins.db.DatabaseDriverFactory
 import cc.unitmesh.devins.ui.compose.AutoDevApp
+import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.platform.AndroidActivityProvider
 
 /**
@@ -21,6 +22,9 @@ class MainActivity : ComponentActivity() {
 
         // 初始化数据库
         DatabaseDriverFactory.init(this)
+
+        // 初始化配置管理器（必须在使用前调用）
+        ConfigManager.initialize(this)
 
         enableEdgeToEdge()
         setContent {

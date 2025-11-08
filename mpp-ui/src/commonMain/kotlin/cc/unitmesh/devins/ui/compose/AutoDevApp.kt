@@ -81,13 +81,59 @@ private fun AutoDevContent() {
 
     LaunchedEffect(Unit) {
         if (!WorkspaceManager.hasActiveWorkspace()) {
-            val defaultPath = "/Users/phodal/IdeaProjects/untitled"
-            val fileSystem = DefaultFileSystem(defaultPath)
-            if (fileSystem.exists(defaultPath)) {
-                WorkspaceManager.openWorkspace("Default Project", defaultPath)
-            } else {
-                WorkspaceManager.openEmptyWorkspace("Empty Workspace")
+            // 跨平台默认路径策略
+            val defaultPath = when {
+                Platform.isAndroid -> {
+                    // Android: 使用应用的外部存储目录
+                    "/storage/emulated/0/Documents"
+                }
+                Platform.isJs -> {
+                    // JS/Browser: 使用当前工作目录（通常是项目根目录）
+                    "."
+                }
+                else -> {
+                    // JVM (Desktop): 使用用户主目录下的默认项目目录
+                    val homeDir = Platform.getUserHomeDir()
+                    "$homeDir/AutoDevProjects"
+                }
             }
+
+            println("🔍 尝试使用默认工作空间路径: $defaultPath")
+            val fileSystem = DefaultFileSystem(defaultPath)
+            
+            if (fileSystem.exists(defaultPath)) {
+                println("✅ 打开工作空间: $defaultPath")
+                WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
+            } else {
+                // 根据平台采取不同的后备策略
+                when {
+                    Platform.isAndroid -> {
+                        // Android: 尝试使用 /sdcard
+                        val fallbackPath = "/sdcard"
+                        println("⚠️ Documents 目录不存在，使用备用路径: $fallbackPath")
+                        WorkspaceManager.openWorkspace("Default Workspace", fallbackPath)
+                    }
+                    Platform.isJs -> {
+                        // JS: 直接使用当前目录，不检查存在性
+                        println("⚠️ 使用当前工作目录")
+                        WorkspaceManager.openWorkspace("Current Directory", ".")
+                    }
+                    else -> {
+                        // Desktop: 尝试创建目录
+                        try {
+                            fileSystem.createDirectory(defaultPath)
+                            println("✅ 创建默认工作空间目录: $defaultPath")
+                            WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
+                        } catch (e: Exception) {
+                            println("⚠️ 无法创建默认目录，使用用户主目录")
+                            val homeDir = Platform.getUserHomeDir()
+                            WorkspaceManager.openWorkspace("Home Directory", homeDir)
+                        }
+                    }
+                }
+            }
+        } else {
+            println("✅ 已有活动工作空间: ${WorkspaceManager.currentWorkspace?.rootPath}")
         }
     }
 
@@ -106,6 +152,7 @@ private fun AutoDevContent() {
             }
         } catch (e: Exception) {
             println("⚠️ 加载配置失败: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -345,8 +392,28 @@ private fun AutoDevContent() {
                 currentModelConfig = newConfig
                 if (newConfig.isValid()) {
                     try {
+                        // 保存配置到文件
+                        scope.launch {
+                            try {
+                                // 创建 NamedModelConfig 对象以便保存
+                                val namedConfig = cc.unitmesh.llm.NamedModelConfig(
+                                    name = configName,
+                                    provider = newConfig.provider.name,
+                                    apiKey = newConfig.apiKey,
+                                    model = newConfig.modelName,
+                                    baseUrl = newConfig.baseUrl,
+                                    temperature = newConfig.temperature,
+                                    maxTokens = newConfig.maxTokens
+                                )
+                                ConfigManager.saveConfig(namedConfig, setActive = true)
+                                println("✅ 模型配置已保存到磁盘: $configName")
+                            } catch (e: Exception) {
+                                println("⚠️ 保存配置到磁盘失败: ${e.message}")
+                            }
+                        }
+
                         llmService = KoogLLMService.create(newConfig)
-                        println("✅ 模型配置已保存: $configName")
+                        println("✅ 模型配置已应用: $configName")
                     } catch (e: Exception) {
                         println("❌ 配置 LLM 服务失败: ${e.message}")
                         llmService = null
@@ -355,9 +422,7 @@ private fun AutoDevContent() {
                 showModelConfigDialog = false
             }
         )
-    }
-
-    // Tool Config Dialog
+    }    // Tool Config Dialog
     if (showToolConfigDialog) {
         cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
             onDismiss = { showToolConfigDialog = false },
