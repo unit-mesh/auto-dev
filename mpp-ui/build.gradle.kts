@@ -24,6 +24,8 @@ sqldelight {
     }
 }
 
+version = "0.1.5"
+
 kotlin {
     jvm {
         compilerOptions {
@@ -163,7 +165,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = version.toString()
     }
 
     compileOptions {
@@ -209,7 +211,7 @@ compose.desktop {
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb
             )
             packageName = "AutoDev Desktop"
-            packageVersion = "1.0.0"
+            packageVersion = version.toString()
             description = "AutoDev Desktop Application with DevIns Support"
             copyright = "© 2024 AutoDev Team. All rights reserved."
             vendor = "AutoDev Team"
