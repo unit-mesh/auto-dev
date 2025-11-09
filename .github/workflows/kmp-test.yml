@@ -35,6 +35,9 @@ jobs:
           tool-cache: false
           large-packages: false
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       # Check out the current repository
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,23 +52,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
-      # Set up Android SDK (pre-installed on ubuntu-latest)
-      - name: Set up Android SDK
-        run: |
-          # Use ANDROID_HOME which is reliably set in GitHub Actions
-          export ANDROID_SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "Android SDK location: $ANDROID_SDK_ROOT"
-          ls -la $ANDROID_SDK_ROOT || echo "SDK directory not found at $ANDROID_SDK_ROOT"
-
-      # Create local.properties with Android SDK location
-      - name: Create local.properties
-        run: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-          cat local.properties
-          echo "Verifying SDK directory exists..."
-          test -d "$ANDROID_SDK_ROOT" && echo "✓ SDK directory exists" || echo "✗ SDK directory not found"
 
       # Accept Android SDK licenses
       - name: Accept Android SDK licenses
