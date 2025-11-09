@@ -1,3 +1,5 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
@@ -205,13 +207,9 @@ compose.desktop {
         mainClass = "cc.unitmesh.devins.ui.MainKt"
 
         nativeDistributions {
-            targetFormats(
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb
-            )
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "AutoDev Desktop"
-            packageVersion = version.toString()
+            packageVersion = "1.0.5"
             description = "AutoDev Desktop Application with DevIns Support"
             copyright = "© 2024 AutoDev Team. All rights reserved."
             vendor = "AutoDev Team"
