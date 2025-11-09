@@ -9,6 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sse.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -111,37 +112,39 @@ fun Application.configureRouting() {
                         )
                     }
 
-                    // Set SSE headers
-                    call.response.headers.append(HttpHeaders.ContentType, "text/event-stream")
-                    call.response.headers.append(HttpHeaders.CacheControl, "no-cache")
-                    call.response.headers.append(HttpHeaders.Connection, "keep-alive")
-                    call.response.headers.append(HttpHeaders.AccessControlAllowOrigin, "*")
+                    // 使用 respondTextWriter 进行 SSE 流式响应
+                    call.respondTextWriter(contentType = ContentType.Text.EventStream) {
+                        try {
+                            agentService.executeAgentStream(project.path, request).collect { event ->
+                                val eventType = when (event) {
+                                    is AgentEvent.IterationStart -> "iteration"
+                                    is AgentEvent.LLMResponseChunk -> "llm_chunk"
+                                    is AgentEvent.ToolCall -> "tool_call"
+                                    is AgentEvent.ToolResult -> "tool_result"
+                                    is AgentEvent.Error -> "error"
+                                    is AgentEvent.Complete -> "complete"
+                                }
 
-                    try {
-                        agentService.executeAgentStream(project.path, request).collect { event ->
-                            val eventType = when (event) {
-                                is AgentEvent.IterationStart -> "iteration"
-                                is AgentEvent.LLMResponseChunk -> "llm_chunk"
-                                is AgentEvent.ToolCall -> "tool_call"
-                                is AgentEvent.ToolResult -> "tool_result"
-                                is AgentEvent.Error -> "error"
-                                is AgentEvent.Complete -> "complete"
+                                val data = when (event) {
+                                    is AgentEvent.IterationStart -> json.encodeToString(event)
+                                    is AgentEvent.LLMResponseChunk -> json.encodeToString(event)
+                                    is AgentEvent.ToolCall -> json.encodeToString(event)
+                                    is AgentEvent.ToolResult -> json.encodeToString(event)
+                                    is AgentEvent.Error -> json.encodeToString(event)
+                                    is AgentEvent.Complete -> json.encodeToString(event)
+                                }
+
+                                // 写入 SSE 格式的数据
+                                write("event: $eventType\n")
+                                write("data: $data\n\n")
+                                flush()
                             }
-
-                            val data = when (event) {
-                                is AgentEvent.IterationStart -> json.encodeToString(event)
-                                is AgentEvent.LLMResponseChunk -> json.encodeToString(event)
-                                is AgentEvent.ToolCall -> json.encodeToString(event)
-                                is AgentEvent.ToolResult -> json.encodeToString(event)
-                                is AgentEvent.Error -> json.encodeToString(event)
-                                is AgentEvent.Complete -> json.encodeToString(event)
-                            }
-
-                            call.respondText("event: $eventType\ndata: $data\n\n", ContentType.Text.EventStream)
+                        } catch (e: Exception) {
+                            val errorData = json.encodeToString(AgentEvent.Error("Execution failed: ${e.message}"))
+                            write("event: error\n")
+                            write("data: $errorData\n\n")
+                            flush()
                         }
-                    } catch (e: Exception) {
-                        val errorData = json.encodeToString(AgentEvent.Error("Execution failed: ${e.message}"))
-                        call.respondText("event: error\ndata: $errorData\n\n", ContentType.Text.EventStream)
                     }
                 }
             }

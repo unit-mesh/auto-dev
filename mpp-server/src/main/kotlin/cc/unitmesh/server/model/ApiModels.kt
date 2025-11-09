@@ -27,7 +27,16 @@ data class ProjectListResponse(
 @Serializable
 data class AgentRequest(
     val projectId: String,
-    val task: String
+    val task: String,
+    val llmConfig: LLMConfig? = null
+)
+
+@Serializable
+data class LLMConfig(
+    val provider: String,
+    val modelName: String,
+    val apiKey: String,
+    val baseUrl: String = ""
 )
 
 @Serializable
