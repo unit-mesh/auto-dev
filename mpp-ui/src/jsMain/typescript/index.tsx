@@ -13,6 +13,8 @@ import { Command } from 'commander';
 import { App } from './ui/App.js';
 import { ConfigManager } from './config/ConfigManager.js';
 import { CliRenderer } from './agents/render/CliRenderer.js';
+import { ServerAgentClient } from './agents/ServerAgentClient.js';
+import { ServerRenderer } from './agents/render/ServerRenderer.js';
 import mppCore from '@autodev/mpp-core';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -184,6 +186,99 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
 }
 
 /**
+ * Run in server mode - connect to remote mpp-server
+ */
+async function runServerAgent(
+  serverUrl: string,
+  projectId: string,
+  task: string,
+  quiet: boolean = false,
+  useServerConfig: boolean = false
+) {
+  try {
+    const client = new ServerAgentClient(serverUrl);
+
+    // Health check
+    if (!quiet) {
+      console.log(`🔍 Connecting to server: ${serverUrl}`);
+      try {
+        const health = await client.healthCheck();
+        console.log(`✅ Server is ${health.status}`);
+      } catch (error) {
+        console.error(`❌ Server health check failed: ${error}`);
+        console.error('Please make sure mpp-server is running.');
+        process.exit(1);
+      }
+    }
+
+    // Determine LLM config source
+    let llmConfig: any = undefined;
+
+    if (!useServerConfig) {
+      // Load configuration from local ~/.autodev/config.yaml
+      const config = await ConfigManager.load();
+      const activeConfig = config.getActiveConfig();
+
+      if (!activeConfig) {
+        console.error('❌ No active LLM configuration found.');
+        console.error('Please run the interactive mode first to configure your LLM provider, or use --use-server-config flag.');
+        process.exit(1);
+      }
+
+      llmConfig = {
+        provider: activeConfig.provider,
+        modelName: activeConfig.model,
+        apiKey: activeConfig.apiKey || '',
+        baseUrl: activeConfig.baseUrl || ''
+      };
+
+      if (!quiet) {
+        console.log(`\n🚀 AutoDev Remote Coding Agent`);
+        console.log(`🌐 Server: ${serverUrl}`);
+        console.log(`📦 Project: ${projectId}`);
+        console.log(`📦 Provider: ${activeConfig.provider} (from client)`);
+        console.log(`🤖 Model: ${activeConfig.model}`);
+        console.log();
+      }
+    } else {
+      if (!quiet) {
+        console.log(`\n🚀 AutoDev Remote Coding Agent`);
+        console.log(`🌐 Server: ${serverUrl}`);
+        console.log(`📦 Project: ${projectId}`);
+        console.log(`📦 Using server's LLM configuration`);
+        console.log();
+      }
+    }
+
+    // Create renderer
+    const renderer = new ServerRenderer();
+
+    // Execute with streaming
+    try {
+      for await (const event of client.executeStream({
+        projectId,
+        task,
+        llmConfig
+      })) {
+        renderer.renderEvent(event);
+
+        // Check if complete
+        if (event.type === 'complete') {
+          process.exit(event.success ? 0 : 1);
+        }
+      }
+    } catch (error: any) {
+      console.error(`❌ Streaming error: ${error}`);
+      process.exit(1);
+    }
+
+  } catch (error) {
+    console.error('❌ Fatal error:', error);
+    process.exit(1);
+  }
+}
+
+/**
  * Run in interactive TUI mode
  */
 async function runInteractive() {
@@ -215,10 +310,10 @@ async function main() {
     .description('Start interactive chat mode (default)')
     .action(runInteractive);
 
-  // Coding agent mode
+  // Coding agent mode (local)
   program
     .command('code')
-    .description('Run autonomous coding agent to complete a task')
+    .description('Run autonomous coding agent to complete a task (local)')
     .requiredOption('-p, --path <path>', 'Project path (e.g., /path/to/project or . for current directory)')
     .requiredOption('-t, --task <task>', 'Development task or requirement to complete')
     .option('-m, --max-iterations <number>', 'Maximum iterations', '20')
@@ -227,6 +322,19 @@ async function main() {
     .action(async (options) => {
       const projectPath = options.path === '.' ? process.cwd() : options.path;
       await runCodingAgent(projectPath, options.task, options.quiet && !options.verbose);
+    });
+
+  // Server mode (remote)
+  program
+    .command('server')
+    .description('Connect to remote mpp-server and execute coding agent task')
+    .requiredOption('-p, --project-id <projectId>', 'Project ID on the server (e.g., autocrud)')
+    .requiredOption('-t, --task <task>', 'Development task or requirement to complete')
+    .option('-s, --server-url <url>', 'Server URL', 'http://localhost:8080')
+    .option('-q, --quiet', 'Quiet mode - only show important messages', false)
+    .option('--use-server-config', 'Use server\'s LLM configuration instead of client\'s', false)
+    .action(async (options) => {
+      await runServerAgent(options.serverUrl, options.projectId, options.task, options.quiet, options.useServerConfig);
     });
 
   // Parse arguments
