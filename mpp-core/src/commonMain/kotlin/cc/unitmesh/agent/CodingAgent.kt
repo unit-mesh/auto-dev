@@ -43,7 +43,8 @@ class CodingAgent(
     private val fileSystem: ToolFileSystem? = null,
     private val shellExecutor: ShellExecutor? = null,
     private val mcpServers: Map<String, McpServerConfig>? = null,
-    private val mcpToolConfigService: McpToolConfigService
+    private val mcpToolConfigService: McpToolConfigService,
+    private val enableLLMStreaming: Boolean = true  // 新增：控制 LLM 流式响应
 ) : MainAgent<AgentTask, ToolResult.AgentResult>(
     AgentDefinition(
         name = "CodingAgent",
@@ -101,7 +102,8 @@ class CodingAgent(
         toolOrchestrator = toolOrchestrator,
         renderer = renderer,
         maxIterations = maxIterations,
-        subAgentManager = subAgentManager
+        subAgentManager = subAgentManager,
+        enableLLMStreaming = enableLLMStreaming  // 传递流式配置
     )
 
     // 标记 MCP 工具是否已初始化

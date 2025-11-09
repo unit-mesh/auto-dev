@@ -29,7 +29,8 @@ class CodingAgentExecutor(
     private val toolOrchestrator: ToolOrchestrator,
     private val renderer: CodingAgentRenderer,
     private val maxIterations: Int = 100,
-    private val subAgentManager: SubAgentManager? = null
+    private val subAgentManager: SubAgentManager? = null,
+    private val enableLLMStreaming: Boolean = true  // 新增：控制 LLM 流式响应
 ) {
     private val toolCallParser = ToolCallParser()
     private var currentIteration = 0
@@ -68,15 +69,29 @@ class CodingAgentExecutor(
             try {
                 renderer.renderLLMResponseStart()
 
-                if (currentIteration == 1) {
-                    conversationManager!!.sendMessage(initialUserMessage, compileDevIns = true).cancellable().collect { chunk ->
-                        llmResponse.append(chunk)
-                        renderer.renderLLMResponseChunk(chunk)
+                if (enableLLMStreaming) {
+                    // 流式模式：逐块接收并渲染
+                    if (currentIteration == 1) {
+                        conversationManager!!.sendMessage(initialUserMessage, compileDevIns = true).cancellable().collect { chunk ->
+                            llmResponse.append(chunk)
+                            renderer.renderLLMResponseChunk(chunk)
+                        }
+                    } else {
+                        conversationManager!!.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
+                            llmResponse.append(chunk)
+                            renderer.renderLLMResponseChunk(chunk)
+                        }
                     }
                 } else {
-                    conversationManager!!.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
-                        llmResponse.append(chunk)
-                        renderer.renderLLMResponseChunk(chunk)
+                    // 非流式模式：一次性获取完整响应
+                    val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
+                    val response = llmService.sendPrompt(message)
+                    llmResponse.append(response)
+                    // 模拟流式输出，按句子分块渲染
+                    response.split(Regex("(?<=[.!?。！？]\\s)")).forEach { sentence ->
+                        if (sentence.isNotBlank()) {
+                            renderer.renderLLMResponseChunk(sentence)
+                        }
                     }
                 }
 

@@ -1,11 +1,10 @@
 package cc.unitmesh.llm
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.parser.CodeFence
 import cc.unitmesh.indexer.DomainDictService
 import cc.unitmesh.indexer.template.TemplateEngine
-import cc.unitmesh.agent.logging.getLogger
-import kotlinx.coroutines.flow.collect
 
 /**
  * Prompt Enhancer for improving user prompts using domain knowledge and context
