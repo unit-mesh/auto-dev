@@ -18,6 +18,10 @@ jobs:
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,6 +70,9 @@ jobs:
   build-desktop:
     name: Build Desktop (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -114,12 +121,15 @@ jobs:
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.path }}
-
   # Create release with all artifacts
   create-release:
     name: Create Release
     needs: [build-android, build-desktop]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     # Only run for compose-* tags to avoid conflicts with main release workflow
     if: startsWith(github.ref, 'refs/tags/compose-')
     steps:

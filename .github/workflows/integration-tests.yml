@@ -153,29 +153,7 @@ jobs:
         echo "Keep Test Projects: ${KEEP_TEST_PROJECTS}"
         echo ""
 
-        # 运行对应的测试类别
-        if [ "${{ matrix.test-category }}" = "all" ]; then
-          echo "Running all integration tests v2..."
-          npm run test:integration-v2
-        elif [ "${{ matrix.test-category }}" = "simple" ]; then
-          echo "Running simple robustness tests..."
-          npm run test:integration-v2:simple
-        elif [ "${{ matrix.test-category }}" = "business" ]; then
-          echo "Running business scenario tests..."
-          npm run test:integration-v2:business
-        elif [ "${{ matrix.test-category }}" = "errors" ]; then
-          echo "Running error recovery tests..."
-          npm run test:integration-v2:errors
-        elif [ "${{ matrix.test-category }}" = "performance" ]; then
-          echo "Running performance tests..."
-          npm run test:integration-v2:performance
-        elif [ "${{ matrix.test-category }}" = "custom" ]; then
-          echo "Running custom scenario tests..."
-          npm run test:integration-v2:custom
-        else
-          echo "Unknown test category: ${{ matrix.test-category }}"
-          exit 1
-        fi
+        npm run test:integration-v2
       timeout-minutes: 45
 
     - name: Analyze test results and check threshold
