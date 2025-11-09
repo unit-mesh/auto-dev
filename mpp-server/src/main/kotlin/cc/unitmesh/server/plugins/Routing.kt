@@ -9,11 +9,30 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 fun Application.configureRouting() {
     val config = ServerConfig.load()
     val projectService = ProjectService(config.projects)
     val agentService = AgentService(config.llm)
+
+    // JSON serializer with polymorphic support for AgentEvent
+    val json = Json {
+        serializersModule = SerializersModule {
+            polymorphic(AgentEvent::class) {
+                subclass(AgentEvent.IterationStart::class)
+                subclass(AgentEvent.LLMResponseChunk::class)
+                subclass(AgentEvent.ToolCall::class)
+                subclass(AgentEvent.ToolResult::class)
+                subclass(AgentEvent.Error::class)
+                subclass(AgentEvent.Complete::class)
+            }
+        }
+    }
 
     routing {
         // Health check
@@ -70,6 +89,59 @@ fun Application.configureRouting() {
                             HttpStatusCode.InternalServerError,
                             mapOf("error" to (e.message ?: "Unknown error"))
                         )
+                    }
+                }
+
+                // SSE Streaming execution
+                post("/stream") {
+                    val request = try {
+                        call.receive<AgentRequest>()
+                    } catch (e: Exception) {
+                        return@post call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Invalid request: ${e.message}")
+                        )
+                    }
+
+                    val project = projectService.getProject(request.projectId)
+                    if (project == null) {
+                        return@post call.respond(
+                            HttpStatusCode.NotFound,
+                            mapOf("error" to "Project not found")
+                        )
+                    }
+
+                    // Set SSE headers
+                    call.response.headers.append(HttpHeaders.ContentType, "text/event-stream")
+                    call.response.headers.append(HttpHeaders.CacheControl, "no-cache")
+                    call.response.headers.append(HttpHeaders.Connection, "keep-alive")
+                    call.response.headers.append(HttpHeaders.AccessControlAllowOrigin, "*")
+
+                    try {
+                        agentService.executeAgentStream(project.path, request).collect { event ->
+                            val eventType = when (event) {
+                                is AgentEvent.IterationStart -> "iteration"
+                                is AgentEvent.LLMResponseChunk -> "llm_chunk"
+                                is AgentEvent.ToolCall -> "tool_call"
+                                is AgentEvent.ToolResult -> "tool_result"
+                                is AgentEvent.Error -> "error"
+                                is AgentEvent.Complete -> "complete"
+                            }
+
+                            val data = when (event) {
+                                is AgentEvent.IterationStart -> json.encodeToString(event)
+                                is AgentEvent.LLMResponseChunk -> json.encodeToString(event)
+                                is AgentEvent.ToolCall -> json.encodeToString(event)
+                                is AgentEvent.ToolResult -> json.encodeToString(event)
+                                is AgentEvent.Error -> json.encodeToString(event)
+                                is AgentEvent.Complete -> json.encodeToString(event)
+                            }
+
+                            call.respondText("event: $eventType\ndata: $data\n\n", ContentType.Text.EventStream)
+                        }
+                    } catch (e: Exception) {
+                        val errorData = json.encodeToString(AgentEvent.Error("Execution failed: ${e.message}"))
+                        call.respondText("event: error\ndata: $errorData\n\n", ContentType.Text.EventStream)
                     }
                 }
             }

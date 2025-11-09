@@ -20,6 +20,7 @@ fun main() {
 fun Application.module() {
     configureSerialization()
     configureCORS()
+    configureSSE()
     configureRouting()
 }
 

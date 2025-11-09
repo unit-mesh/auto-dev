@@ -8,37 +8,33 @@
 
 - **远程项目访问**: Android 端可以选择并操作远程服务器上的项目
 - **流式响应**: 通过 SSE 提供实时的 AI 响应流
-- **跨平台渲染**: 使用 `ComposeRenderer` 统一的跨平台 UI 渲染能力
+- **跨平台渲染**: 使用 `CodingAgentRenderer` 统一的跨平台渲染能力
 - **完整的 Agent 能力**: 复用 `mpp-core` 的 CodingAgent、Tool System、LLM 集成等核心能力
 
-## 🎯 MVP 目标
+## ✅ 当前状态
 
-创建一个**最简单可运行**的服务器，实现以下核心功能：
+**当前版本**: v2.0.0 (Phase 5 & 6 完成)
 
-1. ✅ **基础 HTTP 服务器**: 使用 Ktor + Netty 启动服务
-2. ✅ **项目列表 API**: 返回服务器上可用的项目列表
-3. ✅ **Agent 执行 API**: 接收用户请求（当前返回占位符响应）
-4. 🚧 **SSE 流式响应**: 计划在下一阶段实现
-5. ✅ **基础配置**: 支持配置 LLM、项目路径等
-
-## ✅ MVP 完成状态
-
-**当前版本**: v1.0.0 (MVP)
-
-**已完成**:
+**已完成功能**:
 - ✅ 服务器可编译、可运行
 - ✅ 健康检查端点 `GET /health`
 - ✅ 项目列表 API `GET /api/projects`
 - ✅ 项目详情 API `GET /api/projects/{id}`
-- ✅ Agent 执行 API `POST /api/agent/run` (占位符实现)
+- ✅ **Agent 同步执行 API** `POST /api/agent/run` (Phase 5 ✅)
+- ✅ **Agent 流式执行 API** `POST /api/agent/stream` (Phase 6 ✅)
+- ✅ **真实 CodingAgent 集成** - 使用 `mpp-core` 的完整 Agent 能力
+- ✅ **ServerSideRenderer** - 实现 `CodingAgentRenderer` 接口
+- ✅ **SSE 事件流** - 支持 iteration, llm_chunk, tool_call, tool_result, error, complete
+- ✅ **多种 LLM 支持** - OpenAI, Anthropic, Google, DeepSeek, Ollama 等
 - ✅ 环境变量配置支持
 - ✅ 基础测试通过
 
-**下一阶段计划**:
-- 🚧 集成真实的 CodingAgent 执行
-- 🚧 实现 SSE 流式响应
-- 🚧 添加认证和授权
-- 🚧 性能优化和错误处理
+**下一阶段计划** (Phase 7):
+- 🚧 添加认证和授权 (JWT/OAuth)
+- 🚧 速率限制和配额管理
+- 🚧 监控和日志聚合
+- 🚧 Docker 容器化和 Kubernetes 部署
+- 🚧 数据库持久化
 
 ## 🏗️ 技术架构
 
