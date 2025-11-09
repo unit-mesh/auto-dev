@@ -91,6 +91,7 @@ configure(subprojects - project(":exts")
         - project(":mpp-core")
         - project(":mpp-ui")
         - project(":mpp-codegraph")
+        - project(":mpp-server")
 ) {
     apply {
         plugin("idea")

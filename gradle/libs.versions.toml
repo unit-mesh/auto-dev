@@ -7,6 +7,7 @@ qodana = "0.1.13"
 kover = "0.7.5"
 compose = "1.8.0"
 ktlint = "13.1.0"
+ktor = "3.3.0"
 
 chapi = "2.1.2"
 jtokkit = "1.1.0"
@@ -14,6 +15,13 @@ jtokkit = "1.1.0"
 [libraries]
 jtokkit = { module = "com.knuddels:jtokkit", version.ref = "jtokkit" }
 
+ktor-serverCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-serverContentNegotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktor-serializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+ktor-serverCors = { module = "io.ktor:ktor-server-cors-jvm", version.ref = "ktor" }
+ktor-serverSse = { module = "io.ktor:ktor-server-sse-jvm", version.ref = "ktor" }
+ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
@@ -27,5 +35,6 @@ kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 
 [bundles]
