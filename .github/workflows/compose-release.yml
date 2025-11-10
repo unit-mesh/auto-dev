@@ -55,7 +55,7 @@ jobs:
       - name: Build mpp-server fat JAR
         run: ./gradlew :mpp-server:fatJar --no-daemon
 
-      - name: Clean build cache to save space
+      - name: Clean build cache to save space (Linux only)
         run: |
           ./gradlew :mpp-server:clean
           rm -rf ~/.gradle/caches/modules-2/files-2.1
@@ -110,7 +110,7 @@ jobs:
       - name: Build Android Release APK
         run: ./gradlew :mpp-ui:assembleRelease --no-daemon
 
-      - name: Clean build cache to save space
+      - name: Clean build cache to save space (Linux only)
         run: |
           ./gradlew :mpp-ui:clean
           rm -rf ~/.gradle/caches/modules-2/files-2.1
@@ -186,11 +186,21 @@ jobs:
       - name: Build Desktop package
         run: ./gradlew :mpp-ui:${{ matrix.task }} --no-daemon
 
-      - name: Clean build cache to save space
+      - name: Clean build cache to save space (Unix)
+        if: runner.os != 'Windows'
         run: |
           ./gradlew :mpp-ui:clean
           rm -rf ~/.gradle/caches/modules-2/files-2.1
           df -h
+
+      - name: Clean build cache to save space (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./gradlew :mpp-ui:clean
+          if (Test-Path "$env:USERPROFILE\.gradle\caches\modules-2\files-2.1") {
+            Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches\modules-2\files-2.1"
+          }
 
       - name: Upload Desktop package
         uses: actions/upload-artifact@v4
