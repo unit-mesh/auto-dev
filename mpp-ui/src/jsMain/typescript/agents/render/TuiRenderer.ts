@@ -10,9 +10,9 @@
  * - 减少冗余日志
  */
 
-import type { ModeContext } from '../../modes/Mode.js';
+import type { ModeContext } from '../../modes';
 import type { Message } from '../../ui/App.js';
-import {BaseRenderer} from "./BaseRenderer";
+import {BaseRenderer} from "./BaseRenderer.js";
 
 /**
  * TUI 渲染器
