@@ -10,7 +10,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sse.*
-import kotlinx.serialization.encodeToString
+import io.ktor.sse.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -93,58 +93,51 @@ fun Application.configureRouting() {
                     }
                 }
 
-                // SSE Streaming execution
-                post("/stream") {
-                    val request = try {
-                        call.receive<AgentRequest>()
-                    } catch (e: Exception) {
-                        return@post call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid request: ${e.message}")
-                        )
+                sse("/stream") {
+                    val projectId = call.parameters["projectId"] ?: run {
+                        send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Missing projectId parameter"))))
+                        return@sse
                     }
 
-                    val project = projectService.getProject(request.projectId)
+                    val task = call.parameters["task"] ?: run {
+                        send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Missing task parameter"))))
+                        return@sse
+                    }
+
+                    val project = projectService.getProject(projectId)
                     if (project == null) {
-                        return@post call.respond(
-                            HttpStatusCode.NotFound,
-                            mapOf("error" to "Project not found")
-                        )
+                        send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Project not found"))))
+                        return@sse
                     }
 
-                    // 使用 respondTextWriter 进行 SSE 流式响应
-                    call.respondTextWriter(contentType = ContentType.Text.EventStream) {
-                        try {
-                            agentService.executeAgentStream(project.path, request).collect { event ->
-                                val eventType = when (event) {
-                                    is AgentEvent.IterationStart -> "iteration"
-                                    is AgentEvent.LLMResponseChunk -> "llm_chunk"
-                                    is AgentEvent.ToolCall -> "tool_call"
-                                    is AgentEvent.ToolResult -> "tool_result"
-                                    is AgentEvent.Error -> "error"
-                                    is AgentEvent.Complete -> "complete"
-                                }
+                    val request = AgentRequest(projectId = projectId, task = task)
 
-                                val data = when (event) {
-                                    is AgentEvent.IterationStart -> json.encodeToString(event)
-                                    is AgentEvent.LLMResponseChunk -> json.encodeToString(event)
-                                    is AgentEvent.ToolCall -> json.encodeToString(event)
-                                    is AgentEvent.ToolResult -> json.encodeToString(event)
-                                    is AgentEvent.Error -> json.encodeToString(event)
-                                    is AgentEvent.Complete -> json.encodeToString(event)
-                                }
-
-                                // 写入 SSE 格式的数据
-                                write("event: $eventType\n")
-                                write("data: $data\n\n")
-                                flush()
+                    try {
+                        agentService.executeAgentStream(project.path, request).collect { event ->
+                            val eventType = when (event) {
+                                is AgentEvent.IterationStart -> "iteration"
+                                is AgentEvent.LLMResponseChunk -> "llm_chunk"
+                                is AgentEvent.ToolCall -> "tool_call"
+                                is AgentEvent.ToolResult -> "tool_result"
+                                is AgentEvent.Error -> "error"
+                                is AgentEvent.Complete -> "complete"
                             }
-                        } catch (e: Exception) {
-                            val errorData = json.encodeToString(AgentEvent.Error("Execution failed: ${e.message}"))
-                            write("event: error\n")
-                            write("data: $errorData\n\n")
-                            flush()
+
+                            val data = when (event) {
+                                is AgentEvent.IterationStart -> json.encodeToString(event)
+                                is AgentEvent.LLMResponseChunk -> json.encodeToString(event)
+                                is AgentEvent.ToolCall -> json.encodeToString(event)
+                                is AgentEvent.ToolResult -> json.encodeToString(event)
+                                is AgentEvent.Error -> json.encodeToString(event)
+                                is AgentEvent.Complete -> json.encodeToString(event)
+                            }
+
+                            send(ServerSentEvent(data = data, event = eventType))
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        val errorData = json.encodeToString(AgentEvent.Error("Execution failed: ${e.message}"))
+                        send(ServerSentEvent(data = errorData, event = "error"))
                     }
                 }
             }

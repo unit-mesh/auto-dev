@@ -13,12 +13,9 @@ import cc.unitmesh.server.config.LLMConfig as ServerLLMConfig
 import cc.unitmesh.server.config.ServerConfigLoader
 import cc.unitmesh.server.model.*
 import cc.unitmesh.server.render.ServerSideRenderer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 
 class AgentService(private val fallbackLLMConfig: ServerLLMConfig) {
 
@@ -103,44 +100,43 @@ class AgentService(private val fallbackLLMConfig: ServerLLMConfig) {
                 projectPath = projectPath
             )
 
-            // Launch agent execution in background and collect events
-            CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
-                try {
-                    val result = agent.executeTask(task)
-
-                    // Send final completion event
-                    renderer.sendComplete(
-                        success = result.success,
-                        message = result.message,
-                        iterations = result.steps.size,
-                        steps = result.steps.map { step ->
-                            AgentStepInfo(
-                                step = step.step,
-                                action = step.action,
-                                tool = step.tool,
-                                success = step.success
-                            )
-                        },
-                        edits = result.edits.map { edit ->
-                            AgentEditInfo(
-                                file = edit.file,
-                                operation = edit.operation.name,
-                                content = edit.content
-                            )
-                        }
-                    )
-                } catch (e: Exception) {
-                    renderer.sendError("Agent execution failed: ${e.message}")
-                } finally {
-                    agent.shutdown()
+            coroutineScope {
+                launch {
+                    try {
+                        val result = agent.executeTask(task)
+                        renderer.sendComplete(
+                            success = result.success,
+                            message = result.message,
+                            iterations = result.steps.size,
+                            steps = result.steps.map { step ->
+                                AgentStepInfo(
+                                    step = step.step,
+                                    action = step.action,
+                                    tool = step.tool,
+                                    success = step.success
+                                )
+                            },
+                            edits = result.edits.map { edit ->
+                                AgentEditInfo(
+                                    file = edit.file,
+                                    operation = edit.operation.name,
+                                    content = edit.content
+                                )
+                            }
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        renderer.sendError("Agent execution failed: ${e.message}")
+                    } finally {
+                        agent.shutdown()
+                    }
+                }
+                renderer.events.collect { event ->
+                    emit(event)
                 }
             }
-
-            // Emit all events from the renderer
-            renderer.events.collect { event ->
-                emit(event)
-            }
         } catch (e: Exception) {
+            e.printStackTrace()
             emit(AgentEvent.Error("Failed to start agent: ${e.message}"))
         }
     }
@@ -153,9 +149,7 @@ class AgentService(private val fallbackLLMConfig: ServerLLMConfig) {
      */
     private fun createLLMService(clientConfig: LLMConfig? = null): KoogLLMService {
         val (provider, modelName, apiKey, baseUrl) = when {
-            // Priority 1: Client-provided config
             clientConfig != null -> {
-                println("🔧 Using client-provided LLM config: ${clientConfig.provider}/${clientConfig.modelName}")
                 Quadruple(
                     clientConfig.provider,
                     clientConfig.modelName,
@@ -163,19 +157,15 @@ class AgentService(private val fallbackLLMConfig: ServerLLMConfig) {
                     clientConfig.baseUrl
                 )
             }
-            // Priority 2: Server's ~/.autodev/config.yaml
             serverConfig != null -> {
-                println("🔧 Using server config from ~/.autodev/config.yaml: ${serverConfig?.provider}/${serverConfig?.model}")
                 Quadruple(
-                    serverConfig?.provider ?: "openai",
-                    serverConfig?.model ?: "gpt-4",
+                    serverConfig?.provider ?: "deepseek",
+                    serverConfig?.model ?: "deepseek-chat",
                     serverConfig?.apiKey ?: "",
                     serverConfig?.baseUrl ?: ""
                 )
             }
-            // Priority 3: Fallback to environment variables
             else -> {
-                println("🔧 Using fallback config from environment: ${fallbackLLMConfig.provider}/${fallbackLLMConfig.modelName}")
                 Quadruple(
                     fallbackLLMConfig.provider,
                     fallbackLLMConfig.modelName,
@@ -189,8 +179,8 @@ class AgentService(private val fallbackLLMConfig: ServerLLMConfig) {
             provider = LLMProviderType.valueOf(provider.uppercase()),
             modelName = modelName,
             apiKey = apiKey,
-            temperature = 0.7,
-            maxTokens = 4096,
+            temperature = 0.9,
+            maxTokens = 128000,
             baseUrl = baseUrl.ifEmpty { "" }
         )
 
@@ -218,7 +208,7 @@ class AgentService(private val fallbackLLMConfig: ServerLLMConfig) {
             shellExecutor = null,
             mcpServers = null,
             mcpToolConfigService = mcpToolConfigService,
-            enableLLMStreaming = false  // 暂时禁用 LLM 流式，使用非流式模式确保输出
+            enableLLMStreaming = true  // 启用 LLM 流式输出以支持 SSE
         )
     }
 }
