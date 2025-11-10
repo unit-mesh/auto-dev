@@ -11,6 +11,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sse.*
 import io.ktor.sse.*
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -29,6 +30,8 @@ fun Application.configureRouting() {
                 subclass(AgentEvent.LLMResponseChunk::class)
                 subclass(AgentEvent.ToolCall::class)
                 subclass(AgentEvent.ToolResult::class)
+                subclass(AgentEvent.CloneLog::class)
+                subclass(AgentEvent.CloneProgress::class)
                 subclass(AgentEvent.Error::class)
                 subclass(AgentEvent.Complete::class)
             }
@@ -93,32 +96,55 @@ fun Application.configureRouting() {
                     }
                 }
 
+                // SSE Streaming execution - Using Ktor SSE plugin
                 sse("/stream") {
                     val projectId = call.parameters["projectId"] ?: run {
                         send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Missing projectId parameter"))))
                         return@sse
                     }
-
+                    
                     val task = call.parameters["task"] ?: run {
                         send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Missing task parameter"))))
                         return@sse
                     }
+                    
+                    // Optional git clone parameters
+                    val gitUrl = call.parameters["gitUrl"]
+                    val branch = call.parameters["branch"]
+                    val username = call.parameters["username"]
+                    val password = call.parameters["password"]
 
-                    val project = projectService.getProject(projectId)
-                    if (project == null) {
-                        send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Project not found"))))
-                        return@sse
+                    // If gitUrl is provided, use it; otherwise look up existing project
+                    val projectPath = if (gitUrl.isNullOrBlank()) {
+                        val project = projectService.getProject(projectId)
+                        if (project == null) {
+                            send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Project not found"))))
+                            return@sse
+                        }
+                        project.path
+                    } else {
+                        // Will be cloned by AgentService
+                        ""
                     }
 
-                    val request = AgentRequest(projectId = projectId, task = task)
+                    val request = AgentRequest(
+                        projectId = projectId,
+                        task = task,
+                        gitUrl = gitUrl,
+                        branch = branch,
+                        username = username,
+                        password = password
+                    )
 
                     try {
-                        agentService.executeAgentStream(project.path, request).collect { event ->
+                        agentService.executeAgentStream(projectPath, request).collect { event ->
                             val eventType = when (event) {
                                 is AgentEvent.IterationStart -> "iteration"
                                 is AgentEvent.LLMResponseChunk -> "llm_chunk"
                                 is AgentEvent.ToolCall -> "tool_call"
                                 is AgentEvent.ToolResult -> "tool_result"
+                                is AgentEvent.CloneLog -> "clone_log"
+                                is AgentEvent.CloneProgress -> "clone_progress"
                                 is AgentEvent.Error -> "error"
                                 is AgentEvent.Complete -> "complete"
                             }
@@ -128,10 +154,13 @@ fun Application.configureRouting() {
                                 is AgentEvent.LLMResponseChunk -> json.encodeToString(event)
                                 is AgentEvent.ToolCall -> json.encodeToString(event)
                                 is AgentEvent.ToolResult -> json.encodeToString(event)
+                                is AgentEvent.CloneLog -> json.encodeToString(event)
+                                is AgentEvent.CloneProgress -> json.encodeToString(event)
                                 is AgentEvent.Error -> json.encodeToString(event)
                                 is AgentEvent.Complete -> json.encodeToString(event)
                             }
 
+                            // Send SSE event
                             send(ServerSentEvent(data = data, event = eventType))
                         }
                     } catch (e: Exception) {

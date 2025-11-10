@@ -28,7 +28,11 @@ data class ProjectListResponse(
 data class AgentRequest(
     val projectId: String,
     val task: String,
-    val llmConfig: LLMConfig? = null
+    val llmConfig: LLMConfig? = null,
+    val gitUrl: String? = null,
+    val branch: String? = null,
+    val username: String? = null,
+    val password: String? = null
 )
 
 @Serializable
@@ -82,6 +86,12 @@ sealed interface AgentEvent {
         val success: Boolean,
         val output: String?
     ) : AgentEvent
+
+    @Serializable
+    data class CloneLog(val message: String, val isError: Boolean = false) : AgentEvent
+
+    @Serializable
+    data class CloneProgress(val stage: String, val progress: Int? = null) : AgentEvent
 
     @Serializable
     data class Error(val message: String) : AgentEvent

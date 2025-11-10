@@ -83,21 +83,49 @@ class AgentService(private val fallbackLLMConfig: ServerLLMConfig) {
     }
 
     /**
-     * Execute agent with SSE streaming
+     * Execute agent with SSE streaming (optionally with git clone first)
      */
     suspend fun executeAgentStream(
         projectPath: String,
         request: AgentRequest
     ): Flow<AgentEvent> = flow {
+        // If gitUrl is provided, clone the repository first
+        val actualProjectPath = if (!request.gitUrl.isNullOrBlank()) {
+            val gitCloneService = GitCloneService()
+            
+            // Collect and emit all clone logs
+            gitCloneService.cloneRepositoryWithLogs(
+                gitUrl = request.gitUrl,
+                branch = request.branch,
+                username = request.username,
+                password = request.password,
+                projectId = request.projectId
+            ).collect { event ->
+                emit(event)
+            }
+            
+            // Get the cloned path
+            val clonedPath = gitCloneService.lastClonedPath
+            if (clonedPath == null) {
+                emit(AgentEvent.Error("Clone failed - no project path available"))
+                return@flow
+            }
+            
+            clonedPath
+        } else {
+            projectPath
+        }
+        
+        // Now execute the agent
         val llmService = createLLMService(request.llmConfig)
         val renderer = ServerSideRenderer()
 
-        val agent = createCodingAgent(projectPath, llmService, renderer)
+        val agent = createCodingAgent(actualProjectPath, llmService, renderer)
 
         try {
             val task = AgentTask(
                 requirement = request.task,
-                projectPath = projectPath
+                projectPath = actualProjectPath
             )
 
             coroutineScope {
