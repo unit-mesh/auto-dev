@@ -1,5 +1,6 @@
 package cc.unitmesh.server.command
 
+import cc.unitmesh.agent.logging.AutoDevLogger
 import java.io.File
 import java.lang.String.format
 
@@ -12,23 +13,38 @@ class GitCommand(
     val secrets: List<String> = listOf(),
     val logStream: StreamConsumer
 ) {
+    private val logger = AutoDevLogger.getLogger("GitCommand")
+    
     private fun cloneCommand(): CommandLine {
         return git().withArg("clone")
     }
 
     fun clone(url: String, depth: Int, branch: String): Int {
+        logger.info { "Cloning repository from $url to ${workingDir.absolutePath} with branch: $branch, depth: $depth" }
+        
         val gitClone = cloneCommand()
             .`when`(depth < Int.MAX_VALUE) { git -> git.withArg(String.format("--depth=%s", depth)) }
             .withArg(url).withArg(workingDir.absolutePath)
             .withArgs("--branch", branch)
 
-        return run(gitClone, logStream)
+        val result = run(gitClone, logStream)
+        
+        if (result == 0) {
+            logger.info { "✓ Successfully cloned repository to ${workingDir.absolutePath}" }
+        } else {
+            logger.error { "✗ Failed to clone repository, exit code: $result" }
+        }
+        
+        return result
     }
 
     // todo: collection logs for frontend
     private fun run(cmd: CommandLine, console: StreamConsumer): Int {
+        logger.debug { "Executing command: ${cmd.getCommandLine().joinToString(" ")}" }
         val processBuilder = ProcessBuilder(cmd.getCommandLine())
-        return Processor.executeWithLogs(processBuilder, workingDir, logStream)
+        val result = Processor.executeWithLogs(processBuilder, workingDir, logStream)
+        logger.debug { "Command completed with exit code: $result" }
+        return result
     }
 
     private fun git(): CommandLine {
@@ -41,17 +57,20 @@ class GitCommand(
     }
 
     fun fetch(): Int {
+        logger.info { "Fetching from origin for ${workingDir.absolutePath}" }
         val gitFetch: CommandLine = gitWd().withArgs("fetch", "origin", "--prune", "--recurse-submodules=no")
         val result: Int = run(gitFetch, logStream)
         if (result != 0) {
+            logger.error { "✗ Git fetch failed for ${workingDir.absolutePath}" }
             throw RuntimeException(format("git fetch failed for [%s]", workingDir))
         }
-
+        logger.info { "✓ Successfully fetched from origin" }
         return result
     }
 
     fun pullCode(): Int {
-        return runCascade(
+        logger.info { "Pulling code for ${workingDir.absolutePath} on branch: $branch" }
+        val result = runCascade(
             logStream,
             gitWd().withArgs("reset", "--hard"),
             // clean files
@@ -59,6 +78,14 @@ class GitCommand(
             git_C().withArgs("config", "--replace-all", "remote.origin.fetch", "+" + expandRefSpec()),
             git_C().withArgs("pull", "--rebase"),
         )
+        
+        if (result == 0) {
+            logger.info { "✓ Successfully pulled code" }
+        } else {
+            logger.error { "✗ Failed to pull code, exit code: $result" }
+        }
+        
+        return result
     }
 
     private fun git_C(): CommandLine {
