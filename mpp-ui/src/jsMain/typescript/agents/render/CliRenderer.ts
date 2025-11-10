@@ -208,6 +208,12 @@ export class CliRenderer {
       if (toolName === 'read-file') {
         // For read-file, show formatted code content with syntax highlighting
         this.displayCodeContent(output, this.getFileExtension(output));
+      } else if (toolName === 'write-file' || toolName === 'edit-file') {
+        // For write-file/edit-file, show diff view if available
+        const diffInfo = this.extractDiffInfo(output);
+        if (diffInfo && (diffInfo.additions > 0 || diffInfo.deletions > 0)) {
+          this.displayDiffSummary(diffInfo.additions, diffInfo.deletions);
+        }
       }
     } else if (!success && output) {
       console.log('  ⎿ ' + semanticChalk.error(`Error: ${output.substring(0, 200)}`));
@@ -228,14 +234,15 @@ export class CliRenderer {
         return `Read ${lines} lines`;
 
       case 'write-file':
+      case 'edit-file':
         if (output.includes('created')) {
           const lines = output.split('\n').length;
           return `File created with ${lines} lines`;
-        } else if (output.includes('updated')) {
+        } else if (output.includes('updated') || output.includes('overwrote') || output.includes('Successfully')) {
           // Try to extract diff information if available
           const diffInfo = this.extractDiffInfo(output);
-          if (diffInfo) {
-            return `Edited with ${semanticChalk.success(diffInfo.additions + ' additions')} and ${semanticChalk.error(diffInfo.deletions + ' deletions')}`;
+          if (diffInfo && (diffInfo.additions > 0 || diffInfo.deletions > 0)) {
+            return `Edited with ${semanticChalk.success('+' + diffInfo.additions)} and ${semanticChalk.error('-' + diffInfo.deletions)}`;
           }
           return 'File updated successfully';
         }
@@ -270,6 +277,13 @@ export class CliRenderer {
       console.log(semanticChalk.muted(`... (${lines.length - maxLines} more lines)`));
     }
 
+    console.log(dividers.solid(60));
+  }
+
+  private displayDiffSummary(additions: number, deletions: number): void {
+    // Display diff summary similar to git diff output
+    console.log(dividers.solid(60));
+    console.log(semanticChalk.success(`  +${additions} lines added`) + ' │ ' + semanticChalk.error(`-${deletions} lines removed`));
     console.log(dividers.solid(60));
   }
 
@@ -335,11 +349,11 @@ export class CliRenderer {
 
   private extractDiffInfo(output: string): {additions: number, deletions: number} | null {
     // Try to extract diff information from output
-    // This is a simplified approach - in practice, you'd get this from the actual diff
     const lines = output.split('\n');
     let additions = 0;
     let deletions = 0;
 
+    // Check for unified diff format (from tool output)
     for (const line of lines) {
       if (line.startsWith('+') && !line.startsWith('+++')) {
         additions++;
@@ -352,10 +366,21 @@ export class CliRenderer {
       return { additions, deletions };
     }
 
-    // Fallback: estimate based on content
-    const contentLines = lines.filter(line => line.trim().length > 0).length;
-    if (contentLines > 0) {
-      return { additions: contentLines, deletions: 0 };
+    // Try to parse from success message like "Successfully created file: path (123 chars, 45 lines)"
+    // This is from WriteFileTool output
+    const newFileMatch = output.match(/created file.*\((\d+) chars, (\d+) lines\)/);
+    if (newFileMatch) {
+      const lineCount = parseInt(newFileMatch[2], 10);
+      return { additions: lineCount, deletions: 0 };
+    }
+
+    // Try to parse from success message like "Successfully overwrote file: path (123 chars, 45 lines)"
+    const overwriteMatch = output.match(/overwrote file.*\((\d+) chars, (\d+) lines\)/);
+    if (overwriteMatch) {
+      const lineCount = parseInt(overwriteMatch[2], 10);
+      // For overwrites, we can't determine exact diff without original content
+      // So we'll just show it as additions for now
+      return { additions: lineCount, deletions: 0 };
     }
 
     return null;

@@ -64,16 +64,16 @@ export class ServerRenderer {
       const barLength = 30;
       const filledLength = Math.floor((progress / 100) * barLength);
       const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
-      
+
       process.stdout.write(`\r${semanticChalk.accent(`[${bar}]`)} ${progress}% - ${stage}`);
-      
+
       if (progress === 100) {
         console.log(''); // New line after completion
         console.log(semanticChalk.success('✓ Clone completed'));
         console.log(semanticChalk.accent('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
         console.log('');
       }
-      
+
       this.lastCloneProgress = progress;
     }
   }
@@ -87,7 +87,7 @@ export class ServerRenderer {
       /^Resolving deltas:/,
       /^Unpacking objects:/
     ];
-    
+
     if (noisyPatterns.some(pattern => pattern.test(message))) {
       return; // Skip noisy messages
     }
@@ -195,10 +195,10 @@ export class ServerRenderer {
 
     // Get friendly tool display info (matching CliRenderer style)
     const toolInfo = this.formatToolCallDisplay(toolName, params);
-    
+
     // Display like CliRenderer: ● name - description
     console.log(`● ${toolInfo.name}` + semanticChalk.muted(` - ${toolInfo.description}`));
-    
+
     if (toolInfo.details) {
       console.log('  ⎿ ' + semanticChalk.muted(toolInfo.details));
     }
@@ -269,6 +269,12 @@ export class ServerRenderer {
       // For read-file, show formatted code content (like CliRenderer)
       if (toolName === 'read-file') {
         this.displayCodeContent(output);
+      } else if (toolName === 'write-file' || toolName === 'edit-file') {
+        // For write-file/edit-file, show diff view if available
+        const diffInfo = this.extractDiffInfo(output);
+        if (diffInfo && (diffInfo.additions > 0 || diffInfo.deletions > 0)) {
+          this.displayDiffSummary(diffInfo.additions, diffInfo.deletions);
+        }
       }
     } else if (!success && output) {
       console.log('  ⎿ ' + semanticChalk.error(`Error: ${output.substring(0, 200)}`));
@@ -298,7 +304,12 @@ export class ServerRenderer {
         if (output.includes('created')) {
           const lines = output.split('\n').length;
           return `File created with ${lines} lines`;
-        } else if (output.includes('updated')) {
+        } else if (output.includes('updated') || output.includes('overwrote') || output.includes('Successfully')) {
+          // Try to extract diff information if available
+          const diffInfo = this.extractDiffInfo(output);
+          if (diffInfo && (diffInfo.additions > 0 || diffInfo.deletions > 0)) {
+            return `Edited with ${semanticChalk.success('+' + diffInfo.additions)} and ${semanticChalk.error('-' + diffInfo.deletions)}`;
+          }
           return 'File updated successfully';
         }
         return 'File operation completed';
@@ -334,6 +345,52 @@ export class ServerRenderer {
     console.log('────────────────────────────────────────────────────────────');
   }
 
+  private displayDiffSummary(additions: number, deletions: number): void {
+    // Display diff summary similar to git diff output
+    console.log('────────────────────────────────────────────────────────────');
+    console.log(semanticChalk.success(`  +${additions} lines added`) + ' │ ' + semanticChalk.error(`-${deletions} lines removed`));
+    console.log('────────────────────────────────────────────────────────────');
+  }
+
+  private extractDiffInfo(output: string): {additions: number, deletions: number} | null {
+    // Try to extract diff information from output
+    const lines = output.split('\n');
+    let additions = 0;
+    let deletions = 0;
+
+    // Check for unified diff format (from tool output)
+    for (const line of lines) {
+      if (line.startsWith('+') && !line.startsWith('+++')) {
+        additions++;
+      } else if (line.startsWith('-') && !line.startsWith('---')) {
+        deletions++;
+      }
+    }
+
+    if (additions > 0 || deletions > 0) {
+      return { additions, deletions };
+    }
+
+    // Try to parse from success message like "Successfully created file: path (123 chars, 45 lines)"
+    // This is from WriteFileTool output
+    const newFileMatch = output.match(/created file.*\((\d+) chars, (\d+) lines\)/);
+    if (newFileMatch) {
+      const lineCount = parseInt(newFileMatch[2], 10);
+      return { additions: lineCount, deletions: 0 };
+    }
+
+    // Try to parse from success message like "Successfully overwrote file: path (123 chars, 45 lines)"
+    const overwriteMatch = output.match(/overwrote file.*\((\d+) chars, (\d+) lines\)/);
+    if (overwriteMatch) {
+      const lineCount = parseInt(overwriteMatch[2], 10);
+      // For overwrites, we can't determine exact diff without original content
+      // So we'll just show it as additions for now
+      return { additions: lineCount, deletions: 0 };
+    }
+
+    return null;
+  }
+
   private renderError(message: string): void {
     console.log('');
     console.log(semanticChalk.error(`❌ Error: ${message}`));
@@ -359,7 +416,7 @@ export class ServerRenderer {
     }
 
     console.log('');
-    
+
     if (success) {
       console.log(semanticChalk.success('✅ Task completed successfully'));
     } else {
@@ -369,7 +426,7 @@ export class ServerRenderer {
     if (message && message.trim()) {
       console.log(semanticChalk.muted(`${message}`));
     }
-    
+
     console.log(semanticChalk.muted(`Task completed after ${iterations} iterations`));
 
     if (edits.length > 0) {
