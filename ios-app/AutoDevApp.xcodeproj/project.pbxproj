@@ -96,7 +96,6 @@
 				AA000001000000000000001 /* Sources */,
 				A4000001000000000000001 /* Frameworks */,
 				AB000001000000000000001 /* Resources */,
-				F3C8B8E8E0F6F8F8F8F8F8FF /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -172,23 +171,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F3C8B8E8E0F6F8F8F8F8F8FF /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AutoDevApp/Pods-AutoDevApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AutoDevApp/Pods-AutoDevApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AutoDevApp/Pods-AutoDevApp-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -379,20 +361,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AD000001000000000000001 /* Build configuration list for PBXProject "AutoDevApp" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AE000001000000000000001 /* Debug */,
-				AE000002000000000000001 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		A9000001000000000000001 /* Build configuration list for PBXNativeTarget "AutoDevApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AF000001000000000000001 /* Debug */,
 				AF000002000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AD000001000000000000001 /* Build configuration list for PBXProject "AutoDevApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE000001000000000000001 /* Debug */,
+				AE000002000000000000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

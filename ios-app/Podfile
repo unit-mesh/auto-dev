@@ -10,6 +10,7 @@ target 'AutoDevApp' do
 
   # AutoDev Framework - 使用本地编译的 framework
   # 这个 pod 会在每次 pod install 时自动编译最新的 framework
+  pod 'AutoDevCore', :path => '../mpp-core'
   pod 'AutoDevUI', :path => '../mpp-ui'
 end
 
