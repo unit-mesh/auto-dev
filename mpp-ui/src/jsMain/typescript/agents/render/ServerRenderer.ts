@@ -7,23 +7,34 @@
 
 import { semanticChalk } from '../../design-system/theme-helpers.js';
 import type { AgentEvent, AgentStepInfo, AgentEditInfo } from '../ServerAgentClient.js';
+import { BaseRenderer } from './BaseRenderer.js';
 
 /**
- * ServerRenderer implements the unified JsCodingAgentRenderer interface
+ * ServerRenderer extends BaseRenderer and implements the unified JsCodingAgentRenderer interface
  * defined in mpp-core/src/jsMain/kotlin/cc/unitmesh/agent/RendererExports.kt
  */
-export class ServerRenderer {
-  // Required by Kotlin JS export interface
-  readonly __doNotUseOrImplementIt: any = {};
+export class ServerRenderer extends BaseRenderer {
+  // BaseRenderer already has __doNotUseOrImplementIt
 
   private currentIteration: number = 0;
   private maxIterations: number = 20;
-  private llmBuffer: string = '';
+  // llmBuffer removed - use reasoningBuffer from BaseRenderer
   private toolCallsInProgress: Map<string, { toolName: string; params: string }> = new Map();
   private isCloning: boolean = false;
   private lastCloneProgress: number = 0;
   private hasStartedLLMOutput: boolean = false;
-  private lastOutputLength: number = 0;
+
+  // ============================================================================
+  // Platform-specific output methods (required by BaseRenderer)
+  // ============================================================================
+
+  protected outputContent(content: string): void {
+    process.stdout.write(content);
+  }
+
+  protected outputNewline(): void {
+    console.log();
+  }
 
   // ============================================================================
   // JsCodingAgentRenderer Interface Implementation
@@ -34,8 +45,8 @@ export class ServerRenderer {
   }
 
   renderLLMResponseStart(): void {
+    this.baseLLMResponseStart(); // Use BaseRenderer helper
     this.hasStartedLLMOutput = false;
-    this.lastOutputLength = 0;
   }
 
   renderLLMResponseChunk(chunk: string): void {
@@ -44,14 +55,14 @@ export class ServerRenderer {
 
   renderLLMResponseEnd(): void {
     // Flush any buffered LLM output
-    if (this.llmBuffer.trim()) {
-      const finalContent = this.filterDevinBlocks(this.llmBuffer);
+    if (this.reasoningBuffer.trim()) {
+      const finalContent = this.filterDevinBlocks(this.reasoningBuffer);
       const remainingContent = finalContent.slice(this.lastOutputLength || 0);
       if (remainingContent.trim()) {
-        process.stdout.write(remainingContent);
+        this.outputContent(remainingContent);
       }
-      console.log(''); // Ensure newline
-      this.llmBuffer = '';
+      this.outputNewline(); // Ensure newline
+      this.reasoningBuffer = '';
       this.hasStartedLLMOutput = false;
       this.lastOutputLength = 0;
     }
@@ -182,15 +193,15 @@ export class ServerRenderer {
     }
 
     // Add chunk to buffer
-    this.llmBuffer += chunk;
+    this.reasoningBuffer += chunk;
 
     // Wait for more content if we detect an incomplete devin block
-    if (this.hasIncompleteDevinBlock(this.llmBuffer)) {
+    if (this.hasIncompleteDevinBlock(this.reasoningBuffer)) {
       return; // Don't output anything yet, wait for more chunks
     }
 
     // Process the buffer to filter out devin blocks
-    const processedContent = this.filterDevinBlocks(this.llmBuffer);
+    const processedContent = this.filterDevinBlocks(this.reasoningBuffer);
 
     // Only output new content that hasn't been printed yet
     if (processedContent.length > 0) {
@@ -204,49 +215,15 @@ export class ServerRenderer {
     }
   }
 
-  private hasIncompleteDevinBlock(content: string): boolean {
-    // Check if there's an incomplete devin block
-    const lastOpenDevin = content.lastIndexOf('<devin');
-    const lastCloseDevin = content.lastIndexOf('</devin>');
-
-    // If we have an opening tag without a closing tag after it, it's incomplete
-    // Also check for partial opening tags like '<de' or '<dev' or just '<'
-    const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
-    const hasPartialTag = partialDevinPattern.test(content);
-
-    return lastOpenDevin > lastCloseDevin || hasPartialTag;
-  }
-
-  private filterDevinBlocks(content: string): string {
-    // Remove all complete devin blocks
-    let filtered = content.replace(/<devin[^>]*>[\s\S]*?<\/devin>/g, '');
-
-    // Handle incomplete devin blocks at the end - remove them completely
-    const openDevinIndex = filtered.lastIndexOf('<devin');
-    if (openDevinIndex !== -1) {
-      const closeDevinIndex = filtered.indexOf('</devin>', openDevinIndex);
-      if (closeDevinIndex === -1) {
-        // Incomplete devin block, remove it
-        filtered = filtered.substring(0, openDevinIndex);
-      }
-    }
-
-    // Also remove partial devin tags at the end and any standalone '<' that might be part of a devin tag
-    const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
-    filtered = filtered.replace(partialDevinPattern, '');
-
-    return filtered;
-  }
-
   // ============================================================================
   // Tool Execution Methods (JsCodingAgentRenderer)
   // ============================================================================
 
   renderToolCall(toolName: string, params: string): void {
     // Flush any buffered LLM output first
-    if (this.llmBuffer.trim()) {
+    if (this.reasoningBuffer.trim()) {
       console.log(''); // New line before tool
-      this.llmBuffer = '';
+      this.reasoningBuffer = '';
       this.hasStartedLLMOutput = false;
       this.lastOutputLength = 0;
     }
@@ -480,9 +457,9 @@ export class ServerRenderer {
     this.maxIterations = max;
 
     // Flush any buffered LLM output
-    if (this.llmBuffer.trim()) {
+    if (this.reasoningBuffer.trim()) {
       console.log(''); // Just a newline
-      this.llmBuffer = '';
+      this.reasoningBuffer = '';
     }
 
     // Reset LLM output state for new iteration
@@ -501,14 +478,14 @@ export class ServerRenderer {
     edits: AgentEditInfo[]
   ): void {
     // Flush any buffered LLM output
-    if (this.llmBuffer.trim()) {
-      const finalContent = this.filterDevinBlocks(this.llmBuffer);
+    if (this.reasoningBuffer.trim()) {
+      const finalContent = this.filterDevinBlocks(this.reasoningBuffer);
       const remainingContent = finalContent.slice(this.lastOutputLength || 0);
       if (remainingContent.trim()) {
         process.stdout.write(remainingContent);
       }
       console.log(''); // Ensure newline
-      this.llmBuffer = '';
+      this.reasoningBuffer = '';
     }
 
     console.log('');

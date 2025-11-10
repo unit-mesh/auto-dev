@@ -10,17 +10,30 @@
 import chalk from 'chalk';
 import hljs from 'highlight.js';
 import { semanticChalk, dividers } from '../../design-system/theme-helpers.js';
+import { BaseRenderer } from './BaseRenderer.js';
 
 /**
- * CliRenderer implements the unified JsCodingAgentRenderer interface
+ * CliRenderer extends BaseRenderer and implements the unified JsCodingAgentRenderer interface
  */
-export class CliRenderer {
-  readonly __doNotUseOrImplementIt: any = {};
+export class CliRenderer extends BaseRenderer {
+  // BaseRenderer already has __doNotUseOrImplementIt
+  // BaseRenderer already has reasoningBuffer, isInDevinBlock, lastIterationReasoning, consecutiveRepeats, lastOutputLength
 
-  private reasoningBuffer: string = '';
-  private isInDevinBlock: boolean = false;
-  private lastIterationReasoning: string = '';
-  private consecutiveRepeats: number = 0;
+  // ============================================================================
+  // Platform-specific output methods (required by BaseRenderer)
+  // ============================================================================
+
+  protected outputContent(content: string): void {
+    process.stdout.write(chalk.white(content));
+  }
+
+  protected outputNewline(): void {
+    console.log(); // Single line break
+  }
+
+  // ============================================================================
+  // JsCodingAgentRenderer Interface Implementation
+  // ============================================================================
 
   renderIterationHeader(current: number, max: number): void {
     // Don't show iteration headers - they're not in the reference format
@@ -28,9 +41,7 @@ export class CliRenderer {
   }
 
   renderLLMResponseStart(): void {
-    this.reasoningBuffer = '';
-    this.isInDevinBlock = false;
-    this.lastOutputLength = 0;
+    this.baseLLMResponseStart(); // Use BaseRenderer helper
     process.stdout.write(semanticChalk.muted('💭 '));
   }
 
@@ -38,12 +49,12 @@ export class CliRenderer {
     // Add chunk to buffer
     this.reasoningBuffer += chunk;
 
-    // Wait for more content if we detect an incomplete devin block
+    // Wait for more content if we detect an incomplete devin block (from BaseRenderer)
     if (this.hasIncompleteDevinBlock(this.reasoningBuffer)) {
       return; // Don't output anything yet, wait for more chunks
     }
 
-    // Process the buffer to filter out devin blocks
+    // Process the buffer to filter out devin blocks (from BaseRenderer)
     let processedContent = this.filterDevinBlocks(this.reasoningBuffer);
 
     // Only output new content that hasn't been printed yet
@@ -51,48 +62,12 @@ export class CliRenderer {
       // Find what's new since last output
       const newContent = processedContent.slice(this.lastOutputLength || 0);
       if (newContent.length > 0) {
-        // Clean up excessive newlines - replace multiple consecutive newlines with at most 2
-        const cleanedContent = newContent.replace(/\n{3,}/g, '\n\n');
+        // Clean up excessive newlines (from BaseRenderer)
+        const cleanedContent = this.cleanNewlines(newContent);
         process.stdout.write(chalk.white(cleanedContent));
         this.lastOutputLength = processedContent.length;
       }
     }
-  }
-
-  private lastOutputLength: number = 0;
-
-  private hasIncompleteDevinBlock(content: string): boolean {
-    // Check if there's an incomplete devin block
-    const lastOpenDevin = content.lastIndexOf('<devin');
-    const lastCloseDevin = content.lastIndexOf('</devin>');
-
-    // If we have an opening tag without a closing tag after it, it's incomplete
-    // Also check for partial opening tags like '<de' or '<dev' or just '<'
-    const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
-    const hasPartialTag = partialDevinPattern.test(content);
-
-    return lastOpenDevin > lastCloseDevin || hasPartialTag;
-  }
-
-  private filterDevinBlocks(content: string): string {
-    // Remove all complete devin blocks
-    let filtered = content.replace(/<devin[^>]*>[\s\S]*?<\/devin>/g, '');
-
-    // Handle incomplete devin blocks at the end - remove them completely
-    const openDevinIndex = filtered.lastIndexOf('<devin');
-    if (openDevinIndex !== -1) {
-      const closeDevinIndex = filtered.indexOf('</devin>', openDevinIndex);
-      if (closeDevinIndex === -1) {
-        // Incomplete devin block, remove it
-        filtered = filtered.substring(0, openDevinIndex);
-      }
-    }
-
-    // Also remove partial devin tags at the end and any standalone '<' that might be part of a devin tag
-    const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
-    filtered = filtered.replace(partialDevinPattern, '');
-
-    return filtered;
   }
 
   renderLLMResponseEnd(): void {
@@ -101,10 +76,10 @@ export class CliRenderer {
     const remainingContent = finalContent.slice(this.lastOutputLength || 0);
 
     if (remainingContent.length > 0) {
-      process.stdout.write(chalk.white(remainingContent));
+      this.outputContent(remainingContent);
     }
 
-    // Check if this reasoning is similar to the last one
+    // Check if this reasoning is similar to the last one (from BaseRenderer)
     const currentReasoning = finalContent.trim();
     const similarity = this.calculateSimilarity(currentReasoning, this.lastIterationReasoning);
 
@@ -122,21 +97,8 @@ export class CliRenderer {
     // Only add a line break if the content doesn't already end with one
     const trimmedContent = finalContent.trimEnd();
     if (trimmedContent.length > 0 && !trimmedContent.endsWith('\n')) {
-      console.log(); // Single line break after reasoning only if needed
+      this.outputNewline();
     }
-  }
-
-  private calculateSimilarity(str1: string, str2: string): number {
-    // Simple similarity calculation based on common words
-    if (!str1 || !str2) return 0;
-
-    const words1 = str1.toLowerCase().split(/\s+/);
-    const words2 = str2.toLowerCase().split(/\s+/);
-
-    const commonWords = words1.filter(word => words2.includes(word));
-    const totalWords = Math.max(words1.length, words2.length);
-
-    return totalWords > 0 ? commonWords.length / totalWords : 0;
   }
 
   renderToolCall(toolName: string, paramsStr: string): void {

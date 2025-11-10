@@ -1,8 +1,13 @@
 /**
  * Base TypeScript renderer implementing JsCodingAgentRenderer interface
  * Provides common functionality for all TypeScript renderer implementations
+ * 
+ * This mirrors the Kotlin BaseRenderer from mpp-core.
+ * All TypeScript renderers (CliRenderer, ServerRenderer, TuiRenderer) should extend this class.
+ * 
+ * @see mpp-core/src/commonMain/kotlin/cc/unitmesh/agent/render/BaseRenderer.kt
+ * @see mpp-core/src/jsMain/kotlin/cc/unitmesh/agent/RendererExports.kt - JsCodingAgentRenderer interface
  */
-
 export abstract class BaseRenderer {
   // Required by Kotlin JS export interface
   readonly __doNotUseOrImplementIt: any = {};
@@ -74,17 +79,22 @@ export abstract class BaseRenderer {
     return content.replace(/\n{3,}/g, '\n\n');
   }
 
-  // Abstract methods that must be implemented by subclasses
+  // ============================================================================
+  // JsCodingAgentRenderer Interface - Abstract methods
+  // These must be implemented by subclasses (CliRenderer, ServerRenderer, TuiRenderer)
+  // ============================================================================
+  
   abstract renderIterationHeader(current: number, max: number): void;
   abstract renderLLMResponseStart(): void;
   abstract renderLLMResponseChunk(chunk: string): void;
   abstract renderLLMResponseEnd(): void;
   abstract renderToolCall(toolName: string, paramsStr: string): void;
-  abstract renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput: string | null): void;
+  abstract renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput?: string | null): void;
   abstract renderTaskComplete(): void;
   abstract renderFinalResult(success: boolean, message: string, iterations: number): void;
   abstract renderError(message: string): void;
   abstract renderRepeatWarning(toolName: string, count: number): void;
+  abstract renderRecoveryAdvice(recoveryAdvice: string): void;
 
   /**
    * Common implementation for LLM response start
