@@ -47,7 +47,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@autodev/mpp-core": "^0.1.4",
+    "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
     "@js-joda/core": "^5.6.5",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "chalk": "^5.3.0",
