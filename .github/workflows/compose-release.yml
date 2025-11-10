@@ -23,6 +23,18 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # Remove large packages to free ~14GB
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -34,15 +46,23 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build mpp-core dependency
-        run: ./gradlew :mpp-core:assemble
+        run: ./gradlew :mpp-core:assemble --no-daemon
 
       - name: Build mpp-server fat JAR
-        run: ./gradlew :mpp-server:fatJar
+        run: ./gradlew :mpp-server:fatJar --no-daemon
+
+      - name: Clean build cache to save space
+        run: |
+          ./gradlew :mpp-server:clean
+          rm -rf ~/.gradle/caches/modules-2/files-2.1
+          df -h
 
       - name: Upload Server JAR
         uses: actions/upload-artifact@v4
@@ -59,6 +79,17 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: false  # Keep Android SDK as we need it
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -70,6 +101,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -83,16 +116,23 @@ jobs:
         working-directory: mpp-ui
 
       - name: Fix yarn lock issues
-        run: ./gradlew kotlinUpgradeYarnLock || echo "Yarn lock upgrade failed, continuing..."
+        run: ./gradlew kotlinUpgradeYarnLock --no-daemon || echo "Yarn lock upgrade failed, continuing..."
 
       - name: Build mpp-core dependency
-        run: ./gradlew :mpp-core:assemble
+        run: ./gradlew :mpp-core:assemble --no-daemon
 
       - name: Build Android Debug APK
-        run: ./gradlew :mpp-ui:assembleDebug
+        run: ./gradlew :mpp-ui:assembleDebug --no-daemon
 
       - name: Build Android Release APK
-        run: ./gradlew :mpp-ui:assembleRelease
+        run: ./gradlew :mpp-ui:assembleRelease --no-daemon
+
+      - name: Clean build cache to save space
+        run: |
+          ./gradlew :mpp-ui:clean
+          rm -rf ~/.gradle/caches/modules-2/files-2.1
+          rm -rf ~/.gradle/caches/transforms-*
+          df -h
 
       - name: Upload Android APKs
         uses: actions/upload-artifact@v4
@@ -127,6 +167,18 @@ jobs:
             path: mpp-ui/build/compose/binaries/main/dmg/*.dmg
 
     steps:
+      - name: Free Disk Space (Ubuntu)
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -138,19 +190,27 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
 
       - name: Grant execute permission for gradlew (Unix)
         if: runner.os != 'Windows'
         run: chmod +x gradlew
 
       - name: Fix yarn lock issues
-        run: ./gradlew kotlinUpgradeYarnLock || echo "Yarn lock upgrade failed, continuing..."
+        run: ./gradlew kotlinUpgradeYarnLock --no-daemon || echo "Yarn lock upgrade failed, continuing..."
 
       - name: Build mpp-core dependency
-        run: ./gradlew :mpp-core:assemble
+        run: ./gradlew :mpp-core:assemble --no-daemon
 
       - name: Build Desktop package
-        run: ./gradlew :mpp-ui:${{ matrix.task }}
+        run: ./gradlew :mpp-ui:${{ matrix.task }} --no-daemon
+
+      - name: Clean build cache to save space
+        run: |
+          ./gradlew :mpp-ui:clean
+          rm -rf ~/.gradle/caches/modules-2/files-2.1
+          df -h
 
       - name: Upload Desktop package
         uses: actions/upload-artifact@v4
