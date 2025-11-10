@@ -96,7 +96,97 @@ fun Application.configureRouting() {
                     }
                 }
 
-                // SSE Streaming execution - Using Ktor SSE plugin
+                // SSE Streaming execution - Support both GET and POST
+                // GET: parameters from query string
+                // POST: parameters from JSON body
+                post("/stream") {
+                    // Parse request from POST body
+                    val request = try {
+                        call.receive<AgentRequest>()
+                    } catch (e: Exception) {
+                        return@post call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Invalid request body: ${e.message}")
+                        )
+                    }
+
+                    // Validate required fields
+                    if (request.projectId.isBlank()) {
+                        return@post call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Missing projectId")
+                        )
+                    }
+                    
+                    if (request.task.isBlank()) {
+                        return@post call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Missing task")
+                        )
+                    }
+
+                    // Set SSE response headers
+                    call.response.headers.append(HttpHeaders.ContentType, ContentType.Text.EventStream.toString())
+                    call.response.headers.append(HttpHeaders.CacheControl, "no-cache")
+                    call.response.headers.append(HttpHeaders.Connection, "keep-alive")
+
+                    // If gitUrl is provided, use it; otherwise look up existing project
+                    val projectPath = if (request.gitUrl.isNullOrBlank()) {
+                        val project = projectService.getProject(request.projectId)
+                        if (project == null) {
+                            return@post call.respond(
+                                HttpStatusCode.NotFound,
+                                mapOf("error" to "Project not found: ${request.projectId}")
+                            )
+                        }
+                        project.path
+                    } else {
+                        // Will be cloned by AgentService
+                        ""
+                    }
+
+                    // Use respondTextWriter for SSE streaming
+                    call.respondTextWriter(contentType = ContentType.Text.EventStream) {
+                        try {
+                            agentService.executeAgentStream(projectPath, request).collect { event ->
+                                val eventType = when (event) {
+                                    is AgentEvent.IterationStart -> "iteration"
+                                    is AgentEvent.LLMResponseChunk -> "llm_chunk"
+                                    is AgentEvent.ToolCall -> "tool_call"
+                                    is AgentEvent.ToolResult -> "tool_result"
+                                    is AgentEvent.CloneLog -> "clone_log"
+                                    is AgentEvent.CloneProgress -> "clone_progress"
+                                    is AgentEvent.Error -> "error"
+                                    is AgentEvent.Complete -> "complete"
+                                }
+
+                                val data = when (event) {
+                                    is AgentEvent.IterationStart -> json.encodeToString(event)
+                                    is AgentEvent.LLMResponseChunk -> json.encodeToString(event)
+                                    is AgentEvent.ToolCall -> json.encodeToString(event)
+                                    is AgentEvent.ToolResult -> json.encodeToString(event)
+                                    is AgentEvent.CloneLog -> json.encodeToString(event)
+                                    is AgentEvent.CloneProgress -> json.encodeToString(event)
+                                    is AgentEvent.Error -> json.encodeToString(event)
+                                    is AgentEvent.Complete -> json.encodeToString(event)
+                                }
+
+                                // Write SSE format
+                                write("event: $eventType\n")
+                                write("data: $data\n\n")
+                                flush()
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            val errorData = json.encodeToString(AgentEvent.Error("Execution failed: ${e.message}"))
+                            write("event: error\n")
+                            write("data: $errorData\n\n")
+                            flush()
+                        }
+                    }
+                }
+                
+                // Also support GET for simple cases (backward compatibility)
                 sse("/stream") {
                     val projectId = call.parameters["projectId"] ?: run {
                         send(ServerSentEvent(json.encodeToString(AgentEvent.Error("Missing projectId parameter"))))
