@@ -253,13 +253,25 @@ async function runServerAgent(
     // Create renderer
     const renderer = new ServerRenderer();
 
+    // Smart detection: if projectId looks like a URL, use it as gitUrl
+    const isGitUrl = projectId.startsWith('http://') || 
+                     projectId.startsWith('https://') || 
+                     projectId.startsWith('git@');
+    
+    const requestParams = isGitUrl ? {
+      projectId: projectId.split('/').pop() || 'temp-project', // Use repo name as project ID
+      task,
+      llmConfig,
+      gitUrl: projectId // Pass the URL as gitUrl for cloning
+    } : {
+      projectId,
+      task,
+      llmConfig
+    };
+
     // Execute with streaming
     try {
-      for await (const event of client.executeStream({
-        projectId,
-        task,
-        llmConfig
-      })) {
+      for await (const event of client.executeStream(requestParams)) {
         renderer.renderEvent(event);
 
         // Check if complete

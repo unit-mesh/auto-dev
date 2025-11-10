@@ -8,9 +8,6 @@ import kotlinx.serialization.json.Json
 
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
-        // 忽略 SSE 响应
-        ignoreType<io.ktor.utils.io.ByteWriteChannel>()
-
         json(Json {
             prettyPrint = true
             isLenient = true

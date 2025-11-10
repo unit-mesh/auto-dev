@@ -96,57 +96,63 @@ fun Application.configureRouting() {
                     }
                 }
 
-                // SSE Streaming execution - Support both GET and POST
-                // GET: parameters from query string
-                // POST: parameters from JSON body
-                post("/stream") {
-                    // Parse request from POST body
-                    val request = try {
-                        call.receive<AgentRequest>()
-                    } catch (e: Exception) {
-                        return@post call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid request body: ${e.message}")
-                        )
-                    }
-
-                    // Validate required fields
-                    if (request.projectId.isBlank()) {
-                        return@post call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Missing projectId")
-                        )
+                // SSE Streaming execution - Support POST method with SSE
+                // Use route + sse to properly handle POST requests with Accept: text/event-stream
+                route("/stream", HttpMethod.Post) {
+                    // Handle non-SSE Accept headers (return 406)
+                    handle {
+                        val accept = call.request.headers[HttpHeaders.Accept]
+                        if (accept != null && !accept.contains("text/event-stream")) {
+                            call.respond(HttpStatusCode.NotAcceptable, mapOf("error" to "Only text/event-stream is supported"))
+                        }
                     }
                     
-                    if (request.task.isBlank()) {
-                        return@post call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Missing task")
-                        )
-                    }
-
-                    // Set SSE response headers
-                    call.response.headers.append(HttpHeaders.ContentType, ContentType.Text.EventStream.toString())
-                    call.response.headers.append(HttpHeaders.CacheControl, "no-cache")
-                    call.response.headers.append(HttpHeaders.Connection, "keep-alive")
-
-                    // If gitUrl is provided, use it; otherwise look up existing project
-                    val projectPath = if (request.gitUrl.isNullOrBlank()) {
-                        val project = projectService.getProject(request.projectId)
-                        if (project == null) {
-                            return@post call.respond(
-                                HttpStatusCode.NotFound,
-                                mapOf("error" to "Project not found: ${request.projectId}")
-                            )
+                    sse {
+                        // Parse request from POST body
+                        val request = try {
+                            call.receive<AgentRequest>()
+                        } catch (e: Exception) {
+                            send(ServerSentEvent(
+                                data = json.encodeToString(AgentEvent.Error("Invalid request body: ${e.message}")),
+                                event = "error"
+                            ))
+                            return@sse
                         }
-                        project.path
-                    } else {
-                        // Will be cloned by AgentService
-                        ""
-                    }
 
-                    // Use respondTextWriter for SSE streaming
-                    call.respondTextWriter(contentType = ContentType.Text.EventStream) {
+                        // Validate required fields
+                        if (request.projectId.isBlank()) {
+                            send(ServerSentEvent(
+                                data = json.encodeToString(AgentEvent.Error("Missing projectId")),
+                                event = "error"
+                            ))
+                            return@sse
+                        }
+                        
+                        if (request.task.isBlank()) {
+                            send(ServerSentEvent(
+                                data = json.encodeToString(AgentEvent.Error("Missing task")),
+                                event = "error"
+                            ))
+                            return@sse
+                        }
+
+                        // If gitUrl is provided, use it; otherwise look up existing project
+                        val projectPath = if (request.gitUrl.isNullOrBlank()) {
+                            val project = projectService.getProject(request.projectId)
+                            if (project == null) {
+                                send(ServerSentEvent(
+                                    data = json.encodeToString(AgentEvent.Error("Project not found: ${request.projectId}")),
+                                    event = "error"
+                                ))
+                                return@sse
+                            }
+                            project.path
+                        } else {
+                            // Will be cloned by AgentService
+                            ""
+                        }
+
+                        // Stream events
                         try {
                             agentService.executeAgentStream(projectPath, request).collect { event ->
                                 val eventType = when (event) {
@@ -171,17 +177,13 @@ fun Application.configureRouting() {
                                     is AgentEvent.Complete -> json.encodeToString(event)
                                 }
 
-                                // Write SSE format
-                                write("event: $eventType\n")
-                                write("data: $data\n\n")
-                                flush()
+                                // Send SSE event
+                                send(ServerSentEvent(data = data, event = eventType))
                             }
                         } catch (e: Exception) {
                             e.printStackTrace()
                             val errorData = json.encodeToString(AgentEvent.Error("Execution failed: ${e.message}"))
-                            write("event: error\n")
-                            write("data: $errorData\n\n")
-                            flush()
+                            send(ServerSentEvent(data = errorData, event = "error"))
                         }
                     }
                 }
