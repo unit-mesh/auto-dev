@@ -9,53 +9,54 @@ import kotlinx.coroutines.*
 
 /**
  * ViewModel for Remote Coding Agent
- * 
+ *
  * Connects to mpp-server and streams agent execution events,
  * forwarding them to ComposeRenderer for UI rendering.
- * 
+ *
  * This is the Compose equivalent of runServerAgent() in index.tsx
  */
 class RemoteCodingAgentViewModel(
     private val serverUrl: String,
     private val useServerConfig: Boolean = false
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    // ⚠️ 使用 Dispatchers.Main 确保 UI 状态更新在主线程，实现流式渲染
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val client = RemoteAgentClient(serverUrl)
-    
+
     val renderer = ComposeRenderer()
-    
+
     var isExecuting by mutableStateOf(false)
         private set
-    
+
     var isConnected by mutableStateOf(false)
         private set
-        
+
     var connectionError by mutableStateOf<String?>(null)
         private set
-    
+
     var availableProjects by mutableStateOf<List<ProjectInfo>>(emptyList())
         private set
-    
+
     private var currentExecutionJob: Job? = null
-    
+
     // TreeView state (same as local ViewModel)
     var isTreeViewVisible by mutableStateOf(false)
-    
+
     fun toggleTreeView() {
         isTreeViewVisible = !isTreeViewVisible
     }
-    
+
     fun closeTreeView() {
         isTreeViewVisible = false
     }
-    
+
     init {
         // Check server health on init
         scope.launch {
             checkConnection()
         }
     }
-    
+
     /**
      * Check if server is reachable
      */
@@ -64,13 +65,13 @@ class RemoteCodingAgentViewModel(
             val health = client.healthCheck()
             isConnected = health.status == "ok"
             connectionError = null
-            
+
             // Load available projects if connected
             if (isConnected) {
                 val projectList = client.getProjects()
                 availableProjects = projectList.projects
             }
-            
+
             isConnected
         } catch (e: Exception) {
             isConnected = false
@@ -78,10 +79,10 @@ class RemoteCodingAgentViewModel(
             false
         }
     }
-    
+
     /**
      * Execute a task on the remote server
-     * 
+     *
      * @param projectId The project ID on the server
      * @param task The task description
      * @param gitUrl Optional Git URL to clone (overrides projectId as source)
@@ -91,16 +92,16 @@ class RemoteCodingAgentViewModel(
             println("Agent is already executing")
             return
         }
-        
+
         if (!isConnected) {
             renderer.renderError("Not connected to server. Please check server URL.")
             return
         }
-        
+
         isExecuting = true
         renderer.clearError()
         renderer.addUserMessage(task)
-        
+
         currentExecutionJob = scope.launch {
             try {
                 // Determine LLM config source
@@ -108,13 +109,13 @@ class RemoteCodingAgentViewModel(
                     // Load from local config
                     val config = ConfigManager.load()
                     val activeConfig = config.getActiveModelConfig()
-                    
+
                     if (activeConfig == null) {
                         renderer.renderError("No active LLM configuration found. Please configure your model first.")
                         isExecuting = false
                         return@launch
                     }
-                    
+
                     LLMConfig(
                         provider = activeConfig.provider.name,
                         modelName = activeConfig.modelName,
@@ -125,7 +126,7 @@ class RemoteCodingAgentViewModel(
                     // Use server's config
                     null
                 }
-                
+
                 // Determine request parameters
                 val request = if (gitUrl.isNotBlank()) {
                     // Explicit gitUrl provided
@@ -140,7 +141,7 @@ class RemoteCodingAgentViewModel(
                     val isGitUrl = projectId.startsWith("http://") ||
                                   projectId.startsWith("https://") ||
                                   projectId.startsWith("git@")
-                    
+
                     if (isGitUrl) {
                         RemoteAgentRequest(
                             projectId = projectId.split('/').lastOrNull()?.removeSuffix(".git") ?: "temp-project",
@@ -156,18 +157,19 @@ class RemoteCodingAgentViewModel(
                         )
                     }
                 }
-                
+
                 // Stream events from server and forward to renderer
+                // ⚠️ 关键：collect 在 Main 线程执行（由 scope 决定），确保 UI 状态实时更新
                 client.executeStream(request).collect { event ->
                     handleRemoteEvent(event)
-                    
+
                     // Stop on complete
                     if (event is RemoteAgentEvent.Complete) {
                         isExecuting = false
                         currentExecutionJob = null
                     }
                 }
-                
+
             } catch (e: CancellationException) {
                 renderer.forceStop()
                 renderer.renderError("Task cancelled by user")
@@ -180,10 +182,10 @@ class RemoteCodingAgentViewModel(
             }
         }
     }
-    
+
     /**
      * Handle remote events and forward to ComposeRenderer
-     * 
+     *
      * This is the key bridge: converts RemoteAgentEvent to renderer calls
      */
     private fun handleRemoteEvent(event: RemoteAgentEvent) {
@@ -196,7 +198,7 @@ class RemoteCodingAgentViewModel(
                     renderer.renderLLMResponseEnd()
                 }
             }
-            
+
             is RemoteAgentEvent.CloneLog -> {
                 // Show important clone logs
                 if (!event.isError && (event.message.contains("✓") || event.message.contains("ready"))) {
@@ -207,11 +209,11 @@ class RemoteCodingAgentViewModel(
                     renderer.renderError(event.message)
                 }
             }
-            
+
             is RemoteAgentEvent.Iteration -> {
                 renderer.renderIterationHeader(event.current, event.max)
             }
-            
+
             is RemoteAgentEvent.LLMChunk -> {
                 // Start LLM response if not already started
                 if (!renderer.isProcessing) {
@@ -219,7 +221,7 @@ class RemoteCodingAgentViewModel(
                 }
                 renderer.renderLLMResponseChunk(event.chunk)
             }
-            
+
             is RemoteAgentEvent.ToolCall -> {
                 // End any ongoing LLM response before tool call
                 if (renderer.isProcessing) {
@@ -227,7 +229,7 @@ class RemoteCodingAgentViewModel(
                 }
                 renderer.renderToolCall(event.toolName, event.params)
             }
-            
+
             is RemoteAgentEvent.ToolResult -> {
                 renderer.renderToolResult(
                     toolName = event.toolName,
@@ -237,11 +239,11 @@ class RemoteCodingAgentViewModel(
                     metadata = emptyMap()
                 )
             }
-            
+
             is RemoteAgentEvent.Error -> {
                 renderer.renderError(event.message)
             }
-            
+
             is RemoteAgentEvent.Complete -> {
                 // End any ongoing LLM response
                 if (renderer.isProcessing) {
@@ -251,7 +253,7 @@ class RemoteCodingAgentViewModel(
             }
         }
     }
-    
+
     /**
      * Cancel current task
      */
@@ -262,14 +264,14 @@ class RemoteCodingAgentViewModel(
             isExecuting = false
         }
     }
-    
+
     /**
      * Clear chat history
      */
     fun clearHistory() {
         renderer.clearMessages()
     }
-    
+
     /**
      * Clear error state
      */
@@ -277,7 +279,7 @@ class RemoteCodingAgentViewModel(
         renderer.clearError()
         connectionError = null
     }
-    
+
     /**
      * Dispose resources
      */

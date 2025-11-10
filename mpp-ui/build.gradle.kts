@@ -127,6 +127,9 @@ kotlin {
                 implementation("org.jetbrains.jediterm:jediterm-core:3.57")
                 implementation("org.jetbrains.jediterm:jediterm-ui:3.57")
 
+                // Coroutines Swing for Dispatchers.Main on JVM Desktop
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
+
                 // Ktor HTTP Client CIO engine for JVM
                 implementation("io.ktor:ktor-client-cio:3.2.2")
             }
@@ -154,6 +157,9 @@ kotlin {
                 // Multiplatform Markdown Renderer for Android
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
+
+                // Coroutines Android for Dispatchers.Main on Android
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
 
                 // Ktor HTTP Client CIO engine for Android
                 implementation("io.ktor:ktor-client-cio:3.2.2")
