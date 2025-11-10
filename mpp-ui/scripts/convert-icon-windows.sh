@@ -20,7 +20,7 @@ if command -v magick &> /dev/null || command -v convert &> /dev/null; then
     else
         CONVERT_CMD="convert"
     fi
-    
+
     echo "  Using ImageMagick..."
     # Create ICO with multiple sizes (16, 32, 48, 64, 128, 256)
     $CONVERT_CMD "$RESOURCES_DIR/icon-16.png" \
@@ -34,7 +34,7 @@ if command -v magick &> /dev/null || command -v convert &> /dev/null; then
         echo "  Creating ICO from 256px PNG..."
         $CONVERT_CMD "$PNG_FILE" -define icon:auto-resize=256,128,64,48,32,16 "$ICO_FILE"
     }
-    
+
     echo "✅ ICO file created: $ICO_FILE"
 else
     echo "⚠️  ImageMagick not found."

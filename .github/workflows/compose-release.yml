@@ -1,5 +1,5 @@
 # GitHub Actions Workflow for testing mpp-ui releases
-# Builds Android APK and Desktop packages for multiple platforms
+# Builds Android APK, Desktop packages for multiple platforms, and mpp-server JAR
 # Triggered by tags starting with 'compose-'
 
 name: MPP Release
@@ -14,6 +14,42 @@ on:
         default: '1.0.0-test'
 
 jobs:
+  # Build mpp-server JAR
+  build-server:
+    name: Build Server JAR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build mpp-core dependency
+        run: ./gradlew :mpp-core:assemble
+
+      - name: Build mpp-server fat JAR
+        run: ./gradlew :mpp-server:fatJar
+
+      - name: Upload Server JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-jar
+          path: mpp-server/build/libs/*-all.jar
+
   # Build Android APK
   build-android:
     name: Build Android APK
@@ -124,7 +160,7 @@ jobs:
   # Create release with all artifacts
   create-release:
     name: Create Release
-    needs: [build-android, build-desktop]
+    needs: [build-server, build-android, build-desktop]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -151,7 +187,10 @@ jobs:
           body: |
             ## AutoDev Compose Multiplatform Release Test
             
-            This is a test release for the mpp-ui module containing:
+            This is a test release for the mpp modules containing:
+            
+            ### Server
+            - mpp-server fat JAR (ready to run with `java -jar mpp-server-*-all.jar`)
             
             ### Android
             - Debug APK
