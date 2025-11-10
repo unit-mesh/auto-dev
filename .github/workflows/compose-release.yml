@@ -52,9 +52,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build mpp-core dependency
-        run: ./gradlew :mpp-core:assemble --no-daemon
-
       - name: Build mpp-server fat JAR
         run: ./gradlew :mpp-server:fatJar --no-daemon
 
