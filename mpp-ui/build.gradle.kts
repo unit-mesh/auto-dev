@@ -43,6 +43,28 @@ kotlin {
         }
     }
 
+    // iOS targets
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "AutoDevUI"
+            isStatic = true
+
+            // Set bundle ID
+            binaryOption("bundleId", "com.phodal.autodev")
+
+            // Export dependencies to make them available in Swift
+            export(project(":mpp-core"))
+            export(compose.runtime)
+            export(compose.foundation)
+            export(compose.material3)
+            export(compose.ui)
+        }
+    }
+
     js(IR) {
         // Node.js CLI only - no browser compilation
         // Web UI uses pure TypeScript/React + mpp-core (similar to CLI architecture)
@@ -163,6 +185,30 @@ kotlin {
 
                 // Ktor HTTP Client CIO engine for Android
                 implementation("io.ktor:ktor-client-cio:3.2.2")
+            }
+        }
+
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        iosMain {
+            dependencies {
+                // API dependencies (exported in framework)
+                api(project(":mpp-core"))
+                api(compose.runtime)
+                api(compose.foundation)
+                api(compose.material3)
+                api(compose.ui)
+
+                // SQLDelight - iOS SQLite driver
+                implementation("app.cash.sqldelight:native-driver:2.1.0")
+
+                // Ktor HTTP Client Darwin engine for iOS
+                implementation("io.ktor:ktor-client-darwin:3.2.2")
+
+                // Multiplatform Markdown Renderer for iOS
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
             }
         }
 
