@@ -1,14 +1,18 @@
 /**
  * Base TypeScript renderer implementing JsCodingAgentRenderer interface
  * Provides common functionality for all TypeScript renderer implementations
- * 
+ *
  * This mirrors the Kotlin BaseRenderer from mpp-core.
  * All TypeScript renderers (CliRenderer, ServerRenderer, TuiRenderer) should extend this class.
- * 
+ *
  * @see mpp-core/src/commonMain/kotlin/cc/unitmesh/agent/render/BaseRenderer.kt
  * @see mpp-core/src/jsMain/kotlin/cc/unitmesh/agent/RendererExports.kt - JsCodingAgentRenderer interface
  */
-export abstract class BaseRenderer {
+
+import {cc} from "autodev-mpp-core/autodev-mpp-core";
+import JsCodingAgentRenderer = cc.unitmesh.agent.JsCodingAgentRenderer;
+
+export abstract class BaseRenderer implements JsCodingAgentRenderer {
   // Required by Kotlin JS export interface
   readonly __doNotUseOrImplementIt: any = {};
 
@@ -24,7 +28,7 @@ export abstract class BaseRenderer {
   protected filterDevinBlocks(content: string): string {
     // Remove all complete devin blocks
     let filtered = content.replace(/<devin[^>]*>[\s\S]*?<\/devin>/g, '');
-    
+
     // Handle incomplete devin blocks at the end - remove them completely
     const openDevinIndex = filtered.lastIndexOf('<devin');
     if (openDevinIndex !== -1) {
@@ -34,11 +38,11 @@ export abstract class BaseRenderer {
         filtered = filtered.substring(0, openDevinIndex);
       }
     }
-    
+
     // Also remove partial devin tags at the end and any standalone '<' that might be part of a devin tag
     const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
     filtered = filtered.replace(partialDevinPattern, '');
-    
+
     return filtered;
   }
 
@@ -49,11 +53,11 @@ export abstract class BaseRenderer {
     // Check if there's an incomplete devin block
     const lastOpenDevin = content.lastIndexOf('<devin');
     const lastCloseDevin = content.lastIndexOf('</devin>');
-    
+
     // Also check for partial opening tags like '<de' or '<dev' or just '<'
     const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
     const hasPartialTag = partialDevinPattern.test(content);
-    
+
     return lastOpenDevin > lastCloseDevin || hasPartialTag;
   }
 
@@ -62,13 +66,13 @@ export abstract class BaseRenderer {
    */
   protected calculateSimilarity(str1: string, str2: string): number {
     if (!str1 || !str2) return 0;
-    
+
     const words1 = str1.toLowerCase().split(/\s+/);
     const words2 = str2.toLowerCase().split(/\s+/);
-    
+
     const commonWords = words1.filter(word => words2.includes(word));
     const totalWords = Math.max(words1.length, words2.length);
-    
+
     return totalWords > 0 ? commonWords.length / totalWords : 0;
   }
 
@@ -83,18 +87,32 @@ export abstract class BaseRenderer {
   // JsCodingAgentRenderer Interface - Abstract methods
   // These must be implemented by subclasses (CliRenderer, ServerRenderer, TuiRenderer)
   // ============================================================================
-  
+
   abstract renderIterationHeader(current: number, max: number): void;
   abstract renderLLMResponseStart(): void;
   abstract renderLLMResponseChunk(chunk: string): void;
   abstract renderLLMResponseEnd(): void;
   abstract renderToolCall(toolName: string, paramsStr: string): void;
-  abstract renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput?: string | null): void;
+  abstract renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput?: string | null, metadata?: Record<string, string>): void;
   abstract renderTaskComplete(): void;
   abstract renderFinalResult(success: boolean, message: string, iterations: number): void;
   abstract renderError(message: string): void;
   abstract renderRepeatWarning(toolName: string, count: number): void;
   abstract renderRecoveryAdvice(recoveryAdvice: string): void;
+  /**
+   * Optional policy/permission prompt. Default: no-op; subclasses can override.
+   */
+  renderUserConfirmationRequest(toolName: string, params: Record<string, any>): void {
+    // Default to an info/error line if desired; keeping no-op to avoid extra noise in CLI/Server outputs.
+  }
+
+  /**
+   * Live terminal sessions are optional; default no-op implementation.
+   * Subclasses that support PTY streaming can override.
+   */
+  addLiveTerminal(sessionId: string, command: string, workingDirectory?: string | null, ptyHandle?: any): void {
+    // no-op by default
+  }
 
   /**
    * Common implementation for LLM response start
@@ -131,7 +149,7 @@ export abstract class BaseRenderer {
     }
 
     this.lastIterationReasoning = currentReasoning;
-    
+
     // Only add a line break if the content doesn't already end with one
     const trimmedContent = finalContent.trimEnd();
     if (trimmedContent.length > 0 && !trimmedContent.endsWith('\n')) {

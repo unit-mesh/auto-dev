@@ -18,7 +18,9 @@
     "sourceMap": true,
     "types": ["node"],
     "paths": {
-      "mpp-core": ["../mpp-core/build/js/packages/mpp-core/kotlin/mpp-core.mjs"]
+      "mpp-core": ["../mpp-core/build/js/packages/mpp-core/kotlin/mpp-core.mjs"],
+      "autodev-mpp-core": ["../build/js/packages/autodev-mpp-core/kotlin/autodev-mpp-core.js"],
+      "autodev-mpp-core/*": ["../build/js/packages/autodev-mpp-core/kotlin/*"]
     }
   },
   "include": [

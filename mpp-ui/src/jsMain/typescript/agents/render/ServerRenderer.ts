@@ -91,6 +91,25 @@ export class ServerRenderer extends BaseRenderer {
     console.log('');
   }
 
+  renderUserConfirmationRequest(toolName: string, params: Record<string, any>): void {
+    console.log('');
+    console.log(semanticChalk.warningBold('🔐 User Confirmation Required'));
+    console.log(semanticChalk.accent('━'.repeat(50)));
+    console.log(semanticChalk.warning(`Tool: ${toolName}`));
+
+    const paramEntries = Object.entries(params);
+    if (paramEntries.length > 0) {
+      console.log(semanticChalk.muted('Parameters:'));
+      paramEntries.forEach(([key, value]) => {
+        console.log(semanticChalk.muted(`  • ${key}: ${JSON.stringify(value)}`));
+      });
+    }
+
+    console.log(semanticChalk.success('\n✓ Auto-approved for non-interactive mode'));
+    console.log(semanticChalk.accent('━'.repeat(50)));
+    console.log('');
+  }
+
   // ============================================================================
   // Server-Specific Event Handler
   // ============================================================================
@@ -118,6 +137,9 @@ export class ServerRenderer extends BaseRenderer {
         break;
       case 'tool_result':
         this.renderToolResult(event.toolName, event.success, event.output);
+        break;
+      case 'user_confirmation':
+        this.renderUserConfirmationRequest(event.toolName, event.params || {});
         break;
       case 'error':
         this.renderError(event.message);

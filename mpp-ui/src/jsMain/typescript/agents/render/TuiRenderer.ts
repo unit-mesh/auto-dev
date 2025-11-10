@@ -12,12 +12,20 @@
 
 import type { ModeContext } from '../../modes/Mode.js';
 import type { Message } from '../../ui/App.js';
+import {BaseRenderer} from "./BaseRenderer";
 
 /**
  * TUI 渲染器
  * 实现 Kotlin CodingAgent 期望的 JsCodingAgentRenderer 接口
  */
-export class TuiRenderer {
+export class TuiRenderer extends BaseRenderer {
+  protected outputContent(content: string): void {
+
+  }
+  protected outputNewline(): void {
+
+  }
+
   // Required by Kotlin JS export interface
   readonly __doNotUseOrImplementIt: any = {};
 
@@ -32,6 +40,7 @@ export class TuiRenderer {
   private readonly VERBOSE_MODE = process.env.AUTODEV_VERBOSE === 'true';
 
   constructor(context: ModeContext) {
+    super();
     this.context = context;
   }
 
@@ -165,6 +174,18 @@ export class TuiRenderer {
    */
   renderRecoveryAdvice(recoveryAdvice: string): void {
     const message = `💡 **Suggestion**: ${this.truncateText(recoveryAdvice, 3)}`;
+    this.renderSystemMessage(message);
+  }
+
+  /**
+   * 渲染用户确认请求
+   */
+  renderUserConfirmationRequest(toolName: string, params: Record<string, any>): void {
+    const paramStr = Object.entries(params)
+      .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+      .join(', ');
+
+    const message = `🔐 Tool '${toolName}' needs approval: ${paramStr} (Auto-approved)`;
     this.renderSystemMessage(message);
   }
 

@@ -48,6 +48,7 @@ export type AgentEvent =
   | { type: 'llm_chunk'; chunk: string }
   | { type: 'tool_call'; toolName: string; params: string }
   | { type: 'tool_result'; toolName: string; success: boolean; output?: string }
+  | { type: 'user_confirmation'; toolName: string; params: Record<string, any> }
   | { type: 'error'; message: string }
   | { type: 'complete'; success: boolean; message: string; iterations: number; steps: AgentStepInfo[]; edits: AgentEditInfo[] };
 

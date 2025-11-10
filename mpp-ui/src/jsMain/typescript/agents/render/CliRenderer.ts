@@ -1,9 +1,9 @@
 /**
  * CLI Renderer for CodingAgent
- * 
+ *
  * Implements JsCodingAgentRenderer interface from Kotlin Multiplatform.
  * Provides enhanced CLI output with colors, syntax highlighting, and formatting.
- * 
+ *
  * @see mpp-core/src/jsMain/kotlin/cc/unitmesh/agent/RendererExports.kt - Interface definition
  */
 
@@ -169,7 +169,7 @@ export class CliRenderer extends BaseRenderer {
     return params;
   }
 
-  renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput: string | null): void {
+  renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput: string | null, metadata?: Record<string, string>): void {
     if (success && output) {
       const summary = this.generateToolSummary(toolName, output);
       console.log('  ⎿ ' + semanticChalk.success(summary));
@@ -187,6 +187,42 @@ export class CliRenderer extends BaseRenderer {
     } else if (!success && output) {
       console.log('  ⎿ ' + semanticChalk.error(`Error: ${output.substring(0, 200)}`));
     }
+    // Display metadata if provided
+    if (metadata && Object.keys(metadata).length > 0) {
+      this.displayMetadata(metadata);
+    }
+  }
+
+  private displayMetadata(metadata: Record<string, string>): void {
+    const entries = Object.entries(metadata);
+    if (entries.length === 0) return;
+
+    // Format metadata with icons based on common keys
+    const formattedEntries = entries.map(([key, value]) => {
+      switch (key) {
+        case 'duration':
+        case 'elapsed':
+        case 'time':
+          return `⏱  ${key}: ${semanticChalk.accent(value)}`;
+        case 'size':
+        case 'fileSize':
+        case 'bytes':
+          return `📦 ${key}: ${semanticChalk.accent(value)}`;
+        case 'lines':
+        case 'lineCount':
+          return `📄 ${key}: ${semanticChalk.accent(value)}`;
+        case 'status':
+        case 'exitCode':
+          return `📊 ${key}: ${semanticChalk.accent(value)}`;
+        default:
+          return `   ${key}: ${semanticChalk.muted(value)}`;
+      }
+    });
+
+    console.log(semanticChalk.muted('  ├─ metadata:'));
+    formattedEntries.forEach(entry => {
+      console.log(semanticChalk.muted(`  │  ${entry}`));
+    });
   }
 
   private generateToolSummary(toolName: string, output: string): string {
