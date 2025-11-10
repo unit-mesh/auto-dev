@@ -3,7 +3,7 @@
 ## 🚀 一键运行
 
 ```bash
-cd ios-app
+cd mpp-ios
 ./build-and-run.sh
 ```
 
@@ -28,7 +28,7 @@ cd ios-app
 ### 1. 编译 Framework
 
 ```bash
-cd ios-app
+cd mpp-ios
 ./build-framework.sh
 ```
 
@@ -53,7 +53,7 @@ open AutoDevApp.xcworkspace
 ## 🎯 项目结构
 
 ```
-ios-app/
+mpp-ios/
 ├── AutoDevApp/              # Swift 源代码
 │   ├── AutoDevApp.swift    # 应用入口
 │   ├── ContentView.swift   # 主视图
@@ -113,7 +113,7 @@ pod install
 
 - [README.md](README.md) - 完整文档
 - [../docs/ios-README.md](../docs/ios-README.md) - iOS 支持总览
-- [../docs/ios-app-integration.md](../docs/ios-app-integration.md) - 集成指南
+- [../docs/mpp-ios-integration.md](../docs/mpp-ios-integration.md) - 集成指南
 
 ## 🎉 完成!
 

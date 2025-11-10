@@ -21,9 +21,9 @@ echo -e "${BLUE}║   AutoDev iOS App - Build & Run       ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
 echo ""
 
-# 检查是否在 ios-app 目录
+# 检查是否在 mpp-ios 目录
 if [ ! -f "Podfile" ]; then
-    echo -e "${RED}❌ 错误: 请在 ios-app 目录下运行此脚本${NC}"
+    echo -e "${RED}❌ 错误: 请在 mpp-ios 目录下运行此脚本${NC}"
     exit 1
 fi
 
@@ -62,7 +62,7 @@ echo ""
 
 # 步骤 2: 安装 CocoaPods 依赖
 echo -e "${BLUE}📦 步骤 2/3: 安装 CocoaPods 依赖...${NC}"
-cd ios-app
+cd mpp-ios
 
 # 检查 CocoaPods 是否安装
 if ! command -v pod &> /dev/null; then

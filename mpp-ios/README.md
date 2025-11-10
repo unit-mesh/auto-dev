@@ -25,7 +25,7 @@ cd ..
 ### 3. 安装 CocoaPods 依赖
 
 ```bash
-cd ios-app
+cd mpp-ios
 pod install
 ```
 
@@ -46,7 +46,7 @@ open AutoDevApp.xcworkspace
 ## 项目结构
 
 ```
-ios-app/
+mpp-ios/
 ├── AutoDevApp/                    # iOS 应用源代码
 │   ├── AutoDevApp.swift          # 应用入口
 │   ├── ContentView.swift         # 主视图
@@ -92,7 +92,7 @@ cd ..
 ./gradlew :mpp-ui:linkDebugFrameworkIosSimulatorArm64
 
 # 返回 iOS 项目
-cd ios-app
+cd mpp-ios
 
 # 重新安装 pod (可选,如果 framework 没有更新)
 pod install
@@ -194,7 +194,7 @@ cd ..
 ## 相关文档
 
 - [iOS 支持总结](../docs/ios-support-summary.md)
-- [iOS 集成指南](../docs/ios-app-integration.md)
+- [iOS 集成指南](../docs/mpp-ios-integration.md)
 - [iOS 示例应用](../docs/ios-example-app.md)
 - [iOS README](../docs/ios-README.md)
 
