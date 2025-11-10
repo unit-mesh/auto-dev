@@ -1,0 +1,31 @@
+# Podfile for AutoDev iOS App
+
+platform :ios, '14.0'
+
+# Disable input/output paths for CocoaPods
+install! 'cocoapods', :disable_input_output_paths => true
+
+target 'AutoDevApp' do
+  use_frameworks!
+
+  # AutoDev Framework - 使用本地编译的 framework
+  # 这个 pod 会在每次 pod install 时自动编译最新的 framework
+  pod 'AutoDevUI', :path => '../mpp-ui'
+end
+
+# Post install hook - 配置编译设置
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      # 禁用 Bitcode (Kotlin/Native 不支持)
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+      
+      # 设置最低部署目标
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      
+      # 优化设置
+      config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone' if config.name == 'Debug'
+    end
+  end
+end
+
