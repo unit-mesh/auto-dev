@@ -173,7 +173,7 @@ kotlin {
 
                 // SQLDelight - JS driver
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
-                
+
                 // Ktor HTTP Client JS engine
                 implementation("io.ktor:ktor-client-js:3.2.2")
             }
@@ -254,6 +254,25 @@ tasks.register("printClasspath") {
     doLast {
         println(configurations["jvmRuntimeClasspath"].asPath)
     }
+}
+
+// Task to run Remote Agent CLI
+tasks.register<JavaExec>("runRemoteAgentCli") {
+    group = "application"
+    description = "Run Remote Agent CLI (Kotlin equivalent of TypeScript server command)"
+
+    val jvmCompilation = kotlin.jvm().compilations.getByName("main")
+    classpath(jvmCompilation.output, configurations["jvmRuntimeClasspath"])
+    mainClass.set("cc.unitmesh.devins.ui.cli.RemoteAgentCli")
+
+    // Allow passing arguments from command line
+    // Usage: ./gradlew :mpp-ui:runRemoteAgentCli --args="--server http://localhost:8080 --project-id autocrud --task 'Write tests'"
+    if (project.hasProperty("args")) {
+        args = (project.property("args") as String).split(" ")
+    }
+
+    // Enable standard input for interactive mode (if needed in future)
+    standardInput = System.`in`
 }
 
 // Ktlint configuration
