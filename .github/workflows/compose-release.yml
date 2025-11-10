@@ -18,6 +18,8 @@ jobs:
   build-server:
     name: Build Server JAR
     runs-on: ubuntu-latest
+    # Only run for compose-* releases or manual dispatch
+    if: startsWith(github.ref, 'refs/tags/compose-') || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
       pull-requests: write
@@ -55,22 +57,24 @@ jobs:
       - name: Build mpp-server fat JAR
         run: ./gradlew :mpp-server:fatJar --no-daemon
 
-      - name: Clean build cache to save space (Linux only)
-        run: |
-          ./gradlew :mpp-server:clean
-          rm -rf ~/.gradle/caches/modules-2/files-2.1
-          df -h
-
       - name: Upload Server JAR
         uses: actions/upload-artifact@v4
         with:
           name: server-jar
           path: mpp-server/build/libs/*-all.jar
 
+      - name: Clean build cache to save space (Linux only)
+        run: |
+          ./gradlew :mpp-server:clean
+          rm -rf ~/.gradle/caches/modules-2/files-2.1
+          df -h
+
   # Build Android APK
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
+    # Only run for compose-* releases or manual dispatch
+    if: startsWith(github.ref, 'refs/tags/compose-') || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
       pull-requests: write
@@ -110,13 +114,6 @@ jobs:
       - name: Build Android Release APK
         run: ./gradlew :mpp-ui:assembleRelease --no-daemon
 
-      - name: Clean build cache to save space (Linux only)
-        run: |
-          ./gradlew :mpp-ui:clean
-          rm -rf ~/.gradle/caches/modules-2/files-2.1
-          rm -rf ~/.gradle/caches/transforms-*
-          df -h
-
       - name: Upload Android APKs
         uses: actions/upload-artifact@v4
         with:
@@ -125,10 +122,19 @@ jobs:
             mpp-ui/build/outputs/apk/debug/*.apk
             mpp-ui/build/outputs/apk/release/*.apk
 
+      - name: Clean build cache to save space (Linux only)
+        run: |
+          ./gradlew :mpp-ui:clean
+          rm -rf ~/.gradle/caches/modules-2/files-2.1
+          rm -rf ~/.gradle/caches/transforms-*
+          df -h
+
   # Build Desktop packages for multiple platforms
   build-desktop:
     name: Build Desktop (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    # Only run for compose-* releases or manual dispatch
+    if: startsWith(github.ref, 'refs/tags/compose-') || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
       pull-requests: write
@@ -186,6 +192,12 @@ jobs:
       - name: Build Desktop package
         run: ./gradlew :mpp-ui:${{ matrix.task }} --no-daemon
 
+      - name: Upload Desktop package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.path }}
+
       - name: Clean build cache to save space (Unix)
         if: runner.os != 'Windows'
         run: |
@@ -201,12 +213,6 @@ jobs:
           if (Test-Path "$env:USERPROFILE\.gradle\caches\modules-2\files-2.1") {
             Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches\modules-2\files-2.1"
           }
-
-      - name: Upload Desktop package
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.path }}
   # Create release with all artifacts
   create-release:
     name: Create Release
@@ -216,8 +222,8 @@ jobs:
       contents: write
       pull-requests: write
 
-    # Only run for compose-* tags to avoid conflicts with main release workflow
-    if: startsWith(github.ref, 'refs/tags/compose-')
+    # Only run for compose-* tags or manual dispatch
+    if: startsWith(github.ref, 'refs/tags/compose-') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -226,9 +232,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+        continue-on-error: true
 
       - name: Display structure of downloaded files
-        run: ls -la artifacts/
+        run: |
+          if [ -d "artifacts" ]; then
+            ls -la artifacts/
+          else
+            echo "No artifacts directory found"
+            mkdir -p artifacts
+          fi
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -256,5 +269,6 @@ jobs:
             artifacts/**/*
           draft: false
           prerelease: true
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
