@@ -25,6 +25,7 @@
     "generate:scenario:interactive": "node scripts/generate-test-scenario.js --interactive",
     "validate:scenarios": "node scripts/validate-scenarios.js",
     "clean": "rm -rf dist build",
+    "icon:convert": "bash scripts/convert-icon.sh && python3 scripts/convert-icon-windows.py",
     "prepublish:local": "npm run build",
     "publish:local": "node scripts/publish-local.js",
     "prepublish:remote": "npm run build",

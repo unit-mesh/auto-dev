@@ -229,6 +229,10 @@ compose.desktop {
     application {
         mainClass = "cc.unitmesh.devins.ui.MainKt"
 
+        jvmArgs += listOf(
+            "--add-modules", "java.naming"
+        )
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "AutoDev Desktop"
@@ -237,14 +241,20 @@ compose.desktop {
             copyright = "© 2024 AutoDev Team. All rights reserved."
             vendor = "AutoDev Team"
 
-            windows {
-                menuGroup = "AutoDev"
-            }
+            modules("java.naming")
+
+            // Custom app icon
             macOS {
                 bundleID = "cc.unitmesh.devins.desktop"
+                iconFile.set(project.file("src/jvmMain/resources/icon.icns"))
+            }
+            windows {
+                menuGroup = "AutoDev"
+                iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
             }
             linux {
                 packageName = "autodev-desktop"
+                iconFile.set(project.file("src/jvmMain/resources/icon-512.png"))
             }
         }
     }
