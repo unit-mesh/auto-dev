@@ -10,6 +10,13 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target    = '14.0'
   spec.libraries                = 'c++'
 
+  # Swift MCP SDK dependency
+  spec.dependency 'ModelContextProtocol', '~> 0.10.0'
+
+  # Swift source files for MCP bridge
+  spec.source_files             = 'src/iosMain/swift/**/*.{swift,h,m}'
+  spec.swift_version            = '5.9'
+
   # 根据架构选择正确的 framework
   spec.vendored_frameworks      = 'build/bin/iosSimulatorArm64/debugFramework/AutoDevCore.framework'
 

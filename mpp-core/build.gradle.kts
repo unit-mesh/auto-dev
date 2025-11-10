@@ -59,7 +59,25 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "AutoDevCore"
             isStatic = true
+
+            // Export coroutines for Swift interop
+            export("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
         }
+
+        // Configure cinterop for Swift MCP bridge
+        // Note: This requires the Swift bridge to be compiled first
+        // In practice, this may need to be handled by CocoaPods
+        /*
+        iosTarget.compilations.getByName("main") {
+            cinterops {
+                val mcpBridge by creating {
+                    defFile(project.file("src/iosMain/cinterop/mcpBridge.def"))
+                    packageName("cc.unitmesh.agent.mcp.bridge")
+                    includeDirs(project.file("src/iosMain/swift"))
+                }
+            }
+        }
+        */
     }
 
     js(IR) {
@@ -171,6 +189,9 @@ kotlin {
             dependencies {
                 // Ktor Darwin engine for iOS
                 implementation("io.ktor:ktor-client-darwin:3.2.2")
+
+                // Export coroutines for Swift interop (required by framework export)
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
         }
 
