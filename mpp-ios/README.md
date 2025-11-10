@@ -2,34 +2,49 @@
 
 这是 AutoDev 的 iOS 应用,使用 Compose Multiplatform 构建。
 
-## 快速开始
+## 🚀 快速开始
 
-### 1. 安装依赖
+### 方法 1: 一键运行 (推荐)
+
+```bash
+cd mpp-ios
+./build-and-run.sh
+```
+
+这个脚本会自动:
+1. ✅ 编译 Kotlin Framework
+2. ✅ 安装 CocoaPods 依赖
+3. ✅ 打开 Xcode 项目
+
+然后在 Xcode 中选择模拟器并点击 Run (⌘R)。
+
+### 方法 2: 手动步骤
+
+#### 1. 安装依赖
 
 确保您已安装:
 - Xcode 15.0+
 - CocoaPods (`sudo gem install cocoapods`)
 - Gradle (项目已包含)
 
-### 2. 编译 Kotlin Framework
-
-```bash
-# 返回项目根目录
-cd ..
-
-# 编译 iOS Framework (模拟器)
-./gradlew :mpp-core:linkDebugFrameworkIosSimulatorArm64
-./gradlew :mpp-ui:linkDebugFrameworkIosSimulatorArm64
-```
-
-### 3. 安装 CocoaPods 依赖
+#### 2. 编译 Kotlin Framework
 
 ```bash
 cd mpp-ios
+./build-framework.sh
+```
+
+#### 3. 安装 CocoaPods 依赖
+
+```bash
 pod install
 ```
 
-### 4. 打开 Xcode 项目
+**重要**: `pod install` 会自动配置所有必要的编译参数,无需手动修改 Xcode 配置!
+
+详见: [PODFILE-CONFIG.md](PODFILE-CONFIG.md)
+
+#### 4. 打开 Xcode 项目
 
 ```bash
 open AutoDevApp.xcworkspace
@@ -37,7 +52,7 @@ open AutoDevApp.xcworkspace
 
 **注意**: 必须打开 `.xcworkspace` 文件,而不是 `.xcodeproj` 文件!
 
-### 5. 运行应用
+#### 5. 运行应用
 
 1. 在 Xcode 中选择模拟器 (例如: iPhone 15 Pro)
 2. 点击 Run 按钮 (⌘R)
@@ -117,6 +132,36 @@ pod install
    - 选择您的设备
    - 设置开发团队 (Signing & Capabilities)
    - 运行
+
+## ⚙️ Podfile 自动配置
+
+本项目的 Podfile 已配置为**自动管理所有编译参数**,包括:
+
+- ✅ `FRAMEWORK_SEARCH_PATHS` - Framework 搜索路径
+- ✅ `OTHER_LDFLAGS` - 链接器标志 (`-ObjC`, `-lc++`, `-framework AutoDevUI`, `-lsqlite3`)
+- ✅ `ENABLE_BITCODE` - 禁用 Bitcode (Kotlin/Native 不支持)
+- ✅ `IPHONEOS_DEPLOYMENT_TARGET` - iOS 最低版本
+
+**这意味着您无需手动修改 Xcode 项目配置!**
+
+每次运行 `pod install` 时,这些参数会自动应用到生成的 `.xcconfig` 文件中。
+
+详细说明请参考: [PODFILE-CONFIG.md](PODFILE-CONFIG.md)
+
+### 验证配置
+
+运行 `pod install` 后,可以验证配置是否正确:
+
+```bash
+cat Pods/Target\ Support\ Files/Pods-AutoDevApp/Pods-AutoDevApp.debug.xcconfig | grep -E "OTHER_LDFLAGS|FRAMEWORK_SEARCH_PATHS"
+```
+
+应该看到类似输出:
+
+```
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_ROOT}/../../mpp-core/build/bin/iosSimulatorArm64/debugFramework" "${PODS_ROOT}/../../mpp-ui/build/bin/iosSimulatorArm64/debugFramework"
+OTHER_LDFLAGS = $(inherited) -ObjC -l"c++" -framework "AutoDevCore" -framework "AutoDevUI"
+```
 
 ## 故障排除
 

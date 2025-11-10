@@ -20,12 +20,45 @@ post_install do |installer|
     target.build_configurations.each do |config|
       # 禁用 Bitcode (Kotlin/Native 不支持)
       config.build_settings['ENABLE_BITCODE'] = 'NO'
-      
+
       # 设置最低部署目标
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
-      
+
       # 优化设置
       config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone' if config.name == 'Debug'
+    end
+  end
+
+  # 配置主应用 target 的链接器标志和框架搜索路径
+  installer.pods_project.targets.each do |target|
+    if target.name == 'Pods-AutoDevApp'
+      target.build_configurations.each do |config|
+        # 检测架构和配置
+        arch = 'iosSimulatorArm64'  # 默认 Apple Silicon 模拟器
+        build_config = config.name.downcase.include?('debug') ? 'debug' : 'release'
+
+        # 添加框架搜索路径
+        framework_paths = [
+          "$(inherited)",
+          "\"${PODS_ROOT}/../../mpp-core/build/bin/#{arch}/#{build_config}Framework\"",
+          "\"${PODS_ROOT}/../../mpp-ui/build/bin/#{arch}/#{build_config}Framework\""
+        ]
+
+        config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
+        config.build_settings['FRAMEWORK_SEARCH_PATHS'] = framework_paths
+
+        # 添加链接器标志
+        ldflags = [
+          "$(inherited)",
+          "-ObjC",
+          "-lc++",
+          "-framework AutoDevUI",
+          "-lsqlite3"
+        ]
+
+        config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
+        config.build_settings['OTHER_LDFLAGS'] = ldflags
+      end
     end
   end
 end
