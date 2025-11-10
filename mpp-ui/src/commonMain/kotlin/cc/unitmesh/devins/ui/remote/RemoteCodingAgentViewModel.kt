@@ -82,10 +82,11 @@ class RemoteCodingAgentViewModel(
     /**
      * Execute a task on the remote server
      * 
-     * @param projectId The project ID on the server (or a git URL)
+     * @param projectId The project ID on the server
      * @param task The task description
+     * @param gitUrl Optional Git URL to clone (overrides projectId as source)
      */
-    fun executeTask(projectId: String, task: String) {
+    fun executeTask(projectId: String, task: String, gitUrl: String = "") {
         if (isExecuting) {
             println("Agent is already executing")
             return
@@ -125,24 +126,35 @@ class RemoteCodingAgentViewModel(
                     null
                 }
                 
-                // Smart detection: if projectId looks like a URL, use it as gitUrl
-                val isGitUrl = projectId.startsWith("http://") ||
-                              projectId.startsWith("https://") ||
-                              projectId.startsWith("git@")
-                
-                val request = if (isGitUrl) {
+                // Determine request parameters
+                val request = if (gitUrl.isNotBlank()) {
+                    // Explicit gitUrl provided
                     RemoteAgentRequest(
-                        projectId = projectId.split('/').lastOrNull() ?: "temp-project",
+                        projectId = gitUrl.split('/').lastOrNull()?.removeSuffix(".git") ?: "temp-project",
                         task = task,
                         llmConfig = llmConfig,
-                        gitUrl = projectId
+                        gitUrl = gitUrl
                     )
                 } else {
-                    RemoteAgentRequest(
-                        projectId = projectId,
-                        task = task,
-                        llmConfig = llmConfig
-                    )
+                    // Check if projectId is actually a git URL
+                    val isGitUrl = projectId.startsWith("http://") ||
+                                  projectId.startsWith("https://") ||
+                                  projectId.startsWith("git@")
+                    
+                    if (isGitUrl) {
+                        RemoteAgentRequest(
+                            projectId = projectId.split('/').lastOrNull()?.removeSuffix(".git") ?: "temp-project",
+                            task = task,
+                            llmConfig = llmConfig,
+                            gitUrl = projectId
+                        )
+                    } else {
+                        RemoteAgentRequest(
+                            projectId = projectId,
+                            task = task,
+                            llmConfig = llmConfig
+                        )
+                    }
                 }
                 
                 // Stream events from server and forward to renderer

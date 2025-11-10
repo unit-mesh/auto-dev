@@ -24,6 +24,7 @@ fun TopBarMenuMobile(
     availableAgents: List<String>,
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
+    selectedAgentType: String = "Local",
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
@@ -31,6 +32,8 @@ fun TopBarMenuMobile(
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
     onToggleTreeView: () -> Unit = {},
+    onAgentTypeChange: (String) -> Unit = {},
+    onConfigureRemote: () -> Unit = {},
     onShowModelConfig: () -> Unit,
     onShowToolConfig: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -191,7 +194,103 @@ fun TopBarMenuMobile(
 
                     HorizontalDivider()
 
-                    // 3. 模式切换
+                    // 3. Agent Type 子菜单 (只在 Agent 模式下显示)
+                    if (useAgentMode) {
+                        var agentTypeMenuExpanded by remember { mutableStateOf(false) }
+                        Box {
+                            DropdownMenuItem(
+                                text = {
+                                    Column {
+                                        Text(
+                                            "Agent Type",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            selectedAgentType,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                },
+                                onClick = { agentTypeMenuExpanded = !agentTypeMenuExpanded },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = if (selectedAgentType == "Remote") AutoDevComposeIcons.Cloud else AutoDevComposeIcons.Computer,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = if (agentTypeMenuExpanded) AutoDevComposeIcons.KeyboardArrowUp else AutoDevComposeIcons.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            )
+
+                            // Agent Type 子菜单
+                            DropdownMenu(
+                                expanded = agentTypeMenuExpanded,
+                                onDismissRequest = { agentTypeMenuExpanded = false }
+                            ) {
+                                listOf("Local", "Remote").forEach { type ->
+                                    DropdownMenuItem(
+                                        text = { Text(type) },
+                                        onClick = {
+                                            onAgentTypeChange(type)
+                                            agentTypeMenuExpanded = false
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = if (type == "Remote") AutoDevComposeIcons.Cloud else AutoDevComposeIcons.Computer,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            if (type == selectedAgentType) {
+                                                Icon(
+                                                    imageVector = AutoDevComposeIcons.Check,
+                                                    contentDescription = "Selected",
+                                                    modifier = Modifier.size(16.dp),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+
+                                // Configure Server (只在选择 Remote 时显示)
+                                if (selectedAgentType == "Remote") {
+                                    HorizontalDivider()
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                "Configure Server",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        },
+                                        onClick = {
+                                            agentTypeMenuExpanded = false
+                                            onConfigureRemote()
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = AutoDevComposeIcons.Settings,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider()
+                    }
+
+                    // 4. 模式切换
                     DropdownMenuItem(
                         text = {
                             Column {
@@ -221,7 +320,7 @@ fun TopBarMenuMobile(
 
                     HorizontalDivider()
 
-                    // 4. 主题切换子菜单
+                    // 5. 主题切换子菜单
                     var themeMenuExpanded by remember { mutableStateOf(false) }
                     Box {
                         DropdownMenuItem(
@@ -289,7 +388,7 @@ fun TopBarMenuMobile(
 
                     HorizontalDivider()
 
-                    // 5. Language Switcher
+                    // 6. Language Switcher
                     DropdownMenuItem(
                         text = {
                             Row(
@@ -304,7 +403,7 @@ fun TopBarMenuMobile(
 
                     HorizontalDivider()
 
-                    // 6. Project Explorer Toggle (只在 Agent 模式下显示)
+                    // 7. Project Explorer Toggle (只在 Agent 模式下显示)
                     if (useAgentMode) {
                         DropdownMenuItem(
                             text = {
@@ -340,7 +439,7 @@ fun TopBarMenuMobile(
                         )
                     }
 
-                    // 7. Open Directory
+                    // 8. Open Directory
                     DropdownMenuItem(
                         text = { Text("Open Project") },
                         onClick = {
@@ -356,7 +455,7 @@ fun TopBarMenuMobile(
                         }
                     )
 
-                    // 8. New Chat
+                    // 9. New Chat
                     if (hasHistory) {
                         DropdownMenuItem(
                             text = { Text("New Chat") },
@@ -374,7 +473,7 @@ fun TopBarMenuMobile(
                         )
                     }
 
-                    // 9. Debug Info
+                    // 10. Debug Info
                     if (hasDebugInfo) {
                         HorizontalDivider()
                         DropdownMenuItem(

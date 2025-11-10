@@ -24,6 +24,10 @@ fun TopBarMenuDesktop(
     availableAgents: List<String>,
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
+    // Remote Agent 相关参数
+    selectedAgentType: String = "Local",
+    onAgentTypeChange: (String) -> Unit = {},
+    onConfigureRemote: () -> Unit = {},
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
@@ -38,6 +42,7 @@ fun TopBarMenuDesktop(
     val currentTheme = ThemeManager.currentTheme
     var themeMenuExpanded by remember { mutableStateOf(false) }
     var agentMenuExpanded by remember { mutableStateOf(false) }
+    var agentTypeMenuExpanded by remember { mutableStateOf(false) }
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -135,6 +140,123 @@ fun TopBarMenuDesktop(
                                     }
                                 }
                             )
+                        }
+                    }
+                }
+
+                // Agent Type Selector (Local/Remote) - Only in Agent Mode
+                if (useAgentMode) {
+                    Box {
+                        OutlinedButton(
+                            onClick = { agentTypeMenuExpanded = true },
+                            modifier = Modifier.height(40.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = if (selectedAgentType == "Remote") {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                }
+                            )
+                        ) {
+                            Icon(
+                                imageVector = if (selectedAgentType == "Remote") {
+                                    AutoDevComposeIcons.Cloud
+                                } else {
+                                    AutoDevComposeIcons.Computer
+                                },
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = selectedAgentType,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = agentTypeMenuExpanded,
+                            onDismissRequest = { agentTypeMenuExpanded = false }
+                        ) {
+                            Text(
+                                text = "Agent Type",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            HorizontalDivider()
+
+                            // Local Agent
+                            DropdownMenuItem(
+                                text = { Text("Local") },
+                                onClick = {
+                                    onAgentTypeChange("Local")
+                                    agentTypeMenuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.Computer,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (selectedAgentType == "Local") {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.Check,
+                                            contentDescription = "Selected",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            )
+
+                            // Remote Agent
+                            DropdownMenuItem(
+                                text = { Text("Remote") },
+                                onClick = {
+                                    onAgentTypeChange("Remote")
+                                    agentTypeMenuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.Cloud,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (selectedAgentType == "Remote") {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.Check,
+                                            contentDescription = "Selected",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            )
+
+                            HorizontalDivider()
+
+                            // Configure Remote Server
+                            if (selectedAgentType == "Remote") {
+                                DropdownMenuItem(
+                                    text = { Text("Configure Server...") },
+                                    onClick = {
+                                        onConfigureRemote()
+                                        agentTypeMenuExpanded = false
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.Settings,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }

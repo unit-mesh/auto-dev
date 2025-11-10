@@ -32,7 +32,6 @@ fun RemoteAgentChatInterface(
     serverUrl: String,
     useServerConfig: Boolean = false,
     isTreeViewVisible: Boolean = false,
-    onConfigWarning: () -> Unit,
     onToggleTreeView: (Boolean) -> Unit = {},
     // TopBar 参数
     hasHistory: Boolean = false,
@@ -41,17 +40,22 @@ fun RemoteAgentChatInterface(
     selectedAgent: String = "Remote",
     availableAgents: List<String> = listOf("Remote"),
     useAgentMode: Boolean = true,
+    selectedAgentType: String = "Remote",
     onOpenDirectory: () -> Unit = {},
     onClearHistory: () -> Unit = {},
     onShowDebug: () -> Unit = {},
     onModelConfigChange: (cc.unitmesh.llm.ModelConfig) -> Unit = {},
     onAgentChange: (String) -> Unit = {},
     onModeToggle: () -> Unit = {},
+    onAgentTypeChange: (String) -> Unit = {},
+    onConfigureRemote: () -> Unit = {},
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
     // Remote-specific parameters
     projectId: String = "",
+    gitUrl: String = "",
     onProjectChange: (String) -> Unit = {},
+    onGitUrlChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
@@ -61,6 +65,15 @@ fun RemoteAgentChatInterface(
             serverUrl = serverUrl,
             useServerConfig = useServerConfig
         )
+    }
+
+    // State for git URL input
+    var localGitUrl by remember { mutableStateOf(gitUrl) }
+    // Keep local state in sync when parent passes a new gitUrl (e.g., from dialog)
+    LaunchedEffect(gitUrl) {
+        if (gitUrl != localGitUrl) {
+            localGitUrl = gitUrl
+        }
     }
 
     // 同步外部 TreeView 状态到 ViewModel
@@ -111,7 +124,7 @@ fun RemoteAgentChatInterface(
                         ) {
                             Text("Retry Connection")
                         }
-                        OutlinedButton(onClick = onConfigWarning) {
+                        OutlinedButton(onClick = onConfigureRemote) {
                             Text("Configure")
                         }
                     }
@@ -139,6 +152,7 @@ fun RemoteAgentChatInterface(
                         availableAgents = availableAgents,
                         useAgentMode = useAgentMode,
                         isTreeViewVisible = isTreeViewVisible,
+                        selectedAgentType = selectedAgentType,
                         onOpenDirectory = onOpenDirectory,
                         onClearHistory = {
                             viewModel.clearHistory()
@@ -149,6 +163,8 @@ fun RemoteAgentChatInterface(
                         onAgentChange = onAgentChange,
                         onModeToggle = onModeToggle,
                         onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+                        onAgentTypeChange = onAgentTypeChange,
+                        onConfigureRemote = onConfigureRemote,
                         onShowModelConfig = onShowModelConfig,
                         onShowToolConfig = onShowToolConfig,
                         modifier = Modifier.statusBarsPadding()
@@ -165,7 +181,7 @@ fun RemoteAgentChatInterface(
                         }
                     )
 
-                    // Project selector for remote mode
+                    // Project selector or Git URL input
                     if (viewModel.availableProjects.isNotEmpty()) {
                         ProjectSelector(
                             projects = viewModel.availableProjects,
@@ -175,35 +191,60 @@ fun RemoteAgentChatInterface(
                                 .fillMaxWidth()
                                 .padding(horizontal = 12.dp, vertical = 4.dp)
                         )
+                    } else if (localGitUrl.isBlank()) {
+                        // Show Git URL input if no projects and no gitUrl set
+                        GitUrlInputCard(
+                            onGitUrlSubmit = { url ->
+                                localGitUrl = url
+                                onGitUrlChange(url)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        )
                     }
 
-                    // 输入框
-                    val callbacks = remember(viewModel, projectId) {
-                        object : EditorCallbacks {
-                            override fun onSubmit(input: String) {
-                                if (projectId.isBlank()) {
-                                    viewModel.renderer.renderError("Please select a project first")
-                                } else {
-                                    viewModel.executeTask(projectId, input)
+                    // 输入框 - 只在有项目或 gitUrl 时显示
+                    val hasTarget = projectId.isNotBlank() || localGitUrl.isNotBlank()
+                    if (hasTarget) {
+                        val callbacks = remember(viewModel, projectId, localGitUrl) {
+                            object : EditorCallbacks {
+                                override fun onSubmit(input: String) {
+                                    val effectiveProjectId = if (localGitUrl.isNotBlank()) {
+                                        // Extract repo name from git URL
+                                        localGitUrl.split('/').last().removeSuffix(".git")
+                                    } else {
+                                        projectId
+                                    }
+
+                                    if (effectiveProjectId.isBlank()) {
+                                        viewModel.renderer.renderError("Please provide a project or Git URL")
+                                    } else {
+                                        viewModel.executeTask(effectiveProjectId, input, localGitUrl)
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    DevInEditorInput(
-                        initialText = "",
-                        placeholder = "Describe your coding task...",
-                        callbacks = callbacks,
-                        completionManager = currentWorkspace?.completionManager,
-                        isCompactMode = true,
-                        isExecuting = viewModel.isExecuting,
-                        onStopClick = { viewModel.cancelTask() },
-                        onModelConfigChange = { },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding()
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    )
+                        DevInEditorInput(
+                            initialText = "",
+                            placeholder = if (localGitUrl.isNotBlank()) {
+                                "Task will clone ${localGitUrl.split('/').last()} and execute..."
+                            } else {
+                                "Describe your coding task..."
+                            },
+                            callbacks = callbacks,
+                            completionManager = currentWorkspace?.completionManager,
+                            isCompactMode = true,
+                            isExecuting = viewModel.isExecuting,
+                            onStopClick = { viewModel.cancelTask() },
+                            onModelConfigChange = { },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .imePadding()
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        )
+                    }
 
                     // Connection status indicator
                     RemoteConnectionStatusBar(
@@ -269,6 +310,7 @@ fun RemoteAgentChatInterface(
                 availableAgents = availableAgents,
                 useAgentMode = useAgentMode,
                 isTreeViewVisible = isTreeViewVisible,
+                selectedAgentType = selectedAgentType,
                 onOpenDirectory = onOpenDirectory,
                 onClearHistory = {
                     viewModel.clearHistory()
@@ -279,6 +321,8 @@ fun RemoteAgentChatInterface(
                 onAgentChange = onAgentChange,
                 onModeToggle = onModeToggle,
                 onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+                onAgentTypeChange = onAgentTypeChange,
+                onConfigureRemote = onConfigureRemote,
                 onShowModelConfig = onShowModelConfig,
                 onShowToolConfig = onShowToolConfig,
                 modifier = Modifier.statusBarsPadding()
@@ -295,7 +339,7 @@ fun RemoteAgentChatInterface(
                 }
             )
 
-            // Project selector for remote mode
+            // Project selector or Git URL input
             if (viewModel.availableProjects.isNotEmpty()) {
                 ProjectSelector(
                     projects = viewModel.availableProjects,
@@ -305,35 +349,60 @@ fun RemoteAgentChatInterface(
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 )
+            } else if (localGitUrl.isBlank()) {
+                // Show Git URL input if no projects and no gitUrl set
+                GitUrlInputCard(
+                    onGitUrlSubmit = { url ->
+                        localGitUrl = url
+                        onGitUrlChange(url)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                )
             }
 
-            // 输入框
-            val callbacks = remember(viewModel, projectId) {
-                object : EditorCallbacks {
-                    override fun onSubmit(input: String) {
-                        if (projectId.isBlank()) {
-                            viewModel.renderer.renderError("Please select a project first")
-                        } else {
-                            viewModel.executeTask(projectId, input)
+            // 输入框 - 只在有项目或 gitUrl 时显示
+            val hasTarget = projectId.isNotBlank() || localGitUrl.isNotBlank()
+            if (hasTarget) {
+                val callbacks = remember(viewModel, projectId, localGitUrl) {
+                    object : EditorCallbacks {
+                        override fun onSubmit(input: String) {
+                            val effectiveProjectId = if (localGitUrl.isNotBlank()) {
+                                // Extract repo name from git URL
+                                localGitUrl.split('/').last().removeSuffix(".git")
+                            } else {
+                                projectId
+                            }
+
+                            if (effectiveProjectId.isBlank()) {
+                                viewModel.renderer.renderError("Please provide a project or Git URL")
+                            } else {
+                                viewModel.executeTask(effectiveProjectId, input, localGitUrl)
+                            }
                         }
                     }
                 }
-            }
 
-            DevInEditorInput(
-                initialText = "",
-                placeholder = "Describe your coding task...",
-                callbacks = callbacks,
-                completionManager = currentWorkspace?.completionManager,
-                isCompactMode = true,
-                isExecuting = viewModel.isExecuting,
-                onStopClick = { viewModel.cancelTask() },
-                onModelConfigChange = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            )
+                DevInEditorInput(
+                    initialText = "",
+                    placeholder = if (localGitUrl.isNotBlank()) {
+                        "Task will clone ${localGitUrl.split('/').last()} and execute..."
+                    } else {
+                        "Describe your coding task..."
+                    },
+                    callbacks = callbacks,
+                    completionManager = currentWorkspace?.completionManager,
+                    isCompactMode = true,
+                    isExecuting = viewModel.isExecuting,
+                    onStopClick = { viewModel.cancelTask() },
+                    onModelConfigChange = { },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .imePadding()
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+            }
 
             // Connection status indicator
             RemoteConnectionStatusBar(
@@ -350,7 +419,7 @@ fun RemoteAgentChatInterface(
 
 /**
  * Project selector dropdown for remote mode
- * 
+ *
  * Supports both:
  * - Selecting from available projects
  * - Manually entering a project ID or Git URL
@@ -392,7 +461,7 @@ private fun ProjectSelector(
                         onValueChange = { },
                         readOnly = true,
                         label = { Text("Project / Git URL") },
-                        trailingIcon = { 
+                        trailingIcon = {
                             Row {
                                 IconButton(onClick = { isManualInput = true }) {
                                     Icon(
@@ -432,9 +501,9 @@ private fun ProjectSelector(
                                 }
                             )
                         }
-                        
+
                         HorizontalDivider()
-                        
+
                         DropdownMenuItem(
                             text = {
                                 Row(
@@ -547,6 +616,120 @@ private fun RemoteConnectionStatusBar(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Git URL input card for cloning repositories
+ */
+@Composable
+private fun GitUrlInputCard(
+    onGitUrlSubmit: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var gitUrl by remember { mutableStateOf("") }
+    var gitUrlError by remember { mutableStateOf<String?>(null) }
+
+    fun validateGitUrl(url: String): Boolean {
+        if (url.isBlank()) {
+            gitUrlError = "Git URL cannot be empty"
+            return false
+        }
+
+        val isValid = url.startsWith("http://") ||
+            url.startsWith("https://") ||
+            url.startsWith("git@")
+
+        if (!isValid) {
+            gitUrlError = "Invalid Git URL format"
+            return false
+        }
+
+        gitUrlError = null
+        return true
+    }
+
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Cloud,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Clone Repository",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Text(
+                text = "Enter a Git repository URL to clone and work on",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            OutlinedTextField(
+                value = gitUrl,
+                onValueChange = {
+                    gitUrl = it
+                    gitUrlError = null
+                },
+                label = { Text("Git Repository URL") },
+                placeholder = { Text("https://github.com/username/repo.git") },
+                supportingText = {
+                    Text(
+                        gitUrlError ?: "Supports https://, http://, and git@ URLs",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (gitUrlError != null) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                isError = gitUrlError != null,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Code,
+                        contentDescription = null
+                    )
+                }
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+            ) {
+                Button(
+                    onClick = {
+                        if (validateGitUrl(gitUrl)) {
+                            onGitUrlSubmit(gitUrl)
+                        }
+                    },
+                    enabled = gitUrl.isNotBlank()
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.CloudQueue,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Clone & Start")
+                }
             }
         }
     }
