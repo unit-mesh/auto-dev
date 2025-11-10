@@ -1,12 +1,19 @@
 /**
  * CLI Renderer for CodingAgent
- * Implements JsCodingAgentRenderer interface from Kotlin
+ * 
+ * Implements JsCodingAgentRenderer interface from Kotlin Multiplatform.
+ * Provides enhanced CLI output with colors, syntax highlighting, and formatting.
+ * 
+ * @see mpp-core/src/jsMain/kotlin/cc/unitmesh/agent/RendererExports.kt - Interface definition
  */
 
 import chalk from 'chalk';
 import hljs from 'highlight.js';
 import { semanticChalk, dividers } from '../../design-system/theme-helpers.js';
 
+/**
+ * CliRenderer implements the unified JsCodingAgentRenderer interface
+ */
 export class CliRenderer {
   readonly __doNotUseOrImplementIt: any = {};
 

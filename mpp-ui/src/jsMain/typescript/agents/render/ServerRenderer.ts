@@ -1,13 +1,21 @@
 /**
  * ServerRenderer - Renders events from mpp-server in CLI format
  *
- * Provides similar output to CliRenderer but for server-side events
+ * Implements JsCodingAgentRenderer interface from Kotlin Multiplatform.
+ * Provides similar output to CliRenderer but for server-side events (SSE).
  */
 
 import { semanticChalk } from '../../design-system/theme-helpers.js';
 import type { AgentEvent, AgentStepInfo, AgentEditInfo } from '../ServerAgentClient.js';
 
+/**
+ * ServerRenderer implements the unified JsCodingAgentRenderer interface
+ * defined in mpp-core/src/jsMain/kotlin/cc/unitmesh/agent/RendererExports.kt
+ */
 export class ServerRenderer {
+  // Required by Kotlin JS export interface
+  readonly __doNotUseOrImplementIt: any = {};
+
   private currentIteration: number = 0;
   private maxIterations: number = 20;
   private llmBuffer: string = '';
@@ -17,8 +25,68 @@ export class ServerRenderer {
   private hasStartedLLMOutput: boolean = false;
   private lastOutputLength: number = 0;
 
+  // ============================================================================
+  // JsCodingAgentRenderer Interface Implementation
+  // ============================================================================
+
+  renderIterationHeader(current: number, max: number): void {
+    this.renderIterationStart(current, max);
+  }
+
+  renderLLMResponseStart(): void {
+    this.hasStartedLLMOutput = false;
+    this.lastOutputLength = 0;
+  }
+
+  renderLLMResponseChunk(chunk: string): void {
+    this.renderLLMChunk(chunk);
+  }
+
+  renderLLMResponseEnd(): void {
+    // Flush any buffered LLM output
+    if (this.llmBuffer.trim()) {
+      const finalContent = this.filterDevinBlocks(this.llmBuffer);
+      const remainingContent = finalContent.slice(this.lastOutputLength || 0);
+      if (remainingContent.trim()) {
+        process.stdout.write(remainingContent);
+      }
+      console.log(''); // Ensure newline
+      this.llmBuffer = '';
+      this.hasStartedLLMOutput = false;
+      this.lastOutputLength = 0;
+    }
+  }
+
+  renderTaskComplete(): void {
+    console.log('');
+    console.log(semanticChalk.success('✅ Task marked as complete'));
+  }
+
+  renderRepeatWarning(toolName: string, count: number): void {
+    console.log(semanticChalk.warning(`⚠️  Warning: Tool '${toolName}' has been called ${count} times in a row`));
+  }
+
+  renderRecoveryAdvice(recoveryAdvice: string): void {
+    console.log('');
+    console.log(semanticChalk.accentBold('🔧 ERROR RECOVERY ADVICE:'));
+    console.log(semanticChalk.accent('━'.repeat(50)));
+    const lines = recoveryAdvice.split('\n');
+    for (const line of lines) {
+      if (line.trim()) {
+        console.log(semanticChalk.muted(`   ${line}`));
+      }
+    }
+    console.log(semanticChalk.accent('━'.repeat(50)));
+    console.log('');
+  }
+
+  // ============================================================================
+  // Server-Specific Event Handler
+  // ============================================================================
+
   /**
    * Render an event from the server
+   * This is the main entry point for SSE events from mpp-server
    */
   renderEvent(event: AgentEvent): void {
     switch (event.type) {
@@ -29,10 +97,10 @@ export class ServerRenderer {
         this.renderCloneLog(event.message, event.isError);
         break;
       case 'iteration':
-        this.renderIterationStart(event.current, event.max);
+        this.renderIterationHeader(event.current, event.max);
         break;
       case 'llm_chunk':
-        this.renderLLMChunk(event.chunk);
+        this.renderLLMResponseChunk(event.chunk);
         break;
       case 'tool_call':
         this.renderToolCall(event.toolName, event.params);
@@ -48,6 +116,10 @@ export class ServerRenderer {
         break;
     }
   }
+
+  // ============================================================================
+  // Server-Specific Methods (not in JsCodingAgentRenderer)
+  // ============================================================================
 
   private renderCloneProgress(stage: string, progress?: number): void {
     if (!this.isCloning) {
@@ -100,24 +172,6 @@ export class ServerRenderer {
         console.log(semanticChalk.muted(`  ${message}`));
       }
     }
-  }
-
-  private renderIterationStart(current: number, max: number): void {
-    this.currentIteration = current;
-    this.maxIterations = max;
-
-    // Flush any buffered LLM output
-    if (this.llmBuffer.trim()) {
-      console.log(''); // Just a newline
-      this.llmBuffer = '';
-    }
-
-    // Reset LLM output state for new iteration
-    this.hasStartedLLMOutput = false;
-    this.lastOutputLength = 0;
-
-    // Don't show iteration headers like CliRenderer - they're not in the reference format
-    // The reference format shows tools directly without iteration numbers
   }
 
   private renderLLMChunk(chunk: string): void {
@@ -184,7 +238,11 @@ export class ServerRenderer {
     return filtered;
   }
 
-  private renderToolCall(toolName: string, params: string): void {
+  // ============================================================================
+  // Tool Execution Methods (JsCodingAgentRenderer)
+  // ============================================================================
+
+  renderToolCall(toolName: string, params: string): void {
     // Flush any buffered LLM output first
     if (this.llmBuffer.trim()) {
       console.log(''); // New line before tool
@@ -261,7 +319,7 @@ export class ServerRenderer {
     }
   }
 
-  private renderToolResult(toolName: string, success: boolean, output?: string): void {
+  renderToolResult(toolName: string, success: boolean, output?: string | null, fullOutput?: string | null): void {
     if (success && output) {
       const summary = this.generateToolSummary(toolName, output);
       console.log('  ⎿ ' + semanticChalk.success(summary));
@@ -391,10 +449,48 @@ export class ServerRenderer {
     return null;
   }
 
-  private renderError(message: string): void {
+  renderError(message: string): void {
     console.log('');
     console.log(semanticChalk.error(`❌ Error: ${message}`));
     console.log('');
+  }
+
+  renderFinalResult(success: boolean, message: string, iterations: number): void {
+    console.log('');
+    if (success) {
+      console.log(semanticChalk.success('✅ Task completed successfully'));
+    } else {
+      console.log(semanticChalk.error('❌ Task failed'));
+    }
+
+    if (message && message.trim()) {
+      console.log(semanticChalk.muted(`${message}`));
+    }
+
+    console.log(semanticChalk.muted(`Task completed after ${iterations} iterations`));
+    console.log('');
+  }
+
+  // ============================================================================
+  // Server-Specific Helper Methods
+  // ============================================================================
+
+  private renderIterationStart(current: number, max: number): void {
+    this.currentIteration = current;
+    this.maxIterations = max;
+
+    // Flush any buffered LLM output
+    if (this.llmBuffer.trim()) {
+      console.log(''); // Just a newline
+      this.llmBuffer = '';
+    }
+
+    // Reset LLM output state for new iteration
+    this.hasStartedLLMOutput = false;
+    this.lastOutputLength = 0;
+
+    // Don't show iteration headers like CliRenderer - they're not in the reference format
+    // The reference format shows tools directly without iteration numbers
   }
 
   private renderComplete(

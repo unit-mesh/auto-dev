@@ -10,7 +10,15 @@ import kotlinx.datetime.Clock
 
 /**
  * Compose UI Renderer that extends BaseRenderer
- * Integrates the BaseRenderer architecture with Compose state management
+ *
+ * Implements CodingAgentRenderer interface from mpp-core.
+ * Integrates the BaseRenderer architecture with Compose state management.
+ *
+ * This renderer maintains a unified timeline of all agent activities (messages, tool calls, results)
+ * and exposes them as Compose state for reactive UI updates.
+ *
+ * @see cc.unitmesh.agent.render.CodingAgentRenderer - The core interface
+ * @see cc.unitmesh.agent.render.BaseRenderer - Common functionality
  */
 class ComposeRenderer : BaseRenderer() {
     // Unified timeline for all events (messages, tool calls, results)
