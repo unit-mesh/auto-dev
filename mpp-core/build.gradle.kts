@@ -50,6 +50,18 @@ kotlin {
         }
     }
 
+    // iOS targets
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "AutoDevCore"
+            isStatic = true
+        }
+    }
+
     js(IR) {
         outputModuleName = "autodev-mpp-core"
         // Support both browser and Node.js with UMD (for compatibility)
@@ -152,6 +164,13 @@ kotlin {
         jsTest {
             dependencies {
                 implementation(kotlin("test-js"))
+            }
+        }
+
+        iosMain {
+            dependencies {
+                // Ktor Darwin engine for iOS
+                implementation("io.ktor:ktor-client-darwin:3.2.2")
             }
         }
 
