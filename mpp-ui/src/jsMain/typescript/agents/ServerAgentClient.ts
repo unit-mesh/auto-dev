@@ -42,6 +42,8 @@ export interface AgentResponse {
 }
 
 export type AgentEvent =
+  | { type: 'clone_progress'; stage: string; progress?: number }
+  | { type: 'clone_log'; message: string; isError?: boolean }
   | { type: 'iteration'; current: number; max: number }
   | { type: 'llm_chunk'; chunk: string }
   | { type: 'tool_call'; toolName: string; params: string }
@@ -143,6 +145,10 @@ export class ServerAgentClient {
       const parsed = JSON.parse(data);
 
       switch (type) {
+        case 'clone_progress':
+          return { type: 'clone_progress', stage: parsed.stage, progress: parsed.progress };
+        case 'clone_log':
+          return { type: 'clone_log', message: parsed.message, isError: parsed.isError };
         case 'iteration':
           return { type: 'iteration', current: parsed.current, max: parsed.max };
         case 'llm_chunk':

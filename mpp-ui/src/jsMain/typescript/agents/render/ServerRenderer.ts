@@ -12,12 +12,20 @@ export class ServerRenderer {
   private maxIterations: number = 20;
   private llmBuffer: string = '';
   private toolCallsInProgress: Map<string, { toolName: string; params: string }> = new Map();
+  private isCloning: boolean = false;
+  private lastCloneProgress: number = 0;
 
   /**
    * Render an event from the server
    */
   renderEvent(event: AgentEvent): void {
     switch (event.type) {
+      case 'clone_progress':
+        this.renderCloneProgress(event.stage, event.progress);
+        break;
+      case 'clone_log':
+        this.renderCloneLog(event.message, event.isError);
+        break;
       case 'iteration':
         this.renderIterationStart(event.current, event.max);
         break;
@@ -39,6 +47,59 @@ export class ServerRenderer {
     }
   }
 
+  private renderCloneProgress(stage: string, progress?: number): void {
+    if (!this.isCloning) {
+      // First clone event - show header
+      console.log('');
+      console.log(semanticChalk.accent('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+      console.log(semanticChalk.info('📦 Cloning repository...'));
+      console.log('');
+      this.isCloning = true;
+    }
+
+    // Show progress bar for significant progress updates
+    if (progress !== undefined && progress !== this.lastCloneProgress) {
+      const barLength = 30;
+      const filledLength = Math.floor((progress / 100) * barLength);
+      const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+      
+      process.stdout.write(`\r${semanticChalk.accent(`[${bar}]`)} ${progress}% - ${stage}`);
+      
+      if (progress === 100) {
+        console.log(''); // New line after completion
+        console.log(semanticChalk.success('✓ Clone completed'));
+        console.log(semanticChalk.accent('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+        console.log('');
+      }
+      
+      this.lastCloneProgress = progress;
+    }
+  }
+
+  private renderCloneLog(message: string, isError: boolean = false): void {
+    // Filter out noisy git messages
+    const noisyPatterns = [
+      /^Executing:/,
+      /^remote:/,
+      /^Receiving objects:/,
+      /^Resolving deltas:/,
+      /^Unpacking objects:/
+    ];
+    
+    if (noisyPatterns.some(pattern => pattern.test(message))) {
+      return; // Skip noisy messages
+    }
+
+    // Only show important messages
+    if (message.includes('✓') || message.includes('Repository ready') || isError) {
+      if (isError) {
+        console.log(semanticChalk.error(`  ✗ ${message}`));
+      } else {
+        console.log(semanticChalk.muted(`  ${message}`));
+      }
+    }
+  }
+
   private renderIterationStart(current: number, max: number): void {
     this.currentIteration = current;
     this.maxIterations = max;
@@ -54,19 +115,42 @@ export class ServerRenderer {
   }
 
   private renderLLMChunk(chunk: string): void {
-    // Buffer LLM output and print when we have a complete thought
-    this.llmBuffer += chunk;
-
-    // Print if we have a newline or enough content
-    if (chunk.includes('\n') || this.llmBuffer.length > 100) {
-      process.stdout.write(semanticChalk.muted(chunk));
+    // Filter out devin blocks before buffering
+    const filtered = this.filterDevinBlock(chunk);
+    if (!filtered) return;
+    
+    // Print immediately for streaming effect (like local mode)
+    process.stdout.write(filtered);
+    this.llmBuffer += filtered;
+  }
+  
+  private filterDevinBlock(chunk: string): string {
+    // Remove any part of <devin> tags
+    if (chunk.includes('<devin') || chunk.includes('</devin') || 
+        chunk.includes('<de') || chunk.includes('</de')) {
+      return '';
     }
+    
+    // If we're inside a devin block (detected in buffer), skip content
+    if (this.llmBuffer.includes('<devin') && !this.llmBuffer.includes('</devin>')) {
+      return ''; // Inside devin block, skip
+    }
+    
+    // Remove content that looks like JSON blocks in tool calls
+    if (this.llmBuffer.includes('```json') || this.llmBuffer.includes('/glob')) {
+      // Skip until we see closing tags
+      if (!chunk.includes('</devin>') && !chunk.includes('I expect')) {
+        return '';
+      }
+    }
+    
+    return chunk;
   }
 
   private renderToolCall(toolName: string, params: string): void {
-    // Flush any buffered LLM output
+    // Flush any buffered LLM output first
     if (this.llmBuffer.trim()) {
-      console.log(this.llmBuffer);
+      console.log(''); // New line before tool
       this.llmBuffer = '';
     }
 
@@ -75,7 +159,7 @@ export class ServerRenderer {
     try {
       const paramsObj = JSON.parse(params);
 
-      // Create friendly descriptions based on tool type
+      // Create friendly descriptions based on tool type (matching local mode style)
       if (toolName === 'read-file' && paramsObj.path) {
         description = `${paramsObj.path} - read file - file reader`;
       } else if (toolName === 'write-file' && paramsObj.path) {
@@ -93,7 +177,7 @@ export class ServerRenderer {
       // If params parsing fails, use tool name
     }
 
-    console.log(semanticChalk.info(`● ${description}`));
+    console.log(`● ${description}`);
 
     // Store for matching with result
     this.toolCallsInProgress.set(toolName, { toolName, params });
@@ -116,80 +200,69 @@ export class ServerRenderer {
     try {
       const paramsObj = JSON.parse(toolCall.params);
 
-      // Render based on tool type
+      // Render based on tool type (simplified to match local mode)
       if (toolName === 'read-file') {
         if (success && output) {
           const lines = output.split('\n');
-          console.log(semanticChalk.muted(`  ⎿ Reading file: ${paramsObj.path}`));
-          console.log(semanticChalk.muted(`  ⎿ Read ${lines.length} lines`));
+          console.log(`  ⎿ Reading file: ${paramsObj.path}`);
+          console.log(`  ⎿ Read ${lines.length} lines`);
 
-          // Show preview (first 15 lines)
+          // Show preview (first 15 lines) like local mode
           if (lines.length > 0) {
-            console.log(semanticChalk.muted('────────────────────────────────────────────────────────────'));
+            console.log('────────────────────────────────────────────────────────────');
             const preview = lines.slice(0, 15);
             preview.forEach((line, i) => {
-              console.log(semanticChalk.muted(`${String(i + 1).padStart(3, ' ')} │ ${line}`));
+              console.log(`${String(i + 1).padStart(3, ' ')} │ ${line}`);
             });
             if (lines.length > 15) {
-              console.log(semanticChalk.muted(`... (${lines.length - 15} more lines)`));
+              console.log(`... (${lines.length - 15} more lines)`);
             }
-            console.log(semanticChalk.muted('────────────────────────────────────────────────────────────'));
+            console.log('────────────────────────────────────────────────────────────');
           }
         } else {
-          console.log(semanticChalk.error(`  ⎿ Failed to read file: ${output || 'Unknown error'}`));
+          console.log(`  ⎿ Failed to read file: ${output || 'Unknown error'}`);
         }
-      } else if (toolName === 'write-file') {
+      } else if (toolName === 'write-file' || toolName === 'edit-file') {
         if (success) {
-          console.log(semanticChalk.success(`  ⎿ File written: ${paramsObj.path}`));
+          console.log(`  ⎿ ${toolName === 'write-file' ? 'Written' : 'Edited'}: ${paramsObj.path}`);
         } else {
-          console.log(semanticChalk.error(`  ⎿ Failed to write file: ${output || 'Unknown error'}`));
-        }
-      } else if (toolName === 'edit-file') {
-        if (success) {
-          console.log(semanticChalk.success(`  ⎿ File edited: ${paramsObj.path}`));
-        } else {
-          console.log(semanticChalk.error(`  ⎿ Failed to edit file: ${output || 'Unknown error'}`));
+          console.log(`  ⎿ Failed: ${output || 'Unknown error'}`);
         }
       } else if (toolName === 'glob') {
         if (success && output) {
           const files = output.split('\n').filter(f => f.trim());
-          console.log(semanticChalk.muted(`  ⎿ Searching for files matching pattern: ${paramsObj.pattern}`));
-          console.log(semanticChalk.success(`  ⎿ Found ${files.length} files`));
+          console.log(`  ⎿ Searching for files matching pattern: ${paramsObj.pattern}`);
+          console.log(`  ⎿ Found ${files.length} files`);
+          
+          // Don't show file list - too verbose (matching local mode)
         } else {
-          console.log(semanticChalk.error(`  ⎿ Search failed: ${output || 'Unknown error'}`));
+          console.log(`  ⎿ Search failed: ${output || 'Unknown error'}`);
         }
       } else if (toolName === 'grep') {
         if (success && output) {
           const matches = output.split('\n').filter(m => m.trim());
-          console.log(semanticChalk.muted(`  ⎿ Searching for: ${paramsObj.pattern}`));
-          console.log(semanticChalk.success(`  ⎿ Found ${matches.length} matches`));
+          console.log(`  ⎿ Searching for: ${paramsObj.pattern}`);
+          console.log(`  ⎿ Found ${matches.length} matches`);
         } else {
-          console.log(semanticChalk.error(`  ⎿ Search failed: ${output || 'Unknown error'}`));
+          console.log(`  ⎿ Search failed: ${output || 'Unknown error'}`);
         }
       } else if (toolName === 'shell') {
         if (success) {
-          console.log(semanticChalk.success(`  ⎿ Command executed`));
-          if (output) {
-            console.log(semanticChalk.muted(`  ⎿ Output: ${output.substring(0, 200)}${output.length > 200 ? '...' : ''}`));
+          console.log(`  ⎿ Command executed`);
+          if (output && output.trim()) {
+            const shortOutput = output.substring(0, 100);
+            console.log(`  ⎿ ${shortOutput}${output.length > 100 ? '...' : ''}`);
           }
         } else {
-          console.log(semanticChalk.error(`  ⎿ Command failed: ${output || 'Unknown error'}`));
+          console.log(`  ⎿ Command failed: ${output || 'Unknown error'}`);
         }
       } else {
         // Generic tool result
-        if (success) {
-          console.log(semanticChalk.success(`  ⎿ ${output || 'Success'}`));
-        } else {
-          console.log(semanticChalk.error(`  ⎿ ${output || 'Failed'}`));
-        }
+        console.log(success ? `  ⎿ Success` : `  ⎿ Failed: ${output || 'Unknown error'}`);
       }
     } catch (e) {
-      // Fallback if params parsing fails
-      if (success) {
-        console.log(semanticChalk.success(`  ⎿ ${output || 'Success'}`));
-      } else {
-        console.log(semanticChalk.error(`  ⎿ ${output || 'Failed'}`));
-      }
+      // Fallback if params parsing fails - don't show raw output
+      console.log(success ? `  ⎿ Success` : `  ⎿ Failed`);
     }
 
     // Remove from in-progress map
@@ -241,4 +314,5 @@ export class ServerRenderer {
     console.log('');
   }
 }
+
 
