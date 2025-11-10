@@ -21,7 +21,12 @@ application {
 }
 
 dependencies {
+    // Use JVM target from multiplatform project
     implementation(projects.mppCore)
+    
+    // Add kotlin-logging explicitly for JVM
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
+    implementation("ch.qos.logback:logback-classic:1.5.16")
 
     // Ktor Server
     implementation(libs.ktor.serverCore)
