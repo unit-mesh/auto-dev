@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Compose Server" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="cc.unitmesh.server.ServerApplicationKt" />
+    <module name="AutoDev-Intellij.mpp-server.main" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
