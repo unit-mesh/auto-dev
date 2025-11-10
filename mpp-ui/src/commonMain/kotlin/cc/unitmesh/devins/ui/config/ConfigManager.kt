@@ -73,6 +73,13 @@ expect object ConfigManager {
      * @param mcpServers Map of server name to server configuration
      */
     suspend fun saveMcpServers(mcpServers: Map<String, cc.unitmesh.agent.mcp.McpServerConfig>)
+    
+    /**
+     * Save remote server configuration
+     *
+     * @param remoteServer Remote server configuration
+     */
+    suspend fun saveRemoteServer(remoteServer: RemoteServerConfig)
 
     /**
      * Load tool configuration from file (~/.autodev/mcp.json)

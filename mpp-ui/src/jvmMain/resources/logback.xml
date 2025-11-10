@@ -3,7 +3,8 @@
     <!-- 定义日志文件存储路径 -->
     <property name="LOG_HOME" value="${user.home}/.autodev/logs" />
     <property name="APP_NAME" value="autodev-app" />
-    
+    <property name="JNDI_DISABLED" value="true"/>
+
     <!-- 控制台输出 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -14,7 +15,7 @@
             <level>INFO</level>
         </filter>
     </appender>
-    
+
     <!-- 文件输出 - 所有日志 -->
     <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${APP_NAME}.log</file>
@@ -34,7 +35,7 @@
             <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-    
+
     <!-- 错误日志单独文件 -->
     <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${APP_NAME}-error.log</file>
@@ -55,27 +56,27 @@
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-    
+
     <!-- UI 特定的日志级别配置 -->
     <logger name="cc.unitmesh.devins.ui" level="DEBUG" />
     <logger name="cc.unitmesh.agent" level="DEBUG" />
     <logger name="cc.unitmesh.devins" level="DEBUG" />
     <logger name="cc.unitmesh.llm" level="INFO" />
     <logger name="cc.unitmesh.indexer" level="INFO" />
-    
+
     <!-- MCP 相关日志 -->
     <logger name="cc.unitmesh.agent.mcp" level="DEBUG" />
     <logger name="cc.unitmesh.agent.config" level="DEBUG" />
-    
+
     <!-- Compose UI 相关日志 -->
     <logger name="androidx.compose" level="WARN" />
     <logger name="org.jetbrains.skia" level="WARN" />
-    
+
     <!-- 第三方库日志级别 -->
     <logger name="io.ktor" level="INFO" />
     <logger name="kotlinx.coroutines" level="WARN" />
     <logger name="ai.koog" level="INFO" />
-    
+
     <!-- 根日志级别 -->
     <root level="DEBUG">
         <appender-ref ref="CONSOLE" />

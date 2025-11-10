@@ -67,6 +67,7 @@ object AutoDevComposeIcons {
     val Cloud: ImageVector get() = Icons.Default.Cloud
     val CloudOff: ImageVector get() = Icons.Default.Cloud // Fallback - CloudOff may not exist in Default
     val CloudQueue: ImageVector get() = Icons.Default.Cloud // Fallback - CloudQueue may not exist in Default
+    val Computer: ImageVector get() = Icons.Default.Computer
 
     // Tools & Utilities
     val Search: ImageVector get() = Icons.Default.Search

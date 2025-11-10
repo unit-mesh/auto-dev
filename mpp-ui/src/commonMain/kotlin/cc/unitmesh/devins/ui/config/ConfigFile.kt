@@ -24,6 +24,10 @@ import kotlinx.serialization.Serializable
  *   filesystem:
  *     command: npx
  *     args: ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
+ * remoteServer:
+ *   url: "http://localhost:8080"
+ *   enabled: false
+ *   useServerConfig: false
  * ```
  */
 @Serializable
@@ -31,7 +35,18 @@ public data class ConfigFile(
     val active: String = "",
     val configs: List<NamedModelConfig> = emptyList(),
     val mcpServers: Map<String, McpServerConfig>? = emptyMap(),
-    val language: String? = "en" // Language preference: "en" or "zh"
+    val language: String? = "en", // Language preference: "en" or "zh"
+    val remoteServer: RemoteServerConfig? = null
+)
+
+/**
+ * Remote server configuration
+ */
+@Serializable
+data class RemoteServerConfig(
+    val url: String = "http://localhost:8080",
+    val enabled: Boolean = false,
+    val useServerConfig: Boolean = false // Whether to use server's LLM config instead of local
 )
 
 class AutoDevConfigWrapper(val configFile: ConfigFile) {
@@ -70,5 +85,13 @@ class AutoDevConfigWrapper(val configFile: ConfigFile) {
 
     fun getEnabledMcpServers(): Map<String, McpServerConfig> {
         return configFile.mcpServers?.filter { !it.value.disabled && it.value.validate() } ?: emptyMap()
+    }
+    
+    fun getRemoteServer(): RemoteServerConfig {
+        return configFile.remoteServer ?: RemoteServerConfig()
+    }
+    
+    fun isRemoteMode(): Boolean {
+        return configFile.remoteServer?.enabled == true
     }
 }

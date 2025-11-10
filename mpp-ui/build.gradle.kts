@@ -82,6 +82,12 @@ kotlin {
 
                 // JSON 处理
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+
+
+//                implementation("javax.naming:jndi:1.2.1")
+
+                // Ktor HTTP Client (for remote agent)
+                implementation("io.ktor:ktor-client-core:3.2.2")
             }
         }
 
@@ -110,7 +116,9 @@ kotlin {
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
 
                 // Logback for JVM logging backend with file storage
-                implementation("ch.qos.logback:logback-classic:1.5.19")
+                implementation("ch.qos.logback:logback-classic:1.5.19") {
+                    exclude(group = "javax.naming", module = "javax.naming-api")
+                }
 
                 // RSyntaxTextArea for syntax highlighting in JVM
                 implementation("com.fifesoft:rsyntaxtextarea:3.6.0")
@@ -118,6 +126,9 @@ kotlin {
                 implementation("org.jetbrains.pty4j:pty4j:0.13.10")
                 implementation("org.jetbrains.jediterm:jediterm-core:3.57")
                 implementation("org.jetbrains.jediterm:jediterm-ui:3.57")
+
+                // Ktor HTTP Client CIO engine for JVM
+                implementation("io.ktor:ktor-client-cio:3.2.2")
             }
         }
 
@@ -143,6 +154,9 @@ kotlin {
                 // Multiplatform Markdown Renderer for Android
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
+
+                // Ktor HTTP Client CIO engine for Android
+                implementation("io.ktor:ktor-client-cio:3.2.2")
             }
         }
 
@@ -153,6 +167,9 @@ kotlin {
 
                 // SQLDelight - JS driver
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
+                
+                // Ktor HTTP Client JS engine
+                implementation("io.ktor:ktor-client-js:3.2.2")
             }
         }
     }

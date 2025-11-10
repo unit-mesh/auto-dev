@@ -182,6 +182,14 @@ actual object ConfigManager {
         val updatedConfigFile = configFile.copy(mcpServers = mcpServers)
         save(updatedConfigFile)
     }
+    
+    actual suspend fun saveRemoteServer(remoteServer: RemoteServerConfig) {
+        val wrapper = load()
+        val configFile = wrapper.configFile
+
+        val updatedConfigFile = configFile.copy(remoteServer = remoteServer)
+        save(updatedConfigFile)
+    }
 
     actual suspend fun loadToolConfig(): ToolConfigFile {
         return try {
