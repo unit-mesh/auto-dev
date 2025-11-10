@@ -1,15 +1,14 @@
 package cc.unitmesh.devins.ui.remote
 
 import io.ktor.client.*
-import io.ktor.client.plugins.*
+import io.ktor.client.plugins.sse.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.charsets.Charsets
-import io.ktor.utils.io.core.readText
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -53,70 +52,33 @@ class RemoteAgentClient(
      * Returns a Flow of AgentEvent for reactive processing
      */
     fun executeStream(request: RemoteAgentRequest): Flow<RemoteAgentEvent> = flow {
-        val response = httpClient.post("$baseUrl/api/agent/stream") {
-            contentType(ContentType.Application.Json)
-            header(HttpHeaders.Accept, "text/event-stream")
-            setBody(json.encodeToString(RemoteAgentRequest.serializer(), request))
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE // No timeout for streaming
-                connectTimeoutMillis = 30_000
-                socketTimeoutMillis = Long.MAX_VALUE
-            }
-        }
-
-        if (!response.status.isSuccess()) {
-            throw RemoteAgentException("Server error: ${response.status.value} - ${response.bodyAsText()}")
-        }
-
-        // Parse SSE stream in real-time
-        val channel = response.bodyAsChannel()
-        parseSSEStreamRealtime(channel).collect { event ->
-            emit(event)
-        }
-    }
-
-    /**
-     * Parse SSE stream format in real-time:
-     * event: event_type
-     * data: {"key": "value"}
-     *
-     * (blank line separates events)
-     */
-    private fun parseSSEStreamRealtime(channel: ByteReadChannel): Flow<RemoteAgentEvent> = flow {
-        var currentEventType: String? = null
-        var currentData: String? = null
-
         try {
-            while (!channel.isClosedForRead) {
-                val line = channel.readUTF8Line() ?: break
-                when {
-                    line.startsWith("event:") -> {
-                        currentEventType = line.removePrefix("event:").trim()
-                    }
-                    line.startsWith("data:") -> {
-                        currentData = line.removePrefix("data:").trim()
-                    }
-                    line.isBlank() && currentEventType != null && currentData != null -> {
-                        // Complete event - parse and emit immediately
-                        val event = parseEvent(currentEventType, currentData)
-                        if (event != null) {
-                            emit(event)
-
-                            // Stop on complete event
-                            if (event is RemoteAgentEvent.Complete) {
-                                return@flow
-                            }
-                        }
-
-                        // Reset for next event
-                        currentEventType = null
-                        currentData = null
-                    }
+            // Use proper SSE client with POST body
+            httpClient.sse(
+                urlString = "$baseUrl/api/agent/stream",
+                request = {
+                    method = HttpMethod.Post
+                    contentType(ContentType.Application.Json)
+                    setBody(json.encodeToString(RemoteAgentRequest.serializer(), request))
                 }
+            ) {
+                // Process SSE events using incoming flow
+                incoming
+                    .mapNotNull { event ->
+                        event.data?.takeIf { data ->
+                            !data.trim().equals("[DONE]", ignoreCase = true)
+                        }?.let { data ->
+                            val eventType = event.event ?: "message"
+                            parseEvent(eventType, data)
+                        }
+                    }
+                    .collect { parsedEvent ->
+                        emit(parsedEvent)
+                    }
             }
         } catch (e: Exception) {
-            println("Error reading SSE stream: ${e.message}")
-            throw RemoteAgentException("Stream reading failed: ${e.message}", e)
+            e.printStackTrace()
+            throw RemoteAgentException("Stream connection failed: ${e.message}", e)
         }
     }
 

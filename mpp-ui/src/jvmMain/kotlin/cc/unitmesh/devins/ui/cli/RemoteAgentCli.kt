@@ -113,7 +113,6 @@ object RemoteAgentCli {
             client.executeStream(request).collect { event ->
                 renderer.renderEvent(event)
 
-                // Check if complete
                 if (event is RemoteAgentEvent.Complete) {
                     client.close()
                     exitProcess(if (event.success) 0 else 1)
