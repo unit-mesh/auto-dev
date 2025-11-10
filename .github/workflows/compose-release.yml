@@ -183,9 +183,6 @@ jobs:
       - name: Fix yarn lock issues
         run: ./gradlew kotlinUpgradeYarnLock --no-daemon || echo "Yarn lock upgrade failed, continuing..."
 
-      - name: Build mpp-core dependency
-        run: ./gradlew :mpp-core:assemble --no-daemon
-
       - name: Build Desktop package
         run: ./gradlew :mpp-ui:${{ matrix.task }} --no-daemon
 
