@@ -16,66 +16,36 @@ class ToolCallParser {
     /**
      * Parse all tool calls from LLM response
      * Now supports multiple tool calls for parallel execution
+     * 
+     * IMPORTANT: Only parses tool calls within <devin> blocks to avoid false positives
+     * from natural language text (e.g., "/blog/" API paths, "/Hibernate" in sentences)
      */
     fun parseToolCalls(llmResponse: String): List<ToolCall> {
         val toolCalls = mutableListOf<ToolCall>()
 
+        // Only extract from devin blocks - do NOT parse direct tool calls from plain text
         val devinBlocks = devinParser.extractDevinBlocks(llmResponse)
 
-        if (devinBlocks.isEmpty()) {
-            // Try to parse multiple direct tool calls
-            val directCalls = parseAllDirectToolCalls(llmResponse)
-            toolCalls.addAll(directCalls)
-        } else {
-            // Parse all devin blocks (not just the first one)
-            for (block in devinBlocks) {
-                val toolCall = parseToolCallFromDevinBlock(block)
-                if (toolCall != null) {
-                    if (toolCall.toolName == ToolType.WriteFile.name && !toolCall.params.containsKey("content")) {
-                        val contentFromContext = extractContentFromContext(llmResponse, block)
-                        if (contentFromContext != null) {
-                            val updatedParams = toolCall.params.toMutableMap()
-                            updatedParams["content"] = contentFromContext
-                            toolCalls.add(ToolCall.create(toolCall.toolName, updatedParams))
-                        } else {
-                            toolCalls.add(toolCall)
-                        }
+        // Parse all devin blocks (not just the first one)
+        for (block in devinBlocks) {
+            val toolCall = parseToolCallFromDevinBlock(block)
+            if (toolCall != null) {
+                if (toolCall.toolName == ToolType.WriteFile.name && !toolCall.params.containsKey("content")) {
+                    val contentFromContext = extractContentFromContext(llmResponse, block)
+                    if (contentFromContext != null) {
+                        val updatedParams = toolCall.params.toMutableMap()
+                        updatedParams["content"] = contentFromContext
+                        toolCalls.add(ToolCall.create(toolCall.toolName, updatedParams))
                     } else {
                         toolCalls.add(toolCall)
                     }
+                } else {
+                    toolCalls.add(toolCall)
                 }
             }
         }
 
-        logger.debug { "Parsed ${toolCalls.size} tool call(s) from LLM response" }
-        return toolCalls
-    }
-    
-    /**
-     * Parse all direct tool calls (without devin blocks)
-     * Supports multiple tool calls in a single response
-     */
-    private fun parseAllDirectToolCalls(response: String): List<ToolCall> {
-        val toolCalls = mutableListOf<ToolCall>()
-        val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""", RegexOption.MULTILINE)
-        
-        // Find all tool call matches
-        val matches = toolPattern.findAll(response)
-        
-        for (match in matches) {
-            val toolName = match.groups[1]?.value ?: continue
-            val rest = match.groups[2]?.value?.trim() ?: ""
-            
-            try {
-                val toolCall = parseToolCallFromLine("/$toolName $rest")
-                if (toolCall != null) {
-                    toolCalls.add(toolCall)
-                }
-            } catch (e: Exception) {
-                logger.warn(e) { "Failed to parse tool call: /$toolName $rest" }
-            }
-        }
-        
+        logger.debug { "Parsed ${toolCalls.size} tool call(s) from LLM response (from ${devinBlocks.size} devin block(s))" }
         return toolCalls
     }
 
@@ -120,16 +90,6 @@ class ToolCallParser {
         } else {
             parseToolCallFromLine(toolCallLine)
         }
-    }
-
-    private fun parseDirectToolCall(response: String): ToolCall? {
-        val toolPattern = Regex("""/(\w+(?:-\w+)*)(.*)""", RegexOption.MULTILINE)
-        val match = toolPattern.find(response) ?: return null
-        
-        val toolName = match.groups[1]?.value ?: return null
-        val rest = match.groups[2]?.value?.trim() ?: ""
-        
-        return parseToolCallFromLine("/$toolName $rest")
     }
     
     private fun parseToolCallFromLine(line: String): ToolCall? {

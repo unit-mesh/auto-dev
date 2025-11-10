@@ -254,10 +254,10 @@ async function runServerAgent(
     const renderer = new ServerRenderer();
 
     // Smart detection: if projectId looks like a URL, use it as gitUrl
-    const isGitUrl = projectId.startsWith('http://') || 
-                     projectId.startsWith('https://') || 
+    const isGitUrl = projectId.startsWith('http://') ||
+                     projectId.startsWith('https://') ||
                      projectId.startsWith('git@');
-    
+
     const requestParams = isGitUrl ? {
       projectId: projectId.split('/').pop() || 'temp-project', // Use repo name as project ID
       task,
