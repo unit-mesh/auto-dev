@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		408539BC2EC2C63B0093CFB2 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 408539BB2EC2C63B0093CFB2 /* MCP */; };
 		A1000001000000000000001 /* AutoDevApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001 /* AutoDevApp.swift */; };
 		A1000002000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002000000000000001 /* ContentView.swift */; };
 		A1000003000000000000001 /* ComposeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003000000000000001 /* ComposeView.swift */; };
@@ -32,6 +33,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3C8B8E8E0F6F8F8F8F8F8F8 /* Pods_AutoDevApp.framework in Frameworks */,
+				408539BC2EC2C63B0093CFB2 /* MCP in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,6 +98,7 @@
 				AA000001000000000000001 /* Sources */,
 				A4000001000000000000001 /* Frameworks */,
 				AB000001000000000000001 /* Resources */,
+				7CDBCAF47328AC3C5EF6D62B /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -130,6 +133,9 @@
 				Base,
 			);
 			mainGroup = A5000001000000000000001;
+			packageReferences = (
+				408539BA2EC2C63B0093CFB2 /* XCRemoteSwiftPackageReference "swift-sdk" */,
+			);
 			productRefGroup = A7000001000000000000001 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -151,6 +157,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		7CDBCAF47328AC3C5EF6D62B /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AutoDevApp/Pods-AutoDevApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		F3C8B8E8E0F6F8F8F8F8F8FE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -380,6 +405,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		408539BA2EC2C63B0093CFB2 /* XCRemoteSwiftPackageReference "swift-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/modelcontextprotocol/swift-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		408539BB2EC2C63B0093CFB2 /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 408539BA2EC2C63B0093CFB2 /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AC000001000000000000001 /* Project object */;
 }
