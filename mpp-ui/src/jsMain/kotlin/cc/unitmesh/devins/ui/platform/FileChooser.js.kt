@@ -1,26 +1,43 @@
 package cc.unitmesh.devins.ui.platform
 
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.name
+
 /**
- * JS 平台的文件选择器实现
- * 目前提供空实现，未来可以基于 HTML5 File API 实现
+ * FileKit 实现的跨平台文件选择器 - JS 平台
+ * 注意：JS 平台不支持目录选择，且只能返回文件名而非完整路径
  */
-class JsFileChooser : FileChooser {
+class FileKitChooser : FileChooser {
     override suspend fun chooseFile(
         title: String,
         initialDirectory: String?,
         fileExtensions: List<String>?
     ): String? {
-        console.warn("File chooser not implemented for JS platform")
-        return null
+        val fileType = if (fileExtensions.isNullOrEmpty()) {
+            FileKitType.File()
+        } else {
+            FileKitType.File(fileExtensions)
+        }
+
+        val file = FileKit.openFilePicker(
+            type = fileType,
+            title = title
+        )
+
+        // JS 平台只能返回文件名，无法获取完整路径
+        return file?.name
     }
 
     override suspend fun chooseDirectory(
         title: String,
         initialDirectory: String?
     ): String? {
-        console.warn("Directory chooser not implemented for JS platform")
+        // JS 平台不支持目录选择
         return null
     }
 }
 
-actual fun createFileChooser(): FileChooser = JsFileChooser()
+actual fun createFileChooser(): FileChooser = FileKitChooser()
+

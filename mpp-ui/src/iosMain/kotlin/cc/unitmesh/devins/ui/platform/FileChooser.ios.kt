@@ -1,37 +1,52 @@
 package cc.unitmesh.devins.ui.platform
 
-/**
- * iOS implementation of file chooser
- * File chooser functionality is limited on iOS
- */
-actual fun createFileChooser(): FileChooser {
-    return IosFileChooser()
-}
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.path
 
 /**
- * iOS implementation of FileChooser
- * Uses UIDocumentPickerViewController (stub for now)
+ * FileKit 实现的跨平台文件选择器 - iOS 平台
  */
-class IosFileChooser : FileChooser {
+class FileKitChooser : FileChooser {
     override suspend fun chooseFile(
         title: String,
         initialDirectory: String?,
         fileExtensions: List<String>?
     ): String? {
-        // iOS file chooser implementation would require UIDocumentPickerViewController
-        // For now, this is a stub implementation
-        println("File chooser not yet implemented for iOS")
-        return null
+        val fileType = if (fileExtensions.isNullOrEmpty()) {
+            FileKitType.File()
+        } else {
+            FileKitType.File(fileExtensions)
+        }
+
+        val directory = initialDirectory?.let { PlatformFile(it) }
+
+        val file = FileKit.openFilePicker(
+            type = fileType,
+            title = title,
+            directory = directory
+        )
+
+        return file?.path
     }
 
     override suspend fun chooseDirectory(
         title: String,
         initialDirectory: String?
     ): String? {
-        // iOS directory chooser implementation would require UIDocumentPickerViewController
-        // For now, this is a stub implementation
-        println("Directory chooser not yet implemented for iOS")
-        return null
+        val directory = initialDirectory?.let { PlatformFile(it) }
+
+        val result = FileKit.openDirectoryPicker(
+            title = title,
+            directory = directory
+        )
+
+        return result?.path
     }
 }
+
+actual fun createFileChooser(): FileChooser = FileKitChooser()
 

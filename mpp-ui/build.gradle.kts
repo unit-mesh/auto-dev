@@ -105,6 +105,9 @@ kotlin {
                 // JSON 处理
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
+                // FileKit - Cross-platform file picker
+                implementation("io.github.vinceglb:filekit-core:0.12.0")
+                implementation("io.github.vinceglb:filekit-dialogs:0.12.0")
 
 //                implementation("javax.naming:jndi:1.2.1")
 

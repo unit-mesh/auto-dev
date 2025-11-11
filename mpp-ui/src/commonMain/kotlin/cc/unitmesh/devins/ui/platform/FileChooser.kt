@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.platform
 
 /**
  * 跨平台文件选择器抽象
+ * 基于 FileKit 实现，支持 JVM、Android、iOS、JS/WASM
  */
 interface FileChooser {
     /**
@@ -31,5 +32,6 @@ interface FileChooser {
 
 /**
  * 获取平台特定的文件选择器实例
+ * 现在所有平台都使用 FileKit 实现
  */
 expect fun createFileChooser(): FileChooser

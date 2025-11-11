@@ -1,59 +1,52 @@
 package cc.unitmesh.devins.ui.platform
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
-import javax.swing.JFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.path
 
 /**
- * JVM 平台的文件选择器实现
+ * FileKit 实现的跨平台文件选择器 - JVM 平台
  */
-class JvmFileChooser : FileChooser {
+class FileKitChooser : FileChooser {
     override suspend fun chooseFile(
         title: String,
         initialDirectory: String?,
         fileExtensions: List<String>?
-    ): String? =
-        withContext(Dispatchers.IO) {
-            val chooser =
-                JFileChooser().apply {
-                    dialogTitle = title
-                    currentDirectory = initialDirectory?.let { File(it) } ?: File(System.getProperty("user.home"))
-
-                    if (!fileExtensions.isNullOrEmpty()) {
-                        val description = fileExtensions.joinToString(", ") { "*.$it" }
-                        fileFilter = FileNameExtensionFilter(description, *fileExtensions.toTypedArray())
-                    }
-                }
-
-            val result = chooser.showOpenDialog(null)
-            if (result == JFileChooser.APPROVE_OPTION) {
-                chooser.selectedFile.absolutePath
-            } else {
-                null
-            }
+    ): String? {
+        val fileType = if (fileExtensions.isNullOrEmpty()) {
+            FileKitType.File()
+        } else {
+            FileKitType.File(fileExtensions)
         }
+
+        val directory = initialDirectory?.let { PlatformFile(it) }
+
+        val file = FileKit.openFilePicker(
+            type = fileType,
+            title = title,
+            directory = directory
+        )
+
+        return file?.path
+    }
 
     override suspend fun chooseDirectory(
         title: String,
         initialDirectory: String?
-    ): String? =
-        withContext(Dispatchers.IO) {
-            val chooser =
-                JFileChooser().apply {
-                    fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                    dialogTitle = title
-                    currentDirectory = initialDirectory?.let { File(it) } ?: File(System.getProperty("user.home"))
-                }
+    ): String? {
+        val directory = initialDirectory?.let { PlatformFile(it) }
 
-            val result = chooser.showOpenDialog(null)
-            if (result == JFileChooser.APPROVE_OPTION) {
-                chooser.selectedFile.absolutePath
-            } else {
-                null
-            }
-        }
+        val result = FileKit.openDirectoryPicker(
+            title = title,
+            directory = directory
+        )
+
+        return result?.path
+    }
 }
 
-actual fun createFileChooser(): FileChooser = JvmFileChooser()
+actual fun createFileChooser(): FileChooser = FileKitChooser()
+
