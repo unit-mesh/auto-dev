@@ -62,7 +62,6 @@ fun AgentMessageList(
                 is ComposeRenderer.TimelineItem.CombinedToolItem -> {
                     CombinedToolItem(
                         toolName = timelineItem.toolName,
-                        description = timelineItem.description,
                         details = timelineItem.details,
                         fullParams = timelineItem.fullParams,
                         filePath = timelineItem.filePath,
@@ -247,7 +246,6 @@ fun TaskCompletedItem(
 @Composable
 fun CombinedToolItem(
     toolName: String,
-    description: String,
     details: String?,
     fullParams: String? = null,
     filePath: String? = null,
@@ -321,14 +319,6 @@ fun CombinedToolItem(
                     modifier = Modifier.weight(1f)
                 )
 
-                // Description
-                Text(
-                    text = "- $description",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                // Result summary (if available)
                 if (summary != null) {
                     Text(
                         text = "→ $summary",

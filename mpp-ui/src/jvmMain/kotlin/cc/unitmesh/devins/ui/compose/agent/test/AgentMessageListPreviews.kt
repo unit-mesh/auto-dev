@@ -119,7 +119,6 @@ fun Preview_CombinedToolItem_FileRead() {
         Surface {
             CombinedToolItem(
                 toolName = "src/Main.kt - ReadFile",
-                description = "file reader",
                 details = "path=src/Main.kt",
                 fullParams = "path=src/Main.kt encoding=utf-8",
                 filePath = "src/Main.kt",
