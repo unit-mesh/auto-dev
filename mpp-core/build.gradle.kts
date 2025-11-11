@@ -97,11 +97,12 @@ kotlin {
         }
     }
 
-     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-     wasmJs {
-         browser()
-         nodejs()
-     }
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        nodejs()
+        binaries.library()
+    }
 
     sourceSets {
         commonMain {
@@ -230,6 +231,27 @@ npmPublish {
                     url.set("https://github.com/unit-mesh/auto-dev.git")
                 }
                 keywords.set(listOf("kotlin", "multiplatform", "ai", "llm", "devins"))
+            }
+        }
+
+        named("wasmJs") {
+            packageJson {
+                name = "@autodev/mpp-core-wasm"
+                version = project.version.toString()
+                main = "autodev-mpp-core-wasm.mjs"
+                types = "autodev-mpp-core-wasm.d.ts"
+                description.set("AutoDev Multiplatform Core - WebAssembly Build")
+                author {
+                    name.set("Unit Mesh")
+                    email.set("h@phodal.com")
+                }
+                license.set("MIT")
+                private.set(false)
+                repository {
+                    type.set("git")
+                    url.set("https://github.com/unit-mesh/auto-dev.git")
+                }
+                keywords.set(listOf("kotlin", "multiplatform", "wasm", "webassembly", "ai", "llm", "devins"))
             }
         }
     }
