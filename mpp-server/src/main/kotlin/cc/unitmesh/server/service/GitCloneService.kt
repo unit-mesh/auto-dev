@@ -1,11 +1,10 @@
 package cc.unitmesh.server.service
 
 import cc.unitmesh.agent.logging.AutoDevLogger
-import cc.unitmesh.server.model.AgentEvent
+import cc.unitmesh.agent.AgentEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.receiveAsFlow
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader

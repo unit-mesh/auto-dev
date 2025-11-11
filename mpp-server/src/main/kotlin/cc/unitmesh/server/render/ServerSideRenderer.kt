@@ -1,14 +1,13 @@
 package cc.unitmesh.server.render
 
+import cc.unitmesh.agent.AgentEditInfo
 import cc.unitmesh.agent.render.CodingAgentRenderer
-import cc.unitmesh.server.model.AgentEvent
+import cc.unitmesh.agent.AgentEvent
+import cc.unitmesh.agent.AgentStepInfo
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 
-/**
- * Server-side renderer that emits events through a Flow for SSE streaming
- */
 class ServerSideRenderer : CodingAgentRenderer {
     private val eventChannel = Channel<AgentEvent>(Channel.UNLIMITED)
     
@@ -72,8 +71,8 @@ class ServerSideRenderer : CodingAgentRenderer {
         success: Boolean,
         message: String,
         iterations: Int,
-        steps: List<cc.unitmesh.server.model.AgentStepInfo>,
-        edits: List<cc.unitmesh.server.model.AgentEditInfo>
+        steps: List<AgentStepInfo>,
+        edits: List<AgentEditInfo>
     ) {
         eventChannel.trySend(AgentEvent.Complete(success, message, iterations, steps, edits))
         eventChannel.close()

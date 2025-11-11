@@ -1,5 +1,6 @@
 package cc.unitmesh.server.plugins
 
+import cc.unitmesh.agent.AgentEvent
 import cc.unitmesh.server.config.ServerConfig
 import cc.unitmesh.server.model.*
 import cc.unitmesh.server.service.AgentService
@@ -11,7 +12,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sse.*
 import io.ktor.sse.*
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
