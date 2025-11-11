@@ -60,7 +60,6 @@ fun ModelConfigDialog(
                         .padding(24.dp)
                         .verticalScroll(rememberScrollState())
             ) {
-                // Title
                 Text(
                     text = Strings.modelConfigTitle,
                     style = MaterialTheme.typography.headlineSmall,
@@ -69,7 +68,6 @@ fun ModelConfigDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Configuration Name
                 Text(
                     text = "配置名称",
                     style = MaterialTheme.typography.labelLarge

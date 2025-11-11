@@ -492,9 +492,6 @@ fun DevInEditorInput(
                         }
                     }
 
-                    // 底部工具栏
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
                     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
 
                     BottomToolbar(

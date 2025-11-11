@@ -63,7 +63,7 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
             ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.primary
             ),
-        shape = RoundedCornerShape(4.dp)
+        shape = RoundedCornerShape(32.dp)
     ) {
         Text(
             text = displayText,
