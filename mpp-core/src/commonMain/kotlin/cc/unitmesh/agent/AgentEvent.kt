@@ -74,6 +74,66 @@ sealed class RemoteAgentEvent {
         val steps: List<AgentStepInfo>,
         val edits: List<AgentEditInfo>
     ) : RemoteAgentEvent()
+
+    companion object {
+        private val json = kotlinx.serialization.json.Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
+
+        fun from(eventType: String, data: String): RemoteAgentEvent? {
+            return try {
+                when (eventType) {
+                    "clone_progress" -> {
+                        val parsed = json.decodeFromString<CloneProgressData>(data)
+                        RemoteAgentEvent.CloneProgress(parsed.stage, parsed.progress)
+                    }
+                    "clone_log" -> {
+                        val parsed = json.decodeFromString<CloneLogData>(data)
+                        RemoteAgentEvent.CloneLog(parsed.message, parsed.isError ?: false)
+                    }
+                    "iteration" -> {
+                        val parsed = json.decodeFromString<IterationData>(data)
+                        RemoteAgentEvent.Iteration(parsed.current, parsed.max)
+                    }
+                    "llm_chunk" -> {
+                        val parsed = json.decodeFromString<LLMChunkData>(data)
+                        RemoteAgentEvent.LLMChunk(parsed.chunk)
+                    }
+                    "tool_call" -> {
+                        val parsed = json.decodeFromString<ToolCallData>(data)
+                        RemoteAgentEvent.ToolCall(parsed.toolName, parsed.params)
+                    }
+                    "tool_result" -> {
+                        val parsed = json.decodeFromString<ToolResultData>(data)
+                        RemoteAgentEvent.ToolResult(parsed.toolName, parsed.success, parsed.output)
+                    }
+                    "error" -> {
+                        val parsed = json.decodeFromString<ErrorData>(data)
+                        RemoteAgentEvent.Error(parsed.message)
+                    }
+                    "complete" -> {
+                        val parsed = json.decodeFromString<CompleteData>(data)
+                        RemoteAgentEvent.Complete(
+                            parsed.success,
+                            parsed.message,
+                            parsed.iterations,
+                            parsed.steps,
+                            parsed.edits
+                        )
+                    }
+                    else -> {
+                        println("Unknown SSE event type: $eventType")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Failed to parse SSE event: $e")
+                null
+            }
+        }
+
+    }
 }
 
 @Serializable
