@@ -17,6 +17,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.terminal.PlatformTerminalDisplay
@@ -207,93 +208,34 @@ fun TaskCompletedItem(
     message: String
 ) {
     Card(
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = if (success) "✅" else "⚠️",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            if (success) {
+                Text(
+                    text = "completed",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f),
+                    fontSize = 10.sp
+                )
+            } else {
+                Text(
+                    text = "⚠️",
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp
+                )
+            }
+
             Text(
                 text = message,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                fontSize = 10.sp
             )
-        }
-    }
-}
-
-@Composable
-fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
-    Card(
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            ),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Animated progress indicator
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "🔧 ${toolCall.toolName}",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        text = toolCall.description,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                // "Executing" badge
-                Card(
-                    colors =
-                        CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = "EXECUTING",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            toolCall.details?.let { details ->
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Parameters: ${formatToolParameters(details)}",
-                    modifier = Modifier.padding(start = 8.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
         }
     }
 }

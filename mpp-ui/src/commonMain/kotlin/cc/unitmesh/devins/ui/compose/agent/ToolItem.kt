@@ -3,6 +3,7 @@ package cc.unitmesh.devins.ui.compose.agent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +31,9 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 @Composable
@@ -233,19 +237,72 @@ fun ToolErrorItem(
                 Text(
                     text = "❌ Error",
                     color = MaterialTheme.colorScheme.onErrorContainer,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = 18.sp
                 )
-                TextButton(onClick = onDismiss) {
-                    Text("Dismiss")
+                TextButton(
+                    onClick = onDismiss,
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier.height(24.dp)
+                ) {
+                    Text(
+                        text = "Dismiss",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
 
+            Spacer(modifier = Modifier.height(2.dp)) // 调整行间距
             Text(
                 text = error,
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 8.dp)
+                lineHeight = 18.sp
             )
+        }
+    }
+}
+
+@Composable
+fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = "🔧 ${toolCall.toolName} — ${toolCall.description}",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+
+            // "Executing" badge
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "EXECUTING",
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
     }
 }
