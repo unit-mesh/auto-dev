@@ -250,9 +250,6 @@ fun TerminalWidget(
     val foregroundColor = MaterialTheme.colorScheme.onSurface
     val selectionColor = MaterialTheme.colorScheme.primaryContainer
     val cursorColor = MaterialTheme.colorScheme.primary
-    val primaryColor = MaterialTheme.colorScheme.primary
-
-    // Load FiraCode font
     val terminalFont = remember { loadTerminalFont() }
 
     DisposableEffect(Unit) {

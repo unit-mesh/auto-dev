@@ -119,31 +119,31 @@ actual fun LiveTerminalItem(
                     modifier = Modifier.weight(1f)
                 )
 
-                // Status badge - compact
-//                Surface(
-//                    color =
-//                        if (isRunning) {
-//                            AutoDevColors.Green.c400.copy(alpha = 0.15f)
-//                        } else {
-//                            MaterialTheme.colorScheme.surfaceVariant
-//                        },
-//                    shape = RoundedCornerShape(10.dp),
-//                    modifier = Modifier.height(20.dp)
-//                ) {
-//                    Text(
-//                        text = if (isRunning) "RUNNING" else "DONE",
-//                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-//                        color =
-//                            if (isRunning) {
-//                                AutoDevColors.Green.c400
-//                            } else {
-//                                MaterialTheme.colorScheme.onSurfaceVariant
-//                            },
-//                        style = MaterialTheme.typography.labelSmall,
-//                        fontSize = 10.sp,
-//                        fontWeight = FontWeight.Bold
-//                    )
-//                }
+//                 Status badge - compact
+                Surface(
+                    color =
+                        if (isRunning) {
+                            AutoDevColors.Green.c400.copy(alpha = 0.15f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.height(20.dp)
+                ) {
+                    Text(
+                        text = if (isRunning) "RUNNING" else "DONE",
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        color =
+                            if (isRunning) {
+                                AutoDevColors.Green.c400
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             // Working directory - only show when expanded and exists
@@ -158,29 +158,21 @@ actual fun LiveTerminalItem(
                 )
             }
 
-            // Terminal content
             if (expanded) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 if (ttyConnector != null) {
-                    // Dynamic height based on content, similar to IDEA's terminal implementation
-                    // Minimum: ~4 lines (100dp), Maximum: ~20 lines (400dp)
-                    // This provides a better UX than full-height terminal
-                    val terminalHeight = 100.dp // Default to ~15 lines, good balance for most commands
+                    val terminalHeight = 60.dp
 
                     TerminalWidget(
                         ttyConnector = ttyConnector,
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .height(terminalHeight)
+                        modifier = Modifier.fillMaxWidth().height(terminalHeight)
                     )
                 } else {
                     Card(
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer
-                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
