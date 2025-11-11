@@ -1,6 +1,6 @@
 package cc.unitmesh.agent
 
-import kotlin.js.Date
+import kotlinx.datetime.Clock
 
 actual object Platform {
     actual val name: String = "WebAssembly"
@@ -8,6 +8,7 @@ actual object Platform {
     actual val isJs: Boolean = false
     actual val isWasm: Boolean = true
     actual val isAndroid: Boolean = false
+    actual val isIOS: Boolean = false
 
     actual fun getOSName(): String {
         return "WebAssembly"
@@ -18,25 +19,27 @@ actual object Platform {
     }
 
     actual fun getCurrentTimestamp(): String {
-        val date = Date()
-        return date.toISOString()
+        // Use kotlinx-datetime for cross-platform timestamp
+        return Clock.System.now().toString()
     }
 
     actual fun getOSInfo(): String {
-        // In WASM environment, try to get browser info
-        return try {
-            val userAgent = js("navigator.userAgent || 'Unknown Browser'") as String
-            "WebAssembly in Browser: $userAgent"
-        } catch (e: Exception) {
-            "WebAssembly Runtime"
-        }
+        // In WASM environment, we can't reliably access browser info
+        // Return a generic description
+        return "WebAssembly Runtime"
     }
 
     actual fun getOSVersion(): String {
-        return try {
-            js("navigator.appVersion || 'Unknown'") as String
-        } catch (e: Exception) {
-            "Unknown"
-        }
+        return "Unknown"
+    }
+
+    actual fun getUserHomeDir(): String {
+        // WASM runs in browser or minimal runtime, no concept of home directory
+        return "~"
+    }
+
+    actual fun getLogDir(): String {
+        // WASM typically runs in browser, use a virtual path
+        return "~/.autodev/logs"
     }
 }

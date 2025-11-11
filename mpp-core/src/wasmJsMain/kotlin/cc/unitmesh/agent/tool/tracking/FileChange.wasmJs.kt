@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.tool.tracking
 
-import kotlin.js.Date
+import kotlinx.datetime.Clock
 
-actual fun getCurrentTimestamp(): Long = Date.now().toLong()
+actual fun getCurrentTimestamp(): Long = Clock.System.now().toEpochMilliseconds()
+
 
