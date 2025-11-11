@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * JS implementation of platform-specific terminal display
- * Falls back to simple text display
+ * Uses ANSI terminal renderer for proper color and formatting support
  *
  * Note: This component is designed to be used inside LazyColumn,
  * so it does NOT include scroll modifiers to avoid nested scrolling conflicts.
@@ -30,11 +30,8 @@ actual fun PlatformTerminalDisplay(
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                 .padding(8.dp)
     ) {
-        Text(
-            text = output,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = FontFamily.Monospace
+        AnsiTerminalRenderer(
+            ansiText = output
         )
     }
 }

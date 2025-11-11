@@ -303,7 +303,7 @@ fun TerminalWidget(
 
 /**
  * Simple terminal output display for showing command results.
- * This is a read-only terminal view for displaying shell command output.
+ * This is a read-only terminal view for displaying shell command output with ANSI support.
  *
  * Note: This component is designed to be used inside LazyColumn,
  * so it does NOT include scroll modifiers to avoid nested scrolling conflicts.
@@ -313,8 +313,7 @@ fun TerminalOutputDisplay(
     output: String,
     modifier: Modifier = Modifier
 ) {
-    // For now, use simple text display instead of JediTerm
-    // JediTerm requires more complex setup for read-only output
+    // Use ANSI terminal renderer for proper color and formatting support
     Box(
         modifier =
             modifier
@@ -322,11 +321,8 @@ fun TerminalOutputDisplay(
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                 .padding(8.dp)
     ) {
-        Text(
-            text = output,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = FontFamily.Monospace
+        AnsiTerminalRenderer(
+            ansiText = output
         )
     }
 }
