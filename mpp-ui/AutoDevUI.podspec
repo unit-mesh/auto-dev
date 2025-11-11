@@ -10,8 +10,8 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target    = '14.0'
   spec.libraries                = 'c++'
 
-  # 依赖 mpp-core
-  spec.dependency 'AutoDevCore'
+  # Note: AutoDevUI framework already exports AutoDevCore (configured in build.gradle.kts)
+  # No need to add AutoDevCore as a separate dependency to avoid duplicate symbols
 
   # 根据架构选择正确的 framework
   spec.vendored_frameworks      = 'build/bin/iosSimulatorArm64/debugFramework/AutoDevUI.framework'

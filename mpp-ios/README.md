@@ -1,24 +1,127 @@
 # AutoDev iOS App
 
-这是 AutoDev 的 iOS 应用,使用 Compose Multiplatform 构建。
+这是 AutoDev 的 iOS 应用,使用 Kotlin Multiplatform 和 Compose Multiplatform 构建。
+
+## ✨ 功能特性
+
+- ✅ 自动构建 Kotlin Framework (mpp-core 和 mpp-ui)
+- ✅ 自动解析 Swift Package Manager 依赖 (MCP SDK)
+- ✅ 生成可运行的 .app 文件
+- ✅ 支持模拟器和真机构建
+- ✅ 支持 Debug 和 Release 配置
 
 ## 🚀 快速开始
 
-### 方法 1: 一键运行 (推荐)
+**最简单的方式：**
 
 ```bash
 cd mpp-ios
-./build-and-run.sh
+./build-ios-app.sh --build    # 构建 .app 文件
+./build-ios-app.sh --run      # 构建并运行到模拟器
 ```
 
-这个脚本会自动:
-1. ✅ 编译 Kotlin Framework
+构建成功后，.app 文件位于：`mpp-ios/build/Build/Products/Debug-iphonesimulator/AutoDevApp.app`
+
+## 📖 详细构建方式
+
+### 方法 1: 使用构建脚本 (推荐)
+
+```bash
+cd mpp-ios
+
+# 构建应用（生成 .app 文件）
+./build-ios-app.sh --build
+
+# 构建并运行到模拟器
+./build-ios-app.sh --run
+
+# 清理后重新构建
+./build-ios-app.sh --clean
+
+# 构建 Release 版本
+./build-ios-app.sh --release --build
+
+# 为真机构建（需要配置签名）
+./build-ios-app.sh --device
+
+# 查看帮助
+./build-ios-app.sh --help
+```
+
+### 方法 2: 使用 Makefile
+
+从项目根目录运行:
+
+```bash
+# 查看所有可用命令
+make help
+
+# 构建 iOS 应用
+make ios-build
+
+# 构建并运行到模拟器
+make ios-run
+
+# 清理并重新构建
+make ios-clean
+
+# 构建 Release 版本
+make ios-release
+```
+
+### 方法 3: 使用 Gradle Tasks
+
+从项目根目录运行:
+
+```bash
+# 查看所有 iOS 任务
+./gradlew tasks --group=ios
+
+# 构建 iOS 应用
+./gradlew iosBuildApp
+
+# 构建并运行到模拟器
+./gradlew iosRun
+
+# 清理并重新构建
+./gradlew iosClean
+
+# 构建 Release 版本
+./gradlew iosRelease
+```
+
+## 🔧 构建过程
+
+这些命令会自动:
+1. ✅ 编译 Kotlin Framework (mpp-core 和 mpp-ui)
 2. ✅ 安装 CocoaPods 依赖
-3. ✅ 打开 Xcode 项目
+3. ✅ 解析 Swift Package Manager 依赖 (MCP SDK)
+4. ✅ 构建 iOS 应用并生成 .app 文件
+5. ✅ (可选) 安装并运行到模拟器
 
-然后在 Xcode 中选择模拟器并点击 Run (⌘R)。
+## 📦 构建产物
 
-### 方法 2: 手动步骤
+成功构建后，你会得到：
+
+- **Debug 模拟器版本**: `mpp-ios/build/Build/Products/Debug-iphonesimulator/AutoDevApp.app`
+- **Release 模拟器版本**: `mpp-ios/build/Build/Products/Release-iphonesimulator/AutoDevApp.app`
+- **真机版本**: `mpp-ios/build/Build/Products/Debug-iphoneos/AutoDevApp.app` (需要配置签名)
+
+## ⚠️ 常见问题
+
+### 1. "No such module 'MCP'" 错误
+
+这个问题已经解决！构建脚本会自动解析 Swift Package Manager 依赖。
+
+### 2. 重复符号错误
+
+确保 Podfile 中只链接 `AutoDevUI`，不要同时链接 `AutoDevCore`，因为 `AutoDevUI` 已经 export 了 `AutoDevCore`。
+
+### 3. SQLite 链接错误
+
+Podfile 已经配置了 `-lsqlite3` 链接器标志，如果仍然出现问题，请运行 `pod install` 重新安装依赖。
+
+### 方法 4: 手动步骤
 
 #### 1. 安装依赖
 
@@ -76,9 +179,27 @@ mpp-ios/
 
 ## 自动化脚本
 
-### 一键构建和运行
+### 新版构建脚本 (推荐)
 
-使用提供的脚本:
+`build-ios-app.sh` - 完整的 iOS 构建脚本,支持多种选项:
+
+```bash
+# 基本用法
+./build-ios-app.sh                    # 编译 framework + pod install + 打开 Xcode
+./build-ios-app.sh --build            # 完整构建应用
+./build-ios-app.sh --run              # 构建并运行到模拟器
+./build-ios-app.sh --clean            # 清理后重新构建
+./build-ios-app.sh --release          # 使用 Release 配置
+./build-ios-app.sh --device           # 为真机构建
+./build-ios-app.sh --help             # 显示帮助
+
+# 组合使用
+./build-ios-app.sh --clean --release --build  # 清理后构建 Release 版本
+```
+
+### 旧版脚本 (仍然可用)
+
+`build-and-run.sh` - 简化版脚本:
 
 ```bash
 ./build-and-run.sh
@@ -89,10 +210,12 @@ mpp-ios/
 2. 安装 CocoaPods 依赖
 3. 打开 Xcode 项目
 
-### 仅编译 Framework
+`build-framework.sh` - 仅编译 Framework:
 
 ```bash
-./build-framework.sh
+./build-framework.sh              # Debug 模拟器版本
+./build-framework.sh release      # Release 版本
+./build-framework.sh device       # 真机版本
 ```
 
 ## 开发指南

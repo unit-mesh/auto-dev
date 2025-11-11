@@ -9,8 +9,8 @@ target 'AutoDevApp' do
   use_frameworks!
 
   # AutoDev Framework - 使用本地编译的 framework
-  # 这个 pod 会在每次 pod install 时自动编译最新的 framework
-  pod 'AutoDevCore', :path => '../mpp-core'
+  # 注意：只需要链接 AutoDevUI，因为它已经 export 了 AutoDevCore
+  # 同时链接两个会导致重复符号错误
   pod 'AutoDevUI', :path => '../mpp-ui'
 end
 
@@ -37,10 +37,9 @@ post_install do |installer|
         arch = 'iosSimulatorArm64'  # 默认 Apple Silicon 模拟器
         build_config = config.name.downcase.include?('debug') ? 'debug' : 'release'
 
-        # 添加框架搜索路径
+        # 添加框架搜索路径（只需要 mpp-ui，因为它已经包含了 mpp-core）
         framework_paths = [
           "$(inherited)",
-          "\"${PODS_ROOT}/../../mpp-core/build/bin/#{arch}/#{build_config}Framework\"",
           "\"${PODS_ROOT}/../../mpp-ui/build/bin/#{arch}/#{build_config}Framework\""
         ]
 
@@ -61,5 +60,21 @@ post_install do |installer|
       end
     end
   end
+
+  # 直接修改主应用项目的构建设置，确保 sqlite3 被链接
+  app_project = Xcodeproj::Project.open('AutoDevApp.xcodeproj')
+  app_project.targets.each do |target|
+    if target.name == 'AutoDevApp'
+      target.build_configurations.each do |config|
+        # 添加 sqlite3 库
+        config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
+        ldflags = config.build_settings['OTHER_LDFLAGS']
+        ldflags = [ldflags] unless ldflags.is_a?(Array)
+        ldflags << '-lsqlite3' unless ldflags.include?('-lsqlite3')
+        config.build_settings['OTHER_LDFLAGS'] = ldflags
+      end
+    end
+  end
+  app_project.save
 end
 

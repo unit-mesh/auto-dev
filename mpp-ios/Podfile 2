@@ -1,5 +1,0 @@
-use_frameworks!
-
-target 'AutoDevApp' do
-  pod 'AutoDevUI', :path => '../path/to/mpp-ui'
-end

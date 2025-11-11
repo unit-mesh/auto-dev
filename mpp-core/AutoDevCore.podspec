@@ -10,12 +10,10 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target    = '14.0'
   spec.libraries                = 'c++'
 
-  # Swift MCP SDK dependency
-  spec.dependency 'ModelContextProtocol', '~> 0.10.0'
-
-  # Swift source files for MCP bridge
-  spec.source_files             = 'src/iosMain/swift/**/*.{swift,h,m}'
-  spec.swift_version            = '5.9'
+  # Note: Swift MCP SDK is managed via Swift Package Manager in the Xcode project
+  # MCP bridge code (McpClientBridge.swift) should be added directly to the Xcode project
+  # instead of being included in the framework, because it depends on the MCP SDK
+  # which is managed via SPM, not CocoaPods.
 
   # 根据架构选择正确的 framework
   spec.vendored_frameworks      = 'build/bin/iosSimulatorArm64/debugFramework/AutoDevCore.framework'
