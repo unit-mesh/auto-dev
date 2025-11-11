@@ -160,8 +160,6 @@ expect fun LiveTerminalItem(
 @Composable
 fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
     val isUser = message.role == MessageRole.USER
-    var expanded by remember { mutableStateOf(false) }
-    val clipboardManager = LocalClipboardManager.current
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -172,48 +170,24 @@ fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
             shape = RoundedCornerShape(4.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
-            Column(modifier = Modifier.padding(8.dp)) {
-                // 消息内容区域 - 可点击展开/收起
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = !expanded },
-                    verticalAlignment = Alignment.Top
-                ) {
+            PlatformMessageTextContainer(text = message.content) {
+                Column(modifier = Modifier.padding(8.dp)) {
                     Text(
                         text = message.content,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                }
-
-                // 展开时显示操作按钮
-                if (expanded) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        // 复制按钮
-                        IconButton(
-                            onClick = {
-                                clipboardManager.setText(AnnotatedString(message.content))
-                            },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy message",
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
                 }
             }
         }
     }
 }
+
+@Composable
+expect fun PlatformMessageTextContainer(
+    text: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+)
 
 @Composable
 fun StreamingMessageItem(content: String) {
