@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.terminal.PlatformTerminalDisplay
@@ -158,7 +159,7 @@ expect fun LiveTerminalItem(
 )
 
 @Composable
-fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
+fun MessageItem(message: Message) {
     val isUser = message.role == MessageRole.USER
 
     Row(

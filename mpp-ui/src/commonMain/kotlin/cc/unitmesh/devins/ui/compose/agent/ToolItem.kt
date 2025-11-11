@@ -252,13 +252,15 @@ fun ToolErrorItem(
                 }
             }
 
-            Spacer(modifier = Modifier.height(2.dp)) // 调整行间距
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                style = MaterialTheme.typography.bodyMedium,
-                lineHeight = 18.sp
-            )
+            Spacer(modifier = Modifier.height(2.dp))
+            PlatformMessageTextContainer(text = error) {
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = 18.sp
+                )
+            }
         }
     }
 }
