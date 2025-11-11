@@ -156,9 +156,8 @@ expect fun LiveTerminalItem(
 )
 
 @Composable
-private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
+fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
     val isUser = message.role == MessageRole.USER
-    val clipboardManager = LocalClipboardManager.current
     var expanded by remember { mutableStateOf(false) }
 
     Row(
@@ -170,57 +169,21 @@ private fun MessageItem(message: cc.unitmesh.devins.llm.Message) {
                 Modifier
                     .fillMaxWidth()
                     .clickable { expanded = !expanded },
-            shape = RoundedCornerShape(4.dp), // Smaller radius for CLI-like appearance
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Remove shadow
+            shape = RoundedCornerShape(4.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(modifier = Modifier.padding(8.dp)) { // Reduce padding
                 Text(
                     text = message.content,
                     style = MaterialTheme.typography.bodyMedium
                 )
-
-                if (expanded || !isUser) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Timestamp for AI messages
-                        if (!isUser) {
-                            Text(
-                                text = formatTimestamp(Clock.System.now().toEpochMilliseconds()),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.width(1.dp))
-                        }
-
-                        IconButton(
-                            onClick = { clipboardManager.setText(AnnotatedString(message.content)) },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy message",
-                                tint =
-                                    if (isUser) {
-                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    },
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                }
             }
         }
     }
 }
 
 @Composable
-private fun StreamingMessageItem(content: String) {
+fun StreamingMessageItem(content: String) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(4.dp)
@@ -250,7 +213,6 @@ fun ToolResultItem(
     var showFullOutput by remember { mutableStateOf(!success) }
     val clipboardManager = LocalClipboardManager.current
 
-    // Determine which output to display
     val displayOutput = if (showFullOutput) fullOutput else output
     val hasFullOutput = fullOutput != null && fullOutput != output
 
@@ -263,7 +225,6 @@ fun ToolResultItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            // Header row - always visible
             Row(
                 modifier =
                     Modifier
@@ -279,8 +240,7 @@ fun ToolResultItem(
                             MaterialTheme.colorScheme.onSecondaryContainer
                         } else {
                             MaterialTheme.colorScheme.onErrorContainer
-                        },
-                    fontWeight = FontWeight.Bold
+                        }
                 )
                 Text(
                     text = toolName,
@@ -305,7 +265,6 @@ fun ToolResultItem(
                     fontWeight = FontWeight.Medium
                 )
 
-                // Show expand icon only if there's output to show
                 if (displayOutput != null) {
                     Icon(
                         imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
@@ -321,7 +280,6 @@ fun ToolResultItem(
                 }
             }
 
-            // Expandable output
             if (expanded && displayOutput != null) {
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -343,7 +301,6 @@ fun ToolResultItem(
                             style = MaterialTheme.typography.bodyMedium
                         )
 
-                        // Show toggle button if there's a full output different from truncated output
                         if (hasFullOutput) {
                             TextButton(
                                 onClick = { showFullOutput = !showFullOutput },
@@ -427,7 +384,7 @@ fun ToolResultItem(
 }
 
 @Composable
-private fun ErrorItem(
+fun ErrorItem(
     error: String,
     onDismiss: () -> Unit
 ) {
@@ -465,7 +422,7 @@ private fun ErrorItem(
 }
 
 @Composable
-private fun TaskCompletedItem(
+fun TaskCompletedItem(
     success: Boolean,
     message: String
 ) {
@@ -1054,7 +1011,7 @@ fun formatTimestamp(timestamp: Long): String {
 }
 
 @Composable
-private fun TerminalOutputItem(
+fun TerminalOutputItem(
     command: String,
     output: String,
     exitCode: Int,
