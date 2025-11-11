@@ -539,37 +539,9 @@ fun DevInEditorInput(
                                 }
                             }
                         },
-                        onSlashClick = {
-                            val current = textFieldValue
-                            val newText = current.text + "/"
-                            val newPosition = current.text.length + 1
-
-                            textFieldValue =
-                                TextFieldValue(
-                                    text = newText,
-                                    selection = androidx.compose.ui.text.TextRange(newPosition)
-                                )
-
-                            scope.launch {
-                                delay(50)
-                                val context =
-                                    CompletionTrigger.buildContext(
-                                        newText,
-                                        newPosition,
-                                        CompletionTriggerType.COMMAND
-                                    )
-                                if (context != null) {
-                                    currentTriggerType = CompletionTriggerType.COMMAND
-                                    completionItems = manager.getFilteredCompletions(context)
-                                    selectedCompletionIndex = 0
-                                    showCompletion = completionItems.isNotEmpty()
-                                }
-                            }
-                        },
                         onSettingsClick = {
                             showToolConfig = true
                         },
-                        selectedAgent = "Default",
                         onModelConfigChange = onModelConfigChange
                     )
                 }

@@ -25,9 +25,7 @@ fun BottomToolbar(
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
     onAtClick: () -> Unit = {},
-    onSlashClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    selectedAgent: String = "Default",
     workspacePath: String? = null,
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {}
@@ -42,13 +40,11 @@ fun BottomToolbar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 左侧：Workspace + Agent + Model Selector
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f, fill = false)
         ) {
-            // Workspace 指示器（显示项目名称）
             if (!workspacePath.isNullOrEmpty()) {
                 val projectName =
                     workspacePath.substringAfterLast('/')
@@ -79,30 +75,30 @@ fun BottomToolbar(
                     }
                 }
             }
-            // Agent 显示（只读，点击打开顶部菜单配置）
-            if (!isMobile || selectedAgent != "Default") {
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = AutoDevComposeIcons.SmartToy,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = selectedAgent,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                }
-            }
+
+//            if (!isMobile || selectedAgent != "Default") {
+//                Surface(
+//                    shape = MaterialTheme.shapes.small,
+//                    color = MaterialTheme.colorScheme.secondaryContainer,
+//                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+//                ) {
+//                    Row(
+//                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                    ) {
+//                        Icon(
+//                            imageVector = AutoDevComposeIcons.SmartToy,
+//                            contentDescription = null,
+//                            modifier = Modifier.size(14.dp)
+//                        )
+//                        Text(
+//                            text = selectedAgent,
+//                            style = MaterialTheme.typography.labelSmall
+//                        )
+//                    }
+//                }
+//            }
 
             if (!isMobile) {
                 ModelSelector(
@@ -111,12 +107,10 @@ fun BottomToolbar(
             }
         }
 
-        // 右侧：@ Symbol + / Symbol + Settings + Send Button
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // @ 按钮 - 触发 Agent 补全
             IconButton(
                 onClick = onAtClick,
                 modifier = Modifier.size(36.dp)
@@ -129,19 +123,6 @@ fun BottomToolbar(
                 )
             }
 
-            // / 按钮 - 触发命令补全
-            IconButton(
-                onClick = onSlashClick,
-                modifier = Modifier.size(36.dp)
-            ) {
-                Text(
-                    text = "/",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Settings 按钮 - 打开 MCP 工具配置
             IconButton(
                 onClick = onSettingsClick,
                 modifier = Modifier.size(36.dp)
@@ -154,9 +135,7 @@ fun BottomToolbar(
                 )
             }
 
-            // 发送按钮 / 停止按钮
             if (isExecuting) {
-                // 执行中显示 Stop 按钮
                 FilledTonalButton(
                     onClick = onStopClick,
                     modifier = Modifier.height(if (isMobile) 40.dp else 38.dp),
@@ -179,7 +158,6 @@ fun BottomToolbar(
                     )
                 }
             } else {
-                // 未执行时显示 Send 按钮
                 FilledTonalButton(
                     onClick = onSendClick,
                     enabled = sendEnabled,
