@@ -78,6 +78,15 @@ kotlin {
         }
     }
 
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        binaries.executable()
+        compilerOptions {
+            freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+        }
+    }
+
     sourceSets {
         commonMain {
             dependencies {
@@ -224,6 +233,17 @@ kotlin {
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
 
                 // Ktor HTTP Client JS engine
+                implementation("io.ktor:ktor-client-js:3.2.2")
+            }
+        }
+
+        val wasmJsMain by getting {
+            dependencies {
+                // WASM browser dependencies
+                // SQLDelight - Web Worker driver (same as JS)
+                implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
+
+                // Ktor HTTP Client JS engine (works for WASM too)
                 implementation("io.ktor:ktor-client-js:3.2.2")
             }
         }

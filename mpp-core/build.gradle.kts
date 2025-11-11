@@ -11,6 +11,7 @@ repositories {
     mavenCentral()
 }
 
+group = "cc.unitmesh"
 version = project.findProperty("mppVersion") as String? ?: "0.1.5"
 
 android {
