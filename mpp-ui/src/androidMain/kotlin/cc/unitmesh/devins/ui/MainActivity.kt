@@ -17,7 +17,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 注册 Activity 以支持文件选择器功能
         AndroidActivityProvider.setActivity(this)
 
         // 初始化数据库

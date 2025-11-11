@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.platform
 
+import androidx.activity.ComponentActivity
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -50,3 +51,18 @@ class FileKitChooser : FileChooser {
 
 actual fun createFileChooser(): FileChooser = FileKitChooser()
 
+
+
+/**
+ * Android 上的 Activity 提供者
+ * 需要在应用启动时设置 Activity 实例并初始化 FileChooser
+ */
+object AndroidActivityProvider {
+    private var activity: ComponentActivity? = null
+
+    fun setActivity(activity: ComponentActivity) {
+        this.activity = activity
+    }
+
+    fun getActivity(): ComponentActivity? = activity
+}
