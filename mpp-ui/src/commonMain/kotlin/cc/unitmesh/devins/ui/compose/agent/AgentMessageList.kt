@@ -538,21 +538,13 @@ fun ToolCallItem(
                 Text(
                     text = "●",
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = toolName,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.weight(1f)
                 )
-                Text(
-                    text = "- $description",
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodyMedium
-                )
 
-                // Add "View File" button for file operations
                 if (isFileOperation && !filePath.isNullOrEmpty() && onOpenFileViewer != null) {
                     IconButton(
                         onClick = {
@@ -742,7 +734,6 @@ fun TerminalOutputItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            // Header row
             Row(
                 modifier =
                     Modifier
@@ -752,16 +743,6 @@ fun TerminalOutputItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "💻",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Shell",
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
                     text = if (isSuccess) "✓ Exit 0" else "✗ Exit $exitCode",
                     color =
                         if (isSuccess) {
@@ -770,7 +751,8 @@ fun TerminalOutputItem(
                             MaterialTheme.colorScheme.error
                         },
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "${executionTimeMs}ms",
@@ -785,84 +767,11 @@ fun TerminalOutputItem(
                 )
             }
 
-            // Command display
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "$ $command",
-                modifier = Modifier.padding(start = 28.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                style = MaterialTheme.typography.bodySmall,
-                fontFamily = FontFamily.Monospace
-            )
-
-            // Expandable output
             if (expanded && output.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Text(
-                        text = "Output:",
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Row {
-                        // Copy output button
-                        IconButton(
-                            onClick = { clipboardManager.setText(AnnotatedString(output)) },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy output",
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-
-                        // Copy entire block button
-                        IconButton(
-                            onClick = {
-                                val blockText =
-                                    buildString {
-                                        appendLine("[Shell Command]")
-                                        appendLine("Command: $command")
-                                        appendLine("Exit Code: $exitCode")
-                                        appendLine("Execution Time: ${executionTimeMs}ms")
-                                        appendLine("Output:")
-                                        appendLine(output)
-                                    }
-                                clipboardManager.setText(AnnotatedString(blockText))
-                            },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.ContentCopy,
-                                contentDescription = "Copy entire block",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                }
-
-                Card(
-                    colors =
-                        CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    PlatformTerminalDisplay(
-                        output = output,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+                PlatformTerminalDisplay(
+                    output = output,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
         }
     }
