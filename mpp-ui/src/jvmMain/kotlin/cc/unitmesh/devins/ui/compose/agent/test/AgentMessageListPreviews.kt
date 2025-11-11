@@ -12,9 +12,8 @@ import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
 import cc.unitmesh.devins.ui.compose.agent.CombinedToolItem
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.CurrentToolCallItem
-import cc.unitmesh.devins.ui.compose.agent.ErrorItem
+import cc.unitmesh.devins.ui.compose.agent.ToolErrorItem
 import cc.unitmesh.devins.ui.compose.agent.MessageItem
-import cc.unitmesh.devins.ui.compose.agent.StreamingMessageItem
 import cc.unitmesh.devins.ui.compose.agent.TaskCompletedItem
 import cc.unitmesh.devins.ui.compose.agent.TerminalOutputItem
 import cc.unitmesh.devins.ui.compose.agent.ToolCallItem
@@ -72,7 +71,7 @@ fun Preview_ToolResultItem_Failure() {
 fun Preview_ErrorItem() {
     MaterialTheme {
         Surface {
-            ErrorItem(error = "Something went wrong: simulated error for preview.") { }
+            ToolErrorItem(error = "Something went wrong: simulated error for preview.") { }
         }
     }
 }

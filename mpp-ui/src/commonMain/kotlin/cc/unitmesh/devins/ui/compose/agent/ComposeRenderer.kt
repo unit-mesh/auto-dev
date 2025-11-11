@@ -104,7 +104,7 @@ class ComposeRenderer : BaseRenderer() {
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
-        data class ErrorItem(
+        data class ToolErrorItem(
             val error: String,
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
@@ -348,7 +348,7 @@ class ComposeRenderer : BaseRenderer() {
     }
 
     override fun renderError(message: String) {
-        _timeline.add(TimelineItem.ErrorItem(error = message))
+        _timeline.add(TimelineItem.ToolErrorItem(error = message))
         _errorMessage = message
         _isProcessing = false
     }
