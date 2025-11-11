@@ -3,6 +3,7 @@ package cc.unitmesh.devins.ui.remote
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import cc.unitmesh.agent.RemoteAgentEvent
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.config.ConfigManager
 import kotlinx.coroutines.*

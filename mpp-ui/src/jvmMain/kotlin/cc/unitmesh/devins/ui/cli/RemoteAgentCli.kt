@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.cli
 
+import cc.unitmesh.agent.RemoteAgentEvent
 import cc.unitmesh.devins.ui.remote.*
 import kotlinx.coroutines.runBlocking
 import kotlin.system.exitProcess

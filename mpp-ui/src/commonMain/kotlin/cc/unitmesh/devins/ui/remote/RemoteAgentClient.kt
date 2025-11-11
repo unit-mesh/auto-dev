@@ -1,12 +1,12 @@
 package cc.unitmesh.devins.ui.remote
 
+import cc.unitmesh.agent.*
 import io.ktor.client.*
 import io.ktor.client.plugins.sse.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.Serializable
@@ -139,25 +139,6 @@ class RemoteAgentClient(
     }
 }
 
-/**
- * Remote Agent Events - mirrors AgentEvent from mpp-server
- */
-sealed class RemoteAgentEvent {
-    data class CloneProgress(val stage: String, val progress: Int?) : RemoteAgentEvent()
-    data class CloneLog(val message: String, val isError: Boolean) : RemoteAgentEvent()
-    data class Iteration(val current: Int, val max: Int) : RemoteAgentEvent()
-    data class LLMChunk(val chunk: String) : RemoteAgentEvent()
-    data class ToolCall(val toolName: String, val params: String) : RemoteAgentEvent()
-    data class ToolResult(val toolName: String, val success: Boolean, val output: String?) : RemoteAgentEvent()
-    data class Error(val message: String) : RemoteAgentEvent()
-    data class Complete(
-        val success: Boolean,
-        val message: String,
-        val iterations: Int,
-        val steps: List<AgentStepInfo>,
-        val edits: List<AgentEditInfo>
-    ) : RemoteAgentEvent()
-}
 
 /**
  * Request/Response Data Classes
@@ -197,54 +178,6 @@ data class ProjectInfo(
 @Serializable
 data class ProjectListResponse(
     val projects: List<ProjectInfo>
-)
-
-@Serializable
-data class AgentStepInfo(
-    val step: Int,
-    val action: String,
-    val tool: String,
-    val success: Boolean
-)
-
-@Serializable
-data class AgentEditInfo(
-    val file: String,
-    val operation: String,
-    val content: String
-)
-
-/**
- * Internal data classes for SSE parsing
- */
-@Serializable
-private data class CloneProgressData(val stage: String, val progress: Int?)
-
-@Serializable
-private data class CloneLogData(val message: String, val isError: Boolean? = false)
-
-@Serializable
-private data class IterationData(val current: Int, val max: Int)
-
-@Serializable
-private data class LLMChunkData(val chunk: String)
-
-@Serializable
-private data class ToolCallData(val toolName: String, val params: String)
-
-@Serializable
-private data class ToolResultData(val toolName: String, val success: Boolean, val output: String?)
-
-@Serializable
-private data class ErrorData(val message: String)
-
-@Serializable
-private data class CompleteData(
-    val success: Boolean,
-    val message: String,
-    val iterations: Int,
-    val steps: List<AgentStepInfo>,
-    val edits: List<AgentEditInfo>
 )
 
 /**
