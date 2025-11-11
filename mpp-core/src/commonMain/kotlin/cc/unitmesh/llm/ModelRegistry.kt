@@ -92,8 +92,10 @@ object ModelRegistry {
             LLMProviderType.DEEPSEEK -> LLMProvider.DeepSeek
             LLMProviderType.OLLAMA -> LLMProvider.Ollama
             LLMProviderType.OPENROUTER -> LLMProvider.OpenRouter
-            LLMProviderType.GLM, LLMProviderType.QWEN, LLMProviderType.KIMI, LLMProviderType.CUSTOM_OPENAI_BASE -> 
-                LLMProvider.OpenAI // Use OpenAI-compatible provider
+            LLMProviderType.GLM -> LLMProvider.OpenAI // Use OpenAI-compatible provider
+            LLMProviderType.QWEN -> LLMProvider.OpenAI // Use OpenAI-compatible provider
+            LLMProviderType.KIMI -> LLMProvider.OpenAI // Use OpenAI-compatible provider
+            LLMProviderType.CUSTOM_OPENAI_BASE -> LLMProvider.OpenAI // Use OpenAI-compatible provider
         }
 
         return LLModel(
