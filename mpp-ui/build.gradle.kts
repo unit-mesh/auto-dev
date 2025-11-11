@@ -85,6 +85,11 @@ kotlin {
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
         }
+        // Disable WebAssembly optimizer to work around Kotlin/Wasm compiler issues
+        // @see https://youtrack.jetbrains.com/issue/KT-63214
+        d8 {
+            // Use d8 instead of binaryen (wasm-opt) for now
+        }
     }
 
     sourceSets {
@@ -372,4 +377,10 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         exclude("**/generated/**")
         exclude("**/build/**")
     }
+}
+
+// Disable wasm-opt optimizer for production builds to avoid compiler issues
+// This is a temporary workaround for Kotlin/Wasm 2.2.0
+tasks.named("compileProductionExecutableKotlinWasmJsOptimize") {
+    enabled = false
 }

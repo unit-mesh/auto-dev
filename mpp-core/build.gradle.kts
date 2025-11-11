@@ -103,6 +103,9 @@ kotlin {
         browser()
         nodejs()
         binaries.library()
+        // Use d8 optimizer instead of binaryen to avoid wasm-validator errors
+        d8 {
+        }
     }
 
     sourceSets {
@@ -122,9 +125,9 @@ kotlin {
                 implementation("io.github.oshai:kotlin-logging:7.0.13")
 
                 // Koog AI Framework - JVM only for now
-                implementation("ai.koog:koog-agents:0.5.1")
+                implementation("ai.koog:koog-agents:0.5.2")
                 // Koog needs these executors
-                implementation("ai.koog:prompt-executor-llms-all:0.5.1")
+                implementation("ai.koog:prompt-executor-llms-all:0.5.2")
             }
         }
 
@@ -204,7 +207,7 @@ kotlin {
                         strictly("2.2.0")
                     }
                 }
-                
+
                 // WASM specific dependencies if needed
             }
         }
