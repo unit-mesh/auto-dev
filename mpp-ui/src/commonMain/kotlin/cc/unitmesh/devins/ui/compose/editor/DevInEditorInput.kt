@@ -57,7 +57,6 @@ fun DevInEditorInput(
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
     modifier: Modifier = Modifier,
-    // Model config change callback
     onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
@@ -570,7 +569,7 @@ fun DevInEditorInput(
                         onSettingsClick = {
                             showToolConfig = true
                         },
-                        selectedAgent = "Default", // TODO: 从 state 获取
+                        selectedAgent = "Default",
                         onModelConfigChange = onModelConfigChange
                     )
                 }

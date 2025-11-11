@@ -120,7 +120,7 @@ private object EnglishStrings : Map<String, String> by mapOf(
     "modelConfig.temperature" to "Temperature",
     "modelConfig.maxTokens" to "Max Tokens",
     "modelConfig.advancedParameters" to "Advanced Parameters",
-    "modelConfig.configureModel" to "Configure Model...",
+    "modelConfig.configureModel" to "Configure Model",
     "modelConfig.noSavedConfigs" to "No saved configurations",
     "modelConfig.enterModel" to "Enter or select model name",
     "modelConfig.modelHint" to "Select from list or type custom model name",

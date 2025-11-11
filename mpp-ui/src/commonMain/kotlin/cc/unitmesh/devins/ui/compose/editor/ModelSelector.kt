@@ -28,7 +28,6 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
     var expanded by remember { mutableStateOf(false) }
     var showConfigDialog by remember { mutableStateOf(false) }
 
-    // Load configurations from file
     var availableConfigs by remember { mutableStateOf<List<NamedModelConfig>>(emptyList()) }
     var currentConfigName by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -47,20 +46,14 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
         }
     }
 
-    // Get current config
     val currentConfig =
         remember(currentConfigName, availableConfigs) {
             availableConfigs.find { it.name == currentConfigName }
         }
 
-    // 显示文本：如果有配置显示配置信息，否则显示提示
     val displayText =
         remember(currentConfig) {
-            if (currentConfig != null) {
-                "${currentConfig.provider} / ${currentConfig.model}"
-            } else {
-                "⚙️ ${Strings.configureModel}"
-            }
+            currentConfig?.model ?: Strings.configureModel
         }
 
     OutlinedButton(
@@ -70,7 +63,7 @@ fun ModelSelector(onConfigChange: (ModelConfig) -> Unit = {}) {
             ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.primary
             ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(4.dp)
     ) {
         Text(
             text = displayText,

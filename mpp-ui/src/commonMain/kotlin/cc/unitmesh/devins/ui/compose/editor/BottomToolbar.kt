@@ -32,7 +32,7 @@ fun BottomToolbar(
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
-    val isAndroid = Platform.isAndroid
+    val isMobile = Platform.isAndroid || Platform.isIOS
 
     Row(
         modifier =
@@ -74,13 +74,13 @@ fun BottomToolbar(
                             text = projectName,
                             style = MaterialTheme.typography.labelSmall,
                             maxLines = 1,
-                            modifier = Modifier.widthIn(max = if (isAndroid) 80.dp else 120.dp)
+                            modifier = Modifier.widthIn(max = if (isMobile) 80.dp else 120.dp)
                         )
                     }
                 }
             }
             // Agent 显示（只读，点击打开顶部菜单配置）
-            if (!isAndroid || selectedAgent != "Default") {
+            if (!isMobile || selectedAgent != "Default") {
                 Surface(
                     shape = MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.secondaryContainer,
@@ -104,8 +104,7 @@ fun BottomToolbar(
                 }
             }
 
-            // Model Selector（Desktop 或移动端都显示）
-            if (!isAndroid) {
+            if (!isMobile) {
                 ModelSelector(
                     onConfigChange = onModelConfigChange
                 )
@@ -160,8 +159,8 @@ fun BottomToolbar(
                 // 执行中显示 Stop 按钮
                 FilledTonalButton(
                     onClick = onStopClick,
-                    modifier = Modifier.height(if (isAndroid) 40.dp else 38.dp),
-                    contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp),
+                    modifier = Modifier.height(if (isMobile) 40.dp else 38.dp),
+                    contentPadding = PaddingValues(horizontal = if (isMobile) 20.dp else 16.dp),
                     colors =
                         ButtonDefaults.filledTonalButtonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -184,8 +183,8 @@ fun BottomToolbar(
                 FilledTonalButton(
                     onClick = onSendClick,
                     enabled = sendEnabled,
-                    modifier = Modifier.height(if (isAndroid) 40.dp else 38.dp),
-                    contentPadding = PaddingValues(horizontal = if (isAndroid) 20.dp else 16.dp)
+                    modifier = Modifier.height(if (isMobile) 40.dp else 38.dp),
+                    contentPadding = PaddingValues(horizontal = if (isMobile) 20.dp else 16.dp)
                 ) {
                     Icon(
                         imageVector = AutoDevComposeIcons.Send,

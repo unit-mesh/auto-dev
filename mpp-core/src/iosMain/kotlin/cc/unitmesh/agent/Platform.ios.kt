@@ -13,6 +13,8 @@ actual object Platform {
     actual val isWasm: Boolean = false
     actual val isAndroid: Boolean = false
 
+    actual val isIOS: Boolean = true
+
     actual fun getOSName(): String {
         return NSProcessInfo.processInfo.operatingSystemVersionString
     }
