@@ -31,18 +31,27 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AutoDevApp() {
+fun AutoDevApp(
+    triggerFileChooser: Boolean = false,
+    onFileChooserHandled: () -> Unit = {}
+) {
     val currentTheme = ThemeManager.currentTheme
 
     // 应用主题
     AutoDevTheme(themeMode = currentTheme) {
-        AutoDevContent()
+        AutoDevContent(
+            triggerFileChooser = triggerFileChooser,
+            onFileChooserHandled = onFileChooserHandled
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AutoDevContent() {
+private fun AutoDevContent(
+    triggerFileChooser: Boolean = false,
+    onFileChooserHandled: () -> Unit = {}
+) {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
 
@@ -212,6 +221,14 @@ private fun AutoDevContent() {
                     showErrorDialog = true
                 }
             }
+        }
+    }
+
+    // 监听菜单栏的文件选择器触发
+    LaunchedEffect(triggerFileChooser) {
+        if (triggerFileChooser) {
+            openDirectoryChooser()
+            onFileChooserHandled()
         }
     }
 

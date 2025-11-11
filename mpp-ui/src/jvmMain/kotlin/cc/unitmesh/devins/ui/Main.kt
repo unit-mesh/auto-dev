@@ -1,15 +1,16 @@
 package cc.unitmesh.devins.ui
 
+import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.window.*
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.ui.compose.AutoDevApp
 import cc.unitmesh.devins.ui.compose.agent.CodingAgentViewModel
 import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.devins.ui.desktop.AutoDevMenuBar
+import cc.unitmesh.devins.ui.desktop.AutoDevTray
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.LLMProviderType
 import cc.unitmesh.llm.ModelConfig
@@ -34,19 +35,44 @@ fun main(args: Array<String>) {
 //    }
 
     application {
+        var isWindowVisible by remember { mutableStateOf(true) }
+        var triggerFileChooser by remember { mutableStateOf(false) }
+
         val windowState =
             rememberWindowState(
                 width = 1200.dp,
                 height = 800.dp
             )
 
-        Window(
-            onCloseRequest = ::exitApplication,
-            title = "AutoDev Desktop",
-            state = windowState
-        ) {
-            // AutoDevApp 内部已经包含 AutoDevTheme
-            AutoDevApp()
+        // 系统托盘
+        AutoDevTray(
+            isWindowVisible = isWindowVisible,
+            onShowWindow = { isWindowVisible = true },
+            onExit = ::exitApplication
+        )
+
+        if (isWindowVisible) {
+            Window(
+                onCloseRequest = { isWindowVisible = false }, // 关闭时隐藏到托盘
+                title = "AutoDev Desktop",
+                state = windowState
+            ) {
+                // 菜单栏
+                AutoDevMenuBar(
+                    onOpenFile = {
+                        // 触发文件选择器
+                        triggerFileChooser = true
+                        AutoDevLogger.info("AutoDevMain") { "Open File menu clicked" }
+                    },
+                    onExit = ::exitApplication
+                )
+
+                // AutoDevApp 内部已经包含 AutoDevTheme
+                AutoDevApp(
+                    triggerFileChooser = triggerFileChooser,
+                    onFileChooserHandled = { triggerFileChooser = false }
+                )
+            }
         }
     }
 }
