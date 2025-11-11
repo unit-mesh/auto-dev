@@ -239,6 +239,13 @@ kotlin {
 
         val wasmJsMain by getting {
             dependencies {
+                // Force kotlin-stdlib to 2.2.0 to match compiler version
+                implementation("org.jetbrains.kotlin:kotlin-stdlib") {
+                    version {
+                        strictly(libs.versions.kotlin.get())
+                    }
+                }
+
                 // WASM browser dependencies
                 // SQLDelight - Web Worker driver (same as JS)
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")

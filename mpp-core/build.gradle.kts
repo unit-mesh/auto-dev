@@ -196,17 +196,24 @@ kotlin {
             }
         }
 
-//        val wasmJsMain by getting {
-//            dependencies {
-//                // WASM specific dependencies if needed
-//            }
-//        }
-//
-//        val wasmJsTest by getting {
-//            dependencies {
-//                implementation(kotlin("test-wasm-js"))
-//            }
-//        }
+        val wasmJsMain by getting {
+            dependencies {
+                // Force kotlin-stdlib to 2.2.0 to match compiler version
+                implementation("org.jetbrains.kotlin:kotlin-stdlib") {
+                    version {
+                        strictly("2.2.0")
+                    }
+                }
+                
+                // WASM specific dependencies if needed
+            }
+        }
+
+        val wasmJsTest by getting {
+            dependencies {
+                implementation(kotlin("test-wasm-js"))
+            }
+        }
     }
 }
 
