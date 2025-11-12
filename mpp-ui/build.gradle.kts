@@ -7,6 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.android.application")
     id("app.cash.sqldelight") version "2.1.0"
+    id("de.comahe.i18n4k") version "0.11.1"
     alias(libs.plugins.ktlint)
 }
 
@@ -24,6 +25,10 @@ sqldelight {
             packageName.set("cc.unitmesh.devins.db")
         }
     }
+}
+
+i18n4k {
+    sourceCodeLocales = listOf("en", "zh")
 }
 
 version = project.findProperty("mppVersion") as String? ?: "0.1.5"
@@ -127,6 +132,9 @@ kotlin {
 
                 // Ktor HTTP Client (for remote agent)
                 implementation("io.ktor:ktor-client-core:3.2.2")
+
+                // i18n4k - Internationalization
+                implementation("de.comahe.i18n4k:i18n4k-core:0.11.1")
             }
         }
 
