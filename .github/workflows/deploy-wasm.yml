@@ -46,6 +46,15 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # Install pnpm for JS dependencies
+      - name: Install pnpm
+        run: npm install -g pnpm@10.20.0
+
+      # Install mpp-ui JS dependencies
+      - name: Install mpp-ui dependencies
+        run: pnpm install
+        working-directory: mpp-ui
+
       - name: Build WASM Distribution
         run: ./gradlew :mpp-ui:wasmJsBrowserDistribution
 
