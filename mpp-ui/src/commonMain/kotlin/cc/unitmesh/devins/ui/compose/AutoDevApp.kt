@@ -167,6 +167,11 @@ private fun AutoDevContent(
                 println("✅ 加载配置: ${activeConfig.provider.displayName} / ${activeConfig.modelName}")
             } else {
                 println("⚠️ 未找到有效配置")
+                // Don't auto-show config dialog for Wasm web version
+                // Users need to manually configure through the UI menu
+                if (!Platform.isWasm) {
+                    showConfigWarning = true
+                }
             }
         } catch (e: Exception) {
             println("⚠️ 加载配置失败: ${e.message}")
