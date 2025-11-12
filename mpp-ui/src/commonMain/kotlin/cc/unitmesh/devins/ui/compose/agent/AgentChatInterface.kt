@@ -83,7 +83,7 @@ fun AgentChatInterface(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "⚠️ Configuration Required",
+                        text = "Configuration Required",
                         style = MaterialTheme.typography.headlineSmall
                     )
                     Text(
