@@ -213,20 +213,52 @@ class SessionViewModel(
     }
     
     /**
-     * 启动会话执行
+     * 启动会话执行（本地项目）
      */
-    suspend fun executeSession(sessionId: String) {
-        _isLoading.value = true
-        _errorMessage.value = null
-        
-        try {
-            sessionClient.executeSession(sessionId)
-            // 更新会话状态为 RUNNING
-            _currentSession.value = _currentSession.value?.copy(status = SessionStatus.RUNNING)
-        } catch (e: Exception) {
-            _errorMessage.value = "Execute session error: ${e.message}"
-        } finally {
-            _isLoading.value = false
+    fun executeSession(sessionId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                sessionClient.executeSession(sessionId, null, null, null, null)
+                // 更新会话状态为 RUNNING
+                _currentSession.value = _currentSession.value?.copy(status = SessionStatus.RUNNING)
+                println("✅ Session $sessionId execution started")
+            } catch (e: Exception) {
+                _errorMessage.value = "Execute session error: ${e.message}"
+                println("❌ Session execution failed: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    /**
+     * 启动会话执行（Git 项目）
+     */
+    fun executeSessionWithGit(
+        sessionId: String,
+        gitUrl: String,
+        branch: String? = null,
+        username: String? = null,
+        password: String? = null
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                sessionClient.executeSession(sessionId, gitUrl, branch, username, password)
+                // 更新会话状态为 RUNNING
+                _currentSession.value = _currentSession.value?.copy(status = SessionStatus.RUNNING)
+                println("✅ Session $sessionId execution started with Git: $gitUrl")
+            } catch (e: Exception) {
+                _errorMessage.value = "Execute session error: ${e.message}"
+                println("❌ Session execution failed: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
     

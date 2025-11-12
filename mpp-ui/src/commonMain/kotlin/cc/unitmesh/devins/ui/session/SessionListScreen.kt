@@ -39,6 +39,7 @@ fun SessionListScreen(
     val scope = rememberCoroutineScope()
     
     var showActiveSessions by remember { mutableStateOf(true) }
+    var showCreateDialog by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
@@ -63,7 +64,7 @@ fun SessionListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onCreateSession,
+                onClick = { showCreateDialog = true },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(Icons.Default.Add, contentDescription = "创建会话")
@@ -154,6 +155,14 @@ fun SessionListScreen(
                 }
             }
         }
+    }
+    
+    // Create Session Dialog
+    if (showCreateDialog) {
+        CreateSessionDialog(
+            viewModel = viewModel,
+            onDismiss = { showCreateDialog = false }
+        )
     }
 }
 

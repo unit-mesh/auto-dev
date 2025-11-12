@@ -210,9 +210,24 @@ class SessionClient(
     /**
      * 启动会话执行
      */
-    suspend fun executeSession(sessionId: String) {
+    suspend fun executeSession(
+        sessionId: String,
+        gitUrl: String? = null,
+        branch: String? = null,
+        username: String? = null,
+        password: String? = null
+    ) {
+        val requestBody = buildMap {
+            gitUrl?.let { put("gitUrl", it) }
+            branch?.let { put("branch", it) }
+            username?.let { put("username", it) }
+            password?.let { put("password", it) }
+        }
+        
         httpClient.post("$baseUrl/api/sessions/$sessionId/execute") {
             header("Authorization", "Bearer $authToken")
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(requestBody))
         }
     }
     
