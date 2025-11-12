@@ -38,8 +38,7 @@ jobs:
 
       - name: Build WASM Distribution
         run: |
-          # Build distribution (now includes webpack as dependency)
-          ./gradlew :mpp-ui:wasmJsBrowserDistribution
+          ./gradlew :mpp-ui:wasmJsBrowserDistribution --info
 
       - name: List build artifacts
         run: |
