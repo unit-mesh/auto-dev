@@ -45,58 +45,25 @@ fun AgentChatInterface(
             val workspace = currentWorkspace
             val rootPath = workspace?.rootPath ?: Platform.getUserHomeDir()
 
-            if (llmService != null) {
-                CodingAgentViewModel(
-                    llmService = llmService,
-                    projectPath = rootPath,
-                    maxIterations = 100
-                )
-            } else {
-                null
-            }
+            // Always create ViewModel, even if llmService is null
+            // Configuration check will happen when user tries to send a message
+            CodingAgentViewModel(
+                llmService = llmService,
+                projectPath = rootPath,
+                maxIterations = 100
+            )
         }
 
     // 同步外部 TreeView 状态到 ViewModel
     LaunchedEffect(isTreeViewVisible) {
-        viewModel?.let {
-            if (it.isTreeViewVisible != isTreeViewVisible) {
-                it.isTreeViewVisible = isTreeViewVisible
-            }
+        if (viewModel.isTreeViewVisible != isTreeViewVisible) {
+            viewModel.isTreeViewVisible = isTreeViewVisible
         }
     }
 
     // 监听 ViewModel 状态变化并通知外部
-    LaunchedEffect(viewModel?.isTreeViewVisible) {
-        viewModel?.let {
-            onToggleTreeView(it.isTreeViewVisible)
-        }
-    }
-
-    if (viewModel == null) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Card(
-                modifier = Modifier.padding(32.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "Configuration Required",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(
-                        text = "Please configure your LLM model to use the Coding Agent.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Button(onClick = onConfigWarning) {
-                        Text("Configure Model")
-                    }
-                }
-            }
-        }
-        return
+    LaunchedEffect(viewModel.isTreeViewVisible) {
+        onToggleTreeView(viewModel.isTreeViewVisible)
     }
 
     // 使用 ResizableSplitPane 分割 Chat 区域和 TreeView 区域

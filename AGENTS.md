@@ -28,6 +28,8 @@ Rest:
     - Avoid `Flow`, use `Promise`
     - ✅ 使用具体类作为返回类型和参数类型
     - ❌ 避免使用接口类型（JS 端无法正确处理接口的类型转换）
+- For WASM platform, we should not use emoji in code
+- For WASM platform, we should not use emoji in code
 
 ## Design System \(Color & Theme\)
 

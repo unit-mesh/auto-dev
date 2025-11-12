@@ -21,7 +21,8 @@ fun createAgentCallbacks(
             }
 
             // Execute the task using CodingAgent
-            viewModel.executeTask(text.trim())
+            // Pass onConfigWarning callback to be invoked if configuration is required
+            viewModel.executeTask(text.trim(), onConfigRequired = onConfigWarning)
         }
     }
 }

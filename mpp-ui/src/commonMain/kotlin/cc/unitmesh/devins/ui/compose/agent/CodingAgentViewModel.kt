@@ -23,7 +23,7 @@ import kotlinx.coroutines.*
  * for consistent rendering across CLI, TUI, and Compose UI
  */
 class CodingAgentViewModel(
-    private val llmService: KoogLLMService,
+    private val llmService: KoogLLMService?,
     private val projectPath: String,
     private val maxIterations: Int = 100
 ) {
@@ -61,8 +61,11 @@ class CodingAgentViewModel(
 
     init {
         // Start MCP preloading immediately when ViewModel is created
-        scope.launch {
-            startMcpPreloading()
+        // Only if llmService is configured
+        if (llmService != null) {
+            scope.launch {
+                startMcpPreloading()
+            }
         }
     }
 
@@ -128,8 +131,13 @@ class CodingAgentViewModel(
     /**
      * Initialize the CodingAgent with tool configuration
      * This must be called before executing any tasks
+     * @throws IllegalStateException if llmService is not configured
      */
     private suspend fun initializeCodingAgent(): CodingAgent {
+        if (llmService == null) {
+            throw IllegalStateException("LLM service is not configured")
+        }
+
         if (_codingAgent == null || !agentInitialized) {
             val toolConfig = ConfigManager.loadToolConfig()
             val mcpToolConfigService = McpToolConfigService(toolConfig)
@@ -147,15 +155,28 @@ class CodingAgentViewModel(
         return _codingAgent!!
     }
 
-    fun executeTask(task: String) {
+    /**
+     * Check if LLM service is configured
+     */
+    fun isConfigured(): Boolean = llmService != null
+
+    fun executeTask(task: String, onConfigRequired: (() -> Unit)? = null) {
         if (isExecuting) {
             println("Agent is already executing")
             return
         }
 
+        // Check if LLM service is configured
+        if (!isConfigured()) {
+            renderer.addUserMessage(task)
+            renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
+            onConfigRequired?.invoke()
+            return
+        }
+
         // Check if this is a built-in slash command
         if (task.trim().startsWith("/")) {
-            handleBuiltinCommand(task.trim())
+            handleBuiltinCommand(task.trim(), onConfigRequired)
             return
         }
 
@@ -199,7 +220,7 @@ class CodingAgentViewModel(
     /**
      * Handle built-in slash commands
      */
-    private fun handleBuiltinCommand(command: String) {
+    private fun handleBuiltinCommand(command: String, onConfigRequired: (() -> Unit)? = null) {
         val parts = command.substring(1).trim().split("\\s+".toRegex())
         val commandName = parts[0].lowercase()
         val args = parts.drop(1).joinToString(" ")
@@ -207,7 +228,15 @@ class CodingAgentViewModel(
         renderer.addUserMessage(command)
 
         when (commandName) {
-            "init" -> handleInitCommand(args)
+            "init" -> {
+                // /init command requires LLM configuration
+                if (!isConfigured()) {
+                    renderer.renderError("⚠️ LLM model is not configured. Please configure your model to use /init command.")
+                    onConfigRequired?.invoke()
+                    return
+                }
+                handleInitCommand(args)
+            }
             "clear" -> {
                 renderer.clearMessages()
                 renderer.renderFinalResult(true, "✅ Chat history cleared", 0)
@@ -226,6 +255,12 @@ class CodingAgentViewModel(
             }
             else -> {
                 // Unknown command, let the agent handle it
+                if (!isConfigured()) {
+                    renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
+                    onConfigRequired?.invoke()
+                    return
+                }
+
                 isExecuting = true
                 currentExecutionJob =
                     scope.launch {
