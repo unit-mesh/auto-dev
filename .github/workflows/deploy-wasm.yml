@@ -38,7 +38,10 @@ jobs:
 
       - name: Build WASM Distribution
         run: |
-          ./gradlew :mpp-ui:wasmJsBrowserDistribution --info
+          # Clean to ensure fresh build
+          ./gradlew :mpp-ui:clean --no-daemon
+          # Build distribution with webpack (optimizer now enabled)
+          ./gradlew :mpp-ui:wasmJsBrowserDistribution --info --no-daemon
 
       - name: List build artifacts
         run: |

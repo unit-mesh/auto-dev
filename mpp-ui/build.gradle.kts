@@ -401,11 +401,11 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     }
 }
 
-// Disable wasm-opt optimizer for production builds to avoid compiler issues
-// This is a temporary workaround for Kotlin/Wasm 2.2.0
-tasks.named("compileProductionExecutableKotlinWasmJsOptimize") {
-    enabled = false
-}
+// Note: We enable wasm-opt optimizer for production webpack builds
+// If this causes issues, use wasmJsBrowserDevelopmentExecutableDistribution instead
+// tasks.named("compileProductionExecutableKotlinWasmJsOptimize") {
+//     enabled = false
+// }
 
 // Ensure wasmJsBrowserDistribution runs webpack before copying files
 tasks.named("wasmJsBrowserDistribution") {
