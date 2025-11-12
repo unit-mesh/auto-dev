@@ -49,9 +49,11 @@ fun LanguageSwitcher(modifier: Modifier = Modifier) {
                         ) {
                             Text(language.displayName)
                             if (language == currentLanguage) {
-                                Text(
-                                    text = "✓",
-                                    color = MaterialTheme.colorScheme.primary
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.Check,
+                                    contentDescription = "Selected",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }

@@ -179,6 +179,9 @@ kotlin {
 
                 // Ktor HTTP Client CIO engine for JVM
                 implementation("io.ktor:ktor-client-cio:3.2.2")
+
+                // i18n4k - JVM
+                implementation("de.comahe.i18n4k:i18n4k-core-jvm:0.11.1")
             }
         }
 
@@ -210,6 +213,9 @@ kotlin {
 
                 // Ktor HTTP Client CIO engine for Android
                 implementation("io.ktor:ktor-client-cio:3.2.2")
+
+                // i18n4k - Android
+                implementation("de.comahe.i18n4k:i18n4k-core-android:0.11.1")
             }
         }
 
@@ -247,6 +253,9 @@ kotlin {
 
                 // Ktor HTTP Client JS engine
                 implementation("io.ktor:ktor-client-js:3.2.2")
+
+                // i18n4k - JS
+                implementation("de.comahe.i18n4k:i18n4k-core-js:0.11.1")
             }
         }
 
@@ -265,6 +274,9 @@ kotlin {
 
                 // Ktor HTTP Client JS engine (works for WASM too)
                 implementation("io.ktor:ktor-client-js:3.2.2")
+
+                // i18n4k - WASM
+                implementation("de.comahe.i18n4k:i18n4k-core-wasm-js:0.11.1")
             }
         }
     }

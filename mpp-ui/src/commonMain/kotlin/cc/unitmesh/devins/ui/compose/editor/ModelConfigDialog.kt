@@ -1,5 +1,11 @@
 package cc.unitmesh.devins.ui.compose.editor
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,6 +47,7 @@ fun ModelConfigDialog(
     var showApiKey by remember { mutableStateOf(false) }
     var expandedProvider by remember { mutableStateOf(false) }
     var expandedModel by remember { mutableStateOf(false) }
+    var expandedAdvanced by remember { mutableStateOf(false) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -69,7 +76,7 @@ fun ModelConfigDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "配置名称",
+                    text = Strings.configName,
                     style = MaterialTheme.typography.labelLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -77,10 +84,10 @@ fun ModelConfigDialog(
                     value = configName,
                     onValueChange = { configName = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("e.g., my-glm, work-gpt4, personal-claude") },
+                    placeholder = { Text(Strings.configNamePlaceholder) },
                     supportingText = {
                         Text(
-                            "给配置起一个唯一的名称，便于识别和切换",
+                            Strings.configNameHint,
                             style = MaterialTheme.typography.bodySmall
                         )
                     },
@@ -189,10 +196,10 @@ fun ModelConfigDialog(
                         placeholder = {
                             Text(
                                 when (provider) {
-                                    LLMProviderType.GLM -> "e.g., glm-4-plus, glm-4-air"
-                                    LLMProviderType.QWEN -> "e.g., qwen-max, qwen-plus"
-                                    LLMProviderType.KIMI -> "e.g., moonshot-v1-32k"
-                                    LLMProviderType.CUSTOM_OPENAI_BASE -> "e.g., model-name"
+                                    LLMProviderType.GLM -> Strings.modelPlaceholderGLM
+                                    LLMProviderType.QWEN -> Strings.modelPlaceholderQwen
+                                    LLMProviderType.KIMI -> Strings.modelPlaceholderKimi
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> Strings.modelPlaceholderCustom
                                     else -> Strings.enterModel
                                 }
                             )
@@ -200,14 +207,10 @@ fun ModelConfigDialog(
                         supportingText = {
                             Text(
                                 when (provider) {
-                                    LLMProviderType.GLM ->
-                                        "输入 GLM 模型名称（如 glm-4-plus）"
-                                    LLMProviderType.QWEN ->
-                                        "输入 Qwen 模型名称（如 qwen-max）"
-                                    LLMProviderType.KIMI ->
-                                        "输入 Kimi 模型名称（如 moonshot-v1-32k）"
-                                    LLMProviderType.CUSTOM_OPENAI_BASE ->
-                                        "输入 OpenAI 兼容模型名称"
+                                    LLMProviderType.GLM -> Strings.modelHintGLM
+                                    LLMProviderType.QWEN -> Strings.modelHintQwen
+                                    LLMProviderType.KIMI -> Strings.modelHintKimi
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> Strings.modelHintCustom
                                     else -> Strings.modelHint
                                 },
                                 style = MaterialTheme.typography.bodySmall
@@ -268,23 +271,23 @@ fun ModelConfigDialog(
                         placeholder = {
                             Text(
                                 when (provider) {
-                                    LLMProviderType.OLLAMA -> "http://localhost:11434"
-                                    LLMProviderType.GLM -> "https://open.bigmodel.cn/api/paas/v4"
-                                    LLMProviderType.QWEN -> "https://dashscope.aliyuncs.com/api/v1"
-                                    LLMProviderType.KIMI -> "https://api.moonshot.cn/v1"
-                                    LLMProviderType.CUSTOM_OPENAI_BASE -> "https://api.example.com/v1"
-                                    else -> "https://api.example.com"
+                                    LLMProviderType.OLLAMA -> Strings.baseUrlPlaceholderOllama
+                                    LLMProviderType.GLM -> Strings.baseUrlPlaceholderGLM
+                                    LLMProviderType.QWEN -> Strings.baseUrlPlaceholderQwen
+                                    LLMProviderType.KIMI -> Strings.baseUrlPlaceholderKimi
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> Strings.baseUrlPlaceholderCustom
+                                    else -> Strings.baseUrlPlaceholderDefault
                                 }
                             )
                         },
                         supportingText = {
                             Text(
                                 when (provider) {
-                                    LLMProviderType.OLLAMA -> "Ollama 服务器地址"
-                                    LLMProviderType.GLM -> "智谱AI API 地址（不含 /chat/completions）"
-                                    LLMProviderType.QWEN -> "通义千问 API 地址（不含 /chat/completions）"
-                                    LLMProviderType.KIMI -> "月之暗面 API 地址（不含 /chat/completions）"
-                                    LLMProviderType.CUSTOM_OPENAI_BASE -> "OpenAI 兼容 API 地址（不含 /chat/completions）"
+                                    LLMProviderType.OLLAMA -> Strings.baseUrlHintOllama
+                                    LLMProviderType.GLM -> Strings.baseUrlHintGLM
+                                    LLMProviderType.QWEN -> Strings.baseUrlHintQwen
+                                    LLMProviderType.KIMI -> Strings.baseUrlHintKimi
+                                    LLMProviderType.CUSTOM_OPENAI_BASE -> Strings.baseUrlHintCustom
                                     else -> ""
                                 },
                                 style = MaterialTheme.typography.bodySmall
@@ -295,40 +298,65 @@ fun ModelConfigDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Advanced Parameters Section
-                Text(
-                    text = Strings.advancedParameters,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
+                // Advanced Parameters Section - Collapsible
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expandedAdvanced = !expandedAdvanced }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Temperature
-                    OutlinedTextField(
-                        value = temperature,
-                        onValueChange = { temperature = it },
-                        label = { Text(Strings.temperature) },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        supportingText = { Text(Strings.temperatureRange, style = MaterialTheme.typography.bodySmall) }
+                    Text(
+                        text = Strings.advancedParameters,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Icon(
+                        imageVector = if (expandedAdvanced) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
+                        contentDescription = if (expandedAdvanced) "Collapse" else "Expand",
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                AnimatedVisibility(
+                    visible = expandedAdvanced,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column {
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                // Max Tokens
-                OutlinedTextField(
-                    value = maxTokens,
-                    onValueChange = { maxTokens = it },
-                    label = { Text(Strings.maxTokens) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    supportingText = { Text(Strings.maxResponseLength, style = MaterialTheme.typography.bodySmall) }
-                )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Temperature
+                            OutlinedTextField(
+                                value = temperature,
+                                onValueChange = { temperature = it },
+                                label = { Text(Strings.temperature) },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                placeholder = { Text("0.7") },
+                                supportingText = { Text(Strings.temperatureRange, style = MaterialTheme.typography.bodySmall) }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Max Tokens
+                        OutlinedTextField(
+                            value = maxTokens,
+                            onValueChange = { maxTokens = it },
+                            label = { Text(Strings.maxTokens) },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            placeholder = { Text("2000") },
+                            supportingText = { Text(Strings.maxResponseLength, style = MaterialTheme.typography.bodySmall) }
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 

@@ -17,7 +17,7 @@ import de.comahe.i18n4k.i18n4k
  */
 enum class Language(val code: String, val displayName: String) {
     ENGLISH("en", "English"),
-    CHINESE("zh", "中文");
+    CHINESE("zh", Strings.chinese);
 
     companion object {
         fun fromCode(code: String): Language {
@@ -57,6 +57,8 @@ object Strings {
      */
     fun getLanguage(): Language = currentLanguage
 
+    val chinese: String get() = AutoDevStrings.languages_chinese.toString()
+
     // Common strings
     val save: String get() = AutoDevStrings.common_save.toString()
     val cancel: String get() = AutoDevStrings.common_cancel.toString()
@@ -91,6 +93,28 @@ object Strings {
     val maxResponseLength: String get() = AutoDevStrings.modelConfig_maxResponseLength.toString()
     val temperatureRange: String get() = AutoDevStrings.modelConfig_temperatureRange.toString()
     val selected: String get() = AutoDevStrings.modelConfig_selected.toString()
+    val configName: String get() = AutoDevStrings.modelConfig_configName.toString()
+    val configNamePlaceholder: String get() = AutoDevStrings.modelConfig_configNamePlaceholder.toString()
+    val configNameHint: String get() = AutoDevStrings.modelConfig_configNameHint.toString()
+    val baseUrlPlaceholderOllama: String get() = AutoDevStrings.modelConfig_baseUrlPlaceholderOllama.toString()
+    val baseUrlPlaceholderGLM: String get() = AutoDevStrings.modelConfig_baseUrlPlaceholderGLM.toString()
+    val baseUrlPlaceholderQwen: String get() = AutoDevStrings.modelConfig_baseUrlPlaceholderQwen.toString()
+    val baseUrlPlaceholderKimi: String get() = AutoDevStrings.modelConfig_baseUrlPlaceholderKimi.toString()
+    val baseUrlPlaceholderCustom: String get() = AutoDevStrings.modelConfig_baseUrlPlaceholderCustom.toString()
+    val baseUrlPlaceholderDefault: String get() = AutoDevStrings.modelConfig_baseUrlPlaceholderDefault.toString()
+    val baseUrlHintOllama: String get() = AutoDevStrings.modelConfig_baseUrlHintOllama.toString()
+    val baseUrlHintGLM: String get() = AutoDevStrings.modelConfig_baseUrlHintGLM.toString()
+    val baseUrlHintQwen: String get() = AutoDevStrings.modelConfig_baseUrlHintQwen.toString()
+    val baseUrlHintKimi: String get() = AutoDevStrings.modelConfig_baseUrlHintKimi.toString()
+    val baseUrlHintCustom: String get() = AutoDevStrings.modelConfig_baseUrlHintCustom.toString()
+    val modelPlaceholderGLM: String get() = AutoDevStrings.modelConfig_modelPlaceholderGLM.toString()
+    val modelPlaceholderQwen: String get() = AutoDevStrings.modelConfig_modelPlaceholderQwen.toString()
+    val modelPlaceholderKimi: String get() = AutoDevStrings.modelConfig_modelPlaceholderKimi.toString()
+    val modelPlaceholderCustom: String get() = AutoDevStrings.modelConfig_modelPlaceholderCustom.toString()
+    val modelHintGLM: String get() = AutoDevStrings.modelConfig_modelHintGLM.toString()
+    val modelHintQwen: String get() = AutoDevStrings.modelConfig_modelHintQwen.toString()
+    val modelHintKimi: String get() = AutoDevStrings.modelConfig_modelHintKimi.toString()
+    val modelHintCustom: String get() = AutoDevStrings.modelConfig_modelHintCustom.toString()
 
     // Messages with parameters
     fun failedToLoadConfigs(error: String): String = AutoDevStrings.messages_failedToLoadConfigs(error).toString()
