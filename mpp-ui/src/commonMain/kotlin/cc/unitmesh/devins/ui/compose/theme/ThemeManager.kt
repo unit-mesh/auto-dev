@@ -3,38 +3,39 @@ package cc.unitmesh.devins.ui.compose.theme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import cc.unitmesh.devins.ui.i18n.Strings
 
 /**
- * 主题管理器
- * 管理应用的主题模式（白天/夜间）
+ * Theme Manager
+ * Manages the application's theme mode (Light/Dark/System)
  */
 object ThemeManager {
     /**
-     * 主题模式
+     * Theme mode
      */
     enum class ThemeMode {
-        LIGHT, // 白天模式
-        DARK, // 夜间模式
-        SYSTEM // 跟随系统
+        LIGHT, // Light mode
+        DARK, // Dark mode
+        SYSTEM // Follow system
     }
 
     /**
-     * 当前主题模式
+     * Current theme mode
      */
     var currentTheme by mutableStateOf(ThemeMode.SYSTEM)
         private set
 
     /**
-     * 切换主题
+     * Set theme
      */
     fun setTheme(mode: ThemeMode) {
         currentTheme = mode
-        // 这里可以添加持久化逻辑，保存到配置文件
-        println("🎨 切换主题: $mode")
+        // TODO: Add persistence logic to save to config file
+        println(Strings.themeSwitched(getThemeDisplayName(mode)))
     }
 
     /**
-     * 切换到下一个主题
+     * Toggle to next theme
      */
     fun toggleTheme() {
         currentTheme =
@@ -46,18 +47,18 @@ object ThemeManager {
     }
 
     /**
-     * 获取主题显示名称
+     * Get theme display name
      */
     fun getThemeDisplayName(mode: ThemeMode): String {
         return when (mode) {
-            ThemeMode.LIGHT -> "☀️ 白天模式"
-            ThemeMode.DARK -> "🌙 夜间模式"
-            ThemeMode.SYSTEM -> "🖥️ 跟随系统"
+            ThemeMode.LIGHT -> Strings.themeLight
+            ThemeMode.DARK -> Strings.themeDark
+            ThemeMode.SYSTEM -> Strings.themeSystem
         }
     }
 
     /**
-     * 获取当前主题的显示名称
+     * Get current theme display name
      */
     fun getCurrentThemeDisplayName(): String {
         return getThemeDisplayName(currentTheme)

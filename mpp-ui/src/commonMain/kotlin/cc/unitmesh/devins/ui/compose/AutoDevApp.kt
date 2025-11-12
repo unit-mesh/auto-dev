@@ -22,6 +22,7 @@ import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.devins.ui.i18n.Strings
 import cc.unitmesh.devins.ui.platform.createFileChooser
 import cc.unitmesh.devins.ui.remote.RemoteAgentChatInterface
 import cc.unitmesh.devins.workspace.WorkspaceManager
@@ -567,11 +568,11 @@ private fun AutoDevContent(
         AlertDialog(
             onDismissRequest = { showConfigWarning = false },
             title = {
-                Text("⚠️ 未配置 LLM 模型")
+                Text(Strings.modelConfigNotConfigured)
             },
             text = {
                 Column {
-                    Text("请先配置 LLM 模型才能使用 AI 功能。")
+                    Text(Strings.modelConfigNotConfiguredMessage)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         "点击下方按钮打开配置界面。",

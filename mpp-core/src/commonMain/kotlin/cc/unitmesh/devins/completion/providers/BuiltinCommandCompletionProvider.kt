@@ -16,32 +16,32 @@ class BuiltinCommandCompletionProvider : BaseCompletionProvider(setOf(Completion
         BuiltinCommand(
             name = "help",
             description = "Show available commands and help information",
-            icon = "📖"
+            icon = "help"
         ),
         BuiltinCommand(
             name = "clear",
             description = "Clear the screen and conversation history",
-            icon = "🧹"
+            icon = "clear"
         ),
         BuiltinCommand(
             name = "exit",
             description = "Exit the application",
-            icon = "🚪"
+            icon = "exit"
         ),
         BuiltinCommand(
             name = "config",
             description = "Show current configuration settings",
-            icon = "⚙️"
+            icon = "config"
         ),
         BuiltinCommand(
             name = "model",
             description = "Change or view the current LLM model",
-            icon = "🤖"
+            icon = "model"
         ),
         BuiltinCommand(
             name = "init",
             description = "Initialize project domain dictionary",
-            icon = "🚀"
+            icon = "init"
         )
     )
 

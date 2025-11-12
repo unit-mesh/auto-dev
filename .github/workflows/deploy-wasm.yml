@@ -50,11 +50,6 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm@10.20.0
 
-      # Install mpp-ui JS dependencies
-      - name: Install mpp-ui dependencies
-        run: pnpm install
-        working-directory: mpp-core
-
       - name: Build mpp-core
         run: ./gradlew :mpp-core:assembleJsPackage
 

@@ -1,6 +1,9 @@
 package cc.unitmesh.devins.ui.compose.icons
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -55,7 +58,7 @@ object AutoDevComposeIcons {
     val Description: ImageVector get() = Icons.Default.Description
     val Code: ImageVector get() = Icons.Default.Code
     val Javascript: ImageVector get() = Icons.Default.Javascript
-    val Article: ImageVector get() = Icons.Default.Article
+    val Article: ImageVector get() = Icons.AutoMirrored.Filled.Article
 
     // Status & Information
     val Error: ImageVector get() = Icons.Default.Error
@@ -72,6 +75,10 @@ object AutoDevComposeIcons {
     // Tools & Utilities
     val Search: ImageVector get() = Icons.Default.Search
     val Language: ImageVector get() = Icons.Default.Language
+    val Help: ImageVector get() = Icons.AutoMirrored.Filled.Help
+    val Delete: ImageVector get() = Icons.Default.Delete
+    val ExitToApp: ImageVector get() = Icons.AutoMirrored.Filled.ExitToApp
+    val RocketLaunch: ImageVector get() = Icons.Default.RocketLaunch
 
     /**
      * Custom icons converted from SVG resources

@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -117,12 +118,19 @@ private fun CompletionItemRow(
                 .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        item.icon?.let { icon ->
-            Text(
-                text = icon,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(end = 8.dp)
-            )
+        // Display icon using Material Icons instead of emoji text
+        item.icon?.let { iconName ->
+            val iconVector = CompletionIconMapper.getIcon(iconName)
+            if (iconVector != null) {
+                Icon(
+                    imageVector = iconVector,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .padding(end = 8.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         Column(modifier = Modifier.weight(1f)) {

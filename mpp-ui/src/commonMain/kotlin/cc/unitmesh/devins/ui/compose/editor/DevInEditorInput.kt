@@ -149,7 +149,7 @@ fun DevInEditorInput(
 
                     selectedCompletionIndex = 0
                     showCompletion = completionItems.isNotEmpty()
-                    println("🔍 补全触发: char='$addedChar', type=$triggerType, items=${completionItems.size}")
+                    println("[Completion] Triggered: char='$addedChar', type=$triggerType, items=${completionItems.size}")
                 }
             } else if (showCompletion) {
                 // 更新补全列表
@@ -261,7 +261,7 @@ fun DevInEditorInput(
         scope.launch {
             try {
                 isEnhancing = true
-                println("🔍 Enhancing current input...")
+                println("[Enhancement] Enhancing current input...")
 
                 val enhanced = (currentEnhancer as PromptEnhancer).enhance(textFieldValue.text.trim(), "zh")
 
@@ -485,7 +485,7 @@ fun DevInEditorInput(
                             horizontalArrangement = Arrangement.End
                         ) {
                             Text(
-                                text = if (isEnhancing) "🔍 Enhancing..." else "Ctrl+P to enhance prompt",
+                                text = if (isEnhancing) "Enhancing..." else "Ctrl+P to enhance prompt",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
@@ -532,7 +532,7 @@ fun DevInEditorInput(
                                     completionItems = manager.getFilteredCompletions(context)
                                     selectedCompletionIndex = 0
                                     showCompletion = completionItems.isNotEmpty()
-                                    println("🔍 @ 补全触发: items=${completionItems.size}")
+                                    println("[Completion] @ trigger: items=${completionItems.size}")
                                 }
                             }
                         },

@@ -115,6 +115,27 @@ object Strings {
     val modelHintQwen: String get() = AutoDevStrings.modelConfig_modelHintQwen.toString()
     val modelHintKimi: String get() = AutoDevStrings.modelConfig_modelHintKimi.toString()
     val modelHintCustom: String get() = AutoDevStrings.modelConfig_modelHintCustom.toString()
+    val modelConfigNotConfigured: String get() = AutoDevStrings.modelConfig_notConfigured.toString()
+    val modelConfigNotConfiguredMessage: String get() = AutoDevStrings.modelConfig_notConfiguredMessage.toString()
+
+    // Theme
+    val themeLight: String get() = AutoDevStrings.theme_light.toString()
+    val themeDark: String get() = AutoDevStrings.theme_dark.toString()
+    val themeSystem: String get() = AutoDevStrings.theme_system.toString()
+
+    // Builtin Commands
+    val commandHelpName: String get() = AutoDevStrings.command_help_name.toString()
+    val commandHelpDescription: String get() = AutoDevStrings.command_help_description.toString()
+    val commandClearName: String get() = AutoDevStrings.command_clear_name.toString()
+    val commandClearDescription: String get() = AutoDevStrings.command_clear_description.toString()
+    val commandExitName: String get() = AutoDevStrings.command_exit_name.toString()
+    val commandExitDescription: String get() = AutoDevStrings.command_exit_description.toString()
+    val commandConfigName: String get() = AutoDevStrings.command_config_name.toString()
+    val commandConfigDescription: String get() = AutoDevStrings.command_config_description.toString()
+    val commandModelName: String get() = AutoDevStrings.command_model_name.toString()
+    val commandModelDescription: String get() = AutoDevStrings.command_model_description.toString()
+    val commandInitName: String get() = AutoDevStrings.command_init_name.toString()
+    val commandInitDescription: String get() = AutoDevStrings.command_init_description.toString()
 
     // Messages with parameters
     fun failedToLoadConfigs(error: String): String = AutoDevStrings.messages_failedToLoadConfigs(error).toString()
@@ -122,5 +143,6 @@ object Strings {
     fun failedToSetActiveConfig(error: String): String = AutoDevStrings.messages_failedToSetActiveConfig(error).toString()
 
     fun failedToSaveConfig(error: String): String = AutoDevStrings.messages_failedToSaveConfig(error).toString()
-}
 
+    fun themeSwitched(mode: String): String = AutoDevStrings.theme_switched(mode).toString()
+}
