@@ -1,0 +1,130 @@
+-- SessionDb 表：存储会话信息
+CREATE TABLE IF NOT EXISTS SessionDb (
+    id TEXT PRIMARY KEY NOT NULL,
+    projectId TEXT NOT NULL,
+    task TEXT NOT NULL,
+    status TEXT NOT NULL,
+    ownerId TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    metadata TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_session_owner ON SessionDb(ownerId);
+CREATE INDEX IF NOT EXISTS idx_session_project ON SessionDb(projectId);
+CREATE INDEX IF NOT EXISTS idx_session_status ON SessionDb(status);
+CREATE INDEX IF NOT EXISTS idx_session_updated ON SessionDb(updatedAt DESC);
+
+-- 查询所有会话
+selectAll:
+SELECT * FROM SessionDb ORDER BY updatedAt DESC;
+
+-- 查询指定项目的会话
+selectByProject:
+SELECT * FROM SessionDb WHERE projectId = ? ORDER BY updatedAt DESC;
+
+-- 查询指定所有者的会话
+selectByOwner:
+SELECT * FROM SessionDb WHERE ownerId = ? ORDER BY updatedAt DESC;
+
+-- 查询活跃会话（RUNNING 或 PAUSED）
+selectActive:
+SELECT * FROM SessionDb WHERE status IN ('RUNNING', 'PAUSED') ORDER BY updatedAt DESC;
+
+-- 查询指定所有者的活跃会话
+selectActiveByOwner:
+SELECT * FROM SessionDb WHERE ownerId = ? AND status IN ('RUNNING', 'PAUSED') ORDER BY updatedAt DESC;
+
+-- 根据 ID 查询
+selectById:
+SELECT * FROM SessionDb WHERE id = ?;
+
+-- 插入会话
+insert:
+INSERT INTO SessionDb(id, projectId, task, status, ownerId, createdAt, updatedAt, metadata)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- 更新会话状态
+updateStatus:
+UPDATE SessionDb SET status = ?, updatedAt = ? WHERE id = ?;
+
+-- 更新会话元数据
+updateMetadata:
+UPDATE SessionDb SET metadata = ?, updatedAt = ? WHERE id = ?;
+
+-- 删除会话
+delete:
+DELETE FROM SessionDb WHERE id = ?;
+
+-- 清空所有会话
+deleteAll:
+DELETE FROM SessionDb;
+
+-- SessionEventDb 表：存储会话事件（用于事件持久化和回放）
+CREATE TABLE IF NOT EXISTS SessionEventDb (
+    id TEXT PRIMARY KEY NOT NULL,
+    sessionId TEXT NOT NULL,
+    eventId TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    sequenceNumber INTEGER NOT NULL,
+    eventType TEXT NOT NULL,
+    eventData TEXT NOT NULL,
+    FOREIGN KEY (sessionId) REFERENCES SessionDb(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_session_event_session ON SessionEventDb(sessionId);
+CREATE INDEX IF NOT EXISTS idx_session_event_sequence ON SessionEventDb(sessionId, sequenceNumber);
+
+-- 查询会话的所有事件
+selectEventsBySession:
+SELECT * FROM SessionEventDb WHERE sessionId = ? ORDER BY sequenceNumber ASC;
+
+-- 查询会话的事件（分页）
+selectEventsBySessionPaginated:
+SELECT * FROM SessionEventDb WHERE sessionId = ? ORDER BY sequenceNumber ASC LIMIT ? OFFSET ?;
+
+-- 查询会话的最新事件
+selectLatestEventBySession:
+SELECT * FROM SessionEventDb WHERE sessionId = ? ORDER BY sequenceNumber DESC LIMIT 1;
+
+-- 查询会话的事件数量
+countEventsBySession:
+SELECT COUNT(*) FROM SessionEventDb WHERE sessionId = ?;
+
+-- 插入事件
+insertEvent:
+INSERT INTO SessionEventDb(id, sessionId, eventId, timestamp, sequenceNumber, eventType, eventData)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- 删除会话的所有事件
+deleteEventsBySession:
+DELETE FROM SessionEventDb WHERE sessionId = ?;
+
+-- UserDb 表：存储用户信息（简单认证）
+CREATE TABLE IF NOT EXISTS UserDb (
+    username TEXT PRIMARY KEY NOT NULL,
+    passwordHash TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+-- 查询所有用户
+selectAllUsers:
+SELECT * FROM UserDb;
+
+-- 根据用户名查询
+selectUserByUsername:
+SELECT * FROM UserDb WHERE username = ?;
+
+-- 插入用户
+insertUser:
+INSERT INTO UserDb(username, passwordHash, createdAt)
+VALUES (?, ?, ?);
+
+-- 更新用户密码
+updateUserPassword:
+UPDATE UserDb SET passwordHash = ? WHERE username = ?;
+
+-- 删除用户
+deleteUser:
+DELETE FROM UserDb WHERE username = ?;
+

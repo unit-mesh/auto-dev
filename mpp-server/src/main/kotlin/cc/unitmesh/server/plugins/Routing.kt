@@ -1,10 +1,12 @@
 package cc.unitmesh.server.plugins
 
 import cc.unitmesh.agent.AgentEvent
+import cc.unitmesh.server.auth.AuthService
 import cc.unitmesh.server.config.ServerConfig
 import cc.unitmesh.server.model.*
 import cc.unitmesh.server.service.AgentService
 import cc.unitmesh.server.service.ProjectService
+import cc.unitmesh.server.session.SessionManager
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -21,6 +23,10 @@ fun Application.configureRouting() {
     val config = ServerConfig.load()
     val projectService = ProjectService(config.projects)
     val agentService = AgentService(config.llm)
+    
+    // 初始化会话管理和认证服务
+    val sessionManager = SessionManager()
+    val authService = AuthService()
 
     // JSON serializer with polymorphic support for AgentEvent
     val json = Json {
@@ -263,6 +269,9 @@ fun Application.configureRouting() {
                 }
             }
         }
+        
+        // Session 和认证路由
+        sessionRouting(sessionManager, authService, agentService)
     }
 }
 
