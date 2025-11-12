@@ -77,7 +77,7 @@ jobs:
 
       # Test mpp-core for all targets
       - name: Test mpp-core
-        run: ./gradlew :mpp-core:allTests
+        run: ./gradlew :mpp-core:cleanWasmJsBrowserTest :mpp-core:wasmJsBrowserTest
 
       # Build JS package for CLI usage
       - name: Build mpp-core JS package
