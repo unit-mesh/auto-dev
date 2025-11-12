@@ -5,13 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import cc.unitmesh.devins.db.DatabaseDriverFactory
-import cc.unitmesh.devins.ui.compose.AutoDevApp
+import cc.unitmesh.devins.ui.app.SessionApp
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.platform.AndroidActivityProvider
 
 /**
  * AutoDev 移动应用 - Android 版本
- * 支持主题切换
+ * 支持会话管理、项目管理、任务管理和 AI Agent 执行
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,8 +27,11 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            // AutoDevApp 内部已经包含 AutoDevTheme
-            AutoDevApp()
+            // 使用 SessionApp，启用底部导航
+            SessionApp(
+                serverUrl = "http://10.0.2.2:8080", // Android 模拟器访问本机
+                useBottomNavigation = true
+            )
         }
     }
 }

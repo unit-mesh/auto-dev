@@ -19,7 +19,10 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * DevIn AI Assistant 主应用入口
- * 简洁的 AI 对话界面，支持主题切换
+ *
+ * 支持两种模式：
+ * 1. 本地 Chat 模式（默认）- 使用 AutoDevApp
+ * 2. 远程 Session 模式 - 使用 UnifiedApp（通过 --remote 参数）
  */
 fun main(args: Array<String>) {
     // Initialize logging system
@@ -28,15 +31,12 @@ fun main(args: Array<String>) {
     AutoDevLogger.info("AutoDevMain") { "🚀 AutoDev Desktop starting..." }
     AutoDevLogger.info("AutoDevMain") { "📁 Log files location: ${AutoDevLogger.getLogDirectory()}" }
 
-    // Add a test for tool status bar
-//    if (args.contains("--test-status-bar")) {
-//        testToolStatusBar()
-//        return
-//    }
+    val useRemoteMode = args.contains("--remote")
 
     application {
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
+        var showLocalChat by remember { mutableStateOf(!useRemoteMode) }
 
         val windowState =
             rememberWindowState(
@@ -67,11 +67,21 @@ fun main(args: Array<String>) {
                     onExit = ::exitApplication
                 )
 
-                // AutoDevApp 内部已经包含 AutoDevTheme
-                AutoDevApp(
-                    triggerFileChooser = triggerFileChooser,
-                    onFileChooserHandled = { triggerFileChooser = false }
-                )
+                if (showLocalChat) {
+                    // 本地 Chat 模式
+                    AutoDevApp(
+                        triggerFileChooser = triggerFileChooser,
+                        onFileChooserHandled = { triggerFileChooser = false }
+                    )
+                } else {
+                    // 远程 Session 模式
+                    cc.unitmesh.devins.ui.app.UnifiedApp(
+                        serverUrl = "http://localhost:8080",
+                        onOpenLocalChat = {
+                            showLocalChat = true
+                        }
+                    )
+                }
             }
         }
     }

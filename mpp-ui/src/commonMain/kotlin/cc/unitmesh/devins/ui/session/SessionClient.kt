@@ -16,18 +16,19 @@ import kotlinx.serialization.json.Json
  */
 class SessionClient(
     private val baseUrl: String,
-    private val httpClient: HttpClient = HttpClient()
+    val httpClient: HttpClient = HttpClient()
 ) {
     private val json = Json { ignoreUnknownKeys = true }
-    private var authToken: String? = null
-    
+    var authToken: String? = null
+        private set
+
     /**
      * 设置认证 token
      */
     fun setAuthToken(token: String?) {
         authToken = token
     }
-    
+
     /**
      * 登录
      */
@@ -36,17 +37,17 @@ class SessionClient(
             contentType(ContentType.Application.Json)
             setBody("""{"username":"$username","password":"$password"}""")
         }
-        
+
         val responseText = response.bodyAsText()
         val loginResponse = json.decodeFromString<LoginResponse>(responseText)
-        
+
         if (loginResponse.success && loginResponse.token != null) {
             setAuthToken(loginResponse.token)
         }
-        
+
         return loginResponse
     }
-    
+
     /**
      * 注册
      */
@@ -55,17 +56,17 @@ class SessionClient(
             contentType(ContentType.Application.Json)
             setBody("""{"username":"$username","password":"$password"}""")
         }
-        
+
         val responseText = response.bodyAsText()
         val loginResponse = json.decodeFromString<LoginResponse>(responseText)
-        
+
         if (loginResponse.success && loginResponse.token != null) {
             setAuthToken(loginResponse.token)
         }
-        
+
         return loginResponse
     }
-    
+
     /**
      * 登出
      */
@@ -77,13 +78,13 @@ class SessionClient(
             setAuthToken(null)
         }
     }
-    
+
     /**
      * 验证 token
      */
     suspend fun validateToken(): Boolean {
         if (authToken == null) return false
-        
+
         try {
             val response = httpClient.get("$baseUrl/api/auth/validate") {
                 header("Authorization", "Bearer $authToken")
@@ -93,7 +94,7 @@ class SessionClient(
             return false
         }
     }
-    
+
     /**
      * 创建会话
      */
@@ -106,17 +107,17 @@ class SessionClient(
                 ${if (metadata != null) """"metadata":${json.encodeToString(SessionMetadata.serializer(), metadata)}""" else ""}
             }
         """.trimIndent()
-        
+
         val response = httpClient.post("$baseUrl/api/sessions") {
             header("Authorization", "Bearer $authToken")
             contentType(ContentType.Application.Json)
             setBody(requestBody)
         }
-        
+
         val responseText = response.bodyAsText()
         return json.decodeFromString<Session>(responseText)
     }
-    
+
     /**
      * 获取所有会话
      */
@@ -124,11 +125,11 @@ class SessionClient(
         val response = httpClient.get("$baseUrl/api/sessions") {
             header("Authorization", "Bearer $authToken")
         }
-        
+
         val responseText = response.bodyAsText()
         return json.decodeFromString<List<Session>>(responseText)
     }
-    
+
     /**
      * 获取活跃会话
      */
@@ -136,11 +137,11 @@ class SessionClient(
         val response = httpClient.get("$baseUrl/api/sessions/active") {
             header("Authorization", "Bearer $authToken")
         }
-        
+
         val responseText = response.bodyAsText()
         return json.decodeFromString<List<Session>>(responseText)
     }
-    
+
     /**
      * 获取指定会话
      */
@@ -148,11 +149,11 @@ class SessionClient(
         val response = httpClient.get("$baseUrl/api/sessions/$sessionId") {
             header("Authorization", "Bearer $authToken")
         }
-        
+
         val responseText = response.bodyAsText()
         return json.decodeFromString<Session>(responseText)
     }
-    
+
     /**
      * 获取会话状态快照
      */
@@ -160,11 +161,11 @@ class SessionClient(
         val response = httpClient.get("$baseUrl/api/sessions/$sessionId/state") {
             header("Authorization", "Bearer $authToken")
         }
-        
+
         val responseText = response.bodyAsText()
         return json.decodeFromString<SessionState>(responseText)
     }
-    
+
     /**
      * 订阅会话事件流（SSE）
      */
@@ -174,13 +175,13 @@ class SessionClient(
             header("Accept", "text/event-stream")
         }.execute { response ->
             val channel = response.bodyAsChannel()
-            
+
             var currentEvent = ""
             var currentData = ""
-            
+
             while (!channel.isClosedForRead) {
                 val line = channel.readUTF8Line() ?: break
-                
+
                 when {
                     line.startsWith("event:") -> {
                         currentEvent = line.substringAfter("event:").trim()
@@ -206,7 +207,7 @@ class SessionClient(
             }
         }
     }
-    
+
     /**
      * 启动会话执行
      */
@@ -223,14 +224,14 @@ class SessionClient(
             username?.let { put("username", it) }
             password?.let { put("password", it) }
         }
-        
+
         httpClient.post("$baseUrl/api/sessions/$sessionId/execute") {
             header("Authorization", "Bearer $authToken")
             contentType(ContentType.Application.Json)
             setBody(json.encodeToString(requestBody))
         }
     }
-    
+
     /**
      * 删除会话
      */
