@@ -65,6 +65,19 @@ jobs:
           # Then create distribution with all assets
           ./gradlew :mpp-ui:wasmJsBrowserDistribution
 
+      - name: List build artifacts
+        run: |
+          echo "Listing files in `mpp-ui/build/dist/wasmJs/productionExecutable/`"
+          cd mpp-ui/build/dist/wasmJs/productionExecutable/ || { echo "Directory not found"; exit 1; }
+          echo "--- find -ls ---"
+          find . -ls
+          echo "--- sizes (human readable) ---"
+          find . -type f -print0 | xargs -0 du -h 2>/dev/null | sort -h || true
+          echo "--- detailed ls ---"
+          find . -print0 | xargs -0 ls -la --group-directories-first 2>/dev/null || true
+          echo "--- disk usage summary ---"
+          du -sh .
+
       - name: Fix HTML base path for GitHub Pages
         run: |
           cd mpp-ui/build/dist/wasmJs/productionExecutable/

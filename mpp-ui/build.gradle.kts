@@ -85,16 +85,18 @@ kotlin {
 
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
-        browser()
+        browser {
+            commonWebpackConfig {
+                outputFileName = "mpp-ui.js"
+            }
+        }
         binaries.executable()
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
         }
-        // Disable WebAssembly optimizer to work around Kotlin/Wasm compiler issues
-        // @see https://youtrack.jetbrains.com/issue/KT-63214
-        d8 {
-            // Use d8 instead of binaryen (wasm-opt) for now
-        }
+//        d8 {
+//            // Use d8 instead of binaryen (wasm-opt) for now
+//        }
     }
 
     sourceSets {
