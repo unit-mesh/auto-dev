@@ -36,7 +36,8 @@ public data class ConfigFile(
     val configs: List<NamedModelConfig> = emptyList(),
     val mcpServers: Map<String, McpServerConfig>? = emptyMap(),
     val language: String? = "en", // Language preference: "en" or "zh"
-    val remoteServer: RemoteServerConfig? = null
+    val remoteServer: RemoteServerConfig? = null,
+    val agentType: String? = "Local" // "Local" or "Remote" - which agent mode to use
 )
 
 /**
@@ -93,5 +94,9 @@ class AutoDevConfigWrapper(val configFile: ConfigFile) {
     
     fun isRemoteMode(): Boolean {
         return configFile.remoteServer?.enabled == true
+    }
+    
+    fun getAgentType(): String {
+        return configFile.agentType ?: "Local"
     }
 }

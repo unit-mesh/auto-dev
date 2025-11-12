@@ -25,6 +25,7 @@ import kotlinx.datetime.toLocalDateTime
 /**
  * SessionListScreen - 会话列表界面
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionListScreen(
     viewModel: SessionViewModel,

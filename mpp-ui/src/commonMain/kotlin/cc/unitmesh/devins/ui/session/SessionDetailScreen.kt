@@ -20,6 +20,7 @@ import kotlinx.serialization.json.Json
  * SessionDetailScreen - 会话详情界面
  * 显示会话的实时事件流
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionDetailScreen(
     viewModel: SessionViewModel,

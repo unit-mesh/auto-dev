@@ -92,6 +92,37 @@ private fun AutoDevContent(
 
     val workspaceState by WorkspaceManager.workspaceFlow.collectAsState()
 
+    // Agent 类型切换处理函数 - 统一保存到配置
+    fun handleAgentTypeChange(type: String) {
+        println("🔄 切换 Agent Type: $type")
+        
+        // 如果切换到 Remote 模式，检查是否已配置服务器
+        if (type == "Remote") {
+            // 检查是否配置了有效的服务器 URL（非默认的 localhost）
+            val hasValidServerConfig = serverUrl.isNotBlank() && 
+                                       serverUrl != "http://localhost:8080"
+            
+            if (!hasValidServerConfig) {
+                println("⚠️ 未配置远程服务器，显示配置对话框")
+                showRemoteConfigDialog = true
+                // 注意：不立即切换 Agent Type，等用户配置完成后再切换
+                return
+            }
+        }
+        
+        // 正常切换
+        selectedAgentType = type
+        
+        // 保存到配置
+        scope.launch {
+            try {
+                cc.unitmesh.devins.ui.config.saveAgentTypePreference(type)
+            } catch (e: Exception) {
+                println("⚠️ 保存 Agent 类型失败: ${e.message}")
+            }
+        }
+    }
+
     LaunchedEffect(workspaceState) {
         workspaceState?.let { workspace ->
             currentWorkspace = workspace
@@ -174,6 +205,16 @@ private fun AutoDevContent(
                     showConfigWarning = true
                 }
             }
+
+            // Load agent type preference (Local or Remote)
+            selectedAgentType = wrapper.getAgentType()
+            println("✅ 加载 Agent 类型: $selectedAgentType")
+
+            // Load remote server configuration
+            val remoteConfig = wrapper.getRemoteServer()
+            serverUrl = remoteConfig.url
+            useServerConfig = remoteConfig.useServerConfig
+            println("✅ 加载远程服务器配置: $serverUrl")
         } catch (e: Exception) {
             println("⚠️ 加载配置失败: ${e.message}")
             e.printStackTrace()
@@ -285,10 +326,7 @@ private fun AutoDevContent(
                     },
                     onModeToggle = { useAgentMode = !useAgentMode },
                     onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
-                    onAgentTypeChange = { type ->
-                        selectedAgentType = type
-                        println("🔄 切换 Agent Type: $type")
-                    },
+                    onAgentTypeChange = ::handleAgentTypeChange,
                     onConfigureRemote = { showRemoteConfigDialog = true },
                     onShowModelConfig = { showModelConfigDialog = true },
                     onShowToolConfig = { showToolConfigDialog = true },
@@ -395,10 +433,7 @@ private fun AutoDevContent(
                     },
                     onModeToggle = { useAgentMode = !useAgentMode },
                     onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
-                    onAgentTypeChange = { type ->
-                        selectedAgentType = type
-                        println("🔄 切换 Agent Type: $type")
-                    },
+                    onAgentTypeChange = ::handleAgentTypeChange,
                     onConfigureRemote = { showRemoteConfigDialog = true },
                     onShowModelConfig = { showModelConfigDialog = true },
                     onShowToolConfig = { showToolConfigDialog = true },
@@ -658,9 +693,33 @@ private fun AutoDevContent(
                     remoteGitUrl = newConfig.defaultGitUrl
                     println("📦 Remote Git URL set from dialog: ${newConfig.defaultGitUrl}")
                 }
-                println("✅ 远程服务器配置已保存")
-                println("   Server URL: ${newConfig.serverUrl}")
-                println("   Use Server Config: ${newConfig.useServerConfig}")
+                
+                // 保存远程服务器配置到文件
+                scope.launch {
+                    try {
+                        ConfigManager.saveRemoteServer(
+                            cc.unitmesh.devins.ui.config.RemoteServerConfig(
+                                url = newConfig.serverUrl,
+                                enabled = true, // 保存配置后，标记为已启用
+                                useServerConfig = newConfig.useServerConfig
+                            )
+                        )
+                        
+                        // 重要：保存 Remote 配置后，自动切换 Agent Type 为 "Remote"
+                        cc.unitmesh.devins.ui.config.saveAgentTypePreference("Remote")
+                        selectedAgentType = "Remote"
+                        
+                        println("✅ 远程服务器配置已保存并切换到 Remote 模式")
+                        println("   Server URL: ${newConfig.serverUrl}")
+                        println("   Use Server Config: ${newConfig.useServerConfig}")
+                        println("   Agent Type: Remote")
+                    } catch (e: Exception) {
+                        println("⚠️ 保存远程配置失败: ${e.message}")
+                        errorMessage = "保存远程配置失败: ${e.message}"
+                        showErrorDialog = true
+                    }
+                }
+                
                 showRemoteConfigDialog = false
             }
         )
