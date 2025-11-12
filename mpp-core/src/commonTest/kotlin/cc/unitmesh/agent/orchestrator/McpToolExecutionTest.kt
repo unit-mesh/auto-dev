@@ -34,9 +34,6 @@ class McpToolExecutionTest {
             )
         )
 
-        val mcpConfigService = McpToolConfigService(toolConfig)
-
-        // Verify that enabled MCP tools don't have server prefix
         val enabledMcpTools = toolConfig.enabledMcpTools
         assertTrue(enabledMcpTools.contains("list_directory"))
         assertTrue(enabledMcpTools.contains("read_file"))
@@ -46,8 +43,7 @@ class McpToolExecutionTest {
 
     @Test
     fun testToolOrchestratorWithMcpSupport() = runTest {
-        // Skip MCP tests on JS platform as they require Node.js processes
-        if (Platform.isJs) {
+        if (Platform.isJs || Platform.isWasm) {
             println("Skipping MCP test on JS platform - requires Node.js processes")
             return@runTest
         }
@@ -135,7 +131,7 @@ class McpToolExecutionTest {
     fun testJsonParameterConversion() {
         // Skip this test on JS platform when running in browser environment
         // as ToolRegistry initialization may trigger Node.js module loading
-        if (Platform.isJs) {
+        if (Platform.isJs || Platform.isWasm) {
             println("Skipping JSON parameter conversion test on JS platform - may require Node.js modules")
             return
         }
