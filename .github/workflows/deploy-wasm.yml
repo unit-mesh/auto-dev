@@ -59,7 +59,19 @@ jobs:
         working-directory: mpp-ui
 
       - name: Build WASM Distribution
-        run: ./gradlew :mpp-ui:wasmJsBrowserDistribution
+        run: |
+          # First run webpack to generate JS bundle
+          ./gradlew :mpp-ui:wasmJsBrowserProductionWebpack
+          # Then create distribution with all assets
+          ./gradlew :mpp-ui:wasmJsBrowserDistribution
+
+      - name: Fix HTML base path for GitHub Pages
+        run: |
+          cd mpp-ui/build/dist/wasmJs/productionExecutable/
+          # Add base tag to HTML for GitHub Pages subpath
+          sed -i 's|<head>|<head>\n    <base href="/auto-dev/">|' index.html
+          # Update script src to use absolute path
+          sed -i 's|src="mpp-ui.js"|src="/auto-dev/mpp-ui.js"|' index.html
 
       - name: Fix permissions
         run: |
