@@ -71,7 +71,7 @@ object ModelRegistry {
             LLMProviderType.GLM -> GLMModels.create(modelName)
             LLMProviderType.QWEN -> QwenModels.create(modelName)
             LLMProviderType.KIMI -> KimiModels.create(modelName)
-            LLMProviderType.CUSTOM_OPENAI_BASE -> null // Custom models use generic model
+            LLMProviderType.CUSTOM_OPENAI_BASE -> null
         }
 
         return model
@@ -99,10 +99,10 @@ object ModelRegistry {
         }
 
         return LLModel(
-            provider = llmProvider,
-            id = modelName,
-            capabilities = listOf(LLMCapability.Completion, LLMCapability.Temperature),
-            contextLength = contextLength
+            LLMProvider.OpenAI,
+            modelName,
+            listOf(LLMCapability.Completion, LLMCapability.Temperature),
+            contextLength
         )
     }
 

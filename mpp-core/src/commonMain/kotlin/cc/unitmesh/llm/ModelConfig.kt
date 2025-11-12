@@ -12,9 +12,9 @@ enum class LLMProviderType(val displayName: String) {
     DEEPSEEK("DeepSeek"),
     OLLAMA("Ollama"),
     OPENROUTER("OpenRouter"),
-    GLM("GLM"),           // 智谱AI (ChatGLM)
-    QWEN("Qwen"),         // 阿里通义千问
-    KIMI("Kimi"),         // 月之暗面 (Moonshot AI)
+    GLM("GLM"),
+    QWEN("Qwen"),
+    KIMI("Kimi"),
     CUSTOM_OPENAI_BASE("custom-openai-base");
 
     companion object {
