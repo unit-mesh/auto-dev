@@ -411,3 +411,8 @@ tasks.named("compileProductionExecutableKotlinWasmJsOptimize") {
 tasks.named("wasmJsBrowserDistribution") {
     dependsOn("wasmJsBrowserProductionWebpack")
 }
+
+// Force webpack to run (remove onlyIf condition that skips it)
+tasks.named("wasmJsBrowserProductionWebpack") {
+    onlyIf { true }
+}

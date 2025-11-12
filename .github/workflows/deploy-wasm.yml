@@ -22,7 +22,7 @@ jobs:
   # Build job
   build:
     name: Build Kotlin/Wasm
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       # Free GitHub Actions Environment Disk Space
       - name: Maximize Build Space
