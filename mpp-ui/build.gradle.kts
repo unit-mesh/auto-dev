@@ -406,3 +406,8 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
 tasks.named("compileProductionExecutableKotlinWasmJsOptimize") {
     enabled = false
 }
+
+// Ensure wasmJsBrowserDistribution runs webpack before copying files
+tasks.named("wasmJsBrowserDistribution") {
+    dependsOn("wasmJsBrowserProductionWebpack")
+}

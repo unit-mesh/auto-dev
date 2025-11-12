@@ -60,9 +60,9 @@ jobs:
 
       - name: Build WASM Distribution
         run: |
-          # First run webpack to generate JS bundle
-          ./gradlew :mpp-ui:wasmJsBrowserProductionWebpack
-          # Then create distribution with all assets
+          # Clean to ensure fresh build
+          ./gradlew :mpp-ui:clean
+          # Build distribution (now includes webpack as dependency)
           ./gradlew :mpp-ui:wasmJsBrowserDistribution
 
       - name: List build artifacts
