@@ -23,13 +23,16 @@ object AutoDevComposeIcons {
     val ExpandMore: ImageVector get() = Icons.Default.ExpandMore
     val ExpandLess: ImageVector get() = Icons.Default.ExpandLess
     val ChevronRight: ImageVector get() = Icons.Default.ChevronRight
+    val ChevronLeft: ImageVector get() = Icons.Default.ChevronLeft
     val KeyboardArrowUp: ImageVector get() = Icons.Default.KeyboardArrowUp
     val KeyboardArrowDown: ImageVector get() = Icons.Default.KeyboardArrowDown
+    val AccountTree: ImageVector get() = Icons.Default.AccountTree
 
     // Actions
     val Send: ImageVector get() = Icons.Default.Send
     val Settings: ImageVector get() = Icons.Default.Settings
     val Build: ImageVector get() = Icons.Default.Build
+    val Tune: ImageVector get() = Icons.Default.Tune
     val Check: ImageVector get() = Icons.Default.Check
     val CheckCircle: ImageVector get() = Icons.Default.CheckCircle
     val ContentCopy: ImageVector get() = Icons.Default.ContentCopy
@@ -39,6 +42,7 @@ object AutoDevComposeIcons {
     val Clear: ImageVector get() = Icons.Default.Clear
     val Save: ImageVector get() = Icons.Default.Save
     val ArrowDropDown: ImageVector get() = Icons.Default.ArrowDropDown
+    val History: ImageVector get() = Icons.Default.History
 
     // Communication & AI
     val Chat: ImageVector get() = Icons.Default.Chat
@@ -49,6 +53,7 @@ object AutoDevComposeIcons {
     val LightMode: ImageVector get() = Icons.Default.LightMode
     val DarkMode: ImageVector get() = Icons.Default.DarkMode
     val Brightness4: ImageVector get() = Icons.Default.Brightness4
+    val AutoMode: ImageVector get() = Icons.Default.Brightness4 // Using Brightness4 as fallback for auto mode
     val Visibility: ImageVector get() = Icons.Default.Visibility
     val VisibilityOff: ImageVector get() = Icons.Default.VisibilityOff
     val MoreVert: ImageVector get() = Icons.Default.MoreVert

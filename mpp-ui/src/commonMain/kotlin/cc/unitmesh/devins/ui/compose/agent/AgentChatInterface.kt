@@ -37,6 +37,7 @@ fun AgentChatInterface(
     onConfigureRemote: () -> Unit = {},
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
+    showTopBar: Boolean = true, // 新增：控制是否显示 TopBar
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
@@ -76,29 +77,31 @@ fun AgentChatInterface(
             first = {
                 // 左侧：TopBar + Chat + Input 完整区域
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // TopBar 放在左侧列顶部
-                    cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
-                        hasHistory = hasHistory,
-                        hasDebugInfo = hasDebugInfo,
-                        currentModelConfig = currentModelConfig,
-                        selectedAgent = selectedAgent,
-                        availableAgents = availableAgents,
-                        useAgentMode = useAgentMode,
-                        isTreeViewVisible = isTreeViewVisible,
-                        selectedAgentType = selectedAgentType,
-                        onOpenDirectory = onOpenDirectory,
-                        onClearHistory = onClearHistory,
-                        onShowDebug = onShowDebug,
-                        onModelConfigChange = onModelConfigChange,
-                        onAgentChange = onAgentChange,
-                        onModeToggle = onModeToggle,
-                        onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                        onAgentTypeChange = onAgentTypeChange,
-                        onConfigureRemote = onConfigureRemote,
-                        onShowModelConfig = onShowModelConfig,
-                        onShowToolConfig = onShowToolConfig,
-                        modifier = Modifier.statusBarsPadding()
-                    )
+                    // TopBar 放在左侧列顶部（WASM 平台可能隐藏）
+                    if (showTopBar) {
+                        cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
+                            hasHistory = hasHistory,
+                            hasDebugInfo = hasDebugInfo,
+                            currentModelConfig = currentModelConfig,
+                            selectedAgent = selectedAgent,
+                            availableAgents = availableAgents,
+                            useAgentMode = useAgentMode,
+                            isTreeViewVisible = isTreeViewVisible,
+                            selectedAgentType = selectedAgentType,
+                            onOpenDirectory = onOpenDirectory,
+                            onClearHistory = onClearHistory,
+                            onShowDebug = onShowDebug,
+                            onModelConfigChange = onModelConfigChange,
+                            onAgentChange = onAgentChange,
+                            onModeToggle = onModeToggle,
+                            onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+                            onAgentTypeChange = onAgentTypeChange,
+                            onConfigureRemote = onConfigureRemote,
+                            onShowModelConfig = onShowModelConfig,
+                            onShowToolConfig = onShowToolConfig,
+                            modifier = Modifier.statusBarsPadding()
+                        )
+                    }
 
                     // Chat 消息列表
                     AgentMessageList(
@@ -191,29 +194,31 @@ fun AgentChatInterface(
     } else {
         // TreeView 未打开时的布局
         Column(modifier = modifier.fillMaxSize()) {
-            // TopBar
-            cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
-                hasHistory = hasHistory,
-                hasDebugInfo = hasDebugInfo,
-                currentModelConfig = currentModelConfig,
-                selectedAgent = selectedAgent,
-                availableAgents = availableAgents,
-                useAgentMode = useAgentMode,
-                isTreeViewVisible = isTreeViewVisible,
-                selectedAgentType = selectedAgentType,
-                onOpenDirectory = onOpenDirectory,
-                onClearHistory = onClearHistory,
-                onShowDebug = onShowDebug,
-                onModelConfigChange = onModelConfigChange,
-                onAgentChange = onAgentChange,
-                onModeToggle = onModeToggle,
-                onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                onAgentTypeChange = onAgentTypeChange,
-                onConfigureRemote = onConfigureRemote,
-                onShowModelConfig = onShowModelConfig,
-                onShowToolConfig = onShowToolConfig,
-                modifier = Modifier.statusBarsPadding()
-            )
+            // TopBar（WASM 平台可能隐藏）
+            if (showTopBar) {
+                cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
+                    hasHistory = hasHistory,
+                    hasDebugInfo = hasDebugInfo,
+                    currentModelConfig = currentModelConfig,
+                    selectedAgent = selectedAgent,
+                    availableAgents = availableAgents,
+                    useAgentMode = useAgentMode,
+                    isTreeViewVisible = isTreeViewVisible,
+                    selectedAgentType = selectedAgentType,
+                    onOpenDirectory = onOpenDirectory,
+                    onClearHistory = onClearHistory,
+                    onShowDebug = onShowDebug,
+                    onModelConfigChange = onModelConfigChange,
+                    onAgentChange = onAgentChange,
+                    onModeToggle = onModeToggle,
+                    onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+                    onAgentTypeChange = onAgentTypeChange,
+                    onConfigureRemote = onConfigureRemote,
+                    onShowModelConfig = onShowModelConfig,
+                    onShowToolConfig = onShowToolConfig,
+                    modifier = Modifier.statusBarsPadding()
+                )
+            }
 
             // Chat 消息列表
             AgentMessageList(
