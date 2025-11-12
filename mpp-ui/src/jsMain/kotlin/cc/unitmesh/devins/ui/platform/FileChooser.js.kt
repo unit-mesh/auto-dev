@@ -6,8 +6,19 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
 
 /**
- * FileKit 实现的跨平台文件选择器 - JS 平台
- * 注意：JS 平台不支持目录选择，且只能返回文件名而非完整路径
+ * FileKit implementation for JS platform
+ * 
+ * Reference: https://filekit.mintlify.app/dialogs/file-picker
+ * 
+ * Supported features:
+ * - ✅ File picker (JS supported) - https://filekit.mintlify.app/dialogs/file-picker
+ * - ❌ Directory picker (JS NOT supported) - https://filekit.mintlify.app/dialogs/directory-picker
+ *      Only supported on: Android, iOS, macOS, JVM
+ * 
+ * Note: On JS/browser platform:
+ * - File paths are virtual, only file names are accessible
+ * - initialDirectory parameter is not supported
+ * - Full file system access is restricted due to browser security
  */
 class FileKitChooser : FileChooser {
     override suspend fun chooseFile(
@@ -15,18 +26,24 @@ class FileKitChooser : FileChooser {
         initialDirectory: String?,
         fileExtensions: List<String>?
     ): String? {
+        // Configure file type filter
+        // Reference: https://filekit.mintlify.app/dialogs/file-picker#filter-by-type
         val fileType = if (fileExtensions.isNullOrEmpty()) {
             FileKitType.File()
         } else {
             FileKitType.File(fileExtensions)
         }
 
+        // Open file picker with FileKit API
+        // JS is officially supported: https://filekit.mintlify.app/dialogs/file-picker
         val file = FileKit.openFilePicker(
             type = fileType,
             title = title
+            // initialDirectory is not supported on JS/browser platform
         )
 
-        // JS 平台只能返回文件名，无法获取完整路径
+        // On JS/browser, only file name is accessible due to security restrictions
+        // Full file path is not available in browser environment
         return file?.name
     }
 
@@ -34,7 +51,9 @@ class FileKitChooser : FileChooser {
         title: String,
         initialDirectory: String?
     ): String? {
-        // JS 平台不支持目录选择
+        // Directory picker is NOT supported on JS platform
+        // Reference: https://filekit.mintlify.app/dialogs/directory-picker
+        // Supported platforms: Android, iOS, macOS, JVM (NOT JS/WASM)
         return null
     }
 }
