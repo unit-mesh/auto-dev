@@ -155,6 +155,10 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm@10.20.0
 
+      # Build JS package for CLI usage
+      - name: Build mpp-core JS package
+        run: ./gradlew :mpp-core:assembleJsPackage
+
       # Install mpp-ui JS dependencies
       - name: Install mpp-ui dependencies
         run: pnpm install

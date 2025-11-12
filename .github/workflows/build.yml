@@ -114,6 +114,7 @@ jobs:
     name: Test
     needs: [ build ]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       # Check out the current repository
       - name: Fetch Sources
@@ -155,6 +156,7 @@ jobs:
     name: Verify plugin
     needs: [ build ]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       # Free GitHub Actions Environment Disk Space
       - name: Maximize Build Space

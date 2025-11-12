@@ -24,13 +24,6 @@ jobs:
     name: Build Kotlin/Wasm
     runs-on: ubuntu-latest
     steps:
-      # Free GitHub Actions Environment Disk Space
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -40,28 +33,11 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'adopt'
           java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      # Install pnpm for JS dependencies
-      - name: Install pnpm
-        run: npm install -g pnpm@10.20.0
-
-      - name: Build mpp-core
-        run: ./gradlew :mpp-core:assembleJsPackage
-
-      # Install mpp-ui JS dependencies
-      - name: Install mpp-ui dependencies
-        run: pnpm install
-        working-directory: mpp-ui
 
       - name: Build WASM Distribution
         run: |
-          # Clean to ensure fresh build
-          ./gradlew :mpp-ui:clean
           # Build distribution (now includes webpack as dependency)
           ./gradlew :mpp-ui:wasmJsBrowserDistribution
 

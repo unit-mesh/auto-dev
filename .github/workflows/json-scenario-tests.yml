@@ -95,7 +95,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'adopt'
           java-version: ${{ matrix.java-version }}
       
       - name: Setup Node.js
