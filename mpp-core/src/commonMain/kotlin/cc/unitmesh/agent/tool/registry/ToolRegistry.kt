@@ -115,27 +115,7 @@ class ToolRegistry(
         val tool = tools[toolName] as? ExecutableTool<TParams, ToolResult>
         return tool?.createInvocation(params)
     }
-    
-    /**
-     * Create a tool invocation from JSON parameters
-     */
-    fun <TParams : Any> createInvocationFromJson(
-        toolName: String,
-        paramsJson: JsonElement,
-        paramsClass: String
-    ): ToolInvocation<TParams, ToolResult>? {
-        return try {
-            // For now, we'll need to handle JSON parsing differently in KMP
-            // This is a simplified version - in practice you'd need proper serialization
-            null
-        } catch (e: Exception) {
-            null
-        }
-    }
 
-    /**
-     * Execute a tool with parameters
-     */
     suspend fun <TParams : Any> executeTool(
         toolName: String,
         params: TParams,
@@ -166,10 +146,7 @@ class ToolRegistry(
             )
         }
     }
-    
-    /**
-     * Get tool information for a specific tool
-     */
+
     fun getToolInfo(toolName: String): AgentTool? {
         val tool = tools[toolName] ?: return null
         return AgentTool(
@@ -180,19 +157,12 @@ class ToolRegistry(
         )
     }
     
-    /**
-     * Register all built-in tools (filtered by configuration if available)
-     * 
-     * Tools are now discovered through ToolProvider mechanism, making it easy
-     * to add new tools by just creating a new provider.
-     */
+
     private fun registerBuiltinTools() {
-        // Ensure the builtin provider is registered
         if (ToolProviderRegistry.getProviders().isEmpty()) {
             ToolProviderRegistry.register(BuiltinToolsProvider())
         }
         
-        // Create ToolDependencies with all available dependencies
         val dependencies = ToolDependencies(
             fileSystem = fileSystem,
             shellExecutor = shellExecutor,
@@ -200,13 +170,11 @@ class ToolRegistry(
             llmService = llmService
         )
         
-        // Discover all tools from registered providers
         val allBuiltinTools = ToolProviderRegistry.discoverTools(dependencies)
 
         logger.debug { "🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}" }
         logger.debug { "🔧 [ToolRegistry] ConfigService available: ${configService != null}" }
 
-        // Filter tools based on configuration if available
         val toolsToRegister = if (configService != null) {
             val filtered = configService.filterBuiltinTools(allBuiltinTools)
             logger.debug { "🔧 [ToolRegistry] Filtered tools: ${filtered.map { it.name }}" }
@@ -217,7 +185,11 @@ class ToolRegistry(
         }
 
         toolsToRegister.forEach { tool ->
-            registerTool(tool)
+            try {
+                registerTool(tool)
+            } catch (e: Exception) {
+                logger.error(e) { "❌ Failed to register tool: ${tool.name}" }
+            }
         }
 
         logger.info { "🔧 Registered ${toolsToRegister.size}/${allBuiltinTools.size} built-in tools" }
@@ -226,13 +198,6 @@ class ToolRegistry(
         }
     }
 }
-
-data class RegistryStats(
-    val totalTools: Int,
-    val fileSystemTools: Int,
-    val executionTools: Int,
-    val availableTools: List<String>
-)
 
 object GlobalToolRegistry {
     private var instance: ToolRegistry? = null

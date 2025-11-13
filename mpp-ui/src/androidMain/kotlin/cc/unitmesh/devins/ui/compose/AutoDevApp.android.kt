@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Android 专属的 AutoDevApp 实现
- * 
+ *
  * 设计要点：
  * - BottomNavigation：Home/Chat/Tasks/Profile（4个入口）
  * - Drawer：完整导航 + 设置工具 + 用户信息
@@ -65,61 +65,61 @@ private fun AndroidAutoDevContent(
     initialMode: String = "auto"
 ) {
     val scope = rememberCoroutineScope()
-    
+
     // Chat 状态
     var messages by remember { mutableStateOf<List<Message>>(emptyList()) }
     var currentStreamingOutput by remember { mutableStateOf("") }
     var isLLMProcessing by remember { mutableStateOf(false) }
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
-    
+
     // 配置状态
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var compilerOutput by remember { mutableStateOf("") }
-    
+
     // Dialog 状态
     var showModelConfigDialog by remember { mutableStateOf(false) }
     var showToolConfigDialog by remember { mutableStateOf(false) }
     var showDebugDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    
+
     // 导航状态
     var currentScreen by remember { mutableStateOf(AppScreen.HOME) }
-    
+
     // Session 管理（用于 Drawer 和登录）
     val sessionClient = remember { SessionClient("http://localhost:8080") }
     val sessionViewModel = remember { SessionViewModel(sessionClient) }
-    
+
     // Agent 模式状态
     var selectedAgentType by remember { mutableStateOf("Local") }
     var useAgentMode by remember { mutableStateOf(true) }
     var isTreeViewVisible by remember { mutableStateOf(false) }
-    
+
     // 工作空间
     var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
     val workspaceState by WorkspaceManager.workspaceFlow.collectAsState()
-    
+
     // 初始化
     LaunchedEffect(Unit) {
         chatHistoryManager.initialize()
         messages = chatHistoryManager.getMessages()
-        
+
         // 加载配置
         try {
             val wrapper = ConfigManager.load()
             val activeConfig = wrapper.getActiveModelConfig()
-            
+
             if (activeConfig != null && activeConfig.isValid()) {
                 currentModelConfig = activeConfig
                 llmService = KoogLLMService.create(activeConfig)
             }
-            
+
             selectedAgentType = wrapper.getAgentType()
         } catch (e: Exception) {
             println("⚠️ 加载配置失败: ${e.message}")
         }
-        
+
         // 初始化工作空间
         if (!WorkspaceManager.hasActiveWorkspace()) {
             val defaultPath = "/storage/emulated/0/Documents/AutoDev"
@@ -130,13 +130,13 @@ private fun AndroidAutoDevContent(
             }
         }
     }
-    
+
     LaunchedEffect(workspaceState) {
         workspaceState?.let { workspace ->
             currentWorkspace = workspace
         }
     }
-    
+
     // Chat callbacks（需要明确类型）
     val callbacks: EditorCallbacks = createChatCallbacks(
         fileSystem = currentWorkspace.fileSystem,
@@ -157,7 +157,7 @@ private fun AndroidAutoDevContent(
         },
         onConfigWarning = { showModelConfigDialog = true }
     )
-    
+
     // Android NavLayout（Drawer + BottomNavigation）
     AndroidNavLayout(
         currentScreen = currentScreen,
@@ -188,11 +188,14 @@ private fun AndroidAutoDevContent(
                         }
                     }
                 }
+
                 else -> {}
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+        Box(modifier = Modifier
+            .padding(paddingValues)
+            .fillMaxSize()) {
             when (currentScreen) {
                 AppScreen.HOME, AppScreen.CHAT -> {
                     // HOME 和 CHAT 都显示主界面（Agent/Chat）
@@ -261,11 +264,11 @@ private fun AndroidAutoDevContent(
                         )
                     }
                 }
-                
+
                 AppScreen.TASKS -> {
                     TasksPlaceholderScreen()
                 }
-                
+
                 AppScreen.PROFILE -> {
                     ProfileScreen(
                         currentModelConfig = currentModelConfig,
@@ -273,7 +276,7 @@ private fun AndroidAutoDevContent(
                         onShowToolConfig = { showToolConfigDialog = true }
                     )
                 }
-                
+
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -285,7 +288,7 @@ private fun AndroidAutoDevContent(
             }
         }
     }
-    
+
     // Dialogs
     if (showModelConfigDialog) {
         ModelConfigDialog(
@@ -308,7 +311,7 @@ private fun AndroidAutoDevContent(
                             )
                             ConfigManager.saveConfig(namedConfig, setActive = true)
                         }
-                        
+
                         llmService = KoogLLMService.create(newConfig)
                     } catch (e: Exception) {
                         println("❌ 配置 LLM 服务失败: ${e.message}")
@@ -318,24 +321,25 @@ private fun AndroidAutoDevContent(
             }
         )
     }
-    
+
     if (showToolConfigDialog) {
         cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
             onDismiss = { showToolConfigDialog = false },
             onSave = { newConfig ->
                 println("✅ 工具配置已保存")
                 showToolConfigDialog = false
-            }
+            },
+            llmService = llmService
         )
     }
-    
+
     if (showDebugDialog) {
         DebugDialog(
             compilerOutput = compilerOutput,
             onDismiss = { showDebugDialog = false }
         )
     }
-    
+
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
@@ -367,7 +371,7 @@ private fun ChatModeScreen(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         val isCompactMode = messages.isNotEmpty() || isLLMProcessing
-        
+
         if (isCompactMode) {
             // 有消息时显示列表
             MessageList(
@@ -376,9 +380,11 @@ private fun ChatModeScreen(
                 currentOutput = currentStreamingOutput,
                 projectPath = projectPath,
                 fileSystem = fileSystem,
-                modifier = Modifier.fillMaxWidth().weight(1f)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             )
-            
+
             DevInEditorInput(
                 initialText = "",
                 placeholder = "输入消息...",
@@ -394,7 +400,10 @@ private fun ChatModeScreen(
         } else {
             // 空状态 - 居中显示输入框
             Box(
-                modifier = Modifier.fillMaxSize().imePadding().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 DevInEditorInput(
@@ -421,14 +430,16 @@ private fun ProfileScreen(
     onShowToolConfig: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "设置",
             style = MaterialTheme.typography.headlineMedium
         )
-        
+
         // 模型配置
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -455,7 +466,7 @@ private fun ProfileScreen(
                 Icon(Icons.Default.ChevronRight, contentDescription = null)
             }
         }
-        
+
         // 工具配置
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -480,7 +491,7 @@ private fun ProfileScreen(
                 Icon(Icons.Default.ChevronRight, contentDescription = null)
             }
         }
-        
+
         // 关于
         Card(
             modifier = Modifier.fillMaxWidth()

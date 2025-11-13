@@ -2,7 +2,6 @@ package cc.unitmesh.agent.config
 
 import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.ExecutableTool
-import cc.unitmesh.agent.tool.ToolType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,23 +24,14 @@ class McpToolConfigService(val toolConfig: ToolConfigFile) {
         return toolName in toolConfig.enabledBuiltinTools
     }
 
-    fun isBuiltinToolEnabled(toolType: ToolType): Boolean {
-        return isBuiltinToolEnabled(toolType.name)
-    }
-
     fun isMcpToolEnabled(toolName: String): Boolean {
-        // If no specific configuration, disable all by default (require explicit enablement)
         if (toolConfig.enabledMcpTools.isEmpty()) {
             return false
         }
         return toolName in toolConfig.enabledMcpTools
     }
 
-    /**
-     * Filter built-in tools based on configuration
-     */
     fun <T : ExecutableTool<*, *>> filterBuiltinTools(tools: List<T>): List<T> {
-        // If no configuration, return all tools
         if (toolConfig.enabledBuiltinTools.isEmpty()) {
             return tools
         }

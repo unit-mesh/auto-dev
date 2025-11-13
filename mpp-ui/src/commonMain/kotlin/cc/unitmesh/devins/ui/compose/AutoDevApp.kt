@@ -884,7 +884,8 @@ private fun AutoDevContent(
                 println("   启用的内置工具: ${newConfig.enabledBuiltinTools.size}")
                 println("   启用的 MCP 工具: ${newConfig.enabledMcpTools.size}")
                 showToolConfigDialog = false
-            }
+            },
+            llmService = llmService
         )
     }
 
