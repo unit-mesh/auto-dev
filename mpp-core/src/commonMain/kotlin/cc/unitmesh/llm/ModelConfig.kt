@@ -60,9 +60,6 @@ data class ModelConfig(
          */
         fun default() = ModelConfig()
 
-        /**
-         * 获取指定 Provider 支持的模型列表（委托给 ModelRegistry）
-         */
         @Deprecated(
             message = "Use ModelRegistry.getAvailableModels() instead",
             replaceWith = ReplaceWith("ModelRegistry.getAvailableModels(provider)", "cc.unitmesh.llm.ModelRegistry")
@@ -71,9 +68,6 @@ data class ModelConfig(
             return ModelRegistry.getAvailableModels(provider)
         }
 
-        /**
-         * 获取默认模型对象（委托给 ModelRegistry）
-         */
         @Deprecated(
             message = "Use ModelRegistry.createModel() instead",
             replaceWith = ReplaceWith("ModelRegistry.createModel(provider, modelName)", "cc.unitmesh.llm.ModelRegistry")

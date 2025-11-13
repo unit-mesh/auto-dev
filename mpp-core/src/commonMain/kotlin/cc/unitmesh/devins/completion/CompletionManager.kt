@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.completion
 
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.completion.providers.AgentCompletionProvider
 import cc.unitmesh.devins.completion.providers.BuiltinCommandCompletionProvider
 import cc.unitmesh.devins.completion.providers.FilePathCompletionProvider
@@ -24,7 +25,10 @@ class CompletionManager(fileSystem: ProjectFileSystem? = null) {
         CompletionTriggerType.COMMAND_VALUE to FilePathCompletionProvider()
     )
 
-    // 缓存最近的补全结果
+    init {
+        getLogger("CompletionManager").info { "CompletionManager initialized" }
+    }
+
     private var lastContext: CompletionContext? = null
     private var lastResults: List<CompletionItem> = emptyList()
 

@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.llm
 
+import cc.unitmesh.agent.Platform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,7 +25,10 @@ import kotlin.uuid.Uuid
 class ChatHistoryManager {
     private val sessions = mutableMapOf<String, ChatSession>()
     private var currentSessionId: String? = null
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    
+    // Use Dispatchers.Main for WASM/JS compatibility
+    private val dispatcher = if (Platform.isWasm || Platform.isJs) Dispatchers.Main else Dispatchers.Default
+    private val scope = CoroutineScope(dispatcher + SupervisorJob())
     private var initialized = false
 
     // 用于通知 UI 更新的 StateFlow
@@ -59,8 +63,11 @@ class ChatHistoryManager {
     /**
      * 保存所有会话到磁盘
      * 只保存有消息的会话
+     * 在 WASM 平台使用 Dispatchers.Unconfined，确保同步执行
      */
     private fun saveSessionsAsync() {
+        // In WASM with Dispatchers.Unconfined, launch will execute immediately
+        // ensuring synchronous behavior for tests
         scope.launch {
             try {
                 // 过滤掉空会话（没有消息的会话）

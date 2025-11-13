@@ -203,14 +203,10 @@ private fun AutoDevContent(
 
             useSessionManagement = (initialMode == "session")
 
-            println("✅ 加载 Agent 类型: $selectedAgentType (initialMode: $initialMode)")
-
             val remoteConfig = wrapper.getRemoteServer()
             serverUrl = remoteConfig.url
             useServerConfig = remoteConfig.useServerConfig
-            println("✅ 加载远程服务器配置: $serverUrl")
         } catch (e: Exception) {
-            println("⚠️ 加载配置失败: ${e.message}")
             e.printStackTrace()
         }
     }

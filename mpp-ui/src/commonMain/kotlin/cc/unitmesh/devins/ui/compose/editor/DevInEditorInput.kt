@@ -93,7 +93,6 @@ fun DevInEditorInput(
 
     var llmService = remember { KoogLLMService.create(ModelConfig()) }
 
-    // Initialize prompt enhancer
     LaunchedEffect(Unit) {
         try {
             val workspace = WorkspaceManager.currentWorkspace

@@ -34,7 +34,7 @@ object LoggingInitializer {
             logger.info { "Log directory: ${config.baseLogDir}" }
             logger.debug { "File logging enabled: ${config.enableFileLogging}" }
             logger.debug { "Console logging enabled: ${config.enableConsoleLogging}" }
-            
+
         } catch (e: Exception) {
             println("Failed to initialize logging: ${e.message}")
             e.printStackTrace()

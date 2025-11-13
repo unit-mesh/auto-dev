@@ -36,35 +36,13 @@ class SubAgentManager {
         logger.info { "🤖 Registered SubAgent: ${subAgent.name}" }
     }
 
-    /**
-     * 注销 SubAgent
-     */
-    fun unregisterSubAgent(name: String) {
-        subAgents.remove(name)
-        logger.info { "🗑️ Unregistered SubAgent: $name" }
-    }
-    
-    /**
-     * 获取 SubAgent
-     */
     @Suppress("UNCHECKED_CAST")
     fun <TInput : Any, TOutput : ToolResult> getSubAgent(
         name: String
     ): SubAgent<TInput, TOutput>? {
         return subAgents[name] as? SubAgent<TInput, TOutput>
     }
-    
-    /**
-     * 获取所有 SubAgent
-     */
-    fun getAllSubAgents(): Map<String, SubAgent<*, *>> {
-        return subAgents.toMap()
-    }
-    
-    /**
-     * 检查内容是否需要特殊处理
-     * 如果内容过长，自动委托给 ContentHandlerAgent
-     */
+
     suspend fun checkAndHandleLongContent(
         content: String,
         contentType: String = "text",
@@ -105,15 +83,12 @@ class SubAgentManager {
         }
     }
     
-    /**
-     * 向指定的 SubAgent 提问
-     */
     suspend fun askSubAgent(
         subAgentName: String,
         question: String,
         context: Map<String, Any> = emptyMap()
     ): ToolResult.AgentResult {
-        
+
         val subAgent = subAgents[subAgentName]
         if (subAgent == null) {
             return ToolResult.AgentResult(
@@ -122,7 +97,7 @@ class SubAgentManager {
                 metadata = mapOf("availableAgents" to subAgents.keys.joinToString(","))
             )
         }
-        
+
         return try {
             subAgent.handleQuestion(question, context)
         } catch (e: Exception) {
@@ -133,10 +108,7 @@ class SubAgentManager {
             )
         }
     }
-    
-    /**
-     * 获取所有 SubAgent 的状态摘要
-     */
+
     fun getSystemStatus(): Map<String, Any> {
         return mapOf(
             "registeredAgents" to subAgents.size,
@@ -145,10 +117,7 @@ class SubAgentManager {
             "contentThreshold" to contentThreshold
         )
     }
-    
-    /**
-     * 清理所有 SubAgent 的历史数据
-     */
+
     fun cleanup() {
         subAgents.values.forEach { agent ->
             if (agent is AnalysisAgent) {

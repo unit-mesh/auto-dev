@@ -5,21 +5,18 @@ import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
-import cc.unitmesh.agent.tool.impl.*
 import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
 import cc.unitmesh.agent.tool.provider.ToolDependencies
 import cc.unitmesh.agent.tool.provider.ToolProviderRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 import cc.unitmesh.llm.KoogLLMService
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 
 class ToolRegistry(
     private val fileSystem: ToolFileSystem = DefaultToolFileSystem(),
     private val shellExecutor: ShellExecutor = DefaultShellExecutor(),
     private val configService: cc.unitmesh.agent.config.McpToolConfigService? = null,
-    private val subAgentManager: SubAgentManager? = null,
+    private val subAgentManager: SubAgentManager? = SubAgentManager(),
     private val llmService: KoogLLMService? = null
 ) {
     private val logger = getLogger("ToolRegistry")

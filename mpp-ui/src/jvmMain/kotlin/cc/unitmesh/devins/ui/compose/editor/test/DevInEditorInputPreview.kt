@@ -16,7 +16,6 @@ import cc.unitmesh.devins.editor.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
-import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 
