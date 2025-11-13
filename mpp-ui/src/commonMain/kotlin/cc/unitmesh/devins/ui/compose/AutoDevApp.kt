@@ -71,7 +71,6 @@ private fun AutoDevContent(
     var showSessionSidebar by remember { mutableStateOf(true) } // 默认显示（JVM 桌面端）
 
     LaunchedEffect(Unit) {
-        // 初始化 ChatHistoryManager，从磁盘加载历史会话
         chatHistoryManager.initialize()
         messages = chatHistoryManager.getMessages()
     }
@@ -112,25 +111,17 @@ private fun AutoDevContent(
     // Agent 类型切换处理函数 - 统一保存到配置
     fun handleAgentTypeChange(type: String) {
         println("🔄 切换 Agent Type: $type")
-
-        // 如果切换到 Remote 模式，检查是否已配置服务器
         if (type == "Remote") {
-            // 检查是否配置了有效的服务器 URL（非默认的 localhost）
             val hasValidServerConfig = serverUrl.isNotBlank() &&
                                        serverUrl != "http://localhost:8080"
 
             if (!hasValidServerConfig) {
-                println("⚠️ 未配置远程服务器，显示配置对话框")
                 showRemoteConfigDialog = true
-                // 注意：不立即切换 Agent Type，等用户配置完成后再切换
                 return
             }
         }
 
-        // 正常切换
         selectedAgentType = type
-
-        // 保存到配置
         scope.launch {
             try {
                 cc.unitmesh.devins.ui.config.saveAgentTypePreference(type)
@@ -148,45 +139,29 @@ private fun AutoDevContent(
 
     LaunchedEffect(Unit) {
         if (!WorkspaceManager.hasActiveWorkspace()) {
-            // 跨平台默认路径策略
             val defaultPath = when {
-                Platform.isAndroid -> {
-                    // Android: 使用应用的外部存储目录
-                    "/storage/emulated/0/Documents"
-                }
-                Platform.isJs -> {
-                    // JS/Browser: 使用当前工作目录（通常是项目根目录）
-                    "."
-                }
-                else -> {
-                    // JVM (Desktop): 使用用户主目录下的默认项目目录
-                    val homeDir = Platform.getUserHomeDir()
-                    "$homeDir/AutoDevProjects"
-                }
+                Platform.isAndroid -> "/storage/emulated/0/Documents"
+                Platform.isJs -> "."
+                else -> "${Platform.getUserHomeDir()}/AutoDevProjects"
             }
 
             println("🔍 尝试使用默认工作空间路径: $defaultPath")
             val fileSystem = DefaultFileSystem(defaultPath)
 
             if (fileSystem.exists(defaultPath)) {
-                println("✅ 打开工作空间: $defaultPath")
                 WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
             } else {
-                // 根据平台采取不同的后备策略
                 when {
                     Platform.isAndroid -> {
-                        // Android: 尝试使用 /sdcard
                         val fallbackPath = "/sdcard"
                         println("⚠️ Documents 目录不存在，使用备用路径: $fallbackPath")
                         WorkspaceManager.openWorkspace("Default Workspace", fallbackPath)
                     }
                     Platform.isJs -> {
-                        // JS: 直接使用当前目录，不检查存在性
                         println("⚠️ 使用当前工作目录")
                         WorkspaceManager.openWorkspace("Current Directory", ".")
                     }
                     else -> {
-                        // Desktop: 尝试创建目录
                         try {
                             fileSystem.createDirectory(defaultPath)
                             println("✅ 创建默认工作空间目录: $defaultPath")
@@ -204,7 +179,6 @@ private fun AutoDevContent(
         }
     }
 
-    // Load configuration from file
     LaunchedEffect(Unit) {
         try {
             val wrapper = ConfigManager.load()
@@ -216,27 +190,21 @@ private fun AutoDevContent(
                 println("✅ 加载配置: ${activeConfig.provider.displayName} / ${activeConfig.modelName}")
             } else {
                 println("⚠️ 未找到有效配置")
-                // Don't auto-show config dialog for Wasm web version
-                // Users need to manually configure through the UI menu
                 if (!Platform.isWasm) {
                     showConfigWarning = true
                 }
             }
 
-            // Load agent type preference (Local or Remote)
-            // 根据 initialMode 决定初始状态
             selectedAgentType = when (initialMode) {
                 "remote", "session" -> "Remote"
                 "local" -> "Local"
                 else -> wrapper.getAgentType() // "auto" - 从配置加载
             }
 
-            // Session Management 模式检测
             useSessionManagement = (initialMode == "session")
 
             println("✅ 加载 Agent 类型: $selectedAgentType (initialMode: $initialMode)")
 
-            // Load remote server configuration
             val remoteConfig = wrapper.getRemoteServer()
             serverUrl = remoteConfig.url
             useServerConfig = remoteConfig.useServerConfig
@@ -255,11 +223,9 @@ private fun AutoDevContent(
             scope = scope,
             onCompilerOutput = { compilerOutput = it },
             onUserMessage = { userMsg ->
-                // 添加用户消息到本地状态
                 messages = messages + userMsg
             },
             onStreamingOutput = { output ->
-                // 更新流式输出
                 currentStreamingOutput = output
             },
             onAssistantMessage = { assistantMsg ->
@@ -274,7 +240,6 @@ private fun AutoDevContent(
             onConfigWarning = { showModelConfigDialog = true }
         )
 
-    // 打开目录选择器
     fun openDirectoryChooser() {
         scope.launch {
             val fileChooser = createFileChooser()
@@ -297,7 +262,6 @@ private fun AutoDevContent(
         }
     }
 
-    // 监听菜单栏的文件选择器触发
     LaunchedEffect(triggerFileChooser) {
         if (triggerFileChooser) {
             openDirectoryChooser()
@@ -310,7 +274,6 @@ private fun AutoDevContent(
             serverUrl = serverUrl,
             onOpenLocalChat = if (Platform.isJvm) {
                 {
-                    // 切换回本地 Chat 模式
                     useSessionManagement = false
                     selectedAgentType = "Local"
                 }
@@ -324,14 +287,12 @@ private fun AutoDevContent(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
     ) { paddingValues ->
-        // WASM 平台使用 Row 布局，将侧边栏放在左侧
         if (Platform.isWasm) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                // 左侧：侧边栏菜单
                 TopBarMenu(
                     hasHistory = messages.isNotEmpty(),
                     hasDebugInfo = compilerOutput.isNotEmpty(),

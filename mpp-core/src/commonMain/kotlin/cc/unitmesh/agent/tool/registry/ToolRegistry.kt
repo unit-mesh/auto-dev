@@ -193,9 +193,6 @@ class ToolRegistry(
         }
 
         logger.info { "🔧 Registered ${toolsToRegister.size}/${allBuiltinTools.size} built-in tools" }
-        toolsToRegister.forEach { tool ->
-            logger.debug { "   Built-in tool: ${tool.name}" }
-        }
     }
 }
 

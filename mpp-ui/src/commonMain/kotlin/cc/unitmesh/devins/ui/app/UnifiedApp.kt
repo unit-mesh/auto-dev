@@ -43,7 +43,6 @@ internal fun UnifiedAppContent(
     val isAuthenticated by sessionViewModel.isAuthenticated.collectAsState()
     val currentTask by taskViewModel.currentTask.collectAsState()
 
-    // 监听认证状态，同步 token
     LaunchedEffect(isAuthenticated, sessionClient.authToken) {
         if (isAuthenticated && sessionClient.authToken != null) {
             projectClient.setAuthToken(sessionClient.authToken!!)

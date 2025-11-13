@@ -552,11 +552,6 @@ fun DevInEditorInput(
                     onSave = { toolConfigFile ->
                         scope.launch {
                             mcpServers = toolConfigFile.mcpServers
-
-                            println("✅ Tool configuration saved")
-                            println("   Enabled built-in tools: ${toolConfigFile.enabledBuiltinTools.size}")
-                            println("   Enabled MCP tools: ${toolConfigFile.enabledMcpTools.size}")
-                            println("   MCP servers: ${toolConfigFile.mcpServers.size}")
                         }
                     },
                     llmService = llmService

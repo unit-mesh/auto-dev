@@ -73,16 +73,13 @@ class CodingAgent(
     private val subAgentManager = SubAgentManager()
 
     private val toolRegistry = run {
-        logger.info { "Initializing ToolRegistry with configService: ${mcpToolConfigService != null}" }
-        if (mcpToolConfigService != null) {
-            logger.info { "Enabled builtin tools: ${mcpToolConfigService.toolConfig.enabledBuiltinTools}" }
-        }
+        logger.info { "Initializing ToolRegistry with configService." }
         ToolRegistry(
             fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
             shellExecutor = shellExecutor ?: DefaultShellExecutor(),
-            configService = mcpToolConfigService,  // 直接传递构造函数参数
-            subAgentManager = subAgentManager,      // 传递 SubAgentManager
-            llmService = llmService                 // 传递 LLM 服务（WebFetchTool 内部会创建 HttpFetcher）
+            configService = mcpToolConfigService,
+            subAgentManager = subAgentManager,
+            llmService = llmService
         )
     }
 
