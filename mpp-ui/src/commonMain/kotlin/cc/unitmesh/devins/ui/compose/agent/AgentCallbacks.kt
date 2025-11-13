@@ -1,7 +1,5 @@
 package cc.unitmesh.devins.ui.compose.agent
 
-import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
-
 /**
  * Create callbacks for CodingAgent integration
  * Simplified version that works with ComposeRenderer
@@ -9,8 +7,8 @@ import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
 fun createAgentCallbacks(
     viewModel: CodingAgentViewModel,
     onConfigWarning: () -> Unit
-): EditorCallbacks {
-    return object : EditorCallbacks {
+): cc.unitmesh.devins.editor.EditorCallbacks {
+    return object : cc.unitmesh.devins.editor.EditorCallbacks {
         override fun onSubmit(text: String) {
             if (text.isBlank()) return
 

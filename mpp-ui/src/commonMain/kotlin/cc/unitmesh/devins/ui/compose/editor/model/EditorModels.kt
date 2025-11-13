@@ -3,8 +3,6 @@ package cc.unitmesh.devins.ui.compose.editor.model
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 
-typealias EditorCallbacks = cc.unitmesh.devins.editor.EditorCallbacks
-
 /**
  * 语法高亮样式
  * 这是 UI 层特定的类型，保留在此处

@@ -5,7 +5,6 @@ import cc.unitmesh.devins.compiler.context.CompilerContext
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
-import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
@@ -26,8 +25,8 @@ fun createChatCallbacks(
     onProcessingChange: (Boolean) -> Unit,
     onError: (String) -> Unit,
     onConfigWarning: () -> Unit
-): EditorCallbacks {
-    return object : EditorCallbacks {
+): cc.unitmesh.devins.editor.EditorCallbacks {
+    return object : cc.unitmesh.devins.editor.EditorCallbacks {
         override fun onSubmit(text: String) {
             if (llmService == null) {
                 onConfigWarning()

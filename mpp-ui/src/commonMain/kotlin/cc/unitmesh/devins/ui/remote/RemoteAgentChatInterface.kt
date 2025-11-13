@@ -13,7 +13,6 @@ import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
 import cc.unitmesh.devins.ui.compose.agent.FileSystemTreeView
 import cc.unitmesh.devins.ui.compose.agent.FileViewerPanelWrapper
 import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
-import cc.unitmesh.devins.ui.compose.agent.createAgentCallbacks
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.workspace.WorkspaceManager
@@ -107,28 +106,28 @@ fun RemoteAgentChatInterface(
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
-                    
+
                     Text(
                         text = "Cannot Connect to Remote Server",
                         style = MaterialTheme.typography.headlineSmall
                     )
-                    
+
                     Text(
                         text = viewModel.connectionError ?: "Failed to connect to server",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
-                    
+
                     Text(
                         text = "Server: $serverUrl",
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                    
+
                     // Primary action: Switch to Local
                     Button(
                         onClick = { onAgentTypeChange("Local") },
@@ -145,7 +144,7 @@ fun RemoteAgentChatInterface(
                         Spacer(Modifier.width(8.dp))
                         Text("Switch to Local Mode")
                     }
-                    
+
                     // Secondary actions
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -163,7 +162,7 @@ fun RemoteAgentChatInterface(
                             Spacer(Modifier.width(4.dp))
                             Text("Configure")
                         }
-                        
+
                         OutlinedButton(
                             onClick = {
                                 CoroutineScope(Dispatchers.Default).launch {

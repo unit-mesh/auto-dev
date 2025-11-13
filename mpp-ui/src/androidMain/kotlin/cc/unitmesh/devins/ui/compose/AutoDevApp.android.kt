@@ -19,7 +19,6 @@ import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
 import cc.unitmesh.devins.ui.compose.chat.*
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog
-import cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.devins.ui.config.ConfigManager
@@ -138,7 +137,7 @@ private fun AndroidAutoDevContent(
     }
 
     // Chat callbacks（需要明确类型）
-    val callbacks: EditorCallbacks = createChatCallbacks(
+    val callbacks: cc.unitmesh.devins.editor.EditorCallbacks = createChatCallbacks(
         fileSystem = currentWorkspace.fileSystem,
         llmService = llmService,
         chatHistoryManager = chatHistoryManager,
@@ -362,7 +361,7 @@ private fun ChatModeScreen(
     messages: List<Message>,
     currentStreamingOutput: String,
     isLLMProcessing: Boolean,
-    callbacks: EditorCallbacks,
+    callbacks: cc.unitmesh.devins.editor.EditorCallbacks,
     completionManager: CompletionManager,
     projectPath: String,
     fileSystem: ProjectFileSystem,
