@@ -217,6 +217,7 @@ class CodingAgentViewModel(
     fun switchAgent(agentType: AgentType) {
         if (currentAgentType != agentType) {
             currentAgentType = agentType
+            println("🔄 [ViewModel] Switched to agent type: ${agentType.name}")
             // Note: Agents will be lazily initialized when needed
         }
     }
@@ -230,6 +231,8 @@ class CodingAgentViewModel(
      * Execute a code review task
      */
     fun executeReviewTask(reviewTask: ReviewTask, onConfigRequired: (() -> Unit)? = null) {
+        println("📝 [ViewModel] Executing code review task: ${reviewTask.reviewType}")
+
         if (isExecuting) {
             println("Agent is already executing")
             return
@@ -257,9 +260,11 @@ class CodingAgentViewModel(
 
         currentExecutionJob = scope.launch {
             try {
+                println("🔧 [ViewModel] Initializing CodeReviewAgent...")
                 val codeReviewAgent = initializeCodeReviewAgent()
                 chatHistoryManager?.addUserMessage(reviewMessage)
 
+                println("▶️ [ViewModel] Executing CodeReviewAgent task...")
                 val result = codeReviewAgent.executeTask(reviewTask)
 
                 val resultSummary = "Code review completed: ${reviewTask.reviewType}"

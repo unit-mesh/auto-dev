@@ -66,6 +66,7 @@ fun AgentChatInterface(
 
     // 同步 Agent 类型到 ViewModel
     LaunchedEffect(selectedAgentType) {
+        println("🎯 [AgentChatInterface] Agent type changed to: ${selectedAgentType.name}")
         viewModel.switchAgent(selectedAgentType)
     }
 

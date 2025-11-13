@@ -25,7 +25,7 @@ fun CodeReviewInput(
     var selectedReviewType by remember { mutableStateOf(ReviewType.COMPREHENSIVE) }
     var additionalContext by remember { mutableStateOf("") }
     var filePathsInput by remember { mutableStateOf("") }
-    
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -38,13 +38,13 @@ fun CodeReviewInput(
             text = "Code Review Configuration",
             style = MaterialTheme.typography.titleMedium
         )
-        
+
         // Review Type Selection
         Text(
             text = "Review Type",
             style = MaterialTheme.typography.labelMedium
         )
-        
+
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ReviewType.entries.forEach { type ->
                 Row(
@@ -71,51 +71,53 @@ fun CodeReviewInput(
                 }
             }
         }
-        
+
         // File Paths Input (optional)
         OutlinedTextField(
             value = filePathsInput,
             onValueChange = { filePathsInput = it },
             label = { Text("File Paths (optional)") },
             placeholder = { Text("e.g., src/main.kt, src/utils/helper.kt") },
-            supportingText = { 
-                Text("Leave empty to review the entire project. Separate multiple files with commas.") 
+            supportingText = {
+                Text("Leave empty to review the entire project. Separate multiple files with commas.")
             },
             modifier = Modifier.fillMaxWidth(),
             minLines = 2,
             maxLines = 4
         )
-        
+
         // Additional Context Input
         OutlinedTextField(
             value = additionalContext,
             onValueChange = { additionalContext = it },
             label = { Text("Additional Context (optional)") },
             placeholder = { Text("Any specific concerns or focus areas...") },
-            supportingText = { 
-                Text("Provide any additional context to help the reviewer understand your needs.") 
+            supportingText = {
+                Text("Provide any additional context to help the reviewer understand your needs.")
             },
             modifier = Modifier.fillMaxWidth(),
             minLines = 3,
             maxLines = 6
         )
-        
+
         // Start Review Button
         Button(
             onClick = {
+                println("🎬 [CodeReviewInput] Start Review button clicked")
                 val filePaths = if (filePathsInput.isBlank()) {
                     emptyList()
                 } else {
                     filePathsInput.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                 }
-                
+
                 val task = ReviewTask(
                     filePaths = filePaths,
                     reviewType = selectedReviewType,
                     projectPath = projectPath,
                     additionalContext = additionalContext
                 )
-                
+
+                println("📤 [CodeReviewInput] Calling onReview with task: ${task.reviewType}")
                 onReview(task)
             },
             enabled = !isExecuting,
@@ -130,7 +132,7 @@ fun CodeReviewInput(
             }
             Text(if (isExecuting) "Reviewing..." else "Start Review")
         }
-        
+
         // Info card
         Card(
             modifier = Modifier.fillMaxWidth(),
