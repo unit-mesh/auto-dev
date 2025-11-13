@@ -36,10 +36,8 @@ class BuiltinToolsProvider : ToolProvider {
         } else {
             println("   ⚠️  SubAgentManager not available, skipping AskAgentTool")
         }
-        
-        if (dependencies.llmService != null) {
-            tools.add(WebFetchTool(dependencies.llmService))
-        }
+
+        WebFetchTool(dependencies.llmService)
 
         return tools
     }

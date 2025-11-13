@@ -53,51 +53,11 @@ object JsToolConfigManager {
         }
     }
 
-    /**
-     * Get all built-in tools grouped by category
-     */
-    @JsName("getBuiltinToolsByCategory")
-    fun getBuiltinToolsByCategory(): dynamic {
-        // Discover tools using the provider
-        val provider = BuiltinToolsProvider()
-        val tools = provider.provide(
-            fileSystem = DefaultToolFileSystem(),
-            shellExecutor = DefaultShellExecutor(),
-            subAgentManager = null
-        )
-        
-        val toolsByCategory = ToolConfigManager.getBuiltinToolsByCategory(tools)
-
-        // Convert to JS object
-        val result = js("{}")
-        toolsByCategory.forEach { (category, tools) ->
-            result[category.name] = tools.map { tool ->
-                val toolObj = js("{}")
-                toolObj["name"] = tool.name
-                toolObj["displayName"] = tool.displayName
-                toolObj["description"] = tool.description
-                toolObj["category"] = tool.category
-                toolObj["source"] = tool.source.name
-                toolObj["enabled"] = tool.enabled
-                toolObj["serverName"] = tool.serverName
-                toolObj
-            }.toTypedArray()
-        }
-
-        return result
-    }
-    
-    /**
-     * Get tool configuration summary
-     */
     @JsName("getConfigSummary")
     fun getConfigSummary(config: JsToolConfigFile): String {
         return ToolConfigManager.getConfigSummary(config.toCommon())
     }
     
-    /**
-     * Update tool configuration
-     */
     @JsName("updateToolConfig")
     fun updateToolConfig(
         currentConfig: JsToolConfigFile,

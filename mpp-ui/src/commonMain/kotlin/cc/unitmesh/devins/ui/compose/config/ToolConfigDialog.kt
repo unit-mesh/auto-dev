@@ -122,10 +122,8 @@ fun ToolConfigDialog(
                 val allTools = ToolConfigManager.getBuiltinToolsByCategory(tools)
                 builtinToolsByCategory = ToolConfigManager.applyEnabledTools(allTools, toolConfig)
 
-                // Serialize MCP config to JSON for editing
                 mcpConfigJson = serializeMcpConfig(toolConfig.mcpServers)
 
-                // Auto-load MCP tools if any servers are configured
                 if (toolConfig.mcpServers.isNotEmpty()) {
                     scope.launch {
                         // Create callback for incremental loading
@@ -174,7 +172,6 @@ fun ToolConfigDialog(
         }
     }
 
-    // Cleanup auto-save job when dialog is dismissed
     DisposableEffect(Unit) {
         onDispose {
             autoSaveJob?.cancel()

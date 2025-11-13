@@ -61,21 +61,17 @@ object WebFetchSchema : DeclarativeToolSchema(
     }
 }
 
-/**
- * Tool invocation for WebFetch
- */
 class WebFetchInvocation(
     params: WebFetchParams,
     tool: WebFetchTool,
-    private val llmService: KoogLLMService,
+    private val llmService: KoogLLMService?,
     private val httpFetcher: HttpFetcher
 ) : BaseToolInvocation<WebFetchParams, ToolResult>(params, tool) {
-
     private val logger = getLogger("WebFetchInvocation")
 
     override fun getDescription(): String {
         val displayPrompt = if (params.prompt.length > 100) {
-            params.prompt.substring(0, 97) + "..."
+            params.prompt.take(97) + "..."
         } else {
             params.prompt
         }
@@ -98,17 +94,12 @@ class WebFetchInvocation(
                 )
             }
 
-            // Use fallback method: fetch content directly and use AI to process
             executeFallback(parsedUrls.validUrls.first())
         }
     }
 
-    /**
-     * Fallback execution: fetch content directly and use AI to process it
-     */
     private suspend fun executeFallback(url: String): ToolResult {
         try {
-            // Fetch content from URL
             val fetchResult = httpFetcher.fetch(url, timeout = 10000)
 
             if (!fetchResult.success) {
@@ -118,10 +109,11 @@ class WebFetchInvocation(
                 )
             }
 
-            // Truncate content if too long (max 100K chars)
             val content = fetchResult.content.take(100000)
+            if (llmService == null) {
+                return ToolResult.Success(content)
+            }
 
-            // Use AI to process the content according to the original prompt
             val fallbackPrompt = """
                 The user requested the following: "${params.prompt}".
                 
@@ -139,7 +131,7 @@ class WebFetchInvocation(
                 llmService.streamPrompt(
                     userPrompt = fallbackPrompt,
                     compileDevIns = false
-                ).collect { chunk ->
+                )?.collect { chunk ->
                     result.append(chunk)
                 }
             } catch (e: Exception) {
@@ -150,7 +142,7 @@ class WebFetchInvocation(
                         ToolErrorType.WEB_FETCH_PROCESSING_ERROR
                     )
                 }
-                // If we have some content, log the error but continue
+
                 logger.warn(e) { "Warning: LLM streaming was interrupted but partial content was collected: ${e.message}" }
             }
 
@@ -173,24 +165,10 @@ class WebFetchInvocation(
     }
 }
 
-/**
- * HTTP Fetcher interface for fetching web content
- * This allows platform-specific implementations (JVM, JS, Native)
- */
 interface HttpFetcher {
-    /**
-     * Fetch content from a URL
-     *
-     * @param url The URL to fetch
-     * @param timeout Timeout in milliseconds
-     * @return FetchResult containing the content or error
-     */
     suspend fun fetch(url: String, timeout: Long = 10000): FetchResult
 }
 
-/**
- * Result of an HTTP fetch operation
- */
 data class FetchResult(
     val success: Boolean,
     val content: String,
@@ -199,21 +177,10 @@ data class FetchResult(
     val error: String? = null
 )
 
-/**
- * WebFetch tool for fetching and processing web content using AI
- *
- * This tool combines web fetching with AI processing to:
- * 1. Fetch content from URLs
- * 2. Process the content according to user instructions
- * 3. Return AI-generated summaries or extractions
- *
- * The tool automatically creates its own HttpFetcher using platform-specific engines.
- */
 class WebFetchTool(
-    private val llmService: KoogLLMService
+    private val llmService: KoogLLMService? = null
 ) : BaseExecutableTool<WebFetchParams, ToolResult>() {
 
-    // Create platform-specific HTTP fetcher internally
     private val httpFetcher: HttpFetcher by lazy {
         HttpFetcherFactory.create()
     }
