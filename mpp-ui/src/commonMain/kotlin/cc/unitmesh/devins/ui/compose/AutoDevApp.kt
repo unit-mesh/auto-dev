@@ -31,7 +31,6 @@ import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.launch
-// Import UnifiedApp components for Session Management
 import cc.unitmesh.devins.ui.app.UnifiedAppContent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,13 +110,9 @@ private fun AutoDevContent(
 
     val workspaceState by WorkspaceManager.workspaceFlow.collectAsState()
 
-    // Agent 类型切换处理函数 - 统一保存到配置
     fun handleAgentTypeChange(type: String) {
-        println("🔄 切换 Agent Type: $type")
         if (type == "Remote") {
-            val hasValidServerConfig = serverUrl.isNotBlank() &&
-                                       serverUrl != "http://localhost:8080"
-
+            val hasValidServerConfig = serverUrl.isNotBlank() && serverUrl != "http://localhost:8080"
             if (!hasValidServerConfig) {
                 showRemoteConfigDialog = true
                 return
@@ -296,22 +291,18 @@ private fun AutoDevContent(
                     chatHistoryManager = chatHistoryManager,
                     currentSessionId = chatHistoryManager.getCurrentSession().id,
                     onSessionSelected = { sessionId ->
-                        // Agent 模式：调用 Agent ViewModel 的处理器
                         if (useAgentMode && agentSessionSelectedHandler != null) {
                             agentSessionSelectedHandler?.invoke(sessionId)
                         } else {
-                            // Chat 模式：直接更新本地状态
                             chatHistoryManager.switchSession(sessionId)
                             messages = chatHistoryManager.getMessages()
                             currentStreamingOutput = ""
                         }
                     },
                     onNewChat = {
-                        // Agent 模式：调用 Agent ViewModel 的处理器
                         if (useAgentMode && agentNewChatHandler != null) {
                             agentNewChatHandler?.invoke()
                         } else {
-                            // Chat 模式：直接更新本地状态
                             chatHistoryManager.createSession()
                             messages = emptyList()
                             currentStreamingOutput = ""
@@ -386,32 +377,37 @@ private fun AutoDevContent(
                 }
 
                 if (useAgentMode) {
-                    // Conditional rendering based on agent type
                     if (selectedAgentType == "Local") {
                         AgentChatInterface(
                             llmService = llmService,
                             isTreeViewVisible = isTreeViewVisible,
                             onConfigWarning = { showModelConfigDialog = true },
                             onToggleTreeView = { isTreeViewVisible = it },
-                            // 传入会话管理（Agent 模式也支持会话历史）
                             chatHistoryManager = chatHistoryManager,
-                            // 会话切换回调
                             onSessionSelected = { sessionId ->
-                                // Agent 模式的 session 切换由 ViewModel 处理
-                                println("✅ [Agent] Switched to session: $sessionId")
+                                if (useAgentMode && agentSessionSelectedHandler != null) {
+                                    agentSessionSelectedHandler?.invoke(sessionId)
+                                } else {
+                                    chatHistoryManager.switchSession(sessionId)
+                                    messages = chatHistoryManager.getMessages()
+                                    currentStreamingOutput = ""
+                                }
                             },
                             onNewChat = {
-                                // Agent 模式的 new session 由 ViewModel 处理
-                                println("✅ [Agent] Created new session")
+                                if (useAgentMode && agentNewChatHandler != null) {
+                                    agentNewChatHandler?.invoke()
+                                } else {
+                                    chatHistoryManager.createSession()
+                                    messages = emptyList()
+                                    currentStreamingOutput = ""
+                                }
                             },
-                            // 导出内部处理器给 SessionSidebar 使用
                             onInternalSessionSelected = { handler ->
                                 agentSessionSelectedHandler = handler
                             },
                             onInternalNewChat = { handler ->
                                 agentNewChatHandler = handler
                             },
-                            // TopBar 参数
                             hasHistory = messages.isNotEmpty(),
                             hasDebugInfo = compilerOutput.isNotEmpty(),
                             currentModelConfig = currentModelConfig,
