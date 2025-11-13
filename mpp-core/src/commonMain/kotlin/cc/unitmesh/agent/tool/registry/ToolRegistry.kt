@@ -15,9 +15,6 @@ import cc.unitmesh.llm.KoogLLMService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 
-/**
- * Registry for managing and discovering tools
- */
 class ToolRegistry(
     private val fileSystem: ToolFileSystem = DefaultToolFileSystem(),
     private val shellExecutor: ShellExecutor = DefaultShellExecutor(),
@@ -27,15 +24,11 @@ class ToolRegistry(
 ) {
     private val logger = getLogger("ToolRegistry")
     private val tools = mutableMapOf<String, ExecutableTool<*, *>>()
-    private val json = Json { ignoreUnknownKeys = true }
-    
+
     init {
         registerBuiltinTools()
     }
-    
-    /**
-     * Register a tool in the registry
-     */
+
     fun <TParams : Any, TResult : ToolResult> registerTool(
         tool: ExecutableTool<TParams, TResult>
     ) {

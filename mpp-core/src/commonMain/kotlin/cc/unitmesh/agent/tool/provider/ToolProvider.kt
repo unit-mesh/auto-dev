@@ -67,35 +67,15 @@ object ToolProviderRegistry {
         // Sort by priority (descending)
         providers.sortByDescending { it.priority() }
     }
-    
-    /**
-     * Get all registered providers
-     */
+
     fun getProviders(): List<ToolProvider> = providers.toList()
-    
-    /**
-     * Clear all providers (mainly for testing)
-     */
+
     fun clear() {
         providers.clear()
     }
-    
-    /**
-     * Discover all tools from registered providers
-     */
+
     fun discoverTools(dependencies: ToolDependencies): List<ExecutableTool<*, *>> {
         return providers.flatMap { it.provide(dependencies) }
-    }
-    
-    /**
-     * Legacy method for backward compatibility
-     */
-    fun discoverTools(
-        fileSystem: ToolFileSystem,
-        shellExecutor: ShellExecutor,
-        subAgentManager: SubAgentManager?
-    ): List<ExecutableTool<*, *>> {
-        return discoverTools(ToolDependencies(fileSystem, shellExecutor, subAgentManager))
     }
 }
 

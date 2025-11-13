@@ -25,22 +25,22 @@ class BuiltinToolsProvider : ToolProvider {
         tools.add(GrepTool(dependencies.fileSystem))
         tools.add(GlobTool(dependencies.fileSystem))
         
-        // Execution tools (only if shell executor is available)
         if (dependencies.shellExecutor.isAvailable()) {
             tools.add(ShellTool(dependencies.shellExecutor))
+        } else {
+            println("   ⚠️  Shell execution not available, skipping ShellTool")
         }
         
-        // Communication tools (only if SubAgentManager is available)
         if (dependencies.subAgentManager != null) {
             tools.add(AskAgentTool(dependencies.subAgentManager))
+        } else {
+            println("   ⚠️  SubAgentManager not available, skipping AskAgentTool")
         }
         
-        // Web tools (only if LLM service is available)
-        // HttpFetcher is created internally by WebFetchTool
         if (dependencies.llmService != null) {
             tools.add(WebFetchTool(dependencies.llmService))
         }
-        
+
         return tools
     }
 }
