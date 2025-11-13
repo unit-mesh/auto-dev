@@ -36,32 +36,43 @@ data class NavItem(
 )
 
 /**
- * 默认导航项
+ * 默认导航项（支持 Home + Chat）
  */
 val defaultNavItems = listOf(
+    NavItem(
+        screen = AppScreen.HOME,
+        icon = Icons.Default.Home,
+        label = "首页",
+        showInBottomNav = true,
+        showInDrawer = true
+    ),
+    NavItem(
+        screen = AppScreen.CHAT,
+        icon = Icons.Default.Chat,
+        label = "对话",
+        showInBottomNav = true,
+        showInDrawer = true
+    ),
     NavItem(
         screen = AppScreen.PROJECTS,
         icon = Icons.Default.Folder,
         label = "项目",
-        showInBottomNav = true
+        showInBottomNav = false, // Android BottomNav 只显示 4 个
+        showInDrawer = true
     ),
     NavItem(
         screen = AppScreen.TASKS,
         icon = Icons.Default.Assignment,
         label = "任务",
-        showInBottomNav = true
-    ),
-    NavItem(
-        screen = AppScreen.SESSIONS,
-        icon = Icons.Default.History,
-        label = "会话",
-        showInBottomNav = true
+        showInBottomNav = true,
+        showInDrawer = true
     ),
     NavItem(
         screen = AppScreen.PROFILE,
         icon = Icons.Default.Person,
         label = "我的",
-        showInBottomNav = true
+        showInBottomNav = true,
+        showInDrawer = true
     )
 )
 
@@ -84,6 +95,11 @@ fun AndroidNavLayout(
     currentScreen: AppScreen,
     onScreenChange: (AppScreen) -> Unit,
     sessionViewModel: SessionViewModel,
+    onShowSettings: () -> Unit = {},
+    onShowTools: () -> Unit = {},
+    onShowDebug: () -> Unit = {},
+    hasDebugInfo: Boolean = false,
+    actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -106,7 +122,20 @@ fun AndroidNavLayout(
                             sessionViewModel.logout()
                             drawerState.close()
                         }
-                    }
+                    },
+                    onShowSettings = {
+                        onShowSettings()
+                        scope.launch { drawerState.close() }
+                    },
+                    onShowTools = {
+                        onShowTools()
+                        scope.launch { drawerState.close() }
+                    },
+                    onShowDebug = {
+                        onShowDebug()
+                        scope.launch { drawerState.close() }
+                    },
+                    hasDebugInfo = hasDebugInfo
                 )
             }
         }
@@ -119,7 +148,8 @@ fun AndroidNavLayout(
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "菜单")
                         }
-                    }
+                    },
+                    actions = actions
                 )
             },
             bottomBar = {
@@ -141,14 +171,18 @@ fun AndroidNavLayout(
 }
 
 /**
- * Drawer 内容
+ * Drawer 内容（增强版，支持设置和工具）
  */
 @Composable
 private fun DrawerContent(
     currentScreen: AppScreen,
     currentUser: String?,
     onScreenChange: (AppScreen) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onShowSettings: () -> Unit = {},
+    onShowTools: () -> Unit = {},
+    onShowDebug: () -> Unit = {},
+    hasDebugInfo: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -173,12 +207,12 @@ private fun DrawerContent(
                 )
                 Column {
                     Text(
-                        text = currentUser ?: "未知用户",
+                        text = currentUser ?: "本地用户",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = "AutoDev 用户",
+                        text = "AutoDev",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -187,10 +221,10 @@ private fun DrawerContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Divider()
+        HorizontalDivider()
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 导航项
+        // 主导航项
         defaultNavItems.filter { it.showInDrawer }.forEach { navItem ->
             NavigationDrawerItem(
                 icon = { Icon(navItem.icon, contentDescription = navItem.label) },
@@ -203,7 +237,38 @@ private fun DrawerContent(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Divider()
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 设置和工具区域
+        NavigationDrawerItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "模型设置") },
+            label = { Text("模型设置") },
+            selected = false,
+            onClick = onShowSettings,
+            modifier = Modifier.padding(vertical = 2.dp)
+        )
+        
+        NavigationDrawerItem(
+            icon = { Icon(Icons.Default.Build, contentDescription = "工具配置") },
+            label = { Text("工具配置") },
+            selected = false,
+            onClick = onShowTools,
+            modifier = Modifier.padding(vertical = 2.dp)
+        )
+        
+        if (hasDebugInfo) {
+            NavigationDrawerItem(
+                icon = { Icon(Icons.Default.BugReport, contentDescription = "调试信息") },
+                label = { Text("调试信息") },
+                selected = false,
+                onClick = onShowDebug,
+                modifier = Modifier.padding(vertical = 2.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider()
         Spacer(modifier = Modifier.height(8.dp))
 
         // 退出登录
@@ -235,6 +300,8 @@ private fun DrawerContent(
 private fun getScreenTitle(screen: AppScreen): String {
     return when (screen) {
         AppScreen.LOGIN -> "登录"
+        AppScreen.HOME -> "首页"
+        AppScreen.CHAT -> "AI 对话"
         AppScreen.PROJECTS -> "项目"
         AppScreen.TASKS -> "任务"
         AppScreen.SESSIONS -> "会话"
