@@ -91,6 +91,8 @@ fun DevInEditorInput(
         }
     }
 
+    var llmService = remember { KoogLLMService.create(ModelConfig()) }
+
     // Initialize prompt enhancer
     LaunchedEffect(Unit) {
         try {
@@ -100,7 +102,7 @@ fun DevInEditorInput(
                 val configWrapper = ConfigManager.load()
                 val activeConfig = configWrapper.getActiveModelConfig()
                 if (activeConfig != null && activeConfig.isValid()) {
-                    val llmService = KoogLLMService.create(activeConfig)
+                    llmService = KoogLLMService.create(activeConfig)
 
                     // Use workspace file system
                     val fileSystem = workspace.fileSystem
@@ -556,7 +558,8 @@ fun DevInEditorInput(
                             println("   Enabled MCP tools: ${toolConfigFile.enabledMcpTools.size}")
                             println("   MCP servers: ${toolConfigFile.mcpServers.size}")
                         }
-                    }
+                    },
+                    llmService = llmService
                 )
             }
 

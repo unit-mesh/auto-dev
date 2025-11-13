@@ -31,20 +31,14 @@ import cc.unitmesh.agent.tool.provider.ToolDependencies
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.launch
 
-/**
- * Unified Tool and MCP Configuration Dialog
- *
- * Combines MCP server configuration with tool selection
- * - Configure MCP servers
- * - Select built-in tools
- * - Select specific tools from configured MCP servers
- */
 @Composable
 fun ToolConfigDialog(
     onDismiss: () -> Unit,
-    onSave: (ToolConfigFile) -> Unit
+    onSave: (ToolConfigFile) -> Unit,
+    llmService: KoogLLMService? = null
 ) {
     var toolConfig by remember { mutableStateOf(ToolConfigFile.default()) }
     var builtinToolsByCategory by remember { mutableStateOf<Map<ToolCategory, List<ToolItem>>>(emptyMap()) }
@@ -61,7 +55,6 @@ fun ToolConfigDialog(
 
     val scope = rememberCoroutineScope()
 
-    // Auto-save function with debouncing
     fun scheduleAutoSave() {
         hasUnsavedChanges = true
         autoSaveJob?.cancel()
@@ -116,7 +109,7 @@ fun ToolConfigDialog(
                             fileSystem = DefaultToolFileSystem(),
                             shellExecutor = DefaultShellExecutor(),
                             subAgentManager = null,
-                            llmService = null
+                            llmService = llmService
                         )
                     )
                 val allTools = ToolConfigManager.getBuiltinToolsByCategory(tools)
