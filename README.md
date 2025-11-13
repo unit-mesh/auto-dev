@@ -17,6 +17,11 @@
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
+## AutoDev 3.0 - Multiplatform Plane (Doing)
+
+- Multiplatform Agent: Android/iOS, Web, Desktop, IDEs/VSCode,CLI/TUI
+- Built-in Coding Agent
+
 ## AutoDev 2.0 - the Cursor Composer in Intellij IDEA
 
 Video demo (YouTube) — English
