@@ -27,7 +27,7 @@ import kotlinx.datetime.toLocalDateTime
 
 /**
  * Session 侧边栏组件
- * 
+ *
  * 功能：
  * - 显示所有历史会话（本地 + 远程）
  * - 支持折叠/展开
@@ -54,19 +54,19 @@ fun SessionSidebar(
     onRenameSession: ((String, String) -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
-    
+
     // 监听 ChatHistoryManager 的更新
     val updateTrigger by chatHistoryManager.sessionsUpdateTrigger.collectAsState()
-    
+
     // 获取本地会话 - 响应 updateTrigger 变化
     val localSessions = remember(updateTrigger) {
         chatHistoryManager.getAllSessions()
     }
-    
+
     // 获取远程会话
     var remoteSessions by remember { mutableStateOf<List<Session>>(emptyList()) }
     var isLoadingRemote by remember { mutableStateOf(false) }
-    
+
     // 加载远程会话
     LaunchedEffect(sessionClient, updateTrigger) {
         if (sessionClient != null && sessionClient.authToken != null) {
@@ -80,7 +80,7 @@ fun SessionSidebar(
             }
         }
     }
-    
+
     Surface(
         modifier = modifier
             .fillMaxHeight()
@@ -104,7 +104,7 @@ fun SessionSidebar(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 // New Chat Button
                 IconButton(
                     onClick = onNewChat,
@@ -118,12 +118,12 @@ fun SessionSidebar(
                     )
                 }
             }
-            
+
             HorizontalDivider()
-            
+
             // Session List
             val hasAnySessions = localSessions.isNotEmpty() || remoteSessions.isNotEmpty()
-            
+
             if (!hasAnySessions && !isLoadingRemote) {
                 // Empty state
                 Box(
@@ -173,7 +173,7 @@ fun SessionSidebar(
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
-                        
+
                         items(localSessions, key = { "local_${it.id}" }) { session ->
                             LocalSessionItem(
                                 session = session,
@@ -190,7 +190,7 @@ fun SessionSidebar(
                             )
                         }
                     }
-                    
+
                     // 远程会话
                     if (remoteSessions.isNotEmpty()) {
                         item {
@@ -201,11 +201,11 @@ fun SessionSidebar(
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
-                        
+
                         items(remoteSessions, key = { "remote_${it.id}" }) { session ->
                             RemoteSessionItem(
                                 session = session,
-                                onSelect = { 
+                                onSelect = {
                                     onRemoteSessionSelected?.invoke(session)
                                 },
                                 onDelete = {
@@ -221,7 +221,7 @@ fun SessionSidebar(
                             )
                         }
                     }
-                    
+
                     // Loading indicator
                     if (isLoadingRemote) {
                         item {
@@ -237,9 +237,9 @@ fun SessionSidebar(
                     }
                 }
             }
-            
+
             HorizontalDivider()
-            
+
             // Settings at bottom
             Row(
                 modifier = Modifier
@@ -260,7 +260,7 @@ fun SessionSidebar(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                
+
                 // Tool Config
                 IconButton(
                     onClick = onShowToolConfig,
@@ -272,7 +272,7 @@ fun SessionSidebar(
                         modifier = Modifier.size(16.dp)
                     )
                 }
-                
+
                 // Debug Info (if available)
                 if (hasDebugInfo) {
                     IconButton(
@@ -303,19 +303,19 @@ private fun LocalSessionItem(
     var showMenu by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var isHovered by remember { mutableStateOf(false) }
-    
+
     val backgroundColor = if (isSelected) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
         MaterialTheme.colorScheme.surface
     }
-    
+
     val contentColor = if (isSelected) {
         MaterialTheme.colorScheme.onPrimaryContainer
     } else {
         MaterialTheme.colorScheme.onSurface
     }
-    
+
     // 获取会话标题（第一条用户消息的摘要）
     val title = remember(session) {
         session.title ?: run {
@@ -323,12 +323,12 @@ private fun LocalSessionItem(
             firstUserMessage?.content?.take(50) ?: "New Chat"
         }
     }
-    
+
     // 格式化时间
     val timeText = remember(session.updatedAt) {
         formatTimestamp(session.updatedAt)
     }
-    
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -356,14 +356,14 @@ private fun LocalSessionItem(
                 ) {
                     // Local session indicator (no emoji)
                     Surface(
-                        color = if (isSelected) 
-                            MaterialTheme.colorScheme.primary 
-                        else 
+                        color = if (isSelected)
+                            MaterialTheme.colorScheme.primary
+                        else
                             MaterialTheme.colorScheme.secondaryContainer,
                         shape = RoundedCornerShape(3.dp),
                         modifier = Modifier.size(4.dp, 16.dp)
                     ) {}
-                    
+
                     Text(
                         text = title,
                         style = MaterialTheme.typography.bodyMedium,
@@ -372,7 +372,7 @@ private fun LocalSessionItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -395,7 +395,7 @@ private fun LocalSessionItem(
                     )
                 }
             }
-            
+
             // Menu button
             Box {
                 IconButton(
@@ -409,7 +409,7 @@ private fun LocalSessionItem(
                         tint = contentColor.copy(alpha = 0.6f)
                     )
                 }
-                
+
                 DropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
@@ -429,7 +429,7 @@ private fun LocalSessionItem(
                         }
                     )
                     DropdownMenuItem(
-                        text = { 
+                        text = {
                             Text(
                                 "Delete",
                                 color = MaterialTheme.colorScheme.error
@@ -452,11 +452,11 @@ private fun LocalSessionItem(
             }
         }
     }
-    
+
     // Rename dialog
     if (showRenameDialog) {
         var newTitle by remember { mutableStateOf(title) }
-        
+
         AlertDialog(
             onDismissRequest = { showRenameDialog = false },
             title = { Text("Rename Session") },
@@ -497,15 +497,15 @@ private fun RemoteSessionItem(
     onDelete: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    
+
     val backgroundColor = MaterialTheme.colorScheme.surface
     val contentColor = MaterialTheme.colorScheme.onSurface
-    
+
     // 获取会话标题（任务描述的摘要）
     val title = remember(session) {
         session.task.take(50).ifEmpty { "Remote Session" }
     }
-    
+
     // 状态颜色
     val statusColor = when (session.status) {
         cc.unitmesh.session.SessionStatus.RUNNING -> MaterialTheme.colorScheme.primary
@@ -514,12 +514,12 @@ private fun RemoteSessionItem(
         cc.unitmesh.session.SessionStatus.CANCELLED -> MaterialTheme.colorScheme.outline
         else -> MaterialTheme.colorScheme.secondary
     }
-    
+
     // 格式化时间
     val timeText = remember(session.updatedAt) {
         formatTimestamp(session.updatedAt)
     }
-    
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -556,7 +556,7 @@ private fun RemoteSessionItem(
                             modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp)
                         )
                     }
-                    
+
                     Text(
                         text = title,
                         style = MaterialTheme.typography.bodyMedium,
@@ -565,7 +565,7 @@ private fun RemoteSessionItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -583,7 +583,7 @@ private fun RemoteSessionItem(
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                         )
                     }
-                    
+
                     Text(
                         text = "•",
                         style = MaterialTheme.typography.labelSmall,
@@ -596,7 +596,7 @@ private fun RemoteSessionItem(
                     )
                 }
             }
-            
+
             // Menu button
             Box {
                 IconButton(
@@ -610,13 +610,13 @@ private fun RemoteSessionItem(
                         tint = contentColor.copy(alpha = 0.6f)
                     )
                 }
-                
+
                 DropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
                     DropdownMenuItem(
-                        text = { 
+                        text = {
                             Text(
                                 "Delete",
                                 color = MaterialTheme.colorScheme.error
@@ -647,14 +647,14 @@ private fun RemoteSessionItem(
 private fun formatTimestamp(timestamp: Long): String {
     val instant = Instant.fromEpochMilliseconds(timestamp)
     val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-    
+
     val now = kotlinx.datetime.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-    
+
     // Calculate yesterday's date
     val yesterdayDate = now.date.let {
         kotlinx.datetime.LocalDate(it.year, it.monthNumber, it.dayOfMonth - 1)
     }
-    
+
     return when {
         dateTime.date == now.date -> "Today"
         dateTime.date == yesterdayDate -> "Yesterday"
