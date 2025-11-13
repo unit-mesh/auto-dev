@@ -162,7 +162,8 @@ class ToolRegistry(
         if (ToolProviderRegistry.getProviders().isEmpty()) {
             ToolProviderRegistry.register(BuiltinToolsProvider())
         }
-        
+
+        logger.info { "🔧 Registering built-in tools...: llmService: $llmService, subAgentManager: $subAgentManager" }
         val dependencies = ToolDependencies(
             fileSystem = fileSystem,
             shellExecutor = shellExecutor,

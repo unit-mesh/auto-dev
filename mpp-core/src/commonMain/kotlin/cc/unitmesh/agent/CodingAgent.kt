@@ -69,7 +69,6 @@ class CodingAgent(
 
     private val configService = mcpToolConfigService
 
-    // SubAgent 管理器
     private val subAgentManager = SubAgentManager()
 
     private val toolRegistry = run {

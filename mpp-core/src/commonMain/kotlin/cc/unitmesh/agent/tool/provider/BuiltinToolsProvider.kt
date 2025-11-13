@@ -16,7 +16,6 @@ class BuiltinToolsProvider : ToolProvider {
     override fun provide(dependencies: ToolDependencies): List<ExecutableTool<*, *>> {
         val tools = mutableListOf<ExecutableTool<*, *>>()
 
-        // File system tools
         tools.add(ReadFileTool(dependencies.fileSystem))
         tools.add(WriteFileTool(dependencies.fileSystem))
         tools.add(EditFileTool(dependencies.fileSystem))

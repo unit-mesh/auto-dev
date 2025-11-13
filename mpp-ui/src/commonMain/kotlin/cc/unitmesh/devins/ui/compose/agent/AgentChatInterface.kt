@@ -43,7 +43,6 @@ fun AgentChatInterface(
     // 会话切换支持（新增）
     onSessionSelected: ((String) -> Unit)? = null,
     onNewChat: (() -> Unit)? = null,
-    // 内部会话处理器导出（用于 SessionSidebar）
     onInternalSessionSelected: (((String) -> Unit) -> Unit)? = null,
     onInternalNewChat: ((() -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -54,8 +53,6 @@ fun AgentChatInterface(
             val workspace = currentWorkspace
             val rootPath = workspace?.rootPath ?: Platform.getUserHomeDir()
 
-            // Always create ViewModel, even if llmService is null
-            // Configuration check will happen when user tries to send a message
             CodingAgentViewModel(
                 llmService = llmService,
                 projectPath = rootPath,
@@ -64,7 +61,6 @@ fun AgentChatInterface(
             )
         }
 
-    // 连接外部回调到 ViewModel 的会话管理方法
     val handleSessionSelected: (String) -> Unit = remember(viewModel) {
         { sessionId ->
             viewModel.switchSession(sessionId)

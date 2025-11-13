@@ -8,14 +8,7 @@ import kotlinx.serialization.Serializable
  * Tools provide specific functionality that can be invoked by agents.
  */
 interface Tool {
-    /**
-     * The unique name of the tool
-     */
     val name: String
-    
-    /**
-     * Human-readable description of what the tool does
-     */
     val description: String
 }
 
@@ -44,14 +37,14 @@ data class AgentTool(
     val isDevIns: Boolean = false,
     val devinScriptPath: String = "",
 ) : Tool {
-    
+
     override fun toString(): String {
         val descAttr = if (description.isNotEmpty()) " description=\"$description\"" else ""
         val exampleContent = if (example.isNotEmpty()) """
     <example>
         <devin>$example</devin>
     </example>""" else ""
-        
+
         return """<tool name="$name"$descAttr>$exampleContent
 </tool>"""
     }
@@ -67,11 +60,11 @@ sealed class ToolResult {
 
     @Serializable
     data class Error(
-        val message: String, 
+        val message: String,
         val errorType: String = "UNKNOWN",
         val metadata: Map<String, String> = emptyMap()
     ) : ToolResult()
-    
+
     /**
      * Agent 结果 - 包含结构化数据
      * 用于 Agent 执行结果，可以携带额外的元数据
@@ -97,7 +90,7 @@ sealed class ToolResult {
         is AgentResult -> if (!success) content else ""
         is Error -> message
     }
-    
+
     fun extractMetadata(): Map<String, String> = when (this) {
         is Success -> metadata
         is AgentResult -> metadata
@@ -141,22 +134,22 @@ interface ToolInvocation<TParams : Any, TResult : ToolResult> {
      * The validated parameters for this specific invocation.
      */
     val params: TParams
-    
+
     /**
      * The tool that created this invocation
      */
     val tool: ExecutableTool<TParams, TResult>
-    
+
     /**
      * Gets a pre-execution description of the tool operation.
      */
     fun getDescription(): String
-    
+
     /**
      * Determines what file system paths the tool will affect.
      */
     fun getToolLocations(): List<ToolLocation>
-    
+
     /**
      * Executes the tool with the validated parameters.
      */
@@ -170,16 +163,16 @@ abstract class BaseToolInvocation<TParams : Any, TResult : ToolResult>(
     override val params: TParams,
     override val tool: ExecutableTool<TParams, TResult>
 ) : ToolInvocation<TParams, TResult> {
-    
+
     override fun getToolLocations(): List<ToolLocation> = emptyList()
-    
+
     override fun getDescription(): String = "${tool.name} with params: $params"
 }
 
 /**
  * A tool that can be executed with specific parameters.
  * Similar to Gemini CLI's DeclarativeTool concept.
- * 
+ *
  * Tools are now self-describing with metadata for UI/TUI display,
  * categorization, and schema information.
  */
@@ -188,38 +181,23 @@ interface ExecutableTool<TParams : Any, TResult : ToolResult> : Tool {
      * Tool metadata including display name, icon, category, and schema
      */
     val metadata: ToolMetadata
-    
+
     /**
      * Validates parameters and creates a tool invocation
      */
     fun createInvocation(params: TParams): ToolInvocation<TParams, TResult>
-    
+
     /**
      * Gets the parameter class for this tool
      */
-    fun getParameterClass(): String // We'll use string representation for KMP compatibility
+    fun getParameterClass(): String
 }
 
-/**
- * Base implementation of ExecutableTool
- * 
- * Subclasses must provide tool metadata for self-description.
- * This enables zero-configuration tool registration and discovery.
- */
 abstract class BaseExecutableTool<TParams : Any, TResult : ToolResult> : ExecutableTool<TParams, TResult> {
-    
-    /**
-     * Subclasses must provide metadata for the tool.
-     * This should be implemented as a property, not computed each time.
-     */
     abstract override val metadata: ToolMetadata
-    
     override fun createInvocation(params: TParams): ToolInvocation<TParams, TResult> {
         return createToolInvocation(params)
     }
-    
-    /**
-     * Subclasses should implement this to create their specific invocation type
-     */
+
     protected abstract fun createToolInvocation(params: TParams): ToolInvocation<TParams, TResult>
 }
