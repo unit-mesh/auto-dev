@@ -12,8 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
-import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.devins.ui.project.CreateProjectDialog
 import cc.unitmesh.devins.ui.project.Project
 import cc.unitmesh.devins.ui.project.ProjectClient
@@ -24,29 +22,6 @@ import cc.unitmesh.devins.ui.task.CreateTaskDialog
 import cc.unitmesh.devins.ui.task.TaskExecutionScreen
 import cc.unitmesh.devins.ui.task.TaskViewModel
 import kotlinx.coroutines.launch
-
-/**
- * UnifiedApp - 统一的应用界面
- *
- * 侧边栏布局：
- * - 顶部：新建按钮（Session/Project/Task）+ 本地 Chat（Desktop）
- * - 中间：已有的 Sessions/Projects 列表（可折叠）
- * - 底部：Settings、Profile、退出
- */
-@Composable
-fun UnifiedApp(
-    serverUrl: String = "http://localhost:8080",
-    onOpenLocalChat: (() -> Unit)? = null // Desktop 可以打开本地 Chat
-) {
-    val currentTheme = ThemeManager.currentTheme
-
-    AutoDevTheme(themeMode = currentTheme) {
-        UnifiedAppContent(
-            serverUrl = serverUrl,
-            onOpenLocalChat = onOpenLocalChat
-        )
-    }
-}
 
 @Composable
 internal fun UnifiedAppContent(

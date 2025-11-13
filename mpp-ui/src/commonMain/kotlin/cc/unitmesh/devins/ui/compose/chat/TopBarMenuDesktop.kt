@@ -7,7 +7,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
-import cc.unitmesh.devins.ui.compose.settings.LanguageSwitcher
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.llm.ModelConfig
 
@@ -79,7 +78,7 @@ fun TopBarMenuDesktop(
                         modifier = Modifier.size(16.dp)
                     )
                 }
-                
+
                 Text(
                     text = "AutoDev",
                     style = MaterialTheme.typography.titleSmall
@@ -277,7 +276,7 @@ fun TopBarMenuDesktop(
                                         )
                                     }
                                 )
-                                
+
                                 // Session Management Toggle
                                 DropdownMenuItem(
                                     text = { Text(if (useSessionManagement) "Agent Mode" else "Session Manager") },

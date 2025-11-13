@@ -23,7 +23,7 @@ import kotlinx.coroutines.*
  *
  * Uses the new BaseRenderer architecture with ComposeRenderer
  * for consistent rendering across CLI, TUI, and Compose UI
- * 
+ *
  * 支持会话管理：Agent 模式的对话也会保存到 ChatHistoryManager
  */
 class CodingAgentViewModel(
@@ -194,7 +194,7 @@ class CodingAgentViewModel(
                 try {
                     // Initialize agent if not already done
                     val codingAgent = initializeCodingAgent()
-                    
+
                     // 保存用户消息到会话历史
                     chatHistoryManager?.addUserMessage(task)
 
@@ -205,7 +205,7 @@ class CodingAgentViewModel(
                         )
 
                     val result = codingAgent.executeTask(agentTask)
-                    
+
                     // 保存 Agent 完成消息到会话历史（简化版本）
                     val resultSummary = "Agent task completed: $task"
                     chatHistoryManager?.addAssistantMessage(resultSummary)
