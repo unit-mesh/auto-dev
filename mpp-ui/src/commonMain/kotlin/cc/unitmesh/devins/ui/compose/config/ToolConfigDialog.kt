@@ -74,7 +74,6 @@ fun ToolConfigDialog(
                             .filter { it.enabled }
                             .map { it.name }
 
-                    // Parse MCP config from JSON
                     val result = deserializeMcpConfig(mcpConfigJson)
                     if (result.isSuccess) {
                         val newMcpServers = result.getOrThrow()
@@ -96,12 +95,10 @@ fun ToolConfigDialog(
             }
     }
 
-    // Load configuration on start
     LaunchedEffect(Unit) {
         scope.launch {
             try {
                 toolConfig = ConfigManager.loadToolConfig()
-                // Discover tools using the provider
                 val provider = BuiltinToolsProvider()
                 val tools =
                     provider.provide(
@@ -182,12 +179,10 @@ fun ToolConfigDialog(
             tonalElevation = 8.dp
         ) {
             Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -203,7 +198,6 @@ fun ToolConfigDialog(
                             fontWeight = FontWeight.Bold
                         )
 
-                        // Unsaved changes indicator
                         if (hasUnsavedChanges) {
                             Surface(
                                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -244,7 +238,6 @@ fun ToolConfigDialog(
                         CircularProgressIndicator()
                     }
                 } else {
-                    // Tab navigation
                     TabRow(selectedTabIndex = selectedTab) {
                         Tab(
                             selected = selectedTab == 0,
@@ -260,7 +253,6 @@ fun ToolConfigDialog(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Show MCP load error if present
                     if (mcpLoadError != null) {
                         Surface(
                             color = MaterialTheme.colorScheme.errorContainer,
@@ -340,10 +332,10 @@ fun ToolConfigDialog(
                                             mcpConfigError = null
                                             mcpLoadError = null
 
-                                            // Validate JSON first
                                             val result = deserializeMcpConfig(mcpConfigJson)
                                             if (result.isFailure) {
-                                                mcpConfigError = result.exceptionOrNull()?.message ?: "Invalid JSON format"
+                                                mcpConfigError =
+                                                    result.exceptionOrNull()?.message ?: "Invalid JSON format"
                                                 return@launch
                                             }
 
@@ -420,7 +412,6 @@ fun ToolConfigDialog(
                             onClick = {
                                 scope.launch {
                                     try {
-                                        // Cancel any pending auto-save
                                         autoSaveJob?.cancel()
 
                                         val enabledBuiltinTools =
@@ -553,10 +544,7 @@ private fun McpServerConfigTab(
     onMcpConfigChange: (String) -> Unit,
     onReloadMcpTools: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Header with status indicator
+    Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -575,7 +563,6 @@ private fun McpServerConfigTab(
                 )
             }
 
-            // Status indicator
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -730,8 +717,12 @@ private fun McpServerHeader(
                     McpServerLoadingStatus.LOADING -> AutoDevComposeIcons.Refresh to MaterialTheme.colorScheme.primary
                     McpServerLoadingStatus.LOADED -> AutoDevComposeIcons.Cloud to MaterialTheme.colorScheme.primary
                     McpServerLoadingStatus.ERROR -> AutoDevComposeIcons.Error to MaterialTheme.colorScheme.error
-                    McpServerLoadingStatus.DISABLED -> AutoDevComposeIcons.CloudOff to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    McpServerLoadingStatus.AVAILABLE -> AutoDevComposeIcons.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    McpServerLoadingStatus.DISABLED -> AutoDevComposeIcons.CloudOff to MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.6f
+                    )
+                    McpServerLoadingStatus.AVAILABLE -> AutoDevComposeIcons.CloudQueue to MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.6f
+                    )
                 }
 
             Icon(
