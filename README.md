@@ -20,6 +20,7 @@
 ## AutoDev 3.0 - Multiplatform Plane (Doing)
 
 - Multiplatform Agent: Android/iOS, Web, Desktop, IDEs/VSCode,CLI/TUI
+- Web: https://unit-mesh.github.io/auto-dev/
 - Built-in Coding Agent
 
 ## AutoDev 2.0 - the Cursor Composer in Intellij IDEA
