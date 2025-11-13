@@ -25,6 +25,10 @@ class FileContextProvider: LLMCodeContextProvider<PsiFile> {
             }
         }
 
+        if (psiElement.virtualFile?.path == null) {
+            return null
+        }
+
         return FileContext(psiElement, psiElement.name, psiElement.virtualFile?.path!!)
     }
 }
