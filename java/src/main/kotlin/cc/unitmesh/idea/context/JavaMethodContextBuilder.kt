@@ -38,7 +38,7 @@ class JavaMethodContextBuilder : MethodContextBuilder {
         return runReadAction {
             MethodContext(
                 psiElement,
-                text = psiElement.text,
+                text = psiElement?.text ?: "",
                 name = psiElement.name,
                 signature = getSignatureString(psiElement),
                 enclosingClass = psiElement.containingClass,
