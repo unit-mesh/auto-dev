@@ -99,6 +99,10 @@ private fun AutoDevContent(
     // Session Management mode (for Remote Session UI)
     var useSessionManagement by remember { mutableStateOf(false) }
 
+    // Agent 模式的会话处理器（用于连接 SessionSidebar 和 AgentChatInterface）
+    var agentSessionSelectedHandler by remember { mutableStateOf<((String) -> Unit)?>(null) }
+    var agentNewChatHandler by remember { mutableStateOf<(() -> Unit)?>(null) }
+
     val availableAgents = listOf("Default")
 
     var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
@@ -542,14 +546,26 @@ private fun AutoDevContent(
                         chatHistoryManager = chatHistoryManager,
                         currentSessionId = chatHistoryManager.getCurrentSession().id,
                         onSessionSelected = { sessionId ->
-                            chatHistoryManager.switchSession(sessionId)
-                            messages = chatHistoryManager.getMessages()
-                            currentStreamingOutput = ""
+                            // Agent 模式：调用 Agent ViewModel 的处理器
+                            if (useAgentMode && agentSessionSelectedHandler != null) {
+                                agentSessionSelectedHandler?.invoke(sessionId)
+                            } else {
+                                // Chat 模式：直接更新本地状态
+                                chatHistoryManager.switchSession(sessionId)
+                                messages = chatHistoryManager.getMessages()
+                                currentStreamingOutput = ""
+                            }
                         },
                         onNewChat = {
-                            chatHistoryManager.createSession()
-                            messages = emptyList()
-                            currentStreamingOutput = ""
+                            // Agent 模式：调用 Agent ViewModel 的处理器
+                            if (useAgentMode && agentNewChatHandler != null) {
+                                agentNewChatHandler?.invoke()
+                            } else {
+                                // Chat 模式：直接更新本地状态
+                                chatHistoryManager.createSession()
+                                messages = emptyList()
+                                currentStreamingOutput = ""
+                            }
                         },
                         onRenameSession = { sessionId, newTitle ->
                             chatHistoryManager.renameSession(sessionId, newTitle)
@@ -640,6 +656,13 @@ private fun AutoDevContent(
                         onNewChat = {
                             // Agent 模式的 new session 由 ViewModel 处理
                             println("✅ [Agent] Created new session")
+                        },
+                        // 导出内部处理器给 SessionSidebar 使用
+                        onInternalSessionSelected = { handler ->
+                            agentSessionSelectedHandler = handler
+                        },
+                        onInternalNewChat = { handler ->
+                            agentNewChatHandler = handler
                         },
                         // TopBar 参数
                         hasHistory = messages.isNotEmpty(),

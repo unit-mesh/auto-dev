@@ -644,7 +644,7 @@ private fun RemoteSessionItem(
 /**
  * 格式化时间戳为人类可读格式
  */
-private fun formatTimestamp(timestamp: Long): String {
+fun formatTimestamp(timestamp: Long): String {
     val instant = Instant.fromEpochMilliseconds(timestamp)
     val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
 

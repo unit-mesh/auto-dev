@@ -138,11 +138,10 @@ class ChatHistoryManager {
     }
 
     /**
-     * 获取所有会话（只返回有消息的会话）
+     * 获取所有会话（包括空会话，以便用户可以看到新建的会话）
      */
     fun getAllSessions(): List<ChatSession> {
         return sessions.values
-            .filter { it.messages.isNotEmpty() }  // 只返回有消息的会话
             .sortedByDescending { it.updatedAt }
     }
 

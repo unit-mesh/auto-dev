@@ -43,6 +43,9 @@ fun AgentChatInterface(
     // 会话切换支持（新增）
     onSessionSelected: ((String) -> Unit)? = null,
     onNewChat: (() -> Unit)? = null,
+    // 内部会话处理器导出（用于 SessionSidebar）
+    onInternalSessionSelected: (((String) -> Unit) -> Unit)? = null,
+    onInternalNewChat: ((() -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
@@ -74,6 +77,12 @@ fun AgentChatInterface(
             viewModel.newSession()
             onNewChat?.invoke()
         }
+    }
+
+    // 导出内部处理器给父组件（用于 SessionSidebar）
+    LaunchedEffect(handleSessionSelected, handleNewChat) {
+        onInternalSessionSelected?.invoke(handleSessionSelected)
+        onInternalNewChat?.invoke(handleNewChat)
     }
 
     // 同步外部 TreeView 状态到 ViewModel
