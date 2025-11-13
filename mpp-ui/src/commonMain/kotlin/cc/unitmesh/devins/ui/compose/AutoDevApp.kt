@@ -388,6 +388,15 @@ private fun AutoDevContent(
                                 onToggleTreeView = { isTreeViewVisible = it },
                                 // 传入会话管理（Agent 模式也支持会话历史）
                                 chatHistoryManager = chatHistoryManager,
+                                // 会话切换回调
+                                onSessionSelected = { sessionId ->
+                                    // Agent 模式的 session 切换由 ViewModel 处理
+                                    println("✅ [Agent] Switched to session: $sessionId")
+                                },
+                                onNewChat = {
+                                    // Agent 模式的 new session 由 ViewModel 处理
+                                    println("✅ [Agent] Created new session")
+                                },
                                 hasHistory = messages.isNotEmpty(),
                                 hasDebugInfo = compilerOutput.isNotEmpty(),
                                 currentModelConfig = currentModelConfig,
@@ -620,6 +629,15 @@ private fun AutoDevContent(
                         onToggleTreeView = { isTreeViewVisible = it },
                         // 传入会话管理（Agent 模式也支持会话历史）
                         chatHistoryManager = chatHistoryManager,
+                        // 会话切换回调
+                        onSessionSelected = { sessionId ->
+                            // Agent 模式的 session 切换由 ViewModel 处理
+                            println("✅ [Agent] Switched to session: $sessionId")
+                        },
+                        onNewChat = {
+                            // Agent 模式的 new session 由 ViewModel 处理
+                            println("✅ [Agent] Created new session")
+                        },
                         // TopBar 参数
                         hasHistory = messages.isNotEmpty(),
                         hasDebugInfo = compilerOutput.isNotEmpty(),

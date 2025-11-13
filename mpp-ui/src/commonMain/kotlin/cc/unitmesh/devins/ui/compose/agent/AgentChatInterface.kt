@@ -61,6 +61,21 @@ fun AgentChatInterface(
             )
         }
 
+    // 连接外部回调到 ViewModel 的会话管理方法
+    val handleSessionSelected: (String) -> Unit = remember(viewModel) {
+        { sessionId ->
+            viewModel.switchSession(sessionId)
+            onSessionSelected?.invoke(sessionId)
+        }
+    }
+
+    val handleNewChat: () -> Unit = remember(viewModel) {
+        {
+            viewModel.newSession()
+            onNewChat?.invoke()
+        }
+    }
+
     // 同步外部 TreeView 状态到 ViewModel
     LaunchedEffect(isTreeViewVisible) {
         if (viewModel.isTreeViewVisible != isTreeViewVisible) {

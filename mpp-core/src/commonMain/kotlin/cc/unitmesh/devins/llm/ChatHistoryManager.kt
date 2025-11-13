@@ -13,7 +13,7 @@ import kotlin.uuid.Uuid
 /**
  * 聊天历史管理器
  * 管理多个聊天会话
- * 
+ *
  * 功能增强：
  * - 自动持久化到磁盘（~/.autodev/sessions/chat-sessions.json）
  * - 启动时自动加载历史会话
@@ -26,28 +26,28 @@ class ChatHistoryManager {
     private var currentSessionId: String? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var initialized = false
-    
+
     // 用于通知 UI 更新的 StateFlow
     private val _sessionsUpdateTrigger = MutableStateFlow(0)
     val sessionsUpdateTrigger: StateFlow<Int> = _sessionsUpdateTrigger.asStateFlow()
-    
+
     /**
      * 初始化：从磁盘加载历史会话
      */
     suspend fun initialize() {
         if (initialized) return
-        
+
         try {
             val loadedSessions = SessionStorage.loadSessions()
             loadedSessions.forEach { session ->
                 sessions[session.id] = session
             }
-            
+
             // 如果有会话，设置最新的为当前会话
             if (sessions.isNotEmpty()) {
                 currentSessionId = sessions.values.maxByOrNull { it.updatedAt }?.id
             }
-            
+
             println("✅ Loaded ${sessions.size} chat sessions from disk")
             initialized = true
         } catch (e: Exception) {
@@ -55,7 +55,7 @@ class ChatHistoryManager {
             initialized = true
         }
     }
-    
+
     /**
      * 保存所有会话到磁盘
      * 只保存有消息的会话
@@ -66,7 +66,7 @@ class ChatHistoryManager {
                 // 过滤掉空会话（没有消息的会话）
                 val nonEmptySessions = sessions.values.filter { it.messages.isNotEmpty() }
                 SessionStorage.saveSessions(nonEmptySessions)
-                
+
                 // 通知 UI 更新
                 _sessionsUpdateTrigger.value++
             } catch (e: Exception) {
@@ -74,7 +74,7 @@ class ChatHistoryManager {
             }
         }
     }
-    
+
     /**
      * 创建新会话
      * 注意：空会话不会被保存，只有添加消息后才会保存
@@ -85,22 +85,22 @@ class ChatHistoryManager {
         val session = ChatSession(id = sessionId)
         sessions[sessionId] = session
         currentSessionId = sessionId
-        
+
         // 空会话不保存，等有消息时再保存
         // 但通知 UI 更新（虽然不会显示空会话）
         _sessionsUpdateTrigger.value++
-        
+
         return session
     }
-    
+
     /**
      * 获取当前会话
      */
     fun getCurrentSession(): ChatSession {
-        return currentSessionId?.let { sessions[it] } 
+        return currentSessionId?.let { sessions[it] }
             ?: createSession()
     }
-    
+
     /**
      * 切换到指定会话
      * 会先保存当前会话，再切换到新会话
@@ -115,7 +115,7 @@ class ChatHistoryManager {
                 }
             }
         }
-        
+
         // 切换到新会话
         return sessions[sessionId]?.also {
             currentSessionId = sessionId
@@ -123,7 +123,7 @@ class ChatHistoryManager {
             _sessionsUpdateTrigger.value++
         }
     }
-    
+
     /**
      * 删除会话
      */
@@ -132,11 +132,11 @@ class ChatHistoryManager {
         if (currentSessionId == sessionId) {
             currentSessionId = null
         }
-        
+
         // 自动保存并通知 UI 更新
         saveSessionsAsync()
     }
-    
+
     /**
      * 获取所有会话（只返回有消息的会话）
      */
@@ -145,37 +145,37 @@ class ChatHistoryManager {
             .filter { it.messages.isNotEmpty() }  // 只返回有消息的会话
             .sortedByDescending { it.updatedAt }
     }
-    
+
     /**
      * 清空当前会话历史
      */
     fun clearCurrentSession() {
         getCurrentSession().clear()
-        
+
         // 自动保存
         saveSessionsAsync()
     }
-    
+
     /**
      * 添加用户消息到当前会话
      */
     fun addUserMessage(content: String) {
         getCurrentSession().addUserMessage(content)
-        
+
         // 自动保存
         saveSessionsAsync()
     }
-    
+
     /**
      * 添加助手消息到当前会话
      */
     fun addAssistantMessage(content: String) {
         getCurrentSession().addAssistantMessage(content)
-        
+
         // 自动保存
         saveSessionsAsync()
     }
-    
+
     /**
      * 重命名会话（添加标题）
      */
@@ -184,21 +184,21 @@ class ChatHistoryManager {
         // 这里暂时不实现，SessionSidebar 会显示第一条消息的摘要
         saveSessionsAsync()
     }
-    
+
     /**
      * 获取当前会话的消息历史
      */
     fun getMessages(): List<Message> {
         return getCurrentSession().messages
     }
-    
+
     /**
      * 获取当前会话的最近 N 条消息
      */
     fun getRecentMessages(count: Int): List<Message> {
         return getCurrentSession().getRecentMessages(count)
     }
-    
+
     companion object {
         private var instance: ChatHistoryManager? = null
 
