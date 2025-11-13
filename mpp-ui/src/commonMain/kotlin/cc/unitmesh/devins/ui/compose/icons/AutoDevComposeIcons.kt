@@ -86,6 +86,9 @@ object AutoDevComposeIcons {
     val Delete: ImageVector get() = Icons.Default.Delete
     val ExitToApp: ImageVector get() = Icons.AutoMirrored.Filled.ExitToApp
     val RocketLaunch: ImageVector get() = Icons.Default.RocketLaunch
+    val ArrowBack: ImageVector get() = Icons.Default.ArrowBack
+    val Warning: ImageVector get() = Icons.Default.Warning
+    val DriveFileRenameOutline: ImageVector get() = Icons.Default.Edit // Using Edit as fallback for rename
 
     /**
      * Custom icons converted from SVG resources

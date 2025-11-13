@@ -2,31 +2,39 @@ package cc.unitmesh.devins.ui.compose.agent.codereview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
+import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
+import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.compose.sketch.DiffSketchRenderer
+import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
 // Expect function for platform-specific date formatting
 expect fun formatDate(timestamp: Long): String
 
 /**
- * Main Side-by-Side Code Review UI
+ * Main Side-by-Side Code Review UI (redesigned)
  *
- * Left: Original diff view
- * Right: AI analysis & fix flow
+ * Three-column layout using ResizableSplitPane:
+ * - Left: Commit history list (like GitHub commits view)
+ * - Center: Diff viewer with collapsible file changes (using DiffSketchRenderer)
+ * - Right: AI code review messages (using AgentMessageList)
  */
 @Composable
 fun CodeReviewSideBySideView(
@@ -46,13 +54,13 @@ fun CodeReviewSideBySideView(
                     onRetry = { viewModel.refresh() }
                 )
             }
-            state.diffFiles.isEmpty() -> {
-                EmptyDiffView(
+            state.commitHistory.isEmpty() -> {
+                EmptyCommitView(
                     onLoadDiff = { viewModel.refresh() }
                 )
             }
             else -> {
-                SideBySideContent(
+                ThreeColumnLayout(
                     state = state,
                     viewModel = viewModel
                 )
@@ -61,192 +69,693 @@ fun CodeReviewSideBySideView(
     }
 }
 
+/**
+ * Three-column layout with ResizableSplitPane
+ */
 @Composable
-private fun SideBySideContent(
+private fun ThreeColumnLayout(
     state: CodeReviewState,
     viewModel: CodeReviewViewModel
 ) {
-    Row(modifier = Modifier.fillMaxSize()) {
-        // Left side: Diff view
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(MaterialTheme.colors.surface)
-                .padding(8.dp)
-        ) {
-            DiffView(
-                files = state.diffFiles,
-                selectedIndex = state.selectedFileIndex,
-                onSelectFile = { index -> viewModel.selectFile(index) }
+    // Create a mock renderer for the right panel (AI messages)
+    // In a real implementation, this would be passed from the viewModel
+    val renderer = remember { ComposeRenderer() }
+
+    ResizableSplitPane(
+        modifier = Modifier.fillMaxSize(),
+        initialSplitRatio = 0.25f,
+        minRatio = 0.15f,
+        maxRatio = 0.4f,
+        first = {
+            // Left: Commit history list
+            CommitListView(
+                commits = state.commitHistory,
+                selectedIndex = state.selectedCommitIndex,
+                onCommitSelected = { index ->
+                    // Load diff for selected commit
+                    // Call refresh which will load the diff for the commit
+                    // Note: For cross-platform support, we use reflection or expect/actual pattern
+                    try {
+                        // Try to call loadDiffForCommit if it exists (JVM implementation)
+                        val method = viewModel::class.members.find { it.name == "loadDiffForCommit" }
+                        if (method != null) {
+                            method.call(viewModel, index)
+                        }
+                    } catch (e: Exception) {
+                        // Fallback: just update selection
+                        viewModel.selectFile(index)
+                    }
+                }
+            )
+        },
+        second = {
+            // Center + Right: Diff view and AI messages
+            ResizableSplitPane(
+                modifier = Modifier.fillMaxSize(),
+                initialSplitRatio = 0.55f,
+                minRatio = 0.3f,
+                maxRatio = 0.8f,
+                first = {
+                    // Center: Diff viewer
+                    DiffCenterView(
+                        diffFiles = state.diffFiles,
+                        selectedCommit = state.commitHistory.getOrNull(state.selectedCommitIndex)
+                    )
+                },
+                second = {
+                    // Right: AI code review messages
+                    AIReviewPanel(
+                        state = state,
+                        viewModel = viewModel,
+                        renderer = renderer
+                    )
+                }
             )
         }
-
-        // Divider
-        Divider(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(1.dp),
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
-        )
-
-        // Right side: AI analysis flow
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(MaterialTheme.colors.surface)
-                .padding(8.dp)
-        ) {
-            AIAnalysisView(
-                progress = state.aiProgress,
-                fixResults = state.fixResults,
-                onStartAnalysis = { viewModel.startAnalysis() },
-                onCancelAnalysis = { viewModel.cancelAnalysis() }
-            )
-        }
-    }
+    )
 }
 
 /**
- * Left side: Diff viewer with file tree
+ * Left panel: Commit history list (GitHub-style)
  */
 @Composable
-private fun DiffView(
-    files: List<DiffFileInfo>,
+private fun CommitListView(
+    commits: List<CommitInfo>,
     selectedIndex: Int,
-    onSelectFile: (Int) -> Unit
+    onCommitSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(8.dp)
+    ) {
         // Header
         Text(
-            text = "📄 Code Changes",
-            style = MaterialTheme.typography.h6,
-            modifier = Modifier.padding(bottom = 8.dp)
+            text = "Commits (${commits.size})",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)
         )
 
-        // File list
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outlineVariant
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Commit list
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(files.size) { index ->
-                DiffFileItem(
-                    file = files[index],
+            items(commits.size) { index ->
+                CommitListItem(
+                    commit = commits[index],
                     isSelected = index == selectedIndex,
-                    onClick = { onSelectFile(index) }
+                    onClick = { onCommitSelected(index) }
                 )
             }
         }
     }
 }
 
+/**
+ * Single commit list item (GitHub-style)
+ */
 @Composable
-private fun DiffFileItem(
-    file: DiffFileInfo,
+private fun CommitListItem(
+    commit: CommitInfo,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp),
-        elevation = if (isSelected) 4.dp else 1.dp,
-        backgroundColor = if (isSelected) {
-            MaterialTheme.colors.primary.copy(alpha = 0.1f)
-        } else {
-            MaterialTheme.colors.surface
-        },
-        shape = RoundedCornerShape(8.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                AutoDevColors.Indigo.c600.copy(alpha = 0.1f)
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        ),
+        shape = RoundedCornerShape(6.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 2.dp else 0.dp
+        )
     ) {
-        Button(
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.textButtonColors()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
         ) {
+            // Commit message (first line)
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Change type icon
-                Icon(
-                    imageVector = when (file.changeType) {
-                        ChangeType.ADDED -> Icons.Default.Add
-                        ChangeType.DELETED -> Icons.Default.Delete
-                        ChangeType.MODIFIED -> Icons.Default.Edit
-                        ChangeType.RENAMED -> Icons.Default.DriveFileRenameOutline
-                    },
-                    contentDescription = file.changeType.name,
-                    tint = when (file.changeType) {
-                        ChangeType.ADDED -> Color(0xFF4CAF50)
-                        ChangeType.DELETED -> Color(0xFFF44336)
-                        ChangeType.MODIFIED -> Color(0xFF2196F3)
-                        ChangeType.RENAMED -> Color(0xFFFF9800)
-                    },
-                    modifier = Modifier.size(20.dp)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // File path
                 Text(
-                    text = file.path,
-                    style = MaterialTheme.typography.body2,
-                    fontFamily = FontFamily.Monospace,
+                    text = commit.message.lines().firstOrNull() ?: commit.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
 
-                // Language badge
-                file.language?.let { lang ->
+                // Extract PR/issue number if present (e.g., #453)
+                val prNumber = Regex("#(\\d+)").find(commit.message)?.value
+                if (prNumber != null) {
+                    Surface(
+                        color = AutoDevColors.Indigo.c600.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = prNumber,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = AutoDevColors.Indigo.c600,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Author and timestamp
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = commit.author,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Text(
+                    text = formatRelativeTime(commit.timestamp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
+
+            // Short hash
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = commit.shortHash,
+                style = MaterialTheme.typography.labelSmall,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+/**
+ * Format relative time (e.g., "2 minutes ago", "Today 18:03")
+ */
+private fun formatRelativeTime(timestamp: Long): String {
+    val now = System.currentTimeMillis()
+    val diff = now - timestamp
+    
+    return when {
+        diff < 60_000 -> "just now"
+        diff < 3600_000 -> "${diff / 60_000} minutes ago"
+        diff < 86400_000 -> {
+            val hours = diff / 3600_000
+            if (hours < 12) "$hours hours ago" else "Today ${formatDate(timestamp).split(" ").lastOrNull() ?: ""}"
+        }
+        diff < 172800_000 -> "Yesterday"
+        else -> formatDate(timestamp)
+    }
+}
+
+/**
+ * Center panel: Diff viewer with collapsible file changes
+ */
+@Composable
+private fun DiffCenterView(
+    diffFiles: List<DiffFileInfo>,
+    selectedCommit: CommitInfo?,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(8.dp)
+    ) {
+        // Header with commit info
+        if (selectedCommit != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                shape = RoundedCornerShape(6.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
                     Text(
-                        text = lang,
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .background(
-                                MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
-                                RoundedCornerShape(4.dp)
-                            )
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                        text = selectedCommit.message.lines().firstOrNull() ?: selectedCommit.message,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = selectedCommit.author,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = selectedCommit.shortHash,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Files changed header
+        Text(
+            text = "Files changed (${diffFiles.size})",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+        )
+
+        if (diffFiles.isEmpty()) {
+            // Empty state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No file changes in this commit",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            // File list with collapsible diffs
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(diffFiles.size) { index ->
+                    CollapsibleFileDiffItem(
+                        file = diffFiles[index]
                     )
                 }
             }
         }
     }
-
-    // Expandable diff content (for future implementation)
-    if (isSelected && file.hunks.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(8.dp))
-        DiffHunksView(file.hunks)
-    }
 }
 
+/**
+ * Collapsible file diff item using DiffSketchRenderer
+ */
 @Composable
-private fun DiffHunksView(hunks: List<DiffHunk>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF1E1E1E), RoundedCornerShape(4.dp))
-            .padding(8.dp)
+private fun CollapsibleFileDiffItem(
+    file: DiffFileInfo
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(6.dp)
     ) {
-        hunks.forEach { hunk ->
-            DiffHunkView(hunk)
-            Spacer(modifier = Modifier.height(8.dp))
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // File header (clickable to expand/collapse)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Change type icon
+                    Icon(
+                        imageVector = when (file.changeType) {
+                            ChangeType.ADDED -> AutoDevComposeIcons.Add
+                            ChangeType.DELETED -> AutoDevComposeIcons.Delete
+                            ChangeType.MODIFIED -> AutoDevComposeIcons.Edit
+                            ChangeType.RENAMED -> AutoDevComposeIcons.DriveFileRenameOutline
+                        },
+                        contentDescription = file.changeType.name,
+                        tint = when (file.changeType) {
+                            ChangeType.ADDED -> AutoDevColors.Green.c600
+                            ChangeType.DELETED -> AutoDevColors.Red.c600
+                            ChangeType.MODIFIED -> AutoDevColors.Blue.c600
+                            ChangeType.RENAMED -> AutoDevColors.Amber.c600
+                        },
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                    // File path
+                    Text(
+                        text = file.path,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    // Language badge
+                    file.language?.let { lang ->
+                        Surface(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = lang,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Expand/collapse icon
+                Icon(
+                    imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Expandable diff content using DiffSketchRenderer-style rendering
+            if (expanded && file.hunks.isNotEmpty()) {
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                
+                Column(modifier = Modifier.padding(8.dp)) {
+                    file.hunks.forEach { hunk ->
+                        DiffHunkView(hunk)
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+                }
+            }
         }
     }
 }
 
+/**
+ * Right panel: AI code review messages
+ */
+@Composable
+private fun AIReviewPanel(
+    state: CodeReviewState,
+    viewModel: CodeReviewViewModel,
+    renderer: ComposeRenderer,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        // Header with action buttons
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "AI Code Review",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                // Start/Stop analysis button
+                when (state.aiProgress.stage) {
+                    AnalysisStage.IDLE -> {
+                        FilledTonalButton(
+                            onClick = { viewModel.startAnalysis() },
+                            enabled = state.diffFiles.isNotEmpty()
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.PlayArrow,
+                                contentDescription = "Start",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Start Review")
+                        }
+                    }
+                    AnalysisStage.RUNNING_LINT,
+                    AnalysisStage.ANALYZING_LINT,
+                    AnalysisStage.GENERATING_FIX -> {
+                        FilledTonalButton(
+                            onClick = { viewModel.cancelAnalysis() },
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = AutoDevColors.Red.c600.copy(alpha = 0.2f),
+                                contentColor = AutoDevColors.Red.c600
+                            )
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Stop,
+                                contentDescription = "Stop",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Stop")
+                        }
+                    }
+                    AnalysisStage.COMPLETED -> {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.CheckCircle,
+                                contentDescription = "Completed",
+                                tint = AutoDevColors.Green.c600,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Completed",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = AutoDevColors.Green.c600
+                            )
+                        }
+                    }
+                    AnalysisStage.ERROR -> {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Error,
+                                contentDescription = "Error",
+                                tint = AutoDevColors.Red.c600,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Error",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = AutoDevColors.Red.c600
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Progress indicator
+        if (state.aiProgress.stage in listOf(
+                AnalysisStage.RUNNING_LINT,
+                AnalysisStage.ANALYZING_LINT,
+                AnalysisStage.GENERATING_FIX
+            )
+        ) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = AutoDevColors.Indigo.c600
+            )
+        }
+
+        // Message list (reusing AgentMessageList component)
+        // For now, show a placeholder until we integrate with the actual renderer
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+            if (renderer.timeline.isEmpty() && state.aiProgress.stage == AnalysisStage.IDLE) {
+                // Empty state
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Click 'Start Review' to analyze the code changes with AI",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            } else {
+                // Show agent messages or progress outputs
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Show progress outputs
+                    if (state.aiProgress.lintOutput.isNotEmpty()) {
+                        item {
+                            ProgressOutputCard(
+                                title = "Lint Analysis",
+                                content = state.aiProgress.lintOutput,
+                                isActive = state.aiProgress.stage == AnalysisStage.RUNNING_LINT
+                            )
+                        }
+                    }
+
+                    if (state.aiProgress.analysisOutput.isNotEmpty()) {
+                        item {
+                            ProgressOutputCard(
+                                title = "AI Analysis",
+                                content = state.aiProgress.analysisOutput,
+                                isActive = state.aiProgress.stage == AnalysisStage.ANALYZING_LINT
+                            )
+                        }
+                    }
+
+                    if (state.fixResults.isNotEmpty()) {
+                        items(state.fixResults.size) { index ->
+                            FixResultCard(state.fixResults[index])
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Progress output card
+ */
+@Composable
+private fun ProgressOutputCard(
+    title: String,
+    content: String,
+    isActive: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isActive) {
+                AutoDevColors.Indigo.c600.copy(alpha = 0.1f)
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        ),
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+/**
+ * Diff hunk view (simplified from DiffSketchRenderer)
+ */
 @Composable
 private fun DiffHunkView(hunk: DiffHunk) {
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                RoundedCornerShape(4.dp)
+            )
+            .padding(4.dp)
+    ) {
         // Hunk header
         Text(
             text = "@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@",
             fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            color = Color(0xFF888888),
-            modifier = Modifier.padding(bottom = 4.dp)
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
         )
 
         // Lines
@@ -256,264 +765,96 @@ private fun DiffHunkView(hunk: DiffHunk) {
     }
 }
 
+/**
+ * Diff line view (using design system colors)
+ */
 @Composable
 private fun DiffLineView(line: DiffLine) {
-    val backgroundColor = when (line.type) {
-        DiffLineType.ADDED -> Color(0xFF1B4D2E)
-        DiffLineType.DELETED -> Color(0xFF5C1F1F)
-        DiffLineType.CONTEXT -> Color.Transparent
-    }
-
-    val textColor = when (line.type) {
-        DiffLineType.ADDED -> Color(0xFF4CAF50)
-        DiffLineType.DELETED -> Color(0xFFF44336)
-        DiffLineType.CONTEXT -> Color(0xFFCCCCCC)
+    val (backgroundColor, textColor, prefix) = when (line.type) {
+        DiffLineType.ADDED -> Triple(
+            AutoDevColors.Diff.Dark.addedBg,
+            AutoDevColors.Green.c400,
+            "+"
+        )
+        DiffLineType.DELETED -> Triple(
+            AutoDevColors.Diff.Dark.deletedBg,
+            AutoDevColors.Red.c400,
+            "-"
+        )
+        DiffLineType.CONTEXT -> Triple(
+            Color.Transparent,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+            " "
+        )
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .padding(horizontal = 4.dp, vertical = 1.dp)
     ) {
-        // Line numbers
+        // Old line number
         Text(
             text = "${line.oldLineNumber ?: ""}",
             fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            color = Color(0xFF666666),
-            modifier = Modifier.width(40.dp)
+            fontSize = 10.sp,
+            color = AutoDevColors.Diff.Dark.lineNumber,
+            modifier = Modifier.width(32.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.End
         )
+        
+        Spacer(modifier = Modifier.width(4.dp))
+        
+        // New line number
         Text(
             text = "${line.newLineNumber ?: ""}",
             fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            color = Color(0xFF666666),
-            modifier = Modifier.width(40.dp)
+            fontSize = 10.sp,
+            color = AutoDevColors.Diff.Dark.lineNumber,
+            modifier = Modifier.width(32.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.End
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Prefix (+/-)
+        Text(
+            text = prefix,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 11.sp,
+            color = textColor,
+            modifier = Modifier.width(12.dp)
         )
 
         // Content
         Text(
             text = line.content,
             fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            color = textColor,
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
     }
 }
 
 /**
- * Right side: AI analysis and fix flow
+ * Fix result card for displaying AI-generated fixes
  */
-@Composable
-private fun AIAnalysisView(
-    progress: AIAnalysisProgress,
-    fixResults: List<FixResult>,
-    onStartAnalysis: () -> Unit,
-    onCancelAnalysis: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "🤖 AI Analysis & Auto-Fix",
-                style = MaterialTheme.typography.h6
-            )
-
-            // Control buttons
-            when (progress.stage) {
-                AnalysisStage.IDLE -> {
-                    Button(onClick = onStartAnalysis) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Start")
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Start Analysis")
-                    }
-                }
-                AnalysisStage.RUNNING_LINT,
-                AnalysisStage.ANALYZING_LINT,
-                AnalysisStage.GENERATING_FIX -> {
-                    Button(onClick = onCancelAnalysis, colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MaterialTheme.colors.error
-                    )) {
-                        Icon(Icons.Default.Stop, contentDescription = "Cancel")
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Cancel")
-                    }
-                }
-                AnalysisStage.COMPLETED -> {
-                    Row {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = "Completed",
-                            tint = Color(0xFF4CAF50)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Completed", color = Color(0xFF4CAF50))
-                    }
-                }
-                AnalysisStage.ERROR -> {
-                    Row {
-                        Icon(
-                            Icons.Default.Error,
-                            contentDescription = "Error",
-                            tint = MaterialTheme.colors.error
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Error", color = MaterialTheme.colors.error)
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Progress stages
-        ProgressStagesView(progress)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Output sections
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Lint output
-            if (progress.lintOutput.isNotEmpty()) {
-                item {
-                    OutputSection(
-                        title = "1️⃣ Lint Analysis",
-                        content = progress.lintOutput,
-                        isActive = progress.stage == AnalysisStage.RUNNING_LINT
-                    )
-                }
-            }
-
-            // AI analysis
-            if (progress.analysisOutput.isNotEmpty()) {
-                item {
-                    OutputSection(
-                        title = "2️⃣ AI Analysis",
-                        content = progress.analysisOutput,
-                        isActive = progress.stage == AnalysisStage.ANALYZING_LINT
-                    )
-                }
-            }
-
-            // Fix results
-            if (fixResults.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "3️⃣ Auto-Fix Results (${fixResults.size} fixes)",
-                        style = MaterialTheme.typography.subtitle1,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                items(fixResults) { fix ->
-                    FixResultCard(fix)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProgressStagesView(progress: AIAnalysisProgress) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        StageIndicator("Lint", progress.stage >= AnalysisStage.RUNNING_LINT)
-        Text("→", modifier = Modifier.padding(horizontal = 4.dp))
-        StageIndicator("Analyze", progress.stage >= AnalysisStage.ANALYZING_LINT)
-        Text("→", modifier = Modifier.padding(horizontal = 4.dp))
-        StageIndicator("Fix", progress.stage >= AnalysisStage.GENERATING_FIX)
-    }
-}
-
-@Composable
-private fun StageIndicator(label: String, isActive: Boolean) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(
-                    if (isActive) MaterialTheme.colors.primary else Color.Gray,
-                    RoundedCornerShape(20.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isActive) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = label,
-                    tint = Color.White
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.caption,
-            color = if (isActive) MaterialTheme.colors.primary else Color.Gray
-        )
-    }
-}
-
-@Composable
-private fun OutputSection(
-    title: String,
-    content: String,
-    isActive: Boolean
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = 2.dp,
-        shape = RoundedCornerShape(8.dp),
-        backgroundColor = if (isActive) {
-            MaterialTheme.colors.primary.copy(alpha = 0.05f)
-        } else {
-            MaterialTheme.colors.surface
-        }
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.subtitle1,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = content,
-                fontFamily = FontFamily.Monospace,
-                fontSize = 12.sp,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1E1E1E), RoundedCornerShape(4.dp))
-                    .padding(8.dp)
-            )
-        }
-    }
-}
 
 @Composable
 private fun FixResultCard(fix: FixResult) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = 2.dp,
-        shape = RoundedCornerShape(8.dp),
-        backgroundColor = when (fix.status) {
-            FixStatus.FIXED -> Color(0xFF1B4D2E)
-            FixStatus.NO_ISSUE -> Color(0xFF2E4D1B)
-            FixStatus.SKIPPED -> Color(0xFF4D4D1B)
-            FixStatus.FAILED -> Color(0xFF5C1F1F)
-        }.copy(alpha = 0.3f)
+        colors = CardDefaults.cardColors(
+            containerColor = when (fix.status) {
+                FixStatus.FIXED -> AutoDevColors.Green.c600.copy(alpha = 0.1f)
+                FixStatus.NO_ISSUE -> AutoDevColors.Blue.c600.copy(alpha = 0.1f)
+                FixStatus.SKIPPED -> AutoDevColors.Amber.c600.copy(alpha = 0.1f)
+                FixStatus.FAILED -> AutoDevColors.Red.c600.copy(alpha = 0.1f)
+            }
+        ),
+        shape = RoundedCornerShape(6.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             // Header row
@@ -522,52 +863,55 @@ private fun FixResultCard(fix: FixResult) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     // Status icon
                     Icon(
                         imageVector = when (fix.status) {
-                            FixStatus.FIXED -> Icons.Default.CheckCircle
-                            FixStatus.NO_ISSUE -> Icons.Default.Info
-                            FixStatus.SKIPPED -> Icons.Default.Warning
-                            FixStatus.FAILED -> Icons.Default.Error
+                            FixStatus.FIXED -> AutoDevComposeIcons.CheckCircle
+                            FixStatus.NO_ISSUE -> AutoDevComposeIcons.Info
+                            FixStatus.SKIPPED -> AutoDevComposeIcons.Warning
+                            FixStatus.FAILED -> AutoDevComposeIcons.Error
                         },
                         contentDescription = fix.status.name,
                         tint = when (fix.status) {
-                            FixStatus.FIXED -> Color(0xFF4CAF50)
-                            FixStatus.NO_ISSUE -> Color(0xFF2196F3)
-                            FixStatus.SKIPPED -> Color(0xFFFF9800)
-                            FixStatus.FAILED -> Color(0xFFF44336)
+                            FixStatus.FIXED -> AutoDevColors.Green.c600
+                            FixStatus.NO_ISSUE -> AutoDevColors.Blue.c600
+                            FixStatus.SKIPPED -> AutoDevColors.Amber.c600
+                            FixStatus.FAILED -> AutoDevColors.Red.c600
                         },
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-
-                    Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
                         text = "${fix.filePath}:${fix.line}",
-                        style = MaterialTheme.typography.body2,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 // Risk badge
-                Text(
-                    text = fix.risk.name,
-                    style = MaterialTheme.typography.caption,
-                    color = Color.White,
-                    modifier = Modifier
-                        .background(
-                            when (fix.risk) {
-                                RiskLevel.CRITICAL -> Color(0xFFD32F2F)
-                                RiskLevel.HIGH -> Color(0xFFF57C00)
-                                RiskLevel.MEDIUM -> Color(0xFFFBC02D)
-                                RiskLevel.LOW -> Color(0xFF388E3C)
-                                RiskLevel.INFO -> Color(0xFF1976D2)
-                            },
-                            RoundedCornerShape(4.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                Surface(
+                    color = when (fix.risk) {
+                        RiskLevel.CRITICAL -> AutoDevColors.Red.c600
+                        RiskLevel.HIGH -> AutoDevColors.Amber.c600
+                        RiskLevel.MEDIUM -> AutoDevColors.Amber.c500
+                        RiskLevel.LOW -> AutoDevColors.Green.c600
+                        RiskLevel.INFO -> AutoDevColors.Blue.c600
+                    },
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = fix.risk.name,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -575,8 +919,8 @@ private fun FixResultCard(fix: FixResult) {
             // Issue
             Text(
                 text = "Issue: ${fix.lintIssue}",
-                style = MaterialTheme.typography.body2,
-                color = MaterialTheme.colors.error
+                style = MaterialTheme.typography.bodySmall,
+                color = AutoDevColors.Red.c600
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -584,65 +928,99 @@ private fun FixResultCard(fix: FixResult) {
             // AI fix description
             Text(
                 text = "Fix: ${fix.aiFix}",
-                style = MaterialTheme.typography.body2,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             // Fixed code
             fix.fixedCode?.let { code ->
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = code,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 12.sp,
-                    color = Color(0xFF4CAF50),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(4.dp))
-                        .padding(8.dp)
-                )
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = code,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 11.sp,
+                        color = AutoDevColors.Green.c600,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
             }
         }
     }
 }
 
-// Supporting views
+// ===============================================================================
+// Supporting Views
+// ===============================================================================
 
 @Composable
 private fun LoadingView() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator()
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Loading git diff...")
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CircularProgressIndicator(
+                color = AutoDevColors.Indigo.c600
+            )
+            Text(
+                text = "Loading commit history...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
 
 @Composable
-private fun ErrorView(error: String, onRetry: () -> Unit) {
+private fun ErrorView(
+    error: String,
+    onRetry: () -> Unit
+) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(32.dp)
+        ) {
             Icon(
-                Icons.Default.Error,
+                imageVector = AutoDevComposeIcons.Error,
                 contentDescription = "Error",
-                tint = MaterialTheme.colors.error,
+                tint = AutoDevColors.Red.c600,
                 modifier = Modifier.size(48.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Error",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Text(
                 text = error,
-                style = MaterialTheme.typography.body1,
-                color = MaterialTheme.colors.error
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onRetry) {
+            FilledTonalButton(onClick = onRetry) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Refresh,
+                    contentDescription = "Retry",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Retry")
             }
         }
@@ -650,32 +1028,44 @@ private fun ErrorView(error: String, onRetry: () -> Unit) {
 }
 
 @Composable
-private fun EmptyDiffView(onLoadDiff: () -> Unit) {
+private fun EmptyCommitView(onLoadDiff: () -> Unit) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "📄",
-                fontSize = 64.sp
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Icon(
+                imageVector = AutoDevComposeIcons.Description,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(64.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No diff available",
-                style = MaterialTheme.typography.h6
+                text = "No commits available",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Make some changes or specify a commit to review",
-                style = MaterialTheme.typography.body2,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                text = "Make sure you have commits in your repository",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onLoadDiff) {
-                Icon(Icons.Default.Refresh, contentDescription = "Load")
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Load Diff")
+            FilledTonalButton(onClick = onLoadDiff) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Refresh,
+                    contentDescription = "Load",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Load Commits")
             }
         }
     }

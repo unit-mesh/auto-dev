@@ -1,21 +1,24 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 
 /**
- * Code Review Page - Entry point for the Side-by-Side code review UI
+ * Code Review Page - Entry point for the Side-by-Side code review UI (redesigned)
  *
- * This is a full-page view that replaces the chat interface when CODE_REVIEW agent is selected
+ * This is a full-page view that replaces the chat interface when CODE_REVIEW agent is selected.
+ * Features a three-column layout with commit history, diff viewer, and AI review panel.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CodeReviewPage(
     llmService: KoogLLMService?,
@@ -48,7 +51,8 @@ fun CodeReviewPage(
                 workspace = currentWorkspace
             )
         },
-        modifier = modifier
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -63,6 +67,7 @@ fun CodeReviewPage(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CodeReviewTopBar(
     onBack: () -> Unit,
@@ -72,28 +77,41 @@ private fun CodeReviewTopBar(
     TopAppBar(
         title = {
             Column {
-                Text("Code Review")
+                Text(
+                    text = "Code Review",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
                 workspace?.let {
                     Text(
                         text = it.name,
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onPrimary.copy(alpha = 0.7f)
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         },
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(
+                    imageVector = AutoDevComposeIcons.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
         },
         actions = {
-            TextButton(onClick = onRefresh) {
-                Text("Refresh", color = MaterialTheme.colors.onPrimary)
+            IconButton(onClick = onRefresh) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Refresh,
+                    contentDescription = "Refresh",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
         },
-        backgroundColor = MaterialTheme.colors.primary,
-        contentColor = MaterialTheme.colors.onPrimary,
-        elevation = 4.dp
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
+        )
     )
 }
