@@ -23,7 +23,7 @@ fun CodeReviewPage(
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
-    
+
     // Create ViewModel
     val viewModel = remember(currentWorkspace, llmService) {
         val workspace = currentWorkspace ?: WorkspaceManager.getCurrentOrEmpty()

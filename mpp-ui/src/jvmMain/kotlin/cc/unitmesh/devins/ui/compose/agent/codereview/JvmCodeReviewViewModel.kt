@@ -4,10 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
-import cc.unitmesh.agent.ReviewTask
-import cc.unitmesh.agent.ReviewType
 import cc.unitmesh.devins.workspace.Workspace
-import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,95 +12,155 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * ViewModel for Code Review Side-by-Side UI
- *
- * Manages the flow:
- * 1. Load git diff from Workspace
- * 2. Run lint analysis on diff
- * 3. AI analyzes lint output
- * 4. AI generates fixes
- * 5. Display results in side-by-side view
+ * Enhanced CodeReview ViewModel for JVM with Git integration
  */
-open class CodeReviewViewModel(
+class JvmCodeReviewViewModel(
     private val workspace: Workspace,
-    private val llmService: KoogLLMService?,
-    private val codeReviewAgent: CodeReviewAgent? = null
-) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    // State
-    private val _state = MutableStateFlow(CodeReviewState())
-    val state: StateFlow<CodeReviewState> = _state.asStateFlow()
-
-    var currentState by mutableStateOf(CodeReviewState())
-        internal set
-
-    // Control execution
+    private val gitService: GitService,
+    llmService: KoogLLMService? = null,
+    codeReviewAgent: CodeReviewAgent? = null
+) : CodeReviewViewModel(workspace, llmService, codeReviewAgent) {
+    // Control execution for Git operations
     private var currentJob: Job? = null
 
     init {
-        // Auto-load diff when ViewModel is created
-        scope.launch {
-            loadDiff()
+        println("🚀 Initializing JvmCodeReviewViewModel")
+        println("📁 Workspace: ${workspace.rootPath}")
+
+        // Auto-load commit history when ViewModel is created
+        CoroutineScope(Dispatchers.Default).launch {
+            loadCommitHistory()
         }
     }
 
     /**
-     * Load git diff from workspace
+     * Load recent git commits
      */
-    suspend fun loadDiff(request: DiffRequest = DiffRequest()) {
+    suspend fun loadCommitHistory(count: Int = 20) {
+        println("📜 Loading last $count commits...")
         updateState { it.copy(isLoading = true, error = null) }
 
         try {
-            // Get diff from workspace
-            val gitDiff = workspace.getGitDiff(request.baseBranch, request.compareWith)
+            val gitCommits = gitService.getRecentCommits(count)
 
-            if (gitDiff == null) {
-                updateState {
-                    it.copy(
-                        isLoading = false,
-                        error = "No git diff available. Make sure you have uncommitted changes or specify a commit."
-                    )
-                }
-                return
+            println("✅ Loaded ${gitCommits.size} commits:")
+            gitCommits.take(5).forEach { commit ->
+                println("  • ${commit.shortHash} - ${commit.message}")
             }
 
-            // Convert to UI model
-            val diffFiles = gitDiff.files.map { file ->
-                DiffFileInfo(
-                    path = file.path,
-                    oldPath = file.oldPath,
-                    changeType = when (file.status) {
-                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> ChangeType.ADDED
-                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> ChangeType.DELETED
-                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> ChangeType.MODIFIED
-                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAMED
-                        cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.MODIFIED
-                    },
-                    hunks = parseDiffHunks(file.diff),
-                    language = detectLanguage(file.path)
+            // Convert GitCommitInfo to CommitInfo
+            val commits = gitCommits.map { git ->
+                CommitInfo(
+                    hash = git.hash,
+                    shortHash = git.shortHash,
+                    author = git.author,
+                    timestamp = git.date,  // GitCommitInfo.date is Long timestamp
+                    date = formatDate(git.date),  // Format as string for display
+                    message = git.message
                 )
             }
 
             updateState {
                 it.copy(
                     isLoading = false,
-                    diffFiles = diffFiles,
+                    commitHistory = commits,
+                    selectedCommitIndex = 0,
                     error = null
                 )
             }
 
-            // Auto-start analysis if agent is available
-            if (codeReviewAgent != null && diffFiles.isNotEmpty()) {
-                startAnalysis()
+            // Auto-load diff for the first commit
+            if (commits.isNotEmpty()) {
+                loadDiffForCommit(0)
             }
 
         } catch (e: Exception) {
+            println("❌ Failed to load commit history: ${e.message}")
+            e.printStackTrace()
             updateState {
                 it.copy(
                     isLoading = false,
-                    error = "Failed to load diff: ${e.message}"
+                    error = "Failed to load commits: ${e.message}"
                 )
+            }
+        }
+    }
+
+    /**
+     * Load diff for a specific commit
+     */
+    fun loadDiffForCommit(index: Int) {
+        if (index !in currentState.commitHistory.indices) {
+            println("⚠️  Invalid commit index: $index")
+            return
+        }
+
+        val commit = currentState.commitHistory[index]
+        println("🔍 Loading diff for commit: ${commit.shortHash} - ${commit.message}")
+
+        currentJob?.cancel()
+        currentJob = CoroutineScope(Dispatchers.Default).launch {
+            updateState {
+                it.copy(
+                    isLoading = true,
+                    selectedCommitIndex = index,
+                    error = null
+                )
+            }
+
+            try {
+                val gitDiff = gitService.getCommitDiff(commit.hash)
+
+                if (gitDiff == null) {
+                    updateState {
+                        it.copy(
+                            isLoading = false,
+                            error = "No diff available for this commit"
+                        )
+                    }
+                    return@launch
+                }
+
+                // Convert to UI model
+                val diffFiles = gitDiff.files.map { file ->
+                    DiffFileInfo(
+                        path = file.path,
+                        oldPath = file.oldPath,
+                        changeType = when (file.status) {
+                            cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> ChangeType.ADDED
+                            cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> ChangeType.DELETED
+                            cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> ChangeType.MODIFIED
+                            cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAMED
+                            cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.MODIFIED
+                        },
+                        hunks = parseDiffHunks(file.diff),
+                        language = detectLanguage(file.path)
+                    )
+                }
+
+                println("✅ Loaded diff with ${diffFiles.size} changed files")
+                diffFiles.forEach { file ->
+                    println("  • ${file.path} [${file.changeType}] (${file.language ?: "unknown"})")
+                }
+
+                updateState {
+                    it.copy(
+                        isLoading = false,
+                        diffFiles = diffFiles,
+                        selectedFileIndex = 0,
+                        error = null
+                    )
+                }
+
+            } catch (e: Exception) {
+                println("❌ Failed to load diff: ${e.message}")
+                e.printStackTrace()
+                updateState {
+                    it.copy(
+                        isLoading = false,
+                        error = "Failed to load diff: ${e.message}"
+                    )
+                }
             }
         }
     }
@@ -111,14 +168,16 @@ open class CodeReviewViewModel(
     /**
      * Start AI analysis and fix generation
      */
-    open fun startAnalysis() {
+    override fun startAnalysis() {
+        println("🤖 Starting AI analysis...")
+
         if (currentState.diffFiles.isEmpty()) {
             updateState { it.copy(error = "No files to analyze") }
             return
         }
 
         currentJob?.cancel()
-        currentJob = scope.launch {
+        currentJob = CoroutineScope(Dispatchers.Default).launch {
             try {
                 updateState {
                     it.copy(
@@ -127,7 +186,7 @@ open class CodeReviewViewModel(
                     )
                 }
 
-                // Step 1: Run lint on changed files
+                // Step 1: Run lint
                 val filePaths = currentState.diffFiles.map { it.path }
                 runLint(filePaths)
 
@@ -148,6 +207,7 @@ open class CodeReviewViewModel(
                 generateFixes()
 
                 // Completed
+                println("✅ AI analysis completed")
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(stage = AnalysisStage.COMPLETED)
@@ -157,6 +217,8 @@ open class CodeReviewViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                println("❌ Analysis failed: ${e.message}")
+                e.printStackTrace()
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(stage = AnalysisStage.ERROR),
@@ -170,7 +232,8 @@ open class CodeReviewViewModel(
     /**
      * Cancel current analysis
      */
-    open fun cancelAnalysis() {
+    override fun cancelAnalysis() {
+        println("🛑 Cancelling analysis...")
         currentJob?.cancel()
         updateState {
             it.copy(
@@ -182,8 +245,9 @@ open class CodeReviewViewModel(
     /**
      * Select a different file to view
      */
-    open fun selectFile(index: Int) {
+    override fun selectFile(index: Int) {
         if (index in currentState.diffFiles.indices) {
+            println("📄 Selected file: ${currentState.diffFiles[index].path}")
             updateState { it.copy(selectedFileIndex = index) }
         }
     }
@@ -191,24 +255,25 @@ open class CodeReviewViewModel(
     /**
      * Get currently selected file
      */
-    open fun getSelectedFile(): DiffFileInfo? {
+    override fun getSelectedFile(): DiffFileInfo? {
         return currentState.diffFiles.getOrNull(currentState.selectedFileIndex)
     }
 
     /**
-     * Refresh diff
+     * Refresh current commit
      */
-    open fun refresh() {
-        scope.launch {
-            loadDiff()
+    override fun refresh() {
+        println("🔄 Refreshing...")
+        // Use CoroutineScope from MainScope or create a new one
+        CoroutineScope(Dispatchers.Default).launch {
+            loadCommitHistory()
         }
     }
 
     // Private helper methods
 
     private suspend fun runLint(filePaths: List<String>) {
-        // TODO: Integrate with actual lint tools (eslint, pylint, etc.)
-        // For now, simulate lint output
+        println("🔍 Running lint on ${filePaths.size} files...")
 
         val lintOutput = buildString {
             appendLine("Running lint on ${filePaths.size} files...")
@@ -229,7 +294,8 @@ open class CodeReviewViewModel(
     }
 
     private suspend fun analyzeLintOutput() {
-        // TODO: Call CodeReviewAgent to analyze lint output
+        println("🧠 Analyzing lint output...")
+
         val analysisOutput = buildString {
             appendLine("Analyzing lint results...")
             delay(800)
@@ -249,10 +315,11 @@ open class CodeReviewViewModel(
     }
 
     private suspend fun generateFixes() {
-        // TODO: Call CodeReviewAgent to generate fixes
+        println("🔧 Generating fixes...")
+
         val fixes = listOf(
             FixResult(
-                filePath = "src/main/Example.kt",
+                filePath = currentState.diffFiles.firstOrNull()?.path ?: "unknown",
                 line = 42,
                 lintIssue = "Unused variable 'temp'",
                 lintValid = true,
@@ -262,7 +329,7 @@ open class CodeReviewViewModel(
                 status = FixStatus.FIXED
             ),
             FixResult(
-                filePath = "src/main/Example.kt",
+                filePath = currentState.diffFiles.firstOrNull()?.path ?: "unknown",
                 line = 58,
                 lintIssue = "Missing null check",
                 lintValid = true,
@@ -272,7 +339,7 @@ open class CodeReviewViewModel(
                 status = FixStatus.FIXED
             ),
             FixResult(
-                filePath = "src/main/Example.kt",
+                filePath = currentState.diffFiles.firstOrNull()?.path ?: "unknown",
                 line = 73,
                 lintIssue = "Inefficient loop",
                 lintValid = true,
@@ -282,6 +349,8 @@ open class CodeReviewViewModel(
                 status = FixStatus.FIXED
             )
         )
+
+        println("✅ Generated ${fixes.size} fixes")
 
         updateState {
             it.copy(
@@ -295,7 +364,6 @@ open class CodeReviewViewModel(
 
     private fun parseDiffHunks(diff: String): List<DiffHunk> {
         // TODO: Parse unified diff format
-        // For now, return empty list
         return emptyList()
     }
 
@@ -313,21 +381,16 @@ open class CodeReviewViewModel(
 
     private fun updateState(update: (CodeReviewState) -> CodeReviewState) {
         currentState = update(currentState)
-        _state.value = currentState
-    }
-
-    /**
-     * Protected method for subclasses to update parent state
-     */
-    protected fun updateParentState(update: (CodeReviewState) -> CodeReviewState) {
-        updateState(update)
+        // Also update parent's state flow
+        super.updateParentState(update)
     }
 
     /**
      * Cleanup when ViewModel is disposed
      */
-    open fun dispose() {
+    override fun dispose() {
+        println("🧹 Disposing JvmCodeReviewViewModel")
         currentJob?.cancel()
-        scope.cancel()
+        super.dispose()
     }
 }

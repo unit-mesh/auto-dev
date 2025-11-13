@@ -7,7 +7,7 @@ import cc.unitmesh.llm.KoogLLMService
 
 /**
  * Agent Interface Router
- * 
+ *
  * Routes to different UI based on selected agent type:
  * - CODING: Traditional chat interface
  * - CODE_REVIEW: Side-by-side diff + AI fix view

@@ -388,6 +388,19 @@ tasks.register<JavaExec>("runRemoteAgentCli") {
     standardInput = System.`in`
 }
 
+// Task to run Code Review Demo
+tasks.register<JavaExec>("runCodeReviewDemo") {
+    group = "application"
+    description = "Run Code Review Demo (Side-by-Side UI with Git integration)"
+
+    val jvmCompilation = kotlin.jvm().compilations.getByName("main")
+    classpath(jvmCompilation.output, configurations["jvmRuntimeClasspath"])
+    mainClass.set("cc.unitmesh.devins.ui.compose.agent.codereview.demo.CodeReviewDemoKt")
+
+    // Enable standard input
+    standardInput = System.`in`
+}
+
 // Ktlint configuration
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     version.set("1.0.1")

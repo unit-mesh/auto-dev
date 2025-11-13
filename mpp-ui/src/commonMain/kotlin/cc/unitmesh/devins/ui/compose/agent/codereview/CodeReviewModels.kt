@@ -153,7 +153,9 @@ data class DiffResponse(
  */
 data class CommitInfo(
     val hash: String,
+    val shortHash: String,
     val author: String,
+    val timestamp: Long,
     val date: String,
     val message: String
 )
