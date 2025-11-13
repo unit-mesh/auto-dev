@@ -65,6 +65,7 @@ object AutoDevComposeIcons {
     val Code: ImageVector get() = Icons.Default.Code
     val Javascript: ImageVector get() = Icons.Default.Javascript
     val Article: ImageVector get() = Icons.AutoMirrored.Filled.Article
+    val RateReview: ImageVector get() = Icons.Default.RateReview
 
     // Status & Information
     val Error: ImageVector get() = Icons.Default.Error

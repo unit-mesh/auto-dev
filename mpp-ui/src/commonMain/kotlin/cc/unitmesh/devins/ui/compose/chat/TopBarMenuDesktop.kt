@@ -26,6 +26,9 @@ fun TopBarMenuDesktop(
     // Remote Agent 相关参数
     selectedAgentType: String = "Local",
     useSessionManagement: Boolean = false,
+    // Agent Task Type 相关参数 (Coding vs Code Review)
+    selectedTaskAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
+    onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     // Sidebar 相关参数
     showSessionSidebar: Boolean = false,
     onToggleSidebar: () -> Unit = {},
@@ -47,6 +50,7 @@ fun TopBarMenuDesktop(
     var themeMenuExpanded by remember { mutableStateOf(false) }
     var agentMenuExpanded by remember { mutableStateOf(false) }
     var agentTypeMenuExpanded by remember { mutableStateOf(false) }
+    var taskAgentTypeMenuExpanded by remember { mutableStateOf(false) }
 
     Surface(
         modifier = modifier.fillMaxWidth().height(32.dp),
@@ -150,6 +154,104 @@ fun TopBarMenuDesktop(
                                 },
                                 trailingIcon = {
                                     if (agent == selectedAgent) {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.Check,
+                                            contentDescription = "Selected",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Task Agent Type Selector (Coding/Code Review) - Only in Agent Mode
+                if (useAgentMode) {
+                    Box {
+                        OutlinedButton(
+                            onClick = { taskAgentTypeMenuExpanded = true },
+                            modifier = Modifier.height(24.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW) {
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                }
+                            )
+                        ) {
+                            Icon(
+                                imageVector = if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW) {
+                                    AutoDevComposeIcons.RateReview
+                                } else {
+                                    AutoDevComposeIcons.Code
+                                },
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = selectedTaskAgentType.getDisplayName(),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = taskAgentTypeMenuExpanded,
+                            onDismissRequest = { taskAgentTypeMenuExpanded = false }
+                        ) {
+                            Text(
+                                text = "Task Type",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            HorizontalDivider()
+
+                            // Coding Agent
+                            DropdownMenuItem(
+                                text = { Text("Coding Agent") },
+                                onClick = {
+                                    onTaskAgentTypeChange(cc.unitmesh.devins.ui.compose.agent.AgentType.CODING)
+                                    taskAgentTypeMenuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.Code,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODING) {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.Check,
+                                            contentDescription = "Selected",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            )
+
+                            // Code Review Agent
+                            DropdownMenuItem(
+                                text = { Text("Code Review") },
+                                onClick = {
+                                    onTaskAgentTypeChange(cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW)
+                                    taskAgentTypeMenuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.RateReview,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW) {
                                         Icon(
                                             imageVector = AutoDevComposeIcons.Check,
                                             contentDescription = "Selected",

@@ -21,6 +21,9 @@ fun AgentChatInterface(
     onToggleTreeView: (Boolean) -> Unit = {},
     // 会话管理（新增）
     chatHistoryManager: cc.unitmesh.devins.llm.ChatHistoryManager? = null,
+    // Agent 类型切换（新增）
+    selectedAgentType: AgentType = AgentType.CODING,
+    onAgentTypeChange: (AgentType) -> Unit = {},
     // TopBar 参数
     hasHistory: Boolean = false,
     hasDebugInfo: Boolean = false,
@@ -28,14 +31,14 @@ fun AgentChatInterface(
     selectedAgent: String = "Default",
     availableAgents: List<String> = listOf("Default"),
     useAgentMode: Boolean = true,
-    selectedAgentType: String = "Local",
+    selectedRemoteAgentType: String = "Local",
     onOpenDirectory: () -> Unit = {},
     onClearHistory: () -> Unit = {},
     onShowDebug: () -> Unit = {},
     onModelConfigChange: (cc.unitmesh.llm.ModelConfig) -> Unit = {},
     onAgentChange: (String) -> Unit = {},
     onModeToggle: () -> Unit = {},
-    onAgentTypeChange: (String) -> Unit = {},
+    onRemoteAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
@@ -60,6 +63,11 @@ fun AgentChatInterface(
                 chatHistoryManager = chatHistoryManager  // 传入会话管理
             )
         }
+
+    // 同步 Agent 类型到 ViewModel
+    LaunchedEffect(selectedAgentType) {
+        viewModel.switchAgent(selectedAgentType)
+    }
 
     val handleSessionSelected: (String) -> Unit = remember(viewModel) {
         { sessionId ->
@@ -113,7 +121,7 @@ fun AgentChatInterface(
                             availableAgents = availableAgents,
                             useAgentMode = useAgentMode,
                             isTreeViewVisible = isTreeViewVisible,
-                            selectedAgentType = selectedAgentType,
+                            selectedAgentType = selectedRemoteAgentType,
                             onOpenDirectory = onOpenDirectory,
                             onClearHistory = onClearHistory,
                             onShowDebug = onShowDebug,
@@ -121,7 +129,7 @@ fun AgentChatInterface(
                             onAgentChange = onAgentChange,
                             onModeToggle = onModeToggle,
                             onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                            onAgentTypeChange = onAgentTypeChange,
+                            onAgentTypeChange = onRemoteAgentTypeChange,
                             onConfigureRemote = onConfigureRemote,
                             onShowModelConfig = onShowModelConfig,
                             onShowToolConfig = onShowToolConfig,
@@ -149,22 +157,39 @@ fun AgentChatInterface(
                             )
                         }
 
-                    // 输入框
-                    DevInEditorInput(
-                        initialText = "",
-                        placeholder = "Describe your coding task...",
-                        callbacks = callbacks,
-                        completionManager = currentWorkspace?.completionManager,
-                        isCompactMode = true,
-                        isExecuting = viewModel.isExecuting,
-                        onStopClick = { viewModel.cancelTask() },
-                        onModelConfigChange = { /* Handle model config change if needed */ },
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .imePadding()
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                    )
+                    // 根据选中的 Agent 类型显示不同的输入组件
+                    when (selectedAgentType) {
+                        AgentType.CODING -> {
+                            // 输入框 for Coding Agent
+                            DevInEditorInput(
+                                initialText = "",
+                                placeholder = "Describe your coding task...",
+                                callbacks = callbacks,
+                                completionManager = currentWorkspace?.completionManager,
+                                isCompactMode = true,
+                                isExecuting = viewModel.isExecuting,
+                                onStopClick = { viewModel.cancelTask() },
+                                onModelConfigChange = { /* Handle model config change if needed */ },
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .imePadding()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                            )
+                        }
+                        AgentType.CODE_REVIEW -> {
+                            CodeReviewInput(
+                                projectPath = currentWorkspace?.rootPath ?: "",
+                                onReview = { reviewTask ->
+                                    viewModel.executeReviewTask(reviewTask, onConfigWarning)
+                                },
+                                isExecuting = viewModel.isExecuting,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .imePadding()
+                            )
+                        }
+                    }
 
                     ToolLoadingStatusBar(
                         viewModel = viewModel,
@@ -230,7 +255,8 @@ fun AgentChatInterface(
                     availableAgents = availableAgents,
                     useAgentMode = useAgentMode,
                     isTreeViewVisible = isTreeViewVisible,
-                    selectedAgentType = selectedAgentType,
+                    selectedAgentType = selectedRemoteAgentType,
+                    selectedTaskAgentType = selectedAgentType,
                     onOpenDirectory = onOpenDirectory,
                     onClearHistory = onClearHistory,
                     onShowDebug = onShowDebug,
@@ -238,7 +264,8 @@ fun AgentChatInterface(
                     onAgentChange = onAgentChange,
                     onModeToggle = onModeToggle,
                     onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                    onAgentTypeChange = onAgentTypeChange,
+                    onAgentTypeChange = onRemoteAgentTypeChange,
+                    onTaskAgentTypeChange = onAgentTypeChange,
                     onConfigureRemote = onConfigureRemote,
                     onShowModelConfig = onShowModelConfig,
                     onShowToolConfig = onShowToolConfig,

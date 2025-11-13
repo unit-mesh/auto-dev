@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.AgentTask
 import cc.unitmesh.agent.CodingAgent
+import cc.unitmesh.agent.CodeReviewAgent
+import cc.unitmesh.agent.ReviewTask
 import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.PreloadingStatus
@@ -19,12 +21,13 @@ import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 
 /**
- * Compose ViewModel for Coding Agent
+ * Compose ViewModel for Multi-Agent support (Coding Agent + Code Review Agent)
  *
  * Uses the new BaseRenderer architecture with ComposeRenderer
  * for consistent rendering across CLI, TUI, and Compose UI
  *
  * 支持会话管理：Agent 模式的对话也会保存到 ChatHistoryManager
+ * 支持多 Agent 切换：CodingAgent 和 CodeReviewAgent
  */
 class CodingAgentViewModel(
     private val llmService: KoogLLMService?,
@@ -36,8 +39,13 @@ class CodingAgentViewModel(
 
     val renderer = ComposeRenderer()
 
-    // Lazy initialization of CodingAgent to handle async tool config loading
+    // Current agent type
+    var currentAgentType by mutableStateOf(AgentType.CODING)
+        private set
+
+    // Lazy initialization of agents to handle async tool config loading
     private var _codingAgent: CodingAgent? = null
+    private var _codeReviewAgent: CodeReviewAgent? = null
     private var agentInitialized = false
 
     var isExecuting by mutableStateOf(false)
@@ -178,9 +186,101 @@ class CodingAgentViewModel(
     }
 
     /**
+     * Initialize the CodeReviewAgent with tool configuration
+     * Uses the same factory pattern as CodingAgent
+     * @throws IllegalStateException if llmService is not configured
+     */
+    private suspend fun initializeCodeReviewAgent(): CodeReviewAgent {
+        if (llmService == null) {
+            throw IllegalStateException("LLM service is not configured")
+        }
+
+        if (_codeReviewAgent == null) {
+            val toolConfig = ConfigManager.loadToolConfig()
+            val mcpToolConfigService = McpToolConfigService(toolConfig)
+
+            // Reuse the same pattern: create the agent directly
+            _codeReviewAgent = CodeReviewAgent(
+                projectPath = projectPath,
+                llmService = llmService,
+                maxIterations = maxIterations,
+                renderer = renderer,
+                mcpToolConfigService = mcpToolConfigService
+            )
+        }
+        return _codeReviewAgent!!
+    }
+
+    /**
+     * Switch to a different agent type
+     */
+    fun switchAgent(agentType: AgentType) {
+        if (currentAgentType != agentType) {
+            currentAgentType = agentType
+            // Note: Agents will be lazily initialized when needed
+        }
+    }
+
+    /**
      * Check if LLM service is configured
      */
     fun isConfigured(): Boolean = llmService != null
+
+    /**
+     * Execute a code review task
+     */
+    fun executeReviewTask(reviewTask: ReviewTask, onConfigRequired: (() -> Unit)? = null) {
+        if (isExecuting) {
+            println("Agent is already executing")
+            return
+        }
+
+        // Check if LLM service is configured
+        if (!isConfigured()) {
+            renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
+            onConfigRequired?.invoke()
+            return
+        }
+
+        isExecuting = true
+        renderer.clearError()
+
+        // Add user message describing the review
+        val reviewMessage = buildString {
+            append("Starting code review: ")
+            append(reviewTask.reviewType.name.lowercase().replace("_", " "))
+            if (reviewTask.filePaths.isNotEmpty()) {
+                append(" for ${reviewTask.filePaths.size} file(s)")
+            }
+        }
+        renderer.addUserMessage(reviewMessage)
+
+        currentExecutionJob = scope.launch {
+            try {
+                val codeReviewAgent = initializeCodeReviewAgent()
+                chatHistoryManager?.addUserMessage(reviewMessage)
+
+                val result = codeReviewAgent.executeTask(reviewTask)
+
+                val resultSummary = "Code review completed: ${reviewTask.reviewType}"
+                chatHistoryManager?.addAssistantMessage(resultSummary)
+
+                // Result is already handled by the renderer
+                isExecuting = false
+                currentExecutionJob = null
+            } catch (e: CancellationException) {
+                // Task was cancelled
+                renderer.forceStop()
+                renderer.renderError("Code review cancelled by user")
+                isExecuting = false
+                currentExecutionJob = null
+            } catch (e: Exception) {
+                renderer.renderError(e.message ?: "Unknown error during code review")
+                isExecuting = false
+                currentExecutionJob = null
+            }
+        }
+    }
 
     fun executeTask(task: String, onConfigRequired: (() -> Unit)? = null) {
         if (isExecuting) {

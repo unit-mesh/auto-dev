@@ -91,7 +91,7 @@ fun DevInEditorInput(
         }
     }
 
-    var llmService = remember { KoogLLMService.create(ModelConfig()) }
+    var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
 
     LaunchedEffect(Unit) {
         try {
@@ -110,7 +110,7 @@ fun DevInEditorInput(
                     val domainDictService = cc.unitmesh.indexer.DomainDictService(fileSystem)
 
                     // Create prompt enhancer
-                    enhancer = PromptEnhancer(llmService, fileSystem, domainDictService)
+                    enhancer = PromptEnhancer(llmService!!, fileSystem, domainDictService)
                 }
             }
         } catch (e: Exception) {

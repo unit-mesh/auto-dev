@@ -14,6 +14,7 @@ import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
+import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.devins.ui.compose.chat.DebugDialog
 import cc.unitmesh.devins.ui.compose.chat.MessageList
 import cc.unitmesh.devins.ui.compose.chat.SessionSidebar
@@ -86,6 +87,9 @@ private fun AutoDevContent(
     var selectedAgent by remember { mutableStateOf("Default") }
     var useAgentMode by remember { mutableStateOf(true) } // 恢复默认 Agent 模式（SessionSidebar 现在支持所有模式）
     var isTreeViewVisible by remember { mutableStateOf(false) } // TreeView visibility for agent mode
+
+    // Agent Type Selection (Coding vs Code Review)
+    var currentAgentType by remember { mutableStateOf(AgentType.CODING) }
 
     // Remote Agent state
     var selectedAgentType by remember { mutableStateOf("Local") }
@@ -349,6 +353,9 @@ private fun AutoDevContent(
                                 onToggleTreeView = { isTreeViewVisible = it },
                                 // 传入会话管理（Agent 模式也支持会话历史）
                                 chatHistoryManager = chatHistoryManager,
+                                // Agent 类型选择
+                                selectedAgentType = currentAgentType,
+                                onAgentTypeChange = { agentType -> currentAgentType = agentType },
                                 // 会话切换回调
                                 onSessionSelected = { sessionId ->
                                     // Agent 模式的 session 切换由 ViewModel 处理
@@ -364,7 +371,7 @@ private fun AutoDevContent(
                                 selectedAgent = selectedAgent,
                                 availableAgents = availableAgents,
                                 useAgentMode = useAgentMode,
-                                selectedAgentType = selectedAgentType,
+                                selectedRemoteAgentType = selectedAgentType,
                                 onOpenDirectory = { openDirectoryChooser() },
                                 onClearHistory = {
                                     chatHistoryManager.clearCurrentSession()
@@ -386,7 +393,7 @@ private fun AutoDevContent(
                                     selectedAgent = agent
                                 },
                                 onModeToggle = { useAgentMode = !useAgentMode },
-                                onAgentTypeChange = { type -> selectedAgentType = type },
+                                onRemoteAgentTypeChange = { type -> selectedAgentType = type },
                                 onConfigureRemote = { showRemoteConfigDialog = true },
                                 onShowModelConfig = { showModelConfigDialog = true },
                                 onShowToolConfig = { showToolConfigDialog = true },
@@ -628,7 +635,8 @@ private fun AutoDevContent(
                         selectedAgent = selectedAgent,
                         availableAgents = availableAgents,
                         useAgentMode = useAgentMode,
-                        selectedAgentType = selectedAgentType,
+                        selectedAgentType = currentAgentType,
+                        selectedRemoteAgentType = selectedAgentType,
                         onOpenDirectory = { openDirectoryChooser() },
                         onClearHistory = {
                             chatHistoryManager.clearCurrentSession()
@@ -654,7 +662,7 @@ private fun AutoDevContent(
                         },
                         onModeToggle = { useAgentMode = !useAgentMode },
                         onAgentTypeChange = { type ->
-                            selectedAgentType = type
+                            currentAgentType = type
                             println("🔄 切换 Agent Type: $type")
                         },
                         onConfigureRemote = { showRemoteConfigDialog = true },

@@ -23,6 +23,9 @@ fun TopBarMenu(
     // Remote Agent 相关参数
     selectedAgentType: String = "Local", // "Local" or "Remote"
     useSessionManagement: Boolean = false, // Session Management mode
+    // Agent Task Type 相关参数 (Coding vs Code Review)
+    selectedTaskAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
+    onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     // Sidebar 相关参数
     showSessionSidebar: Boolean = false,
     onToggleSidebar: () -> Unit = {},
@@ -53,7 +56,9 @@ fun TopBarMenu(
             isTreeViewVisible = isTreeViewVisible,
             selectedAgentType = selectedAgentType,
             useSessionManagement = useSessionManagement,
+            selectedTaskAgentType = selectedTaskAgentType,
             onAgentTypeChange = onAgentTypeChange,
+            onTaskAgentTypeChange = onTaskAgentTypeChange,
             onConfigureRemote = onConfigureRemote,
             onSessionManagementToggle = onSessionManagementToggle,
             onOpenDirectory = onOpenDirectory,
@@ -79,7 +84,9 @@ fun TopBarMenu(
             isTreeViewVisible = isTreeViewVisible,
             selectedAgentType = selectedAgentType,
             useSessionManagement = useSessionManagement,
+            selectedTaskAgentType = selectedTaskAgentType,
             onAgentTypeChange = onAgentTypeChange,
+            onTaskAgentTypeChange = onTaskAgentTypeChange,
             onConfigureRemote = onConfigureRemote,
             onSessionManagementToggle = onSessionManagementToggle,
             onOpenDirectory = onOpenDirectory,
@@ -105,9 +112,11 @@ fun TopBarMenu(
             isTreeViewVisible = isTreeViewVisible,
             selectedAgentType = selectedAgentType,
             useSessionManagement = useSessionManagement,
+            selectedTaskAgentType = selectedTaskAgentType,
             showSessionSidebar = showSessionSidebar,
             onToggleSidebar = onToggleSidebar,
             onAgentTypeChange = onAgentTypeChange,
+            onTaskAgentTypeChange = onTaskAgentTypeChange,
             onConfigureRemote = onConfigureRemote,
             onSessionManagementToggle = onSessionManagementToggle,
             onOpenDirectory = onOpenDirectory,

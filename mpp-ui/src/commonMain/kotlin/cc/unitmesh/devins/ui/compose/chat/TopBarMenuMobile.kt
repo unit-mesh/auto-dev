@@ -26,6 +26,9 @@ fun TopBarMenuMobile(
     isTreeViewVisible: Boolean = false,
     selectedAgentType: String = "Local",
     useSessionManagement: Boolean = false,
+    // Agent Task Type 相关参数
+    selectedTaskAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
+    onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
