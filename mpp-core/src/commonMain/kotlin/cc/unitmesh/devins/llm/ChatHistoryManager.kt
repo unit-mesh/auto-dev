@@ -3,6 +3,9 @@ package cc.unitmesh.devins.llm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -15,12 +18,18 @@ import kotlin.uuid.Uuid
  * - 自动持久化到磁盘（~/.autodev/sessions/chat-sessions.json）
  * - 启动时自动加载历史会话
  * - 保持现有 API 完全兼容
+ * - 提供 StateFlow 用于 UI 响应式更新
+ * - 只保存有消息的会话（空会话不保存）
  */
 class ChatHistoryManager {
     private val sessions = mutableMapOf<String, ChatSession>()
     private var currentSessionId: String? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var initialized = false
+    
+    // 用于通知 UI 更新的 StateFlow
+    private val _sessionsUpdateTrigger = MutableStateFlow(0)
+    val sessionsUpdateTrigger: StateFlow<Int> = _sessionsUpdateTrigger.asStateFlow()
     
     /**
      * 初始化：从磁盘加载历史会话
@@ -49,12 +58,17 @@ class ChatHistoryManager {
     
     /**
      * 保存所有会话到磁盘
+     * 只保存有消息的会话
      */
     private fun saveSessionsAsync() {
         scope.launch {
             try {
-                val sessionsList = sessions.values.toList()
-                SessionStorage.saveSessions(sessionsList)
+                // 过滤掉空会话（没有消息的会话）
+                val nonEmptySessions = sessions.values.filter { it.messages.isNotEmpty() }
+                SessionStorage.saveSessions(nonEmptySessions)
+                
+                // 通知 UI 更新
+                _sessionsUpdateTrigger.value++
             } catch (e: Exception) {
                 println("⚠️ Failed to save sessions: ${e.message}")
             }
@@ -63,6 +77,7 @@ class ChatHistoryManager {
     
     /**
      * 创建新会话
+     * 注意：空会话不会被保存，只有添加消息后才会保存
      */
     @OptIn(ExperimentalUuidApi::class)
     fun createSession(): ChatSession {
@@ -71,8 +86,9 @@ class ChatHistoryManager {
         sessions[sessionId] = session
         currentSessionId = sessionId
         
-        // 自动保存
-        saveSessionsAsync()
+        // 空会话不保存，等有消息时再保存
+        // 但通知 UI 更新（虽然不会显示空会话）
+        _sessionsUpdateTrigger.value++
         
         return session
     }
@@ -103,15 +119,17 @@ class ChatHistoryManager {
             currentSessionId = null
         }
         
-        // 自动保存
+        // 自动保存并通知 UI 更新
         saveSessionsAsync()
     }
     
     /**
-     * 获取所有会话
+     * 获取所有会话（只返回有消息的会话）
      */
     fun getAllSessions(): List<ChatSession> {
-        return sessions.values.sortedByDescending { it.updatedAt }
+        return sessions.values
+            .filter { it.messages.isNotEmpty() }  // 只返回有消息的会话
+            .sortedByDescending { it.updatedAt }
     }
     
     /**

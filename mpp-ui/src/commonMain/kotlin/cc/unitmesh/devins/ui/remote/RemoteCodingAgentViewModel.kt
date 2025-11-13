@@ -274,6 +274,13 @@ class RemoteCodingAgentViewModel(
     }
 
     /**
+     * Create new session (for Remote, just clear messages)
+     */
+    fun newSession() {
+        renderer.clearMessages()
+    }
+
+    /**
      * Clear error state
      */
     fun clearError() {

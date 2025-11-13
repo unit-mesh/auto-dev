@@ -30,7 +30,7 @@ import kotlinx.datetime.toLocalDateTime
  * 
  * 功能：
  * - 显示所有历史会话（本地 + 远程）
- * - 图标区分：📝 本地会话、☁️ 远程会话
+ * - 支持折叠/展开
  * - 支持切换、删除会话
  * - 显示会话的第一条消息作为标题
  * - 显示最后更新时间
@@ -45,8 +45,6 @@ fun SessionSidebar(
     sessionClient: SessionClient? = null,
     onRemoteSessionSelected: ((Session) -> Unit)? = null,
     // 功能按钮回调
-    onOpenProject: () -> Unit = {},
-    onClearHistory: () -> Unit = {},
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
     onShowDebug: () -> Unit = {},
@@ -55,11 +53,12 @@ fun SessionSidebar(
 ) {
     val scope = rememberCoroutineScope()
     
-    // 获取本地会话
-    val localSessions by remember {
-        derivedStateOf {
-            chatHistoryManager.getAllSessions()
-        }
+    // 监听 ChatHistoryManager 的更新
+    val updateTrigger by chatHistoryManager.sessionsUpdateTrigger.collectAsState()
+    
+    // 获取本地会话 - 响应 updateTrigger 变化
+    val localSessions = remember(updateTrigger) {
+        chatHistoryManager.getAllSessions()
     }
     
     // 获取远程会话
@@ -67,7 +66,7 @@ fun SessionSidebar(
     var isLoadingRemote by remember { mutableStateOf(false) }
     
     // 加载远程会话
-    LaunchedEffect(sessionClient) {
+    LaunchedEffect(sessionClient, updateTrigger) {
         if (sessionClient != null && sessionClient.authToken != null) {
             isLoadingRemote = true
             try {
@@ -81,7 +80,9 @@ fun SessionSidebar(
     }
     
     Surface(
-        modifier = modifier.fillMaxHeight(),
+        modifier = modifier
+            .fillMaxHeight()
+            .width(240.dp),
         color = MaterialTheme.colorScheme.surfaceContainer,
         shadowElevation = 1.dp
     ) {
@@ -92,12 +93,12 @@ fun SessionSidebar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Chat History",
+                    text = "Sessions",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -105,90 +106,14 @@ fun SessionSidebar(
                 // New Chat Button
                 IconButton(
                     onClick = onNewChat,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(28.dp)
                 ) {
                     Icon(
                         imageVector = AutoDevComposeIcons.Add,
                         contentDescription = "New Chat",
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
-                }
-            }
-            
-            HorizontalDivider()
-            
-            // Action Buttons（功能按钮）
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                // Open Project
-                IconButton(
-                    onClick = onOpenProject,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Folder,
-                        contentDescription = "Open Project",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-                
-                // Model Config
-                IconButton(
-                    onClick = onShowModelConfig,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Settings,
-                        contentDescription = "Model Config",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                
-                // Tool Config
-                IconButton(
-                    onClick = onShowToolConfig,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Build,
-                        contentDescription = "Tool Config",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-                
-                // Clear History
-                IconButton(
-                    onClick = onClearHistory,
-                    modifier = Modifier.size(28.dp),
-                    enabled = localSessions.isNotEmpty()
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Delete,
-                        contentDescription = "Clear History",
-                        modifier = Modifier.size(16.dp),
-                        tint = if (localSessions.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                    )
-                }
-                
-                // Debug Info
-                if (hasDebugInfo) {
-                    IconButton(
-                        onClick = onShowDebug,
-                        modifier = Modifier.size(28.dp)
-                    ) {
-                        Icon(
-                            imageVector = AutoDevComposeIcons.BugReport,
-                            contentDescription = "Debug Info",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-                    }
                 }
             }
             
@@ -202,26 +127,27 @@ fun SessionSidebar(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .weight(1f)
+                        .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Icon(
                             imageVector = AutoDevComposeIcons.Chat,
                             contentDescription = null,
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(36.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                         Text(
-                            text = "No chat history",
+                            text = "No history",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Start a new conversation",
+                            text = "Start a conversation",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
@@ -229,18 +155,20 @@ fun SessionSidebar(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentPadding = PaddingValues(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     // 本地会话
                     if (localSessions.isNotEmpty()) {
                         item {
                             Text(
-                                text = "Local Sessions",
-                                style = MaterialTheme.typography.labelMedium,
+                                text = "Local",
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
                         
@@ -262,10 +190,10 @@ fun SessionSidebar(
                     if (remoteSessions.isNotEmpty()) {
                         item {
                             Text(
-                                text = "Remote Sessions",
-                                style = MaterialTheme.typography.labelMedium,
+                                text = "Remote",
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
                         
@@ -295,12 +223,63 @@ fun SessionSidebar(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
+                                    .padding(12.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                CircularProgressIndicator(modifier = Modifier.size(20.dp))
                             }
                         }
+                    }
+                }
+            }
+            
+            HorizontalDivider()
+            
+            // Settings at bottom
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Model Config
+                IconButton(
+                    onClick = onShowModelConfig,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Settings,
+                        contentDescription = "Model Config",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                // Tool Config
+                IconButton(
+                    onClick = onShowToolConfig,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Build,
+                        contentDescription = "Tool Config",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                
+                // Debug Info (if available)
+                if (hasDebugInfo) {
+                    IconButton(
+                        onClick = onShowDebug,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.BugReport,
+                            contentDescription = "Debug Info",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
             }
@@ -343,32 +322,37 @@ private fun LocalSessionItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(6.dp))
             .clickable(onClick = onSelect),
         color = backgroundColor,
-        tonalElevation = if (isSelected) 2.dp else 0.dp
+        tonalElevation = if (isSelected) 3.dp else 0.dp,
+        shadowElevation = if (isSelected) 2.dp else 0.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Content
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Local session icon
-                    Text(
-                        text = "📝",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    // Local session indicator (no emoji)
+                    Surface(
+                        color = if (isSelected) 
+                            MaterialTheme.colorScheme.primary 
+                        else 
+                            MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(3.dp),
+                        modifier = Modifier.size(4.dp, 16.dp)
+                    ) {}
                     
                     Text(
                         text = title,
@@ -380,23 +364,24 @@ private fun LocalSessionItem(
                 }
                 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 10.dp)
                 ) {
                     Text(
-                        text = "${session.messages.size} messages",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.7f)
+                        text = "${session.messages.size} msgs",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.6f)
                     )
                     Text(
                         text = "•",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.5f)
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.4f)
                     )
                     Text(
                         text = timeText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.7f)
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -404,13 +389,13 @@ private fun LocalSessionItem(
             // Delete button
             IconButton(
                 onClick = { showDeleteConfirm = true },
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             ) {
                 Icon(
                     imageVector = AutoDevComposeIcons.Delete,
                     contentDescription = "Delete",
-                    modifier = Modifier.size(16.dp),
-                    tint = contentColor.copy(alpha = 0.7f)
+                    modifier = Modifier.size(14.dp),
+                    tint = contentColor.copy(alpha = 0.6f)
                 )
             }
         }
@@ -477,7 +462,7 @@ private fun RemoteSessionItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(6.dp))
             .clickable(onClick = onSelect),
         color = backgroundColor,
         tonalElevation = 0.dp
@@ -485,29 +470,29 @@ private fun RemoteSessionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Content
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Remote session icon (避免 WASM 平台的 emoji 问题，使用文字)
+                    // Remote session indicator (no emoji)
                     Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(4.dp)
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        shape = RoundedCornerShape(3.dp)
                     ) {
                         Text(
                             text = "R",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp)
                         )
                     }
                     
@@ -521,31 +506,32 @@ private fun RemoteSessionItem(
                 }
                 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 10.dp)
                 ) {
                     // 状态指示器
                     Surface(
                         color = statusColor.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(3.dp)
                     ) {
                         Text(
                             text = session.status.name,
                             style = MaterialTheme.typography.labelSmall,
                             color = statusColor,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                         )
                     }
                     
                     Text(
                         text = "•",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.5f)
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.4f)
                     )
                     Text(
                         text = timeText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.7f)
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -553,13 +539,13 @@ private fun RemoteSessionItem(
             // Delete button
             IconButton(
                 onClick = { showDeleteConfirm = true },
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             ) {
                 Icon(
                     imageVector = AutoDevComposeIcons.Delete,
                     contentDescription = "Delete",
-                    modifier = Modifier.size(16.dp),
-                    tint = contentColor.copy(alpha = 0.7f)
+                    modifier = Modifier.size(14.dp),
+                    tint = contentColor.copy(alpha = 0.6f)
                 )
             }
         }

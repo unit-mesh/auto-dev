@@ -19,6 +19,8 @@ fun AgentChatInterface(
     isTreeViewVisible: Boolean = false,
     onConfigWarning: () -> Unit,
     onToggleTreeView: (Boolean) -> Unit = {},
+    // 会话管理（新增）
+    chatHistoryManager: cc.unitmesh.devins.llm.ChatHistoryManager? = null,
     // TopBar 参数
     hasHistory: Boolean = false,
     hasDebugInfo: Boolean = false,
@@ -42,7 +44,7 @@ fun AgentChatInterface(
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
     val viewModel =
-        remember(llmService, currentWorkspace?.rootPath) {
+        remember(llmService, currentWorkspace?.rootPath, chatHistoryManager) {
             val workspace = currentWorkspace
             val rootPath = workspace?.rootPath ?: Platform.getUserHomeDir()
 
@@ -51,7 +53,8 @@ fun AgentChatInterface(
             CodingAgentViewModel(
                 llmService = llmService,
                 projectPath = rootPath,
-                maxIterations = 100
+                maxIterations = 100,
+                chatHistoryManager = chatHistoryManager  // 传入会话管理
             )
         }
 

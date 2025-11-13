@@ -68,18 +68,16 @@ fun TopBarMenuDesktop(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Sidebar Toggle Button (only in Chat mode)
-                if (!useAgentMode) {
-                    IconButton(
-                        onClick = onToggleSidebar,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (showSessionSidebar) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
-                            contentDescription = if (showSessionSidebar) "Hide Sidebar" else "Show Sidebar",
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                // Sidebar Toggle Button (always visible)
+                IconButton(
+                    onClick = onToggleSidebar,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = if (showSessionSidebar) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                        contentDescription = if (showSessionSidebar) "Hide Sidebar" else "Show Sidebar",
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
                 
                 Text(

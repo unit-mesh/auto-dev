@@ -11,6 +11,8 @@ import cc.unitmesh.agent.config.PreloadingStatus
 import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.filesystem.DefaultProjectFileSystem
+import cc.unitmesh.devins.llm.ChatHistoryManager
+import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.indexer.DomainDictGenerator
 import cc.unitmesh.llm.KoogLLMService
@@ -21,11 +23,14 @@ import kotlinx.coroutines.*
  *
  * Uses the new BaseRenderer architecture with ComposeRenderer
  * for consistent rendering across CLI, TUI, and Compose UI
+ * 
+ * 支持会话管理：Agent 模式的对话也会保存到 ChatHistoryManager
  */
 class CodingAgentViewModel(
     private val llmService: KoogLLMService?,
     private val projectPath: String,
-    private val maxIterations: Int = 100
+    private val maxIterations: Int = 100,
+    private val chatHistoryManager: ChatHistoryManager? = null  // 新增：会话管理
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -189,6 +194,9 @@ class CodingAgentViewModel(
                 try {
                     // Initialize agent if not already done
                     val codingAgent = initializeCodingAgent()
+                    
+                    // 保存用户消息到会话历史
+                    chatHistoryManager?.addUserMessage(task)
 
                     val agentTask =
                         AgentTask(
@@ -197,6 +205,10 @@ class CodingAgentViewModel(
                         )
 
                     val result = codingAgent.executeTask(agentTask)
+                    
+                    // 保存 Agent 完成消息到会话历史（简化版本）
+                    val resultSummary = "Agent task completed: $task"
+                    chatHistoryManager?.addAssistantMessage(resultSummary)
 
                     // Result is already handled by the renderer
                     isExecuting = false
@@ -239,6 +251,7 @@ class CodingAgentViewModel(
             }
             "clear" -> {
                 renderer.clearMessages()
+                chatHistoryManager?.clearCurrentSession()  // 同时清空会话历史
                 renderer.renderFinalResult(true, "✅ Chat history cleared", 0)
             }
             "help" -> {
@@ -300,6 +313,15 @@ class CodingAgentViewModel(
      */
     fun clearHistory() {
         renderer.clearMessages()
+        chatHistoryManager?.clearCurrentSession()
+    }
+
+    /**
+     * Create new session and switch to it
+     */
+    fun newSession() {
+        renderer.clearMessages()
+        chatHistoryManager?.createSession()
     }
 
     /**

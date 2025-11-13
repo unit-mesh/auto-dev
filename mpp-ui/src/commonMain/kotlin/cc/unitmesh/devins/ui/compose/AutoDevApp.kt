@@ -85,7 +85,7 @@ private fun AutoDevContent(
     var showModelConfigDialog by remember { mutableStateOf(false) }
     var showToolConfigDialog by remember { mutableStateOf(false) }
     var selectedAgent by remember { mutableStateOf("Default") }
-    var useAgentMode by remember { mutableStateOf(false) } // 默认 Chat 模式，显示 SessionSidebar
+    var useAgentMode by remember { mutableStateOf(true) } // 恢复默认 Agent 模式（SessionSidebar 现在支持所有模式）
     var isTreeViewVisible by remember { mutableStateOf(false) } // TreeView visibility for agent mode
 
     // Remote Agent state
@@ -526,8 +526,8 @@ private fun AutoDevContent(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                // Session Sidebar（只在 JVM 桌面端的 Chat 模式下显示）
-                if (showSessionSidebar && Platform.isJvm && !useAgentMode) {
+                // Session Sidebar（Desktop 上始终显示，支持折叠）
+                if (showSessionSidebar && Platform.isJvm) {
                     SessionSidebar(
                         chatHistoryManager = chatHistoryManager,
                         currentSessionId = chatHistoryManager.getCurrentSession().id,
@@ -541,17 +541,10 @@ private fun AutoDevContent(
                             messages = emptyList()
                             currentStreamingOutput = ""
                         },
-                        onOpenProject = { openDirectoryChooser() },
-                        onClearHistory = {
-                            chatHistoryManager.clearCurrentSession()
-                            messages = emptyList()
-                            currentStreamingOutput = ""
-                        },
                         onShowModelConfig = { showModelConfigDialog = true },
                         onShowToolConfig = { showToolConfigDialog = true },
                         onShowDebug = { showDebugDialog = true },
-                        hasDebugInfo = compilerOutput.isNotEmpty(),
-                        modifier = Modifier.width(280.dp)
+                        hasDebugInfo = compilerOutput.isNotEmpty()
                     )
                 }
                 
@@ -624,6 +617,8 @@ private fun AutoDevContent(
                         isTreeViewVisible = isTreeViewVisible,
                         onConfigWarning = { showModelConfigDialog = true },
                         onToggleTreeView = { isTreeViewVisible = it },
+                        // 传入会话管理（Agent 模式也支持会话历史）
+                        chatHistoryManager = chatHistoryManager,
                         // TopBar 参数
                         hasHistory = messages.isNotEmpty(),
                         hasDebugInfo = compilerOutput.isNotEmpty(),
