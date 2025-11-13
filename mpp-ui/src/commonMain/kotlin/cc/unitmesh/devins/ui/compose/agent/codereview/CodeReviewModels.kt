@@ -1,0 +1,159 @@
+package cc.unitmesh.devins.ui.compose.agent.codereview
+
+import kotlinx.serialization.Serializable
+
+/**
+ * Complete state for Code Review side-by-side UI
+ */
+data class CodeReviewState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val commitHistory: List<CommitInfo> = emptyList(),
+    val selectedCommitIndex: Int = 0,
+    val diffFiles: List<DiffFileInfo> = emptyList(),
+    val selectedFileIndex: Int = 0,
+    val aiProgress: AIAnalysisProgress = AIAnalysisProgress(),
+    val fixResults: List<FixResult> = emptyList()
+)
+
+/**
+ * Information about a file in the diff
+ */
+data class DiffFileInfo(
+    val path: String,
+    val oldPath: String? = null, // For renamed files
+    val changeType: ChangeType = ChangeType.MODIFIED,
+    val hunks: List<DiffHunk> = emptyList(),
+    val language: String? = null
+)
+
+/**
+ * Type of file change
+ */
+enum class ChangeType {
+    ADDED,
+    DELETED,
+    MODIFIED,
+    RENAMED
+}
+
+/**
+ * A continuous block of changes (hunk)
+ */
+data class DiffHunk(
+    val oldStart: Int,
+    val oldLines: Int,
+    val newStart: Int,
+    val newLines: Int,
+    val lines: List<DiffLine>
+)
+
+/**
+ * A single line in a diff
+ */
+data class DiffLine(
+    val type: DiffLineType,
+    val content: String,
+    val oldLineNumber: Int? = null,
+    val newLineNumber: Int? = null
+)
+
+/**
+ * Type of diff line
+ */
+enum class DiffLineType {
+    CONTEXT,  // Unchanged line
+    ADDED,    // + line
+    DELETED   // - line
+}
+
+/**
+ * AI analysis progress for streaming display
+ */
+data class AIAnalysisProgress(
+    val stage: AnalysisStage = AnalysisStage.IDLE,
+    val currentFile: String? = null,
+    val currentLine: Int? = null,
+    val lintOutput: String = "",
+    val analysisOutput: String = "",
+    val fixOutput: String = ""
+)
+
+/**
+ * Stages of AI analysis
+ */
+enum class AnalysisStage {
+    IDLE,
+    RUNNING_LINT,
+    ANALYZING_LINT,
+    GENERATING_FIX,
+    COMPLETED,
+    ERROR
+}
+
+/**
+ * Result of a single fix for a specific issue
+ */
+@Serializable
+data class FixResult(
+    val filePath: String,
+    val line: Int,
+    val lintIssue: String,
+    val lintValid: Boolean,
+    val risk: RiskLevel,
+    val aiFix: String,
+    val fixedCode: String? = null,
+    val status: FixStatus
+)
+
+/**
+ * Risk level of the issue
+ */
+@Serializable
+enum class RiskLevel {
+    CRITICAL,
+    HIGH,
+    MEDIUM,
+    LOW,
+    INFO
+}
+
+/**
+ * Status of the fix
+ */
+@Serializable
+enum class FixStatus {
+    FIXED,       // AI has fixed the issue
+    NO_ISSUE,    // No issue found
+    SKIPPED,     // User chose to skip
+    FAILED       // Fix failed
+}
+
+/**
+ * Request to get diff from workspace
+ */
+data class DiffRequest(
+    val commitHash: String? = null,  // null = get last commit
+    val baseBranch: String? = null,
+    val compareWith: String? = null
+)
+
+/**
+ * Response containing diff information
+ */
+data class DiffResponse(
+    val success: Boolean,
+    val error: String? = null,
+    val files: List<DiffFileInfo> = emptyList(),
+    val commitInfo: CommitInfo? = null
+)
+
+/**
+ * Information about a commit
+ */
+data class CommitInfo(
+    val hash: String,
+    val author: String,
+    val date: String,
+    val message: String
+)
