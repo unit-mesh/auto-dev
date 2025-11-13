@@ -27,6 +27,9 @@ fun TopBarMenuDesktop(
     // Remote Agent 相关参数
     selectedAgentType: String = "Local",
     useSessionManagement: Boolean = false,
+    // Sidebar 相关参数
+    showSessionSidebar: Boolean = false,
+    onToggleSidebar: () -> Unit = {},
     onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onSessionManagementToggle: () -> Unit = {},
@@ -60,11 +63,30 @@ fun TopBarMenuDesktop(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left: Logo/Title (smaller)
-            Text(
-                text = "AutoDev",
-                style = MaterialTheme.typography.titleSmall
-            )
+            // Left: Logo/Title + Sidebar Toggle
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Sidebar Toggle Button (only in Chat mode)
+                if (!useAgentMode) {
+                    IconButton(
+                        onClick = onToggleSidebar,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (showSessionSidebar) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                            contentDescription = if (showSessionSidebar) "Hide Sidebar" else "Show Sidebar",
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                
+                Text(
+                    text = "AutoDev",
+                    style = MaterialTheme.typography.titleSmall
+                )
+            }
 
             // Right: Action Icons (compact, 24dp buttons)
             Row(

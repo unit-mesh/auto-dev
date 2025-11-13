@@ -23,6 +23,9 @@ fun TopBarMenu(
     // Remote Agent 相关参数
     selectedAgentType: String = "Local", // "Local" or "Remote"
     useSessionManagement: Boolean = false, // Session Management mode
+    // Sidebar 相关参数
+    showSessionSidebar: Boolean = false,
+    onToggleSidebar: () -> Unit = {},
     onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onSessionManagementToggle: () -> Unit = {},
@@ -102,6 +105,8 @@ fun TopBarMenu(
             isTreeViewVisible = isTreeViewVisible,
             selectedAgentType = selectedAgentType,
             useSessionManagement = useSessionManagement,
+            showSessionSidebar = showSessionSidebar,
+            onToggleSidebar = onToggleSidebar,
             onAgentTypeChange = onAgentTypeChange,
             onConfigureRemote = onConfigureRemote,
             onSessionManagementToggle = onSessionManagementToggle,

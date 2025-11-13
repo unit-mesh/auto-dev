@@ -16,6 +16,7 @@ import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
 import cc.unitmesh.devins.ui.compose.chat.DebugDialog
 import cc.unitmesh.devins.ui.compose.chat.MessageList
+import cc.unitmesh.devins.ui.compose.chat.SessionSidebar
 import cc.unitmesh.devins.ui.compose.chat.TopBarMenu
 import cc.unitmesh.devins.ui.compose.chat.createChatCallbacks
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
@@ -66,8 +67,12 @@ private fun AutoDevContent(
     var isLLMProcessing by remember { mutableStateOf(false) }
 
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
+    
+    var showSessionSidebar by remember { mutableStateOf(true) } // 默认显示（JVM 桌面端）
 
     LaunchedEffect(Unit) {
+        // 初始化 ChatHistoryManager，从磁盘加载历史会话
+        chatHistoryManager.initialize()
         messages = chatHistoryManager.getMessages()
     }
 
@@ -334,6 +339,8 @@ private fun AutoDevContent(
                     isTreeViewVisible = isTreeViewVisible,
                     selectedAgentType = selectedAgentType,
                     useSessionManagement = useSessionManagement,
+                    showSessionSidebar = showSessionSidebar,
+                    onToggleSidebar = { showSessionSidebar = !showSessionSidebar },
                     onOpenDirectory = { openDirectoryChooser() },
                     onClearHistory = {
                         chatHistoryManager.clearCurrentSession()
@@ -370,69 +377,191 @@ private fun AutoDevContent(
                     modifier = Modifier.fillMaxHeight()
                 )
 
-                // 右侧：主内容区域
-                WasmMainContent(
-                    useAgentMode = useAgentMode,
-                    selectedAgentType = selectedAgentType,
-                    messages = messages,
-                    isLLMProcessing = isLLMProcessing,
-                    currentStreamingOutput = currentStreamingOutput,
-                    currentWorkspace = currentWorkspace,
-                    callbacks = callbacks,
-                    llmService = llmService,
-                    isTreeViewVisible = isTreeViewVisible,
-                    onTreeViewToggle = { isTreeViewVisible = it },
-                    compilerOutput = compilerOutput,
-                    currentModelConfig = currentModelConfig,
-                    selectedAgent = selectedAgent,
-                    availableAgents = availableAgents,
-                    onOpenDirectory = { openDirectoryChooser() },
-                    onClearHistory = {
-                        chatHistoryManager.clearCurrentSession()
-                        messages = emptyList()
-                        currentStreamingOutput = ""
-                    },
-                    onShowDebug = { showDebugDialog = true },
-                    onModelConfigChange = { config ->
-                        currentModelConfig = config
-                        if (config.isValid()) {
-                            try {
-                                llmService = KoogLLMService.create(config)
-                            } catch (e: Exception) {
-                                println("❌ 切换模型失败: ${e.message}")
+                // 右侧：主内容区域（WASM 平台保持简洁，不添加 SessionSidebar）
+                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    if (useAgentMode) {
+                        // Agent 模式
+                        if (selectedAgentType == "Local") {
+                            AgentChatInterface(
+                                llmService = llmService,
+                                isTreeViewVisible = isTreeViewVisible,
+                                onConfigWarning = { showModelConfigDialog = true },
+                                onToggleTreeView = { isTreeViewVisible = it },
+                                hasHistory = messages.isNotEmpty(),
+                                hasDebugInfo = compilerOutput.isNotEmpty(),
+                                currentModelConfig = currentModelConfig,
+                                selectedAgent = selectedAgent,
+                                availableAgents = availableAgents,
+                                useAgentMode = useAgentMode,
+                                selectedAgentType = selectedAgentType,
+                                onOpenDirectory = { openDirectoryChooser() },
+                                onClearHistory = {
+                                    chatHistoryManager.clearCurrentSession()
+                                    messages = emptyList()
+                                    currentStreamingOutput = ""
+                                },
+                                onShowDebug = { showDebugDialog = true },
+                                onModelConfigChange = { config ->
+                                    currentModelConfig = config
+                                    if (config.isValid()) {
+                                        try {
+                                            llmService = KoogLLMService.create(config)
+                                        } catch (e: Exception) {
+                                            println("❌ 切换模型失败: ${e.message}")
+                                        }
+                                    }
+                                },
+                                onAgentChange = { agent ->
+                                    selectedAgent = agent
+                                },
+                                onModeToggle = { useAgentMode = !useAgentMode },
+                                onAgentTypeChange = { type -> selectedAgentType = type },
+                                onConfigureRemote = { showRemoteConfigDialog = true },
+                                onShowModelConfig = { showModelConfigDialog = true },
+                                onShowToolConfig = { showToolConfigDialog = true },
+                                showTopBar = false,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            RemoteAgentChatInterface(
+                                serverUrl = serverUrl,
+                                useServerConfig = useServerConfig,
+                                isTreeViewVisible = isTreeViewVisible,
+                                onToggleTreeView = { isTreeViewVisible = it },
+                                hasHistory = false,
+                                hasDebugInfo = compilerOutput.isNotEmpty(),
+                                currentModelConfig = currentModelConfig,
+                                selectedAgent = selectedAgent,
+                                availableAgents = availableAgents,
+                                useAgentMode = useAgentMode,
+                                selectedAgentType = selectedAgentType,
+                                onOpenDirectory = { openDirectoryChooser() },
+                                onClearHistory = {},
+                                onShowDebug = { showDebugDialog = true },
+                                onModelConfigChange = { config -> currentModelConfig = config },
+                                onAgentChange = { agent -> selectedAgent = agent },
+                                onModeToggle = { useAgentMode = !useAgentMode },
+                                onAgentTypeChange = { type -> selectedAgentType = type },
+                                onConfigureRemote = { showRemoteConfigDialog = true },
+                                onShowModelConfig = { showModelConfigDialog = true },
+                                onShowToolConfig = { showToolConfigDialog = true },
+                                projectId = remoteProjectId,
+                                gitUrl = remoteGitUrl,
+                                onProjectChange = { projectId -> remoteProjectId = projectId },
+                                onGitUrlChange = { url -> remoteGitUrl = url },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    } else {
+                        // Chat 模式
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            val isCompactMode = messages.isNotEmpty() || isLLMProcessing
+                            
+                            if (isCompactMode) {
+                                MessageList(
+                                    messages = messages,
+                                    isLLMProcessing = isLLMProcessing,
+                                    currentOutput = currentStreamingOutput,
+                                    projectPath = currentWorkspace.rootPath,
+                                    fileSystem = currentWorkspace.fileSystem,
+                                    modifier = Modifier.fillMaxWidth().weight(1f)
+                                )
+                                
+                                DevInEditorInput(
+                                    initialText = "",
+                                    placeholder = "Type your message...",
+                                    callbacks = callbacks,
+                                    completionManager = currentWorkspace.completionManager,
+                                    isCompactMode = true,
+                                    onModelConfigChange = { config ->
+                                        currentModelConfig = config
+                                        if (config.isValid()) {
+                                            try {
+                                                llmService = KoogLLMService.create(config)
+                                            } catch (e: Exception) {
+                                                println("❌ 切换模型失败: ${e.message}")
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .imePadding()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .imePadding()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    DevInEditorInput(
+                                        initialText = "",
+                                        placeholder = "Type your message...",
+                                        callbacks = callbacks,
+                                        completionManager = currentWorkspace.completionManager,
+                                        onModelConfigChange = { config ->
+                                            currentModelConfig = config
+                                            if (config.isValid()) {
+                                                try {
+                                                    llmService = KoogLLMService.create(config)
+                                                } catch (e: Exception) {
+                                                    println("❌ 切换模型失败: ${e.message}")
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth(0.9f)
+                                    )
+                                }
                             }
                         }
-                    },
-                    onAgentChange = { agent ->
-                        selectedAgent = agent
-                        println("🤖 切换 Agent: $agent")
-                    },
-                    onModeToggle = { useAgentMode = !useAgentMode },
-                    onAgentTypeChange = { type ->
-                        selectedAgentType = type
-                    },
-                    onConfigureRemote = { showRemoteConfigDialog = true },
-                    onShowModelConfig = { showModelConfigDialog = true },
-                    onShowToolConfig = { showToolConfigDialog = true },
-                    onConfigWarning = { showModelConfigDialog = true },
-                    serverUrl = serverUrl,
-                    useServerConfig = useServerConfig,
-                    remoteProjectId = remoteProjectId,
-                    remoteGitUrl = remoteGitUrl,
-                    onProjectChange = { remoteProjectId = it },
-                    onGitUrlChange = { remoteGitUrl = it },
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                )
+                    }
+                }
             }
         } else {
-            // 非 WASM 平台保持原有布局
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                horizontalAlignment = Alignment.CenterHorizontally
+            // 非 WASM 平台：使用 Row 布局，左侧 SessionSidebar，右侧主内容
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
+                // Session Sidebar（只在 JVM 桌面端的 Chat 模式下显示）
+                if (showSessionSidebar && Platform.isJvm && !useAgentMode) {
+                    SessionSidebar(
+                        chatHistoryManager = chatHistoryManager,
+                        currentSessionId = chatHistoryManager.getCurrentSession().id,
+                        onSessionSelected = { sessionId ->
+                            chatHistoryManager.switchSession(sessionId)
+                            messages = chatHistoryManager.getMessages()
+                            currentStreamingOutput = ""
+                        },
+                        onNewChat = {
+                            chatHistoryManager.createSession()
+                            messages = emptyList()
+                            currentStreamingOutput = ""
+                        },
+                        onOpenProject = { openDirectoryChooser() },
+                        onClearHistory = {
+                            chatHistoryManager.clearCurrentSession()
+                            messages = emptyList()
+                            currentStreamingOutput = ""
+                        },
+                        onShowModelConfig = { showModelConfigDialog = true },
+                        onShowToolConfig = { showToolConfigDialog = true },
+                        onShowDebug = { showDebugDialog = true },
+                        hasDebugInfo = compilerOutput.isNotEmpty(),
+                        modifier = Modifier.width(280.dp)
+                    )
+                }
+                
+                // 主内容区域
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                 // Agent 模式：TopBar 在左侧列
                 // Chat 模式：TopBar 占据全宽
                 if (!useAgentMode) {
@@ -446,6 +575,8 @@ private fun AutoDevContent(
                     isTreeViewVisible = isTreeViewVisible,
                     selectedAgentType = selectedAgentType,
                     useSessionManagement = useSessionManagement,
+                    showSessionSidebar = showSessionSidebar,
+                    onToggleSidebar = { showSessionSidebar = !showSessionSidebar },
                     onOpenDirectory = { openDirectoryChooser() },
                     onClearHistory = {
                         chatHistoryManager.clearCurrentSession()
@@ -659,9 +790,9 @@ private fun AutoDevContent(
                         )
                     }
                 }
-            }
-        }
-        } // 关闭非 WASM 平台的 Column
+                } // 关闭 Column
+            } // 关闭 Row
+        } // 关闭 WASM/非WASM 判断
     } // 关闭 Scaffold 的 content lambda
 
     // Model Config Dialog
@@ -880,162 +1011,4 @@ private fun AutoDevContent(
         )
     }
 }
-
-/**
- * WASM 平台的主内容区域
- * 包含 Agent/Chat 的所有功能，但不包含侧边栏
- */
-@Composable
-private fun WasmMainContent(
-    useAgentMode: Boolean,
-    selectedAgentType: String,
-    messages: List<Message>,
-    isLLMProcessing: Boolean,
-    currentStreamingOutput: String,
-    currentWorkspace: cc.unitmesh.devins.workspace.Workspace,
-    callbacks: cc.unitmesh.devins.ui.compose.editor.model.EditorCallbacks,
-    llmService: KoogLLMService?,
-    isTreeViewVisible: Boolean,
-    onTreeViewToggle: (Boolean) -> Unit,
-    compilerOutput: String,
-    currentModelConfig: ModelConfig?,
-    selectedAgent: String,
-    availableAgents: List<String>,
-    onOpenDirectory: () -> Unit,
-    onClearHistory: () -> Unit,
-    onShowDebug: () -> Unit,
-    onModelConfigChange: (ModelConfig) -> Unit,
-    onAgentChange: (String) -> Unit,
-    onModeToggle: () -> Unit,
-    onAgentTypeChange: (String) -> Unit,
-    onConfigureRemote: () -> Unit,
-    onShowModelConfig: () -> Unit,
-    onShowToolConfig: () -> Unit,
-    onConfigWarning: () -> Unit,
-    serverUrl: String,
-    useServerConfig: Boolean,
-    remoteProjectId: String,
-    remoteGitUrl: String,
-    onProjectChange: (String) -> Unit,
-    onGitUrlChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    if (useAgentMode) {
-        // Conditional rendering based on agent type
-        if (selectedAgentType == "Local") {
-            // Local Agent - 不显示 TopBar（已在左侧边栏）
-            Box(modifier = modifier) {
-                AgentChatInterface(
-                    llmService = llmService,
-                    isTreeViewVisible = isTreeViewVisible,
-                    onConfigWarning = onConfigWarning,
-                    onToggleTreeView = onTreeViewToggle,
-                    hasHistory = messages.isNotEmpty(),
-                    hasDebugInfo = compilerOutput.isNotEmpty(),
-                    currentModelConfig = currentModelConfig,
-                    selectedAgent = selectedAgent,
-                    availableAgents = availableAgents,
-                    useAgentMode = useAgentMode,
-                    selectedAgentType = selectedAgentType,
-                    onOpenDirectory = onOpenDirectory,
-                    onClearHistory = onClearHistory,
-                    onShowDebug = onShowDebug,
-                    onModelConfigChange = onModelConfigChange,
-                    onAgentChange = onAgentChange,
-                    onModeToggle = onModeToggle,
-                    onAgentTypeChange = onAgentTypeChange,
-                    onConfigureRemote = onConfigureRemote,
-                    onShowModelConfig = onShowModelConfig,
-                    onShowToolConfig = onShowToolConfig,
-                    showTopBar = false, // WASM 平台不显示内部 TopBar
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        } else {
-            // Remote Agent
-            Box(modifier = modifier) {
-                RemoteAgentChatInterface(
-                    serverUrl = serverUrl,
-                    useServerConfig = useServerConfig,
-                    isTreeViewVisible = isTreeViewVisible,
-                    onToggleTreeView = onTreeViewToggle,
-                    hasHistory = false,
-                    hasDebugInfo = compilerOutput.isNotEmpty(),
-                    currentModelConfig = currentModelConfig,
-                    selectedAgent = selectedAgent,
-                    availableAgents = availableAgents,
-                    useAgentMode = useAgentMode,
-                    selectedAgentType = selectedAgentType,
-                    onOpenDirectory = onOpenDirectory,
-                    onClearHistory = onClearHistory,
-                    onShowDebug = onShowDebug,
-                    onModelConfigChange = onModelConfigChange,
-                    onAgentChange = onAgentChange,
-                    onModeToggle = onModeToggle,
-                    onAgentTypeChange = onAgentTypeChange,
-                    onConfigureRemote = onConfigureRemote,
-                    onShowModelConfig = onShowModelConfig,
-                    onShowToolConfig = onShowToolConfig,
-                    projectId = remoteProjectId,
-                    gitUrl = remoteGitUrl,
-                    onProjectChange = onProjectChange,
-                    onGitUrlChange = onGitUrlChange,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
-    } else {
-        // Chat Mode
-        val isCompactMode = messages.isNotEmpty() || isLLMProcessing
-
-        Column(modifier = modifier) {
-            if (isCompactMode) {
-                MessageList(
-                    messages = messages,
-                    isLLMProcessing = isLLMProcessing,
-                    currentOutput = currentStreamingOutput,
-                    projectPath = currentWorkspace.rootPath,
-                    fileSystem = currentWorkspace.fileSystem,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .imePadding()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                ) {
-                    DevInEditorInput(
-                        initialText = "",
-                        placeholder = "Type your message...",
-                        callbacks = callbacks,
-                        completionManager = currentWorkspace.completionManager,
-                        isCompactMode = true,
-                        onModelConfigChange = onModelConfigChange,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .imePadding()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    DevInEditorInput(
-                        initialText = "",
-                        placeholder = "Type your message...",
-                        callbacks = callbacks,
-                        completionManager = currentWorkspace.completionManager,
-                        onModelConfigChange = onModelConfigChange,
-                        modifier = Modifier.fillMaxWidth(0.9f)
-                    )
-                }
-            }
-        }
-    }
 }
