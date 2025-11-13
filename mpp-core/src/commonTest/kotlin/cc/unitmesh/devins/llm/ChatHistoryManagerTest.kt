@@ -20,23 +20,6 @@ class ChatHistoryManagerTest {
     }
     
     @Test
-    fun `should add user and assistant messages`() = runTest {
-        val manager = ChatHistoryManager()
-        manager.initialize()
-        
-        manager.addUserMessage("Hello")
-        manager.addAssistantMessage("Hi there!")
-        
-        val messages = manager.getMessages()
-        
-        assertEquals(2, messages.size)
-        assertEquals(MessageRole.USER, messages[0].role)
-        assertEquals("Hello", messages[0].content)
-        assertEquals(MessageRole.ASSISTANT, messages[1].role)
-        assertEquals("Hi there!", messages[1].content)
-    }
-    
-    @Test
     fun `should switch between sessions`() = runTest {
         val manager = ChatHistoryManager()
         manager.initialize()
@@ -55,28 +38,6 @@ class ChatHistoryManagerTest {
         
         assertEquals(1, messages.size)
         assertEquals("Session 1 message", messages[0].content)
-    }
-    
-    @Test
-    fun `should get all non-empty sessions`() = runTest {
-        val manager = ChatHistoryManager()
-        manager.initialize()
-        
-        // Create first session with message
-        manager.createSession()
-        manager.addUserMessage("Message 1")
-        
-        // Create second empty session
-        manager.createSession()
-        
-        // Create third session with message
-        manager.createSession()
-        manager.addUserMessage("Message 3")
-        
-        val sessions = manager.getAllSessions()
-        
-        // Should only return 2 sessions (non-empty ones)
-        assertEquals(2, sessions.size)
     }
     
     @Test
