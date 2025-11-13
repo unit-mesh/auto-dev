@@ -26,7 +26,6 @@ export class TuiRenderer extends BaseRenderer {
 
   }
 
-  // Required by Kotlin JS export interface
   readonly __doNotUseOrImplementIt: any = {};
 
   private context: ModeContext;
@@ -43,8 +42,6 @@ export class TuiRenderer extends BaseRenderer {
     super();
     this.context = context;
   }
-
-  // JsCodingAgentRenderer interface implementation
 
   /**
    * 渲染迭代头部 - 只在重要时显示

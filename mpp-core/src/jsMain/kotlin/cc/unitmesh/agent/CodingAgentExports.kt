@@ -2,99 +2,11 @@ package cc.unitmesh.agent
 
 import cc.unitmesh.agent.config.JsToolConfigFile
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
-import cc.unitmesh.agent.Platform
 import cc.unitmesh.llm.JsMessage
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
-import kotlin.js.JsExport
-import kotlin.js.JsName
 import kotlin.js.Promise
 
-/**
- * JS exports for Coding Agent functionality
- * 
- * This file provides JavaScript-friendly exports of the coding agent
- * functionality for use in Node.js/browser environments
- */
-
-/**
- * JS-friendly version of CodingAgentContext
- */
-@JsExport
-data class JsCodingAgentContext(
-    val currentFile: String? = null,
-    val projectPath: String,
-    val projectStructure: String = "",
-    val osInfo: String,
-    val timestamp: String,
-    val toolList: String = "",
-    val agentRules: String = "",
-    val buildTool: String = "",
-    val shell: String = "/bin/bash",
-    val moduleInfo: String = "",
-    val frameworkContext: String = "",
-) {
-    /**
-     * Convert to common CodingAgentContext
-     */
-    fun toCommon(): CodingAgentContext {
-        return CodingAgentContext(
-            currentFile = currentFile,
-            projectPath = projectPath,
-            projectStructure = projectStructure,
-            osInfo = osInfo,
-            timestamp = timestamp,
-            toolList = toolList,
-            agentRules = agentRules,
-            buildTool = buildTool,
-            shell = shell,
-            moduleInfo = moduleInfo,
-            frameworkContext = frameworkContext
-        )
-    }
-    
-    companion object {
-        /**
-         * Create from common CodingAgentContext
-         */
-        fun fromCommon(context: CodingAgentContext): JsCodingAgentContext {
-            return JsCodingAgentContext(
-                currentFile = context.currentFile,
-                projectPath = context.projectPath,
-                projectStructure = context.projectStructure,
-                osInfo = context.osInfo,
-                timestamp = context.timestamp,
-                toolList = context.toolList,
-                agentRules = context.agentRules,
-                buildTool = context.buildTool,
-                shell = context.shell,
-                moduleInfo = context.moduleInfo,
-                frameworkContext = context.frameworkContext
-            )
-        }
-
-        /**
-         * Create from task and tool registry (JS-friendly version of CodingAgentContext.fromTask)
-         */
-        @JsName("fromTask")
-        fun fromTask(task: JsAgentTask, toolRegistry: cc.unitmesh.llm.JsToolRegistry): JsCodingAgentContext {
-            // Get formatted tool list from registry
-            val toolList = toolRegistry.formatToolListForAI()
-
-            return JsCodingAgentContext(
-                projectPath = task.projectPath,
-                osInfo = Platform.getOSInfo(),
-                timestamp = Platform.getCurrentTimestamp(),
-                shell = Platform.getDefaultShell(),
-                toolList = toolList
-            )
-        }
-    }
-}
-
-/**
- * JS-friendly version of AgentStep
- */
 @JsExport
 data class JsAgentStep(
     val step: Int,
@@ -176,72 +88,6 @@ data class JsAgentTask(
     }
 }
 
-/**
- * JS-friendly Prompt Renderer
- */
-@JsExport
-class JsCodingAgentPromptRenderer {
-    private val renderer = CodingAgentPromptRenderer()
-    
-    /**
-     * Render system prompt from context
-     */
-    fun render(context: JsCodingAgentContext, language: String = "EN"): String {
-        return renderer.render(context.toCommon(), language)
-    }
-}
-
-/**
- * Context builder for JavaScript
- * This provides a convenient way to build context from JS
- */
-@JsExport
-class JsCodingAgentContextBuilder {
-    private var currentFile: String? = null
-    private var projectPath: String = ""
-    private var projectStructure: String = ""
-    private var osInfo: String = ""
-    private var timestamp: String = ""
-    private var toolList: String = ""
-    private var agentRules: String = ""
-    private var buildTool: String = ""
-    private var shell: String = "/bin/bash"
-    private var moduleInfo: String = ""
-    private var frameworkContext: String = ""
-    
-    fun setCurrentFile(value: String?) = apply { this.currentFile = value }
-    fun setProjectPath(value: String) = apply { this.projectPath = value }
-    fun setProjectStructure(value: String) = apply { this.projectStructure = value }
-    fun setOsInfo(value: String) = apply { this.osInfo = value }
-    fun setTimestamp(value: String) = apply { this.timestamp = value }
-    fun setToolList(value: String) = apply { this.toolList = value }
-    fun setAgentRules(value: String) = apply { this.agentRules = value }
-    fun setBuildTool(value: String) = apply { this.buildTool = value }
-    fun setShell(value: String) = apply { this.shell = value }
-    fun setModuleInfo(value: String) = apply { this.moduleInfo = value }
-    fun setFrameworkContext(value: String) = apply { this.frameworkContext = value }
-    
-    fun build(): JsCodingAgentContext {
-        return JsCodingAgentContext(
-            currentFile = currentFile,
-            projectPath = projectPath,
-            projectStructure = projectStructure,
-            osInfo = osInfo,
-            timestamp = timestamp,
-            toolList = toolList,
-            agentRules = agentRules,
-            buildTool = buildTool,
-            shell = shell,
-            moduleInfo = moduleInfo,
-            frameworkContext = frameworkContext
-        )
-    }
-}
-
-/**
- * JS Export for CodingAgent (MainAgent)
- * 使用 Kotlin 的 MainAgent 替代 TypeScript 的 CodingAgentService
- */
 @JsExport
 class JsCodingAgent(
     private val projectPath: String,

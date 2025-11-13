@@ -196,7 +196,6 @@ class CodingAgentViewModel(
             return
         }
 
-        // Check if this is a built-in slash command
         if (task.trim().startsWith("/")) {
             handleBuiltinCommand(task.trim(), onConfigRequired)
             return
@@ -209,12 +208,8 @@ class CodingAgentViewModel(
         currentExecutionJob =
             scope.launch {
                 try {
-                    // Initialize agent if not already done
                     val codingAgent = initializeCodingAgent()
-
-                    // 保存用户消息到会话历史
                     chatHistoryManager?.addUserMessage(task)
-
                     val agentTask =
                         AgentTask(
                             requirement = task,
@@ -223,7 +218,6 @@ class CodingAgentViewModel(
 
                     val result = codingAgent.executeTask(agentTask)
 
-                    // 保存 Agent 完成消息到会话历史（简化版本）
                     val resultSummary = "Agent task completed: $task"
                     chatHistoryManager?.addAssistantMessage(resultSummary)
 
@@ -284,7 +278,6 @@ class CodingAgentViewModel(
                 renderer.renderFinalResult(true, helpText, 0)
             }
             else -> {
-                // Unknown command, let the agent handle it
                 if (!isConfigured()) {
                     renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
                     onConfigRequired?.invoke()
@@ -443,28 +436,6 @@ class CodingAgentViewModel(
      */
     fun areMcpServersReady(): Boolean = !McpToolConfigManager.isPreloading()
 
-    /**
-     * Refresh tool configuration (call this when user modifies tool settings)
-     */
-    suspend fun refreshToolConfig() {
-        try {
-            val newToolConfig = ConfigManager.loadToolConfig()
-            cachedToolConfig = newToolConfig
-
-            // If MCP servers configuration changed, restart preloading
-            val currentMcpServers = cachedToolConfig?.mcpServers ?: emptyMap()
-            if (currentMcpServers.isNotEmpty()) {
-                // Restart MCP preloading with new configuration
-                startMcpPreloading()
-            }
-        } catch (e: Exception) {
-            println("Error refreshing tool config: ${e.message}")
-        }
-    }
-
-    /**
-     * Get tool loading status for UI display
-     */
     fun getToolLoadingStatus(): ToolLoadingStatus {
         val toolConfig = cachedToolConfig
 
