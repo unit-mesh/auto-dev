@@ -85,7 +85,7 @@ private fun AutoDevContent(
     var showModelConfigDialog by remember { mutableStateOf(false) }
     var showToolConfigDialog by remember { mutableStateOf(false) }
     var selectedAgent by remember { mutableStateOf("Default") }
-    var useAgentMode by remember { mutableStateOf(true) } // New: toggle between chat and agent mode
+    var useAgentMode by remember { mutableStateOf(false) } // 默认 Chat 模式，显示 SessionSidebar
     var isTreeViewVisible by remember { mutableStateOf(false) } // TreeView visibility for agent mode
 
     // Remote Agent state
