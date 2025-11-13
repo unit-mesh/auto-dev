@@ -32,8 +32,6 @@ import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.launch
 // Import UnifiedApp components for Session Management
 import cc.unitmesh.devins.ui.app.UnifiedAppContent
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +52,7 @@ fun AutoDevApp(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AutoDevContent(
     triggerFileChooser: Boolean = false,
@@ -100,10 +98,6 @@ private fun AutoDevContent(
 
     // Session Management mode (for Remote Session UI)
     var useSessionManagement by remember { mutableStateOf(false) }
-
-    // Session 切换触发器（用于通知 AgentChatInterface）
-    var agentSessionSwitchTrigger by remember { mutableStateOf<Pair<String, Long>?>(null) }
-    var agentNewChatTrigger by remember { mutableStateOf(0L) }
 
     val availableAgents = listOf("Default")
 
@@ -394,14 +388,13 @@ private fun AutoDevContent(
                                 onToggleTreeView = { isTreeViewVisible = it },
                                 // 传入会话管理（Agent 模式也支持会话历史）
                                 chatHistoryManager = chatHistoryManager,
-                                // Session 切换触发器（从 SessionSidebar 传入）
-                                sessionSwitchTrigger = agentSessionSwitchTrigger,
-                                newChatTrigger = agentNewChatTrigger,
                                 // 会话切换回调
                                 onSessionSelected = { sessionId ->
+                                    // Agent 模式的 session 切换由 ViewModel 处理
                                     println("✅ [Agent] Switched to session: $sessionId")
                                 },
                                 onNewChat = {
+                                    // Agent 模式的 new session 由 ViewModel 处理
                                     println("✅ [Agent] Created new session")
                                 },
                                 hasHistory = messages.isNotEmpty(),
@@ -549,27 +542,17 @@ private fun AutoDevContent(
                         chatHistoryManager = chatHistoryManager,
                         currentSessionId = chatHistoryManager.getCurrentSession().id,
                         onSessionSelected = { sessionId ->
-                            if (useAgentMode) {
-                                // Agent 模式：触发 AgentChatInterface 的 session 切换
-                                val second = Clock.System.now().toEpochMilliseconds()
-                                agentSessionSwitchTrigger = Pair(sessionId, second)
-                            } else {
-                                // Chat 模式：直接更新本地状态
-                                chatHistoryManager.switchSession(sessionId)
-                                messages = chatHistoryManager.getMessages()
-                                currentStreamingOutput = ""
-                            }
+                            chatHistoryManager.switchSession(sessionId)
+                            messages = chatHistoryManager.getMessages()
+                            currentStreamingOutput = ""
                         },
                         onNewChat = {
-                            if (useAgentMode) {
-                                // Agent 模式：触发 AgentChatInterface 创建新 session
-                                agentNewChatTrigger = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-                            } else {
-                                // Chat 模式：直接创建新 session
-                                chatHistoryManager.createSession()
-                                messages = emptyList()
-                                currentStreamingOutput = ""
-                            }
+                            chatHistoryManager.createSession()
+                            messages = emptyList()
+                            currentStreamingOutput = ""
+                        },
+                        onRenameSession = { sessionId, newTitle ->
+                            chatHistoryManager.renameSession(sessionId, newTitle)
                         },
                         onShowModelConfig = { showModelConfigDialog = true },
                         onShowToolConfig = { showToolConfigDialog = true },
@@ -629,6 +612,7 @@ private fun AutoDevContent(
                     onConfigureRemote = { showRemoteConfigDialog = true },
                     onSessionManagementToggle = {
                         useSessionManagement = !useSessionManagement
+                        println("🔄 切换 Session Management: $useSessionManagement")
                     },
                     onShowModelConfig = { showModelConfigDialog = true },
                     onShowToolConfig = { showToolConfigDialog = true },
@@ -648,32 +632,14 @@ private fun AutoDevContent(
                         onToggleTreeView = { isTreeViewVisible = it },
                         // 传入会话管理（Agent 模式也支持会话历史）
                         chatHistoryManager = chatHistoryManager,
-                        // Session 切换触发器（从 SessionSidebar 传入）
-                        sessionSwitchTrigger = agentSessionSwitchTrigger,
-                        newChatTrigger = agentNewChatTrigger,
-                        // 会话切换回调（ViewModel 内部已处理消息加载）
+                        // 会话切换回调
                         onSessionSelected = { sessionId ->
-                            if (useAgentMode) {
-                                // Agent 模式：触发 AgentChatInterface 的 session 切换
-                                val second = Clock.System.now().toEpochMilliseconds()
-                                agentSessionSwitchTrigger = Pair(sessionId, second)
-                            } else {
-                                // Chat 模式：直接更新本地状态
-                                chatHistoryManager.switchSession(sessionId)
-                                messages = chatHistoryManager.getMessages()
-                                currentStreamingOutput = ""
-                            }
+                            // Agent 模式的 session 切换由 ViewModel 处理
+                            println("✅ [Agent] Switched to session: $sessionId")
                         },
                         onNewChat = {
-                            if (useAgentMode) {
-                                // Agent 模式：触发 AgentChatInterface 创建新 session
-                                agentNewChatTrigger = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-                            } else {
-                                // Chat 模式：直接创建新 session
-                                chatHistoryManager.createSession()
-                                messages = emptyList()
-                                currentStreamingOutput = ""
-                            }
+                            // Agent 模式的 new session 由 ViewModel 处理
+                            println("✅ [Agent] Created new session")
                         },
                         // TopBar 参数
                         hasHistory = messages.isNotEmpty(),

@@ -43,6 +43,7 @@ object AutoDevComposeIcons {
     val Save: ImageVector get() = Icons.Default.Save
     val ArrowDropDown: ImageVector get() = Icons.Default.ArrowDropDown
     val History: ImageVector get() = Icons.Default.History
+    val Edit: ImageVector get() = Icons.Default.Edit
 
     // Communication & AI
     val Chat: ImageVector get() = Icons.Default.Chat

@@ -180,9 +180,11 @@ class ChatHistoryManager {
      * 重命名会话（添加标题）
      */
     fun renameSession(sessionId: String, title: String) {
-        // ChatSession 目前没有 title 字段，可以通过第一条消息推断
-        // 这里暂时不实现，SessionSidebar 会显示第一条消息的摘要
-        saveSessionsAsync()
+        sessions[sessionId]?.let { session ->
+            session.title = title
+            session.updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+            saveSessionsAsync()
+        }
     }
 
     /**

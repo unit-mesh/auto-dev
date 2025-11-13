@@ -49,7 +49,9 @@ fun SessionSidebar(
     onShowToolConfig: () -> Unit = {},
     onShowDebug: () -> Unit = {},
     hasDebugInfo: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // 本地会话重命名回调
+    onRenameSession: ((String, String) -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
     
@@ -177,6 +179,9 @@ fun SessionSidebar(
                                 session = session,
                                 isSelected = session.id == currentSessionId,
                                 onSelect = { onSessionSelected(session.id) },
+                                onRename = { newTitle ->
+                                    onRenameSession?.invoke(session.id, newTitle)
+                                },
                                 onDelete = {
                                     scope.launch {
                                         chatHistoryManager.deleteSession(session.id)
@@ -292,9 +297,12 @@ private fun LocalSessionItem(
     session: ChatSession,
     isSelected: Boolean,
     onSelect: () -> Unit,
+    onRename: (String) -> Unit,
     onDelete: () -> Unit
 ) {
-    var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var isHovered by remember { mutableStateOf(false) }
     
     val backgroundColor = if (isSelected) {
         MaterialTheme.colorScheme.primaryContainer
@@ -310,8 +318,10 @@ private fun LocalSessionItem(
     
     // 获取会话标题（第一条用户消息的摘要）
     val title = remember(session) {
-        val firstUserMessage = session.messages.firstOrNull { it.role == MessageRole.USER }
-        firstUserMessage?.content?.take(50) ?: "New Chat"
+        session.title ?: run {
+            val firstUserMessage = session.messages.firstOrNull { it.role == MessageRole.USER }
+            firstUserMessage?.content?.take(50) ?: "New Chat"
+        }
     }
     
     // 格式化时间
@@ -386,42 +396,93 @@ private fun LocalSessionItem(
                 }
             }
             
-            // Delete button
-            IconButton(
-                onClick = { showDeleteConfirm = true },
-                modifier = Modifier.size(20.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Delete,
-                    contentDescription = "Delete",
-                    modifier = Modifier.size(14.dp),
-                    tint = contentColor.copy(alpha = 0.6f)
-                )
+            // Menu button
+            Box {
+                IconButton(
+                    onClick = { showMenu = true },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.MoreVert,
+                        contentDescription = "More options",
+                        modifier = Modifier.size(16.dp),
+                        tint = contentColor.copy(alpha = 0.6f)
+                    )
+                }
+                
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Rename") },
+                        onClick = {
+                            showMenu = false
+                            showRenameDialog = true
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { 
+                            Text(
+                                "Delete",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    )
+                }
             }
         }
     }
     
-    // Delete confirmation dialog
-    if (showDeleteConfirm) {
+    // Rename dialog
+    if (showRenameDialog) {
+        var newTitle by remember { mutableStateOf(title) }
+        
         AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Chat?") },
-            text = { Text("This will permanently delete this chat session and all its messages.") },
+            onDismissRequest = { showRenameDialog = false },
+            title = { Text("Rename Session") },
+            text = {
+                OutlinedTextField(
+                    value = newTitle,
+                    onValueChange = { newTitle = it },
+                    label = { Text("Title") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
             confirmButton = {
                 Button(
                     onClick = {
-                        onDelete()
-                        showDeleteConfirm = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
+                        if (newTitle.isNotBlank()) {
+                            onRename(newTitle)
+                        }
+                        showRenameDialog = false
+                    }
                 ) {
-                    Text("Delete")
+                    Text("Rename")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
+                TextButton(onClick = { showRenameDialog = false }) {
                     Text("Cancel")
                 }
             }
@@ -435,7 +496,7 @@ private fun RemoteSessionItem(
     onSelect: () -> Unit,
     onDelete: () -> Unit
 ) {
-    var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     
     val backgroundColor = MaterialTheme.colorScheme.surface
     val contentColor = MaterialTheme.colorScheme.onSurface
@@ -536,46 +597,47 @@ private fun RemoteSessionItem(
                 }
             }
             
-            // Delete button
-            IconButton(
-                onClick = { showDeleteConfirm = true },
-                modifier = Modifier.size(20.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Delete,
-                    contentDescription = "Delete",
-                    modifier = Modifier.size(14.dp),
-                    tint = contentColor.copy(alpha = 0.6f)
-                )
+            // Menu button
+            Box {
+                IconButton(
+                    onClick = { showMenu = true },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.MoreVert,
+                        contentDescription = "More options",
+                        modifier = Modifier.size(16.dp),
+                        tint = contentColor.copy(alpha = 0.6f)
+                    )
+                }
+                
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { 
+                            Text(
+                                "Delete",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    )
+                }
             }
         }
-    }
-    
-    // Delete confirmation dialog
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Remote Session?") },
-            text = { Text("This will permanently delete this remote session.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDelete()
-                        showDeleteConfirm = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }
 

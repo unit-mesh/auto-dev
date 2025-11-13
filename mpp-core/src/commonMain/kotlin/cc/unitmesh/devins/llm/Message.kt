@@ -28,6 +28,7 @@ data class Message(
 @Serializable
 data class ChatSession(
     val id: String,
+    var title: String? = null,
     val messages: MutableList<Message> = mutableListOf(),
     val createdAt: Long = Clock.System.now().toEpochMilliseconds(),
     var updatedAt: Long = Clock.System.now().toEpochMilliseconds()

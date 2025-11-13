@@ -44,9 +44,6 @@ class CodingAgentViewModel(
         private set
     private var currentExecutionJob: Job? = null
 
-    // Track timeline size before task execution to save only new items
-    private var timelineSizeBeforeExecution = 0
-
     // MCP preloading state
     var mcpPreloadingStatus by mutableStateOf(PreloadingStatus(false, emptyList(), 0))
         private set
@@ -80,7 +77,6 @@ class CodingAgentViewModel(
                         renderer.renderLLMResponseChunk(message.content)
                         renderer.renderLLMResponseEnd()
                     }
-
                     else -> {}
                 }
             }
@@ -210,9 +206,6 @@ class CodingAgentViewModel(
         renderer.clearError()
         renderer.addUserMessage(task)
 
-        // 记录执行前的 timeline 大小，用于后续只保存新增内容
-        timelineSizeBeforeExecution = renderer.timeline.size
-
         currentExecutionJob =
             scope.launch {
                 try {
@@ -230,8 +223,9 @@ class CodingAgentViewModel(
 
                     val result = codingAgent.executeTask(agentTask)
 
-                    // 保存完整的 Agent 执行历史到会话（分开保存每个部分）
-                    saveAgentExecutionHistory()
+                    // 保存 Agent 完成消息到会话历史（简化版本）
+                    val resultSummary = "Agent task completed: $task"
+                    chatHistoryManager?.addAssistantMessage(resultSummary)
 
                     // Result is already handled by the renderer
                     isExecuting = false
@@ -272,13 +266,11 @@ class CodingAgentViewModel(
                 }
                 handleInitCommand(args)
             }
-
             "clear" -> {
                 renderer.clearMessages()
                 chatHistoryManager?.clearCurrentSession()  // 同时清空会话历史
                 renderer.renderFinalResult(true, "✅ Chat history cleared", 0)
             }
-
             "help" -> {
                 val helpText =
                     buildString {
@@ -291,7 +283,6 @@ class CodingAgentViewModel(
                     }
                 renderer.renderFinalResult(true, helpText, 0)
             }
-
             else -> {
                 // Unknown command, let the agent handle it
                 if (!isConfigured()) {
@@ -370,7 +361,6 @@ class CodingAgentViewModel(
                             renderer.renderLLMResponseChunk(message.content)
                             renderer.renderLLMResponseEnd()
                         }
-
                         else -> {}
                     }
                 }
@@ -429,13 +419,8 @@ class CodingAgentViewModel(
                         renderer.renderLLMResponseStart()
                         renderer.renderLLMResponseChunk("💾 Saving domain dictionary to prompts/domain.csv...")
                         renderer.renderLLMResponseEnd()
-                        renderer.renderFinalResult(
-                            true,
-                            "✅ Domain dictionary generated successfully! File saved to prompts/domain.csv",
-                            1
-                        )
+                        renderer.renderFinalResult(true, "✅ Domain dictionary generated successfully! File saved to prompts/domain.csv", 1)
                     }
-
                     is cc.unitmesh.indexer.GenerationResult.Error -> {
                         renderer.renderError("❌ Domain dictionary generation failed: ${result.message}")
                     }
@@ -536,87 +521,6 @@ class CodingAgentViewModel(
             mcpToolsTotal = mcpToolsTotal,
             isLoading = McpToolConfigManager.isPreloading()
         )
-    }
-
-    /**
-     * 保存 Agent 执行历史到会话管理器
-     *
-     * 从 renderer 的 timeline 中提取本次执行新增的消息、工具调用和结果，
-     * 分别保存为独立的 ASSISTANT 消息，使历史更清晰易读
-     */
-    private fun saveAgentExecutionHistory() {
-        chatHistoryManager?.let { manager ->
-            val timeline = renderer.timeline
-            if (timeline.isEmpty() || timelineSizeBeforeExecution >= timeline.size) return
-
-            // 只处理本次执行新增的 timeline 项
-            val newItems = timeline.drop(timelineSizeBeforeExecution)
-
-            newItems.forEach { item ->
-                when (item) {
-                    is ComposeRenderer.TimelineItem.MessageItem -> {
-                        // 保存 ASSISTANT 的推理消息（USER 消息已经在 executeTask 前保存）
-                        if (item.message.role == MessageRole.ASSISTANT) {
-                            manager.addAssistantMessage(item.message.content)
-                        }
-                    }
-
-                    is ComposeRenderer.TimelineItem.CombinedToolItem -> {
-                        // 将工具调用和结果保存为单独的消息
-                        val toolMessage = buildString {
-                            appendLine("🔧 Tool: ${item.toolName}")
-                            appendLine("   ${item.description}")
-                            item.details?.let { appendLine("   $it") }
-
-                            // 保存工具执行结果
-                            if (item.success != null) {
-                                appendLine("   Result: ${if (item.success) "✅ " else "❌ "}${item.summary ?: "Unknown"}")
-                                if (!item.success && item.output != null) {
-                                    appendLine("   Error: ${item.output}")
-                                }
-                            }
-                        }
-                        manager.addAssistantMessage(toolMessage.trim())
-                    }
-
-                    is ComposeRenderer.TimelineItem.TerminalOutputItem -> {
-                        // 将终端输出保存为单独的消息
-                        val terminalMessage = buildString {
-                            appendLine("💻 Command: ${item.command}")
-                            appendLine("   Exit code: ${item.exitCode}")
-                            if (item.output.isNotBlank()) {
-                                val truncatedOutput = if (item.output.length > 500) {
-                                    "${item.output.take(500)}...\n[Output truncated]"
-                                } else {
-                                    item.output
-                                }
-                                appendLine("   Output:\n${truncatedOutput.prependIndent("   ")}")
-                            }
-                        }
-                        manager.addAssistantMessage(terminalMessage.trim())
-                    }
-
-                    is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
-                        // 保存任务完成消息
-                        val completeMessage = if (item.success) {
-                            "✅ ${item.message}"
-                        } else {
-                            "❌ ${item.message}"
-                        }
-                        manager.addAssistantMessage(completeMessage)
-                    }
-
-                    is ComposeRenderer.TimelineItem.ToolErrorItem -> {
-                        // 保存错误消息
-                        manager.addAssistantMessage("❌ Error: ${item.error}")
-                    }
-
-                    else -> {
-                        // 忽略其他类型（如 LiveTerminalItem）
-                    }
-                }
-            }
-        }
     }
 
     /**

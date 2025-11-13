@@ -43,9 +43,6 @@ fun AgentChatInterface(
     // 会话切换支持（新增）
     onSessionSelected: ((String) -> Unit)? = null,
     onNewChat: (() -> Unit)? = null,
-    // Session 切换触发器（从 AutoDevApp 传入）
-    sessionSwitchTrigger: Pair<String, Long>? = null,
-    newChatTrigger: Long = 0L,
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
@@ -64,17 +61,16 @@ fun AgentChatInterface(
             )
         }
 
-    // 监听 session 切换触发器（从 AutoDevApp 的 SessionSidebar 传入）
-    LaunchedEffect(sessionSwitchTrigger) {
-        sessionSwitchTrigger?.let { (sessionId, _) ->
+    // 连接外部回调到 ViewModel 的会话管理方法
+    val handleSessionSelected: (String) -> Unit = remember(viewModel) {
+        { sessionId ->
             viewModel.switchSession(sessionId)
             onSessionSelected?.invoke(sessionId)
         }
     }
 
-    // 监听新会话创建触发器
-    LaunchedEffect(newChatTrigger) {
-        if (newChatTrigger > 0L) {
+    val handleNewChat: () -> Unit = remember(viewModel) {
+        {
             viewModel.newSession()
             onNewChat?.invoke()
         }
