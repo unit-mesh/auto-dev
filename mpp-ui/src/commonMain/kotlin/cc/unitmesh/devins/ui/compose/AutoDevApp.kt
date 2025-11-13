@@ -67,7 +67,7 @@ private fun AutoDevContent(
     var isLLMProcessing by remember { mutableStateOf(false) }
 
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
-    
+
     var showSessionSidebar by remember { mutableStateOf(true) } // 默认显示（JVM 桌面端）
 
     LaunchedEffect(Unit) {
@@ -301,8 +301,7 @@ private fun AutoDevContent(
         }
     }
 
-    // 如果启用 Session Management 模式，显示 UnifiedApp 界面
-    if (useSessionManagement && selectedAgentType == "Remote") {
+    if (useSessionManagement || Platform.isAndroid) {
         UnifiedAppContent(
             serverUrl = serverUrl,
             onOpenLocalChat = if (Platform.isJvm) {
@@ -456,7 +455,7 @@ private fun AutoDevContent(
                         // Chat 模式
                         Column(modifier = Modifier.fillMaxSize()) {
                             val isCompactMode = messages.isNotEmpty() || isLLMProcessing
-                            
+
                             if (isCompactMode) {
                                 MessageList(
                                     messages = messages,
@@ -466,7 +465,7 @@ private fun AutoDevContent(
                                     fileSystem = currentWorkspace.fileSystem,
                                     modifier = Modifier.fillMaxWidth().weight(1f)
                                 )
-                                
+
                                 DevInEditorInput(
                                     initialText = "",
                                     placeholder = "Type your message...",
@@ -547,7 +546,7 @@ private fun AutoDevContent(
                         hasDebugInfo = compilerOutput.isNotEmpty()
                     )
                 }
-                
+
                 // 主内容区域
                 Column(
                     modifier = Modifier

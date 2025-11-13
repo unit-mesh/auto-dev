@@ -75,12 +75,13 @@ private fun SessionAppContent(
 
     // 屏幕状态管理
     var currentScreen by remember { mutableStateOf(AppScreen.LOGIN) }
+    var skipLogin by remember { mutableStateOf(false) }
 
     // 监听认证状态
     LaunchedEffect(isAuthenticated) {
         if (isAuthenticated && currentScreen == AppScreen.LOGIN) {
             currentScreen = AppScreen.PROJECTS
-        } else if (!isAuthenticated) {
+        } else if (!isAuthenticated && !skipLogin) {
             currentScreen = AppScreen.LOGIN
         }
     }
@@ -101,12 +102,19 @@ private fun SessionAppContent(
     }
 
     when {
-        !isAuthenticated -> {
+        !isAuthenticated && !skipLogin -> {
             LoginScreen(
                 viewModel = sessionViewModel,
                 onLoginSuccess = {
                     currentScreen = AppScreen.PROJECTS
-                }
+                },
+                onSkipLogin = if (useBottomNavigation) {
+                    // Android 平台允许跳过登录
+                    {
+                        skipLogin = true
+                        currentScreen = AppScreen.PROJECTS
+                    }
+                } else null
             )
         }
         currentTask != null -> {
@@ -143,6 +151,7 @@ private fun SessionAppContent(
 
 /**
  * Android 底部导航布局
+ * 使用新的 NavLayout 组件，支持 Drawer + BottomNavigation
  */
 @Composable
 private fun AndroidNavigationLayout(
@@ -154,35 +163,10 @@ private fun AndroidNavigationLayout(
 ) {
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Folder, contentDescription = "项目") },
-                    label = { Text("项目") },
-                    selected = currentScreen == AppScreen.PROJECTS,
-                    onClick = { onScreenChange(AppScreen.PROJECTS) }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Assignment, contentDescription = "任务") },
-                    label = { Text("任务") },
-                    selected = currentScreen == AppScreen.TASKS,
-                    onClick = { onScreenChange(AppScreen.TASKS) }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.History, contentDescription = "会话") },
-                    label = { Text("会话") },
-                    selected = currentScreen == AppScreen.SESSIONS,
-                    onClick = { onScreenChange(AppScreen.SESSIONS) }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "我的") },
-                    label = { Text("我的") },
-                    selected = currentScreen == AppScreen.PROFILE,
-                    onClick = { onScreenChange(AppScreen.PROFILE) }
-                )
-            }
-        }
+    AndroidNavLayout(
+        currentScreen = currentScreen,
+        onScreenChange = onScreenChange,
+        sessionViewModel = sessionViewModel
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             when (currentScreen) {
@@ -239,6 +223,7 @@ private fun AndroidNavigationLayout(
 
 /**
  * Desktop 侧边导航布局
+ * 使用新的 NavLayout 组件
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -251,85 +236,58 @@ private fun DesktopNavigationLayout(
 ) {
     val scope = rememberCoroutineScope()
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        // 左侧导航栏
-        NavigationRail {
-            NavigationRailItem(
-                icon = { Icon(Icons.Default.Folder, contentDescription = "项目") },
-                label = { Text("项目") },
-                selected = currentScreen == AppScreen.PROJECTS,
-                onClick = { onScreenChange(AppScreen.PROJECTS) }
-            )
-            NavigationRailItem(
-                icon = { Icon(Icons.Default.Assignment, contentDescription = "任务") },
-                label = { Text("任务") },
-                selected = currentScreen == AppScreen.TASKS,
-                onClick = { onScreenChange(AppScreen.TASKS) }
-            )
-            NavigationRailItem(
-                icon = { Icon(Icons.Default.History, contentDescription = "会话") },
-                label = { Text("会话") },
-                selected = currentScreen == AppScreen.SESSIONS,
-                onClick = { onScreenChange(AppScreen.SESSIONS) }
-            )
-            NavigationRailItem(
-                icon = { Icon(Icons.Default.Person, contentDescription = "我的") },
-                label = { Text("我的") },
-                selected = currentScreen == AppScreen.PROFILE,
-                onClick = { onScreenChange(AppScreen.PROFILE) }
-            )
-        }
-
-        // 右侧内容区域
-        Box(modifier = Modifier.weight(1f)) {
-            when (currentScreen) {
-                AppScreen.PROJECTS -> {
-                    ProjectListScreen(
-                        viewModel = projectViewModel,
-                        onProjectClick = { project ->
-                            projectViewModel.selectProject(project)
-                            onScreenChange(AppScreen.TASKS)
-                        }
-                    )
-                }
-                AppScreen.TASKS -> {
-                    TaskListScreen(
-                        viewModel = taskViewModel,
-                        onTaskClick = { task ->
-                            // 任务点击会自动切换到 TaskExecutionScreen
-                        }
-                    )
-                }
-                AppScreen.SESSIONS -> {
-                    SessionListScreen(
-                        viewModel = sessionViewModel,
-                        onSessionClick = { session ->
-                            scope.launch {
-                                sessionViewModel.joinSession(session.id)
-                            }
-                        },
-                        onCreateSession = {
-                            // 创建会话
-                        },
-                        onLogout = {
-                            scope.launch {
-                                sessionViewModel.logout()
-                            }
-                        }
-                    )
-                }
-                AppScreen.PROFILE -> {
-                    ProfileScreen(
-                        viewModel = sessionViewModel,
-                        onLogout = {
-                            scope.launch {
-                                sessionViewModel.logout()
-                            }
-                        }
-                    )
-                }
-                else -> {}
+    DesktopNavLayout(
+        currentScreen = currentScreen,
+        onScreenChange = onScreenChange,
+        sessionViewModel = sessionViewModel
+    ) {
+        when (currentScreen) {
+            AppScreen.PROJECTS -> {
+                ProjectListScreen(
+                    viewModel = projectViewModel,
+                    onProjectClick = { project ->
+                        projectViewModel.selectProject(project)
+                        onScreenChange(AppScreen.TASKS)
+                    }
+                )
             }
+            AppScreen.TASKS -> {
+                TaskListScreen(
+                    viewModel = taskViewModel,
+                    onTaskClick = { task ->
+                        // 任务点击会自动切换到 TaskExecutionScreen
+                    }
+                )
+            }
+            AppScreen.SESSIONS -> {
+                SessionListScreen(
+                    viewModel = sessionViewModel,
+                    onSessionClick = { session ->
+                        scope.launch {
+                            sessionViewModel.joinSession(session.id)
+                        }
+                    },
+                    onCreateSession = {
+                        // 创建会话
+                    },
+                    onLogout = {
+                        scope.launch {
+                            sessionViewModel.logout()
+                        }
+                    }
+                )
+            }
+            AppScreen.PROFILE -> {
+                ProfileScreen(
+                    viewModel = sessionViewModel,
+                    onLogout = {
+                        scope.launch {
+                            sessionViewModel.logout()
+                        }
+                    }
+                )
+            }
+            else -> {}
         }
     }
 }
@@ -340,5 +298,43 @@ enum class AppScreen {
     TASKS,
     SESSIONS,
     PROFILE
+}
+
+/**
+ * SessionAppContext - Session 应用上下文
+ *
+ * 用于管理 Session 应用的全局状态和配置
+ * 参考 SessionAppContext 的设计，提供统一的上下文管理
+ */
+data class SessionAppContext(
+    val serverUrl: String,
+    val useBottomNavigation: Boolean,
+    val sessionViewModel: SessionViewModel,
+    val projectViewModel: ProjectViewModel,
+    val taskViewModel: TaskViewModel,
+    val currentScreen: AppScreen = AppScreen.LOGIN,
+    val skipLogin: Boolean = false,
+    val isAuthenticated: Boolean = false
+) {
+    companion object {
+        /**
+         * 创建默认的 SessionAppContext
+         */
+        fun create(
+            serverUrl: String,
+            useBottomNavigation: Boolean,
+            sessionClient: SessionClient,
+            projectClient: cc.unitmesh.devins.ui.project.ProjectClient,
+            remoteAgentClient: cc.unitmesh.devins.ui.remote.RemoteAgentClient
+        ): SessionAppContext {
+            return SessionAppContext(
+                serverUrl = serverUrl,
+                useBottomNavigation = useBottomNavigation,
+                sessionViewModel = SessionViewModel(sessionClient),
+                projectViewModel = ProjectViewModel(projectClient),
+                taskViewModel = TaskViewModel(sessionClient, remoteAgentClient)
+            )
+        }
+    }
 }
 

@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.project.CreateProjectDialog
 import cc.unitmesh.devins.ui.project.Project
 import cc.unitmesh.devins.ui.project.ProjectClient
@@ -57,13 +58,33 @@ internal fun UnifiedAppContent(
         }
     }
 
+    // 屏幕状态管理（用于 Android NavLayout）
+    var currentScreen by remember { mutableStateOf(AppScreen.PROJECTS) }
+    var skipLogin by remember { mutableStateOf(false) }
+
+    // 监听认证状态
+    LaunchedEffect(isAuthenticated) {
+        if (isAuthenticated && currentScreen == AppScreen.LOGIN) {
+            currentScreen = AppScreen.PROJECTS
+        } else if (!isAuthenticated && !skipLogin) {
+            currentScreen = AppScreen.LOGIN
+        }
+    }
+
     when {
-        !isAuthenticated -> {
+        !isAuthenticated && !skipLogin -> {
             LoginScreen(
                 viewModel = sessionViewModel,
                 onLoginSuccess = {
-                    // 登录成功后加载数据
-                }
+                    currentScreen = AppScreen.PROJECTS
+                },
+                onSkipLogin = if (Platform.isAndroid) {
+                    // Android 平台允许跳过登录
+                    {
+                        skipLogin = true
+                        currentScreen = AppScreen.PROJECTS
+                    }
+                } else null
             )
         }
         currentTask != null -> {
@@ -71,13 +92,23 @@ internal fun UnifiedAppContent(
             TaskExecutionScreen(
                 viewModel = taskViewModel,
                 onBack = {
-                    // 返回主界面
+                    currentScreen = AppScreen.TASKS
                 }
             )
         }
+        Platform.isAndroid -> {
+            // Android: 使用 NavLayout（Drawer + BottomNavigation）
+            AndroidUnifiedLayout(
+                currentScreen = currentScreen,
+                onScreenChange = { currentScreen = it },
+                sessionViewModel = sessionViewModel,
+                projectViewModel = projectViewModel,
+                taskViewModel = taskViewModel
+            )
+        }
         else -> {
-            // 主界面：侧边栏 + 内容区域
-            MainLayout(
+            // Desktop: 使用侧边栏布局
+            DesktopMainLayout(
                 sessionViewModel = sessionViewModel,
                 projectViewModel = projectViewModel,
                 taskViewModel = taskViewModel,
@@ -87,9 +118,85 @@ internal fun UnifiedAppContent(
     }
 }
 
+/**
+ * Android 统一布局 - 使用 NavLayout
+ */
+@Composable
+private fun AndroidUnifiedLayout(
+    currentScreen: AppScreen,
+    onScreenChange: (AppScreen) -> Unit,
+    sessionViewModel: SessionViewModel,
+    projectViewModel: ProjectViewModel,
+    taskViewModel: TaskViewModel
+) {
+    val scope = rememberCoroutineScope()
+    val sessions by sessionViewModel.sessions.collectAsState()
+    val currentProject by projectViewModel.currentProject.collectAsState()
+
+    AndroidNavLayout(
+        currentScreen = currentScreen,
+        onScreenChange = onScreenChange,
+        sessionViewModel = sessionViewModel
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            when (currentScreen) {
+                AppScreen.PROJECTS -> {
+                    cc.unitmesh.devins.ui.project.ProjectListScreen(
+                        viewModel = projectViewModel,
+                        onProjectClick = { project ->
+                            projectViewModel.selectProject(project)
+                            onScreenChange(AppScreen.TASKS)
+                        }
+                    )
+                }
+                AppScreen.TASKS -> {
+                    cc.unitmesh.devins.ui.task.TaskListScreen(
+                        viewModel = taskViewModel,
+                        onTaskClick = { task ->
+                            // 任务点击会自动切换到 TaskExecutionScreen
+                        }
+                    )
+                }
+                AppScreen.SESSIONS -> {
+                    SessionListScreen(
+                        viewModel = sessionViewModel,
+                        onSessionClick = { session ->
+                            scope.launch {
+                                sessionViewModel.joinSession(session.id)
+                            }
+                        },
+                        onCreateSession = {
+                            // 创建会话
+                        },
+                        onLogout = {
+                            scope.launch {
+                                sessionViewModel.logout()
+                            }
+                        }
+                    )
+                }
+                AppScreen.PROFILE -> {
+                    ProfileScreen(
+                        viewModel = sessionViewModel,
+                        onLogout = {
+                            scope.launch {
+                                sessionViewModel.logout()
+                            }
+                        }
+                    )
+                }
+                else -> {}
+            }
+        }
+    }
+}
+
+/**
+ * Desktop 主布局 - 使用侧边栏
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainLayout(
+private fun DesktopMainLayout(
     sessionViewModel: SessionViewModel,
     projectViewModel: ProjectViewModel,
     taskViewModel: TaskViewModel,

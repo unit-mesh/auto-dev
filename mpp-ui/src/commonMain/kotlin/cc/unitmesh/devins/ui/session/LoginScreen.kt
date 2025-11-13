@@ -15,25 +15,47 @@ import kotlinx.coroutines.launch
 
 /**
  * LoginScreen - 登录界面
+ *
+ * @param viewModel Session ViewModel
+ * @param onLoginSuccess 登录成功回调
+ * @param onSkipLogin 跳过登录回调（可选，用于 Android 等平台）
+ * @param showCloseButton 是否显示关闭按钮
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     viewModel: SessionViewModel,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onSkipLogin: (() -> Unit)? = null,
+    showCloseButton: Boolean = onSkipLogin != null
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isRegisterMode by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
-    
+
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val scope = rememberCoroutineScope()
-    
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+
+    Scaffold(
+        topBar = {
+            if (showCloseButton && onSkipLogin != null) {
+                TopAppBar(
+                    title = { Text("") },
+                    actions = {
+                        TextButton(onClick = onSkipLogin) {
+                            Text("跳过")
+                        }
+                    }
+                )
+            }
+        }
+    ) { paddingValues ->
+        Surface(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            color = MaterialTheme.colorScheme.background
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -47,17 +69,17 @@ fun LoginScreen(
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = "AutoDev 多端协同",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Username
             OutlinedTextField(
                 value = username,
@@ -67,9 +89,9 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth().widthIn(max = 400.dp),
                 enabled = !isLoading
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Password
             OutlinedTextField(
                 value = password,
@@ -88,9 +110,9 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth().widthIn(max = 400.dp),
                 enabled = !isLoading
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Error message
             if (errorMessage != null) {
                 Text(
@@ -100,7 +122,7 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            
+
             // Login/Register Button
             Button(
                 onClick = {
@@ -110,7 +132,7 @@ fun LoginScreen(
                         } else {
                             viewModel.login(username, password)
                         }
-                        
+
                         if (success) {
                             onLoginSuccess()
                         }
@@ -128,9 +150,9 @@ fun LoginScreen(
                     Text(if (isRegisterMode) "注册" else "登录")
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Toggle between login and register
             TextButton(
                 onClick = {
@@ -143,6 +165,7 @@ fun LoginScreen(
                     if (isRegisterMode) "已有账号？去登录" else "还没账号？去注册"
                 )
             }
+        }
         }
     }
 }
