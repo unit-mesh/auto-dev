@@ -386,6 +386,8 @@ private fun AutoDevContent(
                                 isTreeViewVisible = isTreeViewVisible,
                                 onConfigWarning = { showModelConfigDialog = true },
                                 onToggleTreeView = { isTreeViewVisible = it },
+                                // 传入会话管理（Agent 模式也支持会话历史）
+                                chatHistoryManager = chatHistoryManager,
                                 hasHistory = messages.isNotEmpty(),
                                 hasDebugInfo = compilerOutput.isNotEmpty(),
                                 currentModelConfig = currentModelConfig,

@@ -103,10 +103,24 @@ class ChatHistoryManager {
     
     /**
      * 切换到指定会话
+     * 会先保存当前会话，再切换到新会话
      */
     fun switchSession(sessionId: String): ChatSession? {
+        // 先保存当前会话（如果存在且有消息）
+        currentSessionId?.let { currentId ->
+            sessions[currentId]?.let { currentSession ->
+                if (currentSession.messages.isNotEmpty()) {
+                    // 触发保存
+                    saveSessionsAsync()
+                }
+            }
+        }
+        
+        // 切换到新会话
         return sessions[sessionId]?.also {
             currentSessionId = sessionId
+            // 通知 UI 更新（切换会话后）
+            _sessionsUpdateTrigger.value++
         }
     }
     

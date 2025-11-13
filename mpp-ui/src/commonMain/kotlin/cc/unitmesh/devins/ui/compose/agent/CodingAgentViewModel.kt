@@ -65,6 +65,23 @@ class CodingAgentViewModel(
     private var cachedToolConfig: cc.unitmesh.agent.config.ToolConfigFile? = null
 
     init {
+        // Load historical messages from chatHistoryManager
+        chatHistoryManager?.let { manager ->
+            val messages = manager.getMessages()
+            messages.forEach { message ->
+                when (message.role) {
+                    MessageRole.USER -> renderer.addUserMessage(message.content)
+                    MessageRole.ASSISTANT -> {
+                        // Add assistant message to renderer
+                        renderer.renderLLMResponseStart()
+                        renderer.renderLLMResponseChunk(message.content)
+                        renderer.renderLLMResponseEnd()
+                    }
+                    else -> {}
+                }
+            }
+        }
+        
         // Start MCP preloading immediately when ViewModel is created
         // Only if llmService is configured
         if (llmService != null) {
@@ -322,6 +339,33 @@ class CodingAgentViewModel(
     fun newSession() {
         renderer.clearMessages()
         chatHistoryManager?.createSession()
+    }
+    
+    /**
+     * Switch to a different session and load its messages
+     */
+    fun switchSession(sessionId: String) {
+        chatHistoryManager?.let { manager ->
+            val session = manager.switchSession(sessionId)
+            if (session != null) {
+                // Clear current renderer state
+                renderer.clearMessages()
+                
+                // Load messages from the switched session
+                val messages = manager.getMessages()
+                messages.forEach { message ->
+                    when (message.role) {
+                        MessageRole.USER -> renderer.addUserMessage(message.content)
+                        MessageRole.ASSISTANT -> {
+                            renderer.renderLLMResponseStart()
+                            renderer.renderLLMResponseChunk(message.content)
+                            renderer.renderLLMResponseEnd()
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
     }
 
     /**

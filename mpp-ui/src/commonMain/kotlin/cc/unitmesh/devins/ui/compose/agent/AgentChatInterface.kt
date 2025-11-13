@@ -40,6 +40,9 @@ fun AgentChatInterface(
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
     showTopBar: Boolean = true, // 新增：控制是否显示 TopBar
+    // 会话切换支持（新增）
+    onSessionSelected: ((String) -> Unit)? = null,
+    onNewChat: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
