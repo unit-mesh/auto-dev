@@ -47,56 +47,53 @@ fun TopBarMenuDesktop(
     var agentTypeMenuExpanded by remember { mutableStateOf(false) }
 
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = if (hasHistory) 4.dp else 0.dp,
-        tonalElevation = if (hasHistory) 2.dp else 0.dp,
+        modifier = modifier.fillMaxWidth().height(32.dp),
+        shadowElevation = if (hasHistory) 1.dp else 0.dp,
+        tonalElevation = if (hasHistory) 0.5.dp else 0.dp,
         color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier =
                 Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 16.dp),
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left: Logo/Title
+            // Left: Logo/Title (smaller)
             Text(
                 text = "AutoDev",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleSmall
             )
 
-            // Right: Action Icons
+            // Right: Action Icons (compact, 24dp buttons)
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Language Switcher
-                LanguageSwitcher(
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-
                 // Model Config Button
                 IconButton(
                     onClick = onShowModelConfig,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = AutoDevComposeIcons.Settings,
                         contentDescription = "Model Configuration",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
                 // Tool Config Button
                 IconButton(
                     onClick = onShowToolConfig,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = AutoDevComposeIcons.Build,
                         contentDescription = "Tool Configuration",
-                        tint = MaterialTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
@@ -104,12 +101,13 @@ fun TopBarMenuDesktop(
                 Box {
                     IconButton(
                         onClick = { agentMenuExpanded = true },
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = AutoDevComposeIcons.SmartToy,
                             contentDescription = "Select Agent",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
 
@@ -151,7 +149,8 @@ fun TopBarMenuDesktop(
                     Box {
                         OutlinedButton(
                             onClick = { agentTypeMenuExpanded = true },
-                            modifier = Modifier.height(40.dp),
+                            modifier = Modifier.height(24.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
                                 containerColor = if (selectedAgentType == "Remote") {
                                     MaterialTheme.colorScheme.primaryContainer
@@ -167,12 +166,12 @@ fun TopBarMenuDesktop(
                                     AutoDevComposeIcons.Computer
                                 },
                                 contentDescription = null,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(14.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(3.dp))
                             Text(
                                 text = selectedAgentType,
-                                style = MaterialTheme.typography.labelMedium
+                                style = MaterialTheme.typography.labelSmall
                             )
                         }
 
@@ -292,87 +291,13 @@ fun TopBarMenuDesktop(
                 // Mode Toggle
                 IconButton(
                     onClick = onModeToggle,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = if (useAgentMode) AutoDevComposeIcons.Custom.AI else AutoDevComposeIcons.Chat,
                         contentDescription = if (useAgentMode) "Switch to Chat Mode" else "Switch to Agent Mode",
-                        tint = if (useAgentMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                // Theme Switcher with Dropdown
-                Box {
-                    IconButton(
-                        onClick = { themeMenuExpanded = true },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector =
-                                when (currentTheme) {
-                                    ThemeManager.ThemeMode.LIGHT -> AutoDevComposeIcons.LightMode
-                                    ThemeManager.ThemeMode.DARK -> AutoDevComposeIcons.DarkMode
-                                    ThemeManager.ThemeMode.SYSTEM -> AutoDevComposeIcons.Brightness4
-                                },
-                            contentDescription = "Theme",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = themeMenuExpanded,
-                        onDismissRequest = { themeMenuExpanded = false }
-                    ) {
-                        Text(
-                            text = "Theme",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                        HorizontalDivider()
-                        ThemeManager.ThemeMode.entries.forEach { mode ->
-                            DropdownMenuItem(
-                                text = { Text(ThemeManager.getThemeDisplayName(mode)) },
-                                onClick = {
-                                    ThemeManager.setTheme(mode)
-                                    themeMenuExpanded = false
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector =
-                                            when (mode) {
-                                                ThemeManager.ThemeMode.LIGHT -> AutoDevComposeIcons.LightMode
-                                                ThemeManager.ThemeMode.DARK -> AutoDevComposeIcons.DarkMode
-                                                ThemeManager.ThemeMode.SYSTEM -> AutoDevComposeIcons.Brightness4
-                                            },
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (mode == currentTheme) {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Check,
-                                            contentDescription = "Selected",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Open Directory
-                IconButton(
-                    onClick = onOpenDirectory,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.FolderOpen,
-                        contentDescription = "Open Project",
-                        tint = MaterialTheme.colorScheme.onSurface
+                        tint = if (useAgentMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
@@ -380,12 +305,13 @@ fun TopBarMenuDesktop(
                 if (hasHistory) {
                     IconButton(
                         onClick = onClearHistory,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = AutoDevComposeIcons.Add,
                             contentDescription = "New Chat",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -394,12 +320,13 @@ fun TopBarMenuDesktop(
                 if (hasDebugInfo) {
                     IconButton(
                         onClick = onShowDebug,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = AutoDevComposeIcons.BugReport,
                             contentDescription = "Debug Info",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -408,7 +335,7 @@ fun TopBarMenuDesktop(
                 if (useAgentMode) {
                     IconButton(
                         onClick = onToggleTreeView,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
@@ -418,7 +345,8 @@ fun TopBarMenuDesktop(
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
-                                }
+                                },
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }

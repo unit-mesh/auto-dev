@@ -92,40 +92,93 @@ fun RemoteAgentChatInterface(
     if (!viewModel.isConnected && viewModel.connectionError != null) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Card(
-                modifier = Modifier.padding(32.dp)
+                modifier = Modifier.padding(32.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Error Icon
+                    Icon(
+                        imageVector = cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons.CloudOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    
                     Text(
-                        text = "⚠️ Connection Error",
+                        text = "Cannot Connect to Remote Server",
                         style = MaterialTheme.typography.headlineSmall
                     )
+                    
                     Text(
                         text = viewModel.connectionError ?: "Failed to connect to server",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
+                    
                     Text(
-                        text = "Server URL: $serverUrl",
+                        text = "Server: $serverUrl",
                         style = MaterialTheme.typography.bodySmall,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    
+                    // Primary action: Switch to Local
+                    Button(
+                        onClick = { onAgentTypeChange("Local") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons.Computer,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Switch to Local Mode")
+                    }
+                    
+                    // Secondary actions
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Button(
+                        OutlinedButton(
+                            onClick = onConfigureRemote,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons.Settings,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("Configure")
+                        }
+                        
+                        OutlinedButton(
                             onClick = {
                                 CoroutineScope(Dispatchers.Default).launch {
                                     viewModel.checkConnection()
                                 }
-                            }
+                            },
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Text("Retry Connection")
-                        }
-                        OutlinedButton(onClick = onConfigureRemote) {
-                            Text("Configure")
+                            Icon(
+                                imageVector = cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("Retry")
                         }
                     }
                 }
