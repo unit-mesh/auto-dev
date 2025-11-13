@@ -3,32 +3,35 @@ package cc.unitmesh.codegraph.parser.wasm
 import kotlin.js.Promise
 
 /**
- * External interfaces for web-tree-sitter API.
- *
- * These interfaces match the TypeScript definitions from:
- * https://github.com/tree-sitter/tree-sitter/blob/master/lib/binding_web/tree-sitter-web.d.ts
- *
- * Note: In Kotlin/Wasm, all external interfaces must extend JsAny,
- * and we cannot use @JsNonModule or companion objects in external interfaces.
+ * Parser module object for accessing static methods
  */
+@JsModule("web-tree-sitter")
+external object ParserModule : JsAny {
+    fun init(): Promise<JsAny>
+}
 
 /**
- * TreeSitter module functions
+ * Parser constructor function
  */
 @JsModule("web-tree-sitter")
-external fun init(): Promise<JsAny>
-
-@JsModule("web-tree-sitter")
-external fun loadLanguage(path: String): Promise<TSLanguageGrammar>
+external fun Parser(): Parser
 
 /**
- * Parser interface for tree-sitter
+ * Parser instance interface
  */
-@JsModule("web-tree-sitter")
-external class Parser : JsAny {
+external interface Parser : JsAny {
     fun parse(input: String): Tree
-    fun setLanguage(language: TSLanguageGrammar)
+    fun setLanguage(language: TSLanguageGrammar?)
     fun getLanguage(): TSLanguageGrammar?
+}
+
+/**
+ * Language module object for accessing static load method
+ */
+@JsModule("web-tree-sitter")
+@JsName("Parser.Language")
+external object LanguageModule : JsAny {
+    fun load(path: String): Promise<TSLanguageGrammar>
 }
 
 /**
@@ -119,6 +122,13 @@ external interface TreeCursor : JsAny {
     fun gotoFirstChildForIndex(index: Int): Boolean
     fun gotoNextSibling(): Boolean
     fun currentNode(): Node
+}
+
+// Console for debugging
+external object console : JsAny {
+    fun log(message: String)
+    fun error(message: String)
+    fun warn(message: String)
 }
 
 // Type aliases for cleaner code

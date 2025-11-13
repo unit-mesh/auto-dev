@@ -24,9 +24,13 @@ class WasmJsCodeParser : CodeParser {
     suspend fun initialize() {
         if (initialized) return
 
-        // Initialize TreeSitter WASM module
-        init().await<JsAny>()
-        initialized = true
+        try {
+            ParserModule.init().await<JsAny>()
+            initialized = true
+        } catch (e: Throwable) {
+            console.error("Failed to initialize TreeSitter: ${e.message ?: "Unknown error"}")
+            throw e
+        }
     }
     
     override suspend fun parseNodes(
@@ -98,7 +102,7 @@ class WasmJsCodeParser : CodeParser {
 
         // Load language grammar from WASM artifacts
         val languageName = getLanguageWasmPath(language)
-        val languageGrammar = loadLanguage(languageName).await<TSLanguageGrammar>()
+        val languageGrammar = LanguageModule.load(languageName).await<TSLanguageGrammar>()
 
         parser.setLanguage(languageGrammar)
         parsers[language] = parser
@@ -107,7 +111,6 @@ class WasmJsCodeParser : CodeParser {
     }
     
     private fun getLanguageWasmPath(language: Language): String {
-        // These paths should resolve to node_modules/@unit-mesh/treesitter-artifacts/
         return when (language) {
             Language.JAVA -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-java.wasm"
             Language.KOTLIN -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-kotlin.wasm"
