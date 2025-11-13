@@ -29,12 +29,15 @@ import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.launch
+// Import UnifiedApp components for Session Management
+import cc.unitmesh.devins.ui.app.UnifiedAppContent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoDevApp(
     triggerFileChooser: Boolean = false,
-    onFileChooserHandled: () -> Unit = {}
+    onFileChooserHandled: () -> Unit = {},
+    initialMode: String = "auto" // "auto", "local", "remote", "session"
 ) {
     val currentTheme = ThemeManager.currentTheme
 
@@ -42,7 +45,8 @@ fun AutoDevApp(
     AutoDevTheme(themeMode = currentTheme) {
         AutoDevContent(
             triggerFileChooser = triggerFileChooser,
-            onFileChooserHandled = onFileChooserHandled
+            onFileChooserHandled = onFileChooserHandled,
+            initialMode = initialMode
         )
     }
 }
@@ -51,7 +55,8 @@ fun AutoDevApp(
 @Composable
 private fun AutoDevContent(
     triggerFileChooser: Boolean = false,
-    onFileChooserHandled: () -> Unit = {}
+    onFileChooserHandled: () -> Unit = {},
+    initialMode: String = "auto"
 ) {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
@@ -86,6 +91,9 @@ private fun AutoDevContent(
     var remoteGitUrl by remember { mutableStateOf("") }
     var remoteProjectId by remember { mutableStateOf("") }
 
+    // Session Management mode (for Remote Session UI)
+    var useSessionManagement by remember { mutableStateOf(false) }
+
     val availableAgents = listOf("Default")
 
     var currentWorkspace by remember { mutableStateOf(WorkspaceManager.getCurrentOrEmpty()) }
@@ -95,13 +103,13 @@ private fun AutoDevContent(
     // Agent 类型切换处理函数 - 统一保存到配置
     fun handleAgentTypeChange(type: String) {
         println("🔄 切换 Agent Type: $type")
-        
+
         // 如果切换到 Remote 模式，检查是否已配置服务器
         if (type == "Remote") {
             // 检查是否配置了有效的服务器 URL（非默认的 localhost）
-            val hasValidServerConfig = serverUrl.isNotBlank() && 
+            val hasValidServerConfig = serverUrl.isNotBlank() &&
                                        serverUrl != "http://localhost:8080"
-            
+
             if (!hasValidServerConfig) {
                 println("⚠️ 未配置远程服务器，显示配置对话框")
                 showRemoteConfigDialog = true
@@ -109,10 +117,10 @@ private fun AutoDevContent(
                 return
             }
         }
-        
+
         // 正常切换
         selectedAgentType = type
-        
+
         // 保存到配置
         scope.launch {
             try {
@@ -207,8 +215,17 @@ private fun AutoDevContent(
             }
 
             // Load agent type preference (Local or Remote)
-            selectedAgentType = wrapper.getAgentType()
-            println("✅ 加载 Agent 类型: $selectedAgentType")
+            // 根据 initialMode 决定初始状态
+            selectedAgentType = when (initialMode) {
+                "remote", "session" -> "Remote"
+                "local" -> "Local"
+                else -> wrapper.getAgentType() // "auto" - 从配置加载
+            }
+
+            // Session Management 模式检测
+            useSessionManagement = (initialMode == "session")
+
+            println("✅ 加载 Agent 类型: $selectedAgentType (initialMode: $initialMode)")
 
             // Load remote server configuration
             val remoteConfig = wrapper.getRemoteServer()
@@ -279,6 +296,21 @@ private fun AutoDevContent(
         }
     }
 
+    // 如果启用 Session Management 模式，显示 UnifiedApp 界面
+    if (useSessionManagement && selectedAgentType == "Remote") {
+        UnifiedAppContent(
+            serverUrl = serverUrl,
+            onOpenLocalChat = if (Platform.isJvm) {
+                {
+                    // 切换回本地 Chat 模式
+                    useSessionManagement = false
+                    selectedAgentType = "Local"
+                }
+            } else null
+        )
+        return
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -301,6 +333,7 @@ private fun AutoDevContent(
                     useAgentMode = useAgentMode,
                     isTreeViewVisible = isTreeViewVisible,
                     selectedAgentType = selectedAgentType,
+                    useSessionManagement = useSessionManagement,
                     onOpenDirectory = { openDirectoryChooser() },
                     onClearHistory = {
                         chatHistoryManager.clearCurrentSession()
@@ -328,6 +361,10 @@ private fun AutoDevContent(
                     onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
                     onAgentTypeChange = ::handleAgentTypeChange,
                     onConfigureRemote = { showRemoteConfigDialog = true },
+                    onSessionManagementToggle = {
+                        useSessionManagement = !useSessionManagement
+                        println("🔄 切换 Session Management: $useSessionManagement")
+                    },
                     onShowModelConfig = { showModelConfigDialog = true },
                     onShowToolConfig = { showToolConfigDialog = true },
                     modifier = Modifier.fillMaxHeight()
@@ -408,6 +445,7 @@ private fun AutoDevContent(
                     useAgentMode = useAgentMode,
                     isTreeViewVisible = isTreeViewVisible,
                     selectedAgentType = selectedAgentType,
+                    useSessionManagement = useSessionManagement,
                     onOpenDirectory = { openDirectoryChooser() },
                     onClearHistory = {
                         chatHistoryManager.clearCurrentSession()
@@ -435,6 +473,10 @@ private fun AutoDevContent(
                     onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
                     onAgentTypeChange = ::handleAgentTypeChange,
                     onConfigureRemote = { showRemoteConfigDialog = true },
+                    onSessionManagementToggle = {
+                        useSessionManagement = !useSessionManagement
+                        println("🔄 切换 Session Management: $useSessionManagement")
+                    },
                     onShowModelConfig = { showModelConfigDialog = true },
                     onShowToolConfig = { showToolConfigDialog = true },
                     modifier =
@@ -693,7 +735,7 @@ private fun AutoDevContent(
                     remoteGitUrl = newConfig.defaultGitUrl
                     println("📦 Remote Git URL set from dialog: ${newConfig.defaultGitUrl}")
                 }
-                
+
                 // 保存远程服务器配置到文件
                 scope.launch {
                     try {
@@ -704,11 +746,11 @@ private fun AutoDevContent(
                                 useServerConfig = newConfig.useServerConfig
                             )
                         )
-                        
+
                         // 重要：保存 Remote 配置后，自动切换 Agent Type 为 "Remote"
                         cc.unitmesh.devins.ui.config.saveAgentTypePreference("Remote")
                         selectedAgentType = "Remote"
-                        
+
                         println("✅ 远程服务器配置已保存并切换到 Remote 模式")
                         println("   Server URL: ${newConfig.serverUrl}")
                         println("   Use Server Config: ${newConfig.useServerConfig}")
@@ -719,7 +761,7 @@ private fun AutoDevContent(
                         showErrorDialog = true
                     }
                 }
-                
+
                 showRemoteConfigDialog = false
             }
         )

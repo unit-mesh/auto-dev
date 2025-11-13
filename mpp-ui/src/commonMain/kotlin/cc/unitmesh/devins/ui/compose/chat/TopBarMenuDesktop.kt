@@ -26,8 +26,10 @@ fun TopBarMenuDesktop(
     isTreeViewVisible: Boolean = false,
     // Remote Agent 相关参数
     selectedAgentType: String = "Local",
+    useSessionManagement: Boolean = false,
     onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
+    onSessionManagementToggle: () -> Unit = {},
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
@@ -254,6 +256,32 @@ fun TopBarMenuDesktop(
                                             contentDescription = null,
                                             modifier = Modifier.size(20.dp)
                                         )
+                                    }
+                                )
+                                
+                                // Session Management Toggle
+                                DropdownMenuItem(
+                                    text = { Text(if (useSessionManagement) "Agent Mode" else "Session Manager") },
+                                    onClick = {
+                                        onSessionManagementToggle()
+                                        agentTypeMenuExpanded = false
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = if (useSessionManagement) AutoDevComposeIcons.Custom.AI else AutoDevComposeIcons.History,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        if (useSessionManagement) {
+                                            Icon(
+                                                imageVector = AutoDevComposeIcons.Check,
+                                                contentDescription = "Active",
+                                                modifier = Modifier.size(16.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
                                     }
                                 )
                             }

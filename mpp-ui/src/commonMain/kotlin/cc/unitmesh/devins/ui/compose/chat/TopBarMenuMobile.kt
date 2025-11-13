@@ -25,6 +25,7 @@ fun TopBarMenuMobile(
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
     selectedAgentType: String = "Local",
+    useSessionManagement: Boolean = false,
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
@@ -34,6 +35,7 @@ fun TopBarMenuMobile(
     onToggleTreeView: () -> Unit = {},
     onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
+    onSessionManagementToggle: () -> Unit = {},
     onShowModelConfig: () -> Unit,
     onShowToolConfig: () -> Unit = {},
     modifier: Modifier = Modifier

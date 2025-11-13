@@ -23,6 +23,9 @@ fun main(args: Array<String>) {
     AutoDevLogger.info("AutoDevMain") { "🚀 AutoDev Desktop starting..." }
     AutoDevLogger.info("AutoDevMain") { "📁 Log files location: ${AutoDevLogger.getLogDirectory()}" }
 
+    // 支持通过命令行参数指定模式：--mode=remote 或 --mode=local
+    val mode = args.find { it.startsWith("--mode=") }?.substringAfter("--mode=") ?: "auto"
+    
     application {
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
@@ -55,7 +58,8 @@ fun main(args: Array<String>) {
 
                 AutoDevApp(
                     triggerFileChooser = triggerFileChooser,
-                    onFileChooserHandled = { triggerFileChooser = false }
+                    onFileChooserHandled = { triggerFileChooser = false },
+                    initialMode = mode
                 )
             }
         }

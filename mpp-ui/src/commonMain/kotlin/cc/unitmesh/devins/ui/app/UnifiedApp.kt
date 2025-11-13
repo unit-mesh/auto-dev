@@ -49,9 +49,9 @@ fun UnifiedApp(
 }
 
 @Composable
-private fun UnifiedAppContent(
+internal fun UnifiedAppContent(
     serverUrl: String,
-    onOpenLocalChat: (() -> Unit)?
+    onOpenLocalChat: (() -> Unit)? = null
 ) {
     // 初始化客户端和 ViewModel
     val sessionClient = remember { SessionClient(serverUrl) }

@@ -40,8 +40,10 @@ fun TopBarMenuWasm(
     isTreeViewVisible: Boolean = false,
     // Remote Agent
     selectedAgentType: String = "Local",
+    useSessionManagement: Boolean = false,
     onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
+    onSessionManagementToggle: () -> Unit = {},
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
