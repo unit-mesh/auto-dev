@@ -1,7 +1,5 @@
 package cc.unitmesh.devins.llm
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -22,15 +20,15 @@ actual object SessionStorage {
      * 加载所有本地 sessions
      * WASM: 使用内存缓存
      */
-    actual suspend fun loadSessions(): List<ChatSession> = withContext(Dispatchers.Default) {
-        memoryCache
+    actual suspend fun loadSessions(): List<ChatSession> {
+        return memoryCache
     }
     
     /**
      * 保存所有本地 sessions
      * WASM: 使用内存缓存
      */
-    actual suspend fun saveSessions(sessions: List<ChatSession>) = withContext(Dispatchers.Default) {
+    actual suspend fun saveSessions(sessions: List<ChatSession>) {
         memoryCache = sessions
         println("✅ Saved ${sessions.size} chat sessions to memory cache (WASM)")
     }
@@ -43,8 +41,8 @@ actual object SessionStorage {
     /**
      * 检查存储文件是否存在
      */
-    actual suspend fun exists(): Boolean = withContext(Dispatchers.Default) {
-        memoryCache.isNotEmpty()
+    actual suspend fun exists(): Boolean {
+        return memoryCache.isNotEmpty()
     }
 }
 
