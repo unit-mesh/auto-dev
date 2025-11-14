@@ -20,7 +20,9 @@ data class CodeReviewState(
     // Infinite scroll support
     val hasMoreCommits: Boolean = false,
     val isLoadingMore: Boolean = false,
-    val totalCommitCount: Int? = null // Total available commits (if known)
+    val totalCommitCount: Int? = null, // Total available commits (if known)
+    // Analysis results cache: commitHash -> AIAnalysisProgress
+    val analysisResultsCache: Map<String, AIAnalysisProgress> = emptyMap()
 )
 
 /**

@@ -368,6 +368,9 @@ open class CodeReviewViewModel(
                     )
                 }
 
+                // Save analysis results to cache after completion
+                saveCurrentAnalysisResults()
+
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -377,6 +380,9 @@ open class CodeReviewViewModel(
                         error = "Analysis failed: ${e.message}"
                     )
                 }
+                
+                // Save error state to cache as well
+                saveCurrentAnalysisResults()
             }
         }
     }
@@ -400,8 +406,22 @@ open class CodeReviewViewModel(
     open fun selectCommit(commitHash: String) {
         // Cancel previous loading job if any
         currentJob?.cancel()
+        
+        // Save current analysis results to cache before switching
+        saveCurrentAnalysisResults()
+        
         currentJob = CoroutineScope(Dispatchers.Default).launch {
+            // Reset to IDLE and clear current analysis progress
+            updateState {
+                it.copy(
+                    aiProgress = AIAnalysisProgress(stage = AnalysisStage.IDLE)
+                )
+            }
+            
             loadCommitDiffInternal(commitHash)
+            
+            // Try to restore cached analysis results for the target commit
+            restoreAnalysisResultsForCommit(commitHash)
         }
     }
 
@@ -441,6 +461,46 @@ open class CodeReviewViewModel(
                 loadCommitHistory()
             } else {
                 loadDiff()
+            }
+        }
+    }
+
+    /**
+     * Save current analysis results to cache
+     */
+    private fun saveCurrentAnalysisResults() {
+        val currentCommit = currentState.commitHistory.getOrNull(currentState.selectedCommitIndex)
+        if (currentCommit != null && currentState.aiProgress.stage != AnalysisStage.IDLE) {
+            // Only save if there's actual analysis data
+            if (currentState.aiProgress.lintResults.isNotEmpty() ||
+                currentState.aiProgress.analysisOutput.isNotBlank() ||
+                currentState.aiProgress.fixOutput.isNotBlank()
+            ) {
+                updateState {
+                    it.copy(
+                        analysisResultsCache = it.analysisResultsCache + (currentCommit.hash to it.aiProgress)
+                    )
+                }
+                
+                AutoDevLogger.info("CodeReviewViewModel") {
+                    "Saved analysis results for commit ${currentCommit.shortHash}"
+                }
+            }
+        }
+    }
+
+    /**
+     * Restore cached analysis results for a specific commit
+     */
+    private fun restoreAnalysisResultsForCommit(commitHash: String) {
+        val cachedProgress = currentState.analysisResultsCache[commitHash]
+        if (cachedProgress != null) {
+            updateState {
+                it.copy(aiProgress = cachedProgress)
+            }
+            
+            AutoDevLogger.info("CodeReviewViewModel") {
+                "Restored analysis results for commit ${commitHash.take(7)}"
             }
         }
     }
