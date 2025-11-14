@@ -133,7 +133,6 @@ class CodeAnalyzer(private val workspace: Workspace) {
 
             val totalRanges = modifiedRanges.values.sumOf { it.size }
             progressCallback?.invoke("\n✅ Code analysis complete. Found $totalRanges modified code elements.\n\n")
-
         } catch (e: Exception) {
             AutoDevLogger.error("CodeAnalyzer") {
                 "Failed to analyze modified code: ${e.message}"

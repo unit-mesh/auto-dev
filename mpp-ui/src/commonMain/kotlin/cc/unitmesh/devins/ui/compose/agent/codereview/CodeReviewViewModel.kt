@@ -30,6 +30,7 @@ open class CodeReviewViewModel(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val gitOps = GitOperations(workspace.rootPath ?: "")
+    private val analysisRepository = cc.unitmesh.devins.db.CodeReviewAnalysisRepository.getInstance()
 
     // Non-AI analysis components (extracted for testability)
     private val codeAnalyzer = CodeAnalyzer(workspace)
@@ -466,41 +467,57 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Save current analysis results to cache
+     * Save current analysis results to database
      */
     private fun saveCurrentAnalysisResults() {
         val currentCommit = currentState.commitHistory.getOrNull(currentState.selectedCommitIndex)
+        val projectPath = workspace.rootPath ?: return
+        
         if (currentCommit != null && currentState.aiProgress.stage != AnalysisStage.IDLE) {
             // Only save if there's actual analysis data
             if (currentState.aiProgress.lintResults.isNotEmpty() ||
                 currentState.aiProgress.analysisOutput.isNotBlank() ||
                 currentState.aiProgress.fixOutput.isNotBlank()
             ) {
-                updateState {
-                    it.copy(
-                        analysisResultsCache = it.analysisResultsCache + (currentCommit.hash to it.aiProgress)
+                try {
+                    analysisRepository.saveAnalysisResult(
+                        projectPath = projectPath,
+                        commitHash = currentCommit.hash,
+                        progress = currentState.aiProgress
                     )
-                }
-                
-                AutoDevLogger.info("CodeReviewViewModel") {
-                    "Saved analysis results for commit ${currentCommit.shortHash}"
+                    
+                    AutoDevLogger.info("CodeReviewViewModel") {
+                        "Saved analysis results to database for commit ${currentCommit.shortHash}"
+                    }
+                } catch (e: Exception) {
+                    AutoDevLogger.error("CodeReviewViewModel") {
+                        "Failed to save analysis results: ${e.message}"
+                    }
                 }
             }
         }
     }
 
     /**
-     * Restore cached analysis results for a specific commit
+     * Restore analysis results from database for a specific commit
      */
     private fun restoreAnalysisResultsForCommit(commitHash: String) {
-        val cachedProgress = currentState.analysisResultsCache[commitHash]
-        if (cachedProgress != null) {
-            updateState {
-                it.copy(aiProgress = cachedProgress)
+        val projectPath = workspace.rootPath ?: return
+        
+        try {
+            val cachedProgress = analysisRepository.getAnalysisResult(projectPath, commitHash)
+            if (cachedProgress != null) {
+                updateState {
+                    it.copy(aiProgress = cachedProgress)
+                }
+                
+                AutoDevLogger.info("CodeReviewViewModel") {
+                    "Restored analysis results from database for commit ${commitHash.take(7)}"
+                }
             }
-            
-            AutoDevLogger.info("CodeReviewViewModel") {
-                "Restored analysis results for commit ${commitHash.take(7)}"
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") {
+                "Failed to restore analysis results: ${e.message}"
             }
         }
     }

@@ -20,9 +20,7 @@ data class CodeReviewState(
     // Infinite scroll support
     val hasMoreCommits: Boolean = false,
     val isLoadingMore: Boolean = false,
-    val totalCommitCount: Int? = null, // Total available commits (if known)
-    // Analysis results cache: commitHash -> AIAnalysisProgress
-    val analysisResultsCache: Map<String, AIAnalysisProgress> = emptyMap()
+    val totalCommitCount: Int? = null // Total available commits (if known)
 )
 
 /**
@@ -54,6 +52,7 @@ data class AIAnalysisProgress(
 /**
  * Represents a modified code range (function, class, etc.) in a file
  */
+@Serializable
 data class ModifiedCodeRange(
     val filePath: String,
     val elementName: String,
@@ -66,6 +65,7 @@ data class ModifiedCodeRange(
 /**
  * Lint results for a specific file
  */
+@Serializable
 data class FileLintResult(
     val filePath: String,
     val linterName: String,
@@ -78,6 +78,7 @@ data class FileLintResult(
 /**
  * UI-friendly lint issue
  */
+@Serializable
 data class LintIssueUI(
     val line: Int,
     val column: Int,
@@ -90,6 +91,7 @@ data class LintIssueUI(
 /**
  * UI-friendly lint severity
  */
+@Serializable
 enum class LintSeverityUI {
     ERROR,
     WARNING,
