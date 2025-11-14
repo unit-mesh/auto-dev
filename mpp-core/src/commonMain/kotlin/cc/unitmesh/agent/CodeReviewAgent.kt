@@ -82,10 +82,12 @@ class CodeReviewAgent(
     private val promptRenderer = CodeReviewAgentPromptRenderer()
     private val configService = mcpToolConfigService
 
+    private val actualFileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath)
+
     private val toolRegistry = run {
         logger.info { "Initializing ToolRegistry for CodeReviewAgent" }
         ToolRegistry(
-            fileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath),
+            fileSystem = actualFileSystem,
             shellExecutor = shellExecutor ?: DefaultShellExecutor(),
             configService = mcpToolConfigService,
             subAgentManager = cc.unitmesh.agent.core.SubAgentManager(),
@@ -97,6 +99,7 @@ class CodeReviewAgent(
         projectPath = projectPath,
         llmService = llmService,
         toolRegistry = toolRegistry,
+        fileSystem = actualFileSystem,
         renderer = renderer,
         maxIterations = maxIterations,
         enableLLMStreaming = enableLLMStreaming

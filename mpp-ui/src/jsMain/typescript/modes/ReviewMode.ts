@@ -81,8 +81,9 @@ export async function runReview(
             encoding: 'utf-8'
           });
         } else {
-          // Get unstaged changes
-          diffContent = execSync('git diff HEAD', {
+          // Default: review the last commit (HEAD)
+          // This shows what was changed in the most recent commit
+          diffContent = execSync('git show HEAD', {
             cwd: projectPath,
             encoding: 'utf-8'
           });
