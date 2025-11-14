@@ -137,38 +137,60 @@ private fun AutoDevContent(
 
     LaunchedEffect(Unit) {
         if (!WorkspaceManager.hasActiveWorkspace()) {
-            val defaultPath = when {
-                Platform.isAndroid -> "/storage/emulated/0/Documents"
-                Platform.isJs -> "."
-                else -> "${Platform.getUserHomeDir()}/AutoDevProjects"
+            // Try to load last workspace first
+            val lastWorkspace = try {
+                ConfigManager.getLastWorkspace()
+            } catch (e: Exception) {
+                println("⚠️ 加载上次工作空间失败: ${e.message}")
+                null
             }
+            
+            if (lastWorkspace != null) {
+                val fileSystem = DefaultFileSystem(lastWorkspace.path)
+                if (fileSystem.exists(lastWorkspace.path)) {
+                    println("✅ 加载上次工作空间: ${lastWorkspace.name} (${lastWorkspace.path})")
+                    WorkspaceManager.openWorkspace(lastWorkspace.name, lastWorkspace.path)
+                } else {
+                    println("⚠️ 上次工作空间不存在: ${lastWorkspace.path}")
+                    // Fall through to default workspace logic
+                }
+            }
+            
+            // If last workspace not available or doesn't exist, use default
+            if (!WorkspaceManager.hasActiveWorkspace()) {
+                val defaultPath = when {
+                    Platform.isAndroid -> "/storage/emulated/0/Documents"
+                    Platform.isJs -> "."
+                    else -> "${Platform.getUserHomeDir()}/AutoDevProjects"
+                }
 
-            val fileSystem = DefaultFileSystem(defaultPath)
+                val fileSystem = DefaultFileSystem(defaultPath)
 
-            if (fileSystem.exists(defaultPath)) {
-                WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
-            } else {
-                when {
-                    Platform.isAndroid -> {
-                        val fallbackPath = "/sdcard"
-                        println("⚠️ Documents 目录不存在，使用备用路径: $fallbackPath")
-                        WorkspaceManager.openWorkspace("Default Workspace", fallbackPath)
-                    }
+                if (fileSystem.exists(defaultPath)) {
+                    WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
+                } else {
+                    when {
+                        Platform.isAndroid -> {
+                            val fallbackPath = "/sdcard"
+                            println("⚠️ Documents 目录不存在，使用备用路径: $fallbackPath")
+                            WorkspaceManager.openWorkspace("Default Workspace", fallbackPath)
+                        }
 
-                    Platform.isJs -> {
-                        println("⚠️ 使用当前工作目录")
-                        WorkspaceManager.openWorkspace("Current Directory", ".")
-                    }
+                        Platform.isJs -> {
+                            println("⚠️ 使用当前工作目录")
+                            WorkspaceManager.openWorkspace("Current Directory", ".")
+                        }
 
-                    else -> {
-                        try {
-                            fileSystem.createDirectory(defaultPath)
-                            println("✅ 创建默认工作空间目录: $defaultPath")
-                            WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
-                        } catch (e: Exception) {
-                            println("⚠️ 无法创建默认目录，使用用户主目录")
-                            val homeDir = Platform.getUserHomeDir()
-                            WorkspaceManager.openWorkspace("Home Directory", homeDir)
+                        else -> {
+                            try {
+                                fileSystem.createDirectory(defaultPath)
+                                println("✅ 创建默认工作空间目录: $defaultPath")
+                                WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
+                            } catch (e: Exception) {
+                                println("⚠️ 无法创建默认目录，使用用户主目录")
+                                val homeDir = Platform.getUserHomeDir()
+                                WorkspaceManager.openWorkspace("Home Directory", homeDir)
+                            }
                         }
                     }
                 }
@@ -249,6 +271,14 @@ private fun AutoDevContent(
                 try {
                     WorkspaceManager.openWorkspace(projectName, path)
                     println("📁 已切换项目路径: $path")
+                    
+                    // Save the last workspace to config
+                    try {
+                        ConfigManager.saveLastWorkspace(projectName, path)
+                        println("✅ 已保存工作空间到配置")
+                    } catch (e: Exception) {
+                        println("⚠️ 保存工作空间配置失败: ${e.message}")
+                    }
                 } catch (e: Exception) {
                     errorMessage = "切换工作空间失败: ${e.message}"
                     showErrorDialog = true

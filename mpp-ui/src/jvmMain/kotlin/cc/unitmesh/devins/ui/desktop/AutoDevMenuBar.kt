@@ -3,8 +3,6 @@ package cc.unitmesh.devins.ui.desktop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
@@ -16,7 +14,7 @@ import kotlinx.coroutines.launch
  * AutoDev Desktop 菜单栏
  * 
  * 提供常用的桌面应用菜单功能：
- * - File 菜单：打开项目 (Ctrl+O)、退出
+ * - File 菜单：打开项目 (Cmd+O on Mac / Ctrl+O on others)、退出
  * - Edit 菜单：复制、粘贴等（未来扩展）
  * - View 菜单：语言切换、主题切换
  * - Help 菜单：关于、文档等（未来扩展）
@@ -35,7 +33,7 @@ fun FrameWindowScope.AutoDevMenuBar(
             Item(
                 "Open Project...",
                 onClick = onOpenFile,
-                shortcut = KeyShortcut(Key.O, ctrl = true),
+                shortcut = Keymap.openProject,
                 mnemonic = 'O'
             )
             
@@ -44,7 +42,7 @@ fun FrameWindowScope.AutoDevMenuBar(
             Item(
                 "Exit",
                 onClick = onExit,
-                shortcut = KeyShortcut(Key.Q, ctrl = true),
+                shortcut = Keymap.exitApp,
                 mnemonic = 'x'
             )
         }
@@ -54,7 +52,7 @@ fun FrameWindowScope.AutoDevMenuBar(
             Item(
                 "Copy",
                 onClick = { /* TODO: 实现复制功能 */ },
-                shortcut = KeyShortcut(Key.C, ctrl = true),
+                shortcut = Keymap.copy,
                 mnemonic = 'C',
                 enabled = false
             )
@@ -62,7 +60,7 @@ fun FrameWindowScope.AutoDevMenuBar(
             Item(
                 "Paste",
                 onClick = { /* TODO: 实现粘贴功能 */ },
-                shortcut = KeyShortcut(Key.V, ctrl = true),
+                shortcut = Keymap.paste,
                 mnemonic = 'P',
                 enabled = false
             )
@@ -98,7 +96,7 @@ fun FrameWindowScope.AutoDevMenuBar(
             // Theme submenu
             Menu("Theme") {
                 Item(
-                    "☀\uFE0F Light",
+                    "Light",
                     onClick = {
                         ThemeManager.setTheme(ThemeManager.ThemeMode.LIGHT)
                     },
@@ -106,7 +104,7 @@ fun FrameWindowScope.AutoDevMenuBar(
                 )
                 
                 Item(
-                    "\uD83C\uDF19 Dark",
+                    "Dark",
                     onClick = {
                         ThemeManager.setTheme(ThemeManager.ThemeMode.DARK)
                     },
@@ -114,7 +112,7 @@ fun FrameWindowScope.AutoDevMenuBar(
                 )
                 
                 Item(
-                    "\uD83D\uDD06 Auto (System)",
+                    "Auto (System)",
                     onClick = {
                         ThemeManager.setTheme(ThemeManager.ThemeMode.SYSTEM)
                     },

@@ -228,7 +228,6 @@ open class CodeReviewViewModel(
                 AutoDevLogger.info("CodeReviewViewModel") {
                     "🤖 Auto-starting analysis with ${diffFiles.size} files"
                 }
-                startAnalysis()
             }
 
         } catch (e: Exception) {

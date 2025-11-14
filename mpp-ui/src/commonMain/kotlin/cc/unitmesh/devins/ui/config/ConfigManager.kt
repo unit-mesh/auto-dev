@@ -105,4 +105,19 @@ expect object ConfigManager {
      * @return A unique name (either baseName or baseName-1, baseName-2, etc.)
      */
     fun generateUniqueConfigName(baseName: String, existingNames: List<String>): String
+    
+    /**
+     * Save last opened workspace
+     *
+     * @param name Workspace name
+     * @param path Workspace absolute path
+     */
+    suspend fun saveLastWorkspace(name: String, path: String)
+    
+    /**
+     * Get last opened workspace
+     *
+     * @return WorkspaceInfo or null if no workspace was saved
+     */
+    suspend fun getLastWorkspace(): WorkspaceInfo?
 }

@@ -211,4 +211,19 @@ actual object ConfigManager {
     private fun toYaml(configFile: ConfigFile): String {
         return YamlUtils.dump(configFile, kotlinx.serialization.serializer())
     }
+    
+    actual suspend fun saveLastWorkspace(name: String, path: String) {
+        val wrapper = load()
+        val configFile = wrapper.configFile
+        
+        val updatedConfigFile = configFile.copy(
+            lastWorkspace = WorkspaceInfo(name = name, path = path)
+        )
+        save(updatedConfigFile)
+    }
+    
+    actual suspend fun getLastWorkspace(): WorkspaceInfo? {
+        val wrapper = load()
+        return wrapper.getLastWorkspace()
+    }
 }

@@ -37,7 +37,8 @@ public data class ConfigFile(
     val mcpServers: Map<String, McpServerConfig>? = emptyMap(),
     val language: String? = "en", // Language preference: "en" or "zh"
     val remoteServer: RemoteServerConfig? = null,
-    val agentType: String? = "Local" // "Local" or "Remote" - which agent mode to use
+    val agentType: String? = "Local", // "Local" or "Remote" - which agent mode to use
+    val lastWorkspace: WorkspaceInfo? = null // Last opened workspace information
 )
 
 /**
@@ -48,6 +49,15 @@ data class RemoteServerConfig(
     val url: String = "http://localhost:8080",
     val enabled: Boolean = false,
     val useServerConfig: Boolean = false // Whether to use server's LLM config instead of local
+)
+
+/**
+ * Last opened workspace information
+ */
+@Serializable
+data class WorkspaceInfo(
+    val name: String,
+    val path: String
 )
 
 class AutoDevConfigWrapper(val configFile: ConfigFile) {
@@ -98,5 +108,9 @@ class AutoDevConfigWrapper(val configFile: ConfigFile) {
     
     fun getAgentType(): String {
         return configFile.agentType ?: "Local"
+    }
+    
+    fun getLastWorkspace(): WorkspaceInfo? {
+        return configFile.lastWorkspace
     }
 }
