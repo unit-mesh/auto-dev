@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -156,7 +157,7 @@ object DiffSketchRenderer {
      * 单个文件的 Diff 视图
      */
     @Composable
-    private fun FileDiffView(fileDiff: FileDiff) {
+    fun FileDiffView(fileDiff: FileDiff) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
@@ -170,9 +171,7 @@ object DiffSketchRenderer {
 
                 Divider()
 
-                // Hunks（如果不是二进制文件）
                 if (fileDiff.isBinaryFile) {
-                    // 二进制文件提示
                     Row(
                         modifier =
                             Modifier
@@ -187,7 +186,6 @@ object DiffSketchRenderer {
                         )
                     }
                 } else if (fileDiff.hunks.isEmpty()) {
-                    // 仅元数据变更（如模式变更）
                     Row(
                         modifier =
                             Modifier
@@ -210,11 +208,8 @@ object DiffSketchRenderer {
         }
     }
 
-    /**
-     * 文件头部
-     */
     @Composable
-    private fun FileHeader(fileDiff: FileDiff) {
+    fun FileHeader(fileDiff: FileDiff) {
         Row(
             modifier =
                 Modifier
@@ -313,7 +308,7 @@ object DiffSketchRenderer {
      * Hunk 视图 - 支持折叠/展开
      */
     @Composable
-    private fun HunkView(hunk: DiffHunk) {
+    fun HunkView(hunk: DiffHunk) {
         var expanded by remember { mutableStateOf(true) }
         val defaultVisibleLines = 5
         val hasMoreLines = hunk.lines.size > defaultVisibleLines
@@ -358,7 +353,6 @@ object DiffSketchRenderer {
                 }
             }
 
-            // Diff 行内容
             val visibleLines =
                 if (expanded || !hasMoreLines) {
                     hunk.lines
@@ -370,7 +364,6 @@ object DiffSketchRenderer {
                 DiffLineView(line)
             }
 
-            // 如果折叠了，显示提示
             if (!expanded && hasMoreLines) {
                 Row(
                     modifier =
@@ -391,11 +384,9 @@ object DiffSketchRenderer {
         }
     }
 
-    /**
-     * 单行 Diff 视图
-     */
+
     @Composable
-    private fun DiffLineView(line: DiffLine) {
+    fun DiffLineView(line: DiffLine) {
         val (backgroundColor, borderColor, prefix) =
             when (line.type) {
                 DiffLineType.ADDED -> Triple(AddedLineBackground, AddedLineBorder, "+")
