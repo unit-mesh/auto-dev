@@ -34,6 +34,12 @@ expect class GitOperations(projectPath: String) {
     suspend fun getRecentCommits(count: Int = 20): List<GitCommitInfo>
     
     /**
+     * 获取 git 仓库的总提交数
+     * @return 总提交数，如果获取失败返回 null
+     */
+    suspend fun getTotalCommitCount(): Int?
+    
+    /**
      * 获取指定 commit 的 diff
      * @param commitHash commit hash
      * @return diff 信息，如果获取失败返回 null

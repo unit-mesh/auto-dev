@@ -97,6 +97,30 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         }
     }
     
+    actual suspend fun getTotalCommitCount(): Int? = withContext(Dispatchers.IO) {
+        try {
+            val command = listOf("git", "rev-list", "--count", "HEAD")
+            
+            val process = ProcessBuilder(command)
+                .directory(File(projectPath))
+                .redirectErrorStream(true)
+                .start()
+            
+            val output = process.inputStream.bufferedReader().readText().trim()
+            val exitCode = process.waitFor()
+            
+            if (exitCode != 0) {
+                logger.warn { "Git rev-list failed with exit code $exitCode: $output" }
+                return@withContext null
+            }
+            
+            output.toIntOrNull()
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to get total commit count: ${e.message}" }
+            null
+        }
+    }
+    
     actual suspend fun getCommitDiff(commitHash: String): GitDiffInfo? = withContext(Dispatchers.IO) {
         try {
             // Get changed files with stats
