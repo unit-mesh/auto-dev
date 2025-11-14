@@ -288,7 +288,7 @@ Use the following Markdown format:
 ### 📊 Summary
 Brief overview (2-3 sentences) of the most critical concerns.
 
-### 🚨 Top 10 Issues (Ordered by Priority)
+### 🚨 Top Issues (Ordered by Priority) (less than 10 if less than 10 significant issues exist)
 
 For each issue, use this format:
 

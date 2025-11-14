@@ -25,7 +25,6 @@ actual object MarkdownSketchRenderer {
     ) {
         val scrollState = rememberScrollState()
 
-        // 自动滚动到底部
         LaunchedEffect(content) {
             if (content.isNotEmpty()) {
                 scrollState.animateScrollTo(scrollState.maxValue)

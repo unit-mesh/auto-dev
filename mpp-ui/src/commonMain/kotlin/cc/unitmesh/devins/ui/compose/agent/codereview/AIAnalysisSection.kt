@@ -16,13 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
-import cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
-/**
- * AI Analysis Section - 展示 AI 分析结果（Markdown 格式）
- * 只显示优先级最高的 10 个 issue
- */
 @Composable
 fun AIAnalysisSection(
     analysisOutput: String,
@@ -93,7 +88,6 @@ fun AIAnalysisSection(
                 }
             }
 
-            // Content - 使用 MarkdownSketchRenderer 渲染 markdown
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
@@ -106,10 +100,11 @@ fun AIAnalysisSection(
                         .padding(bottom = 12.dp)
                 ) {
                     if (analysisOutput.isNotBlank()) {
-                        MarkdownSketchRenderer.RenderResponse(
-                            content = analysisOutput,
-                            isComplete = !isActive,
-                            modifier = Modifier.fillMaxWidth()
+                        Text(
+                            text = analysisOutput,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
                     } else {
                         Text(
