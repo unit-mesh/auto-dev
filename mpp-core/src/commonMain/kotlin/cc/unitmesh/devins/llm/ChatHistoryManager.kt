@@ -3,7 +3,6 @@ package cc.unitmesh.devins.llm
 import cc.unitmesh.agent.Platform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,10 +24,9 @@ import kotlin.uuid.Uuid
 class ChatHistoryManager {
     private val sessions = mutableMapOf<String, ChatSession>()
     private var currentSessionId: String? = null
-    
-    // Use Dispatchers.Main for WASM/JS compatibility
+
     private val dispatcher = if (Platform.isWasm || Platform.isJs) Dispatchers.Main else Dispatchers.Default
-    private val scope = CoroutineScope(dispatcher + SupervisorJob())
+    private val scope = CoroutineScope(dispatcher)
     private var initialized = false
 
     // 用于通知 UI 更新的 StateFlow
@@ -113,20 +111,16 @@ class ChatHistoryManager {
      * 会先保存当前会话，再切换到新会话
      */
     fun switchSession(sessionId: String): ChatSession? {
-        // 先保存当前会话（如果存在且有消息）
         currentSessionId?.let { currentId ->
             sessions[currentId]?.let { currentSession ->
                 if (currentSession.messages.isNotEmpty()) {
-                    // 触发保存
                     saveSessionsAsync()
                 }
             }
         }
 
-        // 切换到新会话
         return sessions[sessionId]?.also {
             currentSessionId = sessionId
-            // 通知 UI 更新（切换会话后）
             _sessionsUpdateTrigger.value++
         }
     }

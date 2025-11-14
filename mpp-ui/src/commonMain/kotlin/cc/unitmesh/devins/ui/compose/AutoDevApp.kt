@@ -13,7 +13,6 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
-import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
 import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.devins.ui.compose.chat.DebugDialog
 import cc.unitmesh.devins.ui.compose.chat.MessageList
@@ -155,10 +154,12 @@ private fun AutoDevContent(
                         println("⚠️ Documents 目录不存在，使用备用路径: $fallbackPath")
                         WorkspaceManager.openWorkspace("Default Workspace", fallbackPath)
                     }
+
                     Platform.isJs -> {
                         println("⚠️ 使用当前工作目录")
                         WorkspaceManager.openWorkspace("Current Directory", ".")
                     }
+
                     else -> {
                         try {
                             fileSystem.createDirectory(defaultPath)
@@ -342,7 +343,6 @@ private fun AutoDevContent(
                             chatHistoryManager.clearCurrentSession()
                             messages = emptyList()
                             currentStreamingOutput = ""
-                            println("🗑️ [SimpleAIChat] 聊天历史已清空")
                         },
                         onShowDebug = { showDebugDialog = true },
                         onModelConfigChange = { config ->
@@ -358,7 +358,6 @@ private fun AutoDevContent(
                         },
                         onAgentChange = { agent ->
                             selectedAgent = agent
-                            println("🤖 切换 Agent: $agent")
                         },
                         onModeToggle = { useAgentMode = !useAgentMode },
                         onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
@@ -385,22 +384,14 @@ private fun AutoDevContent(
                             onToggleTreeView = { isTreeViewVisible = it },
                             chatHistoryManager = chatHistoryManager,
                             onSessionSelected = { sessionId ->
-                                if (useAgentMode && agentSessionSelectedHandler != null) {
-                                    agentSessionSelectedHandler?.invoke(sessionId)
-                                } else {
-                                    chatHistoryManager.switchSession(sessionId)
-                                    messages = chatHistoryManager.getMessages()
-                                    currentStreamingOutput = ""
-                                }
+//                                chatHistoryManager.switchSession(sessionId)
+                                messages = chatHistoryManager.getMessages()
+                                currentStreamingOutput = ""
                             },
                             onNewChat = {
-                                if (useAgentMode && agentNewChatHandler != null) {
-                                    agentNewChatHandler?.invoke()
-                                } else {
-                                    chatHistoryManager.createSession()
-                                    messages = emptyList()
-                                    currentStreamingOutput = ""
-                                }
+//                                chatHistoryManager.createSession()
+                                messages = emptyList()
+                                currentStreamingOutput = ""
                             },
                             onInternalSessionSelected = { handler ->
                                 agentSessionSelectedHandler = handler
@@ -578,220 +569,215 @@ private fun AutoDevContent(
             }
         }
 
-    // Model Config Dialog
-    if (showModelConfigDialog) {
-        cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog(
-            currentConfig = currentModelConfig ?: ModelConfig(),
-            currentConfigName = null, // Will prompt for new name
-            onDismiss = { showModelConfigDialog = false },
-            onSave = { configName, newConfig ->
-                currentModelConfig = newConfig
-                if (newConfig.isValid()) {
-                    try {
-                        // 保存配置到文件
-                        scope.launch {
-                            try {
-                                // 创建 NamedModelConfig 对象以便保存
-                                val namedConfig = cc.unitmesh.llm.NamedModelConfig(
-                                    name = configName,
-                                    provider = newConfig.provider.name,
-                                    apiKey = newConfig.apiKey,
-                                    model = newConfig.modelName,
-                                    baseUrl = newConfig.baseUrl,
-                                    temperature = newConfig.temperature,
-                                    maxTokens = newConfig.maxTokens
+        // Model Config Dialog
+        if (showModelConfigDialog) {
+            cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog(
+                currentConfig = currentModelConfig ?: ModelConfig(),
+                currentConfigName = null, // Will prompt for new name
+                onDismiss = { showModelConfigDialog = false },
+                onSave = { configName, newConfig ->
+                    currentModelConfig = newConfig
+                    if (newConfig.isValid()) {
+                        try {
+                            // 保存配置到文件
+                            scope.launch {
+                                try {
+                                    // 创建 NamedModelConfig 对象以便保存
+                                    val namedConfig = cc.unitmesh.llm.NamedModelConfig(
+                                        name = configName,
+                                        provider = newConfig.provider.name,
+                                        apiKey = newConfig.apiKey,
+                                        model = newConfig.modelName,
+                                        baseUrl = newConfig.baseUrl,
+                                        temperature = newConfig.temperature,
+                                        maxTokens = newConfig.maxTokens
+                                    )
+                                    ConfigManager.saveConfig(namedConfig, setActive = true)
+                                    println("✅ 模型配置已保存到磁盘: $configName")
+                                } catch (e: Exception) {
+                                    println("⚠️ 保存配置到磁盘失败: ${e.message}")
+                                }
+                            }
+
+                            llmService = KoogLLMService.create(newConfig)
+                            println("✅ 模型配置已应用: $configName")
+                        } catch (e: Exception) {
+                            println("❌ 配置 LLM 服务失败: ${e.message}")
+                            llmService = null
+                        }
+                    }
+                    showModelConfigDialog = false
+                }
+            )
+        }    // Tool Config Dialog
+        if (showToolConfigDialog) {
+            cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
+                onDismiss = { showToolConfigDialog = false },
+                onSave = { newConfig ->
+                    println("✅ 工具配置已保存")
+                    println("   启用的内置工具: ${newConfig.enabledBuiltinTools.size}")
+                    println("   启用的 MCP 工具: ${newConfig.enabledMcpTools.size}")
+                    showToolConfigDialog = false
+                },
+                llmService = llmService
+            )
+        }
+
+        // Remote Server Config Dialog
+        if (showRemoteConfigDialog) {
+            cc.unitmesh.devins.ui.compose.config.RemoteServerConfigDialog(
+                currentConfig = cc.unitmesh.devins.ui.compose.config.RemoteServerConfig(
+                    serverUrl = serverUrl,
+                    useServerConfig = useServerConfig,
+                    selectedProjectId = "",
+                    defaultGitUrl = remoteGitUrl
+                ),
+                onDismiss = { showRemoteConfigDialog = false },
+                onSave = { newConfig ->
+                    serverUrl = newConfig.serverUrl
+                    useServerConfig = newConfig.useServerConfig
+                    // If a Git URL is provided, propagate it to remote state so UI reacts immediately
+                    if (newConfig.defaultGitUrl.isNotBlank()) {
+                        remoteGitUrl = newConfig.defaultGitUrl
+                        println("📦 Remote Git URL set from dialog: ${newConfig.defaultGitUrl}")
+                    }
+
+                    // 保存远程服务器配置到文件
+                    scope.launch {
+                        try {
+                            ConfigManager.saveRemoteServer(
+                                cc.unitmesh.devins.ui.config.RemoteServerConfig(
+                                    url = newConfig.serverUrl,
+                                    enabled = true, // 保存配置后，标记为已启用
+                                    useServerConfig = newConfig.useServerConfig
                                 )
-                                ConfigManager.saveConfig(namedConfig, setActive = true)
-                                println("✅ 模型配置已保存到磁盘: $configName")
-                            } catch (e: Exception) {
-                                println("⚠️ 保存配置到磁盘失败: ${e.message}")
+                            )
+
+                            // 重要：保存 Remote 配置后，自动切换 Agent Type 为 "Remote"
+                            cc.unitmesh.devins.ui.config.saveAgentTypePreference("Remote")
+                            selectedAgentType = "Remote"
+                        } catch (e: Exception) {
+                            println("⚠️ 保存远程配置失败: ${e.message}")
+                            errorMessage = "保存远程配置失败: ${e.message}"
+                            showErrorDialog = true
+                        }
+                    }
+
+                    showRemoteConfigDialog = false
+                }
+            )
+        }
+
+        if (showDebugDialog) {
+            DebugDialog(
+                compilerOutput = compilerOutput,
+                onDismiss = { showDebugDialog = false }
+            )
+        }
+
+        if (showConfigWarning) {
+            AlertDialog(
+                onDismissRequest = { showConfigWarning = false },
+                title = {
+                    Text(Strings.modelConfigNotConfigured)
+                },
+                text = {
+                    Column {
+                        Text(Strings.modelConfigNotConfiguredMessage)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "点击下方按钮打开配置界面。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        showConfigWarning = false
+                        showModelConfigDialog = true
+                    }) {
+                        Text("配置模型")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfigWarning = false }) {
+                        Text("稍后")
+                    }
+                }
+            )
+        }
+
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                title = {
+                    Text("❌ LLM API 错误")
+                },
+                text = {
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        Text(
+                            "调用 LLM API 时发生错误：",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // 错误信息卡片
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =
+                                CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer
+                                )
+                        ) {
+                            SelectionContainer {
+                                Text(
+                                    text = errorMessage,
+                                    style =
+                                        MaterialTheme.typography.bodySmall.copy(
+                                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                        ),
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(12.dp)
+                                )
                             }
                         }
 
-                        llmService = KoogLLMService.create(newConfig)
-                        println("✅ 模型配置已应用: $configName")
-                    } catch (e: Exception) {
-                        println("❌ 配置 LLM 服务失败: ${e.message}")
-                        llmService = null
-                    }
-                }
-                showModelConfigDialog = false
-            }
-        )
-    }    // Tool Config Dialog
-    if (showToolConfigDialog) {
-        cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
-            onDismiss = { showToolConfigDialog = false },
-            onSave = { newConfig ->
-                println("✅ 工具配置已保存")
-                println("   启用的内置工具: ${newConfig.enabledBuiltinTools.size}")
-                println("   启用的 MCP 工具: ${newConfig.enabledMcpTools.size}")
-                showToolConfigDialog = false
-            },
-            llmService = llmService
-        )
-    }
+                        Spacer(modifier = Modifier.height(12.dp))
 
-    // Remote Server Config Dialog
-    if (showRemoteConfigDialog) {
-        cc.unitmesh.devins.ui.compose.config.RemoteServerConfigDialog(
-            currentConfig = cc.unitmesh.devins.ui.compose.config.RemoteServerConfig(
-                serverUrl = serverUrl,
-                useServerConfig = useServerConfig,
-                selectedProjectId = "",
-                defaultGitUrl = remoteGitUrl
-            ),
-            onDismiss = { showRemoteConfigDialog = false },
-            onSave = { newConfig ->
-                serverUrl = newConfig.serverUrl
-                useServerConfig = newConfig.useServerConfig
-                // If a Git URL is provided, propagate it to remote state so UI reacts immediately
-                if (newConfig.defaultGitUrl.isNotBlank()) {
-                    remoteGitUrl = newConfig.defaultGitUrl
-                    println("📦 Remote Git URL set from dialog: ${newConfig.defaultGitUrl}")
-                }
-
-                // 保存远程服务器配置到文件
-                scope.launch {
-                    try {
-                        ConfigManager.saveRemoteServer(
-                            cc.unitmesh.devins.ui.config.RemoteServerConfig(
-                                url = newConfig.serverUrl,
-                                enabled = true, // 保存配置后，标记为已启用
-                                useServerConfig = newConfig.useServerConfig
-                            )
+                        // 常见问题提示
+                        Text(
+                            "常见解决方法：",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                         )
-
-                        // 重要：保存 Remote 配置后，自动切换 Agent Type 为 "Remote"
-                        cc.unitmesh.devins.ui.config.saveAgentTypePreference("Remote")
-                        selectedAgentType = "Remote"
-
-                        println("✅ 远程服务器配置已保存并切换到 Remote 模式")
-                        println("   Server URL: ${newConfig.serverUrl}")
-                        println("   Use Server Config: ${newConfig.useServerConfig}")
-                        println("   Agent Type: Remote")
-                    } catch (e: Exception) {
-                        println("⚠️ 保存远程配置失败: ${e.message}")
-                        errorMessage = "保存远程配置失败: ${e.message}"
-                        showErrorDialog = true
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "• 检查 API Key 是否正确\n" +
+                                "• 确认账户余额充足\n" +
+                                "• 检查网络连接\n" +
+                                "• 验证模型名称是否正确",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                }
-
-                showRemoteConfigDialog = false
-            }
-        )
-    }
-
-    if (showDebugDialog) {
-        DebugDialog(
-            compilerOutput = compilerOutput,
-            onDismiss = { showDebugDialog = false }
-        )
-    }
-
-    if (showConfigWarning) {
-        AlertDialog(
-            onDismissRequest = { showConfigWarning = false },
-            title = {
-                Text(Strings.modelConfigNotConfigured)
-            },
-            text = {
-                Column {
-                    Text(Strings.modelConfigNotConfiguredMessage)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "点击下方按钮打开配置界面。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    showConfigWarning = false
-                    showModelConfigDialog = true
-                }) {
-                    Text("配置模型")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showConfigWarning = false }) {
-                    Text("稍后")
-                }
-            }
-        )
-    }
-
-    if (showErrorDialog) {
-        AlertDialog(
-            onDismissRequest = { showErrorDialog = false },
-            title = {
-                Text("❌ LLM API 错误")
-            },
-            text = {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    Text(
-                        "调用 LLM API 时发生错误：",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // 错误信息卡片
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer
-                            )
-                    ) {
-                        SelectionContainer {
-                            Text(
-                                text = errorMessage,
-                                style =
-                                    MaterialTheme.typography.bodySmall.copy(
-                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                    ),
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(12.dp)
-                            )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showErrorDialog = false }) {
+                        Text("关闭")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showErrorDialog = false
                         }
+                    ) {
+                        Text("重新配置")
                     }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // 常见问题提示
-                    Text(
-                        "常见解决方法：",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "• 检查 API Key 是否正确\n" +
-                            "• 确认账户余额充足\n" +
-                            "• 检查网络连接\n" +
-                            "• 验证模型名称是否正确",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
-            },
-            confirmButton = {
-                TextButton(onClick = { showErrorDialog = false }) {
-                    Text("关闭")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showErrorDialog = false
-                    }
-                ) {
-                    Text("重新配置")
-                }
-            }
-        )
+            )
+        }
     }
-}
 }
