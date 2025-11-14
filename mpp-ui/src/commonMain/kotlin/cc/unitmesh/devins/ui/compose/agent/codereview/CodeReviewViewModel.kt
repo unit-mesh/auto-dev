@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.ToolConfigFile
+import cc.unitmesh.agent.language.LanguageDetector
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.tracking.ChangeType
@@ -233,7 +234,7 @@ open class CodeReviewViewModel(
                         cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
                     },
                     hunks = hunks,
-                    language = detectLanguage(file.path)
+                    language = LanguageDetector.detectLanguage(file.path)
                 )
             }
 
@@ -302,7 +303,7 @@ open class CodeReviewViewModel(
                         cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.EDIT
                     },
                     hunks = hunks,
-                    language = detectLanguage(file.path)
+                    language = LanguageDetector.detectLanguage(file.path)
                 )
             }
 

@@ -1,6 +1,7 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.config.JsToolConfigFile
+import cc.unitmesh.agent.language.LanguageDetector
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
@@ -297,7 +298,7 @@ class JsLinterRegistry {
      */
     @JsName("detectLanguage")
     fun detectLanguage(filePath: String): String? {
-        return cc.unitmesh.agent.linter.LanguageDetector.detectLanguage(filePath)
+        return LanguageDetector.detectLanguage(filePath)
     }
 
     /**
@@ -305,7 +306,7 @@ class JsLinterRegistry {
      */
     @JsName("getLintersForLanguage")
     fun getLintersForLanguage(language: String): Array<String> {
-        return cc.unitmesh.agent.linter.LanguageDetector.getLinterNamesForLanguage(language).toTypedArray()
+        return LanguageDetector.getLinterNamesForLanguage(language).toTypedArray()
     }
 }
 

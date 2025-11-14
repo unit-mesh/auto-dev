@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.linter
 
+import cc.unitmesh.agent.language.LanguageDetector
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
