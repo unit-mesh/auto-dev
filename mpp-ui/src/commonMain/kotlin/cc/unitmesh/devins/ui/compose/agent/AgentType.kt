@@ -46,4 +46,16 @@ enum class AgentType {
      * Check if this agent type supports local file operations
      */
     fun supportsLocalFileOps(): Boolean = this in listOf(CODING, CODE_REVIEW)
+
+    companion object {
+        fun fromString(type: String): AgentType {
+            return when (type.lowercase()) {
+                "remote" -> REMOTE
+                "local" -> LOCAL
+                "coding" -> CODING
+                "codereview" -> CODE_REVIEW
+                else -> LOCAL
+            }
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.ui.config
 
 import cc.unitmesh.agent.mcp.McpServerConfig
+import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.llm.NamedModelConfig
 import kotlinx.serialization.Serializable
@@ -97,19 +98,19 @@ class AutoDevConfigWrapper(val configFile: ConfigFile) {
     fun getEnabledMcpServers(): Map<String, McpServerConfig> {
         return configFile.mcpServers?.filter { !it.value.disabled && it.value.validate() } ?: emptyMap()
     }
-    
+
     fun getRemoteServer(): RemoteServerConfig {
         return configFile.remoteServer ?: RemoteServerConfig()
     }
-    
+
     fun isRemoteMode(): Boolean {
         return configFile.remoteServer?.enabled == true
     }
-    
-    fun getAgentType(): String {
-        return configFile.agentType ?: "Local"
+
+    fun getAgentType(): AgentType {
+        return AgentType.fromString(configFile.agentType ?: "Local")
     }
-    
+
     fun getLastWorkspace(): WorkspaceInfo? {
         return configFile.lastWorkspace
     }

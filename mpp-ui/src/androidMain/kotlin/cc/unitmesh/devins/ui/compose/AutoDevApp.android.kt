@@ -16,6 +16,7 @@ import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.app.AndroidNavLayout
 import cc.unitmesh.devins.ui.app.AppScreen
 import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
+import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.devins.ui.compose.chat.*
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog
@@ -91,7 +92,7 @@ private fun AndroidAutoDevContent(
     val sessionViewModel = remember { SessionViewModel(sessionClient) }
 
     // Agent 模式状态
-    var selectedAgentType by remember { mutableStateOf("Local") }
+    var selectedAgentType by remember { mutableStateOf(AgentType.LOCAL) }
     var useAgentMode by remember { mutableStateOf(true) }
     var isTreeViewVisible by remember { mutableStateOf(false) }
 
@@ -157,7 +158,6 @@ private fun AndroidAutoDevContent(
         onConfigWarning = { showModelConfigDialog = true }
     )
 
-    // Android NavLayout（Drawer + BottomNavigation）
     AndroidNavLayout(
         currentScreen = currentScreen,
         onScreenChange = { currentScreen = it },
@@ -167,17 +167,14 @@ private fun AndroidAutoDevContent(
         onShowDebug = { showDebugDialog = true },
         hasDebugInfo = compilerOutput.isNotEmpty(),
         actions = {
-            // TopBar 右侧操作按钮
             when (currentScreen) {
                 AppScreen.HOME, AppScreen.CHAT -> {
-                    // 切换 Agent/Chat 模式
                     IconButton(onClick = { useAgentMode = !useAgentMode }) {
                         Icon(
                             imageVector = if (useAgentMode) Icons.Default.SmartToy else Icons.AutoMirrored.Filled.Chat,
                             contentDescription = if (useAgentMode) "Agent 模式" else "Chat 模式"
                         )
                     }
-                    // TreeView 切换（仅 Agent 模式）
                     if (useAgentMode) {
                         IconButton(onClick = { isTreeViewVisible = !isTreeViewVisible }) {
                             Icon(
@@ -219,7 +216,6 @@ private fun AndroidAutoDevContent(
                                 messages = emptyList()
                                 currentStreamingOutput = ""
                             },
-                            onShowDebug = { showDebugDialog = true },
                             onModelConfigChange = { config ->
                                 currentModelConfig = config
                                 if (config.isValid()) {
@@ -240,7 +236,6 @@ private fun AndroidAutoDevContent(
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        // Chat 模式（使用 MessageList + DevInEditorInput）
                         ChatModeScreen(
                             messages = messages,
                             currentStreamingOutput = currentStreamingOutput,
@@ -249,7 +244,6 @@ private fun AndroidAutoDevContent(
                             completionManager = currentWorkspace.completionManager,
                             projectPath = currentWorkspace.rootPath ?: "/",
                             fileSystem = currentWorkspace.fileSystem,
-                            currentModelConfig = currentModelConfig,
                             onModelConfigChange = { config ->
                                 currentModelConfig = config
                                 if (config.isValid()) {
@@ -332,13 +326,6 @@ private fun AndroidAutoDevContent(
         )
     }
 
-    if (showDebugDialog) {
-        DebugDialog(
-            compilerOutput = compilerOutput,
-            onDismiss = { showDebugDialog = false }
-        )
-    }
-
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
@@ -365,14 +352,12 @@ private fun ChatModeScreen(
     completionManager: CompletionManager,
     projectPath: String,
     fileSystem: ProjectFileSystem,
-    currentModelConfig: ModelConfig?,
     onModelConfigChange: (ModelConfig) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         val isCompactMode = messages.isNotEmpty() || isLLMProcessing
 
         if (isCompactMode) {
-            // 有消息时显示列表
             MessageList(
                 messages = messages,
                 isLLMProcessing = isLLMProcessing,
@@ -397,7 +382,6 @@ private fun ChatModeScreen(
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             )
         } else {
-            // 空状态 - 居中显示输入框
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -418,10 +402,6 @@ private fun ChatModeScreen(
     }
 }
 
-
-/**
- * Profile 屏幕组件
- */
 @Composable
 private fun ProfileScreen(
     currentModelConfig: ModelConfig?,

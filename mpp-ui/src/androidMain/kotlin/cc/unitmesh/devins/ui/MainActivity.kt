@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import cc.unitmesh.devins.db.DatabaseDriverFactory
-import cc.unitmesh.devins.ui.compose.AutoDevApp
 import cc.unitmesh.devins.ui.compose.PlatformAutoDevApp
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.platform.AndroidActivityProvider
@@ -30,7 +29,6 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            // 使用 AutoDevApp，支持本地和远程模式切换
             PlatformAutoDevApp()
         }
     }

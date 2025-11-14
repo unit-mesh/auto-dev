@@ -429,7 +429,6 @@ private fun AutoDevContent(
                 }
 
                 if (useAgentMode) {
-                    // Use unified AgentInterfaceRouter for all agent types
                     AgentInterfaceRouter(
                         llmService = llmService,
                         isTreeViewVisible = isTreeViewVisible,
@@ -439,7 +438,6 @@ private fun AutoDevContent(
                         selectedAgentType = selectedAgentType,
                         onAgentTypeChange = { type ->
                             handleAgentTypeChange(type)
-                            println("🔄 切换 Agent Type: ${type.getDisplayName()}")
                         },
                         onSessionSelected = { sessionId ->
                             messages = chatHistoryManager.getMessages()
