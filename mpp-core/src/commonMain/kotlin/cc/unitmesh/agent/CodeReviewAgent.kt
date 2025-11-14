@@ -7,6 +7,8 @@ import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
+import cc.unitmesh.agent.orchestrator.ToolOrchestrator
+import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import cc.unitmesh.agent.tool.ToolResult
@@ -95,11 +97,19 @@ class CodeReviewAgent(
         )
     }
 
+    private val policyEngine = DefaultPolicyEngine()
+
+    private val toolOrchestrator = ToolOrchestrator(
+        registry = toolRegistry,
+        policyEngine = policyEngine,
+        renderer = renderer,
+        mcpConfigService = mcpToolConfigService
+    )
+
     private val executor = CodeReviewAgentExecutor(
         projectPath = projectPath,
         llmService = llmService,
-        toolRegistry = toolRegistry,
-        fileSystem = actualFileSystem,
+        toolOrchestrator = toolOrchestrator,
         renderer = renderer,
         maxIterations = maxIterations,
         enableLLMStreaming = enableLLMStreaming
@@ -145,7 +155,6 @@ class CodeReviewAgent(
 
     private suspend fun initializeWorkspace(projectPath: String) {
         logger.info { "Initializing workspace for code review: $projectPath" }
-        // Future: MCP tools initialization if needed
     }
 
     private suspend fun buildContext(task: ReviewTask): CodeReviewContext {

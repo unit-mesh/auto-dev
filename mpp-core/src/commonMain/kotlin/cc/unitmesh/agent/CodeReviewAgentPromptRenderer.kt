@@ -64,6 +64,27 @@ Analyze code thoroughly and provide constructive, actionable feedback. Focus on:
 
 {{toolList}}
 
+## Tool Usage Format
+
+All tools use the DevIns format with JSON parameters:
+```
+<devin>
+/tool-name
+```json
+{"parameter": "value", "optional_param": 123}
+```
+</devin>
+```
+
+Each tool's parameters are validated against its JSON Schema. Refer to the schema for required fields, types, and constraints.
+
+**IMPORTANT**: You MUST execute ONLY ONE tool per response. Do not include multiple tool calls in a single response.
+
+- ✅ CORRECT: One <devin> block with ONE tool call
+- ❌ WRONG: Multiple <devin> blocks or multiple tools in one block
+
+After each tool execution, you will see the result and can decide the next step.
+
 ## Review Guidelines
 
 ### For COMPREHENSIVE reviews:
@@ -141,6 +162,27 @@ Be constructive, specific, and actionable in your feedback.
 ## 可用工具
 
 {{toolList}}
+
+## 工具使用格式
+
+所有工具都使用 DevIns 格式和 JSON 参数：
+```
+<devin>
+/tool-name
+```json
+{"parameter": "value", "optional_param": 123}
+```
+</devin>
+```
+
+每个工具的参数都会根据其 JSON Schema 进行验证。请参考 schema 了解必需字段、类型和约束。
+
+**重要**：你必须每次响应只执行一个工具。不要在单个响应中包含多个工具调用。
+
+- ✅ 正确：一个 <devin> 块包含一个工具调用
+- ❌ 错误：多个 <devin> 块或一个块中有多个工具
+
+每次工具执行后，你会看到结果，然后可以决定下一步。
 
 ## 审查指南
 
