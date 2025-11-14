@@ -292,7 +292,7 @@ open class CodeReviewViewModel(
         }
 
         currentJob?.cancel()
-        currentJob = scope.launch {
+        currentJob = CoroutineScope(Dispatchers.Default).launch {
             try {
                 updateState {
                     it.copy(
