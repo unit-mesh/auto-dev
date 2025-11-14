@@ -80,7 +80,7 @@ open class CodeReviewViewModel(
             }
 
             if (commits.isNotEmpty()) {
-                loadCommitDiff(0)
+                loadCommitDiffInternal(0)
             }
 
         } catch (e: Exception) {
@@ -144,72 +144,69 @@ open class CodeReviewViewModel(
     /**
      * Load diff for a specific commit
      */
-    suspend fun loadCommitDiff(index: Int) {
+    private suspend fun loadCommitDiffInternal(index: Int) {
         if (index !in currentState.commitHistory.indices) {
             return
         }
 
         val commit = currentState.commitHistory[index]
+        
+        updateState {
+            it.copy(
+                isLoading = true,
+                selectedCommitIndex = index,
+                error = null
+            )
+        }
 
-        currentJob?.cancel()
-        currentJob = scope.launch {
+        try {
+            val gitDiff = gitOps.getCommitDiff(commit.hash)
+
+            if (gitDiff == null) {
+                updateState {
+                    it.copy(
+                        isLoading = false,
+                        error = "No diff available for this commit"
+                    )
+                }
+                return
+            }
+
+            // Convert to UI model using DiffParser
+            val diffFiles = gitDiff.files.map { file ->
+                val parsedDiff = DiffParser.parse(file.diff)
+                val hunks = parsedDiff.firstOrNull()?.hunks ?: emptyList()
+
+                DiffFileInfo(
+                    path = file.path,
+                    oldPath = file.oldPath,
+                    changeType = when (file.status) {
+                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> cc.unitmesh.agent.tool.tracking.ChangeType.CREATE
+                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> cc.unitmesh.agent.tool.tracking.ChangeType.DELETE
+                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
+                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> cc.unitmesh.agent.tool.tracking.ChangeType.RENAME
+                        cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
+                    },
+                    hunks = hunks,
+                    language = detectLanguage(file.path)
+                )
+            }
+
             updateState {
                 it.copy(
-                    isLoading = true,
-                    selectedCommitIndex = index,
+                    isLoading = false,
+                    diffFiles = diffFiles,
+                    selectedFileIndex = 0,
                     error = null
                 )
             }
 
-            try {
-                val gitDiff = gitOps.getCommitDiff(commit.hash)
-
-                if (gitDiff == null) {
-                    updateState {
-                        it.copy(
-                            isLoading = false,
-                            error = "No diff available for this commit"
-                        )
-                    }
-                    return@launch
-                }
-
-                // Convert to UI model using DiffParser
-                val diffFiles = gitDiff.files.map { file ->
-                    val parsedDiff = DiffParser.parse(file.diff)
-                    val hunks = parsedDiff.firstOrNull()?.hunks ?: emptyList()
-
-                    DiffFileInfo(
-                        path = file.path,
-                        oldPath = file.oldPath,
-                        changeType = when (file.status) {
-                            cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> cc.unitmesh.agent.tool.tracking.ChangeType.CREATE
-                            cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> cc.unitmesh.agent.tool.tracking.ChangeType.DELETE
-                            cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
-                            cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> cc.unitmesh.agent.tool.tracking.ChangeType.RENAME
-                            cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
-                        },
-                        hunks = hunks,
-                        language = detectLanguage(file.path)
-                    )
-                }
-
-                updateState {
-                    it.copy(
-                        isLoading = false,
-                        diffFiles = diffFiles,
-                        selectedFileIndex = 0,
-                        error = null
-                    )
-                }
-
-            } catch (e: Exception) {
-                updateState {
-                    it.copy(
-                        isLoading = false,
-                        error = "Failed to load diff: ${e.message}"
-                    )
-                }
+        } catch (e: Exception) {
+            updateState {
+                it.copy(
+                    isLoading = false,
+                    error = "Failed to load diff: ${e.message}"
+                )
             }
         }
     }
@@ -352,8 +349,10 @@ open class CodeReviewViewModel(
      * Select a different commit to view
      */
     open fun selectCommit(index: Int) {
-        scope.launch {
-            loadCommitDiff(index)
+        // Cancel previous loading job if any
+        currentJob?.cancel()
+        currentJob = scope.launch {
+            loadCommitDiffInternal(index)
         }
     }
 
