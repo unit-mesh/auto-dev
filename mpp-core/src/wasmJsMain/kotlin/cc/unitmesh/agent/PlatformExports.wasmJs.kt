@@ -44,7 +44,7 @@ fun wasmGetDefaultShell(): String = Platform.getDefaultShell()
 
 @JsExport
 @JsName("wasmGetCurrentTimestamp")
-fun wasmGetCurrentTimestamp(): String = Platform.getCurrentTimestamp()
+fun wasmGetCurrentTimestamp(): String = Platform.getCurrentTimestamp().toString()
 
 @JsExport
 @JsName("wasmGetOSInfo")

@@ -25,9 +25,9 @@ actual object Platform {
         }
     }
 
-    actual fun getCurrentTimestamp(): String {
+    actual fun getCurrentTimestamp(): Long {
         val now = ZonedDateTime.now()
-        return now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        return now.toInstant().toEpochMilli()
     }
 
     actual fun getOSInfo(): String {

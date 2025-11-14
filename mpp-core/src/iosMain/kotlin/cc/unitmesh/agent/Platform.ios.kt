@@ -23,8 +23,8 @@ actual object Platform {
         return "/bin/sh"
     }
 
-    actual fun getCurrentTimestamp(): String {
-        return Clock.System.now().toString()
+    actual fun getCurrentTimestamp(): Long {
+        return Clock.System.now().toEpochMilliseconds()
     }
 
     actual fun getOSInfo(): String {

@@ -20,7 +20,7 @@ object JsPlatform {
     
     fun getOSName(): String = Platform.getOSName()
     fun getDefaultShell(): String = Platform.getDefaultShell()
-    fun getCurrentTimestamp(): String = Platform.getCurrentTimestamp()
+    fun getCurrentTimestamp(): String = Platform.getCurrentTimestamp().toString()
     fun getOSInfo(): String = Platform.getOSInfo()
     fun getOSVersion(): String = Platform.getOSVersion()
     fun getUserHomeDir(): String = Platform.getUserHomeDir()

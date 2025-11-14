@@ -20,9 +20,8 @@ actual object Platform {
         return "/system/bin/sh"
     }
 
-    actual fun getCurrentTimestamp(): String {
-        val now = ZonedDateTime.now()
-        return now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    actual fun getCurrentTimestamp(): Long {
+        return System.currentTimeMillis()
     }
 
     actual fun getOSInfo(): String {

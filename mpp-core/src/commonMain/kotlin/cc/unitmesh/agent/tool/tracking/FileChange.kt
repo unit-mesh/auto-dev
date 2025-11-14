@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool.tracking
 
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.util.DiffUtils
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -13,27 +14,27 @@ data class FileChange(
      * The file path that was changed
      */
     val filePath: String,
-    
+
     /**
      * Type of change operation
      */
     val changeType: ChangeType,
-    
+
     /**
      * Original content before change (null for new files)
      */
     val originalContent: String?,
-    
+
     /**
      * New content after change (null for deleted files)
      */
     val newContent: String?,
-    
+
     /**
      * Timestamp when the change was recorded
      */
-    val timestamp: Long = getCurrentTimestamp(),
-    
+    val timestamp: Long = Platform.getCurrentTimestamp(),
+
     /**
      * Additional metadata about the change
      */
@@ -106,9 +107,3 @@ enum class ChangeType {
     DELETE,
     RENAME
 }
-
-/**
- * Cross-platform way to get current timestamp
- */
-expect fun getCurrentTimestamp(): Long
-

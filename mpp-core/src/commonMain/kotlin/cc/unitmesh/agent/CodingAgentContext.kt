@@ -60,7 +60,7 @@ data class CodingAgentContext(
             return CodingAgentContext(
                 projectPath = task.projectPath,
                 osInfo = Platform.getOSInfo(),
-                timestamp = Platform.getCurrentTimestamp(),
+                timestamp = Platform.getCurrentTimestamp().toString(),
                 shell = Platform.getDefaultShell(),
                 toolList = formatToolListForAI(toolList)
             )

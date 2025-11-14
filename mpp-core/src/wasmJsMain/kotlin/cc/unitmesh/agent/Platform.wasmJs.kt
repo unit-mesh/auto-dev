@@ -18,9 +18,8 @@ actual object Platform {
         return "/bin/bash"  // Default to bash for WASM
     }
 
-    actual fun getCurrentTimestamp(): String {
-        // Use kotlinx-datetime for cross-platform timestamp
-        return Clock.System.now().toString()
+    actual fun getCurrentTimestamp(): Long {
+        return Clock.System.now().toEpochMilliseconds()
     }
 
     actual fun getOSInfo(): String {

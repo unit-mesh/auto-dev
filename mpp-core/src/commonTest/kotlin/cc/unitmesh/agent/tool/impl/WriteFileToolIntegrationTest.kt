@@ -75,7 +75,7 @@ class WriteFileToolIntegrationTest {
         val context = CodingAgentContext(
             projectPath = "/test-project",
             osInfo = Platform.getOSInfo(),
-            timestamp = Platform.getCurrentTimestamp(),
+            timestamp = Platform.getCurrentTimestamp().toString(),
             toolList = toolRegistry.getAgentTools().joinToString("\n\n") { tool ->
                 """
                 <tool name="${tool.name}">
