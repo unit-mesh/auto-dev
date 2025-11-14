@@ -81,7 +81,7 @@ class DiffLangSketch : ExtensionLangSketch {
     }
 
     private fun initializeUI() {
-        if (filePatches.size > 1 || filePatches.any { it.beforeName == null }) {
+        if (filePatches.isNotEmpty()) {
             val header = createHeaderAction()
             myHeaderPanel.add(header, BorderLayout.EAST)
             mainPanel.add(myHeaderPanel)
