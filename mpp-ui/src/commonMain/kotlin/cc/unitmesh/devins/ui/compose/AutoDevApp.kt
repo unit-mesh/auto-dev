@@ -144,7 +144,7 @@ private fun AutoDevContent(
                 println("⚠️ 加载上次工作空间失败: ${e.message}")
                 null
             }
-            
+
             if (lastWorkspace != null) {
                 val fileSystem = DefaultFileSystem(lastWorkspace.path)
                 if (fileSystem.exists(lastWorkspace.path)) {
@@ -155,7 +155,7 @@ private fun AutoDevContent(
                     // Fall through to default workspace logic
                 }
             }
-            
+
             // If last workspace not available or doesn't exist, use default
             if (!WorkspaceManager.hasActiveWorkspace()) {
                 val defaultPath = when {
@@ -271,7 +271,7 @@ private fun AutoDevContent(
                 try {
                     WorkspaceManager.openWorkspace(projectName, path)
                     println("📁 已切换项目路径: $path")
-                    
+
                     // Save the last workspace to config
                     try {
                         ConfigManager.saveLastWorkspace(projectName, path)
@@ -317,7 +317,7 @@ private fun AutoDevContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (showSessionSidebar && Platform.isJvm) {
+            if (showSessionSidebar && (Platform.isJvm || Platform.isWasm)) {
                 SessionSidebar(
                     chatHistoryManager = chatHistoryManager,
                     currentSessionId = chatHistoryManager.getCurrentSession().id,

@@ -29,6 +29,55 @@ class CodeReviewAgentPromptRenderer {
         return prompt
     }
 
+    /**
+     * Renders a data-driven analysis prompt (for UI scenarios where data is pre-collected)
+     * This prompt focuses on analyzing provided data rather than using tools
+     */
+    fun renderAnalysisPrompt(
+        reviewType: String,
+        filePaths: List<String>,
+        codeContent: Map<String, String>,
+        lintResults: Map<String, String>,
+        diffContext: String = "",
+        language: String = "EN"
+    ): String {
+        val logger = getLogger("CodeReviewAgentPromptRenderer")
+
+        val template = when (language.uppercase()) {
+            "ZH", "CN" -> CodeReviewAnalysisTemplate.ZH
+            else -> CodeReviewAnalysisTemplate.EN
+        }
+
+        val formattedFiles = codeContent.entries.joinToString("\n\n") { (path, content) ->
+            """### File: $path
+```
+$content
+```"""
+        }
+
+        val formattedLintResults = if (lintResults.isEmpty()) {
+            "No linter issues found."
+        } else {
+            lintResults.entries.joinToString("\n\n") { (path, result) ->
+                """### Lint Results for: $path
+```
+$result
+```"""
+            }
+        }
+
+        val prompt = template
+            .replace("{{reviewType}}", reviewType)
+            .replace("{{fileCount}}", filePaths.size.toString())
+            .replace("{{filePaths}}", filePaths.joinToString("\n- ", prefix = "- "))
+            .replace("{{codeContent}}", formattedFiles)
+            .replace("{{lintResults}}", formattedLintResults)
+            .replace("{{diffContext}}", if (diffContext.isNotBlank()) "\n\n### Diff Context\n$diffContext" else "")
+
+        logger.debug { "Generated analysis prompt (${prompt.length} chars)" }
+        return prompt
+    }
+
     private fun formatLinterInfo(summary: cc.unitmesh.agent.linter.LinterSummary?): String {
         if (summary == null) {
             return "No linter information available."
@@ -71,7 +120,8 @@ class CodeReviewAgentPromptRenderer {
 }
 
 /**
- * Code Review Agent prompt templates
+ * Code Review Agent prompt templates (Tool-driven approach)
+ * Use this when the agent should use tools to gather information
  */
 object CodeReviewAgentTemplate {
     val EN = """
@@ -200,5 +250,147 @@ Be specific and actionable.
 - 建议的修复
 
 保持具体和可操作。
+""".trimIndent()
+}
+
+/**
+ * Code Review Analysis prompt templates (Data-driven approach)
+ * Use this when code and lint results are already collected
+ */
+object CodeReviewAnalysisTemplate {
+    val EN = """
+# Code Review Analysis
+
+You are an expert code reviewer. Analyze the provided code and linter results to provide comprehensive, actionable feedback.
+
+## Task
+
+Review Type: **{{reviewType}}**
+Files to Review: **{{fileCount}}** files
+
+{{filePaths}}
+
+## Code Content
+
+{{codeContent}}
+
+## Linter Results
+
+{{lintResults}}
+{{diffContext}}
+
+## Your Task
+
+Provide a **structured code review** with the following format:
+
+### 1. Summary
+Brief overview of the code quality and main concerns (2-3 sentences).
+
+### 2. Critical Issues (CRITICAL/HIGH)
+List critical issues that **must** be fixed. For each issue:
+- **Severity**: CRITICAL or HIGH
+- **Category**: Security/Performance/Logic/etc.
+- **Location**: file:line
+- **Description**: Clear description of the problem
+- **Suggested Fix**: Specific, actionable recommendation
+
+### 3. Recommendations (MEDIUM)
+List important issues that **should** be fixed. Same format as above.
+
+### 4. Minor Issues (LOW/INFO)
+List minor issues that would be **nice** to fix. Same format as above.
+
+### 5. Positive Aspects
+Highlight good practices and well-written code sections.
+
+## Analysis Guidelines
+
+1. **Prioritize findings**: Focus on security, correctness, and maintainability
+2. **Be specific**: Reference exact file locations and line numbers
+3. **Provide context**: Explain why something is an issue
+4. **Suggest solutions**: Offer concrete, actionable fixes
+5. **Balance criticism**: Acknowledge good code when you see it
+6. **Consider linter feedback**: Build on automated findings with deeper analysis
+7. **Look beyond linters**: Focus on:
+   - Security vulnerabilities
+   - Logic errors
+   - Design and architecture issues
+   - Performance bottlenecks
+   - Code maintainability
+   - Best practices violations
+
+## Output Format
+
+Use Markdown with clear headings. Keep findings **concise** but **actionable**.
+
+**DO NOT** attempt to use any tools. All necessary information is provided above.
+""".trimIndent()
+
+    val ZH = """
+# 代码审查分析
+
+你是一位专业的代码审查专家。分析提供的代码和 linter 结果，提供全面、可操作的反馈。
+
+## 任务
+
+审查类型：**{{reviewType}}**
+待审查文件：**{{fileCount}}** 个文件
+
+{{filePaths}}
+
+## 代码内容
+
+{{codeContent}}
+
+## Linter 结果
+
+{{lintResults}}
+{{diffContext}}
+
+## 你的任务
+
+提供 **结构化的代码审查**，格式如下：
+
+### 1. 总结
+代码质量和主要关注点的简要概述（2-3 句话）。
+
+### 2. 关键问题（CRITICAL/HIGH）
+列出 **必须** 修复的关键问题。每个问题包括：
+- **严重性**：CRITICAL 或 HIGH
+- **类别**：安全/性能/逻辑等
+- **位置**：文件:行号
+- **描述**：问题的清晰描述
+- **建议修复**：具体、可操作的建议
+
+### 3. 建议（MEDIUM）
+列出 **应该** 修复的重要问题。格式同上。
+
+### 4. 次要问题（LOW/INFO）
+列出 **可以** 修复的次要问题。格式同上。
+
+### 5. 积极方面
+突出显示良好的实践和编写良好的代码部分。
+
+## 分析指南
+
+1. **优先级排序**：关注安全性、正确性和可维护性
+2. **具体说明**：引用确切的文件位置和行号
+3. **提供上下文**：解释为什么某件事是问题
+4. **建议解决方案**：提供具体、可操作的修复
+5. **平衡批评**：当看到好代码时要认可
+6. **考虑 linter 反馈**：在自动化发现的基础上进行更深入的分析
+7. **超越 linters**：关注：
+   - 安全漏洞
+   - 逻辑错误
+   - 设计和架构问题
+   - 性能瓶颈
+   - 代码可维护性
+   - 最佳实践违规
+
+## 输出格式
+
+使用 Markdown 格式，带有清晰的标题。保持发现 **简洁** 但 **可操作**。
+
+**不要** 尝试使用任何工具。所有必要信息都已在上面提供。
 """.trimIndent()
 }

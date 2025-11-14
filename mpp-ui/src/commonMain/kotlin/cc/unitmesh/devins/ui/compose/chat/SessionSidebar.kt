@@ -41,16 +41,13 @@ fun SessionSidebar(
     currentSessionId: String?,
     onSessionSelected: (String) -> Unit,
     onNewChat: () -> Unit,
-    // 远程会话支持
     sessionClient: SessionClient? = null,
     onRemoteSessionSelected: ((Session) -> Unit)? = null,
-    // 功能按钮回调
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
     onShowDebug: () -> Unit = {},
     hasDebugInfo: Boolean = false,
     modifier: Modifier = Modifier,
-    // 本地会话重命名回调
     onRenameSession: ((String, String) -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()

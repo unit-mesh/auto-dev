@@ -103,6 +103,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":mpp-core"))
+                implementation(project(":mpp-codegraph"))
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material3)

@@ -44,8 +44,21 @@ data class AIAnalysisProgress(
     val currentLine: Int? = null,
     val lintOutput: String = "",
     val lintResults: List<FileLintResult> = emptyList(),
+    val modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap(),
     val analysisOutput: String = "",
     val fixOutput: String = ""
+)
+
+/**
+ * Represents a modified code range (function, class, etc.) in a file
+ */
+data class ModifiedCodeRange(
+    val filePath: String,
+    val elementName: String,
+    val elementType: String, // "CLASS", "METHOD", "FUNCTION", etc.
+    val startLine: Int,
+    val endLine: Int,
+    val modifiedLines: List<Int> // Lines that were actually modified within this range
 )
 
 /**
