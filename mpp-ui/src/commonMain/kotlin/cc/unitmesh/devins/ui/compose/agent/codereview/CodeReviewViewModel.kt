@@ -38,18 +38,18 @@ open class CodeReviewViewModel(
 
     // Control execution
     private var currentJob: Job? = null
-    
+
     // Performance optimization: Cache code content to avoid re-reading
     private var codeContentCache: Map<String, String>? = null
     private var cacheTimestamp: Long = 0
     private val CACHE_VALIDITY_MS = 30_000L // 30 seconds
-    
+
     // Performance tracking
     private data class PerformanceMetrics(
         val startTime: Long,
         val phase: String
     )
-    
+
     private var currentMetrics: PerformanceMetrics? = null
 
     init {
@@ -261,7 +261,7 @@ open class CodeReviewViewModel(
      */
     suspend fun loadDiff(request: DiffRequest = DiffRequest()) {
         updateState { it.copy(isLoading = true, error = null) }
-        
+
         // Invalidate cache when loading new diff
         invalidateCodeCache()
 
@@ -444,7 +444,7 @@ open class CodeReviewViewModel(
     suspend fun analyzeModifiedCode(): Map<String, List<ModifiedCodeRange>> {
         val projectPath = workspace.rootPath ?: return emptyMap()
         val modifiedRanges = mutableMapOf<String, MutableList<ModifiedCodeRange>>()
-        
+
         try {
             updateState {
                 it.copy(
@@ -459,7 +459,7 @@ open class CodeReviewViewModel(
             for (diffFile in currentState.diffFiles) {
                 // Skip deleted files
                 if (diffFile.changeType == ChangeType.DELETE) continue
-                
+
                 val filePath = diffFile.path
                 val fullPath = if (projectPath.endsWith("/")) {
                     "$projectPath$filePath"
@@ -528,6 +528,7 @@ open class CodeReviewViewModel(
                                 line >= node.startLine && line <= node.endLine
                             }
                         }
+
                         else -> false
                     }
                 }
@@ -555,7 +556,7 @@ open class CodeReviewViewModel(
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(
-                            lintOutput = it.aiProgress.lintOutput + 
+                            lintOutput = it.aiProgress.lintOutput +
                                 "  ✓ $filePath: Found ${ranges.size} modified code element(s)\n"
                         )
                     )
@@ -565,7 +566,7 @@ open class CodeReviewViewModel(
             updateState {
                 it.copy(
                     aiProgress = it.aiProgress.copy(
-                        lintOutput = it.aiProgress.lintOutput + 
+                        lintOutput = it.aiProgress.lintOutput +
                             "\n✅ Code analysis complete. Found ${modifiedRanges.values.sumOf { it.size }} modified code elements.\n\n",
                         modifiedCodeRanges = modifiedRanges
                     )
@@ -579,7 +580,7 @@ open class CodeReviewViewModel(
             updateState {
                 it.copy(
                     aiProgress = it.aiProgress.copy(
-                        lintOutput = it.aiProgress.lintOutput + 
+                        lintOutput = it.aiProgress.lintOutput +
                             "\n⚠️ Failed to analyze code structure: ${e.message}\n\n"
                     )
                 )
@@ -592,7 +593,7 @@ open class CodeReviewViewModel(
     /**
      * Detect programming language from file path
      */
-    private fun detectLanguageFromPath(filePath: String): Language {
+    fun detectLanguageFromPath(filePath: String): Language {
         return when (filePath.substringAfterLast('.', "").lowercase()) {
             "java" -> Language.JAVA
             "kt", "kts" -> Language.KOTLIN
@@ -632,7 +633,7 @@ open class CodeReviewViewModel(
 
             val lintOutputBuilder = StringBuilder(currentState.aiProgress.lintOutput)
             lintOutputBuilder.appendLine("🔍 Running linters: ${linters.joinToString(", ") { it.name }}")
-            
+
             if (modifiedCodeRanges.isNotEmpty()) {
                 val totalRanges = modifiedCodeRanges.values.sumOf { it.size }
                 lintOutputBuilder.appendLine("   Filtering results to $totalRanges modified code element(s)")
@@ -704,9 +705,12 @@ open class CodeReviewViewModel(
                             )
                         }
 
-                        val errorCount = filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
-                        val warningCount = filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.WARNING }
-                        val infoCount = filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.INFO }
+                        val errorCount =
+                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
+                        val warningCount =
+                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.WARNING }
+                        val infoCount =
+                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.INFO }
 
                         allFileLintResults.add(
                             FileLintResult(
@@ -720,13 +724,13 @@ open class CodeReviewViewModel(
                         )
 
                         lintOutputBuilder.appendLine("  📄 ${result.filePath}")
-                        
+
                         if (modifiedCodeRanges.isNotEmpty()) {
                             val totalIssues = result.issues.size
                             val filteredCount = filteredIssues.size
                             lintOutputBuilder.appendLine("     Found: $filteredCount/$totalIssues issues in modified code")
                         }
-                        
+
                         lintOutputBuilder.appendLine("     Errors: $errorCount, Warnings: $warningCount")
 
                         // Show first few issues
@@ -785,7 +789,7 @@ open class CodeReviewViewModel(
      */
     suspend fun analyzeLintOutput() {
         val phaseStartTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-        
+
         try {
             val analysisOutputBuilder = StringBuilder()
             analysisOutputBuilder.appendLine("🤖 Analyzing code with AI (Data-Driven)...")
@@ -800,16 +804,16 @@ open class CodeReviewViewModel(
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
             }
-            
+
             val dataCollectStart = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
             val codeContent = collectCodeContent()
-            
+
             // Collect lint results
             val lintResultsMap = formatLintResults()
-            
+
             // Build diff context
             val diffContext = buildDiffContext()
-            
+
             val dataCollectDuration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - dataCollectStart
 
             analysisOutputBuilder.appendLine("✅ Data collected in ${dataCollectDuration}ms (${codeContent.size} files)")
@@ -833,7 +837,7 @@ open class CodeReviewViewModel(
                 diffContext = diffContext,
                 language = "EN"
             )
-            
+
             val promptLength = prompt.length
             analysisOutputBuilder.appendLine("📊 Prompt size: ${promptLength} chars (~${promptLength / 4} tokens)")
             analysisOutputBuilder.appendLine("⚡ Streaming AI response...")
@@ -850,10 +854,10 @@ open class CodeReviewViewModel(
                     it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
                 }
             }
-            
+
             val totalDuration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - phaseStartTime
             val llmDuration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - llmStartTime
-            
+
             AutoDevLogger.info("CodeReviewViewModel") {
                 "Analysis complete: Total ${totalDuration}ms (Data: ${dataCollectDuration}ms, LLM: ${llmDuration}ms)"
             }
@@ -878,7 +882,7 @@ open class CodeReviewViewModel(
      * Collect code content for all changed files with caching
      * Cache is valid for 30 seconds to avoid re-reading during analysis stages
      */
-    private suspend fun collectCodeContent(): Map<String, String> {
+    suspend fun collectCodeContent(): Map<String, String> {
         // Check if cache is still valid
         val currentTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
         if (codeContentCache != null && (currentTime - cacheTimestamp) < CACHE_VALIDITY_MS) {
@@ -887,13 +891,13 @@ open class CodeReviewViewModel(
             }
             return codeContentCache!!
         }
-        
+
         val startTime = currentTime
         val codeContent = mutableMapOf<String, String>()
-        
+
         for (diffFile in currentState.diffFiles) {
             if (diffFile.changeType == ChangeType.DELETE) continue
-            
+
             try {
                 val content = workspace.fileSystem.readFile(diffFile.path)
                 if (content != null) {
@@ -905,19 +909,19 @@ open class CodeReviewViewModel(
                 }
             }
         }
-        
+
         // Update cache
         codeContentCache = codeContent
         cacheTimestamp = currentTime
-        
+
         val duration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - startTime
         AutoDevLogger.info("CodeReviewViewModel") {
             "Collected ${codeContent.size} files in ${duration}ms"
         }
-        
+
         return codeContent
     }
-    
+
     /**
      * Invalidate code content cache (call when files might have changed)
      */
@@ -929,9 +933,9 @@ open class CodeReviewViewModel(
     /**
      * Format lint results for analysis prompt
      */
-    private fun formatLintResults(): Map<String, String> {
+    fun formatLintResults(): Map<String, String> {
         val lintResultsMap = mutableMapOf<String, String>()
-        
+
         currentState.aiProgress.lintResults.forEach { fileResult ->
             val formatted = buildString {
                 val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
@@ -941,7 +945,7 @@ open class CodeReviewViewModel(
                 appendLine("  Warnings: ${fileResult.warningCount}")
                 appendLine("  Info: ${fileResult.infoCount}")
                 appendLine()
-                
+
                 if (fileResult.issues.isNotEmpty()) {
                     appendLine("Issues:")
                     fileResult.issues.forEach { issue ->
@@ -954,7 +958,7 @@ open class CodeReviewViewModel(
             }
             lintResultsMap[fileResult.filePath] = formatted
         }
-        
+
         return lintResultsMap
     }
 
@@ -963,26 +967,32 @@ open class CodeReviewViewModel(
      */
     private fun buildDiffContext(): String {
         if (currentState.diffFiles.isEmpty()) return ""
-        
+
         return buildString {
             appendLine("## Changed Files Summary")
             appendLine()
-            
+
             currentState.diffFiles.forEach { file ->
                 appendLine("### ${file.path}")
                 appendLine("Change Type: ${file.changeType}")
-                appendLine("Modified Lines: ${file.hunks.sumOf { it.lines.count { line -> 
-                    line.type == cc.unitmesh.devins.ui.compose.sketch.DiffLineType.ADDED 
-                }}}")
+                appendLine(
+                    "Modified Lines: ${
+                        file.hunks.sumOf {
+                            it.lines.count { line ->
+                                line.type == cc.unitmesh.devins.ui.compose.sketch.DiffLineType.ADDED
+                            }
+                        }
+                    }"
+                )
                 appendLine()
             }
-            
+
             // Include modified code ranges if available
             if (currentState.aiProgress.modifiedCodeRanges.isNotEmpty()) {
                 appendLine()
                 appendLine("## Modified Code Elements")
                 appendLine()
-                
+
                 currentState.aiProgress.modifiedCodeRanges.forEach { (filePath, ranges) ->
                     if (ranges.isNotEmpty()) {
                         appendLine("### $filePath")
@@ -1015,7 +1025,7 @@ open class CodeReviewViewModel(
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
             }
-            
+
             val codeContent = collectCodeContent()
 
             fixOutputBuilder.appendLine("✅ Generating fixes with AI...")
@@ -1065,7 +1075,7 @@ open class CodeReviewViewModel(
             appendLine()
             appendLine("Based on the analysis below, provide **specific, actionable code fixes**.")
             appendLine()
-            
+
             // Include original code
             if (codeContent.isNotEmpty()) {
                 appendLine("## Original Code")
@@ -1078,7 +1088,7 @@ open class CodeReviewViewModel(
                     appendLine()
                 }
             }
-            
+
             // Include lint results
             if (currentState.aiProgress.lintResults.isNotEmpty()) {
                 appendLine("## Lint Issues")
@@ -1089,11 +1099,11 @@ open class CodeReviewViewModel(
                         appendLine("### ${fileResult.filePath}")
                         appendLine("Total Issues: $totalCount (${fileResult.errorCount} errors, ${fileResult.warningCount} warnings)")
                         appendLine()
-                        
+
                         // Group by severity
                         val critical = fileResult.issues.filter { it.severity == LintSeverityUI.ERROR }
                         val warnings = fileResult.issues.filter { it.severity == LintSeverityUI.WARNING }
-                        
+
                         if (critical.isNotEmpty()) {
                             appendLine("**Critical Issues:**")
                             critical.forEach { issue ->
@@ -1102,7 +1112,7 @@ open class CodeReviewViewModel(
                             }
                             appendLine()
                         }
-                        
+
                         if (warnings.isNotEmpty()) {
                             appendLine("**Warnings:**")
                             warnings.take(5).forEach { issue ->
@@ -1117,7 +1127,7 @@ open class CodeReviewViewModel(
                     }
                 }
             }
-            
+
             // Include AI analysis summary
             if (currentState.aiProgress.analysisOutput.isNotBlank()) {
                 appendLine("## AI Analysis")
@@ -1125,7 +1135,7 @@ open class CodeReviewViewModel(
                 appendLine(currentState.aiProgress.analysisOutput)
                 appendLine()
             }
-            
+
             // Clear instructions for fix generation
             appendLine("## Your Task")
             appendLine()
