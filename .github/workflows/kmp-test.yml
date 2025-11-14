@@ -112,7 +112,9 @@ jobs:
 
       # Check out the current repository
       - name: Install linter
-        run: sdk install detekt pmd
+        run: |
+          curl -s "https://get.sdkman.io" | bash 
+          sdk install detekt pmd
 
       # Validate wrapper
       - name: Gradle Wrapper Validation
