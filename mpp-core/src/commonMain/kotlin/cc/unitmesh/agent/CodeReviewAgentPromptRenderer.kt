@@ -261,7 +261,7 @@ object CodeReviewAnalysisTemplate {
     val EN = """
 # Code Review Analysis
 
-You are an expert code reviewer. Analyze the provided code and linter results to provide comprehensive, actionable feedback.
+You are an expert code reviewer. Analyze the provided code and linter results to identify the **TOP 10 HIGHEST PRIORITY** issues.
 
 ## Task
 
@@ -281,47 +281,55 @@ Files to Review: **{{fileCount}}** files
 
 ## Your Task
 
-Provide a **structured code review** with the following format:
+Provide a **concise analysis** focusing on the **TOP 10 HIGHEST PRIORITY ISSUES ONLY**.
 
-### 1. Summary
-Brief overview of the code quality and main concerns (2-3 sentences).
+Use the following Markdown format:
 
-### 2. Critical Issues (CRITICAL/HIGH)
-List critical issues that **must** be fixed. For each issue:
-- **Severity**: CRITICAL or HIGH
-- **Category**: Security/Performance/Logic/etc.
-- **Location**: file:line
-- **Description**: Clear description of the problem
-- **Suggested Fix**: Specific, actionable recommendation
+### 📊 Summary
+Brief overview (2-3 sentences) of the most critical concerns.
 
-### 3. Recommendations (MEDIUM)
-List important issues that **should** be fixed. Same format as above.
+### 🚨 Top 10 Issues (Ordered by Priority)
 
-### 4. Minor Issues (LOW/INFO)
-List minor issues that would be **nice** to fix. Same format as above.
+For each issue, use this format:
 
-### 5. Positive Aspects
-Highlight good practices and well-written code sections.
+#### #{issue_number}. {Short Title}
+**Severity**: CRITICAL | HIGH | MEDIUM  
+**Category**: Security | Performance | Logic | Architecture | Maintainability  
+**Location**: `{file}:{line}`  
+
+**Problem**:  
+{Clear, concise description of the issue}
+
+**Impact**:  
+{Why this matters - potential consequences}
+
+**Suggested Fix**:  
+{Specific, actionable recommendation}
+
+---
 
 ## Analysis Guidelines
 
-1. **Prioritize findings**: Focus on security, correctness, and maintainability
-2. **Be specific**: Reference exact file locations and line numbers
-3. **Provide context**: Explain why something is an issue
-4. **Suggest solutions**: Offer concrete, actionable fixes
-5. **Balance criticism**: Acknowledge good code when you see it
-6. **Consider linter feedback**: Build on automated findings with deeper analysis
-7. **Look beyond linters**: Focus on:
-   - Security vulnerabilities
-   - Logic errors
-   - Design and architecture issues
-   - Performance bottlenecks
-   - Code maintainability
-   - Best practices violations
+1. **LIMIT TO 10 ISSUES MAXIMUM** - Focus on the most impactful problems
+2. **Prioritize by severity**:
+   - Security vulnerabilities (CRITICAL)
+   - Logic errors and bugs (HIGH)
+   - Performance issues (MEDIUM-HIGH)
+   - Design problems (MEDIUM)
+   - Code quality issues (LOW-MEDIUM)
+3. **Be specific**: Always reference exact file:line locations
+4. **Be actionable**: Provide clear, implementable solutions
+5. **Be concise**: Keep each issue description brief but complete
+6. **Skip minor issues**: Don't waste space on style nitpicks or trivial warnings
+7. **Group related issues**: If multiple instances of the same problem exist, mention them together
 
-## Output Format
+## Output Requirements
 
-Use Markdown with clear headings. Keep findings **concise** but **actionable**.
+- Use proper Markdown formatting
+- Start with Summary, then list exactly 10 issues (or fewer if less than 10 significant issues exist)
+- Number issues from 1-10
+- Use clear section headers with emoji indicators (📊, 🚨)
+- Keep total output concise and focused
 
 **DO NOT** attempt to use any tools. All necessary information is provided above.
 """.trimIndent()
@@ -329,7 +337,7 @@ Use Markdown with clear headings. Keep findings **concise** but **actionable**.
     val ZH = """
 # 代码审查分析
 
-你是一位专业的代码审查专家。分析提供的代码和 linter 结果，提供全面、可操作的反馈。
+你是一位专业的代码审查专家。分析提供的代码和 linter 结果，识别 **优先级最高的前 10 个问题**。
 
 ## 任务
 
@@ -349,47 +357,55 @@ Use Markdown with clear headings. Keep findings **concise** but **actionable**.
 
 ## 你的任务
 
-提供 **结构化的代码审查**，格式如下：
+提供 **简洁的分析**，**仅关注优先级最高的前 10 个问题**。
 
-### 1. 总结
-代码质量和主要关注点的简要概述（2-3 句话）。
+使用以下 Markdown 格式：
 
-### 2. 关键问题（CRITICAL/HIGH）
-列出 **必须** 修复的关键问题。每个问题包括：
-- **严重性**：CRITICAL 或 HIGH
-- **类别**：安全/性能/逻辑等
-- **位置**：文件:行号
-- **描述**：问题的清晰描述
-- **建议修复**：具体、可操作的建议
+### 📊 总结
+简要概述（2-3 句话）最关键的问题。
 
-### 3. 建议（MEDIUM）
-列出 **应该** 修复的重要问题。格式同上。
+### 🚨 前 10 个问题（按优先级排序）
 
-### 4. 次要问题（LOW/INFO）
-列出 **可以** 修复的次要问题。格式同上。
+对于每个问题，使用以下格式：
 
-### 5. 积极方面
-突出显示良好的实践和编写良好的代码部分。
+#### #{问题编号}. {简短标题}
+**严重性**: CRITICAL | HIGH | MEDIUM  
+**类别**: 安全 | 性能 | 逻辑 | 架构 | 可维护性  
+**位置**: `{文件}:{行号}`  
+
+**问题**:  
+{清晰、简洁的问题描述}
+
+**影响**:  
+{为什么这很重要 - 潜在后果}
+
+**建议修复**:  
+{具体、可操作的建议}
+
+---
 
 ## 分析指南
 
-1. **优先级排序**：关注安全性、正确性和可维护性
-2. **具体说明**：引用确切的文件位置和行号
-3. **提供上下文**：解释为什么某件事是问题
-4. **建议解决方案**：提供具体、可操作的修复
-5. **平衡批评**：当看到好代码时要认可
-6. **考虑 linter 反馈**：在自动化发现的基础上进行更深入的分析
-7. **超越 linters**：关注：
-   - 安全漏洞
-   - 逻辑错误
-   - 设计和架构问题
-   - 性能瓶颈
-   - 代码可维护性
-   - 最佳实践违规
+1. **最多 10 个问题** - 聚焦最有影响力的问题
+2. **按严重性排序**：
+   - 安全漏洞（CRITICAL）
+   - 逻辑错误和 bug（HIGH）
+   - 性能问题（MEDIUM-HIGH）
+   - 设计问题（MEDIUM）
+   - 代码质量问题（LOW-MEDIUM）
+3. **具体说明**：始终引用确切的 文件:行号 位置
+4. **可操作性**：提供清晰、可实施的解决方案
+5. **简洁明了**：保持每个问题描述简短但完整
+6. **跳过次要问题**：不要在样式细节或琐碎警告上浪费空间
+7. **合并相关问题**：如果存在同一问题的多个实例，一起提及
 
-## 输出格式
+## 输出要求
 
-使用 Markdown 格式，带有清晰的标题。保持发现 **简洁** 但 **可操作**。
+- 使用正确的 Markdown 格式
+- 从总结开始，然后列出恰好 10 个问题（如果少于 10 个重要问题则更少）
+- 问题编号从 1-10
+- 使用带 emoji 指示器的清晰章节标题（📊, 🚨）
+- 保持总输出简洁且聚焦
 
 **不要** 尝试使用任何工具。所有必要信息都已在上面提供。
 """.trimIndent()

@@ -381,7 +381,7 @@ open class CodeReviewViewModel(
                         error = "Analysis failed: ${e.message}"
                     )
                 }
-                
+
                 // Save error state to cache as well
                 saveCurrentAnalysisResults()
             }
@@ -407,10 +407,10 @@ open class CodeReviewViewModel(
     open fun selectCommit(commitHash: String) {
         // Cancel previous loading job if any
         currentJob?.cancel()
-        
+
         // Save current analysis results to cache before switching
         saveCurrentAnalysisResults()
-        
+
         currentJob = CoroutineScope(Dispatchers.Default).launch {
             // Reset to IDLE and clear current analysis progress
             updateState {
@@ -418,9 +418,9 @@ open class CodeReviewViewModel(
                     aiProgress = AIAnalysisProgress(stage = AnalysisStage.IDLE)
                 )
             }
-            
+
             loadCommitDiffInternal(commitHash)
-            
+
             // Try to restore cached analysis results for the target commit
             restoreAnalysisResultsForCommit(commitHash)
         }
@@ -472,7 +472,7 @@ open class CodeReviewViewModel(
     private fun saveCurrentAnalysisResults() {
         val currentCommit = currentState.commitHistory.getOrNull(currentState.selectedCommitIndex)
         val projectPath = workspace.rootPath ?: return
-        
+
         if (currentCommit != null && currentState.aiProgress.stage != AnalysisStage.IDLE) {
             // Only save if there's actual analysis data
             if (currentState.aiProgress.lintResults.isNotEmpty() ||
@@ -485,7 +485,7 @@ open class CodeReviewViewModel(
                         commitHash = currentCommit.hash,
                         progress = currentState.aiProgress
                     )
-                    
+
                     AutoDevLogger.info("CodeReviewViewModel") {
                         "Saved analysis results to database for commit ${currentCommit.shortHash}"
                     }
@@ -503,14 +503,14 @@ open class CodeReviewViewModel(
      */
     private fun restoreAnalysisResultsForCommit(commitHash: String) {
         val projectPath = workspace.rootPath ?: return
-        
+
         try {
             val cachedProgress = analysisRepository.getAnalysisResult(projectPath, commitHash)
             if (cachedProgress != null) {
                 updateState {
                     it.copy(aiProgress = cachedProgress)
                 }
-                
+
                 AutoDevLogger.info("CodeReviewViewModel") {
                     "Restored analysis results from database for commit ${commitHash.take(7)}"
                 }
@@ -604,14 +604,10 @@ open class CodeReviewViewModel(
 
         try {
             val analysisOutputBuilder = StringBuilder()
-            analysisOutputBuilder.appendLine("🤖 Analyzing code with AI (Data-Driven)...")
-            analysisOutputBuilder.appendLine()
-
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
             }
 
-            // Collect code content for all changed files
             analysisOutputBuilder.appendLine("📖 Reading code files...")
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
@@ -634,12 +630,10 @@ open class CodeReviewViewModel(
                 it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
             }
 
-            // Get LLM service
             val configWrapper = ConfigManager.load()
             val modelConfig = configWrapper.getActiveModelConfig()!!
             val llmService = KoogLLMService.create(modelConfig)
 
-            // Use the optimized Data-Driven prompt
             val promptRenderer = cc.unitmesh.agent.CodeReviewAgentPromptRenderer()
             val prompt = promptRenderer.renderAnalysisPrompt(
                 reviewType = "COMPREHENSIVE",
@@ -651,14 +645,13 @@ open class CodeReviewViewModel(
             )
 
             val promptLength = prompt.length
-            analysisOutputBuilder.appendLine("📊 Prompt size: ${promptLength} chars (~${promptLength / 4} tokens)")
+            analysisOutputBuilder.appendLine("📊 Prompt size: $promptLength chars (~${promptLength / 4} tokens)")
             analysisOutputBuilder.appendLine("⚡ Streaming AI response...")
             analysisOutputBuilder.appendLine()
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
             }
 
-            // Stream the LLM response - single-shot analysis, no tool calls
             val llmStartTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
             llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
                 analysisOutputBuilder.append(chunk)
@@ -823,12 +816,13 @@ open class CodeReviewViewModel(
 
     /**
      * Build structured prompt for fix generation with all necessary context
+     * Generates unified diff format patches that can be applied directly
      */
     private fun buildFixGenerationPrompt(codeContent: Map<String, String>): String {
         return buildString {
-            appendLine("# Code Fix Generation")
+            appendLine("# Code Fix Generation - Unified Diff Format")
             appendLine()
-            appendLine("Based on the analysis below, provide **specific, actionable code fixes**.")
+            appendLine("Generate **unified diff patches** for the critical issues identified in the analysis.")
             appendLine()
 
             // Include original code
@@ -891,34 +885,68 @@ open class CodeReviewViewModel(
                 appendLine()
             }
 
-            // Clear instructions for fix generation
+            // Clear instructions for diff patch generation
             appendLine("## Your Task")
             appendLine()
-            appendLine("For **each critical issue** (errors first, then important warnings), provide:")
+            appendLine("Generate **unified diff patches** for the most critical issues. Use standard unified diff format.")
             appendLine()
-            appendLine("### Fix Format:")
+            appendLine("### Required Format:")
+            appendLine()
+            appendLine("For each fix, provide a brief explanation followed by the diff patch:")
+            appendLine()
+            appendLine("#### Fix #{number}: {Brief Title}")
+            appendLine("**Issue**: {One-line description}")
+            appendLine("**Location**: {file}:{line}")
+            appendLine()
+            appendLine("```diff")
+            appendLine("diff --git a/{filepath} b/{filepath}")
+            appendLine("index {old_hash}..{new_hash} {mode}")
+            appendLine("--- a/{filepath}")
+            appendLine("+++ b/{filepath}")
+            appendLine("@@ -{old_start},{old_count} +{new_start},{new_count} @@ {context}")
+            appendLine(" {context line}")
+            appendLine("-{removed line}")
+            appendLine("+{added line}")
+            appendLine(" {context line}")
             appendLine("```")
-            appendLine("#### Issue: [Brief title]")
-            appendLine("**File**: `path/to/file.kt`")
-            appendLine("**Line**: `123`")
-            appendLine("**Problem**: [Clear explanation]")
             appendLine()
-            appendLine("**Fix**:")
-            appendLine("```kotlin")
-            appendLine("// Fixed code here")
+            appendLine("### Example:")
+            appendLine()
+            appendLine("#### Fix #1: Fix null pointer exception")
+            appendLine("**Issue**: Missing null check for user parameter")
+            appendLine("**Location**: src/User.kt:15")
+            appendLine()
+            appendLine("```diff")
+            appendLine("diff --git a/src/User.kt b/src/User.kt")
+            appendLine("index abc1234..def5678 100644")
+            appendLine("--- a/src/User.kt")
+            appendLine("+++ b/src/User.kt")
+            appendLine("@@ -13,7 +13,10 @@ class UserService {")
+            appendLine("     fun processUser(user: User?) {")
+            appendLine("-        println(user.name)")
+            appendLine("+        if (user == null) {")
+            appendLine("+            throw IllegalArgumentException(\"User cannot be null\")")
+            appendLine("+        }")
+            appendLine("+        println(user.name)")
+            appendLine("     }")
+            appendLine(" }")
             appendLine("```")
             appendLine()
-            appendLine("**Explanation**: [Why this fix works]")
-            appendLine("```")
+            appendLine("### Guidelines:")
             appendLine()
-            appendLine("**Guidelines**:")
-            appendLine("1. Prioritize critical issues (errors) over warnings")
-            appendLine("2. Provide complete, runnable code fixes")
-            appendLine("3. Explain the reasoning behind each fix")
-            appendLine("4. Group related fixes together")
-            appendLine("5. For large refactorings, provide step-by-step instructions")
+            appendLine("1. **Use standard unified diff format** - Must be parseable by standard diff tools")
+            appendLine("2. **Include context lines** - Show 3 lines of context before and after changes")
+            appendLine("3. **Accurate line numbers** - Ensure @@ headers have correct line numbers")
+            appendLine("4. **Complete hunks** - Each hunk should be self-contained and applicable")
+            appendLine("5. **One fix per patch** - Separate different fixes into different diff blocks")
+            appendLine("6. **Priority order** - Start with critical/high severity issues")
+            appendLine("7. **Maximum 5 patches** - Focus on the most important fixes")
             appendLine()
-            appendLine("**DO NOT** attempt to use tools. All necessary information is provided above.")
+            appendLine("**IMPORTANT**: ")
+            appendLine("- Each diff MUST be in a ```diff code block")
+            appendLine("- Use exact line numbers from the original code")
+            appendLine("- Include enough context for patch to be applied correctly")
+            appendLine("- DO NOT use any tools - all code is provided above")
         }
     }
 
@@ -932,6 +960,169 @@ open class CodeReviewViewModel(
      */
     protected fun updateParentState(update: (CodeReviewState) -> CodeReviewState) {
         updateState(update)
+    }
+
+    /**
+     * Apply a diff patch to the workspace
+     */
+    open fun applyDiffPatch(diffPatch: String) {
+        scope.launch {
+            try {
+                AutoDevLogger.info("CodeReviewViewModel") {
+                    "Applying diff patch..."
+                }
+
+                // Parse the diff patch to extract file path and changes
+                val fileDiffs = cc.unitmesh.devins.ui.compose.sketch.DiffParser.parse(diffPatch)
+                
+                if (fileDiffs.isEmpty()) {
+                    AutoDevLogger.warn("CodeReviewViewModel") {
+                        "Failed to parse diff patch"
+                    }
+                    updateState {
+                        it.copy(error = "Failed to parse diff patch")
+                    }
+                    return@launch
+                }
+
+                var appliedCount = 0
+                var failedCount = 0
+
+                fileDiffs.forEach { fileDiff ->
+                    val targetPath = fileDiff.newPath ?: fileDiff.oldPath
+                    if (targetPath == null || targetPath == "/dev/null") {
+                        AutoDevLogger.warn("CodeReviewViewModel") {
+                            "Skipping invalid file path"
+                        }
+                        failedCount++
+                        return@forEach
+                    }
+
+                    try {
+                        // Apply the diff patch using the applyDiffPatchToFile helper
+                        val success = applyDiffPatchToFile(targetPath, fileDiff)
+                        if (success) {
+                            appliedCount++
+                            AutoDevLogger.info("CodeReviewViewModel") {
+                                "Successfully applied patch to $targetPath"
+                            }
+                        } else {
+                            failedCount++
+                            AutoDevLogger.warn("CodeReviewViewModel") {
+                                "Failed to apply patch to $targetPath"
+                            }
+                        }
+                    } catch (e: Exception) {
+                        failedCount++
+                        AutoDevLogger.error("CodeReviewViewModel") {
+                            "Error applying patch to $targetPath: ${e.message}"
+                        }
+                    }
+                }
+
+                // Show result message
+                val message = buildString {
+                    if (appliedCount > 0) {
+                        append("✅ Applied $appliedCount patch${if (appliedCount > 1) "es" else ""}")
+                    }
+                    if (failedCount > 0) {
+                        if (appliedCount > 0) append(", ")
+                        append("❌ $failedCount failed")
+                    }
+                }
+
+                AutoDevLogger.info("CodeReviewViewModel") {
+                    message
+                }
+
+            } catch (e: Exception) {
+                AutoDevLogger.error("CodeReviewViewModel") {
+                    "Failed to apply diff patch: ${e.message}"
+                }
+                updateState {
+                    it.copy(error = "Failed to apply diff patch: ${e.message}")
+                }
+            }
+        }
+    }
+
+    /**
+     * Apply a single file diff patch to the workspace
+     */
+    private suspend fun applyDiffPatchToFile(
+        filePath: String,
+        fileDiff: cc.unitmesh.devins.ui.compose.sketch.FileDiff
+    ): Boolean {
+        try {
+            // Read the current file content
+            val currentContent = workspace.fileSystem.readFile(filePath) ?: ""
+            val currentLines = currentContent.lines().toMutableList()
+
+            // Apply each hunk
+            fileDiff.hunks.forEach { hunk ->
+                // Simple implementation: find and replace based on old lines
+                var oldLineIndex = hunk.oldStartLine - 1
+
+                hunk.lines.forEach { diffLine ->
+                    when (diffLine.type) {
+                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.CONTEXT -> {
+                            // Context line - verify it matches
+                            if (oldLineIndex < currentLines.size) {
+                                if (currentLines[oldLineIndex].trim() != diffLine.content.trim()) {
+                                    AutoDevLogger.warn("CodeReviewViewModel") {
+                                        "Context mismatch at line ${oldLineIndex + 1}: expected '${diffLine.content}', got '${currentLines[oldLineIndex]}'"
+                                    }
+                                }
+                                oldLineIndex++
+                            }
+                        }
+                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.DELETED -> {
+                            // Delete line
+                            if (oldLineIndex < currentLines.size) {
+                                currentLines.removeAt(oldLineIndex)
+                            }
+                        }
+                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.ADDED -> {
+                            // Add line
+                            currentLines.add(oldLineIndex, diffLine.content)
+                            oldLineIndex++
+                        }
+                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.HEADER -> {
+                            // Skip header lines
+                        }
+                    }
+                }
+            }
+
+            // Write the modified content back to the file
+            val newContent = currentLines.joinToString("\n")
+            workspace.fileSystem.writeFile(filePath, newContent)
+
+            return true
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") {
+                "Error applying patch to $filePath: ${e.message}"
+            }
+            return false
+        }
+    }
+
+    /**
+     * Reject a diff patch (user decided not to apply it)
+     */
+    open fun rejectDiffPatch(diffPatch: String) {
+        AutoDevLogger.info("CodeReviewViewModel") {
+            "User rejected diff patch"
+        }
+        
+        // Parse the diff to log which files were rejected
+        val fileDiffs = cc.unitmesh.devins.ui.compose.sketch.DiffParser.parse(diffPatch)
+        fileDiffs.forEach { fileDiff ->
+            val targetPath = fileDiff.newPath ?: fileDiff.oldPath
+            AutoDevLogger.info("CodeReviewViewModel") {
+                "Rejected patch for: $targetPath"
+            }
+        }
     }
 
     /**

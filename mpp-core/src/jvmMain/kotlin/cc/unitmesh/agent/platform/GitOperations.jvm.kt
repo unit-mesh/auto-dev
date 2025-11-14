@@ -250,19 +250,38 @@ actual class GitOperations actual constructor(private val projectPath: String) {
                 if (parts.size >= 3) {
                     val additions = parts[0].toIntOrNull() ?: 0
                     val deletions = parts[1].toIntOrNull() ?: 0
-                    val path = parts.subList(2, parts.size).joinToString(" ")
+                    var path = parts.subList(2, parts.size).joinToString(" ")
+                    var oldPath: String? = null
+                    
+                    // Handle git rename/move patterns like "old/{path => newpath}/file.kt"
+                    // or "dir/{ => subdir}/file.kt" (move into subdirectory)
+                    if (path.contains("{ => ") || path.contains(" => }")) {
+                        val renamePattern = Regex("""(.*)\{(.*) => (.*)\}(.*)""")
+                        val match = renamePattern.find(path)
+                        if (match != null) {
+                            val prefix = match.groupValues[1]
+                            val oldPart = match.groupValues[2].trim()
+                            val newPart = match.groupValues[3].trim()
+                            val suffix = match.groupValues[4]
+                            
+                            // Construct the new path (target after move/rename)
+                            path = prefix + newPart + suffix
+                            // Construct the old path (source before move/rename)
+                            oldPath = prefix + oldPart + suffix
+                        }
+                    }
                     
                     totalAdditions += additions
                     totalDeletions += deletions
                     
                     // Extract diff for this file
-                    val fileDiff = extractFileDiff(diffOutput, path)
+                    val fileDiff = extractFileDiff(diffOutput, path, oldPath)
                     
                     files.add(
                         GitDiffFile(
                             path = path,
-                            oldPath = null,
-                            status = determineFileStatus(diffOutput, path),
+                            oldPath = oldPath,
+                            status = determineFileStatus(diffOutput, path, oldPath),
                             additions = additions,
                             deletions = deletions,
                             diff = fileDiff
@@ -278,15 +297,16 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         )
     }
     
-    private fun extractFileDiff(diffOutput: String, filePath: String): String {
+    private fun extractFileDiff(diffOutput: String, filePath: String, oldPath: String? = null): String {
         val lines = diffOutput.lines()
         val result = StringBuilder()
         var inFile = false
         var headerFound = false
         
         for (line in lines) {
-            // Check for file header
-            if (line.startsWith("diff --git") && line.contains(filePath)) {
+            // Check for file header (check both new path and old path for renamed files)
+            if (line.startsWith("diff --git") && 
+                (line.contains(filePath) || (oldPath != null && line.contains(oldPath)))) {
                 inFile = true
                 headerFound = true
                 result.appendLine(line)
@@ -295,7 +315,9 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             
             // If we found the header, collect all lines until next diff
             if (inFile) {
-                if (line.startsWith("diff --git") && !line.contains(filePath)) {
+                if (line.startsWith("diff --git") && 
+                    !line.contains(filePath) && 
+                    (oldPath == null || !line.contains(oldPath))) {
                     // Next file started
                     break
                 }
@@ -306,17 +328,18 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         return result.toString()
     }
     
-    private fun determineFileStatus(diffOutput: String, filePath: String): GitFileStatus {
+    private fun determineFileStatus(diffOutput: String, filePath: String, oldPath: String? = null): GitFileStatus {
         val lines = diffOutput.lines()
         
         for (line in lines) {
             if (line.startsWith("new file") && diffOutput.contains("b/$filePath")) {
                 return GitFileStatus.ADDED
             }
-            if (line.startsWith("deleted file") && diffOutput.contains("a/$filePath")) {
+            if (line.startsWith("deleted file") && 
+                (diffOutput.contains("a/$filePath") || (oldPath != null && diffOutput.contains("a/$oldPath")))) {
                 return GitFileStatus.DELETED
             }
-            if (line.startsWith("rename from")) {
+            if (line.startsWith("rename from") || oldPath != null) {
                 return GitFileStatus.RENAMED
             }
         }

@@ -28,9 +28,16 @@ actual class DatabaseDriverFactory {
         val driver =
             JdbcSqliteDriver(
                 url = "jdbc:sqlite:${dbFile.absolutePath}",
-                properties = Properties(),
-                schema = DevInsDatabase.Schema
+                properties = Properties()
             )
+
+        // Create schema if it doesn't exist
+        try {
+            DevInsDatabase.Schema.create(driver)
+        } catch (e: Exception) {
+            // Schema might already exist, log but continue
+            println("Database schema creation: ${e.message}")
+        }
 
         return driver
     }

@@ -219,26 +219,28 @@ fun CodeReviewAgentPanel(
                         }
                     }
 
-                    // 2. AI Analysis Section
+                    // 2. AI Analysis Section - with Markdown rendering
                     if (state.aiProgress.analysisOutput.isNotEmpty()) {
                         item {
-                            CollapsibleAnalysisCard(
-                                title = "AI Analysis",
-                                content = state.aiProgress.analysisOutput,
-                                isActive = state.aiProgress.stage == AnalysisStage.ANALYZING_LINT,
-                                icon = AutoDevComposeIcons.SmartToy
+                            AIAnalysisSection(
+                                analysisOutput = state.aiProgress.analysisOutput,
+                                isActive = state.aiProgress.stage == AnalysisStage.ANALYZING_LINT
                             )
                         }
                     }
 
-                    // 3. Generate Fixes Section
+                    // 3. Suggested Fixes Section - with interactive diff patches
                     if (state.aiProgress.fixOutput.isNotEmpty()) {
                         item {
-                            CollapsibleAnalysisCard(
-                                title = "Suggested Fixes",
-                                content = state.aiProgress.fixOutput,
+                            SuggestedFixesSection(
+                                fixOutput = state.aiProgress.fixOutput,
                                 isActive = state.aiProgress.stage == AnalysisStage.GENERATING_FIX,
-                                icon = AutoDevComposeIcons.Build
+                                onApplyFix = { diffPatch ->
+                                    viewModel.applyDiffPatch(diffPatch)
+                                },
+                                onRejectFix = { diffPatch ->
+                                    viewModel.rejectDiffPatch(diffPatch)
+                                }
                             )
                         }
                     }
