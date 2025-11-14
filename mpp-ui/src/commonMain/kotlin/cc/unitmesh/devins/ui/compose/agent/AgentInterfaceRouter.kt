@@ -3,14 +3,17 @@ package cc.unitmesh.devins.ui.compose.agent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import cc.unitmesh.devins.ui.compose.agent.codereview.CodeReviewPage
+import cc.unitmesh.devins.ui.remote.RemoteAgentChatInterface
 import cc.unitmesh.llm.KoogLLMService
 
 /**
  * Agent Interface Router
  *
- * Routes to different UI based on selected agent type:
- * - CODING: Traditional chat interface
- * - CODE_REVIEW: Side-by-side diff + AI fix view
+ * Unified router for all agent types:
+ * - LOCAL: Simple local chat interface
+ * - CODING: Full-featured coding agent with tools
+ * - CODE_REVIEW: Dedicated code review interface
+ * - REMOTE: Remote agent connected to mpp-server
  */
 @Composable
 fun AgentInterfaceRouter(
@@ -27,14 +30,12 @@ fun AgentInterfaceRouter(
     selectedAgent: String = "Default",
     availableAgents: List<String> = listOf("Default"),
     useAgentMode: Boolean = true,
-    selectedRemoteAgentType: String = "Local",
     onOpenDirectory: () -> Unit = {},
     onClearHistory: () -> Unit = {},
     onShowDebug: () -> Unit = {},
     onModelConfigChange: (cc.unitmesh.llm.ModelConfig) -> Unit = {},
     onAgentChange: (String) -> Unit = {},
     onModeToggle: () -> Unit = {},
-    onRemoteAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
@@ -43,6 +44,13 @@ fun AgentInterfaceRouter(
     onNewChat: (() -> Unit)? = null,
     onInternalSessionSelected: (((String) -> Unit) -> Unit)? = null,
     onInternalNewChat: ((() -> Unit) -> Unit)? = null,
+    // Remote-specific parameters
+    serverUrl: String = "http://localhost:8080",
+    useServerConfig: Boolean = false,
+    projectId: String = "",
+    gitUrl: String = "",
+    onProjectChange: (String) -> Unit = {},
+    onGitUrlChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     when (selectedAgentType) {
@@ -56,9 +64,50 @@ fun AgentInterfaceRouter(
                 modifier = modifier
             )
         }
+
+        AgentType.REMOTE -> {
+            // Show remote agent interface
+            RemoteAgentChatInterface(
+                serverUrl = serverUrl,
+                useServerConfig = useServerConfig,
+                isTreeViewVisible = isTreeViewVisible,
+                onToggleTreeView = onToggleTreeView,
+                hasHistory = false, // Remote agent manages its own history
+                hasDebugInfo = hasDebugInfo,
+                currentModelConfig = currentModelConfig,
+                selectedAgent = selectedAgent,
+                availableAgents = availableAgents,
+                useAgentMode = useAgentMode,
+                selectedAgentType = selectedAgentType.getDisplayName(),
+                onOpenDirectory = onOpenDirectory,
+                onClearHistory = onClearHistory,
+                onModelConfigChange = onModelConfigChange,
+                onAgentChange = onAgentChange,
+                onModeToggle = onModeToggle,
+                onAgentTypeChange = { typeName ->
+                    // Convert display name back to AgentType
+                    val newType = when (typeName) {
+                        "Local Chat", "Local" -> AgentType.LOCAL
+                        "Remote Agent", "Remote" -> AgentType.REMOTE
+                        "Code Review" -> AgentType.CODE_REVIEW
+                        else -> AgentType.CODING
+                    }
+                    onAgentTypeChange(newType)
+                },
+                onConfigureRemote = onConfigureRemote,
+                onShowModelConfig = onShowModelConfig,
+                onShowToolConfig = onShowToolConfig,
+                projectId = projectId,
+                gitUrl = gitUrl,
+                onProjectChange = onProjectChange,
+                onGitUrlChange = onGitUrlChange,
+                modifier = modifier
+            )
+        }
+
         AgentType.LOCAL,
         AgentType.CODING -> {
-            // Show traditional chat interface
+            // Show local chat/coding interface
             AgentChatInterface(
                 llmService = llmService,
                 isTreeViewVisible = isTreeViewVisible,
@@ -73,13 +122,11 @@ fun AgentInterfaceRouter(
                 selectedAgent = selectedAgent,
                 availableAgents = availableAgents,
                 useAgentMode = useAgentMode,
-                selectedRemoteAgentType = selectedRemoteAgentType,
                 onOpenDirectory = onOpenDirectory,
                 onClearHistory = onClearHistory,
                 onModelConfigChange = onModelConfigChange,
                 onAgentChange = onAgentChange,
                 onModeToggle = onModeToggle,
-                onRemoteAgentTypeChange = onRemoteAgentTypeChange,
                 onConfigureRemote = onConfigureRemote,
                 onShowModelConfig = onShowModelConfig,
                 onShowToolConfig = onShowToolConfig,

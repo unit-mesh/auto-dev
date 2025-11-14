@@ -1,6 +1,8 @@
 package cc.unitmesh.agent.platform
 
 import cc.unitmesh.agent.logging.getLogger
+import cc.unitmesh.devins.workspace.GitCommitInfo
+import cc.unitmesh.devins.workspace.GitDiffInfo
 
 /**
  * Android 平台的 Git 操作实现
@@ -22,4 +24,20 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     }
     
     actual fun isSupported(): Boolean = false
+
+    actual suspend fun getRecentCommits(count: Int): List<GitCommitInfo> {
+        return emptyList()
+    }
+
+    actual suspend fun getTotalCommitCount(): Int? {
+        return null
+    }
+
+    actual suspend fun getCommitDiff(commitHash: String): GitDiffInfo? {
+        return null
+    }
+
+    actual suspend fun getDiff(base: String, target: String): GitDiffInfo? {
+        return null
+    }
 }

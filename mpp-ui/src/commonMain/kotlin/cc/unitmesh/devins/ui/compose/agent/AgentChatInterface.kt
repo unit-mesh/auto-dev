@@ -19,9 +19,9 @@ fun AgentChatInterface(
     isTreeViewVisible: Boolean = false,
     onConfigWarning: () -> Unit,
     onToggleTreeView: (Boolean) -> Unit = {},
-    // 会话管理（新增）
+    // 会话管理
     chatHistoryManager: cc.unitmesh.devins.llm.ChatHistoryManager? = null,
-    // Agent 类型切换（新增）
+    // Agent 类型（LOCAL or CODING）
     selectedAgentType: AgentType = AgentType.CODING,
     onAgentTypeChange: (AgentType) -> Unit = {},
     // TopBar 参数
@@ -31,18 +31,16 @@ fun AgentChatInterface(
     selectedAgent: String = "Default",
     availableAgents: List<String> = listOf("Default"),
     useAgentMode: Boolean = true,
-    selectedRemoteAgentType: String = "Local",
     onOpenDirectory: () -> Unit = {},
     onClearHistory: () -> Unit = {},
     onModelConfigChange: (cc.unitmesh.llm.ModelConfig) -> Unit = {},
     onAgentChange: (String) -> Unit = {},
     onModeToggle: () -> Unit = {},
-    onRemoteAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
-    showTopBar: Boolean = true, // 新增：控制是否显示 TopBar
-    // 会话切换支持（新增）
+    showTopBar: Boolean = true,
+    // 会话切换支持
     onSessionSelected: ((String) -> Unit)? = null,
     onNewChat: (() -> Unit)? = null,
     onInternalSessionSelected: (((String) -> Unit) -> Unit)? = null,
@@ -121,14 +119,23 @@ fun AgentChatInterface(
                             availableAgents = availableAgents,
                             useAgentMode = useAgentMode,
                             isTreeViewVisible = isTreeViewVisible,
-                            selectedAgentType = selectedRemoteAgentType,
+                            selectedAgentType = "Local", // Always local for this interface
+                            selectedTaskAgentType = selectedAgentType,
+                            onTaskAgentTypeChange = onAgentTypeChange,
                             onOpenDirectory = onOpenDirectory,
                             onClearHistory = onClearHistory,
                             onModelConfigChange = onModelConfigChange,
                             onAgentChange = onAgentChange,
                             onModeToggle = onModeToggle,
                             onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                            onAgentTypeChange = onRemoteAgentTypeChange,
+                            onAgentTypeChange = { typeName ->
+                                // Convert string to AgentType for switching between Local/Remote
+                                val newType = when (typeName) {
+                                    "Remote" -> AgentType.REMOTE
+                                    else -> AgentType.LOCAL
+                                }
+                                onAgentTypeChange(newType)
+                            },
                             onConfigureRemote = onConfigureRemote,
                             onShowModelConfig = onShowModelConfig,
                             onShowToolConfig = onShowToolConfig,
@@ -188,6 +195,10 @@ fun AgentChatInterface(
                                     .fillMaxWidth()
                                     .imePadding()
                             )
+                        }
+                        AgentType.REMOTE -> {
+                            // REMOTE type should not reach here - it's handled by AgentInterfaceRouter
+                            // This is a fallback to prevent compilation errors
                         }
                     }
 
@@ -255,16 +266,23 @@ fun AgentChatInterface(
                     availableAgents = availableAgents,
                     useAgentMode = useAgentMode,
                     isTreeViewVisible = isTreeViewVisible,
-                    selectedAgentType = selectedRemoteAgentType,
+                    selectedAgentType = "Local", // Always local for this interface
                     selectedTaskAgentType = selectedAgentType,
+                    onTaskAgentTypeChange = onAgentTypeChange,
                     onOpenDirectory = onOpenDirectory,
                     onClearHistory = onClearHistory,
                     onModelConfigChange = onModelConfigChange,
                     onAgentChange = onAgentChange,
                     onModeToggle = onModeToggle,
                     onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                    onAgentTypeChange = onRemoteAgentTypeChange,
-                    onTaskAgentTypeChange = onAgentTypeChange,
+                    onAgentTypeChange = { typeName ->
+                        // Convert string to AgentType for switching between Local/Remote
+                        val newType = when (typeName) {
+                            "Remote" -> AgentType.REMOTE
+                            else -> AgentType.LOCAL
+                        }
+                        onAgentTypeChange(newType)
+                    },
                     onConfigureRemote = onConfigureRemote,
                     onShowModelConfig = onShowModelConfig,
                     onShowToolConfig = onShowToolConfig,

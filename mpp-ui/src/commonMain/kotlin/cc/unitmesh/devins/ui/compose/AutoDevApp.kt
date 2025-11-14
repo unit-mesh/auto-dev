@@ -84,11 +84,10 @@ private fun AutoDevContent(
     var useAgentMode by remember { mutableStateOf(true) } // 恢复默认 Agent 模式（SessionSidebar 现在支持所有模式）
     var isTreeViewVisible by remember { mutableStateOf(false) } // TreeView visibility for agent mode
 
-    // Agent Type Selection (Coding vs Code Review)
-    var currentAgentType by remember { mutableStateOf(AgentType.CODING) }
+    // Unified Agent Type Selection (LOCAL, CODING, CODE_REVIEW, REMOTE)
+    var selectedAgentType by remember { mutableStateOf(AgentType.CODING) }
 
     // Remote Agent state
-    var selectedAgentType by remember { mutableStateOf("Local") }
     var serverUrl by remember { mutableStateOf("http://localhost:8080") }
     var useServerConfig by remember { mutableStateOf(false) }
     var showRemoteConfigDialog by remember { mutableStateOf(false) }
@@ -108,8 +107,9 @@ private fun AutoDevContent(
 
     val workspaceState by WorkspaceManager.workspaceFlow.collectAsState()
 
-    fun handleAgentTypeChange(type: String) {
-        if (type == "Remote") {
+    fun handleAgentTypeChange(type: AgentType) {
+        // Check remote configuration if switching to remote mode
+        if (type == AgentType.REMOTE) {
             val hasValidServerConfig = serverUrl.isNotBlank() && serverUrl != "http://localhost:8080"
             if (!hasValidServerConfig) {
                 showRemoteConfigDialog = true
@@ -120,7 +120,13 @@ private fun AutoDevContent(
         selectedAgentType = type
         scope.launch {
             try {
-                cc.unitmesh.devins.ui.config.saveAgentTypePreference(type)
+                // Save as string for config compatibility
+                val typeString = when (type) {
+                    AgentType.REMOTE -> "Remote"
+                    AgentType.LOCAL -> "Local"
+                    else -> "Local" // CODING and CODE_REVIEW are local modes
+                }
+                cc.unitmesh.devins.ui.config.saveAgentTypePreference(typeString)
             } catch (e: Exception) {
                 println("⚠️ 保存 Agent 类型失败: ${e.message}")
             }
@@ -214,10 +220,19 @@ private fun AutoDevContent(
                 }
             }
 
+            // Load agent type from config or initial mode
             selectedAgentType = when (initialMode) {
-                "remote", "session" -> "Remote"
-                "local" -> "Local"
-                else -> wrapper.getAgentType() // "auto" - 从配置加载
+                "remote", "session" -> AgentType.REMOTE
+                "local" -> AgentType.LOCAL
+                else -> {
+                    // "auto" - load from config
+                    val configType = wrapper.getAgentType()
+                    when (configType) {
+                        "Remote" -> AgentType.REMOTE
+                        "Local" -> AgentType.LOCAL
+                        else -> AgentType.CODING // Default to CODING
+                    }
+                }
             }
 
             useSessionManagement = (initialMode == "session")
@@ -298,7 +313,7 @@ private fun AutoDevContent(
             onOpenLocalChat = if (Platform.isJvm) {
                 {
                     useSessionManagement = false
-                    selectedAgentType = "Local"
+                    selectedAgentType = AgentType.LOCAL
                 }
             } else null
         )
@@ -361,7 +376,11 @@ private fun AutoDevContent(
                         availableAgents = availableAgents,
                         useAgentMode = useAgentMode,
                         isTreeViewVisible = isTreeViewVisible,
-                        selectedAgentType = selectedAgentType,
+                        selectedAgentType = if (selectedAgentType == AgentType.REMOTE) "Remote" else "Local",
+                        selectedTaskAgentType = selectedAgentType,
+                        onTaskAgentTypeChange = { type ->
+                            handleAgentTypeChange(type)
+                        },
                         useSessionManagement = useSessionManagement,
                         showSessionSidebar = showSessionSidebar,
                         onToggleSidebar = { showSessionSidebar = !showSessionSidebar },
@@ -387,7 +406,15 @@ private fun AutoDevContent(
                         },
                         onModeToggle = { useAgentMode = !useAgentMode },
                         onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
-                        onAgentTypeChange = ::handleAgentTypeChange,
+                        onAgentTypeChange = { typeString ->
+                            // Convert string to AgentType
+                            val type = when (typeString) {
+                                "Remote" -> AgentType.REMOTE
+                                "Local" -> AgentType.LOCAL
+                                else -> AgentType.LOCAL
+                            }
+                            handleAgentTypeChange(type)
+                        },
                         onConfigureRemote = { showRemoteConfigDialog = true },
                         onSessionManagementToggle = {
                             useSessionManagement = !useSessionManagement
@@ -402,116 +429,79 @@ private fun AutoDevContent(
                 }
 
                 if (useAgentMode) {
-                    if (selectedAgentType == "Local") {
-                        AgentInterfaceRouter(
-                            llmService = llmService,
-                            isTreeViewVisible = isTreeViewVisible,
-                            onConfigWarning = { showModelConfigDialog = true },
-                            onToggleTreeView = { isTreeViewVisible = it },
-                            chatHistoryManager = chatHistoryManager,
-                            onSessionSelected = { sessionId ->
-                                messages = chatHistoryManager.getMessages()
-                                currentStreamingOutput = ""
-                            },
-                            onNewChat = {
-                                messages = emptyList()
-                                currentStreamingOutput = ""
-                            },
-                            onInternalSessionSelected = { handler ->
-                                agentSessionSelectedHandler = handler
-                            },
-                            onInternalNewChat = { handler ->
-                                agentNewChatHandler = handler
-                            },
-                            hasHistory = messages.isNotEmpty(),
-                            hasDebugInfo = compilerOutput.isNotEmpty(),
-                            currentModelConfig = currentModelConfig,
-                            selectedAgent = selectedAgent,
-                            availableAgents = availableAgents,
-                            useAgentMode = useAgentMode,
-                            selectedAgentType = currentAgentType,
-                            selectedRemoteAgentType = selectedAgentType,
-                            onOpenDirectory = { openDirectoryChooser() },
-                            onClearHistory = {
-                                chatHistoryManager.clearCurrentSession()
-                                messages = emptyList()
-                                currentStreamingOutput = ""
-                                println("🗑️ [SimpleAIChat] 聊天历史已清空")
-                            },
-                            onModelConfigChange = { config ->
-                                currentModelConfig = config
-                                if (config.isValid()) {
-                                    try {
-                                        llmService = KoogLLMService.create(config)
-                                        println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
-                                    } catch (e: Exception) {
-                                        println("❌ 切换模型失败: ${e.message}")
-                                    }
+                    // Use unified AgentInterfaceRouter for all agent types
+                    AgentInterfaceRouter(
+                        llmService = llmService,
+                        isTreeViewVisible = isTreeViewVisible,
+                        onConfigWarning = { showModelConfigDialog = true },
+                        onToggleTreeView = { isTreeViewVisible = it },
+                        chatHistoryManager = chatHistoryManager,
+                        selectedAgentType = selectedAgentType,
+                        onAgentTypeChange = { type ->
+                            handleAgentTypeChange(type)
+                            println("🔄 切换 Agent Type: ${type.getDisplayName()}")
+                        },
+                        onSessionSelected = { sessionId ->
+                            messages = chatHistoryManager.getMessages()
+                            currentStreamingOutput = ""
+                        },
+                        onNewChat = {
+                            messages = emptyList()
+                            currentStreamingOutput = ""
+                        },
+                        onInternalSessionSelected = { handler ->
+                            agentSessionSelectedHandler = handler
+                        },
+                        onInternalNewChat = { handler ->
+                            agentNewChatHandler = handler
+                        },
+                        hasHistory = messages.isNotEmpty(),
+                        hasDebugInfo = compilerOutput.isNotEmpty(),
+                        currentModelConfig = currentModelConfig,
+                        selectedAgent = selectedAgent,
+                        availableAgents = availableAgents,
+                        useAgentMode = useAgentMode,
+                        onOpenDirectory = { openDirectoryChooser() },
+                        onClearHistory = {
+                            chatHistoryManager.clearCurrentSession()
+                            messages = emptyList()
+                            currentStreamingOutput = ""
+                            println("🗑️ [SimpleAIChat] 聊天历史已清空")
+                        },
+                        onModelConfigChange = { config ->
+                            currentModelConfig = config
+                            if (config.isValid()) {
+                                try {
+                                    llmService = KoogLLMService.create(config)
+                                    println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
+                                } catch (e: Exception) {
+                                    println("❌ 切换模型失败: ${e.message}")
                                 }
-                            },
-                            onAgentChange = { agent ->
-                                selectedAgent = agent
-                                println("🤖 切换 Agent: $agent")
-                            },
-                            onModeToggle = { useAgentMode = !useAgentMode },
-                            onAgentTypeChange = { type ->
-                                currentAgentType = type
-                                println("🔄 切换 Agent Type: $type")
-                            },
-                            onConfigureRemote = { showRemoteConfigDialog = true },
-                            onShowModelConfig = { showModelConfigDialog = true },
-                            onShowToolConfig = { showToolConfigDialog = true },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        // Remote Agent
-                        RemoteAgentChatInterface(
-                            serverUrl = serverUrl,
-                            useServerConfig = useServerConfig,
-                            isTreeViewVisible = isTreeViewVisible,
-                            onToggleTreeView = { isTreeViewVisible = it },
-                            // TopBar 参数
-                            hasHistory = false, // Remote agent manages its own history
-                            hasDebugInfo = compilerOutput.isNotEmpty(),
-                            currentModelConfig = currentModelConfig,
-                            selectedAgent = selectedAgent,
-                            availableAgents = availableAgents,
-                            useAgentMode = useAgentMode,
-                            selectedAgentType = selectedAgentType,
-                            onOpenDirectory = { openDirectoryChooser() },
-                            onClearHistory = {
-                                // Remote agent clears history on server side
-                                println("🗑️ [RemoteAgent] 清空远程历史")
-                            },
-                            onModelConfigChange = { config ->
-                                currentModelConfig = config
-                            },
-                            onAgentChange = { agent ->
-                                selectedAgent = agent
-                                println("🤖 切换 Agent: $agent")
-                            },
-                            onModeToggle = { useAgentMode = !useAgentMode },
-                            onAgentTypeChange = { type ->
-                                selectedAgentType = type
-                                println("🔄 切换 Agent Type: $type")
-                            },
-                            onConfigureRemote = { showRemoteConfigDialog = true },
-                            onShowModelConfig = { showModelConfigDialog = true },
-                            onShowToolConfig = { showToolConfigDialog = true },
-                            // Remote-specific
-                            projectId = remoteProjectId,
-                            gitUrl = remoteGitUrl,
-                            onProjectChange = { projectId ->
-                                remoteProjectId = projectId
-                                println("📁 Project ID: $projectId")
-                            },
-                            onGitUrlChange = { url ->
-                                remoteGitUrl = url
-                                println("📦 Git URL: $url")
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
+                            }
+                        },
+                        onAgentChange = { agent ->
+                            selectedAgent = agent
+                            println("🤖 切换 Agent: $agent")
+                        },
+                        onModeToggle = { useAgentMode = !useAgentMode },
+                        onConfigureRemote = { showRemoteConfigDialog = true },
+                        onShowModelConfig = { showModelConfigDialog = true },
+                        onShowToolConfig = { showToolConfigDialog = true },
+                        // Remote-specific parameters (only used when selectedAgentType is REMOTE)
+                        serverUrl = serverUrl,
+                        useServerConfig = useServerConfig,
+                        projectId = remoteProjectId,
+                        gitUrl = remoteGitUrl,
+                        onProjectChange = { projectId ->
+                            remoteProjectId = projectId
+                            println("📁 Project ID: $projectId")
+                        },
+                        onGitUrlChange = { url ->
+                            remoteGitUrl = url
+                            println("📦 Git URL: $url")
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
                 } else {
                     val isCompactMode = messages.isNotEmpty() || isLLMProcessing
 
@@ -675,9 +665,9 @@ private fun AutoDevContent(
                                 )
                             )
 
-                            // 重要：保存 Remote 配置后，自动切换 Agent Type 为 "Remote"
+                            // 重要：保存 Remote 配置后，自动切换 Agent Type 为 REMOTE
                             cc.unitmesh.devins.ui.config.saveAgentTypePreference("Remote")
-                            selectedAgentType = "Remote"
+                            selectedAgentType = AgentType.REMOTE
                         } catch (e: Exception) {
                             println("⚠️ 保存远程配置失败: ${e.message}")
                             errorMessage = "保存远程配置失败: ${e.message}"
