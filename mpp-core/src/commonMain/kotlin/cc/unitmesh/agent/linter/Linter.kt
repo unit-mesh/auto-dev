@@ -80,32 +80,53 @@ interface Linter {
 }
 
 /**
+ * Summary of linters available for files
+ */
+data class LinterSummary(
+    val totalLinters: Int,
+    val availableLinters: List<LinterAvailability>,
+    val unavailableLinters: List<LinterAvailability>,
+    val fileMapping: Map<String, List<String>> // file path -> linter names
+)
+
+/**
+ * Linter availability information
+ */
+data class LinterAvailability(
+    val name: String,
+    val isAvailable: Boolean,
+    val version: String? = null,
+    val supportedFiles: List<String> = emptyList(),
+    val installationInstructions: String? = null
+)
+
+/**
  * Registry for managing available linters
  */
 class LinterRegistry {
     private val linters = mutableMapOf<String, Linter>()
-    
+
     /**
      * Register a linter
      */
     fun register(linter: Linter) {
         linters[linter.name] = linter
     }
-    
+
     /**
      * Get linter by name
      */
     fun getLinter(name: String): Linter? {
         return linters[name]
     }
-    
+
     /**
      * Get all registered linters
      */
     fun getAllLinters(): List<Linter> {
         return linters.values.toList()
     }
-    
+
     /**
      * Find suitable linters for a file based on extension
      */
@@ -115,7 +136,7 @@ class LinterRegistry {
             linter.supportedExtensions.any { it.equals(extension, ignoreCase = true) }
         }
     }
-    
+
     /**
      * Find suitable linters for multiple files
      */
@@ -127,10 +148,51 @@ class LinterRegistry {
             }
         }.distinctBy { it.name }
     }
-    
+
+    /**
+     * Get summary of linters for specific files
+     */
+    suspend fun getLinterSummaryForFiles(filePaths: List<String>): LinterSummary {
+        val suitableLinters = findLintersForFiles(filePaths)
+
+        val availabilities = mutableListOf<LinterAvailability>()
+        val fileMapping = mutableMapOf<String, MutableList<String>>()
+
+        for (linter in suitableLinters) {
+            val isAvailable = linter.isAvailable()
+            val supportedFiles = filePaths.filter { path ->
+                val ext = path.substringAfterLast('.', "").lowercase()
+                linter.supportedExtensions.any { it.equals(ext, ignoreCase = true) }
+            }
+
+            val availability = LinterAvailability(
+                name = linter.name,
+                isAvailable = isAvailable,
+                supportedFiles = supportedFiles,
+                installationInstructions = if (!isAvailable) linter.getInstallationInstructions() else null
+            )
+            availabilities.add(availability)
+
+            // Build file mapping
+            for (file in supportedFiles) {
+                fileMapping.getOrPut(file) { mutableListOf() }.add(linter.name)
+            }
+        }
+
+        val available = availabilities.filter { it.isAvailable }
+        val unavailable = availabilities.filter { !it.isAvailable }
+
+        return LinterSummary(
+            totalLinters = availabilities.size,
+            availableLinters = available,
+            unavailableLinters = unavailable,
+            fileMapping = fileMapping
+        )
+    }
+
     companion object {
         private var instance: LinterRegistry? = null
-        
+
         fun getInstance(): LinterRegistry {
             if (instance == null) {
                 instance = LinterRegistry()
@@ -139,7 +201,7 @@ class LinterRegistry {
             }
             return instance!!
         }
-        
+
         private fun registerDefaultLinters(registry: LinterRegistry) {
             // Register platform-specific linters
             // This will be implemented in platform-specific source sets

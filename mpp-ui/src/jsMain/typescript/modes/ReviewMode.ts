@@ -127,26 +127,63 @@ export async function runReview(
       };
     }
 
-    // Step 3: Run linters (optional)
-    let lintResults: any[] = [];
-
+    // Step 3: Detect available linters
     if (!skipLint && filePaths.length > 0) {
-      console.log(semanticChalk.info('🔍 Running linters...'));
+      console.log(semanticChalk.info('🔍 Detecting linters...'));
 
       try {
-        const linterRegistry = new KotlinCC.unitmesh.agent.JsLinterRegistry();
-        const linterNames = linterRegistry.findLintersForFiles(filePaths);
+        const linterRegistry = KotlinCC.unitmesh.agent.linter.LinterRegistry.getInstance();
+        const linterSummary = await linterRegistry.getLinterSummaryForFiles(filePaths);
 
-        if (linterNames.length > 0) {
-          console.log(semanticChalk.muted(`Available linters: ${linterNames.join(', ')}`));
-          console.log(semanticChalk.warning('Note: Linter execution requires linters to be installed'));
+        if (linterSummary.totalLinters > 0) {
           console.log();
+
+          // Show available linters
+          if (linterSummary.availableLinters.length > 0) {
+            console.log(semanticChalk.success(`✅ Available Linters (${linterSummary.availableLinters.length}):`));
+            linterSummary.availableLinters.forEach((linter: any) => {
+              const version = linter.version ? ` (${linter.version})` : '';
+              console.log(semanticChalk.muted(`  - ${linter.name}${version}`));
+
+              if (linter.supportedFiles && linter.supportedFiles.length > 0) {
+                const fileList = linter.supportedFiles.slice(0, 3).join(', ');
+                const more = linter.supportedFiles.length > 3 ? ` +${linter.supportedFiles.length - 3} more` : '';
+                console.log(semanticChalk.muted(`    Files: ${fileList}${more}`));
+              }
+            });
+            console.log();
+          }
+
+          // Show unavailable linters
+          if (linterSummary.unavailableLinters.length > 0) {
+            console.log(semanticChalk.warning(`⚠️  Not Installed (${linterSummary.unavailableLinters.length}):`));
+            linterSummary.unavailableLinters.forEach((linter: any) => {
+              console.log(semanticChalk.muted(`  - ${linter.name}`));
+              if (linter.installationInstructions) {
+                console.log(semanticChalk.muted(`    Install: ${linter.installationInstructions}`));
+              }
+            });
+            console.log();
+          }
+
+          // Show file-linter mapping
+          if (linterSummary.fileMapping && Object.keys(linterSummary.fileMapping).length > 0) {
+            console.log(semanticChalk.info('📋 File-Linter Mapping:'));
+            const entries = Object.entries(linterSummary.fileMapping);
+            entries.slice(0, 5).forEach(([file, linters]: [string, any]) => {
+              console.log(semanticChalk.muted(`  ${file} → ${linters.join(', ')}`));
+            });
+            if (entries.length > 5) {
+              console.log(semanticChalk.muted(`  ... and ${entries.length - 5} more files`));
+            }
+            console.log();
+          }
         } else {
           console.log(semanticChalk.warning('No suitable linters found for the changed files'));
           console.log();
         }
       } catch (error: any) {
-        console.log(semanticChalk.warning(`Linter check failed: ${error.message}`));
+        console.log(semanticChalk.warning(`Linter detection failed: ${error.message}`));
         console.log();
       }
     }

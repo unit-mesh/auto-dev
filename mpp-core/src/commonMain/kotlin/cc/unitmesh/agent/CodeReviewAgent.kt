@@ -158,12 +158,26 @@ class CodeReviewAgent(
     }
 
     private suspend fun buildContext(task: ReviewTask): CodeReviewContext {
+        // Get linter summary for the files
+        val linterSummary = if (task.filePaths.isNotEmpty()) {
+            try {
+                val linterRegistry = cc.unitmesh.agent.linter.LinterRegistry.getInstance()
+                linterRegistry.getLinterSummaryForFiles(task.filePaths)
+            } catch (e: Exception) {
+                logger.warn { "Failed to get linter summary: ${e.message}" }
+                null
+            }
+        } else {
+            null
+        }
+
         return CodeReviewContext(
             projectPath = task.projectPath,
             filePaths = task.filePaths,
             reviewType = task.reviewType,
             additionalContext = task.additionalContext,
-            toolList = formatToolList()
+            toolList = formatToolList(),
+            linterSummary = linterSummary
         )
     }
 
@@ -222,7 +236,8 @@ data class CodeReviewContext(
     val filePaths: List<String>,
     val reviewType: ReviewType,
     val additionalContext: String,
-    val toolList: String
+    val toolList: String,
+    val linterSummary: cc.unitmesh.agent.linter.LinterSummary? = null
 )
 
 /**

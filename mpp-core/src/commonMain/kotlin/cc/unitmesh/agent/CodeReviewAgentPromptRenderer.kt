@@ -15,15 +15,58 @@ class CodeReviewAgentPromptRenderer {
             else -> CodeReviewAgentTemplate.EN
         }
 
+        val linterInfo = formatLinterInfo(context.linterSummary)
+
         val prompt = template
             .replace("{{projectPath}}", context.projectPath)
             .replace("{{reviewType}}", context.reviewType.name)
             .replace("{{filePaths}}", context.filePaths.joinToString(", "))
             .replace("{{toolList}}", context.toolList)
             .replace("{{additionalContext}}", context.additionalContext)
+            .replace("{{linterInfo}}", linterInfo)
 
         logger.debug { "Generated code review prompt (${prompt.length} chars)" }
         return prompt
+    }
+
+    private fun formatLinterInfo(summary: cc.unitmesh.agent.linter.LinterSummary?): String {
+        if (summary == null) {
+            return "No linter information available."
+        }
+
+        return buildString {
+            appendLine("### Available Linters")
+            appendLine()
+
+            if (summary.availableLinters.isNotEmpty()) {
+                appendLine("**Installed and Ready (${summary.availableLinters.size}):**")
+                summary.availableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
+                    if (linter.supportedFiles.isNotEmpty()) {
+                        appendLine("  - Files: ${linter.supportedFiles.joinToString(", ")}")
+                    }
+                }
+                appendLine()
+            }
+
+            if (summary.unavailableLinters.isNotEmpty()) {
+                appendLine("**Not Installed (${summary.unavailableLinters.size}):**")
+                summary.unavailableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}**")
+                    linter.installationInstructions?.let {
+                        appendLine("  - Install: $it")
+                    }
+                }
+                appendLine()
+            }
+
+            if (summary.fileMapping.isNotEmpty()) {
+                appendLine("### File-Linter Mapping")
+                summary.fileMapping.forEach { (file, linters) ->
+                    appendLine("- `$file` → ${linters.joinToString(", ")}")
+                }
+            }
+        }
     }
 }
 
@@ -59,6 +102,10 @@ Analyze code thoroughly and provide constructive, actionable feedback. Focus on:
 - **Review Type**: {{reviewType}}
 - **Files to Review**: {{filePaths}}
 - **Additional Context**: {{additionalContext}}
+
+## Linter Information
+
+{{linterInfo}}
 
 ## Available Tools
 
@@ -158,6 +205,10 @@ Be constructive, specific, and actionable in your feedback.
 - **审查类型**: {{reviewType}}
 - **待审查文件**: {{filePaths}}
 - **额外上下文**: {{additionalContext}}
+
+## Linter 信息
+
+{{linterInfo}}
 
 ## 可用工具
 
