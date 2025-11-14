@@ -35,13 +35,11 @@ object DiffUtils {
         }
         
         if (oldContent == null) {
-            // New file - all lines are added
             val lines = newContent?.lines()?.size ?: 0
             return DiffStats(addedLines = lines, deletedLines = 0, contextLines = 0)
         }
         
         if (newContent == null) {
-            // Deleted file - all lines are deleted
             val lines = oldContent.lines().size
             return DiffStats(addedLines = 0, deletedLines = lines, contextLines = 0)
         }
@@ -65,10 +63,7 @@ object DiffUtils {
         
         return DiffStats(added, deleted, context)
     }
-    
-    /**
-     * Generate a unified diff format string between old and new content
-     */
+
     fun generateUnifiedDiff(
         oldContent: String?,
         newContent: String?,

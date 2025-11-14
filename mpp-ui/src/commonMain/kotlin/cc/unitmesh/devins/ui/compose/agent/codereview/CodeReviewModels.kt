@@ -15,7 +15,11 @@ data class CodeReviewState(
     val diffFiles: List<DiffFileInfo> = emptyList(),
     val selectedFileIndex: Int = 0,
     val aiProgress: AIAnalysisProgress = AIAnalysisProgress(),
-    val fixResults: List<FixResult> = emptyList()
+    val fixResults: List<FixResult> = emptyList(),
+    // Infinite scroll support
+    val hasMoreCommits: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val totalCommitCount: Int? = null // Total available commits (if known)
 )
 
 /**

@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,16 +44,40 @@ import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
 import cc.unitmesh.devins.ui.compose.sketch.DiffLine
 import cc.unitmesh.devins.ui.compose.sketch.DiffLineType
 import kotlinx.datetime.Clock
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 
 /**
- * Left panel: Commit history list (GitHub-style)
+ * Truncate a file path by showing first/last segments with ... in middle
+ * Examples:
+ * - "src/main/kotlin/com/example/project/VeryLongFileName.kt" -> "src/.../VeryLongFileName.kt"
+ * - "short/path.kt" -> "short/path.kt"
+ */
+private fun truncateFilePath(path: String): String {
+    val segments = path.split("/")
+    
+    // If path is short enough, return as is
+    if (segments.size <= 2) return path
+    
+    // Always use format: first/.../ last
+    val first = segments.first()
+    val last = segments.last()
+    return "$first/.../$last"
+}
+
+/**
+ * Left panel: Commit history list (GitHub-style) with infinite scroll
  */
 @Composable
 fun CommitListView(
     commits: List<CommitInfo>,
     selectedIndex: Int,
     onCommitSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier.Companion,
+    hasMoreCommits: Boolean = false,
+    isLoadingMore: Boolean = false,
+    totalCommitCount: Int? = null,
+    onLoadMore: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -60,8 +85,14 @@ fun CommitListView(
             .background(MaterialTheme.colorScheme.surface)
             .padding(8.dp)
     ) {
+        val displayText = when {
+            totalCommitCount != null -> "Commits (${commits.size}/$totalCommitCount)"
+            hasMoreCommits -> "Commits (${commits.size}+)"
+            else -> "Commits (${commits.size})"
+        }
+        
         Text(
-            text = "Commits (${commits.size})",
+            text = displayText,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Companion.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -74,13 +105,40 @@ fun CommitListView(
 
         Spacer(modifier = Modifier.Companion.height(4.dp))
 
-        LazyColumn(modifier = Modifier.Companion.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        LazyColumn(
+            modifier = Modifier.Companion.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
             items(commits.size) { index ->
                 CommitListItem(
                     commit = commits[index],
                     isSelected = index == selectedIndex,
                     onClick = { onCommitSelected(index) }
                 )
+
+                // Trigger load more when reaching near the end
+                if (index == commits.size - 5 && hasMoreCommits && !isLoadingMore) {
+                    androidx.compose.runtime.LaunchedEffect(Unit) {
+                        onLoadMore()
+                    }
+                }
+            }
+
+            // Loading indicator at the bottom
+            if (isLoadingMore) {
+                item {
+                    Box(
+                        modifier = Modifier.Companion
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Companion.Center
+                    ) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.Companion.size(24.dp),
+                            color = AutoDevColors.Indigo.c600
+                        )
+                    }
+                }
             }
         }
     }
@@ -202,7 +260,9 @@ private fun formatRelativeTime(timestamp: Long): String {
 fun DiffCenterView(
     diffFiles: List<DiffFileInfo>,
     selectedCommit: CommitInfo?,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier.Companion,
+    onViewFile: ((String) -> Unit)? = null,
+    workspaceRoot: String? = null
 ) {
     Column(
         modifier = modifier
@@ -282,7 +342,13 @@ fun DiffCenterView(
             ) {
                 items(diffFiles.size) { index ->
                     CollapsibleFileDiffItem(
-                        file = diffFiles[index]
+                        file = diffFiles[index],
+                        onViewFile = if (onViewFile != null && workspaceRoot != null) {
+                            { path ->
+                                val fullPath = if (path.startsWith("/")) path else "$workspaceRoot/$path"
+                                onViewFile(fullPath)
+                            }
+                        } else null
                     )
                 }
             }
@@ -291,8 +357,12 @@ fun DiffCenterView(
 }
 
 @Composable
-fun CollapsibleFileDiffItem(file: DiffFileInfo) {
+fun CollapsibleFileDiffItem(
+    file: DiffFileInfo,
+    onViewFile: ((String) -> Unit)? = null
+) {
     var expanded by remember { mutableStateOf(false) }
+    val clipboardManager = LocalClipboardManager.current
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -305,7 +375,6 @@ fun CollapsibleFileDiffItem(file: DiffFileInfo) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { expanded = !expanded }
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -332,15 +401,20 @@ fun CollapsibleFileDiffItem(file: DiffFileInfo) {
                         modifier = Modifier.size(18.dp)
                     )
 
+                    // File path with clickable expand
                     Text(
-                        text = file.path,
+                        text = truncateFilePath(file.path),
                         style = MaterialTheme.typography.bodyMedium,
                         fontFamily = FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .clickable { expanded = !expanded }
                     )
 
+                    // Language badge
                     file.language?.let { lang ->
                         Surface(
                             color = MaterialTheme.colorScheme.primaryContainer,
@@ -356,12 +430,54 @@ fun CollapsibleFileDiffItem(file: DiffFileInfo) {
                     }
                 }
 
-                Icon(
-                    imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
-                    contentDescription = if (expanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
+                // Action buttons row
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Copy path button
+                    IconButton(
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(file.path))
+                        },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.ContentCopy,
+                            contentDescription = "Copy path",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+                    // View file button (only on supported platforms)
+                    if (onViewFile != null) {
+                        IconButton(
+                            onClick = { onViewFile(file.path) },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Visibility,
+                                contentDescription = "View file",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    // Expand/collapse button
+                    IconButton(
+                        onClick = { expanded = !expanded },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
+                            contentDescription = if (expanded) "Collapse" else "Expand",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
 
             if (expanded && file.hunks.isNotEmpty()) {

@@ -19,6 +19,7 @@ import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import kotlinx.coroutines.launch
 
 /**
  * Main Side-by-Side Code Review UI (redesigned)
@@ -73,6 +74,7 @@ private fun ThreeColumnLayout(
     viewModel: CodeReviewViewModel
 ) {
     val renderer = remember { ComposeRenderer() }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     ResizableSplitPane(
         modifier = Modifier.fillMaxSize(),
         initialSplitRatio = 0.25f,
@@ -86,6 +88,14 @@ private fun ThreeColumnLayout(
                 onCommitSelected = { index ->
                     // Select commit (will trigger diff loading in subclasses like JvmCodeReviewViewModel)
                     viewModel.selectCommit(index)
+                },
+                hasMoreCommits = state.hasMoreCommits,
+                isLoadingMore = state.isLoadingMore,
+                totalCommitCount = state.totalCommitCount,
+                onLoadMore = {
+                    scope.launch {
+                        viewModel.loadMoreCommits()
+                    }
                 }
             )
         },
@@ -98,10 +108,24 @@ private fun ThreeColumnLayout(
                 maxRatio = 0.8f,
                 first = {
                     // Center: Diff viewer
+                    var fileToView by remember { mutableStateOf<String?>(null) }
+                    
                     DiffCenterView(
                         diffFiles = state.diffFiles,
-                        selectedCommit = state.commitHistory.getOrNull(state.selectedCommitIndex)
+                        selectedCommit = state.commitHistory.getOrNull(state.selectedCommitIndex),
+                        onViewFile = { filePath ->
+                            fileToView = filePath
+                        },
+                        workspaceRoot = viewModel.workspace.rootPath
                     )
+                    
+                    // File viewer dialog
+                    fileToView?.let { path ->
+                        FileViewerDialog(
+                            filePath = path,
+                            onClose = { fileToView = null }
+                        )
+                    }
                 },
                 second = {
                     AIReviewPanel(
@@ -466,9 +490,6 @@ private fun FixResultCard(fix: FixResult) {
     }
 }
 
-// ===============================================================================
-// Supporting Views
-// ===============================================================================
 
 @Composable
 private fun LoadingView() {

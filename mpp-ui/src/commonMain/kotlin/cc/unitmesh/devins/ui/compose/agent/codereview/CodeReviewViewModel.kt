@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 open class CodeReviewViewModel(
-    private val workspace: Workspace,
+    val workspace: Workspace,
     private val codeReviewAgent: CodeReviewAgent? = null
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -42,13 +42,19 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Load recent git commits
+     * Load recent git commits (initial load)
      */
-    suspend fun loadCommitHistory(count: Int = 20) {
+    suspend fun loadCommitHistory(count: Int = 50) {
         updateState { it.copy(isLoading = true, error = null) }
 
         try {
+            // Get total commit count
+            val totalCount = gitOps.getTotalCommitCount()
+            
+            // Get recent commits
             val gitCommits = gitOps.getRecentCommits(count)
+
+            val hasMore = totalCount?.let { it > gitCommits.size } ?: false
 
             // Convert GitCommitInfo to CommitInfo
             val commits = gitCommits.map { git ->
@@ -67,6 +73,8 @@ open class CodeReviewViewModel(
                     isLoading = false,
                     commitHistory = commits,
                     selectedCommitIndex = 0,
+                    hasMoreCommits = hasMore,
+                    totalCommitCount = totalCount,
                     error = null
                 )
             }
@@ -80,6 +88,54 @@ open class CodeReviewViewModel(
                 it.copy(
                     isLoading = false,
                     error = "Failed to load commits: ${e.message}"
+                )
+            }
+        }
+    }
+
+    /**
+     * Load more commits for infinite scroll
+     */
+    suspend fun loadMoreCommits(batchSize: Int = 50) {
+        if (currentState.isLoadingMore || !currentState.hasMoreCommits) {
+            return
+        }
+
+        updateState { it.copy(isLoadingMore = true) }
+
+        try {
+            val currentCount = currentState.commitHistory.size
+            val gitCommits = gitOps.getRecentCommits(currentCount + batchSize + 1)
+
+            // Skip already loaded commits
+            val newCommits = gitCommits.drop(currentCount)
+            val hasMore = newCommits.size > batchSize
+            val commitsToAdd = if (hasMore) newCommits.take(batchSize) else newCommits
+
+            val additionalCommits = commitsToAdd.map { git ->
+                CommitInfo(
+                    hash = git.hash,
+                    shortHash = git.shortHash,
+                    author = git.author,
+                    timestamp = git.date,
+                    date = formatDate(git.date),
+                    message = git.message
+                )
+            }
+
+            updateState {
+                it.copy(
+                    commitHistory = it.commitHistory + additionalCommits,
+                    hasMoreCommits = hasMore,
+                    isLoadingMore = false
+                )
+            }
+
+        } catch (e: Exception) {
+            updateState {
+                it.copy(
+                    isLoadingMore = false,
+                    error = "Failed to load more commits: ${e.message}"
                 )
             }
         }
