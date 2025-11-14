@@ -443,6 +443,8 @@ open class CodeReviewViewModel(
                 it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
             }
 
+            val allFileLintResults = mutableListOf<FileLintResult>()
+
             // Run each linter
             for (linter in linters) {
                 // Check if linter is available
@@ -464,9 +466,37 @@ open class CodeReviewViewModel(
                 // Lint files
                 val results = linter.lintFiles(filePaths, projectPath)
 
-                // Aggregate results
+                // Convert to UI model and aggregate
                 for (result in results) {
                     if (result.hasIssues) {
+                        val uiIssues = result.issues.map { issue ->
+                            LintIssueUI(
+                                line = issue.line,
+                                column = issue.column,
+                                severity = when (issue.severity) {
+                                    cc.unitmesh.agent.linter.LintSeverity.ERROR -> LintSeverityUI.ERROR
+                                    cc.unitmesh.agent.linter.LintSeverity.WARNING -> LintSeverityUI.WARNING
+                                    cc.unitmesh.agent.linter.LintSeverity.INFO -> LintSeverityUI.INFO
+                                },
+                                message = issue.message,
+                                rule = issue.rule,
+                                suggestion = issue.suggestion
+                            )
+                        }
+
+                        val infoCount = result.issues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.INFO }
+
+                        allFileLintResults.add(
+                            FileLintResult(
+                                filePath = result.filePath,
+                                linterName = result.linterName,
+                                errorCount = result.errorCount,
+                                warningCount = result.warningCount,
+                                infoCount = infoCount,
+                                issues = uiIssues
+                            )
+                        )
+
                         lintOutputBuilder.appendLine("  📄 ${result.filePath}")
                         lintOutputBuilder.appendLine("     Errors: ${result.errorCount}, Warnings: ${result.warningCount}")
 
@@ -488,13 +518,23 @@ open class CodeReviewViewModel(
                 }
 
                 updateState {
-                    it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(
+                            lintOutput = lintOutputBuilder.toString(),
+                            lintResults = allFileLintResults
+                        )
+                    )
                 }
             }
 
             lintOutputBuilder.appendLine("✅ Linting complete")
             updateState {
-                it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
+                it.copy(
+                    aiProgress = it.aiProgress.copy(
+                        lintOutput = lintOutputBuilder.toString(),
+                        lintResults = allFileLintResults
+                    )
+                )
             }
 
         } catch (e: Exception) {
@@ -541,27 +581,28 @@ open class CodeReviewViewModel(
                 }
             }
 
-            // Create review task
-            val task = cc.unitmesh.agent.ReviewTask(
-                filePaths = currentState.diffFiles.map { it.path },
-                reviewType = cc.unitmesh.agent.ReviewType.COMPREHENSIVE,
-                projectPath = workspace.rootPath ?: "",
-                additionalContext = context
-            )
+            // Get LLM service from agent
+            val configWrapper = ConfigManager.load()
+            val modelConfig = configWrapper.getActiveModelConfig()!!
+            val llmService = KoogLLMService.create(modelConfig)
 
-            // Execute review
-            val result = codeReviewAgent?.executeTask(task) ?: return
+            // Build prompt for analysis
+            val prompt = buildString {
+                appendLine("Analyze the following lint results and provide insights:")
+                appendLine()
+                appendLine(context)
+                appendLine()
+                appendLine("Please provide:")
+                appendLine("1. Summary of the most critical issues")
+                appendLine("2. Patterns or common problems found")
+                appendLine("3. Recommendations for fixing the issues")
+            }
 
-            analysisOutputBuilder.appendLine(result.message)
-            analysisOutputBuilder.appendLine()
-
-            if (result.findings.isNotEmpty()) {
-                analysisOutputBuilder.appendLine("## Findings (${result.findings.size})")
-                result.findings.forEach { finding ->
-                    analysisOutputBuilder.appendLine("- [${finding.severity}] ${finding.description}")
-                    if (finding.suggestion != null) {
-                        analysisOutputBuilder.appendLine("  💡 ${finding.suggestion}")
-                    }
+            // Stream the LLM response
+            llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+                analysisOutputBuilder.append(chunk)
+                updateState {
+                    it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
                 }
             }
 
@@ -591,12 +632,46 @@ open class CodeReviewViewModel(
                 it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
             }
 
-            // For now, just provide a summary
-            // In a full implementation, this would use the agent to generate actual fixes
-            fixOutputBuilder.appendLine("✅ Analysis complete!")
-            fixOutputBuilder.appendLine()
-            fixOutputBuilder.appendLine("Review the findings above and apply fixes manually,")
-            fixOutputBuilder.appendLine("or use the agent's suggestions to improve your code.")
+            // Build context from lint results and analysis
+            val context = buildString {
+                appendLine("## Lint Results")
+                currentState.aiProgress.lintResults.forEach { fileResult ->
+                    appendLine("### ${fileResult.filePath}")
+                    appendLine("Errors: ${fileResult.errorCount}, Warnings: ${fileResult.warningCount}")
+                    fileResult.issues.take(3).forEach { issue ->
+                        appendLine("- Line ${issue.line}: ${issue.message}")
+                    }
+                    appendLine()
+                }
+                appendLine()
+                appendLine("## Analysis")
+                appendLine(currentState.aiProgress.analysisOutput)
+            }
+
+            // Get LLM service
+            val configWrapper = ConfigManager.load()
+            val modelConfig = configWrapper.getActiveModelConfig()!!
+            val llmService = KoogLLMService.create(modelConfig)
+
+            // Build prompt for fixes
+            val prompt = buildString {
+                appendLine("Based on the lint results and analysis above, suggest specific code fixes:")
+                appendLine()
+                appendLine(context)
+                appendLine()
+                appendLine("For each critical issue, provide:")
+                appendLine("1. The file and line number")
+                appendLine("2. A brief explanation of the problem")
+                appendLine("3. A suggested fix with code example")
+            }
+
+            // Stream the LLM response
+            llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+                fixOutputBuilder.append(chunk)
+                updateState {
+                    it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
+                }
+            }
 
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))

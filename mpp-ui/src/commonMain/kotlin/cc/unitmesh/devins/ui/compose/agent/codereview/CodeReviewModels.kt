@@ -43,9 +43,43 @@ data class AIAnalysisProgress(
     val currentFile: String? = null,
     val currentLine: Int? = null,
     val lintOutput: String = "",
+    val lintResults: List<FileLintResult> = emptyList(),
     val analysisOutput: String = "",
     val fixOutput: String = ""
 )
+
+/**
+ * Lint results for a specific file
+ */
+data class FileLintResult(
+    val filePath: String,
+    val linterName: String,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val issues: List<LintIssueUI>
+)
+
+/**
+ * UI-friendly lint issue
+ */
+data class LintIssueUI(
+    val line: Int,
+    val column: Int,
+    val severity: LintSeverityUI,
+    val message: String,
+    val rule: String? = null,
+    val suggestion: String? = null
+)
+
+/**
+ * UI-friendly lint severity
+ */
+enum class LintSeverityUI {
+    ERROR,
+    WARNING,
+    INFO
+}
 
 /**
  * Stages of AI analysis
