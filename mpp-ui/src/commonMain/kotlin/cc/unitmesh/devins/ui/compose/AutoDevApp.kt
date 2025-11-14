@@ -224,15 +224,7 @@ private fun AutoDevContent(
             selectedAgentType = when (initialMode) {
                 "remote", "session" -> AgentType.REMOTE
                 "local" -> AgentType.LOCAL
-                else -> {
-                    // "auto" - load from config
-                    val configType = wrapper.getAgentType()
-                    when (configType) {
-                        "Remote" -> AgentType.REMOTE
-                        "Local" -> AgentType.LOCAL
-                        else -> AgentType.CODING // Default to CODING
-                    }
-                }
+                else -> wrapper.getAgentType()
             }
 
             useSessionManagement = (initialMode == "session")
