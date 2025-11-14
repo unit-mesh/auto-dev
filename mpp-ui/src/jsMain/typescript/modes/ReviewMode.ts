@@ -132,7 +132,7 @@ export async function runReview(
       console.log(semanticChalk.info('🔍 Detecting linters...'));
 
       try {
-        const linterRegistry = KotlinCC.unitmesh.agent.linter.LinterRegistry.getInstance();
+        const linterRegistry = KotlinCC.unitmesh.agent.linter.JsLinterRegistry;
         const linterSummary = await linterRegistry.getLinterSummaryForFiles(filePaths);
 
         if (linterSummary.totalLinters > 0) {
@@ -191,6 +191,8 @@ export async function runReview(
     // Step 4: Run AI code review
     console.log(semanticChalk.info('🤖 Running AI code review...'));
     console.log();
+
+    let lintResults: any[] = [];
 
     try {
       // Create code review agent

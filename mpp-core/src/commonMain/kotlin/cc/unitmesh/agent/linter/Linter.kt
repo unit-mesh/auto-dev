@@ -197,17 +197,18 @@ class LinterRegistry {
             if (instance == null) {
                 instance = LinterRegistry()
                 // Register default linters
-                registerDefaultLinters(instance!!)
+                registerPlatformLinters(instance!!)
             }
             return instance!!
         }
-
-        private fun registerDefaultLinters(registry: LinterRegistry) {
-            // Register platform-specific linters
-            // This will be implemented in platform-specific source sets
-        }
     }
 }
+
+/**
+ * Platform-specific linter registration
+ * This function is implemented in each platform's source set
+ */
+expect fun registerPlatformLinters(registry: LinterRegistry)
 
 /**
  * Language detection utility

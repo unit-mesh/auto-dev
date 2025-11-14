@@ -15,7 +15,7 @@ import kotlinx.serialization.json.Json
 actual object ConfigManager {
     private const val CONFIG_KEY = "autodev-config"
     private const val TOOL_CONFIG_KEY = "autodev-tool-config"
-    
+
     private val configDir: String = "browser://localStorage"
     private val configFilePath: String = "$configDir/$CONFIG_KEY"
     private val toolConfigFilePath: String = "$configDir/$TOOL_CONFIG_KEY"
@@ -120,6 +120,21 @@ actual object ConfigManager {
 
         val updatedConfigFile = configFile.copy(remoteServer = remoteServer)
         save(updatedConfigFile)
+    }
+
+    actual suspend fun saveLastWorkspace(name: String, path: String) {
+        val wrapper = load()
+        val configFile = wrapper.configFile
+
+        val updatedConfigFile = configFile.copy(
+            lastWorkspace = WorkspaceInfo(name = name, path = path)
+        )
+        save(updatedConfigFile)
+    }
+
+    actual suspend fun getLastWorkspace(): WorkspaceInfo? {
+        val wrapper = load()
+        return wrapper.getLastWorkspace()
     }
 
     actual suspend fun loadToolConfig(): ToolConfigFile {

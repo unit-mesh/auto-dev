@@ -221,6 +221,21 @@ actual object ConfigManager {
         save(updatedConfigFile)
     }
 
+    actual suspend fun saveLastWorkspace(name: String, path: String) {
+        val wrapper = load()
+        val configFile = wrapper.configFile
+
+        val updatedConfigFile = configFile.copy(
+            lastWorkspace = WorkspaceInfo(name = name, path = path)
+        )
+        save(updatedConfigFile)
+    }
+
+    actual suspend fun getLastWorkspace(): WorkspaceInfo? {
+        val wrapper = load()
+        return wrapper.getLastWorkspace()
+    }
+
     actual fun getToolConfigPath(): String = toolConfigFilePath
 
     actual fun generateUniqueConfigName(baseName: String, existingNames: List<String>): String {

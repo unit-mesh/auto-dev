@@ -182,7 +182,7 @@ actual object ConfigManager {
         val updatedConfigFile = configFile.copy(mcpServers = mcpServers)
         save(updatedConfigFile)
     }
-    
+
     actual suspend fun saveRemoteServer(remoteServer: RemoteServerConfig) {
         val wrapper = load()
         val configFile = wrapper.configFile
@@ -259,6 +259,21 @@ actual object ConfigManager {
             uniqueName = "$baseName-$counter"
         }
         return uniqueName
+    }
+
+    actual suspend fun saveLastWorkspace(name: String, path: String) {
+        val wrapper = load()
+        val configFile = wrapper.configFile
+
+        val updatedConfigFile = configFile.copy(
+            lastWorkspace = WorkspaceInfo(name = name, path = path)
+        )
+        save(updatedConfigFile)
+    }
+
+    actual suspend fun getLastWorkspace(): WorkspaceInfo? {
+        val wrapper = load()
+        return wrapper.getLastWorkspace()
     }
 
     private fun createEmpty(): AutoDevConfigWrapper {
