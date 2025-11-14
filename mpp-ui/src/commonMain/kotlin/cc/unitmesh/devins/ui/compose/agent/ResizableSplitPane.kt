@@ -44,7 +44,6 @@ fun ResizableSplitPane(
                 first()
             }
 
-            // Divider with drag handle
             Box(
                 modifier =
                     Modifier
