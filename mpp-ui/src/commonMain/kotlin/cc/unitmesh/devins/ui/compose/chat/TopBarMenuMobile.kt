@@ -32,7 +32,6 @@ fun TopBarMenuMobile(
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onShowDebug: () -> Unit,
-    onModelConfigChange: (ModelConfig) -> Unit,
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
     onToggleTreeView: () -> Unit = {},

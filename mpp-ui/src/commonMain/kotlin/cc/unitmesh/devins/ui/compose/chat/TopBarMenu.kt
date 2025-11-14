@@ -43,36 +43,7 @@ fun TopBarMenu(
     onShowToolConfig: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    // 根据平台选择合适的 UI 风格
-    if (Platform.isWasm) {
-        // WASM: 使用左侧可收起侧边栏风格
-        TopBarMenuWasm(
-            hasHistory = hasHistory,
-            hasDebugInfo = hasDebugInfo,
-            currentModelConfig = currentModelConfig,
-            selectedAgent = selectedAgent,
-            availableAgents = availableAgents,
-            useAgentMode = useAgentMode,
-            isTreeViewVisible = isTreeViewVisible,
-            selectedAgentType = selectedAgentType,
-            useSessionManagement = useSessionManagement,
-            selectedTaskAgentType = selectedTaskAgentType,
-            onAgentTypeChange = onAgentTypeChange,
-            onTaskAgentTypeChange = onTaskAgentTypeChange,
-            onConfigureRemote = onConfigureRemote,
-            onSessionManagementToggle = onSessionManagementToggle,
-            onOpenDirectory = onOpenDirectory,
-            onClearHistory = onClearHistory,
-            onShowDebug = onShowDebug,
-            onModelConfigChange = onModelConfigChange,
-            onAgentChange = onAgentChange,
-            onModeToggle = onModeToggle,
-            onToggleTreeView = onToggleTreeView,
-            onShowModelConfig = onShowModelConfig,
-            onShowToolConfig = onShowToolConfig,
-            modifier = modifier
-        )
-    } else if (Platform.isAndroid) {
+    if (Platform.isAndroid) {
         // Android: 使用紧凑的 Dropdown 菜单风格
         TopBarMenuMobile(
             hasHistory = hasHistory,
@@ -92,7 +63,6 @@ fun TopBarMenu(
             onOpenDirectory = onOpenDirectory,
             onClearHistory = onClearHistory,
             onShowDebug = onShowDebug,
-            onModelConfigChange = onModelConfigChange,
             onAgentChange = onAgentChange,
             onModeToggle = onModeToggle,
             onToggleTreeView = onToggleTreeView,
@@ -122,7 +92,6 @@ fun TopBarMenu(
             onOpenDirectory = onOpenDirectory,
             onClearHistory = onClearHistory,
             onShowDebug = onShowDebug,
-            onModelConfigChange = onModelConfigChange,
             onAgentChange = onAgentChange,
             onModeToggle = onModeToggle,
             onToggleTreeView = onToggleTreeView,
