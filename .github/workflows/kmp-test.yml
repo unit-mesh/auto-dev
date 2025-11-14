@@ -110,6 +110,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Check out the current repository
+      - name: Install linter
+        run: sdk install detekt pmd
+
       # Validate wrapper
       - name: Gradle Wrapper Validation
         uses: gradle/actions/wrapper-validation@v4
