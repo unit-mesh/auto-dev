@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
+import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.devins.ui.compose.sketch.DiffParser
 import cc.unitmesh.devins.workspace.Workspace
 import kotlinx.coroutines.*
@@ -11,8 +12,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-open class CodeReviewViewModel(private val workspace: Workspace, private val codeReviewAgent: CodeReviewAgent? = null) {
+open class CodeReviewViewModel(
+    private val workspace: Workspace,
+    private val codeReviewAgent: CodeReviewAgent? = null
+) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val gitOps = GitOperations(workspace.rootPath ?: "")
 
     // State
     private val _state = MutableStateFlow(CodeReviewState())
@@ -25,14 +30,135 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
     private var currentJob: Job? = null
 
     init {
-        // Auto-load diff when ViewModel is created
-        scope.launch {
-            loadDiff()
+        CoroutineScope(Dispatchers.Default).launch {
+            if (gitOps.isSupported()) {
+                loadCommitHistory()
+            } else {
+                // Fallback to loading diff for platforms without git support
+                loadDiff()
+            }
         }
     }
 
     /**
-     * Load git diff from workspace
+     * Load recent git commits
+     */
+    suspend fun loadCommitHistory(count: Int = 20) {
+        updateState { it.copy(isLoading = true, error = null) }
+
+        try {
+            val gitCommits = gitOps.getRecentCommits(count)
+
+            // Convert GitCommitInfo to CommitInfo
+            val commits = gitCommits.map { git ->
+                CommitInfo(
+                    hash = git.hash,
+                    shortHash = git.shortHash,
+                    author = git.author,
+                    timestamp = git.date,
+                    date = formatDate(git.date),
+                    message = git.message
+                )
+            }
+
+            updateState {
+                it.copy(
+                    isLoading = false,
+                    commitHistory = commits,
+                    selectedCommitIndex = 0,
+                    error = null
+                )
+            }
+
+            if (commits.isNotEmpty()) {
+                loadCommitDiff(0)
+            }
+
+        } catch (e: Exception) {
+            updateState {
+                it.copy(
+                    isLoading = false,
+                    error = "Failed to load commits: ${e.message}"
+                )
+            }
+        }
+    }
+
+    /**
+     * Load diff for a specific commit
+     */
+    suspend fun loadCommitDiff(index: Int) {
+        if (index !in currentState.commitHistory.indices) {
+            return
+        }
+
+        val commit = currentState.commitHistory[index]
+
+        currentJob?.cancel()
+        currentJob = scope.launch {
+            updateState {
+                it.copy(
+                    isLoading = true,
+                    selectedCommitIndex = index,
+                    error = null
+                )
+            }
+
+            try {
+                val gitDiff = gitOps.getCommitDiff(commit.hash)
+
+                if (gitDiff == null) {
+                    updateState {
+                        it.copy(
+                            isLoading = false,
+                            error = "No diff available for this commit"
+                        )
+                    }
+                    return@launch
+                }
+
+                // Convert to UI model using DiffParser
+                val diffFiles = gitDiff.files.map { file ->
+                    val parsedDiff = DiffParser.parse(file.diff)
+                    val hunks = parsedDiff.firstOrNull()?.hunks ?: emptyList()
+
+                    DiffFileInfo(
+                        path = file.path,
+                        oldPath = file.oldPath,
+                        changeType = when (file.status) {
+                            cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> ChangeType.ADDED
+                            cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> ChangeType.DELETED
+                            cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> ChangeType.MODIFIED
+                            cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAMED
+                            cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.MODIFIED
+                        },
+                        hunks = hunks,
+                        language = detectLanguage(file.path)
+                    )
+                }
+
+                updateState {
+                    it.copy(
+                        isLoading = false,
+                        diffFiles = diffFiles,
+                        selectedFileIndex = 0,
+                        error = null
+                    )
+                }
+
+            } catch (e: Exception) {
+                updateState {
+                    it.copy(
+                        isLoading = false,
+                        error = "Failed to load diff: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Load git diff from workspace (fallback for platforms without git support)
      */
     suspend fun loadDiff(request: DiffRequest = DiffRequest()) {
         updateState { it.copy(isLoading = true, error = null) }
@@ -169,8 +295,8 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
      * Select a different commit to view
      */
     open fun selectCommit(index: Int) {
-        if (index in currentState.commitHistory.indices) {
-            updateState { it.copy(selectedCommitIndex = index) }
+        scope.launch {
+            loadCommitDiff(index)
         }
     }
 
@@ -195,7 +321,11 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
      */
     open fun refresh() {
         scope.launch {
-            loadDiff()
+            if (gitOps.isSupported() && currentState.commitHistory.isNotEmpty()) {
+                loadCommitHistory()
+            } else {
+                loadDiff()
+            }
         }
     }
 

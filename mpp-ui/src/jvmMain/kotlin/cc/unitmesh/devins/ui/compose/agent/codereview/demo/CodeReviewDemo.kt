@@ -35,7 +35,7 @@ fun main() = application {
 fun CodeReviewDemoApp() {
     var projectPath by remember { mutableStateOf("/Volumes/source/ai/autocrud") }
     var workspace: Workspace? by remember { mutableStateOf(null) }
-    var viewModel: JvmCodeReviewViewModel? by remember { mutableStateOf(null) }
+    var viewModel: CodeReviewViewModel? by remember { mutableStateOf(null) }
     var isInitialized by remember { mutableStateOf(false) }
 
     // Initialize workspace and viewModel
@@ -50,10 +50,8 @@ fun CodeReviewDemoApp() {
                 val ws = DefaultWorkspace.create("Demo Workspace", projectPath)
                 workspace = ws
 
-                val gitService = GitService(projectPath)
-                val vm = JvmCodeReviewViewModel(
+                val vm = CodeReviewViewModel(
                     workspace = ws,
-                    gitService = gitService,
                     codeReviewAgent = null
                 )
                 viewModel = vm
@@ -106,7 +104,7 @@ fun CodeReviewDemoApp() {
 }
 
 @Composable
-private fun CodeReviewDemoContent(viewModel: JvmCodeReviewViewModel) {
+private fun CodeReviewDemoContent(viewModel: CodeReviewViewModel) {
     val state by viewModel.state.collectAsState()
 
     Row(modifier = Modifier.fillMaxSize()) {

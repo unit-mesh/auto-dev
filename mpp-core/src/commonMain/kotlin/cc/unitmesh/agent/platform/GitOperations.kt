@@ -1,9 +1,12 @@
 package cc.unitmesh.agent.platform
 
+import cc.unitmesh.devins.workspace.GitCommitInfo
+import cc.unitmesh.devins.workspace.GitDiffInfo
+
 /**
  * 跨平台 Git 操作抽象
  * 
- * 提供获取修改文件列表和文件差异的能力
+ * 提供获取修改文件列表、文件差异、提交历史等能力
  * 不同平台有不同实现：
  * - JVM: 使用 ProcessBuilder 调用 git 命令
  * - Android: 空实现或抛出异常（Android 上通常没有 git）
@@ -22,6 +25,28 @@ expect class GitOperations(projectPath: String) {
      * @return diff 内容，如果获取失败返回 null
      */
     suspend fun getFileDiff(filePath: String): String?
+    
+    /**
+     * 获取最近的 commit 历史
+     * @param count 获取的 commit 数量
+     * @return commit 列表
+     */
+    suspend fun getRecentCommits(count: Int = 20): List<GitCommitInfo>
+    
+    /**
+     * 获取指定 commit 的 diff
+     * @param commitHash commit hash
+     * @return diff 信息，如果获取失败返回 null
+     */
+    suspend fun getCommitDiff(commitHash: String): GitDiffInfo?
+    
+    /**
+     * 获取两个 commit/branch 之间的 diff
+     * @param base 基准 commit/branch
+     * @param target 目标 commit/branch
+     * @return diff 信息，如果获取失败返回 null
+     */
+    suspend fun getDiff(base: String, target: String): GitDiffInfo?
     
     /**
      * 检查当前平台是否支持 git 操作

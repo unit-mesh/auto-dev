@@ -20,9 +20,6 @@ import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
-// Expect function for platform-specific date formatting
-expect fun formatDate(timestamp: Long): String
-
 /**
  * Main Side-by-Side Code Review UI (redesigned)
  *
