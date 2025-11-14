@@ -30,7 +30,7 @@ fun TopBarMenuDesktop(
     selectedTaskAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
     onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     // Sidebar 相关参数
-    showSessionSidebar: Boolean = false,
+    showSessionSidebar: Boolean = true,
     onToggleSidebar: () -> Unit = {},
     onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
