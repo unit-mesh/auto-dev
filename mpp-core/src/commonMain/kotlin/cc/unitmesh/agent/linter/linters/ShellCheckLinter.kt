@@ -18,37 +18,61 @@ class ShellCheckLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExe
     override fun getLintCommand(filePath: String, projectPath: String) =
         "shellcheck -f json \"$filePath\""
 
-    override fun parseOutput(output: String, filePath: String): List<LintIssue> {
-        val issues = mutableListOf<LintIssue>()
+    override fun parseOutput(output: String, filePath: String): List<LintIssue> =
+        Companion.parseShellCheckOutput(output, filePath)
 
-        // Parse shellcheck JSON output
-        try {
-            val lines = output.lines()
-            for (line in lines) {
-                if (line.contains("\"level\"")) {
-                    val severity = when {
-                        line.contains("error") -> LintSeverity.ERROR
-                        line.contains("warning") -> LintSeverity.WARNING
-                        else -> LintSeverity.INFO
+    companion object {
+        /**
+         * Parse shellcheck JSON output
+         * Example JSON:
+         * [{"file":"script.sh","line":6,"column":1,"level":"warning","code":2034,"message":"Variable appears unused."}]
+         */
+        fun parseShellCheckOutput(output: String, filePath: String): List<LintIssue> {
+            val issues = mutableListOf<LintIssue>()
+
+            try {
+                // Simple JSON parsing for shellcheck output structure
+                if (output.trim().startsWith("[") && output.trim().endsWith("]")) {
+                    // Extract individual issue objects
+                    val jsonPattern = Regex("""\{[^}]*"level"[^}]*\}""")
+                    val matches = jsonPattern.findAll(output)
+
+                    for (match in matches) {
+                        val json = match.value
+                        
+                        // Extract fields using regex
+                        val lineMatch = Regex(""""line"\s*:\s*(\d+)""").find(json)
+                        val colMatch = Regex(""""column"\s*:\s*(\d+)""").find(json)
+                        val levelMatch = Regex(""""level"\s*:\s*"([^"]+)"""").find(json)
+                        val codeMatch = Regex(""""code"\s*:\s*(\d+)""").find(json)
+                        val messageMatch = Regex(""""message"\s*:\s*"([^"]+)"""").find(json)
+
+                        if (lineMatch != null && messageMatch != null && levelMatch != null) {
+                            val severity = when (levelMatch.groupValues[1].lowercase()) {
+                                "error" -> LintSeverity.ERROR
+                                "warning" -> LintSeverity.WARNING
+                                else -> LintSeverity.INFO
+                            }
+
+                            issues.add(
+                                LintIssue(
+                                    line = lineMatch.groupValues[1].toIntOrNull() ?: 0,
+                                    column = colMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0,
+                                    severity = severity,
+                                    message = messageMatch.groupValues[1],
+                                    rule = codeMatch?.groupValues?.get(1) ?: "SC",
+                                    filePath = filePath
+                                )
+                            )
+                        }
                     }
-
-                    issues.add(
-                        LintIssue(
-                            line = 0,
-                            column = 0,
-                            severity = severity,
-                            message = "ShellCheck issue found",
-                            rule = null,
-                            filePath = filePath
-                        )
-                    )
                 }
+            } catch (e: Exception) {
+                // Fallback - return empty list
             }
-        } catch (e: Exception) {
-            // Fallback
-        }
 
-        return issues
+            return issues
+        }
     }
 
     override fun getInstallationInstructions() =

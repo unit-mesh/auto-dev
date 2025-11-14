@@ -18,38 +18,52 @@ class PMDLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecutor) 
     override fun getLintCommand(filePath: String, projectPath: String) =
         "pmd check -d \"$filePath\" -f text -R rulesets/java/quickstart.xml"
 
-    override fun parseOutput(output: String, filePath: String): List<LintIssue> {
-        val issues = mutableListOf<LintIssue>()
+    override fun parseOutput(output: String, filePath: String): List<LintIssue> =
+        Companion.parsePMDOutput(output, filePath)
 
-        // Parse PMD output format
-        // Example: /path/to/File.java:10:	Rule violation message
-        val pattern = Regex("""(.+):(\d+):\s*(.+)""")
+    companion object {
+        /**
+         * Parse PMD output format
+         * Example: File.java:10: RuleName: Rule violation message
+         * Example: File.java:10:5: RuleName: Rule violation message
+         */
+        fun parsePMDOutput(output: String, filePath: String): List<LintIssue> {
+            val issues = mutableListOf<LintIssue>()
 
-        for (line in output.lines()) {
-            val match = pattern.find(line)
-            if (match != null) {
-                val (_, lineNum, message) = match.destructured
+            // PMD format: filename:line: RuleName: message or filename:line:column: RuleName: message
+            val pattern = Regex("""^([^:]+):(\d+):(?:(\d+):)?\s*([^:]+):\s*(.+)$""")
 
-                // PMD doesn't always specify severity in text format, default to WARNING
-                val severity = when {
-                    message.contains("error", ignoreCase = true) -> LintSeverity.ERROR
-                    else -> LintSeverity.WARNING
+            for (line in output.lines()) {
+                // Skip warning lines
+                if (line.trim().startsWith("[")) {
+                    continue
                 }
+                
+                val match = pattern.find(line.trim())
+                if (match != null) {
+                    val (_, lineNum, colStr, rule, message) = match.destructured
 
-                issues.add(
-                    LintIssue(
-                        line = lineNum.toIntOrNull() ?: 0,
-                        column = 0,
-                        severity = severity,
-                        message = message.trim(),
-                        rule = null,
-                        filePath = filePath
+                    // PMD doesn't specify severity in text format, default to WARNING
+                    val severity = when {
+                        message.contains("error", ignoreCase = true) -> LintSeverity.ERROR
+                        else -> LintSeverity.WARNING
+                    }
+
+                    issues.add(
+                        LintIssue(
+                            line = lineNum.toIntOrNull() ?: 0,
+                            column = colStr.toIntOrNull() ?: 0,
+                            severity = severity,
+                            message = message.trim(),
+                            rule = rule.trim(),
+                            filePath = filePath
+                        )
                     )
-                )
+                }
             }
-        }
 
-        return issues
+            return issues
+        }
     }
 
     override fun getInstallationInstructions() =

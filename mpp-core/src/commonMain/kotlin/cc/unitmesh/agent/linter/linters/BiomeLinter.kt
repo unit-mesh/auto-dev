@@ -18,41 +18,57 @@ class BiomeLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecutor
     override fun getLintCommand(filePath: String, projectPath: String) =
         "biome check --reporter=json \"$filePath\""
 
-    override fun parseOutput(output: String, filePath: String): List<LintIssue> {
-        // Parse Biome JSON output
-        // This is a simplified version - real implementation would use JSON parsing
-        val issues = mutableListOf<LintIssue>()
+    override fun parseOutput(output: String, filePath: String): List<LintIssue> =
+        Companion.parseBiomeOutput(output, filePath)
 
-        try {
-            // Biome outputs JSON format, we'll parse it simply here
-            // In real implementation, use kotlinx.serialization
-            val lines = output.lines()
-            for (line in lines) {
-                if (line.contains("\"severity\"")) {
-                    // Extract basic info from JSON line
-                    val severity = when {
-                        line.contains("error") -> LintSeverity.ERROR
-                        line.contains("warning") -> LintSeverity.WARNING
-                        else -> LintSeverity.INFO
+    companion object {
+        /**
+         * Parse Biome JSON output
+         * Biome outputs a JSON format with diagnostics array
+         */
+        fun parseBiomeOutput(output: String, filePath: String): List<LintIssue> {
+            val issues = mutableListOf<LintIssue>()
+
+            try {
+                // Biome JSON parsing - simplified approach
+                if (output.contains("\"diagnostics\"")) {
+                    // Look for diagnostic objects
+                    val diagnosticPattern = Regex("""\{[^}]*"severity"[^}]*\}""")
+                    val matches = diagnosticPattern.findAll(output)
+
+                    for (match in matches) {
+                        val json = match.value
+                        
+                        // Extract fields
+                        val severityMatch = Regex(""""severity"\s*:\s*"([^"]+)"""").find(json)
+                        val messageMatch = Regex(""""message"\s*:\s*"([^"]+)"""").find(json)
+                        
+                        if (messageMatch != null) {
+                            val severity = when (severityMatch?.groupValues?.get(1)?.lowercase()) {
+                                "error" -> LintSeverity.ERROR
+                                "warning" -> LintSeverity.WARNING
+                                else -> LintSeverity.INFO
+                            }
+
+                            issues.add(
+                                LintIssue(
+                                    line = 0, // Biome's JSON structure is complex, simplified here
+                                    column = 0,
+                                    severity = severity,
+                                    message = messageMatch.groupValues[1],
+                                    rule = null,
+                                    filePath = filePath
+                                )
+                            )
+                        }
                     }
-
-                    issues.add(
-                        LintIssue(
-                            line = 0, // Would extract from JSON
-                            column = 0,
-                            severity = severity,
-                            message = "Biome issue found", // Would extract from JSON
-                            rule = null,
-                            filePath = filePath
-                        )
-                    )
                 }
+            } catch (e: Exception) {
+                // Fallback to simple parsing
             }
-        } catch (e: Exception) {
-            // Fallback to simple parsing
-        }
 
-        return issues
+            return issues
+        }
     }
 
     override fun getInstallationInstructions() =
