@@ -128,7 +128,7 @@ class WriteFileInvocation(
             // Determine change type
             val changeType = when {
                 params.append -> ChangeType.EDIT
-                fileExists -> ChangeType.OVERWRITE
+                fileExists -> ChangeType.RENAME
                 else -> ChangeType.CREATE
             }
             

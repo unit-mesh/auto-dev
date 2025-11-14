@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
@@ -316,17 +317,17 @@ fun CollapsibleFileDiffItem(file: DiffFileInfo) {
                 ) {
                     Icon(
                         imageVector = when (file.changeType) {
-                            ChangeType.ADDED -> AutoDevComposeIcons.Add
-                            ChangeType.DELETED -> AutoDevComposeIcons.Delete
-                            ChangeType.MODIFIED -> AutoDevComposeIcons.Edit
-                            ChangeType.RENAMED -> AutoDevComposeIcons.DriveFileRenameOutline
+                            cc.unitmesh.agent.tool.tracking.ChangeType.CREATE -> AutoDevComposeIcons.Add
+                            cc.unitmesh.agent.tool.tracking.ChangeType.DELETE -> AutoDevComposeIcons.Delete
+                            cc.unitmesh.agent.tool.tracking.ChangeType.EDIT -> AutoDevComposeIcons.Edit
+                            cc.unitmesh.agent.tool.tracking.ChangeType.RENAME -> AutoDevComposeIcons.DriveFileRenameOutline
                         },
                         contentDescription = file.changeType.name,
                         tint = when (file.changeType) {
-                            ChangeType.ADDED -> AutoDevColors.Green.c600
-                            ChangeType.DELETED -> AutoDevColors.Red.c600
-                            ChangeType.MODIFIED -> AutoDevColors.Blue.c600
-                            ChangeType.RENAMED -> AutoDevColors.Amber.c600
+                            cc.unitmesh.agent.tool.tracking.ChangeType.CREATE -> AutoDevColors.Green.c600
+                            cc.unitmesh.agent.tool.tracking.ChangeType.DELETE -> AutoDevColors.Red.c600
+                            cc.unitmesh.agent.tool.tracking.ChangeType.EDIT -> AutoDevColors.Blue.c600
+                            ChangeType.RENAME -> AutoDevColors.Amber.c600
                         },
                         modifier = Modifier.size(18.dp)
                     )

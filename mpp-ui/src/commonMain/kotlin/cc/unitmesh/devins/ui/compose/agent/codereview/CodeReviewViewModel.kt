@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.agent.platform.GitOperations
+import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.sketch.DiffParser
 import cc.unitmesh.devins.workspace.Workspace
 import kotlinx.coroutines.*
@@ -126,11 +127,11 @@ open class CodeReviewViewModel(
                         path = file.path,
                         oldPath = file.oldPath,
                         changeType = when (file.status) {
-                            cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> ChangeType.ADDED
-                            cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> ChangeType.DELETED
-                            cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> ChangeType.MODIFIED
-                            cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAMED
-                            cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.MODIFIED
+                            cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> cc.unitmesh.agent.tool.tracking.ChangeType.CREATE
+                            cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> cc.unitmesh.agent.tool.tracking.ChangeType.DELETE
+                            cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
+                            cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> cc.unitmesh.agent.tool.tracking.ChangeType.RENAME
+                            cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
                         },
                         hunks = hunks,
                         language = detectLanguage(file.path)
@@ -186,11 +187,11 @@ open class CodeReviewViewModel(
                     path = file.path,
                     oldPath = file.oldPath,
                     changeType = when (file.status) {
-                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> ChangeType.ADDED
-                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> ChangeType.DELETED
-                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> ChangeType.MODIFIED
-                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAMED
-                        cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.MODIFIED
+                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> cc.unitmesh.agent.tool.tracking.ChangeType.CREATE
+                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> cc.unitmesh.agent.tool.tracking.ChangeType.DELETE
+                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
+                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> cc.unitmesh.agent.tool.tracking.ChangeType.RENAME
+                        cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.EDIT
                     },
                     hunks = hunks,
                     language = detectLanguage(file.path)

@@ -74,7 +74,7 @@ fun FileChangeItem(
                             ChangeType.CREATE -> Icons.Default.Add
                             ChangeType.EDIT -> Icons.Default.Edit
                             ChangeType.DELETE -> Icons.Default.Delete
-                            ChangeType.OVERWRITE -> Icons.Default.Create
+                            ChangeType.RENAME -> Icons.Default.Create
                         },
                     contentDescription = change.changeType.name,
                     modifier = Modifier.Companion.size(16.dp),
@@ -83,7 +83,7 @@ fun FileChangeItem(
                             ChangeType.CREATE -> MaterialTheme.colorScheme.primary
                             ChangeType.EDIT -> MaterialTheme.colorScheme.tertiary
                             ChangeType.DELETE -> MaterialTheme.colorScheme.error
-                            ChangeType.OVERWRITE -> MaterialTheme.colorScheme.secondary
+                            ChangeType.RENAME -> MaterialTheme.colorScheme.secondary
                         }
                 )
 

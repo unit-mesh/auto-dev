@@ -104,7 +104,7 @@ enum class ChangeType {
     CREATE,
     EDIT,
     DELETE,
-    OVERWRITE
+    RENAME
 }
 
 /**

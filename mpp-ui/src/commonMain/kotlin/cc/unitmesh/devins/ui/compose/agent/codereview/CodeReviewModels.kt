@@ -1,8 +1,7 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
+import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
-import cc.unitmesh.devins.ui.compose.sketch.DiffLine
-import cc.unitmesh.devins.ui.compose.sketch.DiffLineType
 import kotlinx.serialization.Serializable
 
 /**
@@ -26,20 +25,10 @@ data class CodeReviewState(
 data class DiffFileInfo(
     val path: String,
     val oldPath: String? = null, // For renamed files
-    val changeType: ChangeType = ChangeType.MODIFIED,
+    val changeType: ChangeType = ChangeType.EDIT,
     val hunks: List<DiffHunk> = emptyList(),
     val language: String? = null
 )
-
-/**
- * Type of file change
- */
-enum class ChangeType {
-    ADDED,
-    DELETED,
-    MODIFIED,
-    RENAMED
-}
 
 /**
  * AI analysis progress for streaming display
