@@ -9,10 +9,11 @@ import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.tracking.ChangeType
-import cc.unitmesh.codegraph.CodeGraphFactory
-import cc.unitmesh.codegraph.model.CodeElementType
-import cc.unitmesh.codegraph.parser.Language
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
+import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.CodeAnalyzer
+import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.DiffContextBuilder
+import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
+import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintResultFormatter
 import cc.unitmesh.devins.ui.compose.sketch.DiffParser
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.Workspace
@@ -28,6 +29,12 @@ open class CodeReviewViewModel(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val gitOps = GitOperations(workspace.rootPath ?: "")
+
+    // Non-AI analysis components (extracted for testability)
+    private val codeAnalyzer = CodeAnalyzer(workspace)
+    private val lintExecutor = LintExecutor()
+    private val lintResultFormatter = LintResultFormatter()
+    private val diffContextBuilder = DiffContextBuilder()
 
     // State
     private val _state = MutableStateFlow(CodeReviewState())
@@ -438,347 +445,74 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Analyze modified code to find which functions/classes were changed
-     * This uses CodeGraph to parse the file and map diff changes to code elements
+     * Analyze modified code to find which functions/classes were changed.
+     * Delegates to CodeAnalyzer for the actual analysis logic.
      */
     suspend fun analyzeModifiedCode(): Map<String, List<ModifiedCodeRange>> {
         val projectPath = workspace.rootPath ?: return emptyMap()
-        val modifiedRanges = mutableMapOf<String, MutableList<ModifiedCodeRange>>()
 
-        try {
-            updateState {
-                it.copy(
-                    aiProgress = it.aiProgress.copy(
-                        lintOutput = "🔍 Analyzing modified code structure...\n"
-                    )
-                )
-            }
-
-            val parser = CodeGraphFactory.createParser()
-
-            for (diffFile in currentState.diffFiles) {
-                // Skip deleted files
-                if (diffFile.changeType == ChangeType.DELETE) continue
-
-                val filePath = diffFile.path
-                val fullPath = if (projectPath.endsWith("/")) {
-                    "$projectPath$filePath"
-                } else {
-                    "$projectPath/$filePath"
-                }
-
-                // Determine language from file extension
-                val language = detectLanguageFromPath(filePath)
-                if (language == Language.UNKNOWN) {
-                    AutoDevLogger.info("CodeReviewViewModel") {
-                        "Skipping $filePath - unknown language"
-                    }
-                    continue
-                }
-
-                // Read file content
-                val fileContent = try {
-                    workspace.fileSystem.readFile(filePath)
-                } catch (e: Exception) {
-                    AutoDevLogger.warn("CodeReviewViewModel") {
-                        "Failed to read file $filePath: ${e.message}"
-                    }
-                    continue
-                }
-
-                if (fileContent == null) {
-                    AutoDevLogger.warn("CodeReviewViewModel") {
-                        "File not found: $filePath"
-                    }
-                    continue
-                }
-
-                // Get modified line numbers from hunks
-                val modifiedLines = mutableSetOf<Int>()
-                diffFile.hunks.forEach { hunk ->
-                    hunk.lines.forEach { line ->
-                        if (line.type == cc.unitmesh.devins.ui.compose.sketch.DiffLineType.ADDED) {
-                            line.newLineNumber?.let { modifiedLines.add(it) }
-                        }
-                    }
-                }
-
-                if (modifiedLines.isEmpty()) continue
-
-                // Parse the file to get code structure
-                val codeNodes = try {
-                    parser.parseNodes(fileContent, filePath, language)
-                } catch (e: Exception) {
-                    AutoDevLogger.error("CodeReviewViewModel") {
-                        "Failed to parse $filePath: ${e.message}"
-                    }
-                    continue
-                }
-
-                // Find which functions/classes contain modified lines
-                val affectedNodes = codeNodes.filter { node ->
-                    // Only consider methods, functions, and classes
-                    when (node.type) {
-                        CodeElementType.METHOD,
-                        CodeElementType.FUNCTION,
-                        CodeElementType.CLASS,
-                        CodeElementType.INTERFACE -> {
-                            // Check if any modified line falls within this node's range
-                            modifiedLines.any { line ->
-                                line >= node.startLine && line <= node.endLine
-                            }
-                        }
-
-                        else -> false
-                    }
-                }
-
-                // Create ModifiedCodeRange for each affected node
-                val ranges = affectedNodes.map { node ->
-                    val affectedLines = modifiedLines.filter { line ->
-                        line >= node.startLine && line <= node.endLine
-                    }.sorted()
-
-                    ModifiedCodeRange(
-                        filePath = filePath,
-                        elementName = node.name,
-                        elementType = node.type.name,
-                        startLine = node.startLine,
-                        endLine = node.endLine,
-                        modifiedLines = affectedLines
-                    )
-                }
-
-                if (ranges.isNotEmpty()) {
-                    modifiedRanges.getOrPut(filePath) { mutableListOf() }.addAll(ranges)
-                }
-
+        // Delegate to CodeAnalyzer with progress callback
+        val modifiedRanges = codeAnalyzer.analyzeModifiedCode(
+            diffFiles = currentState.diffFiles,
+            projectPath = projectPath,
+            progressCallback = { progress ->
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(
-                            lintOutput = it.aiProgress.lintOutput +
-                                "  ✓ $filePath: Found ${ranges.size} modified code element(s)\n"
+                            lintOutput = it.aiProgress.lintOutput + progress
                         )
                     )
                 }
             }
+        )
 
-            updateState {
-                it.copy(
-                    aiProgress = it.aiProgress.copy(
-                        lintOutput = it.aiProgress.lintOutput +
-                            "\n✅ Code analysis complete. Found ${modifiedRanges.values.sumOf { it.size }} modified code elements.\n\n",
-                        modifiedCodeRanges = modifiedRanges
-                    )
+        // Update state with results
+        updateState {
+            it.copy(
+                aiProgress = it.aiProgress.copy(
+                    modifiedCodeRanges = modifiedRanges
                 )
-            }
-
-        } catch (e: Exception) {
-            AutoDevLogger.error("CodeReviewViewModel") {
-                "Failed to analyze modified code: ${e.message}"
-            }
-            updateState {
-                it.copy(
-                    aiProgress = it.aiProgress.copy(
-                        lintOutput = it.aiProgress.lintOutput +
-                            "\n⚠️ Failed to analyze code structure: ${e.message}\n\n"
-                    )
-                )
-            }
+            )
         }
 
         return modifiedRanges
     }
 
     /**
-     * Detect programming language from file path
+     * Detect programming language from file path.
+     * Delegates to CodeAnalyzer.
      */
-    fun detectLanguageFromPath(filePath: String): Language {
-        return when (filePath.substringAfterLast('.', "").lowercase()) {
-            "java" -> Language.JAVA
-            "kt", "kts" -> Language.KOTLIN
-            "cs" -> Language.CSHARP
-            "js", "jsx" -> Language.JAVASCRIPT
-            "ts", "tsx" -> Language.TYPESCRIPT
-            "py" -> Language.PYTHON
-            "go" -> Language.GO
-            "rs" -> Language.RUST
-            else -> Language.UNKNOWN
-        }
-    }
+    fun detectLanguageFromPath(filePath: String) = codeAnalyzer.detectLanguageFromPath(filePath)
 
     suspend fun runLint(
         filePaths: List<String>,
         modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap()
     ) {
-        try {
-            val projectPath = workspace.rootPath ?: return
+        val projectPath = workspace.rootPath ?: return
 
-            // Get linter registry
-            val linterRegistry = cc.unitmesh.agent.linter.LinterRegistry.getInstance()
-
-            // Find suitable linters for the files
-            val linters = linterRegistry.findLintersForFiles(filePaths)
-
-            if (linters.isEmpty()) {
+        // Delegate to LintExecutor with progress callback
+        val lintResults = lintExecutor.runLint(
+            filePaths = filePaths,
+            projectPath = projectPath,
+            modifiedCodeRanges = modifiedCodeRanges,
+            progressCallback = { progress ->
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(
-                            lintOutput = it.aiProgress.lintOutput + "No suitable linters found for the given files.\n"
-                        )
-                    )
-                }
-                return
-            }
-
-            val lintOutputBuilder = StringBuilder(currentState.aiProgress.lintOutput)
-            lintOutputBuilder.appendLine("🔍 Running linters: ${linters.joinToString(", ") { it.name }}")
-
-            if (modifiedCodeRanges.isNotEmpty()) {
-                val totalRanges = modifiedCodeRanges.values.sumOf { it.size }
-                lintOutputBuilder.appendLine("   Filtering results to $totalRanges modified code element(s)")
-            }
-            lintOutputBuilder.appendLine()
-
-            updateState {
-                it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
-            }
-
-            val allFileLintResults = mutableListOf<FileLintResult>()
-
-            // Run each linter
-            for (linter in linters) {
-                // Check if linter is available
-                if (!linter.isAvailable()) {
-                    lintOutputBuilder.appendLine("⚠️  ${linter.name} is not installed")
-                    lintOutputBuilder.appendLine("   ${linter.getInstallationInstructions()}")
-                    lintOutputBuilder.appendLine()
-                    updateState {
-                        it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
-                    }
-                    continue
-                }
-
-                lintOutputBuilder.appendLine("Running ${linter.name}...")
-                updateState {
-                    it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
-                }
-
-                // Lint files
-                val results = linter.lintFiles(filePaths, projectPath)
-
-                // Convert to UI model and aggregate
-                for (result in results) {
-                    if (result.hasIssues) {
-                        // Filter issues to only those in modified code ranges
-                        val filteredIssues = if (modifiedCodeRanges.isNotEmpty()) {
-                            val ranges = modifiedCodeRanges[result.filePath] ?: emptyList()
-                            if (ranges.isEmpty()) {
-                                // No modified ranges for this file, skip all issues
-                                emptyList()
-                            } else {
-                                result.issues.filter { issue ->
-                                    ranges.any { range ->
-                                        issue.line >= range.startLine && issue.line <= range.endLine
-                                    }
-                                }
-                            }
-                        } else {
-                            // No filtering, include all issues
-                            result.issues
-                        }
-
-                        if (filteredIssues.isEmpty()) continue
-
-                        val uiIssues = filteredIssues.map { issue ->
-                            LintIssueUI(
-                                line = issue.line,
-                                column = issue.column,
-                                severity = when (issue.severity) {
-                                    cc.unitmesh.agent.linter.LintSeverity.ERROR -> LintSeverityUI.ERROR
-                                    cc.unitmesh.agent.linter.LintSeverity.WARNING -> LintSeverityUI.WARNING
-                                    cc.unitmesh.agent.linter.LintSeverity.INFO -> LintSeverityUI.INFO
-                                },
-                                message = issue.message,
-                                rule = issue.rule,
-                                suggestion = issue.suggestion
-                            )
-                        }
-
-                        val errorCount =
-                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
-                        val warningCount =
-                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.WARNING }
-                        val infoCount =
-                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.INFO }
-
-                        allFileLintResults.add(
-                            FileLintResult(
-                                filePath = result.filePath,
-                                linterName = result.linterName,
-                                errorCount = errorCount,
-                                warningCount = warningCount,
-                                infoCount = infoCount,
-                                issues = uiIssues
-                            )
-                        )
-
-                        lintOutputBuilder.appendLine("  📄 ${result.filePath}")
-
-                        if (modifiedCodeRanges.isNotEmpty()) {
-                            val totalIssues = result.issues.size
-                            val filteredCount = filteredIssues.size
-                            lintOutputBuilder.appendLine("     Found: $filteredCount/$totalIssues issues in modified code")
-                        }
-
-                        lintOutputBuilder.appendLine("     Errors: $errorCount, Warnings: $warningCount")
-
-                        // Show first few issues
-                        filteredIssues.take(5).forEach { issue ->
-                            val severityIcon = when (issue.severity) {
-                                cc.unitmesh.agent.linter.LintSeverity.ERROR -> "❌"
-                                cc.unitmesh.agent.linter.LintSeverity.WARNING -> "⚠️"
-                                cc.unitmesh.agent.linter.LintSeverity.INFO -> "ℹ️"
-                            }
-                            lintOutputBuilder.appendLine("     $severityIcon Line ${issue.line}: ${issue.message}")
-                        }
-
-                        if (filteredIssues.size > 5) {
-                            lintOutputBuilder.appendLine("     ... and ${filteredIssues.size - 5} more issues")
-                        }
-                        lintOutputBuilder.appendLine()
-                    }
-                }
-
-                updateState {
-                    it.copy(
-                        aiProgress = it.aiProgress.copy(
-                            lintOutput = lintOutputBuilder.toString(),
-                            lintResults = allFileLintResults
+                            lintOutput = it.aiProgress.lintOutput + progress
                         )
                     )
                 }
             }
+        )
 
-            lintOutputBuilder.appendLine("✅ Linting complete")
-            updateState {
-                it.copy(
-                    aiProgress = it.aiProgress.copy(
-                        lintOutput = lintOutputBuilder.toString(),
-                        lintResults = allFileLintResults
-                    )
+        // Update state with results
+        updateState {
+            it.copy(
+                aiProgress = it.aiProgress.copy(
+                    lintResults = lintResults
                 )
-            }
-
-        } catch (e: Exception) {
-            AutoDevLogger.error("CodeReviewViewModel") { "Failed to run lint: ${e.message}" }
-            updateState {
-                it.copy(
-                    aiProgress = it.aiProgress.copy(
-                        lintOutput = "Error running linters: ${e.message}\n"
-                    )
-                )
-            }
+            )
         }
     }
 
@@ -931,79 +665,22 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Format lint results for analysis prompt
+     * Format lint results for analysis prompt.
+     * Delegates to LintResultFormatter.
      */
     fun formatLintResults(): Map<String, String> {
-        val lintResultsMap = mutableMapOf<String, String>()
-
-        currentState.aiProgress.lintResults.forEach { fileResult ->
-            val formatted = buildString {
-                val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
-                appendLine("File: ${fileResult.filePath}")
-                appendLine("Total Issues: $totalCount")
-                appendLine("  Errors: ${fileResult.errorCount}")
-                appendLine("  Warnings: ${fileResult.warningCount}")
-                appendLine("  Info: ${fileResult.infoCount}")
-                appendLine()
-
-                if (fileResult.issues.isNotEmpty()) {
-                    appendLine("Issues:")
-                    fileResult.issues.forEach { issue ->
-                        appendLine("  [${issue.severity}] Line ${issue.line}: ${issue.message}")
-                        if (issue.rule?.isNotBlank() == true) {
-                            appendLine("    Rule: ${issue.rule}")
-                        }
-                    }
-                }
-            }
-            lintResultsMap[fileResult.filePath] = formatted
-        }
-
-        return lintResultsMap
+        return lintResultFormatter.formatLintResults(currentState.aiProgress.lintResults)
     }
 
     /**
-     * Build diff context showing what was changed
+     * Build diff context showing what was changed.
+     * Delegates to DiffContextBuilder.
      */
     private fun buildDiffContext(): String {
-        if (currentState.diffFiles.isEmpty()) return ""
-
-        return buildString {
-            appendLine("## Changed Files Summary")
-            appendLine()
-
-            currentState.diffFiles.forEach { file ->
-                appendLine("### ${file.path}")
-                appendLine("Change Type: ${file.changeType}")
-                appendLine(
-                    "Modified Lines: ${
-                        file.hunks.sumOf {
-                            it.lines.count { line ->
-                                line.type == cc.unitmesh.devins.ui.compose.sketch.DiffLineType.ADDED
-                            }
-                        }
-                    }"
-                )
-                appendLine()
-            }
-
-            // Include modified code ranges if available
-            if (currentState.aiProgress.modifiedCodeRanges.isNotEmpty()) {
-                appendLine()
-                appendLine("## Modified Code Elements")
-                appendLine()
-
-                currentState.aiProgress.modifiedCodeRanges.forEach { (filePath, ranges) ->
-                    if (ranges.isNotEmpty()) {
-                        appendLine("### $filePath")
-                        ranges.forEach { range ->
-                            appendLine("- ${range.elementType}: ${range.elementName} (lines ${range.startLine}-${range.endLine})")
-                        }
-                        appendLine()
-                    }
-                }
-            }
-        }
+        return diffContextBuilder.buildDiffContext(
+            diffFiles = currentState.diffFiles,
+            modifiedCodeRanges = currentState.aiProgress.modifiedCodeRanges
+        )
     }
 
     /**
