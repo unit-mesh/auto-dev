@@ -76,7 +76,6 @@ fun AgentInterfaceRouter(
                 selectedRemoteAgentType = selectedRemoteAgentType,
                 onOpenDirectory = onOpenDirectory,
                 onClearHistory = onClearHistory,
-                onShowDebug = onShowDebug,
                 onModelConfigChange = onModelConfigChange,
                 onAgentChange = onAgentChange,
                 onModeToggle = onModeToggle,

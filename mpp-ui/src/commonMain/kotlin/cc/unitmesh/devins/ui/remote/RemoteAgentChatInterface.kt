@@ -42,7 +42,6 @@ fun RemoteAgentChatInterface(
     selectedAgentType: String = "Remote",
     onOpenDirectory: () -> Unit = {},
     onClearHistory: () -> Unit = {},
-    onShowDebug: () -> Unit = {},
     onModelConfigChange: (cc.unitmesh.llm.ModelConfig) -> Unit = {},
     onAgentChange: (String) -> Unit = {},
     onModeToggle: () -> Unit = {},
@@ -210,7 +209,6 @@ fun RemoteAgentChatInterface(
                             viewModel.clearHistory()
                             onClearHistory()
                         },
-                        onShowDebug = onShowDebug,
                         onModelConfigChange = onModelConfigChange,
                         onAgentChange = onAgentChange,
                         onModeToggle = onModeToggle,
@@ -368,7 +366,6 @@ fun RemoteAgentChatInterface(
                     viewModel.clearHistory()
                     onClearHistory()
                 },
-                onShowDebug = onShowDebug,
                 onModelConfigChange = onModelConfigChange,
                 onAgentChange = onAgentChange,
                 onModeToggle = onModeToggle,

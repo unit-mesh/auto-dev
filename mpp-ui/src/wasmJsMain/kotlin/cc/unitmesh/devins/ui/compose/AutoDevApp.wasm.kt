@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 
 /**
  * WASM 专属的 AutoDevApp 实现
- * 
+ *
  * 委托给 commonMain 中的 AutoDevApp 实现
  */
 @Composable
@@ -13,7 +13,6 @@ actual fun PlatformAutoDevApp(
     onFileChooserHandled: () -> Unit,
     initialMode: String
 ) {
-    // WASM 平台使用 commonMain 中的原有实现
     AutoDevApp(
         triggerFileChooser = triggerFileChooser,
         onFileChooserHandled = onFileChooserHandled,

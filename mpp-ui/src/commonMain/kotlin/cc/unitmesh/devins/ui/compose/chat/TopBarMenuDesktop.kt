@@ -37,7 +37,6 @@ fun TopBarMenuDesktop(
     onSessionManagementToggle: () -> Unit = {},
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
-    onShowDebug: () -> Unit,
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
     onToggleTreeView: () -> Unit = {},
@@ -430,21 +429,6 @@ fun TopBarMenuDesktop(
                         Icon(
                             imageVector = AutoDevComposeIcons.Add,
                             contentDescription = "New Chat",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                // Debug Info
-                if (hasDebugInfo) {
-                    IconButton(
-                        onClick = onShowDebug,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = AutoDevComposeIcons.BugReport,
-                            contentDescription = "Debug Info",
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
                         )

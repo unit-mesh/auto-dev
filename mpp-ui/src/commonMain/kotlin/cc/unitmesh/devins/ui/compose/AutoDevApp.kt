@@ -14,7 +14,6 @@ import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.compose.agent.AgentType
-import cc.unitmesh.devins.ui.compose.chat.DebugDialog
 import cc.unitmesh.devins.ui.compose.chat.MessageList
 import cc.unitmesh.devins.ui.compose.chat.SessionSidebar
 import cc.unitmesh.devins.ui.compose.chat.TopBarMenu
@@ -77,7 +76,6 @@ private fun AutoDevContent(
     var currentModelConfig by remember { mutableStateOf<ModelConfig?>(null) }
     var llmService by remember { mutableStateOf<KoogLLMService?>(null) }
     var showConfigWarning by remember { mutableStateOf(false) }
-    var showDebugDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var showModelConfigDialog by remember { mutableStateOf(false) }
@@ -344,7 +342,6 @@ private fun AutoDevContent(
                     },
                     onShowModelConfig = { showModelConfigDialog = true },
                     onShowToolConfig = { showToolConfigDialog = true },
-                    onShowDebug = { showDebugDialog = true },
                     hasDebugInfo = compilerOutput.isNotEmpty()
                 )
             }
@@ -374,7 +371,6 @@ private fun AutoDevContent(
                             messages = emptyList()
                             currentStreamingOutput = ""
                         },
-                        onShowDebug = { showDebugDialog = true },
                         onModelConfigChange = { config ->
                             currentModelConfig = config
                             if (config.isValid()) {
@@ -414,12 +410,10 @@ private fun AutoDevContent(
                             onToggleTreeView = { isTreeViewVisible = it },
                             chatHistoryManager = chatHistoryManager,
                             onSessionSelected = { sessionId ->
-//                                chatHistoryManager.switchSession(sessionId)
                                 messages = chatHistoryManager.getMessages()
                                 currentStreamingOutput = ""
                             },
                             onNewChat = {
-//                                chatHistoryManager.createSession()
                                 messages = emptyList()
                                 currentStreamingOutput = ""
                             },
@@ -444,7 +438,6 @@ private fun AutoDevContent(
                                 currentStreamingOutput = ""
                                 println("🗑️ [SimpleAIChat] 聊天历史已清空")
                             },
-                            onShowDebug = { showDebugDialog = true },
                             onModelConfigChange = { config ->
                                 currentModelConfig = config
                                 if (config.isValid()) {
@@ -490,7 +483,6 @@ private fun AutoDevContent(
                                 // Remote agent clears history on server side
                                 println("🗑️ [RemoteAgent] 清空远程历史")
                             },
-                            onShowDebug = { showDebugDialog = true },
                             onModelConfigChange = { config ->
                                 currentModelConfig = config
                             },
@@ -695,13 +687,6 @@ private fun AutoDevContent(
 
                     showRemoteConfigDialog = false
                 }
-            )
-        }
-
-        if (showDebugDialog) {
-            DebugDialog(
-                compilerOutput = compilerOutput,
-                onDismiss = { showDebugDialog = false }
             )
         }
 

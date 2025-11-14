@@ -31,7 +31,6 @@ fun TopBarMenuMobile(
     onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
-    onShowDebug: () -> Unit,
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
     onToggleTreeView: () -> Unit = {},
@@ -470,25 +469,6 @@ fun TopBarMenuMobile(
                             leadingIcon = {
                                 Icon(
                                     imageVector = AutoDevComposeIcons.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        )
-                    }
-
-                    // 10. Debug Info
-                    if (hasDebugInfo) {
-                        HorizontalDivider()
-                        DropdownMenuItem(
-                            text = { Text("Debug Info") },
-                            onClick = {
-                                menuExpanded = false
-                                onShowDebug()
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = AutoDevComposeIcons.BugReport,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )
