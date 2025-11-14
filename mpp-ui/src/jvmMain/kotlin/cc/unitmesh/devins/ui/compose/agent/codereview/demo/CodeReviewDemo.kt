@@ -9,18 +9,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import cc.unitmesh.agent.CodeReviewAgent
-import cc.unitmesh.agent.config.McpToolConfigService
-import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.logging.AutoDevLogger
-import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
-import cc.unitmesh.devins.ui.compose.agent.codereview.*
+import cc.unitmesh.devins.ui.compose.agent.codereview.CodeReviewSideBySideView
+import cc.unitmesh.devins.ui.compose.agent.codereview.CodeReviewViewModel
+import cc.unitmesh.devins.ui.compose.agent.codereview.CodeReviewViewModel.Companion.createCodeReviewAgent
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.DefaultWorkspace
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.llm.KoogLLMService
-import cc.unitmesh.llm.LLMProviderType
-import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -63,6 +59,7 @@ fun CodeReviewDemoApp() {
     var projectPath by remember {
         mutableStateOf(System.getenv("PROJECT_PATH") ?: "/Volumes/source/ai/autocrud")
     }
+
     var workspace: Workspace? by remember { mutableStateOf(null) }
     var viewModel: CodeReviewViewModel? by remember { mutableStateOf(null) }
     var isInitialized by remember { mutableStateOf(false) }
@@ -86,13 +83,10 @@ fun CodeReviewDemoApp() {
 
                     // Step 2: Create LLM service
                     AutoDevLogger.info("CodeReviewDemo") { "🤖 Initializing LLM service..." }
-                    val configWrapper = ConfigManager.load()
-                    val modelConfig = configWrapper.getActiveModelConfig()!!
-                    val llmService = KoogLLMService.create(modelConfig)
 
                     // Step 3: Create CodeReviewAgent
                     AutoDevLogger.info("CodeReviewDemo") { "🔧 Creating CodeReviewAgent..." }
-                    val codeReviewAgent = createCodeReviewAgent(projectPath, llmService)
+                    val codeReviewAgent = createCodeReviewAgent(projectPath)
                     AutoDevLogger.info("CodeReviewDemo") { "✅ CodeReviewAgent created successfully" }
 
                     // Step 4: Create ViewModel with CodeReviewAgent
@@ -240,36 +234,5 @@ private fun ErrorScreen(message: String) {
     }
 }
 
-
-/**
- * Create CodeReviewAgent with necessary dependencies
- */
-private fun createCodeReviewAgent(
-    projectPath: String,
-    llmService: KoogLLMService
-): CodeReviewAgent {
-    AutoDevLogger.info("CodeReviewDemo") { "🛠️  Initializing tool configuration..." }
-
-    // Create tool configuration
-    val toolConfig = ToolConfigFile.default()
-    AutoDevLogger.info("CodeReviewDemo") { "   Tool config: ${toolConfig.enabledBuiltinTools.size} enabled tools" }
-    AutoDevLogger.info("CodeReviewDemo") { "   Enabled tools: ${toolConfig.enabledBuiltinTools.joinToString(", ")}" }
-
-    // Create MCP tool config service
-    val mcpToolConfigService = McpToolConfigService(toolConfig)
-    AutoDevLogger.info("CodeReviewDemo") { "   MCP tool config service initialized" }
-    // Create renderer
-    val renderer = ComposeRenderer()
-    val agent = CodeReviewAgent(
-        projectPath = projectPath,
-        llmService = llmService,
-        maxIterations = 50,
-        renderer = renderer,
-        mcpToolConfigService = mcpToolConfigService,
-        enableLLMStreaming = true
-    )
-
-    return agent
-}
 
 private operator fun String.times(n: Int): String = repeat(n)

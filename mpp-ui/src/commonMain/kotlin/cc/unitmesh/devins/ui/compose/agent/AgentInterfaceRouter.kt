@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.devins.ui.compose.agent.codereview.CodeReviewPage
 import cc.unitmesh.llm.KoogLLMService
 
@@ -51,7 +52,6 @@ fun AgentInterfaceRouter(
             CodeReviewPage(
                 llmService = llmService,
                 onBack = {
-                    // Switch back to CODING agent
                     onAgentTypeChange(AgentType.CODING)
                 },
                 modifier = modifier

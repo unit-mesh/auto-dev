@@ -158,7 +158,6 @@ private fun AIReviewPanel(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        // Header with action buttons
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -180,7 +179,6 @@ private fun AIReviewPanel(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                // Start/Stop analysis button
                 when (state.aiProgress.stage) {
                     AnalysisStage.IDLE -> {
                         FilledTonalButton(
@@ -271,15 +269,12 @@ private fun AIReviewPanel(
             )
         }
 
-        // Message list (reusing AgentMessageList component)
-        // For now, show a placeholder until we integrate with the actual renderer
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
             if (renderer.timeline.isEmpty() && state.aiProgress.stage == AnalysisStage.IDLE) {
-                // Empty state
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -302,12 +297,10 @@ private fun AIReviewPanel(
                     )
                 }
             } else {
-                // Show agent messages or progress outputs
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Show progress outputs
                     if (state.aiProgress.lintOutput.isNotEmpty()) {
                         item {
                             ProgressOutputCard(
@@ -339,9 +332,6 @@ private fun AIReviewPanel(
     }
 }
 
-/**
- * Progress output card
- */
 @Composable
 private fun ProgressOutputCard(
     title: String,

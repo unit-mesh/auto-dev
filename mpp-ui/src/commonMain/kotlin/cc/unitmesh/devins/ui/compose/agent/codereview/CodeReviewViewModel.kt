@@ -4,11 +4,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
+import cc.unitmesh.agent.config.McpToolConfigService
+import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.tracking.ChangeType
+import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.sketch.DiffParser
+import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.Workspace
+import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 open class CodeReviewViewModel(
     val workspace: Workspace,
-    private val codeReviewAgent: CodeReviewAgent? = null
+    private var codeReviewAgent: CodeReviewAgent? = null
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val gitOps = GitOperations(workspace.rootPath ?: "")
@@ -33,6 +38,7 @@ open class CodeReviewViewModel(
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
+            codeReviewAgent = initializeCodingAgent()
             if (gitOps.isSupported()) {
                 loadCommitHistory()
             } else {
@@ -41,6 +47,13 @@ open class CodeReviewViewModel(
             }
         }
     }
+
+    suspend fun initializeCodingAgent(): CodeReviewAgent {
+        codeReviewAgent?.let { return it }
+
+        return createCodeReviewAgent(workspace.rootPath ?: "")
+    }
+
 
     /**
      * Load recent git commits (initial load)
@@ -538,7 +551,7 @@ open class CodeReviewViewModel(
             )
 
             // Execute review
-            val result = codeReviewAgent.executeTask(task)
+            val result = codeReviewAgent?.executeTask(task) ?: return
 
             analysisOutputBuilder.appendLine(result.message)
             analysisOutputBuilder.appendLine()
@@ -620,5 +633,29 @@ open class CodeReviewViewModel(
     open fun dispose() {
         currentJob?.cancel()
         scope.cancel()
+    }
+
+    companion object {
+        suspend fun createCodeReviewAgent(projectPath: String): CodeReviewAgent {
+            val toolConfig = ToolConfigFile.default()
+
+            val configWrapper = ConfigManager.load()
+            val modelConfig = configWrapper.getActiveModelConfig()!!
+            val llmService = KoogLLMService.create(modelConfig)
+
+            val mcpToolConfigService = McpToolConfigService(toolConfig)
+            // Create renderer
+            val renderer = ComposeRenderer()
+            val agent = CodeReviewAgent(
+                projectPath = projectPath,
+                llmService = llmService,
+                maxIterations = 50,
+                renderer = renderer,
+                mcpToolConfigService = mcpToolConfigService,
+                enableLLMStreaming = true
+            )
+
+            return agent
+        }
     }
 }
