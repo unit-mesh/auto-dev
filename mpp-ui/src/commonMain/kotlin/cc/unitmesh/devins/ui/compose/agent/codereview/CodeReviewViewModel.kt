@@ -403,15 +403,203 @@ open class CodeReviewViewModel(
     }
 
     suspend fun runLint(filePaths: List<String>) {
+        try {
+            val projectPath = workspace.rootPath ?: return
 
+            // Get linter registry
+            val linterRegistry = cc.unitmesh.agent.linter.LinterRegistry.getInstance()
+
+            // Find suitable linters for the files
+            val linters = linterRegistry.findLintersForFiles(filePaths)
+
+            if (linters.isEmpty()) {
+                updateState {
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(
+                            lintOutput = "No suitable linters found for the given files.\n"
+                        )
+                    )
+                }
+                return
+            }
+
+            val lintOutputBuilder = StringBuilder()
+            lintOutputBuilder.appendLine("🔍 Running linters: ${linters.joinToString(", ") { it.name }}")
+            lintOutputBuilder.appendLine()
+
+            updateState {
+                it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
+            }
+
+            // Run each linter
+            for (linter in linters) {
+                // Check if linter is available
+                if (!linter.isAvailable()) {
+                    lintOutputBuilder.appendLine("⚠️  ${linter.name} is not installed")
+                    lintOutputBuilder.appendLine("   ${linter.getInstallationInstructions()}")
+                    lintOutputBuilder.appendLine()
+                    updateState {
+                        it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
+                    }
+                    continue
+                }
+
+                lintOutputBuilder.appendLine("Running ${linter.name}...")
+                updateState {
+                    it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
+                }
+
+                // Lint files
+                val results = linter.lintFiles(filePaths, projectPath)
+
+                // Aggregate results
+                for (result in results) {
+                    if (result.hasIssues) {
+                        lintOutputBuilder.appendLine("  📄 ${result.filePath}")
+                        lintOutputBuilder.appendLine("     Errors: ${result.errorCount}, Warnings: ${result.warningCount}")
+
+                        // Show first few issues
+                        result.issues.take(5).forEach { issue ->
+                            val severityIcon = when (issue.severity) {
+                                cc.unitmesh.agent.linter.LintSeverity.ERROR -> "❌"
+                                cc.unitmesh.agent.linter.LintSeverity.WARNING -> "⚠️"
+                                cc.unitmesh.agent.linter.LintSeverity.INFO -> "ℹ️"
+                            }
+                            lintOutputBuilder.appendLine("     $severityIcon Line ${issue.line}: ${issue.message}")
+                        }
+
+                        if (result.issues.size > 5) {
+                            lintOutputBuilder.appendLine("     ... and ${result.issues.size - 5} more issues")
+                        }
+                        lintOutputBuilder.appendLine()
+                    }
+                }
+
+                updateState {
+                    it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
+                }
+            }
+
+            lintOutputBuilder.appendLine("✅ Linting complete")
+            updateState {
+                it.copy(aiProgress = it.aiProgress.copy(lintOutput = lintOutputBuilder.toString()))
+            }
+
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") { "Failed to run lint: ${e.message}" }
+            updateState {
+                it.copy(
+                    aiProgress = it.aiProgress.copy(
+                        lintOutput = "Error running linters: ${e.message}\n"
+                    )
+                )
+            }
+        }
     }
 
     suspend fun analyzeLintOutput() {
+        try {
+            if (codeReviewAgent == null) {
+                updateState {
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(
+                            analysisOutput = "Code review agent not available\n"
+                        )
+                    )
+                }
+                return
+            }
 
+            val analysisOutputBuilder = StringBuilder()
+            analysisOutputBuilder.appendLine("🤖 Analyzing lint results with AI...")
+            analysisOutputBuilder.appendLine()
+
+            updateState {
+                it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
+            }
+
+            // Build context from lint output and diff
+            val context = buildString {
+                appendLine("## Lint Results")
+                appendLine(currentState.aiProgress.lintOutput)
+                appendLine()
+                appendLine("## Changed Files")
+                currentState.diffFiles.forEach { file ->
+                    appendLine("- ${file.path} (${file.changeType})")
+                }
+            }
+
+            // Create review task
+            val task = cc.unitmesh.agent.ReviewTask(
+                filePaths = currentState.diffFiles.map { it.path },
+                reviewType = cc.unitmesh.agent.ReviewType.COMPREHENSIVE,
+                projectPath = workspace.rootPath ?: "",
+                additionalContext = context
+            )
+
+            // Execute review
+            val result = codeReviewAgent.executeTask(task)
+
+            analysisOutputBuilder.appendLine(result.message)
+            analysisOutputBuilder.appendLine()
+
+            if (result.findings.isNotEmpty()) {
+                analysisOutputBuilder.appendLine("## Findings (${result.findings.size})")
+                result.findings.forEach { finding ->
+                    analysisOutputBuilder.appendLine("- [${finding.severity}] ${finding.description}")
+                    if (finding.suggestion != null) {
+                        analysisOutputBuilder.appendLine("  💡 ${finding.suggestion}")
+                    }
+                }
+            }
+
+            updateState {
+                it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
+            }
+
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") { "Failed to analyze lint output: ${e.message}" }
+            updateState {
+                it.copy(
+                    aiProgress = it.aiProgress.copy(
+                        analysisOutput = "Error analyzing lint output: ${e.message}\n"
+                    )
+                )
+            }
+        }
     }
 
     suspend fun generateFixes() {
+        try {
+            val fixOutputBuilder = StringBuilder()
+            fixOutputBuilder.appendLine("🔧 Generating fixes...")
+            fixOutputBuilder.appendLine()
 
+            updateState {
+                it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
+            }
+
+            // For now, just provide a summary
+            // In a full implementation, this would use the agent to generate actual fixes
+            fixOutputBuilder.appendLine("✅ Analysis complete!")
+            fixOutputBuilder.appendLine()
+            fixOutputBuilder.appendLine("Review the findings above and apply fixes manually,")
+            fixOutputBuilder.appendLine("or use the agent's suggestions to improve your code.")
+
+            updateState {
+                it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
+            }
+
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") { "Failed to generate fixes: ${e.message}" }
+            updateState {
+                it.copy(
+                    aiProgress = it.aiProgress.copy(
+                        fixOutput = "Error generating fixes: ${e.message}\n"
+                    )
+                )
+            }
+        }
     }
 
     private fun updateState(update: (CodeReviewState) -> CodeReviewState) {

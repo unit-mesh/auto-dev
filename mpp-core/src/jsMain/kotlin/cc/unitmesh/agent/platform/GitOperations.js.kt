@@ -71,7 +71,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             logger.warn { "Git operations require Node.js environment" }
             return emptyList()
         }
-        
+
         return try {
             val output = execGitCommand("git log -n $count --pretty=format:%H|%an|%ae|%ct|%s")
             output.lines()
@@ -82,7 +82,21 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             emptyList()
         }
     }
-    
+
+    actual suspend fun getTotalCommitCount(): Int? {
+        if (!isNodeJs) {
+            return null
+        }
+
+        return try {
+            val output = execGitCommand("git rev-list --count HEAD")
+            output.trim().toIntOrNull()
+        } catch (e: Throwable) {
+            logger.warn(e) { "Failed to get total commit count: ${e.message}" }
+            null
+        }
+    }
+
     actual suspend fun getCommitDiff(commitHash: String): GitDiffInfo? {
         if (!isNodeJs) {
             return null

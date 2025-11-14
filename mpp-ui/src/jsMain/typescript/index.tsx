@@ -15,6 +15,7 @@ import { ConfigManager } from './config/ConfigManager.js';
 import { CliRenderer } from './agents/render/CliRenderer.js';
 import { ServerAgentClient } from './agents/ServerAgentClient.js';
 import { ServerRenderer } from './agents/render/ServerRenderer.js';
+import { runReview } from './modes/ReviewMode.js';
 import mppCore from '@autodev/mpp-core';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -291,6 +292,74 @@ async function runServerAgent(
 }
 
 /**
+ * Run code review mode
+ */
+async function runCodeReview(projectPath: string, options: any) {
+  try {
+    // Resolve project path
+    const resolvedPath = path.resolve(projectPath);
+
+    // Check if project path exists
+    if (!fs.existsSync(resolvedPath)) {
+      console.error(`❌ Project path does not exist: ${resolvedPath}`);
+      process.exit(1);
+    }
+
+    // Load configuration
+    const config = await ConfigManager.load();
+    const activeConfig = config.getActiveConfig();
+
+    if (!activeConfig) {
+      console.error('❌ No active LLM configuration found.');
+      console.error('Please run the interactive mode first to configure your LLM provider.');
+      process.exit(1);
+    }
+
+    if (!options.quiet) {
+      console.log(`\n🚀 AutoDev Code Review`);
+      console.log(`📦 Provider: ${activeConfig.provider}`);
+      console.log(`🤖 Model: ${activeConfig.model}`);
+      console.log();
+    }
+
+    // Create Kotlin LLM service
+    const llmService = KotlinCC.unitmesh.llm.JsKoogLLMService.Companion.create(
+      new KotlinCC.unitmesh.llm.JsModelConfig(
+        activeConfig.provider,
+        activeConfig.model,
+        activeConfig.apiKey || '',
+        activeConfig.temperature || 0.7,
+        activeConfig.maxTokens || 8192,
+        activeConfig.baseUrl || ''
+      )
+    );
+
+    // Create CLI renderer
+    const renderer = new CliRenderer();
+
+    // Run review
+    const result = await runReview(
+      {
+        projectPath: resolvedPath,
+        commitHash: options.commit,
+        baseBranch: options.base,
+        compareWith: options.compare,
+        reviewType: options.type,
+        skipLint: options.skipLint
+      },
+      llmService,
+      renderer
+    );
+
+    process.exit(result.success ? 0 : 1);
+
+  } catch (error) {
+    console.error('❌ Fatal error:', error);
+    process.exit(1);
+  }
+}
+
+/**
  * Run in interactive TUI mode
  */
 async function runInteractive() {
@@ -347,6 +416,22 @@ async function main() {
     .option('--use-server-config', 'Use server\'s LLM configuration instead of client\'s', false)
     .action(async (options) => {
       await runServerAgent(options.serverUrl, options.projectId, options.task, options.quiet, options.useServerConfig);
+    });
+
+  // Code review mode
+  program
+    .command('review')
+    .description('Run automated code review with linting and AI analysis')
+    .requiredOption('-p, --path <path>', 'Project path (e.g., /path/to/project or . for current directory)')
+    .option('-c, --commit <hash>', 'Review specific commit')
+    .option('-b, --base <branch>', 'Base branch for comparison (e.g., main)')
+    .option('--compare <branch>', 'Branch to compare with base')
+    .option('-t, --type <type>', 'Review type: COMPREHENSIVE, SECURITY, PERFORMANCE, STYLE', 'COMPREHENSIVE')
+    .option('--skip-lint', 'Skip linting phase', false)
+    .option('-q, --quiet', 'Quiet mode - only show important messages', false)
+    .action(async (options) => {
+      const projectPath = options.path === '.' ? process.cwd() : options.path;
+      await runCodeReview(projectPath, options);
     });
 
   // Parse arguments

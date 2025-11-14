@@ -23,9 +23,9 @@ actual object Platform {
         }
     }
 
-    actual fun getCurrentTimestamp(): String {
+    actual fun getCurrentTimestamp(): Long {
         val date = Date()
-        return date.toISOString()
+        return date.getTime().toLong()
     }
 
     actual fun getOSInfo(): String {
