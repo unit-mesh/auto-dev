@@ -109,29 +109,38 @@ class WasmJsCodeParser : CodeParser {
 
         val parser = createParser().await<Parser>()
 
-        // Load language grammar from WASM artifacts
-        val languageName = getLanguageWasmPath(language)
-        console.log("Loading language grammar: $languageName")
-        val languageGrammar = treeSitterModule!!.Language.load(languageName).await<TSLanguageGrammar>()
-
-        parser.setLanguage(languageGrammar)
-        parsers[language] = parser
-
-        return parser
+        // Load language grammar from WASM artifacts using binary data (similar to JS implementation)
+        val wasmPath = getLanguageWasmPath(language)
+        console.log("Loading language grammar from: $wasmPath")
+        
+        try {
+            // Use the new loadLanguageFromWasm function that mimics JS implementation:
+            // await Parser.init();
+            // const bits = fs.readFileSync(wasmPath);
+            // return await Parser.Language.load(bits);
+            val languageGrammar = loadLanguageFromWasm(wasmPath).await<TSLanguageGrammar>()
+            
+            parser.setLanguage(languageGrammar)
+            parsers[language] = parser
+            
+            console.log("Language grammar loaded successfully")
+            return parser
+        } catch (e: Throwable) {
+            console.error("Failed to load language from $wasmPath: ${e.message ?: "Unknown error"}")
+            throw e
+        }
     }
     
     private fun getLanguageWasmPath(language: Language): String {
-        return when (language) {
-            Language.JAVA -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-java.wasm"
-            Language.KOTLIN -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-kotlin.wasm"
-            Language.JAVASCRIPT -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-javascript.wasm"
-            Language.TYPESCRIPT -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-typescript.wasm"
-            Language.PYTHON -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-python.wasm"
-            Language.GO -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-go.wasm"
-            Language.RUST -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-rust.wasm"
-            Language.CSHARP -> "node_modules/@unit-mesh/treesitter-artifacts/tree-sitter-c-sharp.wasm"
-            else -> throw IllegalArgumentException("Unsupported language: $language")
+        // Get the language identifier (handle special case for C#)
+        val langId = when (language) {
+            Language.CSHARP -> "c_sharp"
+            else -> language.name.lowercase()
         }
+        
+        // Construct path similar to JS: path.join(ROOT_DIR, 'node_modules', '@unit-mesh', 'treesitter-artifacts', 'wasm', `tree-sitter-${lang}.wasm`)
+        // In WASM environment, we need to use relative path from project root
+        return "node_modules/@unit-mesh/treesitter-artifacts/wasm/tree-sitter-$langId.wasm"
     }
     
     private fun buildNodesFromTreeNode(

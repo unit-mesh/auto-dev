@@ -46,18 +46,54 @@ external interface LanguageClass : JsAny {
      * JavaScript: `TreeSitter.Language.load(path)`
      */
     fun load(path: String): Promise<TSLanguageGrammar>
+    
+    /**
+     * Load a language grammar from binary data (Uint8Array)
+     *
+     * JavaScript: `TreeSitter.Language.load(bits)`
+     */
+    fun load(bits: JsAny): Promise<TSLanguageGrammar>
 }
+
+/**
+ * Initialize Parser and load language from WASM file
+ * 
+ * This implementation works in both Node.js and browser environments:
+ * - In Node.js: uses fs.readFileSync to read the file as buffer
+ * - In browser/WASM: uses fetch to load the file as ArrayBuffer
+ * 
+ * JavaScript equivalent to the TypeScript getLanguage method
+ */
+@JsFun("""async (wasmPath) => {
+    const Parser = await import('web-tree-sitter');
+    await Parser.default.init();
+    
+    let bits;
+    // Check if we're in Node.js environment
+    if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+        // Node.js environment - use fs
+        const fs = await import('fs');
+        bits = fs.readFileSync(wasmPath);
+    } else {
+        // Browser/WASM environment - use fetch
+        const response = await fetch(wasmPath);
+        bits = await response.arrayBuffer();
+    }
+    
+    return await Parser.default.Language.load(bits);
+}
+""")
+external fun loadLanguageFromWasm(wasmPath: String): Promise<TSLanguageGrammar>
 
 /**
  * Create a new Parser instance
  *
- * JavaScript: `const ts = await import('web-tree-sitter'); return new ts.default();`
+ * JavaScript: `const ts = await import('web-tree-sitter'); await ts.default.init(); return new ts.default();`
  */
 @JsFun("""async () => { 
     const ts = await import('web-tree-sitter');
     await ts.default.init(); 
-    console.log(ts.default);
-    return ts.default; 
+    return new ts.default(); 
 }
 """
 )
