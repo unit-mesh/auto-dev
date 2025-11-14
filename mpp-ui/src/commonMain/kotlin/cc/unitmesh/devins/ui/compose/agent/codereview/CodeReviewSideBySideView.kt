@@ -86,8 +86,11 @@ private fun ThreeColumnLayout(
                 commits = state.commitHistory,
                 selectedIndex = state.selectedCommitIndex,
                 onCommitSelected = { index ->
-                    // Select commit (will trigger diff loading in subclasses like JvmCodeReviewViewModel)
-                    viewModel.selectCommit(index)
+                    // Get the commit hash from the index and use that
+                    val commitHash = state.commitHistory.getOrNull(index)?.hash
+                    if (commitHash != null) {
+                        viewModel.selectCommit(commitHash)
+                    }
                 },
                 hasMoreCommits = state.hasMoreCommits,
                 isLoadingMore = state.isLoadingMore,
@@ -109,16 +112,17 @@ private fun ThreeColumnLayout(
                 first = {
                     // Center: Diff viewer
                     var fileToView by remember { mutableStateOf<String?>(null) }
-                    
+
                     DiffCenterView(
                         diffFiles = state.diffFiles,
                         selectedCommit = state.commitHistory.getOrNull(state.selectedCommitIndex),
                         onViewFile = { filePath ->
                             fileToView = filePath
                         },
-                        workspaceRoot = viewModel.workspace.rootPath
+                        workspaceRoot = viewModel.workspace.rootPath,
+                        isLoadingDiff = state.isLoadingDiff
                     )
-                    
+
                     // File viewer dialog
                     fileToView?.let { path ->
                         FileViewerDialog(

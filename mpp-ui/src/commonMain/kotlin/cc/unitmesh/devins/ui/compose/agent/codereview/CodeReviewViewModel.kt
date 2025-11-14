@@ -50,7 +50,7 @@ open class CodeReviewViewModel(
         try {
             // Get total commit count
             val totalCount = gitOps.getTotalCommitCount()
-            
+
             // Get recent commits
             val gitCommits = gitOps.getRecentCommits(count)
 
@@ -80,7 +80,7 @@ open class CodeReviewViewModel(
             }
 
             if (commits.isNotEmpty()) {
-                loadCommitDiffInternal(0)
+                loadCommitDiffInternal(commits[0].hash)
             }
 
         } catch (e: Exception) {
@@ -142,18 +142,26 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Load diff for a specific commit
+     * Load diff for a specific commit by hash
      */
-    private suspend fun loadCommitDiffInternal(index: Int) {
-        if (index !in currentState.commitHistory.indices) {
+    private suspend fun loadCommitDiffInternal(commitHash: String) {
+        // Find the commit index by hash
+        val index = currentState.commitHistory.indexOfFirst { it.hash == commitHash }
+        if (index < 0) {
+            updateState {
+                it.copy(
+                    isLoadingDiff = false,
+                    error = "Commit not found: $commitHash"
+                )
+            }
             return
         }
 
         val commit = currentState.commitHistory[index]
-        
+
         updateState {
             it.copy(
-                isLoading = true,
+                isLoadingDiff = true,
                 selectedCommitIndex = index,
                 error = null
             )
@@ -165,7 +173,7 @@ open class CodeReviewViewModel(
             if (gitDiff == null) {
                 updateState {
                     it.copy(
-                        isLoading = false,
+                        isLoadingDiff = false,
                         error = "No diff available for this commit"
                     )
                 }
@@ -194,7 +202,7 @@ open class CodeReviewViewModel(
 
             updateState {
                 it.copy(
-                    isLoading = false,
+                    isLoadingDiff = false,
                     diffFiles = diffFiles,
                     selectedFileIndex = 0,
                     error = null
@@ -204,7 +212,7 @@ open class CodeReviewViewModel(
         } catch (e: Exception) {
             updateState {
                 it.copy(
-                    isLoading = false,
+                    isLoadingDiff = false,
                     error = "Failed to load diff: ${e.message}"
                 )
             }
@@ -346,13 +354,25 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Select a different commit to view
+     * Select a different commit to view by hash
+     * @param commitHash The git commit hash
      */
-    open fun selectCommit(index: Int) {
+    open fun selectCommit(commitHash: String) {
         // Cancel previous loading job if any
         currentJob?.cancel()
-        currentJob = scope.launch {
-            loadCommitDiffInternal(index)
+        currentJob = CoroutineScope(Dispatchers.Default).launch {
+            loadCommitDiffInternal(commitHash)
+        }
+    }
+
+    /**
+     * Select a different commit to view by index (deprecated, use selectCommit(hash) instead)
+     * @param index The index in the commit history list
+     */
+    @Deprecated("Use selectCommit(commitHash: String) instead", ReplaceWith("selectCommit(commitHistory[index].hash)"))
+    open fun selectCommitByIndex(index: Int) {
+        if (index in currentState.commitHistory.indices) {
+            selectCommit(currentState.commitHistory[index].hash)
         }
     }
 
@@ -423,6 +443,7 @@ open class CodeReviewViewModel(
             )
         }
     }
+
     private suspend fun generateFixes() {
         // TODO: Call CodeReviewAgent to generate fixes
         val fixes = listOf(

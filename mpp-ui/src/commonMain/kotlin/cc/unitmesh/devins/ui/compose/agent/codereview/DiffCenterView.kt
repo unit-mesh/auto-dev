@@ -55,10 +55,10 @@ import androidx.compose.ui.text.AnnotatedString
  */
 private fun truncateFilePath(path: String): String {
     val segments = path.split("/")
-    
+
     // If path is short enough, return as is
     if (segments.size <= 2) return path
-    
+
     // Always use format: first/.../ last
     val first = segments.first()
     val last = segments.last()
@@ -90,7 +90,7 @@ fun CommitListView(
             hasMoreCommits -> "Commits (${commits.size}+)"
             else -> "Commits (${commits.size})"
         }
-        
+
         Text(
             text = displayText,
             style = MaterialTheme.typography.titleMedium,
@@ -116,7 +116,6 @@ fun CommitListView(
                     onClick = { onCommitSelected(index) }
                 )
 
-                // Trigger load more when reaching near the end
                 if (index == commits.size - 5 && hasMoreCommits && !isLoadingMore) {
                     androidx.compose.runtime.LaunchedEffect(Unit) {
                         onLoadMore()
@@ -124,7 +123,6 @@ fun CommitListView(
                 }
             }
 
-            // Loading indicator at the bottom
             if (isLoadingMore) {
                 item {
                     Box(
@@ -262,7 +260,8 @@ fun DiffCenterView(
     selectedCommit: CommitInfo?,
     modifier: Modifier = Modifier.Companion,
     onViewFile: ((String) -> Unit)? = null,
-    workspaceRoot: String? = null
+    workspaceRoot: String? = null,
+    isLoadingDiff: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -322,7 +321,29 @@ fun DiffCenterView(
             modifier = Modifier.Companion.padding(horizontal = 4.dp, vertical = 8.dp)
         )
 
-        if (diffFiles.isEmpty()) {
+        if (isLoadingDiff) {
+            Box(
+                modifier = Modifier.Companion
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Companion.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.Companion.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.Companion.size(32.dp),
+                        color = AutoDevColors.Indigo.c600
+                    )
+                    Text(
+                        text = "Loading diff...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else if (diffFiles.isEmpty()) {
             Box(
                 modifier = Modifier.Companion
                     .fillMaxSize()

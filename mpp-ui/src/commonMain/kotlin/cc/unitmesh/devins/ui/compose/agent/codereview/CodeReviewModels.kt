@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
  */
 data class CodeReviewState(
     val isLoading: Boolean = false,
+    val isLoadingDiff: Boolean = false, // Loading diff for a specific commit (not blocking UI)
     val error: String? = null,
     val commitHistory: List<CommitInfo> = emptyList(),
     val selectedCommitIndex: Int = 0,
