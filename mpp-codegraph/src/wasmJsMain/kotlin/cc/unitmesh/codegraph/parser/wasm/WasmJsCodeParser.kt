@@ -7,10 +7,10 @@ import kotlinx.coroutines.await
 
 /**
  * WASM-JS implementation of CodeParser using web-tree-sitter.
- * 
+ *
  * This implementation uses external interfaces to interact with the web-tree-sitter JavaScript API.
  * It loads TreeSitter WASM grammars from @unit-mesh/treesitter-artifacts npm package.
- * 
+ *
  * Reference: https://github.com/tree-sitter/tree-sitter/tree/master/lib/binding_web
  */
 class WasmJsCodeParser : CodeParser {
@@ -27,65 +27,64 @@ class WasmJsCodeParser : CodeParser {
 
         try {
             console.log("Initializing TreeSitter WASM...")
-            // Initialize TreeSitter and get the module
             treeSitterModule = initTreeSitter().await()
             console.log("TreeSitter WASM initialized successfully")
-    initialized = true
-} catch (e: Throwable) {
-    console.error("Failed to initialize TreeSitter: ${e.message ?: "Unknown error"}")
-    throw e
-}
-}
-    
+            initialized = true
+        } catch (e: Throwable) {
+            console.error("Failed to initialize TreeSitter: ${e.message ?: "Unknown error"}")
+            throw e
+        }
+    }
+
     override suspend fun parseNodes(
         sourceCode: String,
         filePath: String,
         language: Language
     ): List<CodeNode> {
         initialize()
-        
+
         val parser = getOrCreateParser(language)
         val tree = parser.parse(sourceCode)
         val rootNode = tree.rootNode
-        
+
         return buildNodesFromTreeNode(rootNode, sourceCode, filePath, language)
     }
-    
+
     override suspend fun parseNodesAndRelationships(
         sourceCode: String,
         filePath: String,
         language: Language
     ): Pair<List<CodeNode>, List<CodeRelationship>> {
         initialize()
-        
+
         val parser = getOrCreateParser(language)
         val tree = parser.parse(sourceCode)
         val rootNode = tree.rootNode
-        
+
         val nodes = buildNodesFromTreeNode(rootNode, sourceCode, filePath, language)
         val relationships = buildRelationships(nodes)
-        
+
         return Pair(nodes, relationships)
     }
-    
+
     override suspend fun parseCodeGraph(
         files: Map<String, String>,
         language: Language
     ): CodeGraph {
         initialize()
-        
+
         val allNodes = mutableListOf<CodeNode>()
         val allRelationships = mutableListOf<CodeRelationship>()
-        
+
         for ((filePath, sourceCode) in files) {
             val (nodes, relationships) = parseNodesAndRelationships(sourceCode, filePath, language)
             allNodes.addAll(nodes)
             allRelationships.addAll(relationships)
         }
-        
+
         // Generate MADE_OF relationships
         generateMadeOfRelationships(allNodes, allRelationships)
-        
+
         return CodeGraph(
             nodes = allNodes,
             relationships = allRelationships,
@@ -96,7 +95,7 @@ class WasmJsCodeParser : CodeParser {
             )
         )
     }
-    
+
     private suspend fun getOrCreateParser(language: Language): TSParser {
         if (parsers.containsKey(language)) {
             return parsers[language]!!
@@ -112,17 +111,17 @@ class WasmJsCodeParser : CodeParser {
         // Load language grammar from WASM artifacts using binary data (similar to JS implementation)
         val wasmPath = getLanguageWasmPath(language)
         console.log("Loading language grammar from: $wasmPath")
-        
+
         try {
             // Use the new loadLanguageFromWasm function that mimics JS implementation:
             // await Parser.init();
             // const bits = fs.readFileSync(wasmPath);
             // return await Parser.Language.load(bits);
             val languageGrammar = loadLanguageFromWasm(wasmPath).await<TSLanguageGrammar>()
-            
+
             parser.setLanguage(languageGrammar)
             parsers[language] = parser
-            
+
             console.log("Language grammar loaded successfully")
             return parser
         } catch (e: Throwable) {
@@ -130,19 +129,19 @@ class WasmJsCodeParser : CodeParser {
             throw e
         }
     }
-    
+
     private fun getLanguageWasmPath(language: Language): String {
         // Get the language identifier (handle special case for C#)
         val langId = when (language) {
             Language.CSHARP -> "c_sharp"
             else -> language.name.lowercase()
         }
-        
+
         // Construct path similar to JS: path.join(ROOT_DIR, 'node_modules', '@unit-mesh', 'treesitter-artifacts', 'wasm', `tree-sitter-${lang}.wasm`)
         // In WASM environment, we need to use relative path from project root
         return "node_modules/@unit-mesh/treesitter-artifacts/wasm/tree-sitter-$langId.wasm"
     }
-    
+
     private fun buildNodesFromTreeNode(
         rootNode: TSNode,
         sourceCode: String,
@@ -151,12 +150,12 @@ class WasmJsCodeParser : CodeParser {
     ): List<CodeNode> {
         val nodes = mutableListOf<CodeNode>()
         val packageName = extractPackageName(rootNode, sourceCode)
-        
+
         processNode(rootNode, sourceCode, filePath, packageName, language, nodes)
-        
+
         return nodes
     }
-    
+
     private fun processNode(
         node: TSNode,
         sourceCode: String,
@@ -167,13 +166,13 @@ class WasmJsCodeParser : CodeParser {
         parentName: String = ""
     ) {
         val nodeType = node.type
-        
+
         when (nodeType) {
             "class_declaration", "interface_declaration", "enum_declaration",
             "class_body", "object_declaration", "class", "class_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
-                
+
                 // Process children with this node as parent
                 for (i in 0 until node.childCount) {
                     val child = node.child(i)
@@ -182,15 +181,18 @@ class WasmJsCodeParser : CodeParser {
                     }
                 }
             }
+
             "method_declaration", "function_declaration", "function", "function_definition", "method_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
             }
-            "field_declaration", "property_declaration", "variable_declaration", 
+
+            "field_declaration", "property_declaration", "variable_declaration",
             "field_definition", "public_field_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
             }
+
             else -> {
                 // Recursively process children
                 for (i in 0 until node.childCount) {
@@ -202,7 +204,7 @@ class WasmJsCodeParser : CodeParser {
             }
         }
     }
-    
+
     private fun createCodeNode(
         node: TSNode,
         sourceCode: String,
@@ -214,12 +216,12 @@ class WasmJsCodeParser : CodeParser {
         val name = extractName(node, sourceCode)
         val type = mapNodeTypeToCodeElementType(node.type)
         val content = extractNodeText(node, sourceCode)
-        
+
         val qualifiedName = buildQualifiedName(packageName, parentName, name)
-        
+
         // Generate a simple ID based on qualified name
         val id = qualifiedName.hashCode().toString()
-        
+
         return CodeNode(
             id = id,
             type = type,
@@ -240,7 +242,7 @@ class WasmJsCodeParser : CodeParser {
             )
         )
     }
-    
+
     private fun buildQualifiedName(packageName: String, parentName: String, name: String): String {
         return when {
             parentName.isNotEmpty() && packageName.isNotEmpty() -> "$packageName.$parentName.$name"
@@ -249,7 +251,7 @@ class WasmJsCodeParser : CodeParser {
             else -> name
         }
     }
-    
+
     private fun extractPackageName(node: TSNode, sourceCode: String): String {
         for (i in 0 until node.childCount) {
             val child = node.child(i)
@@ -262,7 +264,7 @@ class WasmJsCodeParser : CodeParser {
         }
         return ""
     }
-    
+
     private fun extractName(node: TSNode, sourceCode: String): String {
         for (i in 0 until node.childCount) {
             val child = node.child(i)
@@ -272,13 +274,13 @@ class WasmJsCodeParser : CodeParser {
         }
         return "unknown"
     }
-    
+
     private fun extractNodeText(node: TSNode, sourceCode: String): String {
         val startByte = node.startIndex
         val endByte = node.endIndex
         return sourceCode.substring(startByte, endByte)
     }
-    
+
     private fun mapNodeTypeToCodeElementType(nodeType: String): CodeElementType {
         return when (nodeType) {
             "class_declaration", "class_body", "object_declaration", "class", "class_definition" -> CodeElementType.CLASS
@@ -291,25 +293,25 @@ class WasmJsCodeParser : CodeParser {
             else -> CodeElementType.UNKNOWN
         }
     }
-    
+
     private fun buildRelationships(nodes: List<CodeNode>): List<CodeRelationship> {
         val relationships = mutableListOf<CodeRelationship>()
         // Simplified - in real implementation, we'd parse extends/implements
         return relationships
     }
-    
+
     private fun generateMadeOfRelationships(
         nodes: List<CodeNode>,
         relationships: MutableList<CodeRelationship>
     ) {
         // Group nodes by parent
         val nodesByParent = nodes.groupBy { it.metadata["parent"] ?: "" }
-        
+
         for ((parentName, childNodes) in nodesByParent) {
             if (parentName.isEmpty()) continue
-            
+
             val parentNode = nodes.find { it.name == parentName } ?: continue
-            
+
             for (childNode in childNodes) {
                 relationships.add(
                     CodeRelationship(

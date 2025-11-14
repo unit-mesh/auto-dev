@@ -2,6 +2,8 @@
 // This file provides fallbacks for Node.js core modules when running tests in browser
 // Specifically needed for web-tree-sitter which may try to use Node.js APIs
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 config.resolve = config.resolve || {};
 config.resolve.fallback = config.resolve.fallback || {};
 
@@ -18,5 +20,23 @@ config.resolve.fallback.stream = false;
 config.resolve.fallback.util = false;
 config.resolve.fallback.buffer = false;
 config.resolve.fallback.process = false;
+
+// Copy tree-sitter.wasm and language WASM files to the output directory
+config.plugins = config.plugins || [];
+config.plugins.push(
+    new CopyWebpackPlugin({
+        patterns: [
+            {
+                from: '../../node_modules/web-tree-sitter/tree-sitter.wasm',
+                to: 'tree-sitter.wasm'
+            },
+            // Copy tree-sitter language WASM files from @unit-mesh/treesitter-artifacts
+            {
+                from: '../../node_modules/@unit-mesh/treesitter-artifacts/wasm/*.wasm',
+                to: 'wasm/[name][ext]'
+            }
+        ]
+    })
+);
 
 console.log('Applied Node.js polyfills for mpp-codegraph wasmJs browser tests');
