@@ -82,7 +82,6 @@ class CodeReviewAgent(
 
     private val logger = getLogger("CodeReviewAgent")
     private val promptRenderer = CodeReviewAgentPromptRenderer()
-    private val configService = mcpToolConfigService
 
     private val actualFileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = projectPath)
 
@@ -158,7 +157,6 @@ class CodeReviewAgent(
     }
 
     private suspend fun buildContext(task: ReviewTask): CodeReviewContext {
-        // Get linter summary for the files
         val linterSummary = if (task.filePaths.isNotEmpty()) {
             try {
                 val linterRegistry = cc.unitmesh.agent.linter.LinterRegistry.getInstance()

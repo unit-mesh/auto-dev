@@ -69,11 +69,9 @@ class CodingAgentViewModel(
         isTreeViewVisible = false
     }
 
-    // Cached tool configuration for UI display
     private var cachedToolConfig: cc.unitmesh.agent.config.ToolConfigFile? = null
 
     init {
-        // Load historical messages from chatHistoryManager
         chatHistoryManager?.let { manager ->
             val messages = manager.getMessages()
             messages.forEach { message ->
@@ -90,8 +88,6 @@ class CodingAgentViewModel(
             }
         }
 
-        // Start MCP preloading immediately when ViewModel is created
-        // Only if llmService is configured
         if (llmService != null) {
             scope.launch {
                 startMcpPreloading()
@@ -106,8 +102,6 @@ class CodingAgentViewModel(
         try {
             mcpPreloadingMessage = "Loading MCP servers configuration..."
             val toolConfig = ConfigManager.loadToolConfig()
-
-            // Cache the tool configuration for UI display
             cachedToolConfig = toolConfig
 
             if (toolConfig.mcpServers.isEmpty()) {
@@ -117,20 +111,16 @@ class CodingAgentViewModel(
 
             mcpPreloadingMessage = "Initializing ${toolConfig.mcpServers.size} MCP servers..."
 
-            // Initialize MCP servers (this will start background preloading)
             McpToolConfigManager.init(toolConfig)
 
-            // Monitor preloading status
             while (McpToolConfigManager.isPreloading()) {
                 mcpPreloadingStatus = McpToolConfigManager.getPreloadingStatus()
                 mcpPreloadingMessage = "Loading MCP servers... (${mcpPreloadingStatus.preloadedServers.size} completed)"
                 delay(500) // Update every 500ms
             }
 
-            // Wait a bit more to ensure all status updates are complete
             delay(1000)
 
-            // Final status update - force refresh multiple times to ensure we get the latest
             repeat(3) {
                 mcpPreloadingStatus = McpToolConfigManager.getPreloadingStatus()
                 delay(100)
@@ -145,13 +135,6 @@ class CodingAgentViewModel(
                 } else {
                     "MCP servers initialization completed (no tools loaded)"
                 }
-
-            // Debug: Print final status
-            println("🔍 [CodingAgentViewModel] Final MCP status:")
-            println("   Preloaded servers: ${mcpPreloadingStatus.preloadedServers}")
-            println("   Total cached: ${mcpPreloadingStatus.totalCachedConfigurations}")
-            println("   Is preloading: ${McpToolConfigManager.isPreloading()}")
-            println("   Message: $mcpPreloadingMessage")
         } catch (e: Exception) {
             mcpPreloadingMessage = "Failed to load MCP servers: ${e.message}"
             println("Error during MCP preloading: ${e.message}")
@@ -185,11 +168,6 @@ class CodingAgentViewModel(
         return _codingAgent!!
     }
 
-    /**
-     * Initialize the CodeReviewAgent with tool configuration
-     * Uses the same factory pattern as CodingAgent
-     * @throws IllegalStateException if llmService is not configured
-     */
     private suspend fun initializeCodeReviewAgent(): CodeReviewAgent {
         if (llmService == null) {
             throw IllegalStateException("LLM service is not configured")
@@ -208,12 +186,10 @@ class CodingAgentViewModel(
                 mcpToolConfigService = mcpToolConfigService
             )
         }
+
         return _codeReviewAgent!!
     }
 
-    /**
-     * Switch to a different agent type
-     */
     fun switchAgent(agentType: AgentType) {
         if (currentAgentType != agentType) {
             currentAgentType = agentType
@@ -301,11 +277,6 @@ class CodingAgentViewModel(
             return
         }
 
-        if (task.trim().startsWith("/")) {
-            handleBuiltinCommand(task.trim(), onConfigRequired)
-            return
-        }
-
         isExecuting = true
         renderer.clearError()
         renderer.addUserMessage(task)
@@ -345,76 +316,6 @@ class CodingAgentViewModel(
             }
     }
 
-    /**
-     * Handle built-in slash commands
-     */
-    private fun handleBuiltinCommand(command: String, onConfigRequired: (() -> Unit)? = null) {
-        val parts = command.substring(1).trim().split("\\s+".toRegex())
-        val commandName = parts[0].lowercase()
-        val args = parts.drop(1).joinToString(" ")
-
-        renderer.addUserMessage(command)
-
-        when (commandName) {
-            "init" -> {
-                // /init command requires LLM configuration
-                if (!isConfigured()) {
-                    renderer.renderError("⚠️ LLM model is not configured. Please configure your model to use /init command.")
-                    onConfigRequired?.invoke()
-                    return
-                }
-                handleInitCommand(args)
-            }
-            "clear" -> {
-                renderer.clearMessages()
-                chatHistoryManager?.clearCurrentSession()  // 同时清空会话历史
-                renderer.renderFinalResult(true, "✅ Chat history cleared", 0)
-            }
-            "help" -> {
-                val helpText =
-                    buildString {
-                        appendLine("📖 Available Commands:")
-                        appendLine("  /init [--force] - Initialize project domain dictionary")
-                        appendLine("  /clear - Clear chat history")
-                        appendLine("  /help - Show this help message")
-                        appendLine("")
-                        appendLine("💡 You can also use @ for agents and other DevIns commands")
-                    }
-                renderer.renderFinalResult(true, helpText, 0)
-            }
-            else -> {
-                if (!isConfigured()) {
-                    renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
-                    onConfigRequired?.invoke()
-                    return
-                }
-
-                isExecuting = true
-                currentExecutionJob =
-                    scope.launch {
-                        try {
-                            val codingAgent = initializeCodingAgent()
-                            val agentTask =
-                                AgentTask(
-                                    requirement = command,
-                                    projectPath = projectPath
-                                )
-                            codingAgent.executeTask(agentTask)
-                            isExecuting = false
-                            currentExecutionJob = null
-                        } catch (e: Exception) {
-                            renderer.renderError(e.message ?: "Unknown error")
-                            isExecuting = false
-                            currentExecutionJob = null
-                        }
-                    }
-            }
-        }
-    }
-
-    /**
-     * Cancel current task
-     */
     fun cancelTask() {
         if (isExecuting && currentExecutionJob != null) {
             currentExecutionJob?.cancel("Task cancelled by user")
@@ -423,25 +324,12 @@ class CodingAgentViewModel(
         }
     }
 
-    /**
-     * Clear chat history
-     */
-    fun clearHistory() {
-        renderer.clearMessages()
-        chatHistoryManager?.clearCurrentSession()
-    }
 
-    /**
-     * Create new session and switch to it
-     */
     fun newSession() {
         renderer.clearMessages()
         chatHistoryManager?.createSession()
     }
 
-    /**
-     * Switch to a different session and load its messages
-     */
     fun switchSession(sessionId: String) {
         chatHistoryManager?.let { manager ->
             val session = manager.switchSession(sessionId)
@@ -466,80 +354,9 @@ class CodingAgentViewModel(
         }
     }
 
-    /**
-     * Handle /init command for domain dictionary generation
-     */
-    private fun handleInitCommand(args: String) {
-        val force = args.contains("--force")
-
-        scope.launch {
-            try {
-                // Add messages to timeline using the renderer's message system
-                renderer.addUserMessage("/init $args")
-
-                // Start processing indicator
-                renderer.renderLLMResponseStart()
-                renderer.renderLLMResponseChunk("🚀 Starting domain dictionary generation...")
-                renderer.renderLLMResponseEnd()
-
-                // Load configuration
-                val configWrapper = ConfigManager.load()
-                val modelConfig = configWrapper.getActiveModelConfig()
-
-                if (modelConfig == null) {
-                    renderer.renderError("❌ No LLM configuration found. Please configure your model first.")
-                    return@launch
-                }
-
-                renderer.renderLLMResponseStart()
-                renderer.renderLLMResponseChunk("📊 Analyzing project code...")
-                renderer.renderLLMResponseEnd()
-
-                // Create domain dictionary generator
-                val fileSystem = DefaultProjectFileSystem(projectPath)
-                val generator = DomainDictGenerator(fileSystem = fileSystem, modelConfig = modelConfig)
-
-                // Check if domain dictionary already exists
-                if (!force && fileSystem.exists("prompts/domain.csv")) {
-                    renderer.renderError("⚠️ Domain dictionary already exists at prompts/domain.csv\nUse /init --force to regenerate")
-                    return@launch
-                }
-
-                renderer.renderLLMResponseStart()
-                renderer.renderLLMResponseChunk("🤖 Generating domain dictionary with AI...")
-                renderer.renderLLMResponseEnd()
-
-                // Generate domain dictionary
-                val result = generator.generateAndSave()
-
-                when (result) {
-                    is cc.unitmesh.indexer.GenerationResult.Success -> {
-                        renderer.renderLLMResponseStart()
-                        renderer.renderLLMResponseChunk("💾 Saving domain dictionary to prompts/domain.csv...")
-                        renderer.renderLLMResponseEnd()
-                        renderer.renderFinalResult(true, "✅ Domain dictionary generated successfully! File saved to prompts/domain.csv", 1)
-                    }
-                    is cc.unitmesh.indexer.GenerationResult.Error -> {
-                        renderer.renderError("❌ Domain dictionary generation failed: ${result.message}")
-                    }
-                }
-            } catch (e: Exception) {
-                renderer.renderError("❌ Domain dictionary generation failed: ${e.message}")
-            }
-        }
-    }
-
-    /**
-     * Clear error state
-     */
     fun clearError() {
         renderer.clearError()
     }
-
-    /**
-     * Check if MCP servers are ready (preloading completed)
-     */
-    fun areMcpServersReady(): Boolean = !McpToolConfigManager.isPreloading()
 
     fun getToolLoadingStatus(): ToolLoadingStatus {
         val toolConfig = cachedToolConfig
