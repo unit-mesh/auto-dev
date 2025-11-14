@@ -143,7 +143,6 @@ private fun AutoDevContent(
                 else -> "${Platform.getUserHomeDir()}/AutoDevProjects"
             }
 
-            println("🔍 尝试使用默认工作空间路径: $defaultPath")
             val fileSystem = DefaultFileSystem(defaultPath)
 
             if (fileSystem.exists(defaultPath)) {

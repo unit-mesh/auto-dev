@@ -3,18 +3,65 @@ package cc.unitmesh.codegraph.parser.wasm
 import kotlin.js.Promise
 
 /**
- * Parser module object for accessing static methods
+ * External declarations for web-tree-sitter API using @JsFun for dynamic imports.
+ *
+ * This approach is more reliable in WASM test environments than @JsModule.
+ *
+ * Reference JS implementation:
+ * ```js
+ * const TreeSitter = await import('web-tree-sitter');
+ * await TreeSitter.default.init();
+ * const parser = new TreeSitter.default();
+ * const language = await TreeSitter.default.Language.load(wasmPath);
+ * parser.setLanguage(language);
+ * const tree = parser.parse(sourceCode);
+ * ```
  */
-@JsModule("web-tree-sitter")
-external object ParserModule : JsAny {
-    fun init(): Promise<JsAny>
+
+/**
+ * Initialize TreeSitter and return the TreeSitter module
+ *
+ * JavaScript: `const ts = await import('web-tree-sitter'); await ts.default.init(); return ts.default;`
+ */
+@JsFun("async () => { const ts = await import('web-tree-sitter'); await ts.default.init(); return ts.default; }")
+external fun initTreeSitter(): Promise<TreeSitterModule>
+
+/**
+ * TreeSitter module interface (the default export from web-tree-sitter)
+ */
+external interface TreeSitterModule : JsAny {
+    /**
+     * Language class for loading grammar WASM files
+     */
+    val Language: LanguageClass
 }
 
 /**
- * Parser constructor function
+ * Language class with static load method
  */
-@JsModule("web-tree-sitter")
-external fun Parser(): Parser
+external interface LanguageClass : JsAny {
+    /**
+     * Load a language grammar from a WASM file path
+     *
+     * JavaScript: `TreeSitter.Language.load(path)`
+     */
+    fun load(path: String): Promise<TSLanguageGrammar>
+}
+
+/**
+ * Create a new Parser instance
+ *
+ * JavaScript: `const ts = await import('web-tree-sitter'); return new ts.default();`
+ */
+@JsFun("""async () => { 
+    const ts = await import('web-tree-sitter');
+    await ts.default.init(); 
+    console.log(ts.default);
+    return ts.default; 
+}
+"""
+)
+external fun createParser(): Promise<Parser>
 
 /**
  * Parser instance interface
@@ -23,15 +70,6 @@ external interface Parser : JsAny {
     fun parse(input: String): Tree
     fun setLanguage(language: TSLanguageGrammar?)
     fun getLanguage(): TSLanguageGrammar?
-}
-
-/**
- * Language module object for accessing static load method
- */
-@JsModule("web-tree-sitter")
-@JsName("Parser.Language")
-external object LanguageModule : JsAny {
-    fun load(path: String): Promise<TSLanguageGrammar>
 }
 
 /**

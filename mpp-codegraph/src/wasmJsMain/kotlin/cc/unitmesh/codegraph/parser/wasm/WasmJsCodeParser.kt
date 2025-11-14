@@ -14,10 +14,11 @@ import kotlinx.coroutines.await
  * Reference: https://github.com/tree-sitter/tree-sitter/tree/master/lib/binding_web
  */
 class WasmJsCodeParser : CodeParser {
-    
+
     private var initialized = false
+    private var treeSitterModule: TreeSitterModule? = null
     private val parsers = mutableMapOf<Language, TSParser>()
-    
+
     /**
      * Initialize TreeSitter WASM runtime
      */
@@ -25,13 +26,16 @@ class WasmJsCodeParser : CodeParser {
         if (initialized) return
 
         try {
-            ParserModule.init().await<JsAny>()
-            initialized = true
-        } catch (e: Throwable) {
-            console.error("Failed to initialize TreeSitter: ${e.message ?: "Unknown error"}")
-            throw e
-        }
-    }
+            console.log("Initializing TreeSitter WASM...")
+            // Initialize TreeSitter and get the module
+            treeSitterModule = initTreeSitter().await()
+            console.log("TreeSitter WASM initialized successfully")
+    initialized = true
+} catch (e: Throwable) {
+    console.error("Failed to initialize TreeSitter: ${e.message ?: "Unknown error"}")
+    throw e
+}
+}
     
     override suspend fun parseNodes(
         sourceCode: String,
@@ -98,11 +102,17 @@ class WasmJsCodeParser : CodeParser {
             return parsers[language]!!
         }
 
-        val parser = Parser()
+        // Ensure TreeSitter is initialized
+        if (treeSitterModule == null) {
+            throw IllegalStateException("TreeSitter not initialized. Call initialize() first.")
+        }
+
+        val parser = createParser().await<Parser>()
 
         // Load language grammar from WASM artifacts
         val languageName = getLanguageWasmPath(language)
-        val languageGrammar = LanguageModule.load(languageName).await<TSLanguageGrammar>()
+        console.log("Loading language grammar: $languageName")
+        val languageGrammar = treeSitterModule!!.Language.load(languageName).await<TSLanguageGrammar>()
 
         parser.setLanguage(languageGrammar)
         parsers[language] = parser
