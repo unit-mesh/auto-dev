@@ -241,4 +241,4 @@ fastlane/test_output
 *.cer
 *.p12
 *.provisionprofile
-Samples
+#Samples

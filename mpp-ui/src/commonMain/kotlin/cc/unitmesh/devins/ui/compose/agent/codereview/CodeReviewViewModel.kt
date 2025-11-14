@@ -186,7 +186,10 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
         }
     }
 
-    // Private helper methods
+
+    open fun parseDiffHunks(diff: String): List<DiffHunk> {
+        return emptyList()
+    }
 
     private suspend fun runLint(filePaths: List<String>) {
         // TODO: Integrate with actual lint tools (eslint, pylint, etc.)
@@ -229,7 +232,6 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
             )
         }
     }
-
     private suspend fun generateFixes() {
         // TODO: Call CodeReviewAgent to generate fixes
         val fixes = listOf(
@@ -272,24 +274,6 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
                     fixOutput = "Generated ${fixes.size} fixes"
                 )
             )
-        }
-    }
-
-    private fun parseDiffHunks(diff: String): List<DiffHunk> {
-        // TODO: Parse unified diff format
-        // For now, return empty list
-        return emptyList()
-    }
-
-    private fun detectLanguage(filePath: String): String? {
-        return when (filePath.substringAfterLast('.', "")) {
-            "kt" -> "kotlin"
-            "java" -> "java"
-            "js", "ts" -> "javascript"
-            "py" -> "python"
-            "go" -> "go"
-            "rs" -> "rust"
-            else -> null
         }
     }
 

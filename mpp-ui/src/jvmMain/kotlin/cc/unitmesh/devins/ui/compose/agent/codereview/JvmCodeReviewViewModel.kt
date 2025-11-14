@@ -2,7 +2,6 @@ package cc.unitmesh.devins.ui.compose.agent.codereview
 
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.devins.workspace.Workspace
-import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 
 /**
@@ -348,23 +347,6 @@ class JvmCodeReviewViewModel(
         }
     }
 
-    private fun parseDiffHunks(diff: String): List<DiffHunk> {
-        // TODO: Parse unified diff format
-        return emptyList()
-    }
-
-    private fun detectLanguage(filePath: String): String? {
-        return when (filePath.substringAfterLast('.', "")) {
-            "kt" -> "kotlin"
-            "java" -> "java"
-            "js", "ts" -> "javascript"
-            "py" -> "python"
-            "go" -> "go"
-            "rs" -> "rust"
-            else -> null
-        }
-    }
-
     private fun updateState(update: (CodeReviewState) -> CodeReviewState) {
         currentState = update(currentState)
         // Also update parent's state flow
@@ -380,3 +362,4 @@ class JvmCodeReviewViewModel(
         super.dispose()
     }
 }
+
