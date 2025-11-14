@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
+import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.sketch.DiffParser
@@ -209,6 +210,14 @@ open class CodeReviewViewModel(
                 )
             }
 
+            // Auto-start analysis if agent is available (for automatic testing)
+            if (codeReviewAgent != null && diffFiles.isNotEmpty()) {
+                AutoDevLogger.info("CodeReviewViewModel") {
+                    "🤖 Auto-starting analysis with ${diffFiles.size} files"
+                }
+                startAnalysis()
+            }
+
         } catch (e: Exception) {
             updateState {
                 it.copy(
@@ -266,12 +275,6 @@ open class CodeReviewViewModel(
                     error = null
                 )
             }
-
-            // Auto-start analysis if agent is available
-            if (codeReviewAgent != null && diffFiles.isNotEmpty()) {
-                startAnalysis()
-            }
-
         } catch (e: Exception) {
             updateState {
                 it.copy(
@@ -282,9 +285,6 @@ open class CodeReviewViewModel(
         }
     }
 
-    /**
-     * Start AI analysis and fix generation
-     */
     open fun startAnalysis() {
         if (currentState.diffFiles.isEmpty()) {
             updateState { it.copy(error = "No files to analyze") }
@@ -301,11 +301,9 @@ open class CodeReviewViewModel(
                     )
                 }
 
-                // Step 1: Run lint on changed files
                 val filePaths = currentState.diffFiles.map { it.path }
                 runLint(filePaths)
 
-                // Step 2: AI analyzes lint output
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(stage = AnalysisStage.ANALYZING_LINT)
@@ -313,15 +311,14 @@ open class CodeReviewViewModel(
                 }
                 analyzeLintOutput()
 
-                // Step 3: Generate fixes
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(stage = AnalysisStage.GENERATING_FIX)
                     )
                 }
+
                 generateFixes()
 
-                // Completed
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(stage = AnalysisStage.COMPLETED)
@@ -405,88 +402,16 @@ open class CodeReviewViewModel(
         }
     }
 
-    private suspend fun runLint(filePaths: List<String>) {
-        val lintOutput = buildString {
-            appendLine("Running lint on ${filePaths.size} files...")
-            delay(500)
-            filePaths.forEach { path ->
-                appendLine("Checking: $path")
-            }
-            appendLine("Lint analysis completed.")
-        }
+    suspend fun runLint(filePaths: List<String>) {
 
-        updateState {
-            it.copy(
-                aiProgress = it.aiProgress.copy(
-                    lintOutput = lintOutput
-                )
-            )
-        }
     }
 
-    private suspend fun analyzeLintOutput() {
-        // TODO: Call CodeReviewAgent to analyze lint output
-        val analysisOutput = buildString {
-            appendLine("Analyzing lint results...")
-            delay(800)
-            appendLine("Found 3 issues:")
-            appendLine("- Line 42: Unused variable 'temp'")
-            appendLine("- Line 58: Missing null check")
-            appendLine("- Line 73: Inefficient loop")
-        }
+    suspend fun analyzeLintOutput() {
 
-        updateState {
-            it.copy(
-                aiProgress = it.aiProgress.copy(
-                    analysisOutput = analysisOutput
-                )
-            )
-        }
     }
 
-    private suspend fun generateFixes() {
-        // TODO: Call CodeReviewAgent to generate fixes
-        val fixes = listOf(
-            FixResult(
-                filePath = "src/main/Example.kt",
-                line = 42,
-                lintIssue = "Unused variable 'temp'",
-                lintValid = true,
-                risk = RiskLevel.LOW,
-                aiFix = "Remove the unused variable",
-                fixedCode = "// Variable removed",
-                status = FixStatus.FIXED
-            ),
-            FixResult(
-                filePath = "src/main/Example.kt",
-                line = 58,
-                lintIssue = "Missing null check",
-                lintValid = true,
-                risk = RiskLevel.MEDIUM,
-                aiFix = "Add null check before accessing property",
-                fixedCode = "if (value != null) { value.property }",
-                status = FixStatus.FIXED
-            ),
-            FixResult(
-                filePath = "src/main/Example.kt",
-                line = 73,
-                lintIssue = "Inefficient loop",
-                lintValid = true,
-                risk = RiskLevel.INFO,
-                aiFix = "Replace with forEach for better readability",
-                fixedCode = "list.forEach { item -> process(item) }",
-                status = FixStatus.FIXED
-            )
-        )
+    suspend fun generateFixes() {
 
-        updateState {
-            it.copy(
-                fixResults = fixes,
-                aiProgress = it.aiProgress.copy(
-                    fixOutput = "Generated ${fixes.size} fixes"
-                )
-            )
-        }
     }
 
     private fun updateState(update: (CodeReviewState) -> CodeReviewState) {
