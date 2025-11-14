@@ -1,15 +1,9 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Enhanced CodeReview ViewModel for JVM with Git integration
@@ -17,9 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class JvmCodeReviewViewModel(
     private val workspace: Workspace,
     private val gitService: GitService,
-    llmService: KoogLLMService? = null,
-    codeReviewAgent: CodeReviewAgent? = null
-) : CodeReviewViewModel(workspace, llmService, codeReviewAgent) {
+    codeReviewAgent: CodeReviewAgent? = null) : CodeReviewViewModel(workspace, codeReviewAgent) {
     // Control execution for Git operations
     private var currentJob: Job? = null
 
@@ -69,7 +61,6 @@ class JvmCodeReviewViewModel(
                 )
             }
 
-            // Auto-load diff for the first commit
             if (commits.isNotEmpty()) {
                 loadDiffForCommit(0)
             }
@@ -86,17 +77,13 @@ class JvmCodeReviewViewModel(
         }
     }
 
-    /**
-     * Load diff for a specific commit
-     */
+
     fun loadDiffForCommit(index: Int) {
         if (index !in currentState.commitHistory.indices) {
-            println("⚠️  Invalid commit index: $index")
             return
         }
 
         val commit = currentState.commitHistory[index]
-        println("🔍 Loading diff for commit: ${commit.shortHash} - ${commit.message}")
 
         currentJob?.cancel()
         currentJob = CoroutineScope(Dispatchers.Default).launch {
@@ -138,7 +125,6 @@ class JvmCodeReviewViewModel(
                     )
                 }
 
-                println("✅ Loaded diff with ${diffFiles.size} changed files")
                 diffFiles.forEach { file ->
                     println("  • ${file.path} [${file.changeType}] (${file.language ?: "unknown"})")
                 }

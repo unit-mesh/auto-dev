@@ -4,31 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
-import cc.unitmesh.agent.ReviewTask
-import cc.unitmesh.agent.ReviewType
 import cc.unitmesh.devins.workspace.Workspace
-import cc.unitmesh.devins.workspace.WorkspaceManager
-import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/**
- * ViewModel for Code Review Side-by-Side UI
- *
- * Manages the flow:
- * 1. Load git diff from Workspace
- * 2. Run lint analysis on diff
- * 3. AI analyzes lint output
- * 4. AI generates fixes
- * 5. Display results in side-by-side view
- */
-open class CodeReviewViewModel(
-    private val workspace: Workspace,
-    private val llmService: KoogLLMService?,
-    private val codeReviewAgent: CodeReviewAgent? = null
-) {
+open class CodeReviewViewModel(private val workspace: Workspace, private val codeReviewAgent: CodeReviewAgent? = null) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // State
