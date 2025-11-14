@@ -30,7 +30,7 @@ class CodeReviewAnalysisIntegrationTest {
         lintExecutor = LintExecutor()
         lintResultFormatter = LintResultFormatter()
         testLinter = TestLinter()
-        
+
         // Register test linter
         val registry = LinterRegistry.getInstance()
         registry.register(testLinter)
@@ -41,7 +41,7 @@ class CodeReviewAnalysisIntegrationTest {
         // Given: A file with lint issues
         val filePath = "/project/src/main/Example.kt"
         val projectPath = "/project"
-        
+
         // Modified code ranges: lines 10-20 and 50-60
         val modifiedCodeRanges = mapOf(
             filePath to listOf(
@@ -86,14 +86,14 @@ class CodeReviewAnalysisIntegrationTest {
 
         // Then: Only issues in modified ranges should be included
         assertEquals(1, results.size, "Should have results for 1 file")
-        
+
         val fileResult = results.first()
         assertEquals(filePath, fileResult.filePath)
         assertEquals(3, fileResult.issues.size, "Should filter to 3 issues (lines 12, 18, 55)")
         assertEquals(1, fileResult.errorCount, "Should have 1 error (line 18)")
         assertEquals(2, fileResult.warningCount, "Should have 2 warnings (lines 12, 55)")
         assertEquals(0, fileResult.infoCount, "Should have 0 info")
-        
+
         // Verify the specific issues
         val issueLines = fileResult.issues.map { it.line }.sorted()
         assertEquals(listOf(12, 18, 55), issueLines)
@@ -104,7 +104,7 @@ class CodeReviewAnalysisIntegrationTest {
         // Given: A file with lint issues
         val filePath = "/project/src/main/Example.kt"
         val projectPath = "/project"
-        
+
         testLinter.setTestIssues(
             filePath,
             listOf(
@@ -136,7 +136,7 @@ class CodeReviewAnalysisIntegrationTest {
         val filePath = "/project/src/main/Example.kt"
         val otherFilePath = "/project/src/main/Other.kt"
         val projectPath = "/project"
-        
+
         val modifiedCodeRanges = mapOf(
             otherFilePath to listOf(
                 ModifiedCodeRange(
@@ -204,7 +204,7 @@ class CodeReviewAnalysisIntegrationTest {
         // Then: Should return formatted map with file path as key
         assertEquals(1, formatted.size)
         assertTrue(formatted.containsKey("/project/src/Example.kt"))
-        
+
         val formattedText = formatted["/project/src/Example.kt"]!!
         assertTrue(formattedText.contains("File: /project/src/Example.kt"))
         assertTrue(formattedText.contains("Total Issues: 4"))
@@ -256,14 +256,14 @@ class CodeReviewAnalysisIntegrationTest {
             oldLineNumber = null,
             newLineNumber = 15
         )
-        
+
         val diffLine2 = DiffLine(
             type = DiffLineType.DELETED,
             content = "-    val oldVariable = 10",
             oldLineNumber = 14,
             newLineNumber = null
         )
-        
+
         val diffLine3 = DiffLine(
             type = DiffLineType.CONTEXT,
             content = "     val existing = 20",
@@ -284,11 +284,11 @@ class CodeReviewAnalysisIntegrationTest {
         assertEquals(DiffLineType.ADDED, diffLine1.type)
         assertEquals(15, diffLine1.newLineNumber)
         assertEquals(null, diffLine1.oldLineNumber)
-        
+
         assertEquals(DiffLineType.DELETED, diffLine2.type)
         assertEquals(14, diffLine2.oldLineNumber)
         assertEquals(null, diffLine2.newLineNumber)
-        
+
         assertEquals(3, diffHunk.lines.size)
         assertEquals(14, diffHunk.oldStartLine)
         assertEquals(15, diffHunk.newStartLine)
@@ -306,7 +306,7 @@ class CodeReviewAnalysisIntegrationTest {
             endLine = 20,
             modifiedLines = listOf(12, 15)
         )
-        
+
         val range2 = ModifiedCodeRange(
             filePath = "/project/src/Example.kt",
             elementName = "myFunction",
@@ -315,7 +315,7 @@ class CodeReviewAnalysisIntegrationTest {
             endLine = 20,
             modifiedLines = listOf(12, 15)
         )
-        
+
         val range3 = ModifiedCodeRange(
             filePath = "/project/src/Example.kt",
             elementName = "otherFunction",
@@ -328,7 +328,7 @@ class CodeReviewAnalysisIntegrationTest {
         // Data class equality
         assertEquals(range1, range2, "Identical ModifiedCodeRange should be equal")
         assertTrue(range1 != range3, "Different ModifiedCodeRange should not be equal")
-        
+
         // Data class copy
         val range4 = range1.copy(elementName = "renamedFunction")
         assertEquals("renamedFunction", range4.elementName)
@@ -343,7 +343,7 @@ class TestLinter : Linter {
     override val name: String = "TestLinter"
     override val description: String = "A test linter for integration tests"
     override val supportedExtensions: List<String> = listOf("kt", "kts", "java")
-    
+
     private var testIssues: Map<String, List<LintIssue>> = emptyMap()
     private var available: Boolean = true
 

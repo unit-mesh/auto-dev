@@ -1,0 +1,74 @@
+-- CodeReviewAnalysisDb 表：存储 Code Review 分析结果
+CREATE TABLE IF NOT EXISTS CodeReviewAnalysisDb (
+    id TEXT PRIMARY KEY NOT NULL,
+    projectPath TEXT NOT NULL,
+    commitHash TEXT NOT NULL,
+    stage TEXT NOT NULL,
+    lintOutput TEXT NOT NULL DEFAULT '',
+    lintResults TEXT NOT NULL DEFAULT '',
+    modifiedCodeRanges TEXT NOT NULL DEFAULT '',
+    analysisOutput TEXT NOT NULL DEFAULT '',
+    fixOutput TEXT NOT NULL DEFAULT '',
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_analysis_project ON CodeReviewAnalysisDb(projectPath);
+CREATE INDEX IF NOT EXISTS idx_analysis_commit ON CodeReviewAnalysisDb(commitHash);
+CREATE INDEX IF NOT EXISTS idx_analysis_project_commit ON CodeReviewAnalysisDb(projectPath, commitHash);
+CREATE INDEX IF NOT EXISTS idx_analysis_updated ON CodeReviewAnalysisDb(updatedAt DESC);
+
+-- 查询所有分析结果
+selectAll:
+SELECT * FROM CodeReviewAnalysisDb ORDER BY updatedAt DESC;
+
+-- 根据项目路径查询
+selectByProject:
+SELECT * FROM CodeReviewAnalysisDb WHERE projectPath = ? ORDER BY updatedAt DESC;
+
+-- 根据项目路径和 commit hash 查询
+selectByProjectAndCommit:
+SELECT * FROM CodeReviewAnalysisDb WHERE projectPath = ? AND commitHash = ? LIMIT 1;
+
+-- 根据 ID 查询
+selectById:
+SELECT * FROM CodeReviewAnalysisDb WHERE id = ?;
+
+-- 插入分析结果
+insert:
+INSERT INTO CodeReviewAnalysisDb(id, projectPath, commitHash, stage, lintOutput, lintResults, modifiedCodeRanges, analysisOutput, fixOutput, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- 更新分析结果
+update:
+UPDATE CodeReviewAnalysisDb 
+SET stage = ?,
+    lintOutput = ?,
+    lintResults = ?,
+    modifiedCodeRanges = ?,
+    analysisOutput = ?,
+    fixOutput = ?,
+    updatedAt = ?
+WHERE id = ?;
+
+-- 删除分析结果
+delete:
+DELETE FROM CodeReviewAnalysisDb WHERE id = ?;
+
+-- 根据项目和 commit 删除
+deleteByProjectAndCommit:
+DELETE FROM CodeReviewAnalysisDb WHERE projectPath = ? AND commitHash = ?;
+
+-- 删除旧的分析结果（保留最近 N 条）
+deleteOldAnalysis:
+DELETE FROM CodeReviewAnalysisDb 
+WHERE id NOT IN (
+    SELECT id FROM CodeReviewAnalysisDb 
+    ORDER BY updatedAt DESC 
+    LIMIT ?
+);
+
+-- 清空所有分析结果
+deleteAll:
+DELETE FROM CodeReviewAnalysisDb;
+
