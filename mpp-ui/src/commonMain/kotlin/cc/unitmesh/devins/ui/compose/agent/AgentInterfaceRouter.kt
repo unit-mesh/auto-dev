@@ -57,6 +57,7 @@ fun AgentInterfaceRouter(
                 modifier = modifier
             )
         }
+        AgentType.LOCAL,
         AgentType.CODING -> {
             // Show traditional chat interface
             AgentChatInterface(

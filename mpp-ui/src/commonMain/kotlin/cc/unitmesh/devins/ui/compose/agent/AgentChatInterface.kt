@@ -160,6 +160,7 @@ fun AgentChatInterface(
 
                     // 根据选中的 Agent 类型显示不同的输入组件
                     when (selectedAgentType) {
+                        AgentType.LOCAL,
                         AgentType.CODING -> {
                             // 输入框 for Coding Agent
                             DevInEditorInput(
