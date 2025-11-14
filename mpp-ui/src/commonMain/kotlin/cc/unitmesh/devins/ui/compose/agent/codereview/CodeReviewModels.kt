@@ -1,5 +1,8 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
+import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
+import cc.unitmesh.devins.ui.compose.sketch.DiffLine
+import cc.unitmesh.devins.ui.compose.sketch.DiffLineType
 import kotlinx.serialization.Serializable
 
 /**
@@ -18,6 +21,7 @@ data class CodeReviewState(
 
 /**
  * Information about a file in the diff
+ * Extends FileDiff from sketch package with CodeReview-specific fields
  */
 data class DiffFileInfo(
     val path: String,
@@ -35,36 +39,6 @@ enum class ChangeType {
     DELETED,
     MODIFIED,
     RENAMED
-}
-
-/**
- * A continuous block of changes (hunk)
- */
-data class DiffHunk(
-    val oldStart: Int,
-    val oldLines: Int,
-    val newStart: Int,
-    val newLines: Int,
-    val lines: List<DiffLine>
-)
-
-/**
- * A single line in a diff
- */
-data class DiffLine(
-    val type: DiffLineType,
-    val content: String,
-    val oldLineNumber: Int? = null,
-    val newLineNumber: Int? = null
-)
-
-/**
- * Type of diff line
- */
-enum class DiffLineType {
-    CONTEXT,  // Unchanged line
-    ADDED,    // + line
-    DELETED   // - line
 }
 
 /**

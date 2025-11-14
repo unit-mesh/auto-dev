@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
+import cc.unitmesh.devins.ui.compose.sketch.DiffParser
 import cc.unitmesh.devins.workspace.Workspace
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,8 +51,11 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
                 return
             }
 
-            // Convert to UI model
+            // Convert to UI model using DiffParser
             val diffFiles = gitDiff.files.map { file ->
+                val parsedDiff = DiffParser.parse(file.diff)
+                val hunks = parsedDiff.firstOrNull()?.hunks ?: emptyList()
+
                 DiffFileInfo(
                     path = file.path,
                     oldPath = file.oldPath,
@@ -62,7 +66,7 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
                         cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAMED
                         cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.MODIFIED
                     },
-                    hunks = parseDiffHunks(file.diff),
+                    hunks = hunks,
                     language = detectLanguage(file.path)
                 )
             }
@@ -162,6 +166,15 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
     }
 
     /**
+     * Select a different commit to view
+     */
+    open fun selectCommit(index: Int) {
+        if (index in currentState.commitHistory.indices) {
+            updateState { it.copy(selectedCommitIndex = index) }
+        }
+    }
+
+    /**
      * Select a different file to view
      */
     open fun selectFile(index: Int) {
@@ -186,15 +199,7 @@ open class CodeReviewViewModel(private val workspace: Workspace, private val cod
         }
     }
 
-
-    open fun parseDiffHunks(diff: String): List<DiffHunk> {
-        return emptyList()
-    }
-
     private suspend fun runLint(filePaths: List<String>) {
-        // TODO: Integrate with actual lint tools (eslint, pylint, etc.)
-        // For now, simulate lint output
-
         val lintOutput = buildString {
             appendLine("Running lint on ${filePaths.size} files...")
             delay(500)

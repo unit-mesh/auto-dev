@@ -87,19 +87,8 @@ private fun ThreeColumnLayout(
                 commits = state.commitHistory,
                 selectedIndex = state.selectedCommitIndex,
                 onCommitSelected = { index ->
-                    // Load diff for selected commit
-                    // Call refresh which will load the diff for the commit
-                    // Note: For cross-platform support, we use reflection or expect/actual pattern
-                    try {
-                        // Try to call loadDiffForCommit if it exists (JVM implementation)
-                        val method = viewModel::class.members.find { it.name == "loadDiffForCommit" }
-                        if (method != null) {
-                            method.call(viewModel, index)
-                        }
-                    } catch (e: Exception) {
-                        // Fallback: just update selection
-                        viewModel.selectFile(index)
-                    }
+                    // Select commit (will trigger diff loading in subclasses like JvmCodeReviewViewModel)
+                    viewModel.selectCommit(index)
                 }
             )
         },

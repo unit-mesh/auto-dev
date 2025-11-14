@@ -54,7 +54,6 @@ fun CodeReviewDemoApp() {
                 val vm = JvmCodeReviewViewModel(
                     workspace = ws,
                     gitService = gitService,
-                    llmService = null,
                     codeReviewAgent = null
                 )
                 viewModel = vm

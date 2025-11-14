@@ -38,6 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
+import cc.unitmesh.devins.ui.compose.sketch.DiffLine
+import cc.unitmesh.devins.ui.compose.sketch.DiffLineType
 import kotlinx.datetime.Clock
 
 /**
@@ -387,8 +390,9 @@ fun DiffHunkView(hunk: DiffHunk) {
             )
             .padding(4.dp)
     ) {
+        // Display hunk header (already formatted in DiffHunk.header)
         Text(
-            text = "@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@",
+            text = hunk.header,
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -396,7 +400,10 @@ fun DiffHunkView(hunk: DiffHunk) {
         )
 
         hunk.lines.forEach { line ->
-            DiffLineView(line)
+            // Skip HEADER type lines (they're handled above)
+            if (line.type != DiffLineType.HEADER) {
+                DiffLineView(line)
+            }
         }
     }
 }
@@ -422,6 +429,12 @@ fun DiffLineView(line: DiffLine) {
             MaterialTheme.colorScheme.onSurfaceVariant,
             " "
         )
+
+        DiffLineType.HEADER -> Triple(
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            MaterialTheme.colorScheme.onSurfaceVariant,
+            ""
+        )
     }
 
     Row(
@@ -430,8 +443,9 @@ fun DiffLineView(line: DiffLine) {
             .background(backgroundColor)
             .padding(horizontal = 4.dp, vertical = 1.dp)
     ) {
+        // Old line number
         Text(
-            text = "${line.oldLineNumber ?: ""}",
+            text = line.oldLineNumber?.toString() ?: "",
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 10.sp,
             color = AutoDevColors.Diff.Dark.lineNumber,
@@ -443,7 +457,7 @@ fun DiffLineView(line: DiffLine) {
 
         // New line number
         Text(
-            text = "${line.newLineNumber ?: ""}",
+            text = line.newLineNumber?.toString() ?: "",
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 10.sp,
             color = AutoDevColors.Diff.Dark.lineNumber,
@@ -453,6 +467,7 @@ fun DiffLineView(line: DiffLine) {
 
         Spacer(modifier = Modifier.Companion.width(8.dp))
 
+        // Line prefix (+/-/ )
         Text(
             text = prefix,
             fontFamily = FontFamily.Companion.Monospace,
@@ -461,6 +476,7 @@ fun DiffLineView(line: DiffLine) {
             modifier = Modifier.Companion.width(12.dp)
         )
 
+        // Line content
         Text(
             text = line.content,
             fontFamily = FontFamily.Companion.Monospace,

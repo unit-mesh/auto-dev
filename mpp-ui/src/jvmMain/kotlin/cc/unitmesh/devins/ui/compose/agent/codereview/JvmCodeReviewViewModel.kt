@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
 import cc.unitmesh.agent.CodeReviewAgent
+import cc.unitmesh.devins.ui.compose.sketch.DiffParser
 import cc.unitmesh.devins.workspace.Workspace
 import kotlinx.coroutines.*
 
@@ -107,8 +108,11 @@ class JvmCodeReviewViewModel(
                     return@launch
                 }
 
-                // Convert to UI model
+                // Convert to UI model using DiffParser
                 val diffFiles = gitDiff.files.map { file ->
+                    val parsedDiff = DiffParser.parse(file.diff)
+                    val hunks = parsedDiff.firstOrNull()?.hunks ?: emptyList()
+
                     DiffFileInfo(
                         path = file.path,
                         oldPath = file.oldPath,
@@ -119,7 +123,7 @@ class JvmCodeReviewViewModel(
                             cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAMED
                             cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.MODIFIED
                         },
-                        hunks = parseDiffHunks(file.diff),
+                        hunks = hunks,
                         language = detectLanguage(file.path)
                     )
                 }
@@ -225,6 +229,13 @@ class JvmCodeReviewViewModel(
                 aiProgress = AIAnalysisProgress(stage = AnalysisStage.IDLE)
             )
         }
+    }
+
+    /**
+     * Select a different commit to view
+     */
+    override fun selectCommit(index: Int) {
+        loadDiffForCommit(index)
     }
 
     /**
