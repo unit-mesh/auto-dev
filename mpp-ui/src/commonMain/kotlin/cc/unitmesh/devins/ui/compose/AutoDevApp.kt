@@ -32,6 +32,7 @@ import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.launch
 import cc.unitmesh.devins.ui.app.UnifiedAppContent
+import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -377,7 +378,7 @@ private fun AutoDevContent(
 
                 if (useAgentMode) {
                     if (selectedAgentType == "Local") {
-                        AgentChatInterface(
+                        AgentInterfaceRouter(
                             llmService = llmService,
                             isTreeViewVisible = isTreeViewVisible,
                             onConfigWarning = { showModelConfigDialog = true },
