@@ -99,13 +99,6 @@ jobs:
     runs-on: macos-latest
     needs: test-mpp-core  # Ensure mpp-core builds successfully first
     steps:
-      # Free GitHub Actions Environment Disk Space
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
-
       # Check out the current repository
       - name: Checkout code
         uses: actions/checkout@v4
