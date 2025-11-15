@@ -403,11 +403,21 @@ async function runLinters(filePaths: string[], projectPath: string): Promise<Rec
 }
 
 /**
+ * Enhanced review finding with more details
+ */
+interface EnhancedReviewFinding extends ReviewFinding {
+  methodName?: string;
+  className?: string;
+  codeSnippet?: string;
+  source?: string;  // "Linter (detekt: ...)" or "Manual Analysis"
+}
+
+/**
  * Parse structured findings from markdown output
  * Looks for issues in format: #### #{number}. {title}
  */
-function parseMarkdownFindings(markdown: string): ReviewFinding[] {
-  const findings: ReviewFinding[] = [];
+function parseMarkdownFindings(markdown: string): EnhancedReviewFinding[] {
+  const findings: EnhancedReviewFinding[] = [];
   
   // Split by issue markers (#### #1., #### #2., etc.)
   const issuePattern = /####\s*#(\d+)\.\s*(.+?)(?=####\s*#\d+\.|$)/gs;
@@ -426,34 +436,67 @@ function parseMarkdownFindings(markdown: string): ReviewFinding[] {
     const categoryMatch = issueText.match(/\*\*Category\*\*:\s*(.+?)(?:\n|\*\*)/i);
     const category = categoryMatch ? categoryMatch[1].trim() : 'General';
 
-    // Extract location
-    const locationMatch = issueText.match(/\*\*Location\*\*:\s*`?([^`\n]+?)(?:`|\n)/i);
+    // Extract location with method/class name
+    const locationMatch = issueText.match(/\*\*Location\*\*:\s*`([^`]+)`(?:\s+in\s+`([^`]+)`)?/i);
     let filePath: string | undefined;
     let lineNumber: number | undefined;
+    let methodName: string | undefined;
+    let className: string | undefined;
     
     if (locationMatch) {
       const location = locationMatch[1].trim();
       const parts = location.split(':');
       filePath = parts[0];
       if (parts.length > 1) {
-        lineNumber = parseInt(parts[1], 10);
+        const lineStr = parts[1].replace(/[^\d]/g, ''); // Extract just the number
+        lineNumber = parseInt(lineStr, 10) || undefined;
+      }
+      
+      // Extract method/class name
+      if (locationMatch[2]) {
+        const nameInfo = locationMatch[2].trim();
+        // Could be "MethodName" or "ClassName" or "MethodName / ClassName"
+        if (nameInfo.includes('/')) {
+          const [method, cls] = nameInfo.split('/').map(s => s.trim());
+          methodName = method;
+          className = cls;
+        } else {
+          // Assume it's a method name if it starts with lowercase, else class name
+          if (nameInfo[0] === nameInfo[0].toLowerCase()) {
+            methodName = nameInfo;
+          } else {
+            className = nameInfo;
+          }
+        }
       }
     }
 
+    // Extract source (Linter or Manual Analysis)
+    const sourceMatch = issueText.match(/\*\*Source\*\*:\s*(.+?)(?:\n|\*\*)/i);
+    const source = sourceMatch ? sourceMatch[1].trim() : undefined;
+
     // Extract problem description
-    const problemMatch = issueText.match(/\*\*Problem\*\*:\s*(.+?)(?=\*\*|$)/is);
+    const problemMatch = issueText.match(/\*\*Problem\*\*:\s*(.+?)(?=\*\*Code\*\*|\*\*Impact\*\*|\*\*|$)/is);
     const description = problemMatch ? problemMatch[1].trim() : issueTitle;
 
+    // Extract code snippet
+    const codeMatch = issueText.match(/\*\*Code\*\*:\s*```[\w]*\n([\s\S]+?)```/i);
+    const codeSnippet = codeMatch ? codeMatch[1].trim() : undefined;
+
     // Extract suggested fix
-    const fixMatch = issueText.match(/\*\*Suggested Fix\*\*:\s*(.+?)(?=---|\*\*|$)/is);
+    const fixMatch = issueText.match(/\*\*Suggested Fix\*\*:\s*(.+?)(?=---|\*\*|####|$)/is);
     const suggestion = fixMatch ? fixMatch[1].trim() : undefined;
 
     findings.push({
       severity,
       category,
-      description: `${issueTitle}${description !== issueTitle ? ': ' + description : ''}`,
+      description: `${issueTitle}${description !== issueTitle && description !== issueTitle + ':' ? ': ' + description : ''}`,
       filePath,
       lineNumber,
+      methodName,
+      className,
+      codeSnippet,
+      source,
       suggestion
     });
   }
@@ -633,9 +676,9 @@ async function fetchGitDiff(options: ReviewOptions): Promise<{ diffContent: stri
 }
 
 /**
- * Display findings from Kotlin CodeReviewAgent
+ * Display findings from Kotlin CodeReviewAgent with enhanced formatting
  */
-function displayKotlinFindings(findings: any[]): void {
+function displayKotlinFindings(findings: EnhancedReviewFinding[]): void {
   console.log(semanticChalk.info(`📋 Found ${findings.length} findings:`));
   console.log();
 
@@ -645,50 +688,69 @@ function displayKotlinFindings(findings: any[]): void {
   const medium = findings.filter(f => f.severity === 'MEDIUM');
   const low = findings.filter(f => f.severity === 'LOW' || f.severity === 'INFO');
 
+  // Helper to format a single finding
+  const formatFinding = (f: EnhancedReviewFinding, color: (str: string) => string) => {
+    // Build location string with method/class info
+    let location = f.filePath || 'N/A';
+    if (f.lineNumber) {
+      location += `:${f.lineNumber}`;
+    }
+    if (f.methodName || f.className) {
+      const context = [f.methodName, f.className].filter(Boolean).join(' / ');
+      location += ` in ${context}`;
+    }
+    
+    console.log(color(`  • ${f.description}`));
+    console.log(semanticChalk.muted(`    📍 ${location}`));
+    
+    // Show source if available
+    if (f.source) {
+      const sourceIcon = f.source.toLowerCase().includes('linter') ? '🔍' : '👁️';
+      console.log(semanticChalk.muted(`    ${sourceIcon} ${f.source}`));
+    }
+    
+    // Show code snippet if available
+    if (f.codeSnippet) {
+      console.log(semanticChalk.muted(`    📝 Code:`));
+      f.codeSnippet.split('\n').forEach((line, idx) => {
+        if (idx < 5) { // Show max 5 lines
+          console.log(semanticChalk.muted(`       ${line}`));
+        }
+      });
+    }
+    
+    // Show suggestion
+    if (f.suggestion) {
+      const shortSuggestion = f.suggestion.length > 150 
+        ? f.suggestion.substring(0, 150) + '...' 
+        : f.suggestion;
+      console.log(semanticChalk.muted(`    💡 ${shortSuggestion}`));
+    }
+    console.log();
+  };
+
   if (critical.length > 0) {
     console.log(semanticChalk.error(`🔴 CRITICAL (${critical.length}):`));
-    critical.forEach(f => {
-      const location = f.lineNumber ? `${f.filePath}:${f.lineNumber}` : f.filePath || 'N/A';
-      console.log(semanticChalk.error(`  - ${f.description}`));
-      console.log(semanticChalk.muted(`    📍 ${location}`));
-      if (f.suggestion) {
-        console.log(semanticChalk.muted(`    💡 ${f.suggestion.substring(0, 100)}${f.suggestion.length > 100 ? '...' : ''}`));
-      }
-    });
     console.log();
+    critical.forEach(f => formatFinding(f, semanticChalk.error));
   }
 
   if (high.length > 0) {
     console.log(semanticChalk.warning(`🟠 HIGH (${high.length}):`));
-    high.forEach(f => {
-      const location = f.lineNumber ? `${f.filePath}:${f.lineNumber}` : f.filePath || 'N/A';
-      console.log(semanticChalk.warning(`  - ${f.description}`));
-      console.log(semanticChalk.muted(`    📍 ${location}`));
-      if (f.suggestion) {
-        console.log(semanticChalk.muted(`    💡 ${f.suggestion.substring(0, 100)}${f.suggestion.length > 100 ? '...' : ''}`));
-      }
-    });
     console.log();
+    high.forEach(f => formatFinding(f, semanticChalk.warning));
   }
 
   if (medium.length > 0) {
     console.log(semanticChalk.info(`🟡 MEDIUM (${medium.length}):`));
-    medium.forEach(f => {
-      const location = f.lineNumber ? `${f.filePath}:${f.lineNumber}` : f.filePath || 'N/A';
-      console.log(semanticChalk.info(`  - ${f.description}`));
-      console.log(semanticChalk.muted(`    📍 ${location}`));
-    });
     console.log();
+    medium.forEach(f => formatFinding(f, semanticChalk.info));
   }
 
   if (low.length > 0) {
-    console.log(semanticChalk.muted(`🟢 LOW (${low.length}):`));
-    low.forEach(f => {
-      const location = f.lineNumber ? `${f.filePath}:${f.lineNumber}` : f.filePath || 'N/A';
-      console.log(semanticChalk.muted(`  - ${f.description}`));
-      console.log(semanticChalk.muted(`    📍 ${location}`));
-    });
+    console.log(semanticChalk.muted(`🟢 LOW/INFO (${low.length}):`));
     console.log();
+    low.forEach(f => formatFinding(f, semanticChalk.muted));
   }
 }
 

@@ -324,32 +324,26 @@ class CodeReviewAgent(
         val conversationManager = cc.unitmesh.agent.conversation.ConversationManager(llmService, systemPrompt)
         val initialMessage = buildToolDrivenMessage(task, issueInfo)
         
-        onProgress("🔍 Starting tool-driven analysis...")
-        
         var currentIteration = 0
         val maxIter = if (task.analyzeIntent) 10 else maxIterations
         
         while (currentIteration < maxIter) {
             currentIteration++
-            renderer.renderIterationHeader(currentIteration, maxIter)
             
             val llmResponse = StringBuilder()
             
             try {
-                renderer.renderLLMResponseStart()
-                
                 val message = if (currentIteration == 1) initialMessage else buildContinuationMessage()
                 conversationManager.sendMessage(message, compileDevIns = false).collect { chunk: String ->
                     llmResponse.append(chunk)
-                    renderer.renderLLMResponseChunk(chunk)
+                    // Use onProgress callback (CLI provides its own output handling)
                     onProgress(chunk)
                 }
                 
-                renderer.renderLLMResponseEnd()
                 conversationManager.addAssistantResponse(llmResponse.toString())
             } catch (e: Exception) {
                 logger.error(e) { "LLM call failed: ${e.message}" }
-                renderer.renderError("LLM call failed: ${e.message}")
+                onProgress("❌ LLM call failed: ${e.message}\n")
                 break
             }
             
@@ -359,7 +353,6 @@ class CodeReviewAgent(
             
             if (toolCalls.isEmpty()) {
                 logger.info { "No tool calls found, analysis complete" }
-                renderer.renderTaskComplete()
                 break
             }
             
@@ -369,12 +362,9 @@ class CodeReviewAgent(
             
             if (isAnalysisComplete(llmResponse.toString(), task.analyzeIntent)) {
                 logger.info { "Analysis complete" }
-                renderer.renderTaskComplete()
                 break
             }
         }
-        
-        onProgress("✅ Analysis complete")
         
         val finalAnalysis = conversationManager.getHistory()
             .lastOrNull { msg -> msg.role == cc.unitmesh.devins.llm.MessageRole.ASSISTANT }

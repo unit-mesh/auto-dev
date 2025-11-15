@@ -282,30 +282,42 @@ ${'$'}{diffContext}
 
 ## Your Task
 
-Provide a **concise analysis** focusing on the **TOP 10 HIGHEST PRIORITY ISSUES ONLY**.
+Provide a **detailed analysis** focusing on the **TOP 10 HIGHEST PRIORITY ISSUES ONLY**.
+
+**IMPORTANT**: For each issue, you MUST:
+1. Provide the EXACT method/function/class name where the issue occurs
+2. Quote the relevant code snippet (3-5 lines showing the problem)
+3. If the issue is from linter results, explicitly mention the linter rule
+4. Give precise line numbers (not ranges like "45-60", but exact line like "line 47")
 
 Use the following Markdown format:
 
 ### 📊 Summary
-Brief overview (2-3 sentences) of the most critical concerns.
+Brief overview (2-3 sentences) of the most critical concerns. Mention how many issues are from linters vs. manual analysis.
 
-### 🚨 Top Issues (Ordered by Priority) (less than 10 if less than 10 significant issues exist)
+### 🚨 Top Issues (Ordered by Priority)
 
-For each issue, use this format:
+For each issue, use this **EXACT** format:
 
 #### #{issue_number}. {Short Title}
 **Severity**: CRITICAL | HIGH | MEDIUM  
 **Category**: Security | Performance | Logic | Architecture | Maintainability  
-**Location**: `{file}:{line}`  
+**Location**: `{file}:{exact_line_number}` in `{MethodName}` / `{ClassName}`  
+**Source**: Linter ({linter_name}: {rule_id}) | Manual Analysis  
 
 **Problem**:  
 {Clear, concise description of the issue}
+
+**Code**:
+```kotlin
+{Show 3-5 lines of relevant code with the problem highlighted}
+```
 
 **Impact**:  
 {Why this matters - potential consequences}
 
 **Suggested Fix**:  
-{Specific, actionable recommendation}
+{Specific, actionable recommendation with example code if possible}
 
 ---
 
@@ -367,30 +379,42 @@ ${'$'}{diffContext}
 
 ## 你的任务
 
-提供 **简洁的分析**，**仅关注优先级最高的前 10 个问题**。
+提供 **详细的分析**，**仅关注优先级最高的前 10 个问题**。
+
+**重要**：对于每个问题，你必须：
+1. 提供问题发生的**精确方法/函数/类名**
+2. 引用相关代码片段（显示问题的 3-5 行）
+3. 如果问题来自 linter 结果，明确提及 linter 规则
+4. 给出精确的行号（不是范围如"45-60"，而是精确行号如"第 47 行"）
 
 使用以下 Markdown 格式：
 
 ### 📊 总结
-简要概述（2-3 句话）最关键的问题。
+简要概述（2-3 句话）最关键的问题。提及有多少问题来自 linters，多少来自手动分析。
 
 ### 🚨 前 10 个问题（按优先级排序）
 
-对于每个问题，使用以下格式：
+对于每个问题，使用以下**精确**格式：
 
 #### #{问题编号}. {简短标题}
 **严重性**: CRITICAL | HIGH | MEDIUM  
 **类别**: 安全 | 性能 | 逻辑 | 架构 | 可维护性  
-**位置**: `{文件}:{行号}`  
+**位置**: `{文件}:{精确行号}` 在 `{方法名}` / `{类名}`  
+**来源**: Linter ({linter_名称}: {规则ID}) | 手动分析  
 
 **问题**:  
 {清晰、简洁的问题描述}
+
+**代码**:
+```kotlin
+{显示 3-5 行相关代码，突出显示问题}
+```
 
 **影响**:  
 {为什么这很重要 - 潜在后果}
 
 **建议修复**:  
-{具体、可操作的建议}
+{具体、可操作的建议，如果可能提供示例代码}
 
 ---
 
