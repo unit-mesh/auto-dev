@@ -106,8 +106,9 @@ jobs:
       # Check out the current repository
       - name: Install linters
         run: |
-          brew install detekt pmd golangci-lint dotenv-linter
-          pip3 install sqlfluff checkov
+          brew install detekt pmd golangci-lint dotenv-linter hadolint actionlint
+          pip3 install sqlfluff checkov yamllint
+          npm install -g markdownlint-cli
 
       # Validate wrapper
       - name: Gradle Wrapper Validation
@@ -149,6 +150,10 @@ jobs:
       # Grant execute permission for gradlew
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      # Build JS package for CLI usage
+      - name: Build mpp-core JS package
+        run: ./gradlew :mpp-core:assembleJsPackage
 
       # Install pnpm for JS dependencies
       - name: Install pnpm
