@@ -588,7 +588,6 @@ class CodeReviewAgent(
             val params = toolCall.params.mapValues { it.value as Any }
             
             try {
-                logger.info { "Executing tool: $toolName" }
                 renderer.renderToolCall(toolName, params.toString())
                 
                 val context = cc.unitmesh.agent.orchestrator.ToolExecutionContext(

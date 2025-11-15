@@ -282,22 +282,38 @@ ${'$'}{diffContext}
 
 ## Your Task
 
-Provide a **detailed analysis** focusing on the **TOP 10 HIGHEST PRIORITY ISSUES ONLY**.
+Provide a **CONCISE SUMMARY** of the top 3-5 critical/high priority issues, followed by a **COMPLETE ANALYSIS** of all significant issues.
 
-**IMPORTANT**: For each issue, you MUST:
-1. Provide the EXACT method/function/class name where the issue occurs
-2. Quote the relevant code snippet (3-5 lines showing the problem)
-3. If the issue is from linter results, explicitly mention the linter rule
-4. Give precise line numbers (not ranges like "45-60", but exact line like "line 47")
+**OUTPUT STRUCTURE**:
+1. **Console Summary** (Brief - for terminal display)
+2. **Full Report** (Detailed - for file storage)
 
-Use the following Markdown format:
+---
 
-### 📊 Summary
-Brief overview (2-3 sentences) of the most critical concerns. Mention how many issues are from linters vs. manual analysis.
+## PART 1: Console Summary (Keep this SHORT)
 
-### 🚨 Top Issues (Ordered by Priority)
+### 📊 Quick Summary
+One sentence overview of code quality.
 
-For each issue, use this **EXACT** format:
+### ⚠️ Top Priority Issues (Max 5)
+For CRITICAL/HIGH issues only, list in this compact format:
+
+#### #{number}. {Title}
+**Severity**: CRITICAL | HIGH  
+**Location**: `{file}:{line}` in `{method/class}`  
+**Problem**: {One sentence description}  
+**Fix**: {One sentence suggestion}
+
+---
+
+## PART 2: Full Report (Complete Analysis)
+
+### 📊 Detailed Summary
+Full overview (2-3 sentences) of all concerns. Mention issue counts by severity.
+
+### 🚨 All Issues (Ordered by Priority)
+
+For EACH issue (up to 10), use this **EXACT** format:
 
 #### #{issue_number}. {Short Title}
 **Severity**: CRITICAL | HIGH | MEDIUM  
@@ -323,7 +339,9 @@ For each issue, use this **EXACT** format:
 
 ## Analysis Guidelines
 
-1. **LIMIT TO 10 ISSUES MAXIMUM** - Focus on the most impactful problems
+1. **TWO-PART OUTPUT**: 
+   - Part 1 (Console Summary): 3-5 critical/high issues only, very brief
+   - Part 2 (Full Report): Complete analysis of up to 10 issues with details
 2. **Prioritize by severity** (Use strict criteria):
    - **CRITICAL**: ONLY for issues that WILL cause security breaches, data loss, or system crashes
      - Examples: SQL injection, exposed secrets, null pointer dereferences in critical paths
@@ -379,22 +397,38 @@ ${'$'}{diffContext}
 
 ## 你的任务
 
-提供 **详细的分析**，**仅关注优先级最高的前 10 个问题**。
+提供**简洁摘要**（前 3-5 个严重问题），然后是**完整分析**（所有重要问题）。
 
-**重要**：对于每个问题，你必须：
-1. 提供问题发生的**精确方法/函数/类名**
-2. 引用相关代码片段（显示问题的 3-5 行）
-3. 如果问题来自 linter 结果，明确提及 linter 规则
-4. 给出精确的行号（不是范围如"45-60"，而是精确行号如"第 47 行"）
+**输出结构**：
+1. **控制台摘要**（简短 - 用于终端显示）
+2. **完整报告**（详细 - 用于文件存储）
 
-使用以下 Markdown 格式：
+---
 
-### 📊 总结
-简要概述（2-3 句话）最关键的问题。提及有多少问题来自 linters，多少来自手动分析。
+## 第一部分：控制台摘要（保持简短）
 
-### 🚨 前 10 个问题（按优先级排序）
+### 📊 快速总结
+一句话概述代码质量。
 
-对于每个问题，使用以下**精确**格式：
+### ⚠️ 最高优先级问题（最多 5 个）
+仅列出 CRITICAL/HIGH 问题，使用此简洁格式：
+
+#### #{编号}. {标题}
+**严重性**: CRITICAL | HIGH  
+**位置**: `{文件}:{行号}` 在 `{方法/类}`  
+**问题**: {一句话描述}  
+**修复**: {一句话建议}
+
+---
+
+## 第二部分：完整报告（完整分析）
+
+### 📊 详细总结
+完整概述（2-3 句话）所有问题。提及各严重级别的问题数量。
+
+### 🚨 所有问题（按优先级排序）
+
+对于每个问题（最多 10 个），使用以下**精确**格式：
 
 #### #{问题编号}. {简短标题}
 **严重性**: CRITICAL | HIGH | MEDIUM  
@@ -420,7 +454,9 @@ ${'$'}{diffContext}
 
 ## 分析指南
 
-1. **最多 10 个问题** - 聚焦最有影响力的问题
+1. **两部分输出**：
+   - 第一部分（控制台摘要）：仅 3-5 个 critical/high 问题，非常简短
+   - 第二部分（完整报告）：最多 10 个问题的完整分析和详细信息
 2. **按严重性排序**（使用严格标准）：
    - **CRITICAL**：仅用于必然导致安全漏洞、数据丢失或系统崩溃的问题
      - 示例：SQL 注入、泄露的密钥、关键路径中的空指针解引用
@@ -513,22 +549,46 @@ All tools use the DevIns format with JSON parameters:
 
 ## Output Format
 
-Structure your analysis as:
+**IMPORTANT**: Provide TWO sections:
+
+---
+
+## PART 1: Console Summary (Keep Brief)
 
 ### 🎯 Intent Summary
-Brief summary of what the developer intended to achieve (2-3 sentences).
+One sentence: What the developer intended to achieve.
+
+### 📊 Mermaid Diagram
+```mermaid
+graph TD
+    A[Intent] --> B[Implementation]
+    B --> C[Outcome]
+```
+
+### ✅ Quick Evaluation
+- **Accuracy**: High/Medium/Low
+- **Key Issue**: (if any, one sentence)
+
+---
+
+## PART 2: Full Analysis Report
+
+### 🎯 Detailed Intent Summary
+Full summary (2-3 sentences) of what the developer intended to achieve.
 
 ### 🔍 Detailed Analysis
 - **Primary Goal**: What is the main objective?
 - **Related Issues**: How do the mentioned issues relate to this commit?
 - **Implementation Approach**: How is the intent being implemented?
+- **Key Changes**: What are the most important changes?
 
-### 📊 Intent Flow Diagram
+### 📊 Complete Intent Flow Diagram
 ```mermaid
 graph TD
-    A[User Intent] --> B[Implementation]
-    B --> C[Expected Outcome]
-    %% Add more details about the flow
+    A[User Intent] --> B[Implementation Step 1]
+    B --> C[Implementation Step 2]
+    C --> D[Expected Outcome]
+    %% Add comprehensive flow details
 ```
 
 ### ✅ Implementation Evaluation
@@ -603,22 +663,46 @@ ${'$'}{toolList}
 
 ## 输出格式
 
-按以下结构组织你的分析：
+**重要**：提供两个部分：
+
+---
+
+## 第一部分：控制台摘要（保持简短）
 
 ### 🎯 意图总结
-简要总结开发者意图实现的目标（2-3 句话）。
+一句话：开发者意图实现的目标。
+
+### 📊 Mermaid 图表
+```mermaid
+graph TD
+    A[意图] --> B[实现]
+    B --> C[结果]
+```
+
+### ✅ 快速评估
+- **准确性**：高/中/低
+- **关键问题**：（如有，一句话）
+
+---
+
+## 第二部分：完整分析报告
+
+### 🎯 详细意图总结
+完整总结（2-3 句话）开发者意图实现的目标。
 
 ### 🔍 详细分析
 - **主要目标**：主要目的是什么？
 - **相关问题**：提到的问题如何与此提交相关？
 - **实现方法**：如何实现意图？
+- **关键更改**：最重要的更改是什么？
 
-### 📊 意图流程图
+### 📊 完整意图流程图
 ```mermaid
 graph TD
-    A[用户意图] --> B[实现]
-    B --> C[预期结果]
-    %% 添加更多关于流程的详细信息
+    A[用户意图] --> B[实现步骤 1]
+    B --> C[实现步骤 2]
+    C --> D[预期结果]
+    %% 添加完整的流程详细信息
 ```
 
 ### ✅ 实现评估
