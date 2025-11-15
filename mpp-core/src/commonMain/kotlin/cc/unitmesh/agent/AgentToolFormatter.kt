@@ -34,7 +34,6 @@ object AgentToolFormatter {
 
         return toolList.joinToString("\n\n") { tool ->
             buildString {
-                // Tool header with name and description
                 appendLine("## ${tool.name}")
                 val toolType = tool.name.toToolType()
 
@@ -46,10 +45,8 @@ object AgentToolFormatter {
                     // Pretty print the JSON schema
                     val prettyJson = formatJsonSchema(jsonSchema)
                     appendLine(prettyJson)
-
                     appendLine("```")
                 } else {
-                    // Fallback for MCP tools or other tools
                     val paramClass = tool.getParameterClass()
                     when {
                         paramClass.isBlank() || paramClass == "Unit" -> {
@@ -68,7 +65,6 @@ object AgentToolFormatter {
                             appendLine("```")
                         }
                         tool.name.contains("_") -> {
-                            // Likely an MCP tool
                             appendLine("**Parameters JSON Schema:**")
                             appendLine("```json")
                             appendLine("""{
@@ -87,7 +83,6 @@ object AgentToolFormatter {
 
                 val example = generateToolExample(tool, toolType)
                 if (example.isNotEmpty()) {
-                    appendLine()
                     appendLine("**Example:**")
                     appendLine(example)
                 }
@@ -95,12 +90,6 @@ object AgentToolFormatter {
         }
     }
 
-    /**
-     * Format tool list as simple bullet points (for display purposes)
-     * 
-     * @param toolList List of executable tools
-     * @return Simple formatted string with tool names and descriptions
-     */
     fun formatToolListSimple(toolList: List<ExecutableTool<*, *>>): String {
         return buildString {
             toolList.forEach { tool ->
