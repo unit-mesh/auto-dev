@@ -168,6 +168,8 @@ class CodeReviewAgent(
             null
         }
 
+        logger.info { "Linters summary: $linterSummary" }
+
         val allTools = toolRegistry.getAllTools()
         return CodeReviewContext.fromTask(task, allTools.values.toList(), linterSummary)
     }

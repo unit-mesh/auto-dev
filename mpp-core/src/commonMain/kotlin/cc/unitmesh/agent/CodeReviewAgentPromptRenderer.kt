@@ -197,10 +197,6 @@ ${'$'}{toolList}
 """.trimIndent()
 }
 
-/**
- * Code Review Analysis prompt templates (Data-driven approach)
- * Use this when code and lint results are already collected
- */
 object CodeReviewAnalysisTemplate {
     val EN = """
 # Code Review Analysis
