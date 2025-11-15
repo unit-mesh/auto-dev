@@ -36,18 +36,9 @@ object AgentToolFormatter {
             buildString {
                 // Tool header with name and description
                 appendLine("## ${tool.name}")
-
-                // Check for empty description and provide warning
-                val description = tool.description.takeIf { it.isNotBlank() }
-                    ?: "Tool description not available"
-                appendLine("**Description:** $description")
-                appendLine()
-
-                // Get ToolType for schema information
                 val toolType = tool.name.toToolType()
 
                 if (toolType != null) {
-                    // Use JSON Schema for built-in tools
                     appendLine("**Parameters JSON Schema:**")
                     appendLine("```json")
 
@@ -89,13 +80,11 @@ object AgentToolFormatter {
                             appendLine("```")
                         }
                         else -> {
-                            // Valid parameter class
                             appendLine("**Parameters:** $paramClass")
                         }
                     }
                 }
 
-                // Add example if available
                 val example = generateToolExample(tool, toolType)
                 if (example.isNotEmpty()) {
                     appendLine()
