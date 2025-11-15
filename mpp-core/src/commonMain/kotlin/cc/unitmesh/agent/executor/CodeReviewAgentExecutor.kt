@@ -40,11 +40,12 @@ class CodeReviewAgentExecutor(
     suspend fun execute(
         task: ReviewTask,
         systemPrompt: String,
+        linterSummary: cc.unitmesh.agent.linter.LinterSummary? = null,
         onProgress: (String) -> Unit = {}
     ): CodeReviewResult {
         resetExecution()
         conversationManager = ConversationManager(llmService, systemPrompt)
-        val initialUserMessage = buildInitialUserMessage(task)
+        val initialUserMessage = buildInitialUserMessage(task, linterSummary)
 
         logger.info { "Starting code review: ${task.reviewType} for ${task.filePaths.size} files" }
         onProgress("🔍 Starting code review...")
@@ -132,31 +133,86 @@ class CodeReviewAgentExecutor(
         return currentIteration < maxIterations
     }
 
-    private suspend fun buildInitialUserMessage(task: ReviewTask): String {
+    private suspend fun buildInitialUserMessage(
+        task: ReviewTask,
+        linterSummary: cc.unitmesh.agent.linter.LinterSummary?
+    ): String {
         return buildString {
             appendLine("Please review the following code:")
             appendLine()
+            appendLine("**Project Path**: ${task.projectPath}")
+            appendLine("**Review Type**: ${task.reviewType}")
+            appendLine()
 
             if (task.filePaths.isNotEmpty()) {
-                appendLine("Files to review (${task.filePaths.size} files):")
+                appendLine("**Files to review** (${task.filePaths.size} files):")
                 task.filePaths.forEach { filePath ->
                     appendLine("  - $filePath")
                 }
                 appendLine()
-                appendLine("Use the read-file tool to read the content of each file before reviewing.")
             }
-
-            appendLine("Review type: ${task.reviewType}")
 
             if (task.additionalContext.isNotBlank()) {
-                appendLine()
-                appendLine("Additional context:")
+                appendLine("**Additional context**:")
                 appendLine(task.additionalContext)
+                appendLine()
             }
 
-            appendLine()
-            appendLine("Please provide a thorough code review following the guidelines in the system prompt.")
-            appendLine("Use tools as needed to read files and gather information.")
+            // Add linter information to user message
+            if (linterSummary != null) {
+                appendLine("## Linter Information")
+                appendLine()
+                appendLine(formatLinterInfo(linterSummary))
+                appendLine()
+            }
+
+            if (task.filePaths.isNotEmpty()) {
+                appendLine("**Instructions**:")
+                appendLine("1. First, analyze the linter results above (if provided)")
+                appendLine("2. Use the read-file tool to read the content of each file")
+                appendLine("3. Provide a thorough code review following the guidelines in the system prompt")
+                appendLine("4. Focus on issues beyond what linters can detect")
+            } else {
+                appendLine("**Instructions**:")
+                appendLine("Please provide a thorough code review following the guidelines in the system prompt.")
+                appendLine("Use tools as needed to read files and gather information.")
+            }
+        }
+    }
+
+    /**
+     * Format linter information for display in user messages
+     */
+    private fun formatLinterInfo(linterSummary: cc.unitmesh.agent.linter.LinterSummary): String {
+        return buildString {
+            if (linterSummary.availableLinters.isNotEmpty()) {
+                appendLine("**Available Linters (${linterSummary.availableLinters.size}):**")
+                linterSummary.availableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
+                    if (linter.supportedFiles.isNotEmpty()) {
+                        appendLine("  - Supported files: ${linter.supportedFiles.joinToString(", ")}")
+                    }
+                }
+                appendLine()
+            }
+
+            if (linterSummary.unavailableLinters.isNotEmpty()) {
+                appendLine("**Unavailable Linters (${linterSummary.unavailableLinters.size}):**")
+                linterSummary.unavailableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}** (not installed)")
+                    linter.installationInstructions?.let {
+                        appendLine("  - Install: $it")
+                    }
+                }
+                appendLine()
+            }
+
+            if (linterSummary.fileMapping.isNotEmpty()) {
+                appendLine("**File-Linter Mapping:**")
+                linterSummary.fileMapping.forEach { (file, linters) ->
+                    appendLine("- `$file` → ${linters.joinToString(", ")}")
+                }
+            }
         }
     }
 

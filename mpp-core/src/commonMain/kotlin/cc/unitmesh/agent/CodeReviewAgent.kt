@@ -129,7 +129,7 @@ class CodeReviewAgent(
         val context = buildContext(input)
         val systemPrompt = buildSystemPrompt(context)
 
-        val result = executor.execute(input, systemPrompt, onProgress)
+        val result = executor.execute(input, systemPrompt, context.linterSummary, onProgress)
 
         return ToolResult.AgentResult(
             success = result.success,
@@ -145,7 +145,7 @@ class CodeReviewAgent(
     override suspend fun executeTask(task: ReviewTask): CodeReviewResult {
         val context = buildContext(task)
         val systemPrompt = buildSystemPrompt(context)
-        return executor.execute(task, systemPrompt)
+        return executor.execute(task, systemPrompt, context.linterSummary)
     }
 
     override fun buildSystemPrompt(context: CodeReviewContext, language: String): String {
