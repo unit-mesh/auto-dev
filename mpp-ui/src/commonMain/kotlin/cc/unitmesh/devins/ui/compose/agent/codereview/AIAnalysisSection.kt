@@ -66,7 +66,7 @@ fun AIAnalysisSection(
                     )
 
                     Text(
-                        text = "AI Analysis (Top 10 Issues)",
+                        text = "Issues analysis (AI)",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface

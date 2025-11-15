@@ -182,107 +182,15 @@ class CodeReviewAgent(
         return executor.execute(task, systemPrompt, context.linterSummary)
     }
 
-    /**
-     * Unified analysis method supporting both data-driven and tool-driven approaches
-     * 
-     * **Data-Driven Mode** (useTools=false && codeContent provided):
-     * - Fast, single-pass analysis
-     * - Uses pre-collected code content and lint results
-     * - No tool calls, lower token usage
-     * - Best for: Quick reviews, UI scenarios with pre-loaded data
-     * 
-     * **Tool-Driven Mode** (useTools=true || codeContent empty):
-     * - Iterative, agent-driven analysis
-     * - Agent uses tools to gather information dynamically
-     * - Multiple iterations, higher accuracy
-     * - Best for: Deep analysis, intent reasoning, exploratory reviews
-     * 
-     * **Intent Analysis** (analyzeIntent=true):
-     * - Analyzes commit intent based on message, changes, and related issues
-     * - Generates mermaid diagrams
-     * - Evaluates implementation accuracy
-     * - Requires: commitMessage, codeChanges (or useTools to gather them)
-     * 
-     * @param task Analysis task with all configuration
-     * @param language Language for prompts (EN or ZH)
-     * @param onProgress Progress callback for streaming updates
-     * @return Analysis result with markdown content and optional mermaid diagram
-     */
     suspend fun analyze(
         task: AnalysisTask,
         language: String = "EN",
         onProgress: (String) -> Unit = {}
     ): AnalysisResult {
         logger.info { "Starting unified analysis - useTools: ${task.useTools}, analyzeIntent: ${task.analyzeIntent}" }
-        
-        // Decide which approach to use
-        val shouldUseTools = task.useTools || task.codeContent.isEmpty()
-        
-        return if (shouldUseTools) {
-            // Tool-driven approach
-            analyzeWithTools(task, language, onProgress)
-        } else {
-            // Data-driven approach
-            analyzeWithData(task, language, onProgress)
-        }
+        return analyzeWithTools(task, language, onProgress)
     }
     
-    /**
-     * Data-driven analysis (single-pass, no tools)
-     */
-    private suspend fun analyzeWithData(
-        task: AnalysisTask,
-        language: String,
-        onProgress: (String) -> Unit
-    ): AnalysisResult {
-        logger.info { "Using data-driven approach for ${task.filePaths.size} files" }
-        onProgress("📊 Analyzing pre-collected data...")
-        
-        val prompt = if (task.analyzeIntent) {
-            // Intent analysis with provided data
-            promptRenderer.renderIntentAnalysisWithData(
-                commitMessage = task.commitMessage,
-                commitId = task.commitId,
-                codeChanges = task.codeChanges.ifEmpty { task.codeContent },
-                diffContext = task.diffContext,
-                language = language
-            )
-        } else {
-            // Standard code review with provided data
-            promptRenderer.renderAnalysisPrompt(
-                reviewType = task.reviewType,
-                filePaths = task.filePaths,
-                codeContent = task.codeContent,
-                lintResults = task.lintResults,
-                diffContext = task.diffContext,
-            language = language
-        )
-        }
-        
-        logger.info { "Generated prompt: ${prompt.length} chars" }
-        
-        // Stream LLM response
-        val result = StringBuilder()
-        llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
-            result.append(chunk)
-            onProgress(chunk)
-        }
-        
-        val analysisText = result.toString()
-        logger.info { "Analysis complete: ${analysisText.length} chars" }
-        
-        return AnalysisResult(
-            success = true,
-            content = analysisText,
-            mermaidDiagram = if (task.analyzeIntent) extractMermaidDiagram(analysisText) else null,
-            issuesAnalyzed = if (task.analyzeIntent) parseIssueReferences(task.commitMessage) else emptyList(),
-            usedTools = false
-        )
-    }
-    
-    /**
-     * Tool-driven analysis (iterative, with tool usage)
-     */
     private suspend fun analyzeWithTools(
         task: AnalysisTask,
         language: String,
