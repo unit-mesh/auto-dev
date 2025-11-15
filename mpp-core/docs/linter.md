@@ -5,13 +5,13 @@
 | Azure DevOps Pipelines      | Pipeline Remediation                        | CI/CD Failure Remediation                           |
 | CircleCI                    | CircleCI, Pipeline Remediation              | Configuration Validation, CI/CD Failure Remediation |
 | CloudFormation              | Checkov                                     | Code Security                                       |
-| Cppcheck                    | Cppcheck                       ``           | Code Quality                                        |
+| Cppcheck                    | Cppcheck                                    | Code Quality                                        |
 | CSS                         | Biome                                       | Code Quality                                        |
 | Docker                      | Hadolint, Checkov                           | Code Quality, Code Security                         |
 | Environment Files (.env)    | Dotenv Linter                               | Code Quality                                        |
 | GitHub Actions              | actionlint, Pipeline Remediation            | Code Quality, CI/CD Failure Remediation             |
 | GitLab Pipelines            | Pipeline Remediation                        | CI/CD Failure Remediation                           |
-| Go                          | golangci-lint         ``                    | Code Quality                                        |
+| Go                          | golangci-lint                               | Code Quality                                        |
 | Helm                        | Checkov                                     | Code Security                                       |
 | HTML                        | HTMLHint                                    | Code Quality                                        |
 | Javascript                  | Biome, lint                                 | Code Quality                                        |
@@ -41,4 +41,3 @@
 | Typescript                  | Biome, oxlint                               | Code Quality                                        |
 | YAML                        | YAMLlint                                    | Code Quality                                        |
 | Prisma                      | Prisma Lint                                 | Code Quality                                        |
-``
