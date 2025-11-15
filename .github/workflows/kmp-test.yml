@@ -96,7 +96,7 @@ jobs:
   # Build and test mpp-ui (depends on mpp-core)
   test-mpp-ui:
     name: Test mpp-ui (KMP)
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: test-mpp-core  # Ensure mpp-core builds successfully first
     steps:
       # Free GitHub Actions Environment Disk Space
@@ -112,10 +112,7 @@ jobs:
 
       # Check out the current repository
       - name: Install linter
-        run: |
-          curl -s "https://get.sdkman.io" | bash
-          source "/home/runner/.sdkman/bin/sdkman-init.sh"
-          sdk install detekt pmd
+        run: brew install detekt pmd
 
       # Validate wrapper
       - name: Gradle Wrapper Validation
