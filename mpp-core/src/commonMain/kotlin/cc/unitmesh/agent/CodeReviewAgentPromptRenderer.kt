@@ -10,6 +10,7 @@ import cc.unitmesh.devins.compiler.template.TemplateCompiler
  * TemplateCompiler for consistent template processing across all agents
  */
 class CodeReviewAgentPromptRenderer : AgentPromptRenderer<CodeReviewContext> {
+    val logger = getLogger("CodeReviewAgentPromptRenderer")
 
     /**
      * Render system prompt from context
@@ -19,8 +20,6 @@ class CodeReviewAgentPromptRenderer : AgentPromptRenderer<CodeReviewContext> {
      * @return The rendered system prompt
      */
     override fun render(context: CodeReviewContext, language: String): String {
-        val logger = getLogger("CodeReviewAgentPromptRenderer")
-
         val template = when (language.uppercase()) {
             "ZH", "CN" -> CodeReviewAgentTemplate.ZH
             else -> CodeReviewAgentTemplate.EN
@@ -47,8 +46,6 @@ class CodeReviewAgentPromptRenderer : AgentPromptRenderer<CodeReviewContext> {
         diffContext: String = "",
         language: String = "EN"
     ): String {
-        val logger = getLogger("CodeReviewAgentPromptRenderer")
-
         val template = when (language.uppercase()) {
             "ZH", "CN" -> CodeReviewAnalysisTemplate.ZH
             else -> CodeReviewAnalysisTemplate.EN
@@ -72,7 +69,6 @@ $result
             }
         }
 
-        // Create variable table for template compilation
         val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
         variableTable.addVariable("reviewType", cc.unitmesh.devins.compiler.variable.VariableType.STRING, reviewType)
         variableTable.addVariable("fileCount", cc.unitmesh.devins.compiler.variable.VariableType.STRING, filePaths.size.toString())
@@ -93,11 +89,9 @@ $result
      * This prompt guides the agent to use tools for understanding user intent
      */
     fun renderIntentAnalysisPrompt(
-        context: cc.unitmesh.agent.IntentAnalysisContext,
+        context: IntentAnalysisContext,
         language: String = "EN"
     ): String {
-        val logger = getLogger("CodeReviewAgentPromptRenderer")
-
         val template = when (language.uppercase()) {
             "ZH", "CN" -> IntentAnalysisTemplate.ZH
             else -> IntentAnalysisTemplate.EN
@@ -122,8 +116,6 @@ $result
         diffContext: String = "",
         language: String = "EN"
     ): String {
-        val logger = getLogger("CodeReviewAgentPromptRenderer")
-
         val template = when (language.uppercase()) {
             "ZH", "CN" -> IntentAnalysisDataDrivenTemplate.ZH
             else -> IntentAnalysisDataDrivenTemplate.EN
