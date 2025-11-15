@@ -274,15 +274,14 @@ ${'$'}{diffContext}
 
 ## Your Task
 
-Provide a **CONCISE SUMMARY** of the top 3-5 critical/high priority issues, followed by a **COMPLETE ANALYSIS** of all significant issues.
+Provide a **CONCISE SUMMARY** of the top 3-5 critical/high priority issues of all significant issues.
 
 **OUTPUT STRUCTURE**:
 1. **Console Summary** (Brief - for terminal display)
-2. **Full Report** (Detailed - for file storage)
 
 ---
 
-## PART 1: Console Summary (Keep this SHORT)
+##  Console Summary (Keep this SHORT)
 
 ### 📊 Quick Summary
 One sentence overview of code quality.
@@ -295,37 +294,6 @@ For CRITICAL/HIGH issues only, list in this compact format:
 **Location**: `{file}:{line}` in `{method/class}`  
 **Problem**: {One sentence description}  
 **Fix**: {One sentence suggestion}
-
----
-
-## PART 2: Full Report (Complete Analysis)
-
-### 📊 Detailed Summary
-Full overview (2-3 sentences) of all concerns. Mention issue counts by severity.
-
-### 🚨 All Issues (Ordered by Priority)
-
-For EACH issue (up to 10), use this **EXACT** format:
-
-#### #{issue_number}. {Short Title}
-**Severity**: CRITICAL | HIGH | MEDIUM  
-**Category**: Security | Performance | Logic | Architecture | Maintainability  
-**Location**: `{file}:{exact_line_number}` in `{MethodName}` / `{ClassName}`  
-**Source**: Linter ({linter_name}: {rule_id}) | Manual Analysis  
-
-**Problem**:  
-{Clear, concise description of the issue}
-
-**Code**:
-```kotlin
-{Show 3-5 lines of relevant code with the problem highlighted}
-```
-
-**Impact**:  
-{Why this matters - potential consequences}
-
-**Suggested Fix**:  
-{Specific, actionable recommendation with example code if possible}
 
 ---
 
@@ -343,17 +311,6 @@ For EACH issue (up to 10), use this **EXACT** format:
      - Examples: Missing error handling, suboptimal algorithms, missing validations
    - **LOW/INFO**: Code quality issues that don't affect functionality
      - Examples: Code duplication, minor style inconsistencies, missing comments
-3. **Severity Assessment Rules**:
-   - DEFAULT to MEDIUM for most issues unless there's clear evidence of critical/high impact
-   - Linter warnings should be LOW/INFO unless they indicate actual bugs
-   - Style issues, naming conventions, formatting → Always LOW/INFO
-   - Missing null checks → MEDIUM (unless proven to cause crashes → HIGH)
-   - Performance concerns → MEDIUM (unless proven bottleneck with measurements → HIGH)
-4. **Be specific**: Always reference exact file:line locations
-5. **Be actionable**: Provide clear, implementable solutions
-6. **Be concise**: Keep each issue description brief but complete
-7. **Skip minor issues**: Don't waste space on style nitpicks or trivial warnings
-8. **Group related issues**: If multiple instances of the same problem exist, mention them together
 
 ## Output Requirements
 
@@ -362,8 +319,6 @@ For EACH issue (up to 10), use this **EXACT** format:
 - Number issues from 1-10
 - Use clear section headers with emoji indicators (📊, 🚨)
 - Keep total output concise and focused
-
-**DO NOT** attempt to use any tools. All necessary information is provided above.
 """.trimIndent()
 
     val ZH = """
@@ -389,19 +344,6 @@ ${'$'}{diffContext}
 
 ## 你的任务
 
-提供**简洁摘要**（前 3-5 个严重问题），然后是**完整分析**（所有重要问题）。
-
-**输出结构**：
-1. **控制台摘要**（简短 - 用于终端显示）
-2. **完整报告**（详细 - 用于文件存储）
-
----
-
-## 第一部分：控制台摘要（保持简短）
-
-### 📊 快速总结
-一句话概述代码质量。
-
 ### ⚠️ 最高优先级问题（最多 5 个）
 仅列出 CRITICAL/HIGH 问题，使用此简洁格式：
 
@@ -411,45 +353,7 @@ ${'$'}{diffContext}
 **问题**: {一句话描述}  
 **修复**: {一句话建议}
 
----
-
-## 第二部分：完整报告（完整分析）
-
-### 📊 详细总结
-完整概述（2-3 句话）所有问题。提及各严重级别的问题数量。
-
-### 🚨 所有问题（按优先级排序）
-
-对于每个问题（最多 10 个），使用以下**精确**格式：
-
-#### #{问题编号}. {简短标题}
-**严重性**: CRITICAL | HIGH | MEDIUM  
-**类别**: 安全 | 性能 | 逻辑 | 架构 | 可维护性  
-**位置**: `{文件}:{精确行号}` 在 `{方法名}` / `{类名}`  
-**来源**: Linter ({linter_名称}: {规则ID}) | 手动分析  
-
-**问题**:  
-{清晰、简洁的问题描述}
-
-**代码**:
-```kotlin
-{显示 3-5 行相关代码，突出显示问题}
-```
-
-**影响**:  
-{为什么这很重要 - 潜在后果}
-
-**建议修复**:  
-{具体、可操作的建议，如果可能提供示例代码}
-
----
-
-## 分析指南
-
-1. **两部分输出**：
-   - 第一部分（控制台摘要）：仅 3-5 个 critical/high 问题，非常简短
-   - 第二部分（完整报告）：最多 10 个问题的完整分析和详细信息
-2. **按严重性排序**（使用严格标准）：
+1. **按严重性排序**（使用严格标准）：
    - **CRITICAL**：仅用于必然导致安全漏洞、数据丢失或系统崩溃的问题
      - 示例：SQL 注入、泄露的密钥、关键路径中的空指针解引用
    - **HIGH**：必然导致错误行为或显著性能下降的问题
@@ -465,20 +369,7 @@ ${'$'}{diffContext}
    - 缺少空检查 → MEDIUM（除非证明会导致崩溃 → HIGH）
    - 性能问题 → MEDIUM（除非通过测量证明是瓶颈 → HIGH）
 4. **具体说明**：始终引用确切的 文件:行号 位置
-5. **可操作性**：提供清晰、可实施的解决方案
-6. **简洁明了**：保持每个问题描述简短但完整
-7. **跳过次要问题**：不要在样式细节或琐碎警告上浪费空间
-8. **合并相关问题**：如果存在同一问题的多个实例，一起提及
 
-## 输出要求
-
-- 使用正确的 Markdown 格式
-- 从总结开始，然后列出恰好 10 个问题（如果少于 10 个重要问题则更少）
-- 问题编号从 1-10
-- 使用带 emoji 指示器的清晰章节标题（📊, 🚨）
-- 保持总输出简洁且聚焦
-
-**不要** 尝试使用任何工具。所有必要信息都已在上面提供。
 """.trimIndent()
 }
 
@@ -541,11 +432,9 @@ All tools use the DevIns format with JSON parameters:
 
 ## Output Format
 
-**IMPORTANT**: Provide TWO sections:
-
 ---
 
-## PART 1: Console Summary (Keep Brief)
+## Console Summary (Keep Brief)
 
 ### 🎯 Intent Summary
 One sentence: What the developer intended to achieve.
@@ -556,41 +445,6 @@ graph TD
     A[Intent] --> B[Implementation]
     B --> C[Outcome]
 ```
-
-### ✅ Quick Evaluation
-- **Accuracy**: High/Medium/Low
-- **Key Issue**: (if any, one sentence)
-
----
-
-## PART 2: Full Analysis Report
-
-### 🎯 Detailed Intent Summary
-Full summary (2-3 sentences) of what the developer intended to achieve.
-
-### 🔍 Detailed Analysis
-- **Primary Goal**: What is the main objective?
-- **Related Issues**: How do the mentioned issues relate to this commit?
-- **Implementation Approach**: How is the intent being implemented?
-- **Key Changes**: What are the most important changes?
-
-### 📊 Complete Intent Flow Diagram
-```mermaid
-graph TD
-    A[User Intent] --> B[Implementation Step 1]
-    B --> C[Implementation Step 2]
-    C --> D[Expected Outcome]
-    %% Add comprehensive flow details
-```
-
-### ✅ Implementation Evaluation
-- **Accuracy**: Does the code match the intent? (Rate: High/Medium/Low)
-- **Completeness**: Are all aspects of the intent addressed?
-- **Issues Found**: List any problems or gaps
-- **Suggested Improvements**: Recommendations for better alignment
-
-### 💡 Additional Insights
-Any other relevant observations or recommendations.
 
 ## Guidelines
 
@@ -655,11 +509,9 @@ ${'$'}{toolList}
 
 ## 输出格式
 
-**重要**：提供两个部分：
-
 ---
 
-## 第一部分：控制台摘要（保持简短）
+## 控制台摘要（保持简短）
 
 ### 🎯 意图总结
 一句话：开发者意图实现的目标。
@@ -676,35 +528,6 @@ graph TD
 - **关键问题**：（如有，一句话）
 
 ---
-
-## 第二部分：完整分析报告
-
-### 🎯 详细意图总结
-完整总结（2-3 句话）开发者意图实现的目标。
-
-### 🔍 详细分析
-- **主要目标**：主要目的是什么？
-- **相关问题**：提到的问题如何与此提交相关？
-- **实现方法**：如何实现意图？
-- **关键更改**：最重要的更改是什么？
-
-### 📊 完整意图流程图
-```mermaid
-graph TD
-    A[用户意图] --> B[实现步骤 1]
-    B --> C[实现步骤 2]
-    C --> D[预期结果]
-    %% 添加完整的流程详细信息
-```
-
-### ✅ 实现评估
-- **准确性**：代码是否符合意图？（评级：高/中/低）
-- **完整性**：是否涵盖了意图的所有方面？
-- **发现的问题**：列出任何问题或差距
-- **改进建议**：改善一致性的建议
-
-### 💡 其他见解
-任何其他相关的观察或建议。
 
 ## 指南
 
