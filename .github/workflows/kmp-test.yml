@@ -113,7 +113,8 @@ jobs:
       # Check out the current repository
       - name: Install linter
         run: |
-          curl -s "https://get.sdkman.io" | bash 
+          curl -s "https://get.sdkman.io" | bash
+          source "/home/runner/.sdkman/bin/sdkman-init.sh"
           sdk install detekt pmd
 
       # Validate wrapper
