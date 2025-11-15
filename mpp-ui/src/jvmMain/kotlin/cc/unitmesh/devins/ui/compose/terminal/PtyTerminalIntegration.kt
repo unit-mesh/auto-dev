@@ -7,8 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.linter.shell.PtyShellExecutor
-import cc.unitmesh.linter.shell.ShellExecutionConfig
+import cc.unitmesh.agent.tool.shell.PtyShellExecutor
+import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
