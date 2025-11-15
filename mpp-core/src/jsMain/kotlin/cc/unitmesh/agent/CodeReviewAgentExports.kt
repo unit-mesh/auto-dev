@@ -136,7 +136,7 @@ class JsCodeReviewAgent(
     }
 
     /**
-     * Execute code review task
+     * Execute code review task (Tool-driven approach - legacy)
      */
     @JsName("executeTask")
     fun executeTask(task: JsReviewTask): Promise<JsCodeReviewResult> {
@@ -145,6 +145,63 @@ class JsCodeReviewAgent(
             val result = agent.executeTask(kotlinTask)
             JsCodeReviewResult.fromCommon(result)
         }
+    }
+
+    /**
+     * Analyze code using Data-Driven approach (recommended for CLI/UI)
+     * This is more efficient as it pre-collects all data and makes a single LLM call
+     * 
+     * @param reviewType Type of review (e.g., "COMPREHENSIVE", "SECURITY")
+     * @param filePaths Array of file paths to review
+     * @param codeContent Object mapping file paths to their content
+     * @param lintResults Object mapping file paths to their lint results (formatted strings)
+     * @param diffContext Optional diff context string
+     * @param language Language for the prompt ("EN" or "ZH")
+     * @param onChunk Optional callback for streaming response chunks
+     * @return Promise resolving to the analysis result as markdown string
+     */
+    @JsName("analyzeWithDataDriven")
+    fun analyzeWithDataDriven(
+        reviewType: String,
+        filePaths: Array<String>,
+        codeContent: dynamic,
+        lintResults: dynamic,
+        diffContext: String = "",
+        language: String = "EN",
+        onChunk: ((String) -> Unit)? = null
+    ): Promise<String> {
+        return GlobalScope.promise {
+            // Convert JS dynamic objects to Kotlin maps
+            val codeContentMap = convertDynamicToMap(codeContent)
+            val lintResultsMap = convertDynamicToMap(lintResults)
+            
+            agent.analyzeWithDataDriven(
+                reviewType = reviewType,
+                filePaths = filePaths.toList(),
+                codeContent = codeContentMap,
+                lintResults = lintResultsMap,
+                diffContext = diffContext,
+                language = language,
+                onChunk = onChunk ?: {}
+            )
+        }
+    }
+
+    /**
+     * Helper to convert JS dynamic object to Kotlin Map<String, String>
+     */
+    private fun convertDynamicToMap(obj: dynamic): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        if (obj != null && obj != undefined) {
+            val keys = js("Object.keys(obj)") as Array<String>
+            for (key in keys) {
+                val value = obj[key]
+                if (value != null && value != undefined) {
+                    map[key] = value.toString()
+                }
+            }
+        }
+        return map
     }
 
     /**

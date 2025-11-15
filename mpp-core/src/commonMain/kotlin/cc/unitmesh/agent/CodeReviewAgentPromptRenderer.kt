@@ -251,17 +251,26 @@ For each issue, use this format:
 ## Analysis Guidelines
 
 1. **LIMIT TO 10 ISSUES MAXIMUM** - Focus on the most impactful problems
-2. **Prioritize by severity**:
-   - Security vulnerabilities (CRITICAL)
-   - Logic errors and bugs (HIGH)
-   - Performance issues (MEDIUM-HIGH)
-   - Design problems (MEDIUM)
-   - Code quality issues (LOW-MEDIUM)
-3. **Be specific**: Always reference exact file:line locations
-4. **Be actionable**: Provide clear, implementable solutions
-5. **Be concise**: Keep each issue description brief but complete
-6. **Skip minor issues**: Don't waste space on style nitpicks or trivial warnings
-7. **Group related issues**: If multiple instances of the same problem exist, mention them together
+2. **Prioritize by severity** (Use strict criteria):
+   - **CRITICAL**: ONLY for issues that WILL cause security breaches, data loss, or system crashes
+     - Examples: SQL injection, exposed secrets, null pointer dereferences in critical paths
+   - **HIGH**: Issues that WILL cause incorrect behavior or significant performance degradation
+     - Examples: Logic errors with wrong results, resource leaks, race conditions
+   - **MEDIUM**: Issues that MAY cause problems under certain conditions
+     - Examples: Missing error handling, suboptimal algorithms, missing validations
+   - **LOW/INFO**: Code quality issues that don't affect functionality
+     - Examples: Code duplication, minor style inconsistencies, missing comments
+3. **Severity Assessment Rules**:
+   - DEFAULT to MEDIUM for most issues unless there's clear evidence of critical/high impact
+   - Linter warnings should be LOW/INFO unless they indicate actual bugs
+   - Style issues, naming conventions, formatting → Always LOW/INFO
+   - Missing null checks → MEDIUM (unless proven to cause crashes → HIGH)
+   - Performance concerns → MEDIUM (unless proven bottleneck with measurements → HIGH)
+4. **Be specific**: Always reference exact file:line locations
+5. **Be actionable**: Provide clear, implementable solutions
+6. **Be concise**: Keep each issue description brief but complete
+7. **Skip minor issues**: Don't waste space on style nitpicks or trivial warnings
+8. **Group related issues**: If multiple instances of the same problem exist, mention them together
 
 ## Output Requirements
 
@@ -327,17 +336,26 @@ ${'$'}{diffContext}
 ## 分析指南
 
 1. **最多 10 个问题** - 聚焦最有影响力的问题
-2. **按严重性排序**：
-   - 安全漏洞（CRITICAL）
-   - 逻辑错误和 bug（HIGH）
-   - 性能问题（MEDIUM-HIGH）
-   - 设计问题（MEDIUM）
-   - 代码质量问题（LOW-MEDIUM）
-3. **具体说明**：始终引用确切的 文件:行号 位置
-4. **可操作性**：提供清晰、可实施的解决方案
-5. **简洁明了**：保持每个问题描述简短但完整
-6. **跳过次要问题**：不要在样式细节或琐碎警告上浪费空间
-7. **合并相关问题**：如果存在同一问题的多个实例，一起提及
+2. **按严重性排序**（使用严格标准）：
+   - **CRITICAL**：仅用于必然导致安全漏洞、数据丢失或系统崩溃的问题
+     - 示例：SQL 注入、泄露的密钥、关键路径中的空指针解引用
+   - **HIGH**：必然导致错误行为或显著性能下降的问题
+     - 示例：产生错误结果的逻辑错误、资源泄漏、竞态条件
+   - **MEDIUM**：在特定条件下可能导致问题
+     - 示例：缺少错误处理、次优算法、缺少验证
+   - **LOW/INFO**：不影响功能的代码质量问题
+     - 示例：代码重复、轻微样式不一致、缺少注释
+3. **严重性评估规则**：
+   - 除非有明确的 critical/high 影响证据，否则默认为 MEDIUM
+   - Linter 警告应为 LOW/INFO，除非它们指示实际的 bug
+   - 样式问题、命名约定、格式化 → 始终为 LOW/INFO
+   - 缺少空检查 → MEDIUM（除非证明会导致崩溃 → HIGH）
+   - 性能问题 → MEDIUM（除非通过测量证明是瓶颈 → HIGH）
+4. **具体说明**：始终引用确切的 文件:行号 位置
+5. **可操作性**：提供清晰、可实施的解决方案
+6. **简洁明了**：保持每个问题描述简短但完整
+7. **跳过次要问题**：不要在样式细节或琐碎警告上浪费空间
+8. **合并相关问题**：如果存在同一问题的多个实例，一起提及
 
 ## 输出要求
 

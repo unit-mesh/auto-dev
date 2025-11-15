@@ -148,6 +148,52 @@ class CodeReviewAgent(
         return executor.execute(task, systemPrompt, context.linterSummary)
     }
 
+    /**
+     * Analyze code using Data-Driven approach (more efficient for UI scenarios)
+     * This method accepts pre-collected data and performs a single-pass analysis
+     * 
+     * @param reviewType Type of review (COMPREHENSIVE, SECURITY, PERFORMANCE, STYLE)
+     * @param filePaths List of file paths to review
+     * @param codeContent Map of file paths to their content
+     * @param lintResults Map of file paths to their lint results (formatted as string)
+     * @param diffContext Optional diff context showing what changed
+     * @param language Language for the prompt (EN or ZH)
+     * @return Analysis result as markdown string
+     */
+    suspend fun analyzeWithDataDriven(
+        reviewType: String,
+        filePaths: List<String>,
+        codeContent: Map<String, String>,
+        lintResults: Map<String, String>,
+        diffContext: String = "",
+        language: String = "EN",
+        onChunk: (String) -> Unit = {}
+    ): String {
+        logger.info { "Starting data-driven analysis for ${filePaths.size} files" }
+        
+        // Generate analysis prompt
+        val prompt = promptRenderer.renderAnalysisPrompt(
+            reviewType = reviewType,
+            filePaths = filePaths,
+            codeContent = codeContent,
+            lintResults = lintResults,
+            diffContext = diffContext,
+            language = language
+        )
+        
+        logger.info { "Generated prompt: ${prompt.length} chars (~${prompt.length / 4} tokens)" }
+        
+        // Stream LLM response
+        val result = StringBuilder()
+        llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+            result.append(chunk)
+            onChunk(chunk)
+        }
+        
+        logger.info { "Analysis complete: ${result.length} chars" }
+        return result.toString()
+    }
+
     override fun buildSystemPrompt(context: CodeReviewContext, language: String): String {
         return promptRenderer.render(context, language)
     }

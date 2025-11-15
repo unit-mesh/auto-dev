@@ -102,19 +102,27 @@ export async function runReview(
       }
     }
 
-    // ===== STEP 3: Use Kotlin's CodeReviewAgent (Proper Implementation) =====
-    console.log(semanticChalk.info('🤖 Running AI code review...'));
+    // ===== STEP 3: Read Code Files =====
+    console.log(semanticChalk.info('📖 Reading code files...'));
+    const codeContent = await readCodeFiles(filePaths, projectPath);
+    console.log(semanticChalk.success(`✅ Read ${Object.keys(codeContent).length} files`));
     console.log();
 
-    // Create review task
-    const task = new KotlinCC.unitmesh.agent.JsReviewTask(
-      filePaths,
-      reviewType,
-      projectPath,
-      diffContent.length > 5000 ? `Git diff (first 5000 chars):\n${diffContent.substring(0, 5000)}...` : `Git diff:\n${diffContent}`
-    );
+    // ===== STEP 4: Run Linters and Collect Results =====
+    const lintResults: Record<string, string> = {};
+    if (!skipLint && filePaths.length > 0) {
+      try {
+        const collectedLintResults = await runLinters(filePaths, projectPath);
+        Object.assign(lintResults, collectedLintResults);
+      } catch (error: any) {
+        console.log(semanticChalk.warning(`⚠️  Linter execution failed: ${error.message}`));
+      }
+    }
 
-    // Create code review agent (uses proper prompt renderer)
+    // ===== STEP 5: Use Data-Driven Analysis (Optimized) =====
+    console.log(semanticChalk.info('🤖 Analyzing with AI...'));
+    
+    // Create code review agent
     const reviewAgent = new KotlinCC.unitmesh.agent.JsCodeReviewAgent(
       projectPath,
       llmService,
@@ -124,39 +132,56 @@ export async function runReview(
       null
     );
 
-    const llmStartTime = Date.now();
+    // Build diff context (simplified)
+    const diffContext = diffContent.length > 2000 
+      ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\`` 
+      : `\n## What Changed\n\`\`\`diff\n${diffContent}\n\`\`\``;
 
-    // Execute review (uses CodeReviewAgentExecutor and proper prompts)
-    const result = await reviewAgent.executeTask(task);
+    const promptLength = JSON.stringify(codeContent).length + JSON.stringify(lintResults).length + diffContext.length;
+    console.log(semanticChalk.muted(`📊 Prompt: ${promptLength} chars (~${Math.floor(promptLength / 4)} tokens)`));
+    console.log(semanticChalk.info('⚡ Streaming AI response...'));
+    console.log();
+
+    const llmStartTime = Date.now();
+    let analysisOutput = '';
+
+    // Use Data-Driven analysis (single LLM call)
+    analysisOutput = await reviewAgent.analyzeWithDataDriven(
+      reviewType,
+      filePaths,
+      codeContent,
+      lintResults,
+      diffContext,
+      'EN',
+      (chunk: string) => {
+        process.stdout.write(chunk);
+      }
+    );
 
     const llmDuration = Date.now() - llmStartTime;
     const totalDuration = Date.now() - startTime;
 
     console.log();
+    console.log();
     console.log(semanticChalk.success('✅ Code review complete!'));
     console.log(semanticChalk.muted(`⏱️  Total: ${totalDuration}ms (AI: ${llmDuration}ms)`));
     console.log();
 
-    // Display findings
-    if (result.findings && result.findings.length > 0) {
-      displayKotlinFindings(result.findings);
+    // Parse findings from markdown output
+    const findings = parseMarkdownFindings(analysisOutput);
+
+    if (findings.length > 0) {
+      displayKotlinFindings(findings);
     } else {
-      console.log(semanticChalk.success('✨ No issues found! Code looks good.'));
+      console.log(semanticChalk.success('✨ No significant issues found! Code looks good.'));
       console.log();
     }
 
     return {
-      success: result.success,
-      message: result.message,
-      findings: result.findings ? result.findings.map((f: any) => ({
-        severity: f.severity,
-        category: f.category,
-        description: f.description,
-        filePath: f.filePath,
-        lineNumber: f.lineNumber,
-        suggestion: f.suggestion
-      })) : [],
-      analysisOutput: result.message
+      success: true,
+      message: analysisOutput,
+      findings: findings,
+      analysisOutput: analysisOutput
     };
 
   } catch (error: any) {
@@ -171,6 +196,156 @@ export async function runReview(
 }
 
 // ==================== Helper Functions ====================
+
+/**
+ * Read code files into memory
+ */
+async function readCodeFiles(filePaths: string[], projectPath: string): Promise<Record<string, string>> {
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const codeContent: Record<string, string> = {};
+
+  for (const filePath of filePaths) {
+    try {
+      const fullPath = path.join(projectPath, filePath);
+      const content = await fs.readFile(fullPath, 'utf-8');
+      codeContent[filePath] = content;
+    } catch (error: any) {
+      console.log(semanticChalk.warning(`⚠️  Failed to read ${filePath}: ${error.message}`));
+    }
+  }
+
+  return codeContent;
+}
+
+/**
+ * Run linters on files and collect results
+ */
+async function runLinters(filePaths: string[], projectPath: string): Promise<Record<string, string>> {
+  const lintResults: Record<string, string> = {};
+  
+  try {
+    const linterRegistry = KotlinCC.unitmesh.agent.linter.JsLinterRegistry;
+    const linters = linterRegistry.findLintersForFiles(filePaths);
+    
+    if (linters.length === 0) {
+      return lintResults;
+    }
+
+    console.log(semanticChalk.info(`🔍 Running linters: ${linters.join(', ')}...`));
+
+    // Run linters using child_process
+    const { execSync } = await import('child_process');
+    
+    for (const linter of linters) {
+      try {
+        let command = '';
+        let output = '';
+
+        // Build linter command based on linter name
+        switch (linter) {
+          case 'biome':
+            command = `npx --yes @biomejs/biome check --diagnostic-level=info ${filePaths.join(' ')}`;
+            break;
+          case 'eslint':
+            command = `npx eslint --format json ${filePaths.join(' ')}`;
+            break;
+          case 'detekt':
+            command = `./gradlew detekt`;
+            break;
+          default:
+            continue;
+        }
+
+        try {
+          output = execSync(command, {
+            cwd: projectPath,
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe']
+          });
+        } catch (error: any) {
+          // Linters often exit with non-zero on issues found
+          output = error.stdout || error.message;
+        }
+
+        if (output && output.trim().length > 0) {
+          lintResults[linter] = output;
+        }
+      } catch (error: any) {
+        console.log(semanticChalk.warning(`⚠️  ${linter} failed: ${error.message}`));
+      }
+    }
+
+    if (Object.keys(lintResults).length > 0) {
+      console.log(semanticChalk.success(`✅ Collected lint results from ${Object.keys(lintResults).length} linters`));
+    } else {
+      console.log(semanticChalk.muted('ℹ️  No lint issues found'));
+    }
+  } catch (error: any) {
+    console.log(semanticChalk.warning(`⚠️  Linter execution error: ${error.message}`));
+  }
+
+  return lintResults;
+}
+
+/**
+ * Parse structured findings from markdown output
+ * Looks for issues in format: #### #{number}. {title}
+ */
+function parseMarkdownFindings(markdown: string): ReviewFinding[] {
+  const findings: ReviewFinding[] = [];
+  
+  // Split by issue markers (#### #1., #### #2., etc.)
+  const issuePattern = /####\s*#(\d+)\.\s*(.+?)(?=####\s*#\d+\.|$)/gs;
+  const matches = Array.from(markdown.matchAll(issuePattern));
+
+  for (const match of matches) {
+    const issueText = match[0];
+    const issueNumber = match[1];
+    const issueTitle = match[2].trim();
+
+    // Extract severity
+    const severityMatch = issueText.match(/\*\*Severity\*\*:\s*(CRITICAL|HIGH|MEDIUM|LOW|INFO)/i);
+    const severity = severityMatch ? severityMatch[1].toUpperCase() : 'MEDIUM';
+
+    // Extract category
+    const categoryMatch = issueText.match(/\*\*Category\*\*:\s*(.+?)(?:\n|\*\*)/i);
+    const category = categoryMatch ? categoryMatch[1].trim() : 'General';
+
+    // Extract location
+    const locationMatch = issueText.match(/\*\*Location\*\*:\s*`?([^`\n]+?)(?:`|\n)/i);
+    let filePath: string | undefined;
+    let lineNumber: number | undefined;
+    
+    if (locationMatch) {
+      const location = locationMatch[1].trim();
+      const parts = location.split(':');
+      filePath = parts[0];
+      if (parts.length > 1) {
+        lineNumber = parseInt(parts[1], 10);
+      }
+    }
+
+    // Extract problem description
+    const problemMatch = issueText.match(/\*\*Problem\*\*:\s*(.+?)(?=\*\*|$)/is);
+    const description = problemMatch ? problemMatch[1].trim() : issueTitle;
+
+    // Extract suggested fix
+    const fixMatch = issueText.match(/\*\*Suggested Fix\*\*:\s*(.+?)(?=---|\*\*|$)/is);
+    const suggestion = fixMatch ? fixMatch[1].trim() : undefined;
+
+    findings.push({
+      severity,
+      category,
+      description: `${issueTitle}${description !== issueTitle ? ': ' + description : ''}`,
+      filePath,
+      lineNumber,
+      suggestion
+    });
+  }
+
+  return findings;
+}
 
 /**
  * Fetch git diff and extract file paths
