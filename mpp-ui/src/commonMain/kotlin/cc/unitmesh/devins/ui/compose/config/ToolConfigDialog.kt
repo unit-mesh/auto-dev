@@ -28,7 +28,7 @@ import cc.unitmesh.agent.tool.ToolCategory
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
 import cc.unitmesh.agent.tool.provider.ToolDependencies
-import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
+import cc.unitmesh.linter.shell.DefaultShellExecutor
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.KoogLLMService

@@ -85,9 +85,10 @@ repositories {
     }
 }
 
-// mpp-core, mpp-ui, and mpp-codegraph are configured in their own build.gradle.kts files
+// mpp-linter, mpp-core, mpp-ui, and mpp-codegraph are configured in their own build.gradle.kts files
 
 configure(subprojects - project(":exts")
+        - project(":mpp-linter")
         - project(":mpp-core")
         - project(":mpp-ui")
         - project(":mpp-codegraph")

@@ -10,6 +10,7 @@ pluginManagement {
     }
 }
 
+include("mpp-linter")
 include("mpp-core")
 include("mpp-ui")
 include("mpp-codegraph")

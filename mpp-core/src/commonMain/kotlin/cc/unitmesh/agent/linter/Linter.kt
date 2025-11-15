@@ -1,5 +1,7 @@
 package cc.unitmesh.agent.linter
 
+import cc.unitmesh.linter.*
+
 /**
  * Represents a single linting issue found in code
  */

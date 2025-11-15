@@ -1,10 +1,10 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview.analysis
 
-import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintResult
-import cc.unitmesh.agent.linter.LintSeverity
-import cc.unitmesh.agent.linter.Linter
-import cc.unitmesh.agent.linter.LinterRegistry
+import cc.unitmesh.linter.LintIssue
+import cc.unitmesh.linter.LintResult
+import cc.unitmesh.linter.LintSeverity
+import cc.unitmesh.linter.Linter
+import cc.unitmesh.linter.LinterRegistry
 import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
 import cc.unitmesh.devins.ui.compose.sketch.DiffLine
