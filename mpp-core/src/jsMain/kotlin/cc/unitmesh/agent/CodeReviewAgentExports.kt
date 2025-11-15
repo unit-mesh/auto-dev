@@ -175,14 +175,82 @@ class JsCodeReviewAgent(
             val codeContentMap = convertDynamicToMap(codeContent)
             val lintResultsMap = convertDynamicToMap(lintResults)
             
-            agent.analyzeWithDataDriven(
+            val task = cc.unitmesh.agent.AnalysisTask(
                 reviewType = reviewType,
                 filePaths = filePaths.toList(),
                 codeContent = codeContentMap,
                 lintResults = lintResultsMap,
                 diffContext = diffContext,
+                projectPath = projectPath,
+                useTools = false,  // Data-driven mode
+                analyzeIntent = false
+            )
+            
+            val result = agent.analyze(
+                task = task,
                 language = language,
-                onChunk = onChunk ?: {}
+                onProgress = onChunk ?: {}
+            )
+            
+            result.content
+        }
+    }
+
+    /**
+     * Analyze commit intent (tool-driven or data-driven)
+     * 
+     * @param commitMessage The commit message
+     * @param commitId The commit ID
+     * @param codeChanges Object mapping file paths to their diff/content
+     * @param repoUrl Repository URL for issue tracking (e.g., https://github.com/owner/repo)
+     * @param issueToken Issue tracker token (optional for public repos)
+     * @param useTools Whether to use tools for analysis (default: true)
+     * @param language Language for prompts ("EN" or "ZH")
+     * @param onProgress Optional callback for streaming progress
+     * @return Promise resolving to analysis result with mermaid diagram
+     */
+    @JsName("analyzeIntent")
+    fun analyzeIntent(
+        commitMessage: String,
+        commitId: String = "",
+        codeChanges: dynamic = null,
+        repoUrl: String = "",
+        issueToken: String = "",
+        useTools: Boolean = true,
+        language: String = "EN",
+        onProgress: ((String) -> Unit)? = null
+    ): Promise<JsAnalysisResult> {
+        return GlobalScope.promise {
+            val codeChangesMap = if (codeChanges != null) {
+                convertDynamicToMap(codeChanges)
+            } else {
+                emptyMap()
+            }
+            
+            val task = cc.unitmesh.agent.AnalysisTask(
+                reviewType = "COMPREHENSIVE",
+                projectPath = projectPath,
+                commitMessage = commitMessage,
+                commitId = commitId,
+                codeChanges = codeChangesMap,
+                repoUrl = repoUrl,
+                issueToken = issueToken,
+                useTools = useTools,
+                analyzeIntent = true
+            )
+            
+            val result = agent.analyze(
+                task = task,
+                language = language,
+                onProgress = onProgress ?: {}
+            )
+            
+            JsAnalysisResult(
+                success = result.success,
+                content = result.content,
+                mermaidDiagram = result.mermaidDiagram,
+                issuesAnalyzed = result.issuesAnalyzed.toTypedArray(),
+                usedTools = result.usedTools
             )
         }
     }
@@ -203,17 +271,19 @@ class JsCodeReviewAgent(
         }
         return map
     }
-
-    /**
-     * Initialize workspace
-     */
-    @JsName("initializeWorkspace")
-    fun initializeWorkspace(): Promise<Unit> {
-        return GlobalScope.promise {
-            // Initialization is handled in agent constructor
-        }
-    }
 }
+
+/**
+ * Export-friendly analysis result
+ */
+@JsExport
+data class JsAnalysisResult(
+    val success: Boolean,
+    val content: String,
+    val mermaidDiagram: String?,
+    val issuesAnalyzed: Array<String>,
+    val usedTools: Boolean
+)
 
 /**
  * Diff-related exports for analyzing changes

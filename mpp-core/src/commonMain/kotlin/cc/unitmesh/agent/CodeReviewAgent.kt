@@ -51,16 +51,32 @@ data class ReviewTask(
 )
 
 /**
- * Input task for intent analysis from commit
+ * Unified analysis task
+ * Supports both data-driven (pre-collected data) and tool-driven (dynamic tool usage) approaches
  */
 @Serializable
-data class IntentAnalysisTask(
-    val commitMessage: String,
-    val commitId: String = "",
-    val codeChanges: Map<String, String> = emptyMap(), // file path -> diff content
+data class AnalysisTask(
+    val reviewType: String = "COMPREHENSIVE",
+    val filePaths: List<String> = emptyList(),
     val projectPath: String,
-    val repoUrl: String = "",  // Repository URL for issue tracker
-    val issueToken: String = ""  // Issue tracker token (optional for public repos)
+    
+    // Optional: Pre-collected data for data-driven approach
+    val codeContent: Map<String, String> = emptyMap(),
+    val lintResults: Map<String, String> = emptyMap(),
+    val diffContext: String = "",
+    
+    // Optional: Commit context for intent analysis
+    val commitMessage: String = "",
+    val commitId: String = "",
+    val codeChanges: Map<String, String> = emptyMap(),
+    
+    // Optional: Issue tracker configuration
+    val repoUrl: String = "",
+    val issueToken: String = "",
+    
+    // Control flags
+    val useTools: Boolean = true,  // If false and codeContent provided, use data-driven
+    val analyzeIntent: Boolean = false  // If true, focus on intent analysis with mermaid
 )
 
 /**
@@ -167,88 +183,210 @@ class CodeReviewAgent(
     }
 
     /**
-     * Analyze code using Data-Driven approach (more efficient for UI scenarios)
-     * This method accepts pre-collected data and performs a single-pass analysis
+     * Unified analysis method supporting both data-driven and tool-driven approaches
      * 
-     * @param reviewType Type of review (COMPREHENSIVE, SECURITY, PERFORMANCE, STYLE)
-     * @param filePaths List of file paths to review
-     * @param codeContent Map of file paths to their content
-     * @param lintResults Map of file paths to their lint results (formatted as string)
-     * @param diffContext Optional diff context showing what changed
-     * @param language Language for the prompt (EN or ZH)
-     * @return Analysis result as markdown string
+     * **Data-Driven Mode** (useTools=false && codeContent provided):
+     * - Fast, single-pass analysis
+     * - Uses pre-collected code content and lint results
+     * - No tool calls, lower token usage
+     * - Best for: Quick reviews, UI scenarios with pre-loaded data
+     * 
+     * **Tool-Driven Mode** (useTools=true || codeContent empty):
+     * - Iterative, agent-driven analysis
+     * - Agent uses tools to gather information dynamically
+     * - Multiple iterations, higher accuracy
+     * - Best for: Deep analysis, intent reasoning, exploratory reviews
+     * 
+     * **Intent Analysis** (analyzeIntent=true):
+     * - Analyzes commit intent based on message, changes, and related issues
+     * - Generates mermaid diagrams
+     * - Evaluates implementation accuracy
+     * - Requires: commitMessage, codeChanges (or useTools to gather them)
+     * 
+     * @param task Analysis task with all configuration
+     * @param language Language for prompts (EN or ZH)
+     * @param onProgress Progress callback for streaming updates
+     * @return Analysis result with markdown content and optional mermaid diagram
      */
-    suspend fun analyzeWithDataDriven(
-        reviewType: String,
-        filePaths: List<String>,
-        codeContent: Map<String, String>,
-        lintResults: Map<String, String>,
-        diffContext: String = "",
+    suspend fun analyze(
+        task: AnalysisTask,
         language: String = "EN",
-        onChunk: (String) -> Unit = {}
-    ): String {
-        logger.info { "Starting data-driven analysis for ${filePaths.size} files" }
+        onProgress: (String) -> Unit = {}
+    ): AnalysisResult {
+        logger.info { "Starting unified analysis - useTools: ${task.useTools}, analyzeIntent: ${task.analyzeIntent}" }
         
-        // Generate analysis prompt
-        val prompt = promptRenderer.renderAnalysisPrompt(
-            reviewType = reviewType,
-            filePaths = filePaths,
-            codeContent = codeContent,
-            lintResults = lintResults,
-            diffContext = diffContext,
+        // Decide which approach to use
+        val shouldUseTools = task.useTools || task.codeContent.isEmpty()
+        
+        return if (shouldUseTools) {
+            // Tool-driven approach
+            analyzeWithTools(task, language, onProgress)
+        } else {
+            // Data-driven approach
+            analyzeWithData(task, language, onProgress)
+        }
+    }
+    
+    /**
+     * Data-driven analysis (single-pass, no tools)
+     */
+    private suspend fun analyzeWithData(
+        task: AnalysisTask,
+        language: String,
+        onProgress: (String) -> Unit
+    ): AnalysisResult {
+        logger.info { "Using data-driven approach for ${task.filePaths.size} files" }
+        onProgress("📊 Analyzing pre-collected data...")
+        
+        val prompt = if (task.analyzeIntent) {
+            // Intent analysis with provided data
+            promptRenderer.renderIntentAnalysisWithData(
+                commitMessage = task.commitMessage,
+                commitId = task.commitId,
+                codeChanges = task.codeChanges.ifEmpty { task.codeContent },
+                diffContext = task.diffContext,
+                language = language
+            )
+        } else {
+            // Standard code review with provided data
+            promptRenderer.renderAnalysisPrompt(
+                reviewType = task.reviewType,
+                filePaths = task.filePaths,
+                codeContent = task.codeContent,
+                lintResults = task.lintResults,
+                diffContext = task.diffContext,
             language = language
         )
+        }
         
-        logger.info { "Generated prompt: ${prompt.length} chars (~${prompt.length / 4} tokens)" }
+        logger.info { "Generated prompt: ${prompt.length} chars" }
         
         // Stream LLM response
         val result = StringBuilder()
         llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
             result.append(chunk)
-            onChunk(chunk)
+            onProgress(chunk)
         }
         
-        logger.info { "Analysis complete: ${result.length} chars" }
-        return result.toString()
+        val analysisText = result.toString()
+        logger.info { "Analysis complete: ${analysisText.length} chars" }
+        
+        return AnalysisResult(
+            success = true,
+            content = analysisText,
+            mermaidDiagram = if (task.analyzeIntent) extractMermaidDiagram(analysisText) else null,
+            issuesAnalyzed = if (task.analyzeIntent) parseIssueReferences(task.commitMessage) else emptyList(),
+            usedTools = false
+        )
     }
-
+    
     /**
-     * Analyze user intent from commit (Tool-driven approach)
-     * This method uses tools to dynamically gather information and analyze intent
-     * 
-     * @param task Intent analysis task containing commit info
-     * @param language Language for the prompt (EN or ZH)
-     * @param onProgress Progress callback
-     * @return Intent analysis result with mermaid diagram
+     * Tool-driven analysis (iterative, with tool usage)
      */
-    suspend fun analyzeIntentWithTools(
-        task: IntentAnalysisTask,
-        language: String = "EN",
-        onProgress: (String) -> Unit = {}
-    ): IntentAnalysisResult {
-        logger.info { "Starting intent analysis for commit: ${task.commitId}" }
+    private suspend fun analyzeWithTools(
+        task: AnalysisTask,
+        language: String,
+        onProgress: (String) -> Unit
+    ): AnalysisResult {
+        logger.info { "Using tool-driven approach" }
         
         initializeWorkspace(task.projectPath)
         
-        // Parse issue references from commit message
-        val issueReferences = parseIssueReferences(task.commitMessage)
-        logger.info { "Found ${issueReferences.size} issue references: $issueReferences" }
-        
-        // Fetch issue information if available
-        val issueInfo = if (issueReferences.isNotEmpty()) {
-            fetchIssueInfo(task, issueReferences)
+        // Fetch issue info if analyzing intent
+        val issueInfo = if (task.analyzeIntent && task.commitMessage.isNotBlank()) {
+            val issueRefs = parseIssueReferences(task.commitMessage)
+            if (issueRefs.isNotEmpty()) {
+                fetchIssueInfo(task, issueRefs)
+            } else {
+                emptyMap()
+            }
         } else {
             emptyMap()
         }
         
-        // Build context for intent analysis
-        val context = buildIntentAnalysisContext(task, issueInfo)
-        val systemPrompt = promptRenderer.renderIntentAnalysisPrompt(context, language)
+        // Build context and prompt
+        val systemPrompt = if (task.analyzeIntent) {
+            val context = buildIntentAnalysisContext(task, issueInfo)
+            promptRenderer.renderIntentAnalysisPrompt(context, language)
+        } else {
+            val allTools = toolRegistry.getAllTools()
+            val context = CodeReviewContext(
+                projectPath = task.projectPath,
+                filePaths = task.filePaths,
+                reviewType = ReviewType.valueOf(task.reviewType.uppercase()),
+                additionalContext = task.diffContext,
+                toolList = AgentToolFormatter.formatToolListForAI(allTools.values.toList())
+            )
+            promptRenderer.render(context, language)
+        }
         
-        // Execute intent analysis using tool-driven approach
-        val result = executeIntentAnalysis(task, systemPrompt, issueInfo, onProgress)
+        // Execute with tools
+        val conversationManager = cc.unitmesh.agent.conversation.ConversationManager(llmService, systemPrompt)
+        val initialMessage = buildToolDrivenMessage(task, issueInfo)
         
-        return result
+        onProgress("🔍 Starting tool-driven analysis...")
+        
+        var currentIteration = 0
+        val maxIter = if (task.analyzeIntent) 10 else maxIterations
+        
+        while (currentIteration < maxIter) {
+            currentIteration++
+            renderer.renderIterationHeader(currentIteration, maxIter)
+            
+            val llmResponse = StringBuilder()
+            
+            try {
+                renderer.renderLLMResponseStart()
+                
+                val message = if (currentIteration == 1) initialMessage else buildContinuationMessage()
+                conversationManager.sendMessage(message, compileDevIns = false).collect { chunk: String ->
+                    llmResponse.append(chunk)
+                    renderer.renderLLMResponseChunk(chunk)
+                    onProgress(chunk)
+                }
+                
+                renderer.renderLLMResponseEnd()
+                conversationManager.addAssistantResponse(llmResponse.toString())
+            } catch (e: Exception) {
+                logger.error(e) { "LLM call failed: ${e.message}" }
+                renderer.renderError("LLM call failed: ${e.message}")
+                break
+            }
+            
+            // Parse and execute tool calls
+            val toolCallParser = cc.unitmesh.agent.parser.ToolCallParser()
+            val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
+            
+            if (toolCalls.isEmpty()) {
+                logger.info { "No tool calls found, analysis complete" }
+                renderer.renderTaskComplete()
+                break
+            }
+            
+            val toolResults = executeToolCallsForIntent(toolCalls, task.projectPath)
+            val toolResultsText = cc.unitmesh.agent.tool.ToolResultFormatter.formatMultipleToolResults(toolResults)
+            conversationManager.addToolResults(toolResultsText)
+            
+            if (isAnalysisComplete(llmResponse.toString(), task.analyzeIntent)) {
+                logger.info { "Analysis complete" }
+                renderer.renderTaskComplete()
+                break
+            }
+        }
+        
+        onProgress("✅ Analysis complete")
+        
+        val finalAnalysis = conversationManager.getHistory()
+            .lastOrNull { msg -> msg.role == cc.unitmesh.devins.llm.MessageRole.ASSISTANT }
+            ?.content ?: "No analysis generated"
+        
+        return AnalysisResult(
+            success = true,
+            content = finalAnalysis,
+            mermaidDiagram = if (task.analyzeIntent) extractMermaidDiagram(finalAnalysis) else null,
+            issuesAnalyzed = issueInfo.keys.toList(),
+            usedTools = true
+        )
     }
     
     /**
@@ -268,10 +406,99 @@ class CodeReviewAgent(
     }
     
     /**
+     * Build message for tool-driven analysis
+     */
+    private fun buildToolDrivenMessage(task: AnalysisTask, issueInfo: Map<String, IssueInfo>): String {
+        return if (task.analyzeIntent) {
+            buildIntentAnalysisUserMessage(task, issueInfo)
+        } else {
+            buildString {
+                appendLine("Please review the following code:")
+                appendLine()
+                appendLine("**Project Path**: ${task.projectPath}")
+                appendLine("**Review Type**: ${task.reviewType}")
+                appendLine()
+                
+                if (task.filePaths.isNotEmpty()) {
+                    appendLine("**Files to review** (${task.filePaths.size} files):")
+                    task.filePaths.forEach { appendLine("  - $it") }
+                    appendLine()
+                }
+                
+                if (task.diffContext.isNotBlank()) {
+                    appendLine("**Diff Context**:")
+                    appendLine(task.diffContext)
+                    appendLine()
+                }
+                
+                appendLine("**Instructions**:")
+                appendLine("1. Use tools to read and analyze the code")
+                appendLine("2. Provide thorough code review following the guidelines")
+            }
+        }
+    }
+    
+    /**
+     * Build initial user message for intent analysis
+     */
+    private fun buildIntentAnalysisUserMessage(
+        task: AnalysisTask,
+        issueInfo: Map<String, IssueInfo>
+    ): String {
+        return buildString {
+            appendLine("Please analyze the intent behind this commit and related issues:")
+            appendLine()
+            appendLine("## Commit Information")
+            if (task.commitId.isNotBlank()) {
+                appendLine("**Commit ID**: ${task.commitId}")
+            }
+            appendLine("**Commit Message**:")
+            appendLine("```")
+            appendLine(task.commitMessage)
+            appendLine("```")
+            appendLine()
+            
+            if (issueInfo.isNotEmpty()) {
+                appendLine("## Related Issues")
+                issueInfo.forEach { (id, info) ->
+                    appendLine("### Issue #$id: ${info.title}")
+                    appendLine(info.description)
+                    if (info.labels.isNotEmpty()) {
+                        appendLine("**Labels**: ${info.labels.joinToString(", ")}")
+                    }
+                    appendLine("**Status**: ${info.status}")
+                    appendLine()
+                }
+            }
+            
+            val changes = task.codeChanges.ifEmpty { task.codeContent }
+            if (changes.isNotEmpty()) {
+                appendLine("## Code Changes (${changes.size} files)")
+                changes.forEach { (file, content) ->
+                    appendLine("### $file")
+                    appendLine("```diff")
+                    appendLine(content)
+                    appendLine("```")
+                    appendLine()
+                }
+            }
+            
+            appendLine("## Your Task")
+            appendLine("1. Analyze the user's intent behind this commit")
+            appendLine("2. If needed, use tools to read relevant files and understand the codebase context")
+            appendLine("3. Create a mermaid diagram to visualize the intent and implementation flow")
+            appendLine("4. Evaluate whether the implementation accurately reflects the intent")
+            appendLine("5. Identify any issues or suggest improvements")
+            appendLine()
+            appendLine("Please use the available tools to gather additional context as needed.")
+        }
+    }
+    
+    /**
      * Fetch issue information from issue tracker
      */
     private suspend fun fetchIssueInfo(
-        task: IntentAnalysisTask,
+        task: AnalysisTask,
         issueReferences: List<String>
     ): Map<String, IssueInfo> {
         if (issueReferences.isEmpty()) {
@@ -296,7 +523,7 @@ class CodeReviewAgent(
     /**
      * Get or create issue tracker based on task configuration
      */
-    private fun getOrCreateIssueTracker(task: IntentAnalysisTask): IssueTracker? {
+    private fun getOrCreateIssueTracker(task: AnalysisTask): IssueTracker? {
         // If issue tracker was provided in constructor, use it
         if (issueTracker != null && issueTracker.isConfigured()) {
             return issueTracker
@@ -339,7 +566,7 @@ class CodeReviewAgent(
      * Build context for intent analysis
      */
     private fun buildIntentAnalysisContext(
-        task: IntentAnalysisTask,
+        task: AnalysisTask,
         issueInfo: Map<String, IssueInfo>
     ): IntentAnalysisContext {
         val allTools = toolRegistry.getAllTools()
@@ -351,153 +578,6 @@ class CodeReviewAgent(
             projectPath = task.projectPath,
             toolList = AgentToolFormatter.formatToolListForAI(allTools.values.toList())
         )
-    }
-    
-    /**
-     * Execute intent analysis with tool calling support
-     */
-    private suspend fun executeIntentAnalysis(
-        task: IntentAnalysisTask,
-        systemPrompt: String,
-        issueInfo: Map<String, IssueInfo>,
-        onProgress: (String) -> Unit
-    ): IntentAnalysisResult {
-        val conversationManager = cc.unitmesh.agent.conversation.ConversationManager(llmService, systemPrompt)
-        val initialUserMessage = buildIntentAnalysisUserMessage(task, issueInfo)
-        
-        logger.info { "Starting intent analysis iteration loop" }
-        onProgress("🔍 Analyzing commit intent...")
-        
-        var currentIteration = 0
-        val maxIterationsForIntent = 10 // Limit iterations for intent analysis
-        
-        while (currentIteration < maxIterationsForIntent) {
-            currentIteration++
-            renderer.renderIterationHeader(currentIteration, maxIterationsForIntent)
-            
-            val llmResponse = StringBuilder()
-            
-            try {
-                renderer.renderLLMResponseStart()
-                
-                if (enableLLMStreaming) {
-                    val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
-                    conversationManager.sendMessage(message, compileDevIns = false).collect { chunk: String ->
-                        llmResponse.append(chunk)
-                        renderer.renderLLMResponseChunk(chunk)
-                    }
-                } else {
-                    val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
-                    val response = llmService.sendPrompt(message)
-                    llmResponse.append(response)
-                    renderer.renderLLMResponseChunk(response)
-                }
-                
-                renderer.renderLLMResponseEnd()
-                conversationManager.addAssistantResponse(llmResponse.toString())
-            } catch (e: Exception) {
-                logger.error(e) { "LLM call failed: ${e.message}" }
-                renderer.renderError("LLM call failed: ${e.message}")
-                break
-            }
-            
-            // Parse tool calls
-            val toolCallParser = cc.unitmesh.agent.parser.ToolCallParser()
-            val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
-            
-            if (toolCalls.isEmpty()) {
-                // No more tool calls, analysis complete
-                logger.info { "No tool calls found, intent analysis complete" }
-                renderer.renderTaskComplete()
-                break
-            }
-            
-            // Execute tool calls
-            val toolResults = executeToolCallsForIntent(toolCalls, task.projectPath)
-            val toolResultsText = cc.unitmesh.agent.tool.ToolResultFormatter.formatMultipleToolResults(toolResults)
-            conversationManager.addToolResults(toolResultsText)
-            
-            // Check if analysis is complete
-            if (isIntentAnalysisComplete(llmResponse.toString())) {
-                logger.info { "Intent analysis complete" }
-                renderer.renderTaskComplete()
-                break
-            }
-        }
-        
-        onProgress("✅ Intent analysis complete")
-        
-        // Extract final analysis from conversation
-        val finalAnalysis = conversationManager.getHistory()
-            .lastOrNull { msg -> msg.role == cc.unitmesh.devins.llm.MessageRole.ASSISTANT }
-            ?.content ?: "No analysis generated"
-        
-        // Extract mermaid diagram if present
-        val mermaidDiagram = extractMermaidDiagram(finalAnalysis)
-        
-        return IntentAnalysisResult(
-            success = true,
-            analysis = finalAnalysis,
-            mermaidDiagram = mermaidDiagram,
-            issuesAnalyzed = issueInfo.keys.toList(),
-            implementationAccuracy = "To be evaluated", // Placeholder
-            suggestedImprovements = emptyList() // Placeholder
-        )
-    }
-    
-    /**
-     * Build initial user message for intent analysis
-     */
-    private fun buildIntentAnalysisUserMessage(
-        task: IntentAnalysisTask,
-        issueInfo: Map<String, IssueInfo>
-    ): String {
-        return buildString {
-            appendLine("Please analyze the intent behind this commit and related issues:")
-            appendLine()
-            appendLine("## Commit Information")
-            if (task.commitId.isNotBlank()) {
-                appendLine("**Commit ID**: ${task.commitId}")
-            }
-            appendLine("**Commit Message**:")
-            appendLine("```")
-            appendLine(task.commitMessage)
-            appendLine("```")
-            appendLine()
-            
-            if (issueInfo.isNotEmpty()) {
-                appendLine("## Related Issues")
-                issueInfo.forEach { (id, info) ->
-                    appendLine("### Issue #$id: ${info.title}")
-                    appendLine(info.description)
-                    if (info.labels.isNotEmpty()) {
-                        appendLine("**Labels**: ${info.labels.joinToString(", ")}")
-                    }
-                    appendLine("**Status**: ${info.status}")
-                    appendLine()
-                }
-            }
-            
-            if (task.codeChanges.isNotEmpty()) {
-                appendLine("## Code Changes (${task.codeChanges.size} files)")
-                task.codeChanges.forEach { (file, diff) ->
-                    appendLine("### $file")
-                    appendLine("```diff")
-                    appendLine(diff)
-                    appendLine("```")
-                    appendLine()
-                }
-            }
-            
-            appendLine("## Your Task")
-            appendLine("1. Analyze the user's intent behind this commit")
-            appendLine("2. If needed, use tools to read relevant files and understand the codebase context")
-            appendLine("3. Create a mermaid diagram to visualize the intent and implementation flow")
-            appendLine("4. Evaluate whether the implementation accurately reflects the intent")
-            appendLine("5. Identify any issues or suggest improvements")
-            appendLine()
-            appendLine("Please use the available tools to gather additional context as needed.")
-        }
     }
     
     private fun buildContinuationMessage(): String {
@@ -545,20 +625,37 @@ class CodeReviewAgent(
     }
     
     /**
-     * Check if intent analysis is complete
+     * Check if analysis is complete
      */
-    private fun isIntentAnalysisComplete(response: String): Boolean {
-        val completionIndicators = listOf(
-            "analysis complete",
-            "intent analysis complete",
-            "mermaid diagram",
-            "## final analysis",
-            "## summary"
-        )
+    private fun isAnalysisComplete(response: String, isIntentAnalysis: Boolean): Boolean {
+        val completionIndicators = if (isIntentAnalysis) {
+            listOf(
+                "analysis complete",
+                "intent analysis complete",
+                "mermaid diagram",
+                "## final analysis",
+                "## summary"
+            )
+        } else {
+            listOf(
+                "review complete",
+                "review is complete",
+                "finished reviewing",
+                "completed the review",
+                "final review",
+                "summary:",
+                "## summary"
+            )
+        }
         
         val lowerResponse = response.lowercase()
-        return completionIndicators.any { lowerResponse.contains(it) } &&
-                response.contains("```mermaid", ignoreCase = true)
+        val hasIndicator = completionIndicators.any { lowerResponse.contains(it) }
+        
+        return if (isIntentAnalysis) {
+            hasIndicator && response.contains("```mermaid", ignoreCase = true)
+        } else {
+            hasIndicator
+        }
     }
     
     /**
@@ -681,13 +778,12 @@ data class IntentAnalysisContext(
 }
 
 /**
- * Result of intent analysis
+ * Unified analysis result
  */
-data class IntentAnalysisResult(
+data class AnalysisResult(
     val success: Boolean,
-    val analysis: String,
-    val mermaidDiagram: String?,
-    val issuesAnalyzed: List<String>,
-    val implementationAccuracy: String,
-    val suggestedImprovements: List<String>
+    val content: String,
+    val mermaidDiagram: String? = null,
+    val issuesAnalyzed: List<String> = emptyList(),
+    val usedTools: Boolean = false
 )

@@ -119,9 +119,11 @@ export async function runReview(
       }
     }
 
-    // ===== STEP 5: Use Data-Driven Analysis (Optimized) =====
-    console.log(semanticChalk.info('🤖 Analyzing with AI...'));
-    
+    // ===== STEP 5: Extract Commit Message =====
+    console.log(semanticChalk.info('📝 Extracting commit information...'));
+    const { commitMessage, commitId, repoUrl } = await extractCommitInfo(projectPath, options);
+    console.log();
+
     // Create code review agent
     const reviewAgent = new KotlinCC.unitmesh.agent.JsCodeReviewAgent(
       projectPath,
@@ -132,43 +134,155 @@ export async function runReview(
       null
     );
 
-    // Build diff context (simplified)
-    const diffContext = diffContent.length > 2000 
-      ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\`` 
-      : `\n## What Changed\n\`\`\`diff\n${diffContent}\n\`\`\``;
-
-    const promptLength = JSON.stringify(codeContent).length + JSON.stringify(lintResults).length + diffContext.length;
-    console.log(semanticChalk.muted(`📊 Prompt: ${promptLength} chars (~${Math.floor(promptLength / 4)} tokens)`));
-    console.log(semanticChalk.info('⚡ Streaming AI response...'));
-    console.log();
-
-    const llmStartTime = Date.now();
-    let analysisOutput = '';
-
-    // Use Data-Driven analysis (single LLM call)
-    analysisOutput = await reviewAgent.analyzeWithDataDriven(
-      reviewType,
-      filePaths,
-      codeContent,
-      lintResults,
-      diffContext,
-      'EN',
-      (chunk: string) => {
-        process.stdout.write(chunk);
+    // ===== STEP 6: Intent Analysis (if commit message exists) =====
+    let intentAnalysisOutput = '';
+    let mermaidDiagram: string | null = null;
+    
+    if (commitMessage && commitMessage.trim().length > 10) {
+      console.log(semanticChalk.info('🎯 Analyzing commit intent...'));
+      console.log(semanticChalk.muted(`📄 Commit: ${commitId || 'HEAD'}`));
+      console.log(semanticChalk.muted(`💬 Message: ${commitMessage.substring(0, 80)}${commitMessage.length > 80 ? '...' : ''}`));
+      console.log();
+      
+      const llmStartTime = Date.now();
+      
+      try {
+        // Build code changes map from diff content
+        const codeChangesMap = buildCodeChangesMap(diffContent, filePaths, codeContent);
+        
+        console.log(semanticChalk.info('⚡ Streaming intent analysis...'));
+        console.log();
+        
+        // Call analyzeIntent with tool-driven approach
+        const intentResult = await reviewAgent.analyzeIntent(
+          commitMessage,
+          commitId,
+          codeChangesMap,
+          repoUrl,
+          '', // issueToken - could be added as an option
+          true, // useTools
+          'EN',
+          (chunk: string) => {
+            process.stdout.write(chunk);
+          }
+        );
+        
+        intentAnalysisOutput = intentResult.content;
+        mermaidDiagram = intentResult.mermaidDiagram || null;
+        
+        const llmDuration = Date.now() - llmStartTime;
+        
+        console.log();
+        console.log();
+        console.log(semanticChalk.success('✅ Intent analysis complete!'));
+        console.log(semanticChalk.muted(`⏱️  Time: ${llmDuration}ms`));
+        
+        // Display mermaid diagram if present
+        if (mermaidDiagram) {
+          console.log();
+          console.log(semanticChalk.info('📊 Intent Flow Diagram:'));
+          console.log();
+          console.log(semanticChalk.muted('```mermaid'));
+          console.log(mermaidDiagram);
+          console.log(semanticChalk.muted('```'));
+        }
+        
+        console.log();
+        console.log(semanticChalk.muted('─'.repeat(80)));
+        console.log();
+      } catch (error: any) {
+        console.log(semanticChalk.warning(`⚠️  Intent analysis failed: ${error.message}`));
+        console.log(semanticChalk.muted('Continuing with technical review...'));
+        console.log();
       }
-    );
+    }
 
-    const llmDuration = Date.now() - llmStartTime;
+    // ===== STEP 7: Technical Code Review (if intent analysis was done) =====
+    let technicalReviewOutput = '';
+    
+    if (intentAnalysisOutput) {
+      console.log(semanticChalk.info('🔧 Performing technical code review...'));
+      console.log();
+      
+      // Build diff context
+      const diffContext = diffContent.length > 2000 
+        ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\`` 
+        : `\n## What Changed\n\`\`\`diff\n${diffContent}\n\`\`\``;
+
+      const promptLength = JSON.stringify(codeContent).length + JSON.stringify(lintResults).length + diffContext.length;
+      console.log(semanticChalk.muted(`📊 Prompt: ${promptLength} chars (~${Math.floor(promptLength / 4)} tokens)`));
+      console.log(semanticChalk.info('⚡ Streaming technical review...'));
+      console.log();
+
+      const llmStartTime = Date.now();
+
+      // Use Data-Driven analysis for technical review
+      technicalReviewOutput = await reviewAgent.analyzeWithDataDriven(
+        reviewType,
+        filePaths,
+        codeContent,
+        lintResults,
+        diffContext,
+        'EN',
+        (chunk: string) => {
+          process.stdout.write(chunk);
+        }
+      );
+
+      const llmDuration = Date.now() - llmStartTime;
+      console.log();
+      console.log();
+      console.log(semanticChalk.success('✅ Technical review complete!'));
+      console.log(semanticChalk.muted(`⏱️  Time: ${llmDuration}ms`));
+    } else {
+      // No commit message, just do technical review
+      console.log(semanticChalk.info('🤖 Analyzing with AI...'));
+      
+      const diffContext = diffContent.length > 2000 
+        ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\`` 
+        : `\n## What Changed\n\`\`\`diff\n${diffContent}\n\`\`\``;
+
+      const promptLength = JSON.stringify(codeContent).length + JSON.stringify(lintResults).length + diffContext.length;
+      console.log(semanticChalk.muted(`📊 Prompt: ${promptLength} chars (~${Math.floor(promptLength / 4)} tokens)`));
+      console.log(semanticChalk.info('⚡ Streaming AI response...'));
+      console.log();
+
+      const llmStartTime = Date.now();
+
+      technicalReviewOutput = await reviewAgent.analyzeWithDataDriven(
+        reviewType,
+        filePaths,
+        codeContent,
+        lintResults,
+        diffContext,
+        'EN',
+        (chunk: string) => {
+          process.stdout.write(chunk);
+        }
+      );
+
+      const llmDuration = Date.now() - llmStartTime;
+      console.log();
+      console.log();
+      console.log(semanticChalk.success('✅ Code review complete!'));
+      console.log(semanticChalk.muted(`⏱️  Time: ${llmDuration}ms`));
+    }
+
     const totalDuration = Date.now() - startTime;
 
+    // Combine outputs
+    const analysisOutput = intentAnalysisOutput 
+      ? `# 🎯 Intent Analysis\n\n${intentAnalysisOutput}\n\n---\n\n# 🔧 Technical Review\n\n${technicalReviewOutput}`
+      : technicalReviewOutput;
+
     console.log();
     console.log();
-    console.log(semanticChalk.success('✅ Code review complete!'));
-    console.log(semanticChalk.muted(`⏱️  Total: ${totalDuration}ms (AI: ${llmDuration}ms)`));
+    console.log(semanticChalk.success('✅ Complete review finished!'));
+    console.log(semanticChalk.muted(`⏱️  Total: ${totalDuration}ms`));
     console.log();
 
-    // Parse findings from markdown output
-    const findings = parseMarkdownFindings(analysisOutput);
+    // Parse findings from technical review only (not from intent analysis)
+    const findings = parseMarkdownFindings(technicalReviewOutput || analysisOutput);
 
     if (findings.length > 0) {
       displayKotlinFindings(findings);
@@ -345,6 +459,120 @@ function parseMarkdownFindings(markdown: string): ReviewFinding[] {
   }
 
   return findings;
+}
+
+/**
+ * Extract commit information (message, ID, repo URL)
+ */
+async function extractCommitInfo(
+  projectPath: string,
+  options: ReviewOptions
+): Promise<{ commitMessage: string; commitId: string; repoUrl: string }> {
+  try {
+    const { execSync } = await import('child_process');
+    
+    // Get commit ID
+    let commitId = options.commitHash || '';
+    if (!commitId) {
+      try {
+        commitId = execSync('git rev-parse HEAD', {
+          cwd: projectPath,
+          encoding: 'utf-8'
+        }).trim();
+      } catch {
+        commitId = 'HEAD';
+      }
+    }
+    
+    // Get commit message
+    let commitMessage = '';
+    try {
+      const command = options.commitHash 
+        ? `git log -1 --format=%B ${options.commitHash}`
+        : 'git log -1 --format=%B HEAD';
+      
+      commitMessage = execSync(command, {
+        cwd: projectPath,
+        encoding: 'utf-8'
+      }).trim();
+    } catch (error: any) {
+      console.log(semanticChalk.muted(`Unable to get commit message: ${error.message}`));
+    }
+    
+    // Get repo URL
+    let repoUrl = '';
+    try {
+      const remoteUrl = execSync('git config --get remote.origin.url', {
+        cwd: projectPath,
+        encoding: 'utf-8'
+      }).trim();
+      
+      // Convert SSH URL to HTTPS if needed
+      if (remoteUrl.startsWith('git@github.com:')) {
+        repoUrl = remoteUrl.replace('git@github.com:', 'https://github.com/').replace(/\.git$/, '');
+      } else {
+        repoUrl = remoteUrl.replace(/\.git$/, '');
+      }
+    } catch {
+      // Repo URL is optional
+    }
+    
+    return { commitMessage, commitId, repoUrl };
+  } catch (error: any) {
+    console.log(semanticChalk.muted(`Unable to extract commit info: ${error.message}`));
+    return { commitMessage: '', commitId: '', repoUrl: '' };
+  }
+}
+
+/**
+ * Build code changes map from diff content
+ * Returns a map of file paths to their diff content
+ */
+function buildCodeChangesMap(
+  diffContent: string,
+  filePaths: string[],
+  codeContent: Record<string, string>
+): Record<string, string> {
+  const codeChangesMap: Record<string, string> = {};
+  
+  // Try to extract per-file diffs
+  const lines = diffContent.split('\n');
+  let currentFile = '';
+  let currentDiff: string[] = [];
+  
+  for (const line of lines) {
+    if (line.startsWith('diff --git ')) {
+      // Save previous file's diff
+      if (currentFile && currentDiff.length > 0) {
+        codeChangesMap[currentFile] = currentDiff.join('\n');
+      }
+      
+      // Start new file
+      const match = line.match(/diff --git a\/(.*?) b\/(.*?)$/);
+      if (match) {
+        currentFile = match[2];
+        currentDiff = [line];
+      }
+    } else if (currentFile) {
+      currentDiff.push(line);
+    }
+  }
+  
+  // Save last file's diff
+  if (currentFile && currentDiff.length > 0) {
+    codeChangesMap[currentFile] = currentDiff.join('\n');
+  }
+  
+  // If no per-file diffs were extracted, use full code content as fallback
+  if (Object.keys(codeChangesMap).length === 0) {
+    filePaths.forEach(filePath => {
+      if (codeContent[filePath]) {
+        codeChangesMap[filePath] = codeContent[filePath];
+      }
+    });
+  }
+  
+  return codeChangesMap;
 }
 
 /**
