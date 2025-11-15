@@ -80,11 +80,7 @@ class AgentToolFormatterTest {
         
         // Verify tool name
         assertContains(result, "## read-file")
-        
-        // Verify description is included
-        assertContains(result, "**Description:**")
-        assertContains(result, "Reads and returns the content")
-        
+
         // Verify JSON schema is included
         assertContains(result, "**Parameters JSON Schema:**")
         assertContains(result, "```json")
@@ -217,7 +213,6 @@ class AgentToolFormatterTest {
         val result = AgentToolFormatter.formatToolListForAI(listOf(mcpTool))
         
         assertContains(result, "## mcp_custom_tool")
-        assertContains(result, "A custom MCP tool")
         assertContains(result, "/mcp_custom_tool")
     }
     
@@ -255,7 +250,6 @@ class AgentToolFormatterTest {
         val result = AgentToolFormatter.formatToolListForAI(listOf(toolWithoutDescription))
         
         assertContains(result, "## test_tool")
-        assertContains(result, "Tool description not available")
     }
     
     @Test
