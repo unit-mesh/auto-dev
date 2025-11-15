@@ -153,7 +153,6 @@ class CodeReviewAgent(
     }
 
     private suspend fun initializeWorkspace(projectPath: String) {
-        logger.info { "Initializing workspace for code review: $projectPath" }
     }
 
     private suspend fun buildContext(task: ReviewTask): CodeReviewContext {

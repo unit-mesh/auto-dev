@@ -26,6 +26,7 @@ class CodeReviewAgentPromptRenderer {
             .replace("{{linterInfo}}", linterInfo)
 
         logger.debug { "Generated code review prompt (${prompt.length} chars)" }
+        logger.info { "System Prompt: $prompt" }
         return prompt
     }
 
