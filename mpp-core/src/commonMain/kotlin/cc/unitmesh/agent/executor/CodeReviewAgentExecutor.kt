@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.executor
 
-import cc.unitmesh.agent.CodeReviewContext
 import cc.unitmesh.agent.CodeReviewResult
 import cc.unitmesh.agent.ReviewFinding
 import cc.unitmesh.agent.ReviewTask
