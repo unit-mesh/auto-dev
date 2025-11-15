@@ -104,8 +104,10 @@ jobs:
         uses: actions/checkout@v4
 
       # Check out the current repository
-      - name: Install linter
-        run: brew install detekt pmd
+      - name: Install linters
+        run: |
+          brew install detekt pmd golangci-lint dotenv-linter
+          pip3 install sqlfluff checkov
 
       # Validate wrapper
       - name: Gradle Wrapper Validation
