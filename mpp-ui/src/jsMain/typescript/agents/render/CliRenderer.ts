@@ -155,19 +155,25 @@ export class CliRenderer extends BaseRenderer {
     }
   }
 
-  private parseParamsString(paramsStr: string): Record<string, string> {
-    const params: Record<string, string> = {};
+    private parseParamsString(paramsStr: string): Record<string, string> {
+      const params: Record<string, string> = {};
 
-    // Match key="value" patterns, handling quoted values with spaces
-    const regex = /(\w+)="([^"]*)"/g;
-    let match;
+      // Normalize input: remove surrounding braces and trim
+      const cleaned = paramsStr.trim().replace(/^\{|\}$/g, '').trim();
+      if (!cleaned) return params;
 
-    while ((match = regex.exec(paramsStr)) !== null) {
-      params[match[1]] = match[2];
+      // Match key=value where value may be double-quoted, single-quoted, or unquoted (stops at comma/space/})
+      const regex = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^,\s}]+))/g;
+      let match: RegExpExecArray | null;
+
+      while ((match = regex.exec(cleaned)) !== null) {
+        const key = match[1];
+        const value = match[2] ?? match[3] ?? match[4] ?? '';
+        params[key] = value;
+      }
+
+      return params;
     }
-
-    return params;
-  }
 
   renderToolResult(toolName: string, success: boolean, output: string | null, fullOutput: string | null, metadata?: Record<string, string>): void {
     if (success && output) {
