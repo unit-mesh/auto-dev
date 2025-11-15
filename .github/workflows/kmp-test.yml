@@ -106,9 +106,10 @@ jobs:
       # Check out the current repository
       - name: Install linters
         run: |
-          brew install detekt pmd golangci-lint dotenv-linter hadolint actionlint
-          pip3 install sqlfluff checkov yamllint pylint
-          npm install -g markdownlint-cli eslint
+          brew install pipx
+          brew install detekt pmd golangci-lint dotenv-linter hadolint actionlint gitleaks swiftlint
+          pipx install sqlfluff checkov yamllint pylint semgrep
+          npm install -g markdownlint-cli eslint htmlhint
 
       # Validate wrapper
       - name: Gradle Wrapper Validation
