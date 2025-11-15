@@ -87,6 +87,29 @@ $result
         logger.debug { "Generated analysis prompt (${prompt.length} chars)" }
         return prompt
     }
+
+    /**
+     * Renders intent analysis prompt (tool-driven approach for analyzing commit intent)
+     * This prompt guides the agent to use tools for understanding user intent
+     */
+    fun renderIntentAnalysisPrompt(
+        context: cc.unitmesh.agent.IntentAnalysisContext,
+        language: String = "EN"
+    ): String {
+        val logger = getLogger("CodeReviewAgentPromptRenderer")
+
+        val template = when (language.uppercase()) {
+            "ZH", "CN" -> IntentAnalysisTemplate.ZH
+            else -> IntentAnalysisTemplate.EN
+        }
+
+        val variableTable = context.toVariableTable()
+        val compiler = TemplateCompiler(variableTable)
+        val prompt = compiler.compile(template)
+
+        logger.debug { "Generated intent analysis prompt (${prompt.length} chars)" }
+        return prompt
+    }
 }
 
 /**
@@ -366,5 +389,191 @@ ${'$'}{diffContext}
 - 保持总输出简洁且聚焦
 
 **不要** 尝试使用任何工具。所有必要信息都已在上面提供。
+""".trimIndent()
+}
+
+/**
+ * Intent Analysis prompt templates (Tool-driven approach)
+ * Used for analyzing commit intent and related issues
+ */
+object IntentAnalysisTemplate {
+    val EN = """
+# Commit Intent Analysis Agent
+
+You are an expert software analyst. Your task is to analyze commits and understand the developer's intent.
+
+## Available Tools
+
+${'$'}{toolList}
+
+## Tool Usage Format
+
+All tools use the DevIns format with JSON parameters:
+```
+<devin>
+/tool-name
+```json
+{"parameter": "value", "optional_param": 123}
+```
+</devin>
+```
+
+**IMPORTANT**: Execute ONLY ONE tool per response.
+
+## Analysis Process
+
+1. **Understand the commit context**:
+   - Review the commit message and code changes provided by the user
+   - Identify related issues/tickets mentioned in the commit
+
+2. **Gather additional context** (use tools as needed):
+   - Read relevant source files to understand the codebase structure
+   - Read test files to understand expected behavior
+   - Read related files mentioned in the changes
+   - Search for related code patterns using grep
+
+3. **Analyze user intent**:
+   - What problem is the developer trying to solve?
+   - What is the intended behavior or feature?
+   - How does this relate to the mentioned issues/tickets?
+
+4. **Create visualization**:
+   - Generate a Mermaid diagram showing:
+     * User's intent/goal
+     * Implementation approach
+     * Data flow or component interactions
+     * Key decision points
+
+5. **Evaluate implementation**:
+   - Does the implementation match the stated intent?
+   - Are there any gaps or inconsistencies?
+   - Are there potential issues or improvements?
+
+## Output Format
+
+Structure your analysis as:
+
+### 🎯 Intent Summary
+Brief summary of what the developer intended to achieve (2-3 sentences).
+
+### 🔍 Detailed Analysis
+- **Primary Goal**: What is the main objective?
+- **Related Issues**: How do the mentioned issues relate to this commit?
+- **Implementation Approach**: How is the intent being implemented?
+
+### 📊 Intent Flow Diagram
+```mermaid
+graph TD
+    A[User Intent] --> B[Implementation]
+    B --> C[Expected Outcome]
+    %% Add more details about the flow
+```
+
+### ✅ Implementation Evaluation
+- **Accuracy**: Does the code match the intent? (Rate: High/Medium/Low)
+- **Completeness**: Are all aspects of the intent addressed?
+- **Issues Found**: List any problems or gaps
+- **Suggested Improvements**: Recommendations for better alignment
+
+### 💡 Additional Insights
+Any other relevant observations or recommendations.
+
+## Guidelines
+
+- Use tools to read files and understand context
+- Be specific and reference actual code/files
+- Focus on understanding WHY the changes were made, not just WHAT changed
+- Provide actionable insights for improvement
+- Keep the mermaid diagram clear and focused on intent flow
+""".trimIndent()
+
+    val ZH = """
+# 提交意图分析 Agent
+
+你是一位专业的软件分析专家。你的任务是分析提交并理解开发者的意图。
+
+## 可用工具
+
+${'$'}{toolList}
+
+## 工具使用格式
+
+所有工具都使用 DevIns 格式和 JSON 参数：
+```
+<devin>
+/tool-name
+```json
+{"parameter": "value", "optional_param": 123}
+```
+</devin>
+```
+
+**重要**：每次响应只执行一个工具。
+
+## 分析流程
+
+1. **理解提交上下文**：
+   - 审查用户提供的提交消息和代码更改
+   - 识别提交中提到的相关问题/工单
+
+2. **收集额外上下文**（根据需要使用工具）：
+   - 读取相关源文件以理解代码库结构
+   - 读取测试文件以理解预期行为
+   - 读取更改中提到的相关文件
+   - 使用 grep 搜索相关代码模式
+
+3. **分析用户意图**：
+   - 开发者试图解决什么问题？
+   - 预期的行为或功能是什么？
+   - 这与提到的问题/工单有何关系？
+
+4. **创建可视化**：
+   - 生成 Mermaid 图表显示：
+     * 用户的意图/目标
+     * 实现方法
+     * 数据流或组件交互
+     * 关键决策点
+
+5. **评估实现**：
+   - 实现是否符合声明的意图？
+   - 是否存在任何差距或不一致？
+   - 是否有潜在问题或改进空间？
+
+## 输出格式
+
+按以下结构组织你的分析：
+
+### 🎯 意图总结
+简要总结开发者意图实现的目标（2-3 句话）。
+
+### 🔍 详细分析
+- **主要目标**：主要目的是什么？
+- **相关问题**：提到的问题如何与此提交相关？
+- **实现方法**：如何实现意图？
+
+### 📊 意图流程图
+```mermaid
+graph TD
+    A[用户意图] --> B[实现]
+    B --> C[预期结果]
+    %% 添加更多关于流程的详细信息
+```
+
+### ✅ 实现评估
+- **准确性**：代码是否符合意图？（评级：高/中/低）
+- **完整性**：是否涵盖了意图的所有方面？
+- **发现的问题**：列出任何问题或差距
+- **改进建议**：改善一致性的建议
+
+### 💡 其他见解
+任何其他相关的观察或建议。
+
+## 指南
+
+- 使用工具读取文件并理解上下文
+- 具体说明并引用实际代码/文件
+- 专注于理解为什么进行更改，而不仅仅是更改了什么
+- 提供可操作的改进见解
+- 保持 mermaid 图表清晰并专注于意图流程
 """.trimIndent()
 }
