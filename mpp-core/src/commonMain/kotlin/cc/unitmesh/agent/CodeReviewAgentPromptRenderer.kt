@@ -1,13 +1,24 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.logging.getLogger
+import cc.unitmesh.devins.compiler.template.TemplateCompiler
 
 /**
  * Renders system prompts for the code review agent using templates and context
+ * 
+ * This class implements the unified AgentPromptRenderer interface and uses
+ * TemplateCompiler for consistent template processing across all agents
  */
-class CodeReviewAgentPromptRenderer {
+class CodeReviewAgentPromptRenderer : AgentPromptRenderer<CodeReviewContext> {
 
-    fun render(context: CodeReviewContext, language: String = "EN"): String {
+    /**
+     * Render system prompt from context
+     *
+     * @param context The code review context
+     * @param language Language for the prompt (EN or ZH)
+     * @return The rendered system prompt
+     */
+    override fun render(context: CodeReviewContext, language: String): String {
         val logger = getLogger("CodeReviewAgentPromptRenderer")
 
         val template = when (language.uppercase()) {
@@ -15,15 +26,9 @@ class CodeReviewAgentPromptRenderer {
             else -> CodeReviewAgentTemplate.EN
         }
 
-        val linterInfo = formatLinterInfo(context.linterSummary)
-
-        val prompt = template
-            .replace("{{projectPath}}", context.projectPath)
-            .replace("{{reviewType}}", context.reviewType.name)
-            .replace("{{filePaths}}", context.filePaths.joinToString(", "))
-            .replace("{{toolList}}", context.toolList)
-            .replace("{{additionalContext}}", context.additionalContext)
-            .replace("{{linterInfo}}", linterInfo)
+        val variableTable = context.toVariableTable()
+        val compiler = TemplateCompiler(variableTable)
+        val prompt = compiler.compile(template)
 
         logger.debug { "Generated code review prompt (${prompt.length} chars)" }
         logger.info { "System Prompt: $prompt" }
@@ -67,56 +72,20 @@ $result
             }
         }
 
-        val prompt = template
-            .replace("{{reviewType}}", reviewType)
-            .replace("{{fileCount}}", filePaths.size.toString())
-            .replace("{{filePaths}}", filePaths.joinToString("\n- ", prefix = "- "))
-            .replace("{{codeContent}}", formattedFiles)
-            .replace("{{lintResults}}", formattedLintResults)
-            .replace("{{diffContext}}", if (diffContext.isNotBlank()) "\n\n### Diff Context\n$diffContext" else "")
+        // Create variable table for template compilation
+        val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
+        variableTable.addVariable("reviewType", cc.unitmesh.devins.compiler.variable.VariableType.STRING, reviewType)
+        variableTable.addVariable("fileCount", cc.unitmesh.devins.compiler.variable.VariableType.STRING, filePaths.size.toString())
+        variableTable.addVariable("filePaths", cc.unitmesh.devins.compiler.variable.VariableType.STRING, filePaths.joinToString("\n- ", prefix = "- "))
+        variableTable.addVariable("codeContent", cc.unitmesh.devins.compiler.variable.VariableType.STRING, formattedFiles)
+        variableTable.addVariable("lintResults", cc.unitmesh.devins.compiler.variable.VariableType.STRING, formattedLintResults)
+        variableTable.addVariable("diffContext", cc.unitmesh.devins.compiler.variable.VariableType.STRING, if (diffContext.isNotBlank()) "\n\n### Diff Context\n$diffContext" else "")
+
+        val compiler = TemplateCompiler(variableTable)
+        val prompt = compiler.compile(template)
 
         logger.debug { "Generated analysis prompt (${prompt.length} chars)" }
         return prompt
-    }
-
-    private fun formatLinterInfo(summary: cc.unitmesh.agent.linter.LinterSummary?): String {
-        if (summary == null) {
-            return "No linter information available."
-        }
-
-        return buildString {
-            appendLine("### Available Linters")
-            appendLine()
-
-            if (summary.availableLinters.isNotEmpty()) {
-                appendLine("**Installed and Ready (${summary.availableLinters.size}):**")
-                summary.availableLinters.forEach { linter ->
-                    appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
-                    if (linter.supportedFiles.isNotEmpty()) {
-                        appendLine("  - Files: ${linter.supportedFiles.joinToString(", ")}")
-                    }
-                }
-                appendLine()
-            }
-
-            if (summary.unavailableLinters.isNotEmpty()) {
-                appendLine("**Not Installed (${summary.unavailableLinters.size}):**")
-                summary.unavailableLinters.forEach { linter ->
-                    appendLine("- **${linter.name}**")
-                    linter.installationInstructions?.let {
-                        appendLine("  - Install: $it")
-                    }
-                }
-                appendLine()
-            }
-
-            if (summary.fileMapping.isNotEmpty()) {
-                appendLine("### File-Linter Mapping")
-                summary.fileMapping.forEach { (file, linters) ->
-                    appendLine("- `$file` → ${linters.joinToString(", ")}")
-                }
-            }
-        }
     }
 }
 
@@ -132,20 +101,20 @@ You are an expert code reviewer. Analyze code and provide constructive, actionab
 
 ## Review Context
 
-- **Project Path**: {{projectPath}}
-- **Review Type**: {{reviewType}}
-- **Files to Review**: {{filePaths}}
-- **Additional Context**: {{additionalContext}}
+- **Project Path**: ${'$'}{projectPath}
+- **Review Type**: ${'$'}{reviewType}
+- **Files to Review**: ${'$'}{filePaths}
+- **Additional Context**: ${'$'}{additionalContext}
 
 ## Linter Information
 
-{{linterInfo}}
+${'$'}{linterInfo}
 
 **Use available linters to check code quality automatically.** If linters are available, run them first to get automated feedback, then provide additional insights beyond what linters can detect.
 
 ## Available Tools
 
-{{toolList}}
+${'$'}{toolList}
 
 ## Tool Usage Format
 
@@ -196,20 +165,20 @@ Be specific and actionable.
 
 ## 审查上下文
 
-- **项目路径**: {{projectPath}}
-- **审查类型**: {{reviewType}}
-- **待审查文件**: {{filePaths}}
-- **额外上下文**: {{additionalContext}}
+- **项目路径**: ${'$'}{projectPath}
+- **审查类型**: ${'$'}{reviewType}
+- **待审查文件**: ${'$'}{filePaths}
+- **额外上下文**: ${'$'}{additionalContext}
 
 ## Linter 信息
 
-{{linterInfo}}
+${'$'}{linterInfo}
 
 **优先使用可用的 linters 自动检查代码质量。** 如果有可用的 linters，先运行它们获取自动化反馈，然后提供 linters 无法检测到的额外见解。
 
 ## 可用工具
 
-{{toolList}}
+${'$'}{toolList}
 
 ## 工具使用格式
 
@@ -266,19 +235,19 @@ You are an expert code reviewer. Analyze the provided code and linter results to
 
 ## Task
 
-Review Type: **{{reviewType}}**
-Files to Review: **{{fileCount}}** files
+Review Type: **${'$'}{reviewType}**
+Files to Review: **${'$'}{fileCount}** files
 
-{{filePaths}}
+${'$'}{filePaths}
 
 ## Code Content
 
-{{codeContent}}
+${'$'}{codeContent}
 
 ## Linter Results
 
-{{lintResults}}
-{{diffContext}}
+${'$'}{lintResults}
+${'$'}{diffContext}
 
 ## Your Task
 
@@ -342,19 +311,19 @@ For each issue, use this format:
 
 ## 任务
 
-审查类型：**{{reviewType}}**
-待审查文件：**{{fileCount}}** 个文件
+审查类型：**${'$'}{reviewType}**
+待审查文件：**${'$'}{fileCount}** 个文件
 
-{{filePaths}}
+${'$'}{filePaths}
 
 ## 代码内容
 
-{{codeContent}}
+${'$'}{codeContent}
 
 ## Linter 结果
 
-{{lintResults}}
-{{diffContext}}
+${'$'}{lintResults}
+${'$'}{diffContext}
 
 ## 你的任务
 

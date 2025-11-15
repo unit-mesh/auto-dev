@@ -235,7 +235,139 @@ data class CodeReviewContext(
     val additionalContext: String,
     val toolList: String,
     val linterSummary: cc.unitmesh.agent.linter.LinterSummary? = null
-)
+) : AgentContext {
+    
+    /**
+     * Convert context to variable table for template compilation
+     */
+    override fun toVariableTable(): cc.unitmesh.devins.compiler.variable.VariableTable {
+        val table = cc.unitmesh.devins.compiler.variable.VariableTable()
+        
+        table.addVariable(
+            "projectPath",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            projectPath
+        )
+        table.addVariable(
+            "reviewType",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            reviewType.name
+        )
+        table.addVariable(
+            "filePaths",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            filePaths.joinToString(", ")
+        )
+        table.addVariable(
+            "toolList",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            toolList
+        )
+        table.addVariable(
+            "additionalContext",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            additionalContext
+        )
+        table.addVariable(
+            "linterInfo",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            formatLinterInfo()
+        )
+        
+        return table
+    }
+    
+    /**
+     * Format linter information for display in prompts
+     */
+    private fun formatLinterInfo(): String {
+        if (linterSummary == null) {
+            return "No linter information available."
+        }
+
+        return buildString {
+            appendLine("### Available Linters")
+            appendLine()
+
+            if (linterSummary.availableLinters.isNotEmpty()) {
+                appendLine("**Installed and Ready (${linterSummary.availableLinters.size}):**")
+                linterSummary.availableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
+                    if (linter.supportedFiles.isNotEmpty()) {
+                        appendLine("  - Files: ${linter.supportedFiles.joinToString(", ")}")
+                    }
+                }
+                appendLine()
+            }
+
+            if (linterSummary.unavailableLinters.isNotEmpty()) {
+                appendLine("**Not Installed (${linterSummary.unavailableLinters.size}):**")
+                linterSummary.unavailableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}**")
+                    linter.installationInstructions?.let {
+                        appendLine("  - Install: $it")
+                    }
+                }
+                appendLine()
+            }
+
+            if (linterSummary.fileMapping.isNotEmpty()) {
+                appendLine("### File-Linter Mapping")
+                linterSummary.fileMapping.forEach { (file, linters) ->
+                    appendLine("- `$file` → ${linters.joinToString(", ")}")
+                }
+            }
+        }
+    }
+    
+    companion object {
+        /**
+         * Create CodeReviewContext from ReviewTask
+         * 
+         * @param task The review task
+         * @param toolList List of available tools
+         * @param linterSummary Optional linter summary
+         * @return CodeReviewContext with formatted tool list
+         */
+        fun fromTask(
+            task: ReviewTask,
+            toolList: List<cc.unitmesh.agent.tool.ExecutableTool<*, *>>,
+            linterSummary: cc.unitmesh.agent.linter.LinterSummary? = null
+        ): CodeReviewContext {
+            return CodeReviewContext(
+                projectPath = task.projectPath,
+                filePaths = task.filePaths,
+                reviewType = task.reviewType,
+                additionalContext = task.additionalContext,
+                toolList = AgentToolFormatter.formatToolListForAI(toolList),
+                linterSummary = linterSummary
+            )
+        }
+        
+        /**
+         * Create CodeReviewContext with simple tool list formatting
+         * 
+         * @param task The review task
+         * @param toolList List of available tools
+         * @param linterSummary Optional linter summary
+         * @return CodeReviewContext with simple tool list
+         */
+        fun fromTaskSimple(
+            task: ReviewTask,
+            toolList: List<cc.unitmesh.agent.tool.ExecutableTool<*, *>>,
+            linterSummary: cc.unitmesh.agent.linter.LinterSummary? = null
+        ): CodeReviewContext {
+            return CodeReviewContext(
+                projectPath = task.projectPath,
+                filePaths = task.filePaths,
+                reviewType = task.reviewType,
+                additionalContext = task.additionalContext,
+                toolList = AgentToolFormatter.formatToolListSimple(toolList),
+                linterSummary = linterSummary
+            )
+        }
+    }
+}
 
 /**
  * Result of code review

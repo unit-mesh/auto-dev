@@ -2,6 +2,7 @@
 
 package cc.unitmesh.llm
 
+import cc.unitmesh.agent.AgentToolFormatter
 import cc.unitmesh.agent.CodingAgentContext
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
@@ -743,12 +744,12 @@ class JsToolRegistry(projectPath: String) {
     }
 
     /**
-     * Format tool list for AI consumption (similar to CodingAgentContext.formatToolListForAI)
+     * Format tool list for AI consumption (uses AgentToolFormatter)
      */
     @JsName("formatToolListForAI")
     fun formatToolListForAI(): String {
         val tools = registry.getAllTools().values.toList()
-        return CodingAgentContext.formatToolListForAI(tools)
+        return AgentToolFormatter.formatToolListForAI(tools)
     }
 }
 

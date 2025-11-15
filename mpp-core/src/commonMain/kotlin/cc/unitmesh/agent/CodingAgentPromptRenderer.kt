@@ -6,10 +6,10 @@ import cc.unitmesh.devins.compiler.template.TemplateCompiler
 /**
  * Renders system prompts for the coding agent using templates and context
  * 
- * This class bridges CodingAgentContext with the template system,
- * similar to how SketchRunContext is used with sketch.vm in the JetBrains plugin
+ * This class implements the unified AgentPromptRenderer interface and uses
+ * TemplateCompiler for consistent template processing across all agents
  */
-class CodingAgentPromptRenderer {
+class CodingAgentPromptRenderer : AgentPromptRenderer<CodingAgentContext> {
 
     /**
      * Render system prompt from context
@@ -18,7 +18,7 @@ class CodingAgentPromptRenderer {
      * @param language Language for the prompt (EN or ZH)
      * @return The rendered system prompt
      */
-    fun render(context: CodingAgentContext, language: String = "EN"): String {
+    override fun render(context: CodingAgentContext, language: String): String {
         val logger = getLogger("CodingAgentPromptRenderer")
 
         val template = when (language.uppercase()) {
