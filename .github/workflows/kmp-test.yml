@@ -107,8 +107,8 @@ jobs:
       - name: Install linters
         run: |
           brew install detekt pmd golangci-lint dotenv-linter hadolint actionlint
-          pip3 install sqlfluff checkov yamllint
-          npm install -g markdownlint-cli
+          pip3 install sqlfluff checkov yamllint pylint
+          npm install -g markdownlint-cli eslint
 
       # Validate wrapper
       - name: Gradle Wrapper Validation
