@@ -321,8 +321,7 @@ class CodeReviewAgentExecutor(
             ?.lastOrNull { it.role == cc.unitmesh.devins.llm.MessageRole.ASSISTANT }
             ?.content ?: "No review generated"
 
-        // Parse findings from the final response
-        val parsedFindings = parseFindings(finalResponse)
+        val parsedFindings = ReviewFinding.parseFindings(finalResponse)
         findings.addAll(parsedFindings)
 
         return CodeReviewResult(
@@ -330,38 +329,5 @@ class CodeReviewAgentExecutor(
             message = finalResponse,
             findings = findings.toList()
         )
-    }
-
-    private fun parseFindings(response: String): List<ReviewFinding> {
-        // Simple parsing logic - can be enhanced
-        val findings = mutableListOf<ReviewFinding>()
-
-        // Look for common patterns indicating severity
-        val lines = response.lines()
-        var currentSeverity = Severity.INFO
-
-        for (line in lines) {
-            when {
-                line.contains("CRITICAL", ignoreCase = true) -> currentSeverity = Severity.CRITICAL
-                line.contains("HIGH", ignoreCase = true) -> currentSeverity = Severity.HIGH
-                line.contains("MEDIUM", ignoreCase = true) -> currentSeverity = Severity.MEDIUM
-                line.contains("LOW", ignoreCase = true) -> currentSeverity = Severity.LOW
-                line.startsWith("-") || line.startsWith("*") -> {
-                    // Extract finding from bullet point
-                    val description = line.trimStart('-', '*', ' ')
-                    if (description.length > 10) {
-                        findings.add(
-                            ReviewFinding(
-                                severity = currentSeverity,
-                                category = "General",
-                                description = description
-                            )
-                        )
-                    }
-                }
-            }
-        }
-
-        return findings
     }
 }

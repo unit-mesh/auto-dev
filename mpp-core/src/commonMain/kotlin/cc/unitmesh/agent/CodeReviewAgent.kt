@@ -204,35 +204,6 @@ class CodeReviewAgent(
         )
     }
 
-    private fun parseFindings(content: String): List<ReviewFinding> {
-        val findings = mutableListOf<ReviewFinding>()
-        val lines = content.lines()
-        var currentSeverity = Severity.INFO
-
-        for (line in lines) {
-            when {
-                line.contains("CRITICAL", ignoreCase = true) -> currentSeverity = Severity.CRITICAL
-                line.contains("HIGH", ignoreCase = true) -> currentSeverity = Severity.HIGH
-                line.contains("MEDIUM", ignoreCase = true) -> currentSeverity = Severity.MEDIUM
-                line.contains("LOW", ignoreCase = true) -> currentSeverity = Severity.LOW
-                line.startsWith("-") || line.startsWith("*") || line.startsWith("####") -> {
-                    val description = line.trimStart('-', '*', '#', ' ')
-                    if (description.length > 10) {
-                        findings.add(
-                            ReviewFinding(
-                                severity = currentSeverity,
-                                category = "General",
-                                description = description
-                            )
-                        )
-                    }
-                }
-            }
-        }
-
-        return findings
-    }
-
     suspend fun analyze(
         task: AnalysisTask,
         language: String = "ZH",
@@ -250,8 +221,6 @@ class CodeReviewAgent(
         logger.info { "Using unified analysis approach" }
 
         initializeWorkspace(task.projectPath)
-
-        // Fetch issue info if analyzing intent
         val issueInfo = if (task.analyzeIntent && task.commitMessage.isNotBlank()) {
             val issueRefs = parseIssueReferences(task.commitMessage)
             if (issueRefs.isNotEmpty()) {
@@ -263,7 +232,6 @@ class CodeReviewAgent(
             emptyMap()
         }
 
-        // Get linter summary for the files
         val linterSummary = if (task.filePaths.isNotEmpty()) {
             try {
                 val linterRegistry = cc.unitmesh.agent.linter.LinterRegistry.getInstance()
@@ -292,7 +260,6 @@ class CodeReviewAgent(
                 val message = if (currentIteration == 1) initialMessage else buildContinuationMessage()
                 conversationManager.sendMessage(message, compileDevIns = false).collect { chunk: String ->
                     llmResponse.append(chunk)
-                    // Use onProgress callback (CLI provides its own output handling)
                     onProgress(chunk)
                 }
                 
@@ -303,7 +270,6 @@ class CodeReviewAgent(
                 break
             }
             
-            // Parse and execute tool calls
             val toolCallParser = cc.unitmesh.agent.parser.ToolCallParser()
             val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
             
@@ -747,7 +713,38 @@ data class ReviewFinding(
     val filePath: String? = null,
     val lineNumber: Int? = null,
     val suggestion: String? = null
-)
+) {
+    companion object {
+        fun parseFindings(content: String): List<ReviewFinding> {
+            val findings = mutableListOf<ReviewFinding>()
+            val lines = content.lines()
+            var currentSeverity = Severity.INFO
+
+            for (line in lines) {
+                when {
+                    line.contains("CRITICAL", ignoreCase = true) -> currentSeverity = Severity.CRITICAL
+                    line.contains("HIGH", ignoreCase = true) -> currentSeverity = Severity.HIGH
+                    line.contains("MEDIUM", ignoreCase = true) -> currentSeverity = Severity.MEDIUM
+                    line.contains("LOW", ignoreCase = true) -> currentSeverity = Severity.LOW
+                    line.startsWith("-") || line.startsWith("*") || line.startsWith("####") -> {
+                        val description = line.trimStart('-', '*', '#', ' ')
+                        if (description.length > 10) {
+                            findings.add(
+                                ReviewFinding(
+                                    severity = currentSeverity,
+                                    category = "General",
+                                    description = description
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            return findings
+        }
+    }
+}
 
 enum class Severity {
     CRITICAL, HIGH, MEDIUM, LOW, INFO
