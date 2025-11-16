@@ -14,7 +14,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.devins.ui.compose.AutoDevApp
-import cc.unitmesh.devins.ui.compose.agent.AgentType
+import cc.unitmesh.devins.ui.compose.state.rememberDesktopUiState
 import cc.unitmesh.devins.ui.desktop.AutoDevMenuBar
 import cc.unitmesh.devins.ui.desktop.AutoDevTray
 import cc.unitmesh.devins.ui.desktop.DesktopWindowLayout
@@ -31,9 +31,9 @@ fun main(args: Array<String>) {
     application {
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
-        var currentAgentType by remember { mutableStateOf(AgentType.CODING) }
-        var isTreeViewVisible by remember { mutableStateOf(false) }
-        var workspacePath by remember { mutableStateOf("") }
+
+        // 使用 ViewModel 管理 UI 状态
+        val uiState = rememberDesktopUiState()
 
         val windowState =
             rememberWindowState(
@@ -68,25 +68,24 @@ fun main(args: Array<String>) {
                     onClose = { isWindowVisible = false },
                     titleBarContent = {
                         cc.unitmesh.devins.ui.compose.chat.DesktopTitleBarTabs(
-                            currentAgentType = currentAgentType,
+                            currentAgentType = uiState.currentAgentType,
                             onAgentTypeChange = { newType ->
-                                currentAgentType = newType
+                                uiState.updateAgentType(newType)
                                 AutoDevLogger.info("AutoDevMain") { "🔄 Switch Agent Type: $newType" }
                             },
-                            workspacePath = workspacePath,
-                            isTreeViewVisible = isTreeViewVisible,
+                            isTreeViewVisible = uiState.isTreeViewVisible,
+                            showSessionSidebar = uiState.showSessionSidebar,
+                            selectedAgent = uiState.selectedAgent,
+                            onToggleSidebar = {
+                                uiState.toggleSessionSidebar()
+                                AutoDevLogger.info("AutoDevMain") { "🗂️ Toggle Sidebar: ${uiState.showSessionSidebar}" }
+                            },
                             onToggleTreeView = {
-                                isTreeViewVisible = !isTreeViewVisible
-                                AutoDevLogger.info("AutoDevMain") { "🗂️ Toggle Explorer: $isTreeViewVisible" }
+                                uiState.toggleTreeView()
                             },
-                            onShowModelConfig = {
-                                AutoDevLogger.info("AutoDevMain") { "⚙️ Show Model Config" }
-                            },
-                            onShowToolConfig = {
-                                AutoDevLogger.info("AutoDevMain") { "🔧 Show Tool Config" }
-                            },
-                            onOpenSettings = {
-                                AutoDevLogger.info("AutoDevMain") { "⚙️ Open Settings" }
+                            onConfigureRemote = {
+                                uiState.showRemoteConfigDialog = true
+                                AutoDevLogger.info("AutoDevMain") { "☁️ Configure Remote" }
                             }
                         )
                     }
@@ -105,7 +104,26 @@ fun main(args: Array<String>) {
                             onFileChooserHandled = { triggerFileChooser = false },
                             initialMode = mode,
                             showTopBarInContent = false, // Desktop 不在内容区域显示 TopBar
-                            initialAgentType = currentAgentType // 传递当前选中的 AgentType
+                            initialAgentType = uiState.currentAgentType, // 传递当前选中的 AgentType
+                            onAgentTypeChanged = { type ->
+                                uiState.updateAgentType(type)
+                            },
+                            onTreeViewVisibilityChanged = { visible ->
+                                if (visible != uiState.isTreeViewVisible) {
+                                    uiState.isTreeViewVisible = visible
+                                }
+                            },
+                            onSidebarVisibilityChanged = { visible ->
+                                if (visible != uiState.showSessionSidebar) {
+                                    uiState.showSessionSidebar = visible
+                                }
+                            },
+                            onWorkspacePathChanged = { path ->
+                                uiState.updateWorkspacePath(path)
+                            },
+                            onHasHistoryChanged = { hasHistory ->
+                                // TitleBar 可以根据这个状态显示/隐藏某些按钮
+                            }
                         )
                     }
                 }

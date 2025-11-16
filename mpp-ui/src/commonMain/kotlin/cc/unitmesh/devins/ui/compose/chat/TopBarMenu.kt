@@ -63,8 +63,9 @@ fun TopBarMenu(
             onShowToolConfig = onShowToolConfig,
             modifier = modifier
         )
-    } else {
-        // Desktop (JVM): 使用 Window Tab 风格
+    } else if (!Platform.isJvm) {
+        // WASM: 使用 Window Tab 风格
+        // JVM 平台不显示 TopBarMenu，因为已在窗口标题栏中显示
         TopBarMenuDesktop(
             hasHistory = hasHistory,
             hasDebugInfo = hasDebugInfo,

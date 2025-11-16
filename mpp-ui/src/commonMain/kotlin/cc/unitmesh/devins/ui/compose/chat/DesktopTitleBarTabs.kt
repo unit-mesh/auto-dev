@@ -1,6 +1,5 @@
 package cc.unitmesh.devins.ui.compose.chat
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -8,7 +7,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
@@ -18,21 +16,23 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
  *
  * 布局：
  * - 左侧：Agent Type 菜单（未选中=背景色，选中=圆角突出）
- * - 中间：地址栏（显示工作空间路径）
- * - 右侧：Project Explorer + 其他选项
+ * - 中间：（保留用于将来扩展）
+ * - 右侧：Sidebar Toggle + Project Explorer + Settings + Tools
  */
 @Composable
 fun DesktopTitleBarTabs(
     currentAgentType: AgentType,
     onAgentTypeChange: (AgentType) -> Unit,
-    workspacePath: String = "",
     isTreeViewVisible: Boolean = false,
+    showSessionSidebar: Boolean = true,
+    selectedAgent: String = "Default",
+    onToggleSidebar: () -> Unit = {},
     onToggleTreeView: () -> Unit = {},
-    onShowModelConfig: () -> Unit = {},
-    onShowToolConfig: () -> Unit = {},
-    onOpenSettings: () -> Unit = {},
+    onConfigureRemote: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var agentMenuExpanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -42,10 +42,28 @@ fun DesktopTitleBarTabs(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier.weight(0.3f),
+            modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Sidebar Toggle Button
+            IconButton(
+                onClick = onToggleSidebar,
+                modifier = Modifier.size(28.dp)
+            ) {
+                Icon(
+                    imageVector = if (showSessionSidebar) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                    contentDescription = if (showSessionSidebar) "Hide Sidebar" else "Show Sidebar",
+                    modifier = Modifier.size(16.dp),
+                    tint = if (showSessionSidebar) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
+
+            // Agent Type Tabs
             AgentType.entries.forEach { type ->
                 AgentTypeMenuItem(
                     type = type,
@@ -55,43 +73,26 @@ fun DesktopTitleBarTabs(
             }
         }
 
-//        Surface(
-//            modifier = Modifier
-//                .weight(0.3f)
-//                .height(28.dp)
-//                .padding(horizontal = 8.dp),
-//            shape = RoundedCornerShape(6.dp),
-//            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-//        ) {
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(horizontal = 8.dp),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.spacedBy(6.dp)
-//            ) {
-//                Icon(
-//                    imageVector = AutoDevComposeIcons.Folder,
-//                    contentDescription = null,
-//                    modifier = Modifier.size(14.dp),
-//                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-//                )
-//                Text(
-//                    text = workspacePath.ifEmpty { "No workspace" },
-//                    style = MaterialTheme.typography.labelSmall,
-//                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-//                    maxLines = 1,
-//                    overflow = TextOverflow.Ellipsis,
-//                    modifier = Modifier.weight(1f)
-//                )
-//            }
-//        }
-
+        // Right: Action Buttons
         Row(
-            modifier = Modifier.weight(0.3f, fill = false),
-            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Remote Config (only for REMOTE agent)
+            if (currentAgentType == AgentType.REMOTE) {
+                IconButton(
+                    onClick = onConfigureRemote,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Settings,
+                        contentDescription = "Configure Remote Server",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
             IconButton(
                 onClick = onToggleTreeView,
                 modifier = Modifier.size(28.dp)
@@ -102,45 +103,8 @@ fun DesktopTitleBarTabs(
                     tint = if (isTreeViewVisible) {
                         MaterialTheme.colorScheme.primary
                     } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                        MaterialTheme.colorScheme.onSurface
                     },
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            IconButton(
-                onClick = onShowModelConfig,
-                modifier = Modifier.size(28.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Settings,
-                    contentDescription = "Model Configuration",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            IconButton(
-                onClick = onShowToolConfig,
-                modifier = Modifier.size(28.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Build,
-                    contentDescription = "Tool Configuration",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            // More Options
-            IconButton(
-                onClick = onOpenSettings,
-                modifier = Modifier.size(28.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.MoreVert,
-                    contentDescription = "More Options",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp)
                 )
             }

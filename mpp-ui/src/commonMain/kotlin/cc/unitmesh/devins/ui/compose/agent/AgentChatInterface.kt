@@ -234,9 +234,7 @@ fun AgentChatInterface(
             }
         )
     } else {
-        // TreeView 未打开时的布局
         Column(modifier = modifier.fillMaxSize()) {
-            // TopBar（WASM 平台可能隐藏）
             if (showTopBar) {
                 cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
                     hasHistory = hasHistory,

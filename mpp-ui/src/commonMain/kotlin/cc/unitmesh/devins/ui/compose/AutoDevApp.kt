@@ -13,6 +13,8 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
+import cc.unitmesh.devins.ui.app.UnifiedAppContent
+import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
 import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.devins.ui.compose.chat.MessageList
 import cc.unitmesh.devins.ui.compose.chat.SessionSidebar
@@ -24,13 +26,10 @@ import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.i18n.Strings
 import cc.unitmesh.devins.ui.platform.createFileChooser
-import cc.unitmesh.devins.ui.remote.RemoteAgentChatInterface
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.launch
-import cc.unitmesh.devins.ui.app.UnifiedAppContent
-import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +38,12 @@ fun AutoDevApp(
     onFileChooserHandled: () -> Unit = {},
     initialMode: String = "auto",
     showTopBarInContent: Boolean = true,
-    initialAgentType: AgentType = AgentType.CODING
+    initialAgentType: AgentType = AgentType.CODING,
+    onAgentTypeChanged: (AgentType) -> Unit = {},
+    onTreeViewVisibilityChanged: (Boolean) -> Unit = {},
+    onSidebarVisibilityChanged: (Boolean) -> Unit = {},
+    onWorkspacePathChanged: (String) -> Unit = {},
+    onHasHistoryChanged: (Boolean) -> Unit = {}
 ) {
     val currentTheme = ThemeManager.currentTheme
 
@@ -49,7 +53,12 @@ fun AutoDevApp(
             onFileChooserHandled = onFileChooserHandled,
             initialMode = initialMode,
             showTopBarInContent = showTopBarInContent,
-            initialAgentType = initialAgentType
+            initialAgentType = initialAgentType,
+            onAgentTypeChanged = onAgentTypeChanged,
+            onTreeViewVisibilityChanged = onTreeViewVisibilityChanged,
+            onSidebarVisibilityChanged = onSidebarVisibilityChanged,
+            onWorkspacePathChanged = onWorkspacePathChanged,
+            onHasHistoryChanged = onHasHistoryChanged
         )
     }
 }
@@ -61,7 +70,12 @@ private fun AutoDevContent(
     onFileChooserHandled: () -> Unit = {},
     initialMode: String = "auto",
     showTopBarInContent: Boolean = true,
-    initialAgentType: AgentType = AgentType.CODING
+    initialAgentType: AgentType = AgentType.CODING,
+    onAgentTypeChanged: (AgentType) -> Unit = {},
+    onTreeViewVisibilityChanged: (Boolean) -> Unit = {},
+    onSidebarVisibilityChanged: (Boolean) -> Unit = {},
+    onWorkspacePathChanged: (String) -> Unit = {},
+    onHasHistoryChanged: (Boolean) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
@@ -133,6 +147,7 @@ private fun AutoDevContent(
         }
 
         selectedAgentType = type
+        onAgentTypeChanged(type)
         scope.launch {
             try {
                 // Save as string for config compatibility
@@ -151,7 +166,22 @@ private fun AutoDevContent(
     LaunchedEffect(workspaceState) {
         workspaceState?.let { workspace ->
             currentWorkspace = workspace
+            workspace.rootPath?.let { path ->
+                onWorkspacePathChanged(path)
+            }
         }
+    }
+
+    LaunchedEffect(isTreeViewVisible) {
+        onTreeViewVisibilityChanged(isTreeViewVisible)
+    }
+
+    LaunchedEffect(showSessionSidebar) {
+        onSidebarVisibilityChanged(showSessionSidebar)
+    }
+
+    LaunchedEffect(messages.size) {
+        onHasHistoryChanged(messages.isNotEmpty())
     }
 
     LaunchedEffect(Unit) {
@@ -235,7 +265,6 @@ private fun AutoDevContent(
                 }
             }
 
-            // Load agent type from config or initial mode
             selectedAgentType = when (initialMode) {
                 "remote", "session" -> AgentType.REMOTE
                 "local" -> AgentType.LOCAL
