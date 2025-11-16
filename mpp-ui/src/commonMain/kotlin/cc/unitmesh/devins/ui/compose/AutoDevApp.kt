@@ -37,7 +37,9 @@ import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
 fun AutoDevApp(
     triggerFileChooser: Boolean = false,
     onFileChooserHandled: () -> Unit = {},
-    initialMode: String = "auto"
+    initialMode: String = "auto",
+    showTopBarInContent: Boolean = true, // 是否在内容区域显示 TopBar（Desktop 为 false）
+    initialAgentType: AgentType = AgentType.CODING // Desktop 专用：从 Main.kt 传递的 AgentType
 ) {
     val currentTheme = ThemeManager.currentTheme
 
@@ -45,7 +47,9 @@ fun AutoDevApp(
         AutoDevContent(
             triggerFileChooser = triggerFileChooser,
             onFileChooserHandled = onFileChooserHandled,
-            initialMode = initialMode
+            initialMode = initialMode,
+            showTopBarInContent = showTopBarInContent,
+            initialAgentType = initialAgentType
         )
     }
 }
@@ -55,7 +59,9 @@ fun AutoDevApp(
 private fun AutoDevContent(
     triggerFileChooser: Boolean = false,
     onFileChooserHandled: () -> Unit = {},
-    initialMode: String = "auto"
+    initialMode: String = "auto",
+    showTopBarInContent: Boolean = true,
+    initialAgentType: AgentType = AgentType.CODING
 ) {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
@@ -85,7 +91,16 @@ private fun AutoDevContent(
     var isTreeViewVisible by remember { mutableStateOf(false) } // TreeView visibility for agent mode
 
     // Unified Agent Type Selection (LOCAL, CODING, CODE_REVIEW, REMOTE)
-    var selectedAgentType by remember { mutableStateOf(AgentType.CODING) }
+    // Desktop: 由 Main.kt 管理，通过 initialAgentType 传递
+    // Mobile/Web: 在此组件内部管理
+    var selectedAgentType by remember { mutableStateOf(initialAgentType) }
+
+    // Desktop: 监听 initialAgentType 的变化（从 Main.kt 的标题栏点击事件触发）
+    LaunchedEffect(initialAgentType) {
+        if (!showTopBarInContent) { // 仅在 Desktop 模式下同步
+            selectedAgentType = initialAgentType
+        }
+    }
 
     // Remote Agent state
     var serverUrl by remember { mutableStateOf("http://localhost:8080") }
@@ -322,7 +337,7 @@ private fun AutoDevContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (showSessionSidebar && (Platform.isJvm || Platform.isWasm)) {
+            if (showSessionSidebar) {
                 SessionSidebar(
                     chatHistoryManager = chatHistoryManager,
                     currentSessionId = chatHistoryManager.getCurrentSession().id,
@@ -359,7 +374,12 @@ private fun AutoDevContent(
                     .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (!useAgentMode) {
+                // 根据平台决定是否在内容区域显示 TopBar
+                // Desktop: showTopBarInContent = false，TopBar 在窗口标题栏
+                // Mobile/Web: showTopBarInContent = true，TopBar 在内容区域
+                val shouldShowTopBar = !useAgentMode && showTopBarInContent
+
+                if (shouldShowTopBar) {
                     TopBarMenu(
                         hasHistory = messages.isNotEmpty(),
                         hasDebugInfo = compilerOutput.isNotEmpty(),

@@ -1,18 +1,23 @@
 package cc.unitmesh.devins.ui
 
-import androidx.compose.foundation.window.WindowDraggableArea
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.devins.ui.compose.AutoDevApp
+import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.devins.ui.desktop.AutoDevMenuBar
 import cc.unitmesh.devins.ui.desktop.AutoDevTray
+import cc.unitmesh.devins.ui.desktop.DesktopWindowLayout
 
 fun main(args: Array<String>) {
     AutoDevLogger.initialize()
@@ -26,6 +31,10 @@ fun main(args: Array<String>) {
     application {
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
+
+        // Desktop 专用：在 Main.kt 中管理 AgentType 状态
+        // TopBarMenuDesktop 和 AutoDevApp 共享这个状态
+        var currentAgentType by remember { mutableStateOf(AgentType.CODING) }
 
         val windowState =
             rememberWindowState(
@@ -44,22 +53,49 @@ fun main(args: Array<String>) {
                 onCloseRequest = { isWindowVisible = false }, // 关闭时隐藏到托盘
                 title = "AutoDev Desktop",
                 state = windowState,
-                undecorated = true
+                undecorated = true,  // 使用自定义标题栏
+                transparent = true   // 支持圆角和阴影
             ) {
-                AutoDevMenuBar(
-                    onOpenFile = {
-                        triggerFileChooser = true
-                        AutoDevLogger.info("AutoDevMain") { "Open File menu clicked" }
+                DesktopWindowLayout(
+                    title = "AutoDev",
+                    showWindowControls = true,
+                    onMinimize = { windowState.isMinimized = true },
+                    onMaximize = {
+                        windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
+                            WindowPlacement.Floating
+                        } else {
+                            WindowPlacement.Maximized
+                        }
                     },
-                    onExit = ::exitApplication
-                )
+                    onClose = { isWindowVisible = false },
+                    titleBarContent = {
+                        // Desktop 标题栏：只显示 Agent Type Tabs
+                        cc.unitmesh.devins.ui.compose.chat.DesktopTitleBarTabs(
+                            currentAgentType = currentAgentType,
+                            onAgentTypeChange = { newType ->
+                                currentAgentType = newType
+                                AutoDevLogger.info("AutoDevMain") { "🔄 Switch Agent Type: $newType" }
+                            }
+                        )
+                    }
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        AutoDevMenuBar(
+                            onOpenFile = {
+                                triggerFileChooser = true
+                                AutoDevLogger.info("AutoDevMain") { "Open File menu clicked" }
+                            },
+                            onExit = ::exitApplication
+                        )
 
-                WindowDraggableArea {
-                    AutoDevApp(
-                        triggerFileChooser = triggerFileChooser,
-                        onFileChooserHandled = { triggerFileChooser = false },
-                        initialMode = mode
-                    )
+                        AutoDevApp(
+                            triggerFileChooser = triggerFileChooser,
+                            onFileChooserHandled = { triggerFileChooser = false },
+                            initialMode = mode,
+                            showTopBarInContent = false, // Desktop 不在内容区域显示 TopBar
+                            initialAgentType = currentAgentType // 传递当前选中的 AgentType
+                        )
+                    }
                 }
             }
         }

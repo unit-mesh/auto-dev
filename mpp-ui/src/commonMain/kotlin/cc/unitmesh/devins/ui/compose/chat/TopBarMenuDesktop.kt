@@ -77,23 +77,12 @@ fun TopBarMenuDesktop(
                             modifier = Modifier.size(16.dp)
                         )
                     }
-
-                    // Agent Type Tabs (类似 Chrome Tab)
-                    cc.unitmesh.devins.ui.compose.agent.AgentType.entries.forEach { type ->
-                        AgentTypeTab(
-                            type = type,
-                            isSelected = type == currentAgentType,
-                            onClick = { onAgentTypeChange(type) }
-                        )
-                    }
                 }
 
-                // Right: Action Icons (compact, 24dp buttons)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Configure Remote (only for REMOTE agent type)
                     if (currentAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE) {
                         IconButton(
                             onClick = onConfigureRemote,
@@ -256,7 +245,7 @@ private fun AgentTypeTab(
     } else {
         MaterialTheme.colorScheme.surface
     }
-    
+
     val contentColor = if (isSelected) {
         MaterialTheme.colorScheme.onPrimaryContainer
     } else {
