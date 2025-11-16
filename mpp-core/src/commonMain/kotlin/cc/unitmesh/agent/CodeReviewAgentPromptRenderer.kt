@@ -1,5 +1,7 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.linter.LintFileResult
+import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.compiler.template.TemplateCompiler
 
@@ -116,9 +118,8 @@ $content
                         appendLine("Total Issues: $totalCount (${fileResult.errorCount} errors, ${fileResult.warningCount} warnings)")
                         appendLine()
 
-                        // Group by severity
-                        val critical = fileResult.issues.filter { it.severity == LintSeverityUI.ERROR }
-                        val warnings = fileResult.issues.filter { it.severity == LintSeverityUI.WARNING }
+                        val critical = fileResult.issues.filter { it.severity == LintSeverity.ERROR }
+                        val warnings = fileResult.issues.filter { it.severity == LintSeverity.WARNING }
 
                         if (critical.isNotEmpty()) {
                             appendLine("**Critical Issues:**")

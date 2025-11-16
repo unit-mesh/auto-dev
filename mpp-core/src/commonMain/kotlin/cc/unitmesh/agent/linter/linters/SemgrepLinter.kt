@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -70,7 +69,7 @@ class SemgrepLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecut
                             LintIssue(
                                 line = lineNum,
                                 column = 1, // Semgrep text output doesn't provide column
-                                severity = LintSeverity.WARNING, // Semgrep findings are typically warnings
+                                severity =cc.unitmesh.agent.linter.LintSeverity.WARNING, // Semgrep findings are typically warnings
                                 message = message.ifEmpty { "Security or code quality issue detected" },
                                 rule = ruleId,
                                 filePath = filePath

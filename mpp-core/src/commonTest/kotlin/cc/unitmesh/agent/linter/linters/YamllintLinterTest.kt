@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,7 +26,7 @@ bad.yaml
         assertEquals(4, trailingIssue.line)
         assertEquals(25, trailingIssue.column)
         assertEquals("trailing-spaces", trailingIssue.rule)
-        assertEquals(LintSeverity.ERROR, trailingIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, trailingIssue.severity)
         assertTrue(trailingIssue.message.contains("trailing spaces"))
 
         // Check line length error
@@ -35,18 +34,18 @@ bad.yaml
         assertEquals(16, lineLengthIssue.line)
         assertEquals(81, lineLengthIssue.column)
         assertEquals("line-length", lineLengthIssue.rule)
-        assertEquals(LintSeverity.ERROR, lineLengthIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, lineLengthIssue.severity)
 
         // Check warning issue
         val truthyIssue = issues.find { it.rule == "truthy" }
         assertEquals(19, truthyIssue?.line)
-        assertEquals(LintSeverity.WARNING, truthyIssue?.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, truthyIssue?.severity)
         assertTrue(truthyIssue?.message?.contains("truthy value") == true)
 
         // Check duplicate key error
         val duplicateIssue = issues.find { it.rule == "key-duplicates" }
         assertEquals(27, duplicateIssue?.line)
-        assertEquals(LintSeverity.ERROR, duplicateIssue?.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, duplicateIssue?.severity)
         assertTrue(duplicateIssue?.message?.contains("duplication") == true)
     }
 

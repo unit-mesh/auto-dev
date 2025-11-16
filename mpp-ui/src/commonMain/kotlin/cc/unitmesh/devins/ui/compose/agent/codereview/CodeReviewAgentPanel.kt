@@ -42,6 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cc.unitmesh.agent.linter.LintFileResult
+import cc.unitmesh.agent.linter.LintIssue
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
@@ -255,7 +257,7 @@ fun CodeReviewAgentPanel(
  */
 @Composable
 fun CollapsibleLintAnalysisCard(
-    lintResults: List<FileLintResult>,
+    lintResults: List<LintFileResult>,
     lintOutput: String,
     isActive: Boolean,
     modifier: Modifier = Modifier.Companion
@@ -387,7 +389,7 @@ fun CollapsibleLintAnalysisCard(
  */
 @Composable
 fun FileLintResultCard(
-    fileResult: FileLintResult,
+    fileResult: LintFileResult,
     modifier: Modifier = Modifier.Companion
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -482,10 +484,7 @@ fun FileLintResultCard(
  * Individual lint issue row
  */
 @Composable
-fun LintIssueRow(
-    issue: LintIssueUI,
-    modifier: Modifier = Modifier.Companion
-) {
+fun LintIssueRow(issue: LintIssue, modifier: Modifier = Modifier.Companion) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -494,9 +493,9 @@ fun LintIssueRow(
     ) {
         // Severity icon
         val (severityColor, severityIcon) = when (issue.severity) {
-            LintSeverityUI.ERROR -> AutoDevColors.Red.c600 to AutoDevComposeIcons.Error
-            LintSeverityUI.WARNING -> AutoDevColors.Amber.c600 to AutoDevComposeIcons.Warning
-            LintSeverityUI.INFO -> AutoDevColors.Blue.c600 to AutoDevComposeIcons.Info
+            cc.unitmesh.agent.linter.LintSeverity.ERROR ->  AutoDevColors.Red.c600 to AutoDevComposeIcons.Error
+            cc.unitmesh.agent.linter.LintSeverity.WARNING -> AutoDevColors.Amber.c600 to AutoDevComposeIcons.Warning
+            cc.unitmesh.agent.linter.LintSeverity.INFO -> AutoDevColors.Blue.c600 to AutoDevComposeIcons.Info
         }
 
         Icon(

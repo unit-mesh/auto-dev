@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -36,8 +35,8 @@ class DotenvLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecuto
 
                     // Determine severity based on rule type
                     val severity = when (rule) {
-                        "DuplicatedKey", "LowercaseKey", "IncorrectDelimiter" -> LintSeverity.ERROR
-                        else -> LintSeverity.WARNING
+                        "DuplicatedKey", "LowercaseKey", "IncorrectDelimiter" ->cc.unitmesh.agent.linter.LintSeverity.ERROR
+                        else ->cc.unitmesh.agent.linter.LintSeverity.WARNING
                     }
 
                     issues.add(

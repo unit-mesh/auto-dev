@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -25,7 +24,7 @@ bad-workflow.yml:19:15: the runner of "actions/checkout@v3" action is too old to
         assertEquals(5, syntaxIssue.line)
         assertEquals(5, syntaxIssue.column)
         assertEquals("syntax-check", syntaxIssue.rule)
-        assertEquals(LintSeverity.ERROR, syntaxIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, syntaxIssue.severity)
         assertTrue(syntaxIssue.message.contains("unexpected key"))
 
         // Check missing steps error
@@ -39,7 +38,7 @@ bad-workflow.yml:19:15: the runner of "actions/checkout@v3" action is too old to
         assertEquals(19, warningIssue?.line)
         assertEquals(15, warningIssue?.column)
         assertEquals("action", warningIssue?.rule)
-        assertEquals(LintSeverity.WARNING, warningIssue?.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, warningIssue?.severity)
     }
 
     @Test

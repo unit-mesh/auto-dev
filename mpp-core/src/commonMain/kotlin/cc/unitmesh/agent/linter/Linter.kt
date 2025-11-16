@@ -1,10 +1,29 @@
 package cc.unitmesh.agent.linter
 
-import cc.unitmesh.linter.*
+import kotlinx.serialization.Serializable
+
+
+@Serializable
+data class LintFileResult(
+    val filePath: String,
+    val linterName: String,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val issues: List<LintIssue>
+)
 
 /**
- * Represents a single linting issue found in code
+ * UI-friendly lint severity
  */
+@Serializable
+enum class LintSeverity {
+    ERROR,
+    WARNING,
+    INFO
+}
+
+@Serializable
 data class LintIssue(
     val line: Int,
     val column: Int = 0,
@@ -15,18 +34,7 @@ data class LintIssue(
     val filePath: String? = null
 )
 
-/**
- * Severity levels for lint issues
- */
-enum class LintSeverity {
-    ERROR,
-    WARNING,
-    INFO
-}
-
-/**
- * Result of running a linter on a file or project
- */
+@Serializable
 data class LintResult(
     val filePath: String,
     val issues: List<LintIssue>,

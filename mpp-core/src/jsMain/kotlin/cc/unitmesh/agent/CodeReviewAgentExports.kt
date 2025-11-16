@@ -2,6 +2,9 @@ package cc.unitmesh.agent
 
 import cc.unitmesh.agent.config.JsToolConfigFile
 import cc.unitmesh.agent.language.LanguageDetector
+import cc.unitmesh.agent.linter.LintFileResult
+import cc.unitmesh.agent.linter.LintIssue
+import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
@@ -23,7 +26,7 @@ data class JsReviewTask(
         } catch (e: Exception) {
             ReviewType.COMPREHENSIVE
         }
-        
+
         return ReviewTask(
             filePaths = filePaths.toList(),
             reviewType = type,
@@ -104,6 +107,19 @@ data class JsLintIssue(
 )
 
 /**
+ * JS-friendly version of LintFileResult
+ */
+@JsExport
+data class JsLintFileResult(
+    val filePath: String,
+    val linterName: String,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val issues: Array<JsLintIssue>
+)
+
+/**
  * JS-friendly Code Review Agent for CLI usage
  */
 @JsExport
@@ -123,7 +139,7 @@ class JsCodeReviewAgent(
         renderer = if (renderer != null) JsRendererAdapter(renderer) else DefaultCodingAgentRenderer(),
         mcpToolConfigService = createToolConfigService(toolConfig)
     )
-    
+
     /**
      * Create tool config service from JS tool config
      */
@@ -143,7 +159,7 @@ class JsCodeReviewAgent(
         return GlobalScope.promise {
             val kotlinTask = task.toCommon()
             val agentResult = agent.executeTask(kotlinTask)
-            
+
             // 从 AgentResult 中提取 findings
             val params = agentResult.steps.firstOrNull()?.params
             val findings = when {
@@ -156,7 +172,7 @@ class JsCodeReviewAgent(
                 }
                 else -> emptyList()
             }
-            
+
             // 转换为 JsCodeReviewResult
             JsCodeReviewResult(
                 success = agentResult.success,
@@ -169,7 +185,7 @@ class JsCodeReviewAgent(
     /**
      * Analyze code using Data-Driven approach (recommended for CLI/UI)
      * This is more efficient as it pre-collects all data and makes a single LLM call
-     * 
+     *
      * @param reviewType Type of review (e.g., "COMPREHENSIVE", "SECURITY")
      * @param filePaths Array of file paths to review
      * @param codeContent Object mapping file paths to their content
@@ -193,8 +209,8 @@ class JsCodeReviewAgent(
             // Convert JS dynamic objects to Kotlin maps
             val codeContentMap = convertDynamicToMap(codeContent)
             val lintResultsMap = convertDynamicToMap(lintResults)
-            
-            val task = cc.unitmesh.agent.AnalysisTask(
+
+            val task = AnalysisTask(
                 reviewType = reviewType,
                 filePaths = filePaths.toList(),
                 codeContent = codeContentMap,
@@ -204,20 +220,80 @@ class JsCodeReviewAgent(
                 useTools = false,  // Data-driven mode
                 analyzeIntent = false
             )
-            
+
             val result = agent.analyze(
                 task = task,
                 language = language,
                 onProgress = onChunk ?: {}
             )
-            
+
+            result.content
+        }
+    }
+
+    /**
+     * Generate fixes for identified issues
+     * Uses code content, lint results, and analysis output to provide actionable fixes
+     *
+     * @param codeContent Object mapping file paths to their content
+     * @param lintResults Array of JS lint results
+     * @param analysisOutput The AI analysis output from previous analysis step
+     * @param language Language for the prompt ("EN" or "ZH")
+     * @param onChunk Optional callback for streaming response chunks
+     * @return Promise resolving to the fix generation result as markdown string
+     */
+    @JsName("generateFixes")
+    fun generateFixes(
+        codeContent: dynamic,
+        lintResults: Array<JsLintFileResult>,
+        analysisOutput: String,
+        language: String = "EN",
+        onChunk: ((String) -> Unit)? = null
+    ): Promise<String> {
+        return GlobalScope.promise {
+            // Convert JS dynamic object to Kotlin map
+            val codeContentMap = convertDynamicToMap(codeContent)
+
+            // Convert JS lint results to Kotlin LintFileResult
+            val kotlinLintResults = lintResults.map { jsResult ->
+                LintFileResult(
+                    filePath = jsResult.filePath,
+                    linterName = jsResult.linterName,
+                    errorCount = jsResult.errorCount,
+                    warningCount = jsResult.warningCount,
+                    infoCount = jsResult.infoCount,
+                    issues = jsResult.issues.map { jsIssue ->
+                        LintIssue(
+                            line = jsIssue.line,
+                            column = jsIssue.column,
+                            severity = when (jsIssue.severity.uppercase()) {
+                                "ERROR" -> LintSeverity.ERROR
+                                "WARNING" -> LintSeverity.WARNING
+                                else -> LintSeverity.INFO
+                            },
+                            message = jsIssue.message,
+                            rule = jsIssue.rule,
+                            suggestion = jsIssue.suggestion
+                        )
+                    }
+                )
+            }
+
+            val result = agent.generateFixes(
+                codeContent = codeContentMap,
+                lintResults = kotlinLintResults,
+                analysisOutput = analysisOutput,
+                language = language,
+                onProgress = onChunk ?: {}
+            )
+
             result.content
         }
     }
 
     /**
      * Analyze commit intent (tool-driven or data-driven)
-     * 
+     *
      * @param commitMessage The commit message
      * @param commitId The commit ID
      * @param codeChanges Object mapping file paths to their diff/content
@@ -245,7 +321,7 @@ class JsCodeReviewAgent(
             } else {
                 emptyMap()
             }
-            
+
             val task = cc.unitmesh.agent.AnalysisTask(
                 reviewType = "COMPREHENSIVE",
                 projectPath = projectPath,
@@ -257,13 +333,13 @@ class JsCodeReviewAgent(
                 useTools = useTools,
                 analyzeIntent = true
             )
-            
+
             val result = agent.analyze(
                 task = task,
                 language = language,
                 onProgress = onProgress ?: {}
             )
-            
+
             JsAnalysisResult(
                 success = result.success,
                 content = result.content,

@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -22,11 +21,11 @@ class BiomeLinterTest {
         assertEquals(2, issues.size, "Should parse 2 issues")
 
         val firstIssue = issues[0]
-        assertEquals(LintSeverity.ERROR, firstIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, firstIssue.severity)
         assertEquals("Missing semicolon", firstIssue.message)
 
         val secondIssue = issues[1]
-        assertEquals(LintSeverity.WARNING, secondIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, secondIssue.severity)
         assertEquals("Unused variable", secondIssue.message)
     }
 

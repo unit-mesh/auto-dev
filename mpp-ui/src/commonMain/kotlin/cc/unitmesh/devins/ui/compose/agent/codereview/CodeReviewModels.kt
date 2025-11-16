@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
+import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
 import kotlinx.serialization.Serializable
@@ -43,7 +44,7 @@ data class AIAnalysisProgress(
     val currentFile: String? = null,
     val currentLine: Int? = null,
     val lintOutput: String = "",
-    val lintResults: List<FileLintResult> = emptyList(),
+    val lintResults: List<LintFileResult> = emptyList(),
     val modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap(),
     val analysisOutput: String = "",
     val fixOutput: String = ""
@@ -61,42 +62,6 @@ data class ModifiedCodeRange(
     val endLine: Int,
     val modifiedLines: List<Int> // Lines that were actually modified within this range
 )
-
-/**
- * Lint results for a specific file
- */
-@Serializable
-data class FileLintResult(
-    val filePath: String,
-    val linterName: String,
-    val errorCount: Int,
-    val warningCount: Int,
-    val infoCount: Int,
-    val issues: List<LintIssueUI>
-)
-
-/**
- * UI-friendly lint issue
- */
-@Serializable
-data class LintIssueUI(
-    val line: Int,
-    val column: Int,
-    val severity: LintSeverityUI,
-    val message: String,
-    val rule: String? = null,
-    val suggestion: String? = null
-)
-
-/**
- * UI-friendly lint severity
- */
-@Serializable
-enum class LintSeverityUI {
-    ERROR,
-    WARNING,
-    INFO
-}
 
 /**
  * Stages of AI analysis

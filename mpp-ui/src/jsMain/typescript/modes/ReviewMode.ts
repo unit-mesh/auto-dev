@@ -1,6 +1,6 @@
 /**
  * Review Mode - Automated code review with linting and AI analysis
- * 
+ *
  * Optimized Version: Uses Data-Driven approach instead of Tool-Driven
  * - Pre-collects all data (code content, lint results, diff context)
  * - Single LLM call with structured prompt
@@ -51,7 +51,7 @@ export interface ReviewResult {
 
 /**
  * Run code review on a project or specific changes
- * 
+ *
  * Uses Kotlin's CodeReviewAgent with optimizations:
  * 1. Fetch git diff and extract file paths
  * 2. Detect linters (for display)
@@ -73,7 +73,7 @@ export async function runReview(
   try {
     // ===== STEP 1: Fetch Git Diff =====
     const { diffContent, filePaths } = await fetchGitDiff(options);
-    
+
     if (filePaths.length === 0) {
       console.log(semanticChalk.warning('⚠️  No changes found to review'));
       return {
@@ -137,22 +137,22 @@ export async function runReview(
     // ===== STEP 6: Intent Analysis (if commit message exists) =====
     let intentAnalysisOutput = '';
     let mermaidDiagram: string | null = null;
-    
+
     if (commitMessage && commitMessage.trim().length > 10) {
       console.log(semanticChalk.info('🎯 Analyzing commit intent...'));
       console.log(semanticChalk.muted(`📄 Commit: ${commitId || 'HEAD'}`));
       console.log(semanticChalk.muted(`💬 Message: ${commitMessage.substring(0, 80)}${commitMessage.length > 80 ? '...' : ''}`));
       console.log();
-      
+
       const llmStartTime = Date.now();
-      
+
       try {
         // Build code changes map from diff content
         const codeChangesMap = buildCodeChangesMap(diffContent, filePaths, codeContent);
-        
+
         console.log(semanticChalk.info('⚡ Streaming intent analysis...'));
         console.log();
-        
+
         // Call analyzeIntent with tool-driven approach
         const intentResult = await reviewAgent.analyzeIntent(
           commitMessage,
@@ -166,17 +166,17 @@ export async function runReview(
             process.stdout.write(chunk);
           }
         );
-        
+
         intentAnalysisOutput = intentResult.content;
         mermaidDiagram = intentResult.mermaidDiagram || null;
-        
+
         const llmDuration = Date.now() - llmStartTime;
-        
+
         console.log();
         console.log();
         console.log(semanticChalk.success('✅ Intent analysis complete!'));
         console.log(semanticChalk.muted(`⏱️  Time: ${llmDuration}ms`));
-        
+
         // Display mermaid diagram if present
         if (mermaidDiagram) {
           console.log();
@@ -186,7 +186,7 @@ export async function runReview(
           console.log(mermaidDiagram);
           console.log(semanticChalk.muted('```'));
         }
-        
+
         console.log();
         console.log(semanticChalk.muted('─'.repeat(80)));
         console.log();
@@ -199,14 +199,14 @@ export async function runReview(
 
     // ===== STEP 7: Technical Code Review (if intent analysis was done) =====
     let technicalReviewOutput = '';
-    
+
     if (intentAnalysisOutput) {
       console.log(semanticChalk.info('🔧 Performing technical code review...'));
       console.log();
-      
+
       // Build diff context
-      const diffContext = diffContent.length > 2000 
-        ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\`` 
+      const diffContext = diffContent.length > 2000
+        ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\``
         : `\n## What Changed\n\`\`\`diff\n${diffContent}\n\`\`\``;
 
       const promptLength = JSON.stringify(codeContent).length + JSON.stringify(lintResults).length + diffContext.length;
@@ -215,8 +215,6 @@ export async function runReview(
       console.log();
 
       const llmStartTime = Date.now();
-
-      // Use Data-Driven analysis for technical review
       technicalReviewOutput = await reviewAgent.analyzeWithDataDriven(
         reviewType,
         filePaths,
@@ -237,9 +235,9 @@ export async function runReview(
     } else {
       // No commit message, just do technical review
       console.log(semanticChalk.info('🤖 Analyzing with AI...'));
-      
-      const diffContext = diffContent.length > 2000 
-        ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\`` 
+
+      const diffContext = diffContent.length > 2000
+        ? `\n## What Changed\n\`\`\`diff\n${diffContent.substring(0, 2000)}...\n\`\`\``
         : `\n## What Changed\n\`\`\`diff\n${diffContent}\n\`\`\``;
 
       const promptLength = JSON.stringify(codeContent).length + JSON.stringify(lintResults).length + diffContext.length;
@@ -271,7 +269,7 @@ export async function runReview(
     const totalDuration = Date.now() - startTime;
 
     // Combine outputs
-    const analysisOutput = intentAnalysisOutput 
+    const analysisOutput = intentAnalysisOutput
       ? `# 🎯 Intent Analysis\n\n${intentAnalysisOutput}\n\n---\n\n# 🔧 Technical Review\n\n${technicalReviewOutput}`
       : technicalReviewOutput;
 
@@ -337,11 +335,11 @@ async function readCodeFiles(filePaths: string[], projectPath: string): Promise<
  */
 async function runLinters(filePaths: string[], projectPath: string): Promise<Record<string, string>> {
   const lintResults: Record<string, string> = {};
-  
+
   try {
     const linterRegistry = KotlinCC.unitmesh.agent.linter.JsLinterRegistry;
     const linters = linterRegistry.findLintersForFiles(filePaths);
-    
+
     if (linters.length === 0) {
       return lintResults;
     }
@@ -350,7 +348,7 @@ async function runLinters(filePaths: string[], projectPath: string): Promise<Rec
 
     // Run linters using child_process
     const { execSync } = await import('child_process');
-    
+
     for (const linter of linters) {
       try {
         let command = '';
@@ -418,7 +416,7 @@ interface EnhancedReviewFinding extends ReviewFinding {
  */
 function parseMarkdownFindings(markdown: string): EnhancedReviewFinding[] {
   const findings: EnhancedReviewFinding[] = [];
-  
+
   // Split by issue markers (#### #1., #### #2., etc.)
   const issuePattern = /####\s*#(\d+)\.\s*(.+?)(?=####\s*#\d+\.|$)/gs;
   const matches = Array.from(markdown.matchAll(issuePattern));
@@ -442,7 +440,7 @@ function parseMarkdownFindings(markdown: string): EnhancedReviewFinding[] {
     let lineNumber: number | undefined;
     let methodName: string | undefined;
     let className: string | undefined;
-    
+
     if (locationMatch) {
       const location = locationMatch[1].trim();
       const parts = location.split(':');
@@ -451,7 +449,7 @@ function parseMarkdownFindings(markdown: string): EnhancedReviewFinding[] {
         const lineStr = parts[1].replace(/[^\d]/g, ''); // Extract just the number
         lineNumber = parseInt(lineStr, 10) || undefined;
       }
-      
+
       // Extract method/class name
       if (locationMatch[2]) {
         const nameInfo = locationMatch[2].trim();
@@ -513,7 +511,7 @@ async function extractCommitInfo(
 ): Promise<{ commitMessage: string; commitId: string; repoUrl: string }> {
   try {
     const { execSync } = await import('child_process');
-    
+
     // Get commit ID
     let commitId = options.commitHash || '';
     if (!commitId) {
@@ -526,14 +524,14 @@ async function extractCommitInfo(
         commitId = 'HEAD';
       }
     }
-    
+
     // Get commit message
     let commitMessage = '';
     try {
-      const command = options.commitHash 
+      const command = options.commitHash
         ? `git log -1 --format=%B ${options.commitHash}`
         : 'git log -1 --format=%B HEAD';
-      
+
       commitMessage = execSync(command, {
         cwd: projectPath,
         encoding: 'utf-8'
@@ -541,7 +539,7 @@ async function extractCommitInfo(
     } catch (error: any) {
       console.log(semanticChalk.muted(`Unable to get commit message: ${error.message}`));
     }
-    
+
     // Get repo URL
     let repoUrl = '';
     try {
@@ -549,7 +547,7 @@ async function extractCommitInfo(
         cwd: projectPath,
         encoding: 'utf-8'
       }).trim();
-      
+
       // Convert SSH URL to HTTPS if needed
       if (remoteUrl.startsWith('git@github.com:')) {
         repoUrl = remoteUrl.replace('git@github.com:', 'https://github.com/').replace(/\.git$/, '');
@@ -559,7 +557,7 @@ async function extractCommitInfo(
     } catch {
       // Repo URL is optional
     }
-    
+
     return { commitMessage, commitId, repoUrl };
   } catch (error: any) {
     console.log(semanticChalk.muted(`Unable to extract commit info: ${error.message}`));
@@ -577,19 +575,19 @@ function buildCodeChangesMap(
   codeContent: Record<string, string>
 ): Record<string, string> {
   const codeChangesMap: Record<string, string> = {};
-  
+
   // Try to extract per-file diffs
   const lines = diffContent.split('\n');
   let currentFile = '';
   let currentDiff: string[] = [];
-  
+
   for (const line of lines) {
     if (line.startsWith('diff --git ')) {
       // Save previous file's diff
       if (currentFile && currentDiff.length > 0) {
         codeChangesMap[currentFile] = currentDiff.join('\n');
       }
-      
+
       // Start new file
       const match = line.match(/diff --git a\/(.*?) b\/(.*?)$/);
       if (match) {
@@ -600,12 +598,12 @@ function buildCodeChangesMap(
       currentDiff.push(line);
     }
   }
-  
+
   // Save last file's diff
   if (currentFile && currentDiff.length > 0) {
     codeChangesMap[currentFile] = currentDiff.join('\n');
   }
-  
+
   // If no per-file diffs were extracted, use full code content as fallback
   if (Object.keys(codeChangesMap).length === 0) {
     filePaths.forEach(filePath => {
@@ -614,7 +612,7 @@ function buildCodeChangesMap(
       }
     });
   }
-  
+
   return codeChangesMap;
 }
 
@@ -699,16 +697,16 @@ function displayKotlinFindings(findings: EnhancedReviewFinding[]): void {
       const context = [f.methodName, f.className].filter(Boolean).join(' / ');
       location += ` in ${context}`;
     }
-    
+
     console.log(color(`  • ${f.description}`));
     console.log(semanticChalk.muted(`    📍 ${location}`));
-    
+
     // Show source if available
     if (f.source) {
       const sourceIcon = f.source.toLowerCase().includes('linter') ? '🔍' : '👁️';
       console.log(semanticChalk.muted(`    ${sourceIcon} ${f.source}`));
     }
-    
+
     // Show code snippet if available
     if (f.codeSnippet) {
       console.log(semanticChalk.muted(`    📝 Code:`));
@@ -718,11 +716,11 @@ function displayKotlinFindings(findings: EnhancedReviewFinding[]): void {
         }
       });
     }
-    
+
     // Show suggestion
     if (f.suggestion) {
-      const shortSuggestion = f.suggestion.length > 150 
-        ? f.suggestion.substring(0, 150) + '...' 
+      const shortSuggestion = f.suggestion.length > 150
+        ? f.suggestion.substring(0, 150) + '...'
         : f.suggestion;
       console.log(semanticChalk.muted(`    💡 ${shortSuggestion}`));
     }

@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -34,10 +33,9 @@ class DetektLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecuto
                 if (match != null) {
                     val (path, lineNum, col, message, rule) = match.destructured
 
-                    // Detekt doesn't specify severity in text output, use WARNING as default
                     val severity = when {
-                        message.contains("error", ignoreCase = true) -> LintSeverity.ERROR
-                        else -> LintSeverity.WARNING
+                        message.contains("error", ignoreCase = true) ->cc.unitmesh.agent.linter.LintSeverity.ERROR
+                        else ->cc.unitmesh.agent.linter.LintSeverity.WARNING
                     }
 
                     issues.add(

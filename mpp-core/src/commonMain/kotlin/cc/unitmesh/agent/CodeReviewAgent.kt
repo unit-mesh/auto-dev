@@ -277,6 +277,68 @@ class CodeReviewAgent(
         )
     }
 
+    /**
+     * Generate fixes for identified issues
+     * Uses code content, lint results, and analysis output to provide actionable fixes in unified diff format
+     *
+     * @param codeContent Map of file paths to their content
+     * @param lintResults List of lint results for files
+     * @param analysisOutput The AI analysis output from previous analysis step
+     * @param language Language for the prompt ("EN" or "ZH")
+     * @param onProgress Callback for streaming progress
+     * @return AnalysisResult containing the fix generation output
+     */
+    suspend fun generateFixes(
+        codeContent: Map<String, String>,
+        lintResults: List<cc.unitmesh.agent.linter.LintFileResult>,
+        analysisOutput: String,
+        language: String = "EN",
+        onProgress: (String) -> Unit = {}
+    ): AnalysisResult {
+        logger.info { "Starting fix generation - ${codeContent.size} files, ${lintResults.size} lint results" }
+
+        try {
+            val prompt = promptRenderer.renderFixGenerationPrompt(
+                codeContent = codeContent,
+                lintResults = lintResults,
+                analysisOutput = analysisOutput,
+                language = language
+            )
+
+            logger.debug { "Fix generation prompt size: ${prompt.length} chars" }
+
+            val fixOutput = StringBuilder()
+            try {
+                llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+                    fixOutput.append(chunk)
+                    onProgress(chunk)
+                }
+            } catch (e: Exception) {
+                logger.error(e) { "LLM call failed during fix generation: ${e.message}" }
+                return AnalysisResult(
+                    success = false,
+                    content = "❌ Fix generation failed: ${e.message}",
+                    usedTools = false
+                )
+            }
+
+            logger.info { "Fix generation completed - ${fixOutput.length} chars output" }
+
+            return AnalysisResult(
+                success = true,
+                content = fixOutput.toString(),
+                usedTools = false
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to generate fixes: ${e.message}" }
+            return AnalysisResult(
+                success = false,
+                content = "Error generating fixes: ${e.message}",
+                usedTools = false
+            )
+        }
+    }
+
     override fun buildSystemPrompt(context: CodeReviewContext, language: String): String {
         return "You are a code review assistant. Analyze the code and provide feedback."
     }
@@ -332,9 +394,6 @@ class CodeReviewAgent(
     override val description: String = definition.description
 }
 
-/**
- * Service interface for CodeReviewAgent
- */
 interface CodeReviewService {
     suspend fun executeTask(task: ReviewTask): AgentResult
     fun buildSystemPrompt(context: CodeReviewContext, language: String = "ZH"): String
@@ -405,33 +464,3 @@ data class AnalysisResult(
     val issuesAnalyzed: List<String> = emptyList(),
     val usedTools: Boolean = false
 )
-
-data class LintFileResult(
-    val filePath: String,
-    val linterName: String,
-    val errorCount: Int,
-    val warningCount: Int,
-    val infoCount: Int,
-    val issues: List<LintIssueUI>
-)
-
-/**
- * UI-friendly lint issue
- */
-data class LintIssueUI(
-    val line: Int,
-    val column: Int,
-    val severity: LintSeverityUI,
-    val message: String,
-    val rule: String? = null,
-    val suggestion: String? = null
-)
-
-/**
- * UI-friendly lint severity
- */
-enum class LintSeverityUI {
-    ERROR,
-    WARNING,
-    INFO
-}

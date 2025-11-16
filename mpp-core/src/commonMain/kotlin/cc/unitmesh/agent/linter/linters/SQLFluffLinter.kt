@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -36,9 +35,9 @@ class SQLFluffLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecu
 
                     // sqlfluff doesn't specify severity in text output, use WARNING as default
                     val severity = when {
-                        code == "PRS" -> LintSeverity.ERROR  // Parse errors are severe
-                        message.contains("error", ignoreCase = true) -> LintSeverity.ERROR
-                        else -> LintSeverity.WARNING
+                        code == "PRS" ->cc.unitmesh.agent.linter.LintSeverity.ERROR  // Parse errors are severe
+                        message.contains("error", ignoreCase = true) ->cc.unitmesh.agent.linter.LintSeverity.ERROR
+                        else ->cc.unitmesh.agent.linter.LintSeverity.WARNING
                     }
 
                     issues.add(

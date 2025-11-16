@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -65,7 +64,7 @@ class CheckovLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecut
                                     LintIssue(
                                         line = startLine.toIntOrNull() ?: 0,
                                         column = 1, // Checkov doesn't provide column info
-                                        severity = LintSeverity.WARNING,
+                                        severity =cc.unitmesh.agent.linter.LintSeverity.WARNING,
                                         message = message.trim(),
                                         rule = code,
                                         filePath = filePath

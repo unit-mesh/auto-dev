@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -66,7 +65,7 @@ class GitleaksLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecu
                         LintIssue(
                             line = line,
                             column = 1, // Gitleaks doesn't provide column
-                            severity = LintSeverity.ERROR, // All secrets are errors
+                            severity =cc.unitmesh.agent.linter.LintSeverity.ERROR, // All secrets are errors
                             message = message.ifEmpty { "Potential secret detected" },
                             rule = ruleId,
                             filePath = filePath

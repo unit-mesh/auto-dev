@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -80,7 +79,7 @@ class RuffLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecutor)
                     return LintIssue(
                         line = locationMatch.groupValues[1].toIntOrNull() ?: 0,
                         column = locationMatch.groupValues[2].toIntOrNull() ?: 0,
-                        severity = LintSeverity.WARNING,
+                        severity =cc.unitmesh.agent.linter.LintSeverity.WARNING,
                         message = messageMatch.groupValues[1],
                         rule = codeMatch.groupValues[1],
                         filePath = filePath

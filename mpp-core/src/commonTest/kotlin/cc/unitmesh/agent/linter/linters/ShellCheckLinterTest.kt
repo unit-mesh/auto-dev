@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -21,20 +20,20 @@ class ShellCheckLinterTest {
         val firstIssue = issues[0]
         assertEquals(6, firstIssue.line)
         assertEquals(1, firstIssue.column)
-        assertEquals(LintSeverity.WARNING, firstIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, firstIssue.severity)
         assertEquals("2034", firstIssue.rule)
         assertTrue(firstIssue.message.contains("UNUSED_VAR"))
 
         // Check second issue (info)
         val secondIssue = issues[1]
         assertEquals(9, secondIssue.line)
-        assertEquals(LintSeverity.INFO, secondIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.INFO, secondIssue.severity)
         assertEquals("2086", secondIssue.rule)
 
         // Check third issue (error)
         val thirdIssue = issues[2]
         assertEquals(18, thirdIssue.line)
-        assertEquals(LintSeverity.ERROR, thirdIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, thirdIssue.severity)
         assertEquals("2154", thirdIssue.rule)
     }
 

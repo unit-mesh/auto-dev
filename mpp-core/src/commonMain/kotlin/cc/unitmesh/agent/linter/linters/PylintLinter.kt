@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -36,9 +35,9 @@ class PylintLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecuto
 
                     // Pylint uses letter prefixes: C=Convention, R=Refactor, W=Warning, E=Error, F=Fatal
                     val severity = when (code.firstOrNull()) {
-                        'E', 'F' -> LintSeverity.ERROR
-                        'W' -> LintSeverity.WARNING
-                        else -> LintSeverity.INFO
+                        'E', 'F' ->cc.unitmesh.agent.linter.LintSeverity.ERROR
+                        'W' ->cc.unitmesh.agent.linter.LintSeverity.WARNING
+                        else ->cc.unitmesh.agent.linter.LintSeverity.INFO
                     }
 
                     issues.add(

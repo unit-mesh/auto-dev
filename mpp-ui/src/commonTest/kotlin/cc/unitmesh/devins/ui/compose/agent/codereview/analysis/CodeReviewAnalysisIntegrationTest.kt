@@ -1,10 +1,5 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview.analysis
 
-import cc.unitmesh.linter.LintIssue
-import cc.unitmesh.linter.LintResult
-import cc.unitmesh.linter.LintSeverity
-import cc.unitmesh.linter.Linter
-import cc.unitmesh.linter.LinterRegistry
 import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
 import cc.unitmesh.devins.ui.compose.sketch.DiffLine
@@ -173,24 +168,24 @@ class CodeReviewAnalysisIntegrationTest {
     fun testLintResultFormatter_formatsCorrectly() {
         // Given: Lint results with various issues
         val lintResults = listOf(
-            cc.unitmesh.devins.ui.compose.agent.codereview.FileLintResult(
+            LintFileResult(
                 filePath = "/project/src/Example.kt",
                 linterName = "TestLinter",
                 errorCount = 2,
                 warningCount = 1,
                 infoCount = 1,
-                issues = listOf(
-                    cc.unitmesh.devins.ui.compose.agent.codereview.LintIssueUI(
+                issues = listOf<LintIssueUI>(
+                    LintIssueUI(
                         line = 10,
                         column = 5,
-                        severity = cc.unitmesh.devins.ui.compose.agent.codereview.LintSeverityUI.ERROR,
+                        severity = cc.unitmesh.agent.linter.LintSeverity.ERROR,
                         message = "Test error message",
                         rule = "test-rule-1"
                     ),
-                    cc.unitmesh.devins.ui.compose.agent.codereview.LintIssueUI(
+                    LintIssueUI(
                         line = 15,
                         column = 8,
-                        severity = cc.unitmesh.devins.ui.compose.agent.codereview.LintSeverityUI.WARNING,
+                        severity = cc.unitmesh.agent.linter.LintSeverity.WARNING,
                         message = "Test warning message",
                         rule = "test-rule-2"
                     )
@@ -219,21 +214,21 @@ class CodeReviewAnalysisIntegrationTest {
     fun testLintResultFormatter_createsSummary() {
         // Given: Multiple file results
         val lintResults = listOf(
-            cc.unitmesh.devins.ui.compose.agent.codereview.FileLintResult(
+            LintFileResult(
                 filePath = "/project/src/File1.kt",
                 linterName = "TestLinter",
                 errorCount = 2,
                 warningCount = 1,
                 infoCount = 0,
-                issues = emptyList()
+                issues = emptyList<LintIssueUI>()
             ),
-            cc.unitmesh.devins.ui.compose.agent.codereview.FileLintResult(
+            LintFileResult(
                 filePath = "/project/src/File2.kt",
                 linterName = "TestLinter",
                 errorCount = 1,
                 warningCount = 3,
                 infoCount = 2,
-                issues = emptyList()
+                issues = emptyList<LintIssueUI>()
             )
         )
 

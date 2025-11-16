@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -45,8 +44,8 @@ class PMDLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecutor) 
 
                     // PMD doesn't specify severity in text format, default to WARNING
                     val severity = when {
-                        message.contains("error", ignoreCase = true) -> LintSeverity.ERROR
-                        else -> LintSeverity.WARNING
+                        message.contains("error", ignoreCase = true) ->cc.unitmesh.agent.linter.LintSeverity.ERROR
+                        else ->cc.unitmesh.agent.linter.LintSeverity.WARNING
                     }
 
                     issues.add(

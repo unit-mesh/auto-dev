@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -52,7 +51,7 @@ class HTMLHintLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecu
                                 LintIssue(
                                     line = lineNum,
                                     column = 1, // HTMLHint doesn't provide column in text output
-                                    severity = LintSeverity.ERROR,
+                                    severity =cc.unitmesh.agent.linter.LintSeverity.ERROR,
                                     message = message,
                                     rule = rule,
                                     filePath = filePath

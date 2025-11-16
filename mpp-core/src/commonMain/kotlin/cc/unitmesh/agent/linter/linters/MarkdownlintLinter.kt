@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
 import cc.unitmesh.agent.linter.LintIssue
-import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.ShellBasedLinter
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 
@@ -42,7 +41,7 @@ class MarkdownlintLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellE
                         LintIssue(
                             line = lineNum.toIntOrNull() ?: 0,
                             column = col.toIntOrNull() ?: 1,
-                            severity = LintSeverity.WARNING, // markdownlint treats everything as warnings
+                            severity =cc.unitmesh.agent.linter.LintSeverity.WARNING, // markdownlint treats everything as warnings
                             message = message.trim(),
                             rule = ruleCode,
                             filePath = filePath

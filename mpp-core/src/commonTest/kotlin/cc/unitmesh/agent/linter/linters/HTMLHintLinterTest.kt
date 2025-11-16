@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -29,7 +28,7 @@ Scanned 1 files, found 3 errors in 1 files (66 ms)
         val tagPairIssue = issues[0]
         assertEquals(10, tagPairIssue.line)
         assertEquals("tag-pair", tagPairIssue.rule)
-        assertEquals(LintSeverity.ERROR, tagPairIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, tagPairIssue.severity)
         assertTrue(tagPairIssue.message.contains("Tag must be paired"))
 
         // Check id-unique error

@@ -1,9 +1,9 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview.analysis
 
+import cc.unitmesh.agent.linter.LintFileResult
+import cc.unitmesh.agent.linter.LintIssue
+import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.logging.AutoDevLogger
-import cc.unitmesh.devins.ui.compose.agent.codereview.FileLintResult
-import cc.unitmesh.devins.ui.compose.agent.codereview.LintIssueUI
-import cc.unitmesh.devins.ui.compose.agent.codereview.LintSeverityUI
 import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
 
 /**
@@ -25,14 +25,11 @@ class LintExecutor {
         projectPath: String,
         modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap(),
         progressCallback: ((String) -> Unit)? = null
-    ): List<FileLintResult> {
-        val allFileLintResults = mutableListOf<FileLintResult>()
+    ): List<LintFileResult> {
+        val allFileLintResults = mutableListOf<LintFileResult>()
 
         try {
-            // Get linter registry
             val linterRegistry = cc.unitmesh.agent.linter.LinterRegistry.getInstance()
-
-            // Find suitable linters for the files
             val linters = linterRegistry.findLintersForFiles(filePaths)
 
             if (linters.isEmpty()) {
@@ -65,7 +62,6 @@ class LintExecutor {
                 // Convert to UI model and aggregate
                 for (result in results) {
                     if (result.hasIssues) {
-                        // Filter issues to only those in modified code ranges
                         val filteredIssues = filterIssuesByModifiedRanges(
                             result.issues,
                             result.filePath,
@@ -75,13 +71,13 @@ class LintExecutor {
                         if (filteredIssues.isEmpty()) continue
 
                         val uiIssues = filteredIssues.map { issue ->
-                            LintIssueUI(
+                            LintIssue(
                                 line = issue.line,
                                 column = issue.column,
                                 severity = when (issue.severity) {
-                                    cc.unitmesh.agent.linter.LintSeverity.ERROR -> LintSeverityUI.ERROR
-                                    cc.unitmesh.agent.linter.LintSeverity.WARNING -> LintSeverityUI.WARNING
-                                    cc.unitmesh.agent.linter.LintSeverity.INFO -> LintSeverityUI.INFO
+                                    LintSeverity.ERROR -> LintSeverity.ERROR
+                                    LintSeverity.WARNING -> LintSeverity.WARNING
+                                    LintSeverity.INFO -> LintSeverity.INFO
                                 },
                                 message = issue.message,
                                 rule = issue.rule,
@@ -89,15 +85,13 @@ class LintExecutor {
                             )
                         }
 
-                        val errorCount =
-                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
+                        val errorCount = filteredIssues.count { it.severity == LintSeverity.ERROR }
                         val warningCount =
-                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.WARNING }
-                        val infoCount =
-                            filteredIssues.count { it.severity == cc.unitmesh.agent.linter.LintSeverity.INFO }
+                            filteredIssues.count { it.severity == LintSeverity.WARNING }
+                        val infoCount = filteredIssues.count { it.severity == LintSeverity.INFO }
 
                         allFileLintResults.add(
-                            FileLintResult(
+                            LintFileResult(
                                 filePath = result.filePath,
                                 linterName = result.linterName,
                                 errorCount = errorCount,
@@ -120,9 +114,9 @@ class LintExecutor {
                         // Show first few issues
                         filteredIssues.take(5).forEach { issue ->
                             val severityIcon = when (issue.severity) {
-                                cc.unitmesh.agent.linter.LintSeverity.ERROR -> "❌"
-                                cc.unitmesh.agent.linter.LintSeverity.WARNING -> "⚠️"
-                                cc.unitmesh.agent.linter.LintSeverity.INFO -> "ℹ️"
+                                LintSeverity.ERROR -> "❌"
+                                LintSeverity.WARNING -> "⚠️"
+                                LintSeverity.INFO -> "ℹ️"
                             }
                             progressCallback?.invoke("     $severityIcon Line ${issue.line}: ${issue.message}\n")
                         }

@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -32,20 +31,20 @@ Your code has been rated at 1.88/10
         assertEquals(18, conventionIssue.line)
         assertEquals(0, conventionIssue.column)
         assertEquals("trailing-whitespace", conventionIssue.rule)
-        assertEquals(LintSeverity.INFO, conventionIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.INFO, conventionIssue.severity)
         assertTrue(conventionIssue.message.contains("Trailing whitespace"))
 
         // Check warning issue
         val warningIssue = issues.find { it.rule == "unused-variable" }
         assertEquals(12, warningIssue?.line)
         assertEquals(4, warningIssue?.column)
-        assertEquals(LintSeverity.WARNING, warningIssue?.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, warningIssue?.severity)
         assertTrue(warningIssue?.message?.contains("Unused variable") == true)
 
         // Check refactor issue (INFO)
         val refactorIssue = issues.find { it.rule == "too-few-public-methods" }
         assertEquals(15, refactorIssue?.line)
-        assertEquals(LintSeverity.INFO, refactorIssue?.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.INFO, refactorIssue?.severity)
 
         // Check naming issue
         val namingIssue = issues.find { it.rule == "invalid-name" }
@@ -55,7 +54,7 @@ Your code has been rated at 1.88/10
         // Check unused import
         val importIssue = issues.find { it.rule == "unused-import" }
         assertEquals(4, importIssue?.line)
-        assertEquals(LintSeverity.WARNING, importIssue?.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, importIssue?.severity)
     }
 
     @Test

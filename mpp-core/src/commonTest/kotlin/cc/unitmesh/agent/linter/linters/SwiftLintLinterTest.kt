@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -28,7 +27,7 @@ Done linting! Found 5 violations, 1 serious in 1 file.
         val forceCastIssue = issues[0]
         assertEquals(26, forceCastIssue.line)
         assertEquals(23, forceCastIssue.column)
-        assertEquals(LintSeverity.ERROR, forceCastIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, forceCastIssue.severity)
         assertEquals("force_cast", forceCastIssue.rule)
         assertTrue(forceCastIssue.message.contains("Force casts should be avoided"))
 
@@ -36,14 +35,14 @@ Done linting! Found 5 violations, 1 serious in 1 file.
         val getterIssue = issues[1]
         assertEquals(42, getterIssue.line)
         assertEquals(9, getterIssue.column)
-        assertEquals(LintSeverity.WARNING, getterIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, getterIssue.severity)
         assertEquals("implicit_getter", getterIssue.rule)
 
         // Check line length warning
         val lineLengthIssue = issues[2]
         assertEquals(4, lineLengthIssue.line)
         assertEquals("line_length", lineLengthIssue.rule)
-        assertEquals(LintSeverity.WARNING, lineLengthIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, lineLengthIssue.severity)
     }
 
     @Test

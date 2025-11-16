@@ -756,7 +756,7 @@ open class CodeReviewViewModel(
 
     /**
      * Generate fixes with structured context
-     * Uses code content, lint results, and analysis to provide actionable fixes
+     * Delegates to CodeReviewAgent for fix generation
      */
     suspend fun generateFixes() {
         try {
@@ -782,24 +782,31 @@ open class CodeReviewViewModel(
                 it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
             }
 
-            // Get LLM service
-            val configWrapper = ConfigManager.load()
-            val modelConfig = configWrapper.getActiveModelConfig()!!
-            val llmService = KoogLLMService.create(modelConfig)
+            // Initialize agent if needed
+            val agent = initializeCodingAgent()
 
-            // Build structured prompt for fix generation
-            val prompt = buildFixGenerationPrompt(codeContent)
-
-            // Stream the LLM response
-            llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
-                fixOutputBuilder.append(chunk)
-                updateState {
-                    it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
+            // Delegate to CodeReviewAgent
+            val result = agent.generateFixes(
+                codeContent = codeContent,
+                lintResults = currentState.aiProgress.lintResults,
+                analysisOutput = currentState.aiProgress.analysisOutput,
+                language = "ZH",
+                onProgress = { chunk ->
+                    fixOutputBuilder.append(chunk)
+                    updateState {
+                        it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
+                    }
                 }
-            }
+            )
 
-            updateState {
-                it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
+            if (!result.success) {
+                updateState {
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(
+                            fixOutput = fixOutputBuilder.toString() + "\n" + result.content
+                        )
+                    )
+                }
             }
 
         } catch (e: Exception) {
@@ -814,141 +821,7 @@ open class CodeReviewViewModel(
         }
     }
 
-    /**
-     * Build structured prompt for fix generation with all necessary context
-     * Generates unified diff format patches that can be applied directly
-     */
-    private fun buildFixGenerationPrompt(codeContent: Map<String, String>): String {
-        return buildString {
-            appendLine("# Code Fix Generation - Unified Diff Format")
-            appendLine()
-            appendLine("Generate **unified diff patches** for the critical issues identified in the analysis.")
-            appendLine()
 
-            // Include original code
-            if (codeContent.isNotEmpty()) {
-                appendLine("## Original Code")
-                appendLine()
-                codeContent.forEach { (path, content) ->
-                    appendLine("### File: $path")
-                    appendLine("```")
-                    appendLine(content)
-                    appendLine("```")
-                    appendLine()
-                }
-            }
-
-            // Include lint results
-            if (currentState.aiProgress.lintResults.isNotEmpty()) {
-                appendLine("## Lint Issues")
-                appendLine()
-                currentState.aiProgress.lintResults.forEach { fileResult ->
-                    if (fileResult.issues.isNotEmpty()) {
-                        val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
-                        appendLine("### ${fileResult.filePath}")
-                        appendLine("Total Issues: $totalCount (${fileResult.errorCount} errors, ${fileResult.warningCount} warnings)")
-                        appendLine()
-
-                        // Group by severity
-                        val critical = fileResult.issues.filter { it.severity == LintSeverityUI.ERROR }
-                        val warnings = fileResult.issues.filter { it.severity == LintSeverityUI.WARNING }
-
-                        if (critical.isNotEmpty()) {
-                            appendLine("**Critical Issues:**")
-                            critical.forEach { issue ->
-                                appendLine("- Line ${issue.line}: ${issue.message}")
-                                if (issue.rule?.isNotBlank() == true) appendLine("  Rule: ${issue.rule}")
-                            }
-                            appendLine()
-                        }
-
-                        if (warnings.isNotEmpty()) {
-                            appendLine("**Warnings:**")
-                            warnings.take(5).forEach { issue ->
-                                appendLine("- Line ${issue.line}: ${issue.message}")
-                                if (issue.rule?.isNotBlank() == true) appendLine("  Rule: ${issue.rule}")
-                            }
-                            if (warnings.size > 5) {
-                                appendLine("... and ${warnings.size - 5} more warnings")
-                            }
-                            appendLine()
-                        }
-                    }
-                }
-            }
-
-            // Include AI analysis summary
-            if (currentState.aiProgress.analysisOutput.isNotBlank()) {
-                appendLine("## AI Analysis")
-                appendLine()
-                appendLine(currentState.aiProgress.analysisOutput)
-                appendLine()
-            }
-
-            // Clear instructions for diff patch generation
-            appendLine("## Your Task")
-            appendLine()
-            appendLine("Generate **unified diff patches** for the most critical issues. Use standard unified diff format.")
-            appendLine()
-            appendLine("### Required Format:")
-            appendLine()
-            appendLine("For each fix, provide a brief explanation followed by the diff patch:")
-            appendLine()
-            appendLine("#### Fix #{number}: {Brief Title}")
-            appendLine("**Issue**: {One-line description}")
-            appendLine("**Location**: {file}:{line}")
-            appendLine()
-            appendLine("```diff")
-            appendLine("diff --git a/{filepath} b/{filepath}")
-            appendLine("index {old_hash}..{new_hash} {mode}")
-            appendLine("--- a/{filepath}")
-            appendLine("+++ b/{filepath}")
-            appendLine("@@ -{old_start},{old_count} +{new_start},{new_count} @@ {context}")
-            appendLine(" {context line}")
-            appendLine("-{removed line}")
-            appendLine("+{added line}")
-            appendLine(" {context line}")
-            appendLine("```")
-            appendLine()
-            appendLine("### Example:")
-            appendLine()
-            appendLine("#### Fix #1: Fix null pointer exception")
-            appendLine("**Issue**: Missing null check for user parameter")
-            appendLine("**Location**: src/User.kt:15")
-            appendLine()
-            appendLine("```diff")
-            appendLine("diff --git a/src/User.kt b/src/User.kt")
-            appendLine("index abc1234..def5678 100644")
-            appendLine("--- a/src/User.kt")
-            appendLine("+++ b/src/User.kt")
-            appendLine("@@ -13,7 +13,10 @@ class UserService {")
-            appendLine("     fun processUser(user: User?) {")
-            appendLine("-        println(user.name)")
-            appendLine("+        if (user == null) {")
-            appendLine("+            throw IllegalArgumentException(\"User cannot be null\")")
-            appendLine("+        }")
-            appendLine("+        println(user.name)")
-            appendLine("     }")
-            appendLine(" }")
-            appendLine("```")
-            appendLine()
-            appendLine("### Guidelines:")
-            appendLine()
-            appendLine("1. **Use standard unified diff format** - Must be parseable by standard diff tools")
-            appendLine("2. **Include context lines** - Show 3 lines of context before and after changes")
-            appendLine("3. **Accurate line numbers** - Ensure @@ headers have correct line numbers")
-            appendLine("4. **Complete hunks** - Each hunk should be self-contained and applicable")
-            appendLine("5. **One fix per patch** - Separate different fixes into different diff blocks")
-            appendLine("6. **Priority order** - Start with critical/high severity issues")
-            appendLine("7. **Maximum 5 patches** - Focus on the most important fixes")
-            appendLine()
-            appendLine("**IMPORTANT**: ")
-            appendLine("- Each diff MUST be in a ```diff code block")
-            appendLine("- Use exact line numbers from the original code")
-            appendLine("- Include enough context for patch to be applied correctly")
-            appendLine("- DO NOT use any tools - all code is provided above")
-        }
-    }
 
     private fun updateState(update: (CodeReviewState) -> CodeReviewState) {
         currentState = update(currentState)

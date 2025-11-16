@@ -1,6 +1,5 @@
 package cc.unitmesh.agent.linter.linters
 
-import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -52,20 +51,20 @@ Fingerprint: config.py:stripe-access-token:18
         val apiKeyIssue = issues[0]
         assertEquals(23, apiKeyIssue.line)
         assertEquals("generic-api-key", apiKeyIssue.rule)
-        assertEquals(LintSeverity.ERROR, apiKeyIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, apiKeyIssue.severity)
         assertTrue(apiKeyIssue.message.contains("Secret detected"))
 
         // Check second secret
         val privateKeyIssue = issues[1]
         assertEquals(21, privateKeyIssue.line)
         assertEquals("private-key", privateKeyIssue.rule)
-        assertEquals(LintSeverity.ERROR, privateKeyIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, privateKeyIssue.severity)
 
         // Check third secret
         val stripeIssue = issues[2]
         assertEquals(18, stripeIssue.line)
         assertEquals("stripe-access-token", stripeIssue.rule)
-        assertEquals(LintSeverity.ERROR, stripeIssue.severity)
+        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, stripeIssue.severity)
     }
 
     @Test
