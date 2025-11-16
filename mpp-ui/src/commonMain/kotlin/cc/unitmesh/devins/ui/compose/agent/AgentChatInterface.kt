@@ -87,18 +87,19 @@ fun AgentChatInterface(
         onInternalNewChat?.invoke(handleNewChat)
     }
 
-    // 同步外部 TreeView 状态到 ViewModel（只在外部变化时更新）
+    // 同步外部 TreeView 状态到 ViewModel
     LaunchedEffect(isTreeViewVisible) {
         println("🔄 [AgentChatInterface] External isTreeViewVisible changed to: $isTreeViewVisible")
-        viewModel.isTreeViewVisible = isTreeViewVisible
+        if (viewModel.isTreeViewVisible != isTreeViewVisible) {
+            viewModel.isTreeViewVisible = isTreeViewVisible
+        }
     }
 
-    // 监听 ViewModel 状态变化并通知外部（只在 ViewModel 内部变化时通知）
+    // 监听 ViewModel 状态变化并通知外部（仅当 ViewModel 内部改变时）
     LaunchedEffect(viewModel.isTreeViewVisible) {
         println("🔔 [AgentChatInterface] ViewModel isTreeViewVisible changed to: ${viewModel.isTreeViewVisible}")
         if (viewModel.isTreeViewVisible != isTreeViewVisible) {
             onToggleTreeView(viewModel.isTreeViewVisible)
-            viewModel.toggleTreeView()
         }
     }
 

@@ -98,9 +98,9 @@ fun main(args: Array<String>) {
                             triggerFileChooser = triggerFileChooser,
                             onFileChooserHandled = { triggerFileChooser = false },
                             initialMode = mode,
-                            showTopBarInContent = false, // Desktop 不在内容区域显示 TopBar
-                            initialAgentType = uiState.currentAgentType, // 传递当前选中的 AgentType
-                            initialTreeViewVisible = uiState.isTreeViewVisible, // 传递初始 TreeView 状态
+                            showTopBarInContent = false,
+                            initialAgentType = uiState.currentAgentType,
+                            initialTreeViewVisible = uiState.isTreeViewVisible,
                             onAgentTypeChanged = { type ->
                                 uiState.updateAgentType(type)
                             },
@@ -116,9 +116,6 @@ fun main(args: Array<String>) {
                             },
                             onWorkspacePathChanged = { path ->
                                 uiState.updateWorkspacePath(path)
-                            },
-                            onHasHistoryChanged = { hasHistory ->
-                                // TitleBar 可以根据这个状态显示/隐藏某些按钮
                             }
                         )
                     }

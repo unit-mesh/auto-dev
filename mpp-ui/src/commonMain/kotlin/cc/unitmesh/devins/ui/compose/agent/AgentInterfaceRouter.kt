@@ -55,7 +55,6 @@ fun AgentInterfaceRouter(
 ) {
     when (selectedAgentType) {
         AgentType.CODE_REVIEW -> {
-            // Show dedicated code review page with side-by-side view
             CodeReviewPage(
                 llmService = llmService,
                 onBack = {
@@ -66,7 +65,6 @@ fun AgentInterfaceRouter(
         }
 
         AgentType.REMOTE -> {
-            // Show remote agent interface
             RemoteAgentChatInterface(
                 serverUrl = serverUrl,
                 useServerConfig = useServerConfig,
@@ -106,7 +104,6 @@ fun AgentInterfaceRouter(
 
         AgentType.LOCAL_CHAT,
         AgentType.CODING -> {
-            // Show local chat/coding interface
             AgentChatInterface(
                 llmService = llmService,
                 isTreeViewVisible = isTreeViewVisible,

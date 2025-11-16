@@ -9,12 +9,6 @@ import cc.unitmesh.devins.ui.compose.PlatformAutoDevApp
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.platform.AndroidActivityProvider
 
-/**
- * AutoDev 移动应用 - Android 版本
- *
- * 默认使用本地模式，支持本地和远程两种 Agent 模式
- * 用户可以在应用内通过 UI 切换模式，配置会保存到 ~/.autodev/config.yaml
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

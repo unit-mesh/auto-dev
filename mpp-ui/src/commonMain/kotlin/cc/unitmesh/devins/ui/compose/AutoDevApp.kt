@@ -174,16 +174,16 @@ private fun AutoDevContent(
         }
     }
 
-    LaunchedEffect(isTreeViewVisible) {
-        onTreeViewVisibilityChanged(isTreeViewVisible)
-    }
-
     LaunchedEffect(showSessionSidebar) {
         onSidebarVisibilityChanged(showSessionSidebar)
     }
 
     LaunchedEffect(messages.size) {
         onHasHistoryChanged(messages.isNotEmpty())
+    }
+
+    LaunchedEffect(isTreeViewVisible) {
+        onTreeViewVisibilityChanged(isTreeViewVisible)
     }
 
     LaunchedEffect(Unit) {
@@ -491,9 +491,9 @@ private fun AutoDevContent(
                         llmService = llmService,
                         isTreeViewVisible = isTreeViewVisible,
                         onConfigWarning = { showModelConfigDialog = true },
-                        onToggleTreeView = {
-                            isTreeViewVisible = it
-                            onTreeViewVisibilityChanged(it)
+                        onToggleTreeView = { newValue ->
+                            isTreeViewVisible = newValue
+                            onTreeViewVisibilityChanged(newValue)
                         },
                         chatHistoryManager = chatHistoryManager,
                         selectedAgentType = selectedAgentType,
@@ -613,6 +613,7 @@ private fun AutoDevContent(
             )
         }
 
+        // Remote Server Config Dialog
         if (showRemoteConfigDialog) {
             cc.unitmesh.devins.ui.compose.config.RemoteServerConfigDialog(
                 currentConfig = cc.unitmesh.devins.ui.compose.config.RemoteServerConfig(
