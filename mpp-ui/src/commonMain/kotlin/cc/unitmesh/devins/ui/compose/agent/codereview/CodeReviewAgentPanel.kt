@@ -120,7 +120,6 @@ fun CodeReviewAgentPanel(
                             Text("Stop")
                         }
                     }
-
                     AnalysisStage.COMPLETED -> {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -182,7 +181,6 @@ fun CodeReviewAgentPanel(
                 .padding(8.dp)
         ) {
             if (state.aiProgress.stage == AnalysisStage.IDLE && state.aiProgress.lintResults.isEmpty()) {
-                // Empty state
                 Column(
                     modifier = Modifier.Companion
                         .fillMaxSize()
@@ -205,12 +203,10 @@ fun CodeReviewAgentPanel(
                     )
                 }
             } else {
-                // Analysis results
                 LazyColumn(
                     modifier = Modifier.Companion.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 1. Lint Analysis Section
                     if (state.aiProgress.lintResults.isNotEmpty() || state.aiProgress.lintOutput.isNotEmpty()) {
                         item {
                             CollapsibleLintAnalysisCard(
@@ -221,7 +217,6 @@ fun CodeReviewAgentPanel(
                         }
                     }
 
-                    // 2. AI Analysis Section - with Markdown rendering
                     if (state.aiProgress.analysisOutput.isNotEmpty()) {
                         item {
                             AIAnalysisSection(
@@ -231,7 +226,6 @@ fun CodeReviewAgentPanel(
                         }
                     }
 
-                    // 3. Suggested Fixes Section - with interactive diff patches
                     if (state.aiProgress.fixOutput.isNotEmpty()) {
                         item {
                             SuggestedFixesSection(

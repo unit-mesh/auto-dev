@@ -369,7 +369,6 @@ open class CodeReviewViewModel(
                     )
                 }
 
-                // Save analysis results to cache after completion
                 saveCurrentAnalysisResults()
 
             } catch (e: CancellationException) {
@@ -405,14 +404,10 @@ open class CodeReviewViewModel(
      * @param commitHash The git commit hash
      */
     open fun selectCommit(commitHash: String) {
-        // Cancel previous loading job if any
         currentJob?.cancel()
-
-        // Save current analysis results to cache before switching
         saveCurrentAnalysisResults()
 
         currentJob = CoroutineScope(Dispatchers.Default).launch {
-            // Reset to IDLE and clear current analysis progress
             updateState {
                 it.copy(
                     aiProgress = AIAnalysisProgress(stage = AnalysisStage.IDLE)
@@ -420,42 +415,20 @@ open class CodeReviewViewModel(
             }
 
             loadCommitDiffInternal(commitHash)
-
-            // Try to restore cached analysis results for the target commit
             restoreAnalysisResultsForCommit(commitHash)
         }
     }
 
-    /**
-     * Select a different commit to view by index (deprecated, use selectCommit(hash) instead)
-     * @param index The index in the commit history list
-     */
-    @Deprecated("Use selectCommit(commitHash: String) instead", ReplaceWith("selectCommit(commitHistory[index].hash)"))
-    open fun selectCommitByIndex(index: Int) {
-        if (index in currentState.commitHistory.indices) {
-            selectCommit(currentState.commitHistory[index].hash)
-        }
-    }
-
-    /**
-     * Select a different file to view
-     */
     open fun selectFile(index: Int) {
         if (index in currentState.diffFiles.indices) {
             updateState { it.copy(selectedFileIndex = index) }
         }
     }
 
-    /**
-     * Get currently selected file
-     */
     open fun getSelectedFile(): DiffFileInfo? {
         return currentState.diffFiles.getOrNull(currentState.selectedFileIndex)
     }
 
-    /**
-     * Refresh diff
-     */
     open fun refresh() {
         scope.launch {
             if (gitOps.isSupported() && currentState.commitHistory.isNotEmpty()) {
@@ -847,7 +820,7 @@ open class CodeReviewViewModel(
 
                 // Parse the diff patch to extract file path and changes
                 val fileDiffs = cc.unitmesh.devins.ui.compose.sketch.DiffParser.parse(diffPatch)
-                
+
                 if (fileDiffs.isEmpty()) {
                     AutoDevLogger.warn("CodeReviewViewModel") {
                         "Failed to parse diff patch"
@@ -987,7 +960,7 @@ open class CodeReviewViewModel(
         AutoDevLogger.info("CodeReviewViewModel") {
             "User rejected diff patch"
         }
-        
+
         // Parse the diff to log which files were rejected
         val fileDiffs = cc.unitmesh.devins.ui.compose.sketch.DiffParser.parse(diffPatch)
         fileDiffs.forEach { fileDiff ->
