@@ -163,11 +163,9 @@ fun AgentChatInterface(
                             )
                         }
 
-                    // 根据选中的 Agent 类型显示不同的输入组件
                     when (selectedAgentType) {
                         AgentType.LOCAL,
                         AgentType.CODING -> {
-                            // 输入框 for Coding Agent
                             DevInEditorInput(
                                 initialText = "",
                                 placeholder = "Describe your coding task...",
@@ -185,16 +183,7 @@ fun AgentChatInterface(
                             )
                         }
                         AgentType.CODE_REVIEW -> {
-                            CodeReviewInput(
-                                projectPath = currentWorkspace?.rootPath ?: "",
-                                onReview = { reviewTask ->
-                                    viewModel.executeReviewTask(reviewTask, onConfigWarning)
-                                },
-                                isExecuting = viewModel.isExecuting,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .imePadding()
-                            )
+
                         }
                         AgentType.REMOTE -> {
                             // REMOTE type should not reach here - it's handled by AgentInterfaceRouter

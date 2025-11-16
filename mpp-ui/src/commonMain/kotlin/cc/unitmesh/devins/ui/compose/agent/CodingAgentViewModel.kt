@@ -222,71 +222,7 @@ class CodingAgentViewModel(
             // Note: Agents will be lazily initialized when needed
         }
     }
-
-    /**
-     * Check if LLM service is configured
-     */
     fun isConfigured(): Boolean = llmService != null
-
-    /**
-     * Execute a code review task
-     */
-    fun executeReviewTask(reviewTask: ReviewTask, onConfigRequired: (() -> Unit)? = null) {
-        println("📝 [ViewModel] Executing code review task: ${reviewTask.reviewType}")
-
-        if (isExecuting) {
-            println("Agent is already executing")
-            return
-        }
-
-        // Check if LLM service is configured
-        if (!isConfigured()) {
-            renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
-            onConfigRequired?.invoke()
-            return
-        }
-
-        isExecuting = true
-        renderer.clearError()
-
-        // Add user message describing the review
-        val reviewMessage = buildString {
-            append("Starting code review: ")
-            append(reviewTask.reviewType.name.lowercase().replace("_", " "))
-            if (reviewTask.filePaths.isNotEmpty()) {
-                append(" for ${reviewTask.filePaths.size} file(s)")
-            }
-        }
-        renderer.addUserMessage(reviewMessage)
-
-        currentExecutionJob = scope.launch {
-            try {
-                println("🔧 [ViewModel] Initializing CodeReviewAgent...")
-                val codeReviewAgent = initializeCodeReviewAgent()
-                chatHistoryManager?.addUserMessage(reviewMessage)
-
-                println("▶️ [ViewModel] Executing CodeReviewAgent task...")
-                val result = codeReviewAgent.executeTask(reviewTask)
-
-                val resultSummary = "Code review completed: ${reviewTask.reviewType}"
-                chatHistoryManager?.addAssistantMessage(resultSummary)
-
-                // Result is already handled by the renderer
-                isExecuting = false
-                currentExecutionJob = null
-            } catch (e: CancellationException) {
-                // Task was cancelled
-                renderer.forceStop()
-                renderer.renderError("Code review cancelled by user")
-                isExecuting = false
-                currentExecutionJob = null
-            } catch (e: Exception) {
-                renderer.renderError(e.message ?: "Unknown error during code review")
-                isExecuting = false
-                currentExecutionJob = null
-            }
-        }
-    }
 
     fun executeTask(task: String, onConfigRequired: (() -> Unit)? = null) {
         if (isExecuting) {

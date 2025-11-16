@@ -183,12 +183,10 @@ class CodeReviewAgent(
             projectPath = task.projectPath,
             diffContext = task.additionalContext,
             useTools = true,
-            analyzeIntent = false
+            analyzeIntent = true
         )
 
         val result = analyze(analysisTask, language = "ZH")
-
-        // Parse findings from the analysis content
         val findings = parseFindings(result.content)
 
         return CodeReviewResult(
@@ -198,9 +196,6 @@ class CodeReviewAgent(
         )
     }
 
-    /**
-     * Parse findings from analysis content
-     */
     private fun parseFindings(content: String): List<ReviewFinding> {
         val findings = mutableListOf<ReviewFinding>()
         val lines = content.lines()
@@ -273,11 +268,7 @@ class CodeReviewAgent(
             null
         }
 
-        // Build unified system prompt
-        // Note: This method is deprecated in favor of the two-step approach (analyzeLintOutput + generateFixes)
         val systemPrompt = "You are a code review assistant. Analyze the code and provide feedback."
-        
-        // Execute with tools
         val conversationManager = cc.unitmesh.agent.conversation.ConversationManager(llmService, systemPrompt)
         val initialMessage = buildToolDrivenMessage(task, issueInfo, linterSummary)
         
@@ -656,24 +647,18 @@ class CodeReviewAgent(
             hasIndicator
         }
     }
-    
-    /**
-     * Extract mermaid diagram from analysis
-     */
+
     private fun extractMermaidDiagram(analysis: String): String? {
-        // Use MULTILINE to match across lines
         val mermaidPattern = Regex("```mermaid\\s*\\n([\\s\\S]+?)\\n```")
         val matchResult = mermaidPattern.find(analysis)
         return matchResult?.groupValues?.getOrNull(1)?.trim()
     }
 
     override fun buildSystemPrompt(context: CodeReviewContext, language: String): String {
-        // Build a simple system prompt for backward compatibility
-        // In the new two-step approach, we use renderAnalysisPrompt and renderFixGenerationPrompt directly
         return "You are a code review assistant. Analyze the code and provide feedback."
     }
 
-    private suspend fun initializeWorkspace(projectPath: String) {
+    private fun initializeWorkspace(projectPath: String) {
     }
 
     private suspend fun buildContext(task: ReviewTask): CodeReviewContext {
@@ -713,86 +698,6 @@ class CodeReviewAgent(
             projectPath = projectPath,
             additionalContext = additionalContext
         )
-    }
-
-    /**
-     * Analyze lint output and code content (Step 1 of code review)
-     * This method performs comprehensive analysis of code and lint results
-     *
-     * @param reviewType Type of review (e.g., "COMPREHENSIVE", "SECURITY")
-     * @param filePaths List of file paths to review
-     * @param codeContent Map of file paths to their content
-     * @param lintResults Map of file paths to their lint results
-     * @param diffContext Optional diff context string
-     * @param language Language for the prompt ("EN" or "ZH")
-     * @param onProgress Optional callback for streaming progress
-     * @return Analysis output as string
-     */
-    suspend fun analyzeLintOutput(
-        reviewType: String = "COMPREHENSIVE",
-        filePaths: List<String>,
-        codeContent: Map<String, String>,
-        lintResults: Map<String, String>,
-        diffContext: String = "",
-        language: String = "ZH",
-        onProgress: (String) -> Unit = {}
-    ): String {
-        logger.info { "Starting lint output analysis for ${filePaths.size} files" }
-
-        val prompt = promptRenderer.renderAnalysisPrompt(
-            reviewType = reviewType,
-            filePaths = filePaths,
-            codeContent = codeContent,
-            lintResults = lintResults,
-            diffContext = diffContext,
-            language = language
-        )
-
-        val analysisBuilder = StringBuilder()
-
-        llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
-            analysisBuilder.append(chunk)
-            onProgress(chunk)
-        }
-
-        return analysisBuilder.toString()
-    }
-
-    /**
-     * Generate fixes for identified issues (Step 2 of code review)
-     * This method generates unified diff patches for critical issues
-     *
-     * @param codeContent Map of file paths to their content
-     * @param lintResults List of lint results
-     * @param analysisOutput Output from the analysis step
-     * @param language Language for the prompt ("EN" or "ZH")
-     * @param onProgress Optional callback for streaming progress
-     * @return Fix generation output as string
-     */
-    suspend fun generateFixes(
-        codeContent: Map<String, String>,
-        lintResults: List<LintFileResult>,
-        analysisOutput: String,
-        language: String = "ZH",
-        onProgress: (String) -> Unit = {}
-    ): String {
-        logger.info { "Starting fix generation for ${codeContent.size} files" }
-
-        val prompt = promptRenderer.renderFixGenerationPrompt(
-            codeContent = codeContent,
-            lintResults = lintResults,
-            analysisOutput = analysisOutput,
-            language = language
-        )
-
-        val fixBuilder = StringBuilder()
-
-        llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
-            fixBuilder.append(chunk)
-            onProgress(chunk)
-        }
-
-        return fixBuilder.toString()
     }
 
     override fun formatOutput(output: ToolResult.AgentResult): String {
