@@ -38,8 +38,8 @@ fun AutoDevApp(
     triggerFileChooser: Boolean = false,
     onFileChooserHandled: () -> Unit = {},
     initialMode: String = "auto",
-    showTopBarInContent: Boolean = true, // 是否在内容区域显示 TopBar（Desktop 为 false）
-    initialAgentType: AgentType = AgentType.CODING // Desktop 专用：从 Main.kt 传递的 AgentType
+    showTopBarInContent: Boolean = true,
+    initialAgentType: AgentType = AgentType.CODING
 ) {
     val currentTheme = ThemeManager.currentTheme
 

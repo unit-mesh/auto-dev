@@ -31,9 +31,6 @@ fun main(args: Array<String>) {
     application {
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
-
-        // Desktop 专用：在 Main.kt 中管理 AgentType 状态
-        // TopBarMenuDesktop 和 AutoDevApp 共享这个状态
         var currentAgentType by remember { mutableStateOf(AgentType.CODING) }
 
         val windowState =
@@ -50,11 +47,10 @@ fun main(args: Array<String>) {
 
         if (isWindowVisible) {
             Window(
-                onCloseRequest = { isWindowVisible = false }, // 关闭时隐藏到托盘
+                onCloseRequest = { isWindowVisible = false },
                 title = "AutoDev Desktop",
                 state = windowState,
-                undecorated = true,  // 使用自定义标题栏
-                transparent = true   // 支持圆角和阴影
+                undecorated = true,
             ) {
                 DesktopWindowLayout(
                     title = "AutoDev",
@@ -69,7 +65,6 @@ fun main(args: Array<String>) {
                     },
                     onClose = { isWindowVisible = false },
                     titleBarContent = {
-                        // Desktop 标题栏：只显示 Agent Type Tabs
                         cc.unitmesh.devins.ui.compose.chat.DesktopTitleBarTabs(
                             currentAgentType = currentAgentType,
                             onAgentTypeChange = { newType ->
