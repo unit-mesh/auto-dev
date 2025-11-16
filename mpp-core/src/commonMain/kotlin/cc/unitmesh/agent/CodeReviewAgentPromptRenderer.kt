@@ -22,6 +22,7 @@ class CodeReviewAgentPromptRenderer {
         codeContent: Map<String, String>,
         lintResults: Map<String, String>,
         diffContext: String = "",
+        toolList: String = "",
         language: String = "EN"
     ): String {
         val template = when (language.uppercase()) {
@@ -58,6 +59,7 @@ $result
             VariableType.STRING,
             if (diffContext.isNotBlank()) "\n\n### Diff Context\n$diffContext" else ""
         )
+        variableTable.addVariable("toolList", VariableType.STRING, toolList)
 
         val compiler = TemplateCompiler(variableTable)
         val prompt = compiler.compile(template)
@@ -172,6 +174,29 @@ object CodeReviewAnalysisTemplate {
 
 You are an expert code reviewer. Analyze the provided code and linter results to identify the **TOP 10 HIGHEST PRIORITY** issues.
 
+## Available Tools
+
+You have access to the following tools through DevIns commands. Use these tools to gather additional context when needed:
+
+${'$'}{toolList}
+
+## Tool Usage Format
+
+All tools use the DevIns format with JSON parameters:
+<devin>
+/tool-name
+```json
+{"parameter": "value", "optional_param": 123}
+```
+</devin>
+
+Use tools like /read-file, /glob, /grep to gather more context about the code if needed.
+
+For each step, respond with:
+1. Your reasoning about what to do next (explain your thinking)
+2. **EXACTLY ONE** DevIns command (wrapped in <devin></devin> tags)
+3. What you expect to happen
+
 ## Task
 
 Review Type: **${'$'}{reviewType}**
@@ -223,6 +248,38 @@ For CRITICAL/HIGH issues only, list in this compact format:
 # 代码审查分析
 
 你是一位专业的代码审查专家。分析提供的代码和 linter 结果，识别 **优先级最高的前 10 个问题**。
+
+## 可用工具
+
+你可以通过 DevIns 命令访问以下工具。在需要时使用这些工具收集额外的上下文：
+
+${'$'}{toolList}
+
+## 工具使用格式
+
+所有工具都使用 DevIns 格式和 JSON 参数：
+<devin>
+/tool-name
+```json
+{"parameter": "value", "optional_param": 123}
+```
+</devin>
+
+使用像 /read-file、/glob、/grep 这样的工具来收集更多代码上下文（如果需要）。
+
+## 重要：每次响应只执行一个工具
+
+**你必须每次响应只执行一个工具。** 不要在单个响应中包含多个工具调用。
+
+- ✅ 正确：一个 <devin> 块包含一个工具调用
+- ❌ 错误：多个 <devin> 块或一个块中有多个工具
+
+## 响应格式
+
+对于每一步，请回复：
+1. 你对下一步该做什么的推理（解释你的思考）
+2. **恰好一个** DevIns 命令（包装在 <devin></devin> 标签中）
+3. 你期望发生什么
 
 ## 任务
 

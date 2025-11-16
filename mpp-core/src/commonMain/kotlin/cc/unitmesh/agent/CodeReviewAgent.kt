@@ -246,6 +246,7 @@ class CodeReviewAgent(
             codeContent = codeContent,
             lintResults = lintResults,
             diffContext = task.diffContext,
+            toolList = AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toList()),
             language = language
         )
 
@@ -346,6 +347,7 @@ class CodeReviewAgent(
             codeContent = mapOf(),
             lintResults = mapOf(),
             diffContext = "",
+            toolList = AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toList()),
             language = language
         )
     }
