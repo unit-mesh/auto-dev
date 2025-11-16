@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.linter
 
 import cc.unitmesh.agent.language.LanguageDetector
-import cc.unitmesh.linter.LintSeverity
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -52,7 +51,7 @@ class LinterTest {
         val issue = LintIssue(
             line = 10,
             column = 5,
-            severity = cc.unitmesh.linter.LintSeverity.ERROR,
+            severity = LintSeverity.ERROR,
             message = "Test error",
             rule = "test-rule",
             filePath = "Test.kt"
@@ -60,7 +59,7 @@ class LinterTest {
 
         assertEquals(10, issue.line)
         assertEquals(5, issue.column)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, issue.severity)
+        assertEquals(LintSeverity.ERROR, issue.severity)
         assertEquals("Test error", issue.message)
         assertEquals("test-rule", issue.rule)
     }
@@ -68,8 +67,8 @@ class LinterTest {
     @Test
     fun testLintResult() {
         val issues = listOf(
-            LintIssue(1, 0, cc.unitmesh.linter.LintSeverity.ERROR, "Error 1"),
-            LintIssue(2, 0, cc.unitmesh.linter.LintSeverity.WARNING, "Warning 1"),
+            LintIssue(1, 0, LintSeverity.ERROR, "Error 1"),
+            LintIssue(2, 0, LintSeverity.WARNING, "Warning 1"),
             LintIssue(3, 0, LintSeverity.ERROR, "Error 2")
         )
         

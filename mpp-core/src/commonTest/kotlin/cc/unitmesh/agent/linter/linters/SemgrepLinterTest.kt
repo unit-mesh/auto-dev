@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
+import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -43,14 +44,14 @@ class SemgrepLinterTest {
         val pickleIssue = issues[0]
         assertEquals(11, pickleIssue.line)
         assertEquals("python.lang.security.deserialization.pickle.avoid-pickle", pickleIssue.rule)
-        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, pickleIssue.severity)
+        assertEquals(LintSeverity.WARNING, pickleIssue.severity)
         assertTrue(pickleIssue.message.contains("pickle") || pickleIssue.message.contains("execution"))
 
         // Check eval issue
         val evalIssue = issues[1]
         assertEquals(32, evalIssue.line)
         assertEquals("python.lang.security.audit.eval-detected.eval-detected", evalIssue.rule)
-        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, evalIssue.severity)
+        assertEquals(LintSeverity.WARNING, evalIssue.severity)
         assertTrue(evalIssue.message.contains("eval") || evalIssue.message.contains("injection"))
     }
 

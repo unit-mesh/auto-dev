@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
+import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -25,25 +26,25 @@ Dockerfile.bad:26 DL3020 error: Use COPY instead of ADD for files and folders
         val warningIssue = issues[0]
         assertEquals(3, warningIssue.line)
         assertEquals("DL3006", warningIssue.rule)
-        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, warningIssue.severity)
+        assertEquals(LintSeverity.WARNING, warningIssue.severity)
         assertTrue(warningIssue.message.contains("tag the version"))
 
         // Check error issue
         val errorIssue = issues[1]
         assertEquals(4, errorIssue.line)
         assertEquals("DL4000", errorIssue.rule)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, errorIssue.severity)
+        assertEquals(LintSeverity.ERROR, errorIssue.severity)
         assertTrue(errorIssue.message.contains("MAINTAINER"))
 
         // Check info issue
         val infoIssue = issues.find { it.rule == "DL3015" }
         assertEquals(7, infoIssue?.line)
-        assertEquals(cc.unitmesh.linter.LintSeverity.INFO, infoIssue?.severity)
+        assertEquals(LintSeverity.INFO, infoIssue?.severity)
 
         // Check sudo error
         val sudoIssue = issues.find { it.rule == "DL3004" }
         assertEquals(10, sudoIssue?.line)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, sudoIssue?.severity)
+        assertEquals(LintSeverity.ERROR, sudoIssue?.severity)
         assertTrue(sudoIssue?.message?.contains("sudo") == true)
     }
 

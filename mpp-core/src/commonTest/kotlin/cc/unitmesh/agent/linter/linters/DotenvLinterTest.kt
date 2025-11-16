@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
+import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -28,18 +29,18 @@ Found 7 problems
         // Check duplicate key issue (should be ERROR)
         val duplicateIssue = issues.find { it.rule == "DuplicatedKey" }
         assertEquals(5, duplicateIssue?.line)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, duplicateIssue?.severity)
+        assertEquals(LintSeverity.ERROR, duplicateIssue?.severity)
         assertTrue(duplicateIssue?.message?.contains("API_KEY") == true)
 
         // Check lowercase key issue (should be ERROR)
         val lowercaseIssue = issues.find { it.rule == "LowercaseKey" }
         assertEquals(12, lowercaseIssue?.line)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, lowercaseIssue?.severity)
+        assertEquals(LintSeverity.ERROR, lowercaseIssue?.severity)
         assertTrue(lowercaseIssue?.message?.contains("uppercase") == true)
 
         // Check space character issue (should be WARNING)
         val spaceIssue = issues.find { it.rule == "SpaceCharacter" }
-        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, spaceIssue?.severity)
+        assertEquals(LintSeverity.WARNING, spaceIssue?.severity)
 
         // Check trailing whitespace issue
         val trailingIssue = issues.find { it.rule == "TrailingWhitespace" }

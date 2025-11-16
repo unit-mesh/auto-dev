@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.linter.linters
 
+import cc.unitmesh.agent.linter.LintSeverity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -29,7 +30,7 @@ class ESLintLinterTest {
         assertEquals(3, varIssue.line)
         assertEquals(1, varIssue.column)
         assertEquals("no-var", varIssue.rule)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, varIssue.severity)
+        assertEquals(LintSeverity.ERROR, varIssue.severity)
         assertTrue(varIssue.message.contains("Unexpected var"))
 
         // Check semicolon error
@@ -37,22 +38,22 @@ class ESLintLinterTest {
         assertEquals(4, semiIssue.line)
         assertEquals(15, semiIssue.column)
         assertEquals("semi", semiIssue.rule)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, semiIssue.severity)
+        assertEquals(LintSeverity.ERROR, semiIssue.severity)
 
         // Check warning issue
         val unusedIssue = issues.find { it.line == 9 }
-        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, unusedIssue?.severity)
+        assertEquals(LintSeverity.WARNING, unusedIssue?.severity)
         assertEquals("no-unused-vars", unusedIssue?.rule)
 
         // Check eqeqeq issue
         val eqIssue = issues.find { it.rule == "eqeqeq" }
         assertEquals(21, eqIssue?.line)
-        assertEquals(cc.unitmesh.linter.LintSeverity.ERROR, eqIssue?.severity)
+        assertEquals(LintSeverity.ERROR, eqIssue?.severity)
 
         // Check console warning
         val consoleIssue = issues.find { it.rule == "no-console" }
         assertEquals(33, consoleIssue?.line)
-        assertEquals(cc.unitmesh.linter.LintSeverity.WARNING, consoleIssue?.severity)
+        assertEquals(LintSeverity.WARNING, consoleIssue?.severity)
     }
 
     @Test
