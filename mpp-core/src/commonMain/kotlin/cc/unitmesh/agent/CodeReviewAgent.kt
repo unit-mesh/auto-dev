@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 /**
  * Review types for code review
@@ -163,36 +164,43 @@ class CodeReviewAgent(
         val context = buildContext(input)
         val systemPrompt = buildSystemPrompt(context)
 
-        val result = executor.execute(input, systemPrompt, context.linterSummary, onProgress)
+        val codeReviewResult = executor.execute(input, systemPrompt, context.linterSummary, onProgress)
 
         return ToolResult.AgentResult(
-            success = result.success,
-            content = result.message,
+            success = codeReviewResult.success,
+            content = codeReviewResult.message,
             metadata = mapOf(
                 "reviewType" to input.reviewType.name,
-                "filesReviewed" to input.filePaths.size.toString(),
-                "findings" to result.findings.size.toString()
+                "filesReviewed" to input.filePaths.toString(),
+                "findings" to Json.encodeToString(codeReviewResult.findings)
             )
         )
     }
 
-    override suspend fun executeTask(task: ReviewTask): CodeReviewResult {
-        val analysisTask = AnalysisTask(
-            reviewType = task.reviewType.name,
-            filePaths = task.filePaths,
-            projectPath = task.projectPath,
-            diffContext = task.additionalContext,
-            useTools = true,
-            analyzeIntent = true
-        )
+    override suspend fun executeTask(task: ReviewTask): AgentResult {
+        val context = buildContext(task)
+        val systemPrompt = buildSystemPrompt(context)
 
-        val result = analyze(analysisTask, language = "ZH")
-        val findings = parseFindings(result.content)
+        val codeReviewResult = executor.execute(task, systemPrompt, context.linterSummary) {}
 
-        return CodeReviewResult(
-            success = result.success,
-            message = result.content,
-            findings = findings
+        return AgentResult(
+            success = codeReviewResult.success,
+            message = codeReviewResult.message,
+            steps = listOf(
+                AgentStep(
+                    step = 1,
+                    action = "code_review",
+                    tool = null,
+                    params = mapOf(
+                        "reviewType" to task.reviewType.name,
+                        "filesReviewed" to task.filePaths.size,
+                        "findings" to codeReviewResult.findings
+                    ),
+                    result = codeReviewResult.message,
+                    success = codeReviewResult.success
+                )
+            ),
+            edits = emptyList()
         )
     }
 
@@ -714,13 +722,14 @@ class CodeReviewAgent(
  * Service interface for CodeReviewAgent
  */
 interface CodeReviewService {
-    suspend fun executeTask(task: ReviewTask): CodeReviewResult
+    suspend fun executeTask(task: ReviewTask): AgentResult
     fun buildSystemPrompt(context: CodeReviewContext, language: String = "ZH"): String
 }
 
 /**
  * Result of code review
  */
+@Serializable
 data class CodeReviewResult(
     val success: Boolean,
     val message: String,
@@ -730,6 +739,7 @@ data class CodeReviewResult(
 /**
  * A single finding from code review
  */
+@Serializable
 data class ReviewFinding(
     val severity: Severity,
     val category: String,

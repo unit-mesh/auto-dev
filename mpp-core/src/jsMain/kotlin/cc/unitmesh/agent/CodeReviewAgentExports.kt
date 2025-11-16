@@ -142,8 +142,27 @@ class JsCodeReviewAgent(
     fun executeTask(task: JsReviewTask): Promise<JsCodeReviewResult> {
         return GlobalScope.promise {
             val kotlinTask = task.toCommon()
-            val result = agent.executeTask(kotlinTask)
-            JsCodeReviewResult.fromCommon(result)
+            val agentResult = agent.executeTask(kotlinTask)
+            
+            // 从 AgentResult 中提取 findings
+            val params = agentResult.steps.firstOrNull()?.params
+            val findings = when {
+                params is Map<*, *> -> {
+                    val findingsValue = params["findings"]
+                    when (findingsValue) {
+                        is List<*> -> findingsValue.filterIsInstance<ReviewFinding>()
+                        else -> emptyList()
+                    }
+                }
+                else -> emptyList()
+            }
+            
+            // 转换为 JsCodeReviewResult
+            JsCodeReviewResult(
+                success = agentResult.success,
+                message = agentResult.message,
+                findings = findings.map { JsReviewFinding.fromCommon(it) }.toTypedArray()
+            )
         }
     }
 
