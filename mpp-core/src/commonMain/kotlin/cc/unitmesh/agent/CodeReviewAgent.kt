@@ -177,14 +177,62 @@ class CodeReviewAgent(
     }
 
     override suspend fun executeTask(task: ReviewTask): CodeReviewResult {
-        val context = buildContext(task)
-        val systemPrompt = buildSystemPrompt(context)
-        return executor.execute(task, systemPrompt, context.linterSummary)
+        val analysisTask = AnalysisTask(
+            reviewType = task.reviewType.name,
+            filePaths = task.filePaths,
+            projectPath = task.projectPath,
+            diffContext = task.additionalContext,
+            useTools = true,
+            analyzeIntent = false
+        )
+
+        val result = analyze(analysisTask, language = "ZH")
+
+        // Parse findings from the analysis content
+        val findings = parseFindings(result.content)
+
+        return CodeReviewResult(
+            success = result.success,
+            message = result.content,
+            findings = findings
+        )
+    }
+
+    /**
+     * Parse findings from analysis content
+     */
+    private fun parseFindings(content: String): List<ReviewFinding> {
+        val findings = mutableListOf<ReviewFinding>()
+        val lines = content.lines()
+        var currentSeverity = Severity.INFO
+
+        for (line in lines) {
+            when {
+                line.contains("CRITICAL", ignoreCase = true) -> currentSeverity = Severity.CRITICAL
+                line.contains("HIGH", ignoreCase = true) -> currentSeverity = Severity.HIGH
+                line.contains("MEDIUM", ignoreCase = true) -> currentSeverity = Severity.MEDIUM
+                line.contains("LOW", ignoreCase = true) -> currentSeverity = Severity.LOW
+                line.startsWith("-") || line.startsWith("*") || line.startsWith("####") -> {
+                    val description = line.trimStart('-', '*', '#', ' ')
+                    if (description.length > 10) {
+                        findings.add(
+                            ReviewFinding(
+                                severity = currentSeverity,
+                                category = "General",
+                                description = description
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        return findings
     }
 
     suspend fun analyze(
         task: AnalysisTask,
-        language: String = "EN",
+        language: String = "ZH",
         onProgress: (String) -> Unit = {}
     ): AnalysisResult {
         logger.info { "Starting unified analysis - useTools: ${task.useTools}, analyzeIntent: ${task.analyzeIntent}" }
@@ -196,10 +244,10 @@ class CodeReviewAgent(
         language: String,
         onProgress: (String) -> Unit
     ): AnalysisResult {
-        logger.info { "Using tool-driven approach" }
-        
+        logger.info { "Using unified analysis approach" }
+
         initializeWorkspace(task.projectPath)
-        
+
         // Fetch issue info if analyzing intent
         val issueInfo = if (task.analyzeIntent && task.commitMessage.isNotBlank()) {
             val issueRefs = parseIssueReferences(task.commitMessage)
@@ -211,26 +259,27 @@ class CodeReviewAgent(
         } else {
             emptyMap()
         }
-        
-        // Build context and prompt
-        val systemPrompt = if (task.analyzeIntent) {
-            val context = buildIntentAnalysisContext(task, issueInfo)
-            promptRenderer.renderIntentAnalysisPrompt(context, language)
+
+        // Get linter summary for the files
+        val linterSummary = if (task.filePaths.isNotEmpty()) {
+            try {
+                val linterRegistry = cc.unitmesh.agent.linter.LinterRegistry.getInstance()
+                linterRegistry.getLinterSummaryForFiles(task.filePaths)
+            } catch (e: Exception) {
+                logger.warn { "Failed to get linter summary: ${e.message}" }
+                null
+            }
         } else {
-            val allTools = toolRegistry.getAllTools()
-            val context = CodeReviewContext(
-                projectPath = task.projectPath,
-                filePaths = task.filePaths,
-                reviewType = ReviewType.valueOf(task.reviewType.uppercase()),
-                additionalContext = task.diffContext,
-                toolList = AgentToolFormatter.formatToolListForAI(allTools.values.toList())
-            )
-            promptRenderer.render(context, language)
+            null
         }
+
+        // Build unified system prompt
+        // Note: This method is deprecated in favor of the two-step approach (analyzeLintOutput + generateFixes)
+        val systemPrompt = "You are a code review assistant. Analyze the code and provide feedback."
         
         // Execute with tools
         val conversationManager = cc.unitmesh.agent.conversation.ConversationManager(llmService, systemPrompt)
-        val initialMessage = buildToolDrivenMessage(task, issueInfo)
+        val initialMessage = buildToolDrivenMessage(task, issueInfo, linterSummary)
         
         var currentIteration = 0
         val maxIter = if (task.analyzeIntent) 10 else maxIterations
@@ -306,7 +355,11 @@ class CodeReviewAgent(
     /**
      * Build message for tool-driven analysis
      */
-    private fun buildToolDrivenMessage(task: AnalysisTask, issueInfo: Map<String, IssueInfo>): String {
+    private suspend fun buildToolDrivenMessage(
+        task: AnalysisTask,
+        issueInfo: Map<String, IssueInfo>,
+        linterSummary: cc.unitmesh.agent.linter.LinterSummary?
+    ): String {
         return if (task.analyzeIntent) {
             buildIntentAnalysisUserMessage(task, issueInfo)
         } else {
@@ -316,22 +369,71 @@ class CodeReviewAgent(
                 appendLine("**Project Path**: ${task.projectPath}")
                 appendLine("**Review Type**: ${task.reviewType}")
                 appendLine()
-                
+
                 if (task.filePaths.isNotEmpty()) {
                     appendLine("**Files to review** (${task.filePaths.size} files):")
                     task.filePaths.forEach { appendLine("  - $it") }
                     appendLine()
                 }
-                
+
+                // Add linter information
+                if (linterSummary != null) {
+                    appendLine("## Linter Information")
+                    appendLine()
+                    appendLine(formatLinterInfo(linterSummary))
+                    appendLine()
+                }
+
                 if (task.diffContext.isNotBlank()) {
                     appendLine("**Diff Context**:")
                     appendLine(task.diffContext)
                     appendLine()
                 }
-                
+
                 appendLine("**Instructions**:")
-                appendLine("1. Use tools to read and analyze the code")
-                appendLine("2. Provide thorough code review following the guidelines")
+                appendLine("1. First, analyze the linter results above (if provided)")
+                appendLine("2. Use tools to read and analyze the code")
+                appendLine("3. Provide thorough code review combining:")
+                appendLine("   - Technical issues (security, performance, bugs)")
+                appendLine("   - Business logic concerns")
+                appendLine("   - Suggestions beyond what linters can detect")
+                appendLine("4. Focus on actionable improvements")
+            }
+        }
+    }
+
+    /**
+     * Format linter information for display in user messages
+     */
+    private fun formatLinterInfo(linterSummary: cc.unitmesh.agent.linter.LinterSummary): String {
+        return buildString {
+            if (linterSummary.availableLinters.isNotEmpty()) {
+                appendLine("**Available Linters (${linterSummary.availableLinters.size}):**")
+                linterSummary.availableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
+                    if (linter.supportedFiles.isNotEmpty()) {
+                        appendLine("  - Supported files: ${linter.supportedFiles.joinToString(", ")}")
+                    }
+                }
+                appendLine()
+            }
+
+            if (linterSummary.unavailableLinters.isNotEmpty()) {
+                appendLine("**Unavailable Linters (${linterSummary.unavailableLinters.size}):**")
+                linterSummary.unavailableLinters.forEach { linter ->
+                    appendLine("- **${linter.name}** (not installed)")
+                    linter.installationInstructions?.let {
+                        appendLine("  - Install: $it")
+                    }
+                }
+                appendLine()
+            }
+
+            if (linterSummary.fileMapping.isNotEmpty()) {
+                appendLine("**File-Linter Mapping:**")
+                linterSummary.fileMapping.forEach { (file, linters) ->
+                    appendLine("- `$file` → ${linters.joinToString(", ")}")
+                }
             }
         }
     }
@@ -566,7 +668,9 @@ class CodeReviewAgent(
     }
 
     override fun buildSystemPrompt(context: CodeReviewContext, language: String): String {
-        return promptRenderer.render(context, language)
+        // Build a simple system prompt for backward compatibility
+        // In the new two-step approach, we use renderAnalysisPrompt and renderFixGenerationPrompt directly
+        return "You are a code review assistant. Analyze the code and provide feedback."
     }
 
     private suspend fun initializeWorkspace(projectPath: String) {
@@ -611,6 +715,86 @@ class CodeReviewAgent(
         )
     }
 
+    /**
+     * Analyze lint output and code content (Step 1 of code review)
+     * This method performs comprehensive analysis of code and lint results
+     *
+     * @param reviewType Type of review (e.g., "COMPREHENSIVE", "SECURITY")
+     * @param filePaths List of file paths to review
+     * @param codeContent Map of file paths to their content
+     * @param lintResults Map of file paths to their lint results
+     * @param diffContext Optional diff context string
+     * @param language Language for the prompt ("EN" or "ZH")
+     * @param onProgress Optional callback for streaming progress
+     * @return Analysis output as string
+     */
+    suspend fun analyzeLintOutput(
+        reviewType: String = "COMPREHENSIVE",
+        filePaths: List<String>,
+        codeContent: Map<String, String>,
+        lintResults: Map<String, String>,
+        diffContext: String = "",
+        language: String = "ZH",
+        onProgress: (String) -> Unit = {}
+    ): String {
+        logger.info { "Starting lint output analysis for ${filePaths.size} files" }
+
+        val prompt = promptRenderer.renderAnalysisPrompt(
+            reviewType = reviewType,
+            filePaths = filePaths,
+            codeContent = codeContent,
+            lintResults = lintResults,
+            diffContext = diffContext,
+            language = language
+        )
+
+        val analysisBuilder = StringBuilder()
+
+        llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+            analysisBuilder.append(chunk)
+            onProgress(chunk)
+        }
+
+        return analysisBuilder.toString()
+    }
+
+    /**
+     * Generate fixes for identified issues (Step 2 of code review)
+     * This method generates unified diff patches for critical issues
+     *
+     * @param codeContent Map of file paths to their content
+     * @param lintResults List of lint results
+     * @param analysisOutput Output from the analysis step
+     * @param language Language for the prompt ("EN" or "ZH")
+     * @param onProgress Optional callback for streaming progress
+     * @return Fix generation output as string
+     */
+    suspend fun generateFixes(
+        codeContent: Map<String, String>,
+        lintResults: List<LintFileResult>,
+        analysisOutput: String,
+        language: String = "ZH",
+        onProgress: (String) -> Unit = {}
+    ): String {
+        logger.info { "Starting fix generation for ${codeContent.size} files" }
+
+        val prompt = promptRenderer.renderFixGenerationPrompt(
+            codeContent = codeContent,
+            lintResults = lintResults,
+            analysisOutput = analysisOutput,
+            language = language
+        )
+
+        val fixBuilder = StringBuilder()
+
+        llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
+            fixBuilder.append(chunk)
+            onProgress(chunk)
+        }
+
+        return fixBuilder.toString()
+    }
+
     override fun formatOutput(output: ToolResult.AgentResult): String {
         return output.content
     }
@@ -626,7 +810,7 @@ class CodeReviewAgent(
  */
 interface CodeReviewService {
     suspend fun executeTask(task: ReviewTask): CodeReviewResult
-    fun buildSystemPrompt(context: CodeReviewContext, language: String = "EN"): String
+    fun buildSystemPrompt(context: CodeReviewContext, language: String = "ZH"): String
 }
 
 /**
@@ -684,3 +868,33 @@ data class AnalysisResult(
     val issuesAnalyzed: List<String> = emptyList(),
     val usedTools: Boolean = false
 )
+
+data class LintFileResult(
+    val filePath: String,
+    val linterName: String,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val issues: List<LintIssueUI>
+)
+
+/**
+ * UI-friendly lint issue
+ */
+data class LintIssueUI(
+    val line: Int,
+    val column: Int,
+    val severity: LintSeverityUI,
+    val message: String,
+    val rule: String? = null,
+    val suggestion: String? = null
+)
+
+/**
+ * UI-friendly lint severity
+ */
+enum class LintSeverityUI {
+    ERROR,
+    WARNING,
+    INFO
+}
