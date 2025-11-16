@@ -153,7 +153,7 @@ private fun AutoDevContent(
                 // Save as string for config compatibility
                 val typeString = when (type) {
                     AgentType.REMOTE -> "Remote"
-                    AgentType.LOCAL -> "Local"
+                    AgentType.LOCAL_CHAT -> "Local"
                     else -> "Local" // CODING and CODE_REVIEW are local modes
                 }
                 cc.unitmesh.devins.ui.config.saveAgentTypePreference(typeString)
@@ -267,7 +267,7 @@ private fun AutoDevContent(
 
             selectedAgentType = when (initialMode) {
                 "remote", "session" -> AgentType.REMOTE
-                "local" -> AgentType.LOCAL
+                "local" -> AgentType.LOCAL_CHAT
                 else -> wrapper.getAgentType()
             }
 
@@ -349,7 +349,7 @@ private fun AutoDevContent(
             onOpenLocalChat = if (Platform.isJvm) {
                 {
                     useSessionManagement = false
-                    selectedAgentType = AgentType.LOCAL
+                    selectedAgentType = AgentType.LOCAL_CHAT
                 }
             } else null
         )
@@ -464,7 +464,10 @@ private fun AutoDevContent(
                         llmService = llmService,
                         isTreeViewVisible = isTreeViewVisible,
                         onConfigWarning = { showModelConfigDialog = true },
-                        onToggleTreeView = { isTreeViewVisible = it },
+                        onToggleTreeView = {
+                            isTreeViewVisible = it
+                            onTreeViewVisibilityChanged(it)
+                        },
                         chatHistoryManager = chatHistoryManager,
                         selectedAgentType = selectedAgentType,
                         onAgentTypeChange = { type ->

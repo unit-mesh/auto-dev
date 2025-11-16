@@ -13,7 +13,7 @@ enum class AgentType {
     /**
      * Local chat mode - lightweight conversation without heavy tooling
      */
-    LOCAL,
+    LOCAL_CHAT,
 
     /**
      * Coding agent mode - full-featured local agent with file system, shell, and all tools
@@ -31,10 +31,10 @@ enum class AgentType {
     REMOTE;
 
     fun getDisplayName(): String = when (this) {
-        LOCAL -> "Local Chat"
-        CODING -> "Coding Agent"
-        CODE_REVIEW -> "Code Review"
-        REMOTE -> "Remote Agent"
+        LOCAL_CHAT -> "Chat"
+        CODING -> "Agentic"
+        CODE_REVIEW -> "Review"
+        REMOTE -> "Remote"
     }
 
     /**
@@ -51,10 +51,10 @@ enum class AgentType {
         fun fromString(type: String): AgentType {
             return when (type.lowercase()) {
                 "remote" -> REMOTE
-                "local" -> LOCAL
+                "local" -> LOCAL_CHAT
                 "coding" -> CODING
                 "codereview" -> CODE_REVIEW
-                else -> LOCAL
+                else -> LOCAL_CHAT
             }
         }
     }

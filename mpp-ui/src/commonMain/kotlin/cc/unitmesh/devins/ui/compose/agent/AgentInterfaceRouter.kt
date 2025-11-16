@@ -87,7 +87,7 @@ fun AgentInterfaceRouter(
                 onAgentTypeChange = { typeName ->
                     // Convert display name back to AgentType
                     val newType = when (typeName) {
-                        "Local Chat", "Local" -> AgentType.LOCAL
+                        "Local Chat", "Local" -> AgentType.LOCAL_CHAT
                         "Remote Agent", "Remote" -> AgentType.REMOTE
                         "Code Review" -> AgentType.CODE_REVIEW
                         else -> AgentType.CODING
@@ -105,7 +105,7 @@ fun AgentInterfaceRouter(
             )
         }
 
-        AgentType.LOCAL,
+        AgentType.LOCAL_CHAT,
         AgentType.CODING -> {
             // Show local chat/coding interface
             AgentChatInterface(

@@ -274,7 +274,7 @@ private fun AgentTypeTab(
                     cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE -> AutoDevComposeIcons.Cloud
                     cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
                     cc.unitmesh.devins.ui.compose.agent.AgentType.CODING -> AutoDevComposeIcons.Code
-                    cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL -> AutoDevComposeIcons.Chat
+                    cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
                 },
                 contentDescription = null,
                 tint = contentColor,

@@ -155,7 +155,7 @@ fun AgentChatInterface(
                         }
 
                     when (selectedAgentType) {
-                        AgentType.LOCAL,
+                        AgentType.LOCAL_CHAT,
                         AgentType.CODING -> {
                             DevInEditorInput(
                                 initialText = "",
@@ -192,7 +192,6 @@ fun AgentChatInterface(
                 }
             },
             second = {
-                // 右侧：TreeView + FileViewer（也使用 ResizableSplitPane）
                 val hasFileViewer = viewModel.renderer.currentViewingFile != null
                 if (hasFileViewer) {
                     ResizableSplitPane(
@@ -221,7 +220,6 @@ fun AgentChatInterface(
                         }
                     )
                 } else {
-                    // 只有 TreeView
                     FileSystemTreeView(
                         rootPath = currentWorkspace?.rootPath ?: "",
                         onFileClick = { filePath ->

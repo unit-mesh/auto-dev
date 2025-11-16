@@ -73,6 +73,7 @@ fun main(args: Array<String>) {
                                 uiState.updateAgentType(newType)
                                 AutoDevLogger.info("AutoDevMain") { "🔄 Switch Agent Type: $newType" }
                             },
+                            workspacePath = uiState.workspacePath,
                             isTreeViewVisible = uiState.isTreeViewVisible,
                             showSessionSidebar = uiState.showSessionSidebar,
                             selectedAgent = uiState.selectedAgent,

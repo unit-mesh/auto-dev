@@ -92,7 +92,7 @@ private fun AndroidAutoDevContent(
     val sessionViewModel = remember { SessionViewModel(sessionClient) }
 
     // Agent 模式状态
-    var selectedAgentType by remember { mutableStateOf(AgentType.LOCAL) }
+    var selectedAgentType by remember { mutableStateOf(AgentType.LOCAL_CHAT) }
     var useAgentMode by remember { mutableStateOf(true) }
     var isTreeViewVisible by remember { mutableStateOf(false) }
 
