@@ -173,7 +173,6 @@ class JsCodeReviewAgent(
                 else -> emptyList()
             }
 
-            // 转换为 JsCodeReviewResult
             JsCodeReviewResult(
                 success = agentResult.success,
                 message = agentResult.message,

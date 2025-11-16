@@ -157,7 +157,7 @@ export async function runReview(
           true, // useTools
           'EN',
           (chunk: string) => {
-            process.stdout.write(chunk);
+            // process.stdout.write(chunk);
           }
         );
 
