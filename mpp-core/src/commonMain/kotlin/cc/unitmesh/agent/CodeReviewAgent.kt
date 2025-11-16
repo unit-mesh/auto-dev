@@ -251,31 +251,167 @@ class CodeReviewAgent(
         )
 
         val conversationManager = cc.unitmesh.agent.conversation.ConversationManager(llmService, systemPrompt)
+        val toolCallParser = cc.unitmesh.agent.parser.ToolCallParser()
         val analysisOutput = StringBuilder()
+        var currentIteration = 0
+        var usedTools = false
+
         try {
-            conversationManager.sendMessage("Start analysis", compileDevIns = true).collect { chunk: String ->
-                analysisOutput.append(chunk)
-                onProgress(chunk)
+            while (currentIteration < maxIterations) {
+                currentIteration++
+                logger.debug { "Analysis iteration $currentIteration/$maxIterations" }
+
+                val llmResponse = StringBuilder()
+                try {
+                    if (currentIteration == 1) {
+                        conversationManager.sendMessage("Start analysis", compileDevIns = true).collect { chunk: String ->
+                            llmResponse.append(chunk)
+                            onProgress(chunk)
+                        }
+                    } else {
+                        conversationManager.sendMessage(
+                            "Please continue with your analysis based on the tool results above. " +
+                                    "Use additional tools if needed, or provide your final analysis if you have all the information.",
+                            compileDevIns = true
+                        ).collect { chunk: String ->
+                            llmResponse.append(chunk)
+                            onProgress(chunk)
+                        }
+                    }
+                    conversationManager.addAssistantResponse(llmResponse.toString())
+                    analysisOutput.append(llmResponse.toString())
+                } catch (e: Exception) {
+                    logger.error(e) { "LLM call failed during analysis: ${e.message}" }
+                    return AnalysisResult(
+                        success = false,
+                        content = "❌ Analysis failed: ${e.message}",
+                        usedTools = usedTools
+                    )
+                }
+
+                // Parse tool calls from LLM response
+                val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
+                if (toolCalls.isEmpty()) {
+                    logger.info { "No tool calls found, analysis complete" }
+                    break
+                }
+
+                usedTools = true
+                logger.info { "Found ${toolCalls.size} tool call(s), executing..." }
+
+                // Execute tool calls
+                val toolResults = executeToolCallsForAnalysis(toolCalls)
+                val toolResultsText = formatToolResults(toolResults)
+                conversationManager.addToolResults(toolResultsText)
+                
+                // Also append tool results to analysis output for visibility
+                analysisOutput.append("\n\n<!-- Tool Execution Results -->\n")
+                analysisOutput.append(toolResultsText)
+                onProgress("\n")
             }
-            conversationManager.addAssistantResponse(analysisOutput.toString())
+
+            if (currentIteration >= maxIterations) {
+                logger.warn { "Analysis reached max iterations ($maxIterations)" }
+            }
         } catch (e: Exception) {
-            logger.error(e) { "LLM call failed during analysis: ${e.message}" }
+            logger.error(e) { "Analysis failed: ${e.message}" }
             return AnalysisResult(
                 success = false,
                 content = "❌ Analysis failed: ${e.message}",
-                usedTools = false
+                usedTools = usedTools
             )
         }
 
-        val analysisResult = analysisOutput.toString()
-
         return AnalysisResult(
             success = true,
-            content = analysisResult,
+            content = analysisOutput.toString(),
             mermaidDiagram = null,
             issuesAnalyzed = emptyList(),
-            usedTools = false
+            usedTools = usedTools
         )
+    }
+
+    /**
+     * Execute tool calls for analysis and return results
+     */
+    private suspend fun executeToolCallsForAnalysis(
+        toolCalls: List<cc.unitmesh.agent.state.ToolCall>
+    ): List<Triple<String, Map<String, Any>, cc.unitmesh.agent.orchestrator.ToolExecutionResult>> {
+        val results = mutableListOf<Triple<String, Map<String, Any>, cc.unitmesh.agent.orchestrator.ToolExecutionResult>>()
+
+        for (toolCall in toolCalls) {
+            val toolName = toolCall.toolName
+            val params = toolCall.params.mapValues { it.value as Any }
+            val startTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+
+            try {
+                logger.info { "Executing tool: $toolName" }
+
+                val context = cc.unitmesh.agent.orchestrator.ToolExecutionContext(
+                    workingDirectory = projectPath,
+                    environment = emptyMap()
+                )
+
+                val executionResult = toolOrchestrator.executeToolCall(
+                    toolName,
+                    params,
+                    context
+                )
+
+                results.add(Triple(toolName, params, executionResult))
+            } catch (e: Exception) {
+                logger.error(e) { "Tool execution failed: ${e.message}" }
+                val endTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+                val errorResult = cc.unitmesh.agent.orchestrator.ToolExecutionResult.failure(
+                    executionId = "exec_error_${endTime}",
+                    toolName = toolName,
+                    error = "Tool execution failed: ${e.message}",
+                    startTime = startTime,
+                    endTime = endTime
+                )
+                results.add(Triple(toolName, params, errorResult))
+            }
+        }
+
+        return results
+    }
+
+    /**
+     * Format tool results for feedback to LLM
+     */
+    private fun formatToolResults(
+        results: List<Triple<String, Map<String, Any>, cc.unitmesh.agent.orchestrator.ToolExecutionResult>>
+    ): String = buildString {
+        appendLine("## Tool Execution Results")
+        appendLine()
+
+        results.forEachIndexed { index, (toolName, params, executionResult) ->
+            appendLine("### Tool ${index + 1}: $toolName")
+            
+            if (params.isNotEmpty()) {
+                appendLine("**Parameters:**")
+                params.forEach { (key, value) ->
+                    appendLine("- $key: $value")
+                }
+            }
+            
+            appendLine("**Result:**")
+            when (val result = executionResult.result) {
+                is cc.unitmesh.agent.tool.ToolResult.Success -> {
+                    appendLine("```")
+                    appendLine(result.content)
+                    appendLine("```")
+                }
+                is cc.unitmesh.agent.tool.ToolResult.Error -> {
+                    appendLine("❌ Error: ${result.message}")
+                }
+                is cc.unitmesh.agent.tool.ToolResult.AgentResult -> {
+                    appendLine(if (result.success) "✅ Success" else "❌ Failed")
+                    appendLine(result.content)
+                }
+            }
+            appendLine()
+        }
     }
 
     /**

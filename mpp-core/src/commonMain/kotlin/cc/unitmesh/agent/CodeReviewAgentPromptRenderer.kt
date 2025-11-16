@@ -190,12 +190,20 @@ All tools use the DevIns format with JSON parameters:
 ```
 </devin>
 
+**IMPORTANT: Execute ONE tool at a time**
+- ✅ Correct: One <devin> block with one tool call per response
+- ❌ Wrong: Multiple <devin> blocks or multiple tools in one response
+
 Use tools like /read-file, /glob, /grep to gather more context about the code if needed.
 
-For each step, respond with:
+## Response Format
+
+For each tool call, respond with:
 1. Your reasoning about what to do next (explain your thinking)
 2. **EXACTLY ONE** DevIns command (wrapped in <devin></devin> tags)
 3. What you expect to happen
+
+After gathering all necessary information, provide your final analysis WITHOUT any tool calls.
 
 ## Task
 
@@ -276,10 +284,12 @@ ${'$'}{toolList}
 
 ## 响应格式
 
-对于每一步，请回复：
+对于每个工具调用，请回复：
 1. 你对下一步该做什么的推理（解释你的思考）
 2. **恰好一个** DevIns 命令（包装在 <devin></devin> 标签中）
 3. 你期望发生什么
+
+在收集完所有必要信息后，提供你的最终分析，**不要再包含任何工具调用**。
 
 ## 任务
 
