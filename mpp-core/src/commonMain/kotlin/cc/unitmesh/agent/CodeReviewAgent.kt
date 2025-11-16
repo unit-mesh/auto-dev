@@ -471,12 +471,17 @@ class CodeReviewAgent(
 
             val fixOutput = StringBuilder()
             try {
+                // Use renderer for better UI experience
+                renderer.renderLLMResponseStart()
                 llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
                     fixOutput.append(chunk)
+                    renderer.renderLLMResponseChunk(chunk)
                     onProgress(chunk)
                 }
+                renderer.renderLLMResponseEnd()
             } catch (e: Exception) {
                 logger.error(e) { "LLM call failed during fix generation: ${e.message}" }
+                renderer.renderError("❌ Fix generation failed: ${e.message}")
                 return AnalysisResult(
                     success = false,
                     content = "❌ Fix generation failed: ${e.message}",
@@ -493,6 +498,7 @@ class CodeReviewAgent(
             )
         } catch (e: Exception) {
             logger.error(e) { "Failed to generate fixes: ${e.message}" }
+            renderer.renderError("Error generating fixes: ${e.message}")
             return AnalysisResult(
                 success = false,
                 content = "Error generating fixes: ${e.message}",

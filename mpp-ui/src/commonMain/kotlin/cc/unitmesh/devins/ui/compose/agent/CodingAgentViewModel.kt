@@ -4,9 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.AgentTask
-import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.agent.CodeReviewAgent
-import cc.unitmesh.agent.ReviewTask
+import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.PreloadingStatus

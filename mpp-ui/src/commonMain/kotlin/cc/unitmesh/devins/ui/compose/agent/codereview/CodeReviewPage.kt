@@ -5,8 +5,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import cc.unitmesh.agent.CodeReviewAgent
-import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.devins.workspace.WorkspaceManager

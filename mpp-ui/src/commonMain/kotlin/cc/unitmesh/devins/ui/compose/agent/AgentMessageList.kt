@@ -55,7 +55,6 @@ fun AgentMessageList(
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp), // Reduce padding
         verticalArrangement = Arrangement.spacedBy(6.dp) // Reduce spacing
     ) {
-        // Display timeline items in chronological order
         items(renderer.timeline) { timelineItem ->
             when (timelineItem) {
                 is ComposeRenderer.TimelineItem.MessageItem -> {
@@ -295,7 +294,6 @@ fun CombinedToolItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            // Header row - shows tool name, description, and result in one line
             Row(
                 modifier =
                     Modifier
@@ -304,16 +302,15 @@ fun CombinedToolItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Status indicator
                 Text(
                     text = when {
                         isExecuting -> "●"
-                        success == true -> "✓"
+                        success -> "✓"
                         else -> "✗"
                     },
                     color = when {
                         isExecuting -> MaterialTheme.colorScheme.primary
-                        success == true -> Color(0xFF4CAF50)
+                        success -> Color(0xFF4CAF50)
                         else -> MaterialTheme.colorScheme.error
                     },
                     fontWeight = FontWeight.Bold
@@ -330,9 +327,9 @@ fun CombinedToolItem(
                 if (summary != null) {
                     Text(
                         text = "→ $summary",
-                        color = when {
-                            success == true -> Color(0xFF4CAF50)
-                            success == false -> MaterialTheme.colorScheme.error
+                        color = when (success) {
+                            true -> Color(0xFF4CAF50)
+                            false -> MaterialTheme.colorScheme.error
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         style = MaterialTheme.typography.bodyMedium,
@@ -340,7 +337,6 @@ fun CombinedToolItem(
                     )
                 }
 
-                // Execution time (if available)
                 if (executionTimeMs != null && executionTimeMs > 0) {
                     Text(
                         text = "${executionTimeMs}ms",
@@ -349,7 +345,6 @@ fun CombinedToolItem(
                     )
                 }
 
-                // Add "View File" button for file operations
                 if (isFileOperation && !filePath.isNullOrEmpty() && onOpenFileViewer != null) {
                     IconButton(
                         onClick = { onOpenFileViewer(filePath) },
@@ -375,9 +370,7 @@ fun CombinedToolItem(
                 }
             }
 
-            // Expandable content
             if (expanded) {
-                // Show parameters if available
                 if (displayParams != null) {
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -438,7 +431,6 @@ fun CombinedToolItem(
                     }
                 }
 
-                // Show output if available
                 if (displayOutput != null) {
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -517,11 +509,9 @@ fun ToolCallItem(
     var showFullParams by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
 
-    // Determine which params to display
     val displayParams = if (showFullParams) fullParams else details
     val hasFullParams = fullParams != null && fullParams != details
 
-    // Check if this is a file operation that can be viewed
     val isFileOperation =
         toolType in
             listOf(
@@ -687,10 +677,8 @@ fun formatToolParameters(params: String): String {
 
 fun formatOutput(output: String): String {
     return when {
-        // If it looks like JSON, try to format it
         output.trim().startsWith("{") || output.trim().startsWith("[") -> {
             try {
-                // Simple JSON formatting - add line breaks after commas and braces
                 output.replace(",", ",\n")
                     .replace("{", "{\n  ")
                     .replace("}", "\n}")
@@ -700,25 +688,10 @@ fun formatOutput(output: String): String {
                 output
             }
         }
-        // If it's file content with line numbers, preserve formatting
         output.contains("│") -> output
-        // If it's multi-line, preserve formatting
         output.contains("\n") -> output
-        // For single line, limit length and add ellipsis if too long
         output.length > 100 -> "${output.take(100)}..."
         else -> output
-    }
-}
-
-fun formatTimestamp(timestamp: Long): String {
-    val now = Clock.System.now().toEpochMilliseconds()
-    val diff = now - timestamp
-
-    return when {
-        diff < 60_000 -> "just now"
-        diff < 3600_000 -> "${diff / 60_000}m ago"
-        diff < 86400_000 -> "${diff / 3600_000}h ago"
-        else -> "${diff / 86400_000}d ago"
     }
 }
 

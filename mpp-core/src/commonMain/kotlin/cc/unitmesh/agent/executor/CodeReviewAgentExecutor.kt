@@ -52,9 +52,6 @@ class CodeReviewAgentExecutor(
         val initialUserMessage = buildInitialUserMessage(task, linterSummary)
 
         logger.info { "Starting code review: ${task.reviewType} for ${task.filePaths.size} files" }
-        onProgress("🔍 Starting code review...")
-        onProgress("Project: ${task.projectPath}")
-        onProgress("Review Type: ${task.reviewType}")
 
         while (shouldContinue()) {
             yield()
