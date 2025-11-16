@@ -89,14 +89,8 @@ export async function runReview(
         const linterRegistry = KotlinCC.unitmesh.agent.linter.JsLinterRegistry;
         const linterSummary = await linterRegistry.getLinterSummaryForFiles(filePaths);
 
-        if (linterSummary.totalLinters > 0 && linterSummary.availableLinters.length > 0) {
-          console.log(semanticChalk.info('🔍 Detecting linters...'));
-          console.log(semanticChalk.success(`✅ Available Linters (${linterSummary.availableLinters.length}):`));
-          linterSummary.availableLinters.forEach((linter: any) => {
-            console.log(semanticChalk.muted(`  - ${linter.name}`));
-          });
-          console.log();
-        }
+        let summary = KotlinCC.unitmesh.agent.linter.JsLinterSummary.Companion.format(linterSummary);
+        console.log(summary);
       } catch (error: any) {
         console.log(semanticChalk.warning(`Linter detection failed: ${error.message}`));
       }
