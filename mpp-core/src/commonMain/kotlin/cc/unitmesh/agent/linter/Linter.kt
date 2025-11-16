@@ -90,44 +90,73 @@ interface Linter {
 }
 
 /**
- * Summary of linters available for files
+ * Summary of lint issues found in files
+ * Focused on what matters: which files have issues, what severity, and what the issues are
  */
 data class LinterSummary(
-    val totalLinters: Int,
-    val availableLinters: List<LinterAvailability>,
-    val unavailableLinters: List<LinterAvailability>,
-    val fileMapping: Map<String, List<String>> // file path -> linter names
+    val totalFiles: Int,
+    val filesWithIssues: Int,
+    val totalIssues: Int,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val fileIssues: List<FileLintSummary>, // Per-file issue breakdown
+    val executedLinters: List<String> // Which linters actually ran
 ) {
     companion object {
         fun format(linterSummary: cc.unitmesh.agent.linter.LinterSummary): String {
             return buildString {
-                if (linterSummary.availableLinters.isNotEmpty()) {
-                    appendLine("**Available Linters (${linterSummary.availableLinters.size}):**")
-                    linterSummary.availableLinters.forEach { linter ->
-                        appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
-                        if (linter.supportedFiles.isNotEmpty()) {
-                            appendLine("  - Supported files: ${linter.supportedFiles.joinToString(", ")}")
+                appendLine("## Lint Results Summary")
+                appendLine("Files analyzed: ${linterSummary.totalFiles} | Files with issues: ${linterSummary.filesWithIssues}")
+                appendLine("Total issues: ${linterSummary.totalIssues} (❌ ${linterSummary.errorCount} errors, ⚠️ ${linterSummary.warningCount} warnings, ℹ️ ${linterSummary.infoCount} info)")
+                
+                if (linterSummary.executedLinters.isNotEmpty()) {
+                    appendLine("Linters executed: ${linterSummary.executedLinters.joinToString(", ")}")
+                }
+                appendLine()
+
+                if (linterSummary.fileIssues.isNotEmpty()) {
+                    // Group by severity priority: errors first, then warnings, then info
+                    val filesWithErrors = linterSummary.fileIssues.filter { it.errorCount > 0 }
+                    val filesWithWarnings = linterSummary.fileIssues.filter { it.errorCount == 0 && it.warningCount > 0 }
+                    val filesWithInfo = linterSummary.fileIssues.filter { it.errorCount == 0 && it.warningCount == 0 && it.infoCount > 0 }
+                    
+                    if (filesWithErrors.isNotEmpty()) {
+                        appendLine("### ❌ Files with Errors (${filesWithErrors.size})")
+                        filesWithErrors.forEach { file ->
+                            appendLine("**${file.filePath}** (${file.errorCount} errors, ${file.warningCount} warnings)")
+                            file.topIssues.forEach { issue ->
+                                appendLine("  - Line ${issue.line}: ${issue.message} [${issue.rule ?: "unknown"}]")
+                            }
+                            if (file.hasMoreIssues) {
+                                appendLine("  - ... and ${file.totalIssues - file.topIssues.size} more issues")
+                            }
+                        }
+                        appendLine()
+                    }
+                    
+                    if (filesWithWarnings.isNotEmpty()) {
+                        appendLine("### ⚠️ Files with Warnings (${filesWithWarnings.size})")
+                        filesWithWarnings.forEach { file ->
+                            appendLine("**${file.filePath}** (${file.warningCount} warnings)")
+                            file.topIssues.take(3).forEach { issue ->
+                                appendLine("  - Line ${issue.line}: ${issue.message} [${issue.rule ?: "unknown"}]")
+                            }
+                            if (file.hasMoreIssues) {
+                                appendLine("  - ... and ${file.totalIssues - file.topIssues.size} more issues")
+                            }
+                        }
+                        appendLine()
+                    }
+                    
+                    if (filesWithInfo.isNotEmpty() && filesWithInfo.size <= 5) {
+                        appendLine("### ℹ️ Files with Info (${filesWithInfo.size})")
+                        filesWithInfo.forEach { file ->
+                            appendLine("**${file.filePath}** (${file.infoCount} info)")
                         }
                     }
-                    appendLine()
-                }
-
-                if (linterSummary.unavailableLinters.isNotEmpty()) {
-                    appendLine("**Unavailable Linters (${linterSummary.unavailableLinters.size}):**")
-                    linterSummary.unavailableLinters.forEach { linter ->
-                        appendLine("- **${linter.name}** (not installed)")
-                        linter.installationInstructions?.let {
-                            appendLine("  - Install: $it")
-                        }
-                    }
-                    appendLine()
-                }
-
-                if (linterSummary.fileMapping.isNotEmpty()) {
-                    appendLine("**File-Linter Mapping:**")
-                    linterSummary.fileMapping.forEach { (file, linters) ->
-                        appendLine("- `$file` → ${linters.joinToString(", ")}")
-                    }
+                } else {
+                    appendLine("✅ No issues found!")
                 }
             }
         }
@@ -135,14 +164,17 @@ data class LinterSummary(
 }
 
 /**
- * Linter availability information
+ * Per-file lint issue summary
  */
-data class LinterAvailability(
-    val name: String,
-    val isAvailable: Boolean,
-    val version: String? = null,
-    val supportedFiles: List<String> = emptyList(),
-    val installationInstructions: String? = null
+data class FileLintSummary(
+    val filePath: String,
+    val linterName: String,
+    val totalIssues: Int,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val topIssues: List<LintIssue>, // Top 5 most important issues
+    val hasMoreIssues: Boolean
 )
 
 /**
@@ -196,42 +228,114 @@ class LinterRegistry {
 
     /**
      * Get summary of linters for specific files
+     * Actually runs linters and collects real issues
      */
-    suspend fun getLinterSummaryForFiles(filePaths: List<String>): LinterSummary {
-        val suitableLinters = findLintersForFiles(filePaths)
-
-        val availabilities = mutableListOf<LinterAvailability>()
-        val fileMapping = mutableMapOf<String, MutableList<String>>()
-
-        for (linter in suitableLinters) {
-            val isAvailable = linter.isAvailable()
-            val supportedFiles = filePaths.filter { path ->
-                val ext = path.substringAfterLast('.', "").lowercase()
-                linter.supportedExtensions.any { it.equals(ext, ignoreCase = true) }
-            }
-
-            val availability = LinterAvailability(
-                name = linter.name,
-                isAvailable = isAvailable,
-                supportedFiles = supportedFiles,
-                installationInstructions = if (!isAvailable) linter.getInstallationInstructions() else null
+    suspend fun getLinterSummaryForFiles(filePaths: List<String>, projectPath: String = "."): LinterSummary {
+        if (filePaths.isEmpty()) {
+            return LinterSummary(
+                totalFiles = 0,
+                filesWithIssues = 0,
+                totalIssues = 0,
+                errorCount = 0,
+                warningCount = 0,
+                infoCount = 0,
+                fileIssues = emptyList(),
+                executedLinters = emptyList()
             )
-            availabilities.add(availability)
+        }
 
-            // Build file mapping
-            for (file in supportedFiles) {
-                fileMapping.getOrPut(file) { mutableListOf() }.add(linter.name)
+        val suitableLinters = findLintersForFiles(filePaths)
+        val availableLinters = suitableLinters.filter { it.isAvailable() }
+        
+        if (availableLinters.isEmpty()) {
+            // No linters available, return empty summary
+            return LinterSummary(
+                totalFiles = filePaths.size,
+                filesWithIssues = 0,
+                totalIssues = 0,
+                errorCount = 0,
+                warningCount = 0,
+                infoCount = 0,
+                fileIssues = emptyList(),
+                executedLinters = emptyList()
+            )
+        }
+
+        val fileIssues = mutableListOf<FileLintSummary>()
+        val executedLinters = mutableSetOf<String>()
+        
+        var totalIssues = 0
+        var totalErrors = 0
+        var totalWarnings = 0
+        var totalInfo = 0
+
+        // Run each available linter on its supported files
+        for (linter in availableLinters) {
+            try {
+                val supportedFiles = filePaths.filter { path ->
+                    val ext = path.substringAfterLast('.', "").lowercase()
+                    linter.supportedExtensions.any { it.equals(ext, ignoreCase = true) }
+                }
+
+                if (supportedFiles.isEmpty()) continue
+
+                // Lint the supported files
+                val results = linter.lintFiles(supportedFiles, projectPath)
+                executedLinters.add(linter.name)
+
+                // Process results
+                for (result in results) {
+                    if (result.issues.isEmpty()) continue
+
+                    val issues = result.issues
+                    val errorCount = issues.count { it.severity == LintSeverity.ERROR }
+                    val warningCount = issues.count { it.severity == LintSeverity.WARNING }
+                    val infoCount = issues.count { it.severity == LintSeverity.INFO }
+
+                    // Take top 5 issues, prioritizing errors > warnings > info
+                    val topIssues = issues
+                        .sortedWith(compareBy<LintIssue> {
+                            when (it.severity) {
+                                LintSeverity.ERROR -> 0
+                                LintSeverity.WARNING -> 1
+                                LintSeverity.INFO -> 2
+                            }
+                        }.thenBy { it.line })
+                        .take(5)
+
+                    fileIssues.add(
+                        FileLintSummary(
+                            filePath = result.filePath,
+                            linterName = linter.name,
+                            totalIssues = issues.size,
+                            errorCount = errorCount,
+                            warningCount = warningCount,
+                            infoCount = infoCount,
+                            topIssues = topIssues,
+                            hasMoreIssues = issues.size > 5
+                        )
+                    )
+
+                    totalIssues += issues.size
+                    totalErrors += errorCount
+                    totalWarnings += warningCount
+                    totalInfo += infoCount
+                }
+            } catch (e: Exception) {
+                // Log error but continue with other linters
+                println("Warning: Linter ${linter.name} failed: ${e.message}")
             }
         }
 
-        val available = availabilities.filter { it.isAvailable }
-        val unavailable = availabilities.filter { !it.isAvailable }
-
         return LinterSummary(
-            totalLinters = availabilities.size,
-            availableLinters = available,
-            unavailableLinters = unavailable,
-            fileMapping = fileMapping
+            totalFiles = filePaths.size,
+            filesWithIssues = fileIssues.size,
+            totalIssues = totalIssues,
+            errorCount = totalErrors,
+            warningCount = totalWarnings,
+            infoCount = totalInfo,
+            fileIssues = fileIssues.sortedByDescending { it.errorCount },
+            executedLinters = executedLinters.toList()
         )
     }
 

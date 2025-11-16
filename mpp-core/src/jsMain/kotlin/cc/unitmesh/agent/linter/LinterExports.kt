@@ -17,9 +17,9 @@ object JsLinterRegistry {
      * Get linter summary for specific files
      */
     @JsName("getLinterSummaryForFiles")
-    fun getLinterSummaryForFiles(filePaths: Array<String>): Promise<JsLinterSummary> {
+    fun getLinterSummaryForFiles(filePaths: Array<String>, projectPath: String = "."): Promise<JsLinterSummary> {
         return GlobalScope.promise {
-            val summary = registry.getLinterSummaryForFiles(filePaths.toList())
+            val summary = registry.getLinterSummaryForFiles(filePaths.toList(), projectPath)
             summary.toJs()
         }
     }
@@ -111,15 +111,18 @@ data class JsLinterConfig(
 )
 
 /**
- * JavaScript-friendly linter availability
+ * JavaScript-friendly file lint summary
  */
 @JsExport
-data class JsLinterAvailability(
-    val name: String,
-    val isAvailable: Boolean,
-    val version: String? = null,
-    val supportedFiles: Array<String> = emptyArray(),
-    val installationInstructions: String? = null
+data class JsFileLintSummary(
+    val filePath: String,
+    val linterName: String,
+    val totalIssues: Int,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val topIssues: Array<JsLintIssue>,
+    val hasMoreIssues: Boolean
 )
 
 /**
@@ -127,10 +130,14 @@ data class JsLinterAvailability(
  */
 @JsExport
 data class JsLinterSummary(
-    val totalLinters: Int,
-    val availableLinters: Array<JsLinterAvailability>,
-    val unavailableLinters: Array<JsLinterAvailability>,
-    val fileMapping: dynamic // Map<String, Array<String>>
+    val totalFiles: Int,
+    val filesWithIssues: Int,
+    val totalIssues: Int,
+    val errorCount: Int,
+    val warningCount: Int,
+    val infoCount: Int,
+    val fileIssues: Array<JsFileLintSummary>,
+    val executedLinters: Array<String>
 )
 
 /**
@@ -273,27 +280,29 @@ private fun LinterConfig.toJs(): JsLinterConfig {
     )
 }
 
-private fun LinterAvailability.toJs(): JsLinterAvailability {
-    return JsLinterAvailability(
-        name = name,
-        isAvailable = isAvailable,
-        version = version,
-        supportedFiles = supportedFiles.toTypedArray(),
-        installationInstructions = installationInstructions
+private fun FileLintSummary.toJs(): JsFileLintSummary {
+    return JsFileLintSummary(
+        filePath = filePath,
+        linterName = linterName,
+        totalIssues = totalIssues,
+        errorCount = errorCount,
+        warningCount = warningCount,
+        infoCount = infoCount,
+        topIssues = topIssues.map { it.toJs() }.toTypedArray(),
+        hasMoreIssues = hasMoreIssues
     )
 }
 
 fun LinterSummary.toJs(): JsLinterSummary {
-    val fileMappingJs = js("{}")
-    fileMapping.forEach { (file, linters) ->
-        fileMappingJs[file] = linters.toTypedArray()
-    }
-
     return JsLinterSummary(
-        totalLinters = totalLinters,
-        availableLinters = availableLinters.map { it.toJs() }.toTypedArray(),
-        unavailableLinters = unavailableLinters.map { it.toJs() }.toTypedArray(),
-        fileMapping = fileMappingJs
+        totalFiles = totalFiles,
+        filesWithIssues = filesWithIssues,
+        totalIssues = totalIssues,
+        errorCount = errorCount,
+        warningCount = warningCount,
+        infoCount = infoCount,
+        fileIssues = fileIssues.map { it.toJs() }.toTypedArray(),
+        executedLinters = executedLinters.toTypedArray()
     )
 }
 

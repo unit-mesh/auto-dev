@@ -210,7 +210,7 @@ class CodeReviewAgent(
         val linterSummary = if (task.filePaths.isNotEmpty()) {
             try {
                 val linterRegistry = LinterRegistry.getInstance()
-                linterRegistry.getLinterSummaryForFiles(task.filePaths)
+                linterRegistry.getLinterSummaryForFiles(task.filePaths, task.projectPath)
             } catch (e: Exception) {
                 logger.warn { "Failed to get linter summary: ${e.message}" }
                 null
@@ -519,7 +519,7 @@ class CodeReviewAgent(
     private suspend fun buildContext(task: ReviewTask): CodeReviewContext {
         val linterSummary = if (task.filePaths.isNotEmpty()) {
             try {
-                LinterRegistry.getInstance().getLinterSummaryForFiles(task.filePaths)
+                LinterRegistry.getInstance().getLinterSummaryForFiles(task.filePaths, task.projectPath)
             } catch (e: Exception) {
                 logger.warn { "Failed to get linter summary: ${e.message}" }
                 null
