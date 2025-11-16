@@ -26,9 +26,6 @@ fun DesktopTitleBarTabs(
     onAgentTypeChange: (AgentType) -> Unit,
     workspacePath: String = "",
     isTreeViewVisible: Boolean = false,
-    showSessionSidebar: Boolean = true,
-    selectedAgent: String = "Default",
-    onToggleSidebar: () -> Unit = {},
     onToggleTreeView: () -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     modifier: Modifier = Modifier

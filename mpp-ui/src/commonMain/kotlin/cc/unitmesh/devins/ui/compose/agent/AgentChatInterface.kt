@@ -99,7 +99,6 @@ fun AgentChatInterface(
         onToggleTreeView(viewModel.isTreeViewVisible)
     }
 
-    // 使用 ResizableSplitPane 分割 Chat 区域和 TreeView 区域
     if (viewModel.isTreeViewVisible) {
         ResizableSplitPane(
             modifier = modifier.fillMaxSize(),

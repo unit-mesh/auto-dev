@@ -75,12 +75,6 @@ fun main(args: Array<String>) {
                             },
                             workspacePath = uiState.workspacePath,
                             isTreeViewVisible = uiState.isTreeViewVisible,
-                            showSessionSidebar = uiState.showSessionSidebar,
-                            selectedAgent = uiState.selectedAgent,
-                            onToggleSidebar = {
-                                uiState.toggleSessionSidebar()
-                                AutoDevLogger.info("AutoDevMain") { "🗂️ Toggle Sidebar: ${uiState.showSessionSidebar}" }
-                            },
                             onToggleTreeView = {
                                 uiState.toggleTreeView()
                             },
