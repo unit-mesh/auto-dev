@@ -32,6 +32,8 @@ fun main(args: Array<String>) {
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
         var currentAgentType by remember { mutableStateOf(AgentType.CODING) }
+        var isTreeViewVisible by remember { mutableStateOf(false) }
+        var workspacePath by remember { mutableStateOf("") }
 
         val windowState =
             rememberWindowState(
@@ -70,6 +72,21 @@ fun main(args: Array<String>) {
                             onAgentTypeChange = { newType ->
                                 currentAgentType = newType
                                 AutoDevLogger.info("AutoDevMain") { "🔄 Switch Agent Type: $newType" }
+                            },
+                            workspacePath = workspacePath,
+                            isTreeViewVisible = isTreeViewVisible,
+                            onToggleTreeView = {
+                                isTreeViewVisible = !isTreeViewVisible
+                                AutoDevLogger.info("AutoDevMain") { "🗂️ Toggle Explorer: $isTreeViewVisible" }
+                            },
+                            onShowModelConfig = {
+                                AutoDevLogger.info("AutoDevMain") { "⚙️ Show Model Config" }
+                            },
+                            onShowToolConfig = {
+                                AutoDevLogger.info("AutoDevMain") { "🔧 Show Tool Config" }
+                            },
+                            onOpenSettings = {
+                                AutoDevLogger.info("AutoDevMain") { "⚙️ Open Settings" }
                             }
                         )
                     }
