@@ -122,20 +122,52 @@ fun CodeReviewAgentPanel(
                     }
                     AnalysisStage.COMPLETED -> {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.Companion.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.CheckCircle,
-                                contentDescription = "Completed",
-                                tint = AutoDevColors.Green.c600,
-                                modifier = Modifier.Companion.size(18.dp)
-                            )
-                            Text(
-                                text = "Completed",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = AutoDevColors.Green.c600
-                            )
+                            Surface(
+                                color = AutoDevColors.Green.c600,
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.Companion.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.Companion.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.CheckCircle,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.Companion.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "Complete",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Companion.Bold
+                                    )
+                                }
+                            }
+                            
+                            FilledTonalButton(
+                                onClick = { viewModel.startAnalysis() },
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = AutoDevColors.Indigo.c600,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier.Companion.height(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier.Companion.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.Companion.width(4.dp))
+                                Text(
+                                    text = "Restart review",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
                         }
                     }
 
@@ -221,6 +253,7 @@ fun CodeReviewAgentPanel(
                         item {
                             AIAnalysisSection(
                                 analysisOutput = state.aiProgress.analysisOutput,
+                                reviewFindings = state.aiProgress.reviewFindings,
                                 isActive = state.aiProgress.stage == AnalysisStage.ANALYZING_LINT
                             )
                         }

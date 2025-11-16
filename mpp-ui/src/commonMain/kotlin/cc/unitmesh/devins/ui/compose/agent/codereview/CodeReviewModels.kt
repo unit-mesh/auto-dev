@@ -47,6 +47,7 @@ data class AIAnalysisProgress(
     val lintResults: List<LintFileResult> = emptyList(),
     val modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap(),
     val analysisOutput: String = "",
+    val reviewFindings: List<cc.unitmesh.agent.ReviewFinding> = emptyList(),
     val fixOutput: String = ""
 )
 

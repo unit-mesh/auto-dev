@@ -353,7 +353,54 @@ open class CodeReviewViewModel(
                         aiProgress = it.aiProgress.copy(stage = AnalysisStage.ANALYZING_LINT)
                     )
                 }
-                analyzeLintOutput()
+
+                val agent = initializeCodingAgent()
+                val reviewTask = cc.unitmesh.agent.ReviewTask(
+                    filePaths = filePaths,
+                    reviewType = cc.unitmesh.agent.ReviewType.COMPREHENSIVE,
+                    projectPath = workspace.rootPath ?: ""
+                )
+
+                val analysisOutputBuilder = StringBuilder()
+                updateState {
+                    it.copy(aiProgress = it.aiProgress.copy(analysisOutput = "🧠 Starting code review analysis...\n"))
+                }
+
+                try {
+                    val agentResult = agent.executeTask(reviewTask)
+
+                    // Extract findings from agent result
+                    // The params in AgentStep is a Map<String, Any>
+                    val findings = agentResult.steps.firstOrNull()?.params?.let { params ->
+                        when (params) {
+                            is Map<*, *> -> {
+                                (params["findings"] as? List<*>)?.filterIsInstance<cc.unitmesh.agent.ReviewFinding>()
+                            }
+                            else -> null
+                        }
+                    } ?: emptyList()
+
+                    analysisOutputBuilder.append(agentResult.message)
+
+                    updateState {
+                        it.copy(
+                            aiProgress = it.aiProgress.copy(
+                                analysisOutput = analysisOutputBuilder.toString(),
+                                reviewFindings = findings
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    AutoDevLogger.error("CodeReviewViewModel") { "Failed to execute review task: ${e.message}" }
+                    analysisOutputBuilder.append("\n❌ Error: ${e.message}")
+                    updateState {
+                        it.copy(
+                            aiProgress = it.aiProgress.copy(
+                                analysisOutput = analysisOutputBuilder.toString()
+                            )
+                        )
+                    }
+                }
 
                 updateState {
                     it.copy(
@@ -567,94 +614,7 @@ open class CodeReviewViewModel(
         }
     }
 
-    /**
-     * Analyze lint output using Data-Driven prompt approach
-     * This method collects all necessary data upfront and uses the optimized
-     * CodeReviewAnalysisTemplate for efficient, reliable analysis
-     */
-    suspend fun analyzeLintOutput() {
-        val phaseStartTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
 
-        try {
-            val analysisOutputBuilder = StringBuilder()
-            updateState {
-                it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
-            }
-
-            analysisOutputBuilder.appendLine("📖 Reading code files...")
-            updateState {
-                it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
-            }
-
-            val dataCollectStart = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-            val codeContent = collectCodeContent()
-
-            // Collect lint results
-            val lintResultsMap = formatLintResults()
-
-            // Build diff context
-            val diffContext = buildDiffContext()
-
-            val dataCollectDuration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - dataCollectStart
-
-            analysisOutputBuilder.appendLine("✅ Data collected in ${dataCollectDuration}ms (${codeContent.size} files)")
-            analysisOutputBuilder.appendLine("🧠 Generating analysis prompt...")
-            updateState {
-                it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
-            }
-
-            val configWrapper = ConfigManager.load()
-            val modelConfig = configWrapper.getActiveModelConfig()!!
-            val llmService = KoogLLMService.create(modelConfig)
-
-            val promptRenderer = cc.unitmesh.agent.CodeReviewAgentPromptRenderer()
-            val prompt = promptRenderer.renderAnalysisPrompt(
-                reviewType = "COMPREHENSIVE",
-                filePaths = codeContent.keys.toList(),
-                codeContent = codeContent,
-                lintResults = lintResultsMap,
-                diffContext = diffContext,
-                language = "EN"
-            )
-
-            val promptLength = prompt.length
-            analysisOutputBuilder.appendLine("📊 Prompt size: $promptLength chars (~${promptLength / 4} tokens)")
-            analysisOutputBuilder.appendLine("⚡ Streaming AI response...")
-            analysisOutputBuilder.appendLine()
-            updateState {
-                it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
-            }
-
-            val llmStartTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-            llmService.streamPrompt(prompt, compileDevIns = false).collect { chunk ->
-                analysisOutputBuilder.append(chunk)
-                updateState {
-                    it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
-                }
-            }
-
-            val totalDuration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - phaseStartTime
-            val llmDuration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - llmStartTime
-
-            AutoDevLogger.info("CodeReviewViewModel") {
-                "Analysis complete: Total ${totalDuration}ms (Data: ${dataCollectDuration}ms, LLM: ${llmDuration}ms)"
-            }
-
-            updateState {
-                it.copy(aiProgress = it.aiProgress.copy(analysisOutput = analysisOutputBuilder.toString()))
-            }
-
-        } catch (e: Exception) {
-            AutoDevLogger.error("CodeReviewViewModel") { "Failed to analyze lint output: ${e.message}" }
-            updateState {
-                it.copy(
-                    aiProgress = it.aiProgress.copy(
-                        analysisOutput = "Error analyzing lint output: ${e.message}\n"
-                    )
-                )
-            }
-        }
-    }
 
     /**
      * Collect code content for all changed files with caching
