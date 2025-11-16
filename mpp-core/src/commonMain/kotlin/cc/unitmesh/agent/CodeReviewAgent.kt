@@ -260,12 +260,15 @@ class CodeReviewAgent(
             while (currentIteration < maxIterations) {
                 currentIteration++
                 logger.debug { "Analysis iteration $currentIteration/$maxIterations" }
+                renderer.renderIterationHeader(currentIteration, maxIterations)
 
                 val llmResponse = StringBuilder()
                 try {
+                    renderer.renderLLMResponseStart()
                     if (currentIteration == 1) {
                         conversationManager.sendMessage("Start analysis", compileDevIns = true).collect { chunk: String ->
                             llmResponse.append(chunk)
+                            renderer.renderLLMResponseChunk(chunk)
                             onProgress(chunk)
                         }
                     } else {
@@ -275,13 +278,16 @@ class CodeReviewAgent(
                             compileDevIns = true
                         ).collect { chunk: String ->
                             llmResponse.append(chunk)
+                            renderer.renderLLMResponseChunk(chunk)
                             onProgress(chunk)
                         }
                     }
+                    renderer.renderLLMResponseEnd()
                     conversationManager.addAssistantResponse(llmResponse.toString())
                     analysisOutput.append(llmResponse.toString())
                 } catch (e: Exception) {
                     logger.error(e) { "LLM call failed during analysis: ${e.message}" }
+                    renderer.renderError("❌ Analysis failed: ${e.message}")
                     return AnalysisResult(
                         success = false,
                         content = "❌ Analysis failed: ${e.message}",
@@ -293,6 +299,7 @@ class CodeReviewAgent(
                 val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
                 if (toolCalls.isEmpty()) {
                     logger.info { "No tool calls found, analysis complete" }
+                    renderer.renderTaskComplete()
                     break
                 }
 
@@ -307,14 +314,15 @@ class CodeReviewAgent(
                 // Also append tool results to analysis output for visibility
                 analysisOutput.append("\n\n<!-- Tool Execution Results -->\n")
                 analysisOutput.append(toolResultsText)
-                onProgress("\n")
             }
 
             if (currentIteration >= maxIterations) {
                 logger.warn { "Analysis reached max iterations ($maxIterations)" }
+                renderer.renderError("⚠️ Analysis reached max iterations ($maxIterations)")
             }
         } catch (e: Exception) {
             logger.error(e) { "Analysis failed: ${e.message}" }
+            renderer.renderError("❌ Analysis failed: ${e.message}")
             return AnalysisResult(
                 success = false,
                 content = "❌ Analysis failed: ${e.message}",
@@ -346,6 +354,10 @@ class CodeReviewAgent(
 
             try {
                 logger.info { "Executing tool: $toolName" }
+                val paramsStr = params.entries.joinToString(" ") { (key, value) ->
+                    "$key=\"$value\""
+                }
+                renderer.renderToolCall(toolName, paramsStr)
 
                 val context = cc.unitmesh.agent.orchestrator.ToolExecutionContext(
                     workingDirectory = projectPath,
@@ -359,6 +371,18 @@ class CodeReviewAgent(
                 )
 
                 results.add(Triple(toolName, params, executionResult))
+                
+                // Render tool result
+                val fullOutput = when (val result = executionResult.result) {
+                    is cc.unitmesh.agent.tool.ToolResult.Error -> "Error: ${result.message}"
+                    else -> executionResult.content
+                }
+                renderer.renderToolResult(
+                    toolName,
+                    executionResult.isSuccess,
+                    executionResult.content,
+                    fullOutput
+                )
             } catch (e: Exception) {
                 logger.error(e) { "Tool execution failed: ${e.message}" }
                 val endTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
@@ -370,6 +394,7 @@ class CodeReviewAgent(
                     endTime = endTime
                 )
                 results.add(Triple(toolName, params, errorResult))
+                renderer.renderError("Tool execution failed: ${e.message}")
             }
         }
 

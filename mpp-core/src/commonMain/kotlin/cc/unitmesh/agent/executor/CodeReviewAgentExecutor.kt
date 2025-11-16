@@ -24,19 +24,22 @@ import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContex
  * Handles the execution flow for code review tasks with tool calling support
  */
 class CodeReviewAgentExecutor(
-    private val projectPath: String,
-    private val llmService: KoogLLMService,
-    private val toolOrchestrator: ToolOrchestrator,
-    private val renderer: CodingAgentRenderer,
-    private val maxIterations: Int = 50,
-    private val enableLLMStreaming: Boolean = true
+    projectPath: String,
+    llmService: KoogLLMService,
+    toolOrchestrator: ToolOrchestrator,
+    renderer: CodingAgentRenderer,
+    maxIterations: Int = 50,
+    enableLLMStreaming: Boolean = true
+) : BaseAgentExecutor(
+    projectPath = projectPath,
+    llmService = llmService,
+    toolOrchestrator = toolOrchestrator,
+    renderer = renderer,
+    maxIterations = maxIterations,
+    enableLLMStreaming = enableLLMStreaming
 ) {
     private val logger = getLogger("CodeReviewAgentExecutor")
-    private val toolCallParser = ToolCallParser()
-    private var currentIteration = 0
     private val findings = mutableListOf<ReviewFinding>()
-
-    private var conversationManager: ConversationManager? = null
 
     suspend fun execute(
         task: ReviewTask,
@@ -62,39 +65,13 @@ class CodeReviewAgentExecutor(
             val llmResponse = StringBuilder()
 
             try {
-                renderer.renderLLMResponseStart()
-
-                if (enableLLMStreaming) {
-                    if (currentIteration == 1) {
-                        conversationManager!!.sendMessage(initialUserMessage, compileDevIns = false).cancellable().collect { chunk ->
-                            llmResponse.append(chunk)
-                            renderer.renderLLMResponseChunk(chunk)
-                            onProgress(chunk)
-                        }
-                    } else {
-                        conversationManager!!.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
-                            llmResponse.append(chunk)
-                            renderer.renderLLMResponseChunk(chunk)
-                            onProgress(chunk)
-                        }
-                    }
-                } else {
-                    val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
-                    val response = llmService.sendPrompt(message)
-                    llmResponse.append(response)
-                    response.split(Regex("(?<=[.!?。！？]\\s)")).forEach { sentence ->
-                        if (sentence.isNotBlank()) {
-                            renderer.renderLLMResponseChunk(sentence)
-                            onProgress(sentence)
-                        }
-                    }
+                val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
+                val response = getLLMResponse(message, compileDevIns = false) { chunk ->
+                    onProgress(chunk)
                 }
-
-                renderer.renderLLMResponseEnd()
-                conversationManager!!.addAssistantResponse(llmResponse.toString())
+                llmResponse.append(response)
             } catch (e: Exception) {
                 logger.error(e) { "LLM call failed: ${e.message}" }
-                renderer.renderError("LLM call failed: ${e.message}")
                 onProgress("❌ LLM call failed: ${e.message}")
                 break
             }
@@ -131,13 +108,9 @@ class CodeReviewAgentExecutor(
         findings.clear()
     }
 
-    private fun shouldContinue(): Boolean {
-        return currentIteration < maxIterations
-    }
-
     private suspend fun buildInitialUserMessage(
         task: ReviewTask,
-        linterSummary: cc.unitmesh.agent.linter.LinterSummary?
+        linterSummary: LinterSummary?
     ): String {
         return buildString {
             appendLine("Please review the following code:")
@@ -182,14 +155,13 @@ class CodeReviewAgentExecutor(
         }
     }
 
-    private fun buildContinuationMessage(): String {
+    override fun buildContinuationMessage(): String {
         return "Please continue with the code review based on the tool execution results above. " +
                 "Use additional tools if needed, or provide your final review if you have all the information."
     }
 
     private fun isReviewComplete(response: String): Boolean {
-        // Check if the response contains review completion indicators
-        val completionIndicators = listOf(
+        return hasCompletionIndicator(response, listOf(
             "review complete",
             "review is complete",
             "finished reviewing",
@@ -197,10 +169,7 @@ class CodeReviewAgentExecutor(
             "final review",
             "summary:",
             "## summary"
-        )
-
-        val lowerResponse = response.lowercase()
-        return completionIndicators.any { lowerResponse.contains(it) }
+        ))
     }
 
     /**

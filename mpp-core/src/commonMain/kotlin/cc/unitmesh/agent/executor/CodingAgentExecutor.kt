@@ -24,23 +24,26 @@ import kotlinx.datetime.Clock
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
 
 class CodingAgentExecutor(
-    private val projectPath: String,
-    private val llmService: KoogLLMService,
-    private val toolOrchestrator: ToolOrchestrator,
-    private val renderer: CodingAgentRenderer,
-    private val maxIterations: Int = 100,
+    projectPath: String,
+    llmService: KoogLLMService,
+    toolOrchestrator: ToolOrchestrator,
+    renderer: CodingAgentRenderer,
+    maxIterations: Int = 100,
     private val subAgentManager: SubAgentManager? = null,
-    private val enableLLMStreaming: Boolean = true  // 新增：控制 LLM 流式响应
+    enableLLMStreaming: Boolean = true
+) : BaseAgentExecutor(
+    projectPath = projectPath,
+    llmService = llmService,
+    toolOrchestrator = toolOrchestrator,
+    renderer = renderer,
+    maxIterations = maxIterations,
+    enableLLMStreaming = enableLLMStreaming
 ) {
-    private val toolCallParser = ToolCallParser()
-    private var currentIteration = 0
     private val steps = mutableListOf<AgentStep>()
     private val edits = mutableListOf<AgentEdit>()
 
     private val recentToolCalls = mutableListOf<String>()
     private val MAX_REPEAT_COUNT = 3
-
-    private var conversationManager: ConversationManager? = null
 
     /**
      * 执行 Agent 任务
@@ -67,38 +70,11 @@ class CodingAgentExecutor(
             val llmResponse = StringBuilder()
 
             try {
-                renderer.renderLLMResponseStart()
-
-                if (enableLLMStreaming) {
-                    // 流式模式：逐块接收并渲染
-                    if (currentIteration == 1) {
-                        conversationManager!!.sendMessage(initialUserMessage, compileDevIns = true).cancellable().collect { chunk ->
-                            llmResponse.append(chunk)
-                            renderer.renderLLMResponseChunk(chunk)
-                        }
-                    } else {
-                        conversationManager!!.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
-                            llmResponse.append(chunk)
-                            renderer.renderLLMResponseChunk(chunk)
-                        }
-                    }
-                } else {
-                    // 非流式模式：一次性获取完整响应
-                    val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
-                    val response = llmService.sendPrompt(message)
-                    llmResponse.append(response)
-                    // 模拟流式输出，按句子分块渲染
-                    response.split(Regex("(?<=[.!?。！？]\\s)")).forEach { sentence ->
-                        if (sentence.isNotBlank()) {
-                            renderer.renderLLMResponseChunk(sentence)
-                        }
-                    }
-                }
-
-                renderer.renderLLMResponseEnd()
-                conversationManager!!.addAssistantResponse(llmResponse.toString())
+                val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
+                val compileDevIns = (currentIteration == 1) // Only compile DevIns on first iteration
+                val response = getLLMResponse(message, compileDevIns)
+                llmResponse.append(response)
             } catch (e: Exception) {
-                renderer.renderError("LLM call failed: ${e.message}")
                 break
             }
 
@@ -133,15 +109,11 @@ class CodingAgentExecutor(
         recentToolCalls.clear()
     }
 
-    private fun shouldContinue(): Boolean {
-        return currentIteration < maxIterations
-    }
-
     private fun buildInitialUserMessage(task: AgentTask): String {
         return "Task: ${task.requirement}"
     }
 
-    private fun buildContinuationMessage(): String {
+    override fun buildContinuationMessage(): String {
         return "Please continue with the task based on the tool execution results above. " +
                 "Use additional tools if needed, or summarize if the task is complete."
     }
