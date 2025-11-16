@@ -119,23 +119,14 @@ fun AgentChatInterface(
                             availableAgents = availableAgents,
                             useAgentMode = useAgentMode,
                             isTreeViewVisible = isTreeViewVisible,
-                            selectedAgentType = "Local", // Always local for this interface
-                            selectedTaskAgentType = selectedAgentType,
-                            onTaskAgentTypeChange = onAgentTypeChange,
+                            currentAgentType = selectedAgentType,
+                            onAgentTypeChange = onAgentTypeChange,
                             onOpenDirectory = onOpenDirectory,
                             onClearHistory = onClearHistory,
                             onModelConfigChange = onModelConfigChange,
                             onAgentChange = onAgentChange,
                             onModeToggle = onModeToggle,
                             onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                            onAgentTypeChange = { typeName ->
-                                // Convert string to AgentType for switching between Local/Remote
-                                val newType = when (typeName) {
-                                    "Remote" -> AgentType.REMOTE
-                                    else -> AgentType.LOCAL
-                                }
-                                onAgentTypeChange(newType)
-                            },
                             onConfigureRemote = onConfigureRemote,
                             onShowModelConfig = onShowModelConfig,
                             onShowToolConfig = onShowToolConfig,
@@ -255,23 +246,14 @@ fun AgentChatInterface(
                     availableAgents = availableAgents,
                     useAgentMode = useAgentMode,
                     isTreeViewVisible = isTreeViewVisible,
-                    selectedAgentType = "Local", // Always local for this interface
-                    selectedTaskAgentType = selectedAgentType,
-                    onTaskAgentTypeChange = onAgentTypeChange,
+                    currentAgentType = selectedAgentType,
+                    onAgentTypeChange = onAgentTypeChange,
                     onOpenDirectory = onOpenDirectory,
                     onClearHistory = onClearHistory,
                     onModelConfigChange = onModelConfigChange,
                     onAgentChange = onAgentChange,
                     onModeToggle = onModeToggle,
                     onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                    onAgentTypeChange = { typeName ->
-                        // Convert string to AgentType for switching between Local/Remote
-                        val newType = when (typeName) {
-                            "Remote" -> AgentType.REMOTE
-                            else -> AgentType.LOCAL
-                        }
-                        onAgentTypeChange(newType)
-                    },
                     onConfigureRemote = onConfigureRemote,
                     onShowModelConfig = onShowModelConfig,
                     onShowToolConfig = onShowToolConfig,

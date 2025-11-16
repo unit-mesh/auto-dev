@@ -24,17 +24,15 @@ fun TopBarMenuMobile(
     availableAgents: List<String>,
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
-    selectedAgentType: String = "Local",
+    // 统一的 Agent 类型（LOCAL, CODING, CODE_REVIEW, REMOTE）
+    currentAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
+    onAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     useSessionManagement: Boolean = false,
-    // Agent Task Type 相关参数
-    selectedTaskAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
-    onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
     onAgentChange: (String) -> Unit,
     onModeToggle: () -> Unit = {},
     onToggleTreeView: () -> Unit = {},
-    onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onSessionManagementToggle: () -> Unit = {},
     onShowModelConfig: () -> Unit,
@@ -210,7 +208,7 @@ fun TopBarMenuMobile(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                         Text(
-                                            selectedAgentType,
+                                            currentAgentType.getDisplayName(),
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                     }
@@ -218,7 +216,12 @@ fun TopBarMenuMobile(
                                 onClick = { agentTypeMenuExpanded = !agentTypeMenuExpanded },
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = if (selectedAgentType == "Remote") AutoDevComposeIcons.Cloud else AutoDevComposeIcons.Computer,
+                                        imageVector = when (currentAgentType) {
+                                            cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE -> AutoDevComposeIcons.Cloud
+                                            cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
+                                            cc.unitmesh.devins.ui.compose.agent.AgentType.CODING -> AutoDevComposeIcons.Code
+                                            cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL -> AutoDevComposeIcons.Chat
+                                        },
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -237,22 +240,27 @@ fun TopBarMenuMobile(
                                 expanded = agentTypeMenuExpanded,
                                 onDismissRequest = { agentTypeMenuExpanded = false }
                             ) {
-                                listOf("Local", "Remote").forEach { type ->
+                                cc.unitmesh.devins.ui.compose.agent.AgentType.entries.forEach { type ->
                                     DropdownMenuItem(
-                                        text = { Text(type) },
+                                        text = { Text(type.getDisplayName()) },
                                         onClick = {
                                             onAgentTypeChange(type)
                                             agentTypeMenuExpanded = false
                                         },
                                         leadingIcon = {
                                             Icon(
-                                                imageVector = if (type == "Remote") AutoDevComposeIcons.Cloud else AutoDevComposeIcons.Computer,
+                                                imageVector = when (type) {
+                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE -> AutoDevComposeIcons.Cloud
+                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
+                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODING -> AutoDevComposeIcons.Code
+                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL -> AutoDevComposeIcons.Chat
+                                                },
                                                 contentDescription = null,
                                                 modifier = Modifier.size(20.dp)
                                             )
                                         },
                                         trailingIcon = {
-                                            if (type == selectedAgentType) {
+                                            if (type == currentAgentType) {
                                                 Icon(
                                                     imageVector = AutoDevComposeIcons.Check,
                                                     contentDescription = "Selected",
@@ -265,7 +273,7 @@ fun TopBarMenuMobile(
                                 }
 
                                 // Configure Server (只在选择 Remote 时显示)
-                                if (selectedAgentType == "Remote") {
+                                if (currentAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE) {
                                     HorizontalDivider()
                                     DropdownMenuItem(
                                         text = {

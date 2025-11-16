@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui
 
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +43,8 @@ fun main(args: Array<String>) {
             Window(
                 onCloseRequest = { isWindowVisible = false }, // 关闭时隐藏到托盘
                 title = "AutoDev Desktop",
-                state = windowState
+                state = windowState,
+                undecorated = true
             ) {
                 AutoDevMenuBar(
                     onOpenFile = {
@@ -52,11 +54,13 @@ fun main(args: Array<String>) {
                     onExit = ::exitApplication
                 )
 
-                AutoDevApp(
-                    triggerFileChooser = triggerFileChooser,
-                    onFileChooserHandled = { triggerFileChooser = false },
-                    initialMode = mode
-                )
+                WindowDraggableArea {
+                    AutoDevApp(
+                        triggerFileChooser = triggerFileChooser,
+                        onFileChooserHandled = { triggerFileChooser = false },
+                        initialMode = mode
+                    )
+                }
             }
         }
     }

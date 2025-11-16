@@ -203,7 +203,7 @@ fun RemoteAgentChatInterface(
                         availableAgents = availableAgents,
                         useAgentMode = useAgentMode,
                         isTreeViewVisible = isTreeViewVisible,
-                        selectedAgentType = selectedAgentType,
+                        currentAgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.fromString(selectedAgentType),
                         onOpenDirectory = onOpenDirectory,
                         onClearHistory = {
                             viewModel.clearHistory()
@@ -213,7 +213,9 @@ fun RemoteAgentChatInterface(
                         onAgentChange = onAgentChange,
                         onModeToggle = onModeToggle,
                         onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                        onAgentTypeChange = onAgentTypeChange,
+                        onAgentTypeChange = { type ->
+                            onAgentTypeChange(type.getDisplayName())
+                        },
                         onConfigureRemote = onConfigureRemote,
                         onShowModelConfig = onShowModelConfig,
                         onShowToolConfig = onShowToolConfig,
@@ -360,7 +362,7 @@ fun RemoteAgentChatInterface(
                 availableAgents = availableAgents,
                 useAgentMode = useAgentMode,
                 isTreeViewVisible = isTreeViewVisible,
-                selectedAgentType = selectedAgentType,
+                currentAgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.fromString(selectedAgentType),
                 onOpenDirectory = onOpenDirectory,
                 onClearHistory = {
                     viewModel.clearHistory()
@@ -370,7 +372,9 @@ fun RemoteAgentChatInterface(
                 onAgentChange = onAgentChange,
                 onModeToggle = onModeToggle,
                 onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                onAgentTypeChange = onAgentTypeChange,
+                onAgentTypeChange = { type ->
+                    onAgentTypeChange(type.getDisplayName())
+                },
                 onConfigureRemote = onConfigureRemote,
                 onShowModelConfig = onShowModelConfig,
                 onShowToolConfig = onShowToolConfig,

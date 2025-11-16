@@ -9,7 +9,7 @@ import cc.unitmesh.llm.ModelConfig
  * 平台自适应的顶部工具栏
  * - Android: 使用 Dropdown Menu 风格（移动端优化）
  * - WASM: 使用左侧可收起侧边栏风格（Web 优化）
- * - Desktop (JVM): 使用 IconButton 风格（桌面端优化）
+ * - Desktop (JVM): 使用 Window Tab 风格（桌面端优化，类似 Chrome）
  */
 @Composable
 fun TopBarMenu(
@@ -20,16 +20,13 @@ fun TopBarMenu(
     availableAgents: List<String>,
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
-    // Remote Agent 相关参数
-    selectedAgentType: String = "Local", // "Local" or "Remote"
-    useSessionManagement: Boolean = false, // Session Management mode
-    // Agent Task Type 相关参数 (Coding vs Code Review)
-    selectedTaskAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
-    onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
+    // 统一的 Agent 类型（LOCAL, CODING, CODE_REVIEW, REMOTE）
+    currentAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
+    onAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
+    useSessionManagement: Boolean = false, // Session Management mode (仅 Remote 有效)
     // Sidebar 相关参数
     showSessionSidebar: Boolean = false,
     onToggleSidebar: () -> Unit = {},
-    onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onSessionManagementToggle: () -> Unit = {},
     onOpenDirectory: () -> Unit,
@@ -52,11 +49,9 @@ fun TopBarMenu(
             availableAgents = availableAgents,
             useAgentMode = useAgentMode,
             isTreeViewVisible = isTreeViewVisible,
-            selectedAgentType = selectedAgentType,
-            useSessionManagement = useSessionManagement,
-            selectedTaskAgentType = selectedTaskAgentType,
+            currentAgentType = currentAgentType,
             onAgentTypeChange = onAgentTypeChange,
-            onTaskAgentTypeChange = onTaskAgentTypeChange,
+            useSessionManagement = useSessionManagement,
             onConfigureRemote = onConfigureRemote,
             onSessionManagementToggle = onSessionManagementToggle,
             onOpenDirectory = onOpenDirectory,
@@ -69,7 +64,7 @@ fun TopBarMenu(
             modifier = modifier
         )
     } else {
-        // Desktop (JVM): 使用 IconButton 排列风格
+        // Desktop (JVM): 使用 Window Tab 风格
         TopBarMenuDesktop(
             hasHistory = hasHistory,
             hasDebugInfo = hasDebugInfo,
@@ -78,13 +73,11 @@ fun TopBarMenu(
             availableAgents = availableAgents,
             useAgentMode = useAgentMode,
             isTreeViewVisible = isTreeViewVisible,
-            selectedAgentType = selectedAgentType,
+            currentAgentType = currentAgentType,
+            onAgentTypeChange = onAgentTypeChange,
             useSessionManagement = useSessionManagement,
-            selectedTaskAgentType = selectedTaskAgentType,
             showSessionSidebar = showSessionSidebar,
             onToggleSidebar = onToggleSidebar,
-            onAgentTypeChange = onAgentTypeChange,
-            onTaskAgentTypeChange = onTaskAgentTypeChange,
             onConfigureRemote = onConfigureRemote,
             onSessionManagementToggle = onSessionManagementToggle,
             onOpenDirectory = onOpenDirectory,

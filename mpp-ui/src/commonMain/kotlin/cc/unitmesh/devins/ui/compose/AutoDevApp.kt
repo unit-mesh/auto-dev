@@ -368,9 +368,8 @@ private fun AutoDevContent(
                         availableAgents = availableAgents,
                         useAgentMode = useAgentMode,
                         isTreeViewVisible = isTreeViewVisible,
-                        selectedAgentType = if (selectedAgentType == AgentType.REMOTE) "Remote" else "Local",
-                        selectedTaskAgentType = selectedAgentType,
-                        onTaskAgentTypeChange = { type ->
+                        currentAgentType = selectedAgentType,
+                        onAgentTypeChange = { type ->
                             handleAgentTypeChange(type)
                         },
                         useSessionManagement = useSessionManagement,
@@ -398,15 +397,6 @@ private fun AutoDevContent(
                         },
                         onModeToggle = { useAgentMode = !useAgentMode },
                         onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
-                        onAgentTypeChange = { typeString ->
-                            // Convert string to AgentType
-                            val type = when (typeString) {
-                                "Remote" -> AgentType.REMOTE
-                                "Local" -> AgentType.LOCAL
-                                else -> AgentType.LOCAL
-                            }
-                            handleAgentTypeChange(type)
-                        },
                         onConfigureRemote = { showRemoteConfigDialog = true },
                         onSessionManagementToggle = {
                             useSessionManagement = !useSessionManagement

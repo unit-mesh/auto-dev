@@ -12,7 +12,7 @@ import cc.unitmesh.llm.ModelConfig
 
 /**
  * 桌面端优化的顶部工具栏
- * 使用 IconButton 风格，功能以图标形式排列
+ * 使用 Window Tab 风格，功能以标签页形式排列（类似 Chrome）
  */
 @Composable
 fun TopBarMenuDesktop(
@@ -23,16 +23,13 @@ fun TopBarMenuDesktop(
     availableAgents: List<String>,
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
-    // Remote Agent 相关参数
-    selectedAgentType: String = "Local",
+    // 统一的 Agent 类型（LOCAL, CODING, CODE_REVIEW, REMOTE）
+    currentAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
+    onAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     useSessionManagement: Boolean = false,
-    // Agent Task Type 相关参数 (Coding vs Code Review)
-    selectedTaskAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
-    onTaskAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
     // Sidebar 相关参数
     showSessionSidebar: Boolean = true,
     onToggleSidebar: () -> Unit = {},
-    onAgentTypeChange: (String) -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     onSessionManagementToggle: () -> Unit = {},
     onOpenDirectory: () -> Unit,
@@ -45,357 +42,135 @@ fun TopBarMenuDesktop(
     modifier: Modifier = Modifier
 ) {
     val currentTheme = ThemeManager.currentTheme
-    var themeMenuExpanded by remember { mutableStateOf(false) }
     var agentMenuExpanded by remember { mutableStateOf(false) }
-    var agentTypeMenuExpanded by remember { mutableStateOf(false) }
-    var taskAgentTypeMenuExpanded by remember { mutableStateOf(false) }
 
     Surface(
-        modifier = modifier.fillMaxWidth().height(32.dp),
+        modifier = modifier.fillMaxWidth().height(48.dp),
         shadowElevation = if (hasHistory) 1.dp else 0.dp,
         tonalElevation = if (hasHistory) 0.5.dp else 0.dp,
         color = MaterialTheme.colorScheme.surface
     ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Left: Logo/Title + Sidebar Toggle
+        Column {
+            // Top Row: Sidebar Toggle + Agent Type Tabs + Settings
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(32.dp)
+                        .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Sidebar Toggle Button (always visible)
-                IconButton(
-                    onClick = onToggleSidebar,
-                    modifier = Modifier.size(24.dp)
+                // Left: Sidebar Toggle + Agent Type Tabs
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = if (showSessionSidebar) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
-                        contentDescription = if (showSessionSidebar) "Hide Sidebar" else "Show Sidebar",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                Text(
-                    text = "AutoDev",
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-
-            // Right: Action Icons (compact, 24dp buttons)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Model Config Button
-                IconButton(
-                    onClick = onShowModelConfig,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Settings,
-                        contentDescription = "Model Configuration",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                // Tool Config Button
-                IconButton(
-                    onClick = onShowToolConfig,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Build,
-                        contentDescription = "Tool Configuration",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                // Agent Selector with Dropdown
-                Box {
+                    // Sidebar Toggle Button
                     IconButton(
-                        onClick = { agentMenuExpanded = true },
+                        onClick = onToggleSidebar,
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            imageVector = AutoDevComposeIcons.SmartToy,
-                            contentDescription = "Select Agent",
+                            imageVector = if (showSessionSidebar) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                            contentDescription = if (showSessionSidebar) "Hide Sidebar" else "Show Sidebar",
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+                    // Agent Type Tabs (类似 Chrome Tab)
+                    cc.unitmesh.devins.ui.compose.agent.AgentType.entries.forEach { type ->
+                        AgentTypeTab(
+                            type = type,
+                            isSelected = type == currentAgentType,
+                            onClick = { onAgentTypeChange(type) }
+                        )
+                    }
+                }
+
+                // Right: Action Icons (compact, 24dp buttons)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Configure Remote (only for REMOTE agent type)
+                    if (currentAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE) {
+                        IconButton(
+                            onClick = onConfigureRemote,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Settings,
+                                contentDescription = "Configure Remote Server",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    // Model Config Button
+                    IconButton(
+                        onClick = onShowModelConfig,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Settings,
+                            contentDescription = "Model Configuration",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+                    // Tool Config Button
+                    IconButton(
+                        onClick = onShowToolConfig,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Build,
+                            contentDescription = "Tool Configuration",
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
                         )
                     }
 
-                    DropdownMenu(
-                        expanded = agentMenuExpanded,
-                        onDismissRequest = { agentMenuExpanded = false }
-                    ) {
-                        Text(
-                            text = "Agent",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                        HorizontalDivider()
-                        availableAgents.forEach { agent ->
-                            DropdownMenuItem(
-                                text = { Text(agent) },
-                                onClick = {
-                                    onAgentChange(agent)
-                                    agentMenuExpanded = false
-                                },
-                                trailingIcon = {
-                                    if (agent == selectedAgent) {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Check,
-                                            contentDescription = "Selected",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Task Agent Type Selector (Coding/Code Review) - Only in Agent Mode
-                if (useAgentMode) {
+                    // Agent Selector with Dropdown
                     Box {
-                        OutlinedButton(
-                            onClick = { taskAgentTypeMenuExpanded = true },
-                            modifier = Modifier.height(24.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW) {
-                                    MaterialTheme.colorScheme.secondaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.surface
-                                }
-                            )
+                        IconButton(
+                            onClick = { agentMenuExpanded = true },
+                            modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW) {
-                                    AutoDevComposeIcons.RateReview
-                                } else {
-                                    AutoDevComposeIcons.Code
-                                },
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(3.dp))
-                            Text(
-                                text = selectedTaskAgentType.getDisplayName(),
-                                style = MaterialTheme.typography.labelSmall
+                                imageVector = AutoDevComposeIcons.SmartToy,
+                                contentDescription = "Select Agent",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
 
                         DropdownMenu(
-                            expanded = taskAgentTypeMenuExpanded,
-                            onDismissRequest = { taskAgentTypeMenuExpanded = false }
+                            expanded = agentMenuExpanded,
+                            onDismissRequest = { agentMenuExpanded = false }
                         ) {
                             Text(
-                                text = "Task Type",
+                                text = "Agent",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                             HorizontalDivider()
-
-                            // Coding Agent
-                            DropdownMenuItem(
-                                text = { Text("Coding Agent") },
-                                onClick = {
-                                    onTaskAgentTypeChange(cc.unitmesh.devins.ui.compose.agent.AgentType.CODING)
-                                    taskAgentTypeMenuExpanded = false
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = AutoDevComposeIcons.Code,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODING) {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Check,
-                                            contentDescription = "Selected",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            )
-
-                            // Code Review Agent
-                            DropdownMenuItem(
-                                text = { Text("Code Review") },
-                                onClick = {
-                                    onTaskAgentTypeChange(cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW)
-                                    taskAgentTypeMenuExpanded = false
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = AutoDevComposeIcons.RateReview,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (selectedTaskAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW) {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Check,
-                                            contentDescription = "Selected",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Agent Type Selector (Local/Remote) - Only in Agent Mode
-                if (useAgentMode) {
-                    Box {
-                        OutlinedButton(
-                            onClick = { agentTypeMenuExpanded = true },
-                            modifier = Modifier.height(24.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = if (selectedAgentType == "Remote") {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.surface
-                                }
-                            )
-                        ) {
-                            Icon(
-                                imageVector = if (selectedAgentType == "Remote") {
-                                    AutoDevComposeIcons.Cloud
-                                } else {
-                                    AutoDevComposeIcons.Computer
-                                },
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(3.dp))
-                            Text(
-                                text = selectedAgentType,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = agentTypeMenuExpanded,
-                            onDismissRequest = { agentTypeMenuExpanded = false }
-                        ) {
-                            Text(
-                                text = "Agent Type",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                            HorizontalDivider()
-
-                            // Local Agent
-                            DropdownMenuItem(
-                                text = { Text("Local") },
-                                onClick = {
-                                    onAgentTypeChange("Local")
-                                    agentTypeMenuExpanded = false
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = AutoDevComposeIcons.Computer,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (selectedAgentType == "Local") {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Check,
-                                            contentDescription = "Selected",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            )
-
-                            // Remote Agent
-                            DropdownMenuItem(
-                                text = { Text("Remote") },
-                                onClick = {
-                                    onAgentTypeChange("Remote")
-                                    agentTypeMenuExpanded = false
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = AutoDevComposeIcons.Cloud,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (selectedAgentType == "Remote") {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Check,
-                                            contentDescription = "Selected",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            )
-
-                            HorizontalDivider()
-
-                            // Configure Remote Server
-                            if (selectedAgentType == "Remote") {
+                            availableAgents.forEach { agent ->
                                 DropdownMenuItem(
-                                    text = { Text("Configure Server...") },
+                                    text = { Text(agent) },
                                     onClick = {
-                                        onConfigureRemote()
-                                        agentTypeMenuExpanded = false
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Settings,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                )
-
-                                // Session Management Toggle
-                                DropdownMenuItem(
-                                    text = { Text(if (useSessionManagement) "Agent Mode" else "Session Manager") },
-                                    onClick = {
-                                        onSessionManagementToggle()
-                                        agentTypeMenuExpanded = false
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = if (useSessionManagement) AutoDevComposeIcons.Custom.AI else AutoDevComposeIcons.History,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                        onAgentChange(agent)
+                                        agentMenuExpanded = false
                                     },
                                     trailingIcon = {
-                                        if (useSessionManagement) {
+                                        if (agent == selectedAgent) {
                                             Icon(
                                                 imageVector = AutoDevComposeIcons.Check,
-                                                contentDescription = "Active",
+                                                contentDescription = "Selected",
                                                 modifier = Modifier.size(16.dp),
                                                 tint = MaterialTheme.colorScheme.primary
                                             )
@@ -405,56 +180,125 @@ fun TopBarMenuDesktop(
                             }
                         }
                     }
-                }
 
-                // Mode Toggle
-                IconButton(
-                    onClick = onModeToggle,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = if (useAgentMode) AutoDevComposeIcons.Custom.AI else AutoDevComposeIcons.Chat,
-                        contentDescription = if (useAgentMode) "Switch to Chat Mode" else "Switch to Agent Mode",
-                        tint = if (useAgentMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                // New Chat
-                if (hasHistory) {
+                    // Mode Toggle
                     IconButton(
-                        onClick = onClearHistory,
+                        onClick = onModeToggle,
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            imageVector = AutoDevComposeIcons.Add,
-                            contentDescription = "New Chat",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            imageVector = if (useAgentMode) AutoDevComposeIcons.Custom.AI else AutoDevComposeIcons.Chat,
+                            contentDescription = if (useAgentMode) "Switch to Chat Mode" else "Switch to Agent Mode",
+                            tint = if (useAgentMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
                         )
                     }
-                }
 
-                // Project Explorer Toggle (只在 Agent 模式下显示，放在最右边)
-                if (useAgentMode) {
-                    IconButton(
-                        onClick = onToggleTreeView,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
-                            contentDescription = if (isTreeViewVisible) "Hide Explorer" else "Show Explorer",
-                            tint =
-                                if (isTreeViewVisible) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                },
-                            modifier = Modifier.size(16.dp)
-                        )
+                    // New Chat
+                    if (hasHistory) {
+                        IconButton(
+                            onClick = onClearHistory,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Add,
+                                contentDescription = "New Chat",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    // Project Explorer Toggle (只在 Agent 模式下显示，放在最右边)
+                    if (useAgentMode) {
+                        IconButton(
+                            onClick = onToggleTreeView,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                                contentDescription = if (isTreeViewVisible) "Hide Explorer" else "Show Explorer",
+                                tint =
+                                    if (isTreeViewVisible) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }
+
+            // Bottom Row: Divider (to separate tabs visually)
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
         }
     }
 }
+
+/**
+ * Agent Type Tab (类似 Chrome 标签页)
+ */
+@Composable
+private fun AgentTypeTab(
+    type: cc.unitmesh.devins.ui.compose.agent.AgentType,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isSelected) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    
+    val contentColor = if (isSelected) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Surface(
+        modifier = modifier.height(28.dp),
+        onClick = onClick,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(
+            topStart = 8.dp,
+            topEnd = 8.dp,
+            bottomStart = 0.dp,
+            bottomEnd = 0.dp
+        ),
+        color = backgroundColor,
+        tonalElevation = if (isSelected) 2.dp else 0.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = when (type) {
+                    cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE -> AutoDevComposeIcons.Cloud
+                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
+                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODING -> AutoDevComposeIcons.Code
+                    cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL -> AutoDevComposeIcons.Chat
+                },
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = type.getDisplayName(),
+                style = MaterialTheme.typography.labelSmall,
+                color = contentColor
+            )
+        }
+    }
+}
+
+
+
