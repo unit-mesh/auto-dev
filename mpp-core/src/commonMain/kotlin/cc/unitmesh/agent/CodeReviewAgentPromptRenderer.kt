@@ -4,6 +4,7 @@ import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.devins.compiler.template.TemplateCompiler
+import cc.unitmesh.devins.compiler.variable.VariableType
 
 /**
  * Renders system prompts for the code review agent using templates and context
@@ -47,30 +48,14 @@ $result
         }
 
         val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
-        variableTable.addVariable("reviewType", cc.unitmesh.devins.compiler.variable.VariableType.STRING, reviewType)
-        variableTable.addVariable(
-            "fileCount",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
-            filePaths.size.toString()
-        )
-        variableTable.addVariable(
-            "filePaths",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
-            filePaths.joinToString("\n- ", prefix = "- ")
-        )
-        variableTable.addVariable(
-            "codeContent",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
-            formattedFiles
-        )
-        variableTable.addVariable(
-            "lintResults",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
-            formattedLintResults
-        )
+        variableTable.addVariable("reviewType", VariableType.STRING, reviewType)
+        variableTable.addVariable("fileCount", VariableType.STRING, filePaths.size.toString())
+        variableTable.addVariable("filePaths", VariableType.STRING, filePaths.joinToString("\n- ", prefix = "- "))
+        variableTable.addVariable("codeContent", VariableType.STRING, formattedFiles)
+        variableTable.addVariable("lintResults", VariableType.STRING, formattedLintResults)
         variableTable.addVariable(
             "diffContext",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            VariableType.STRING,
             if (diffContext.isNotBlank()) "\n\n### Diff Context\n$diffContext" else ""
         )
 
@@ -158,17 +143,17 @@ $content
         val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
         variableTable.addVariable(
             "codeContent",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            VariableType.STRING,
             formattedCode
         )
         variableTable.addVariable(
             "lintResults",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            VariableType.STRING,
             formattedLintResults
         )
         variableTable.addVariable(
             "analysisOutput",
-            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            VariableType.STRING,
             analysisOutput
         )
 
