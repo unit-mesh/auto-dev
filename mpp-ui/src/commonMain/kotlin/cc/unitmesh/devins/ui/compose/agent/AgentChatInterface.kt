@@ -57,7 +57,7 @@ fun AgentChatInterface(
                 llmService = llmService,
                 projectPath = rootPath,
                 maxIterations = 100,
-                chatHistoryManager = chatHistoryManager  // 传入会话管理
+                chatHistoryManager = chatHistoryManager
             )
         }
 
@@ -87,16 +87,18 @@ fun AgentChatInterface(
         onInternalNewChat?.invoke(handleNewChat)
     }
 
-    // 同步外部 TreeView 状态到 ViewModel
+    // 同步外部 TreeView 状态到 ViewModel（只在外部变化时更新）
     LaunchedEffect(isTreeViewVisible) {
-        if (viewModel.isTreeViewVisible != isTreeViewVisible) {
-            viewModel.isTreeViewVisible = isTreeViewVisible
-        }
+        println("🔄 [AgentChatInterface] External isTreeViewVisible changed to: $isTreeViewVisible")
+        viewModel.isTreeViewVisible = isTreeViewVisible
     }
 
-    // 监听 ViewModel 状态变化并通知外部
+    // 监听 ViewModel 状态变化并通知外部（只在 ViewModel 内部变化时通知）
     LaunchedEffect(viewModel.isTreeViewVisible) {
-        onToggleTreeView(viewModel.isTreeViewVisible)
+        println("🔔 [AgentChatInterface] ViewModel isTreeViewVisible changed to: ${viewModel.isTreeViewVisible}")
+        if (viewModel.isTreeViewVisible != isTreeViewVisible) {
+            onToggleTreeView(viewModel.isTreeViewVisible)
+        }
     }
 
     if (viewModel.isTreeViewVisible) {
@@ -106,9 +108,7 @@ fun AgentChatInterface(
             minRatio = 0.3f,
             maxRatio = 0.8f,
             first = {
-                // 左侧：TopBar + Chat + Input 完整区域
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // TopBar 放在左侧列顶部（WASM 平台可能隐藏）
                     if (showTopBar) {
                         cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
                             hasHistory = hasHistory,
@@ -300,15 +300,6 @@ fun AgentChatInterface(
                         .padding(horizontal = 12.dp, vertical = 4.dp)
             )
         }
-    }
-}
-
-private fun formatExecutionTime(timeMs: Long): String {
-    val seconds = timeMs / 1000
-    return when {
-        seconds < 60 -> "${seconds}s"
-        seconds < 3600 -> "${seconds / 60}m ${seconds % 60}s"
-        else -> "${seconds / 3600}h ${(seconds % 3600) / 60}m"
     }
 }
 

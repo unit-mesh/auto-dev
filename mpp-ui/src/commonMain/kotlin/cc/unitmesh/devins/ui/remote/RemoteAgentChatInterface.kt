@@ -49,7 +49,6 @@ fun RemoteAgentChatInterface(
     onConfigureRemote: () -> Unit = {},
     onShowModelConfig: () -> Unit = {},
     onShowToolConfig: () -> Unit = {},
-    // Remote-specific parameters
     projectId: String = "",
     gitUrl: String = "",
     onProjectChange: (String) -> Unit = {},
@@ -65,25 +64,11 @@ fun RemoteAgentChatInterface(
         )
     }
 
-    // State for git URL input
     var localGitUrl by remember { mutableStateOf(gitUrl) }
-    // Keep local state in sync when parent passes a new gitUrl (e.g., from dialog)
     LaunchedEffect(gitUrl) {
         if (gitUrl != localGitUrl) {
             localGitUrl = gitUrl
         }
-    }
-
-    // 同步外部 TreeView 状态到 ViewModel
-    LaunchedEffect(isTreeViewVisible) {
-        if (viewModel.isTreeViewVisible != isTreeViewVisible) {
-            viewModel.isTreeViewVisible = isTreeViewVisible
-        }
-    }
-
-    // 监听 ViewModel 状态变化并通知外部
-    LaunchedEffect(viewModel.isTreeViewVisible) {
-        onToggleTreeView(viewModel.isTreeViewVisible)
     }
 
     // Show connection status if not connected
@@ -185,288 +170,119 @@ fun RemoteAgentChatInterface(
         return
     }
 
-    // Main UI - similar structure to AgentChatInterface
-    if (viewModel.isTreeViewVisible) {
-        ResizableSplitPane(
-            modifier = modifier.fillMaxSize(),
-            initialSplitRatio = 0.6f,
-            minRatio = 0.3f,
-            maxRatio = 0.8f,
-            first = {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // TopBar
-                    cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
-                        hasHistory = hasHistory,
-                        hasDebugInfo = hasDebugInfo,
-                        currentModelConfig = currentModelConfig,
-                        selectedAgent = selectedAgent,
-                        availableAgents = availableAgents,
-                        useAgentMode = useAgentMode,
-                        isTreeViewVisible = isTreeViewVisible,
-                        currentAgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.fromString(selectedAgentType),
-                        onOpenDirectory = onOpenDirectory,
-                        onClearHistory = {
-                            viewModel.clearHistory()
-                            onClearHistory()
-                        },
-                        onModelConfigChange = onModelConfigChange,
-                        onAgentChange = onAgentChange,
-                        onModeToggle = onModeToggle,
-                        onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                        onAgentTypeChange = { type ->
-                            onAgentTypeChange(type.getDisplayName())
-                        },
-                        onConfigureRemote = onConfigureRemote,
-                        onShowModelConfig = onShowModelConfig,
-                        onShowToolConfig = onShowToolConfig,
-                        modifier = Modifier.statusBarsPadding()
-                    )
-
-                    // Chat 消息列表
-                    AgentMessageList(
-                        renderer = viewModel.renderer,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        onOpenFileViewer = { filePath ->
-                            viewModel.renderer.openFileViewer(filePath)
-                        }
-                    )
-
-                    // Project selector or Git URL input
-                    if (viewModel.availableProjects.isNotEmpty()) {
-                        ProjectSelector(
-                            projects = viewModel.availableProjects,
-                            selectedProjectId = projectId,
-                            onProjectChange = onProjectChange,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 4.dp)
-                        )
-                    } else if (localGitUrl.isBlank()) {
-                        // Show Git URL input if no projects and no gitUrl set
-                        GitUrlInputCard(
-                            onGitUrlSubmit = { url ->
-                                localGitUrl = url
-                                onGitUrlChange(url)
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                        )
-                    }
-
-                    // 输入框 - 只在有项目或 gitUrl 时显示
-                    val hasTarget = projectId.isNotBlank() || localGitUrl.isNotBlank()
-                    if (hasTarget) {
-                        val callbacks = remember(viewModel, projectId, localGitUrl) {
-                            object : EditorCallbacks {
-                                override fun onSubmit(input: String) {
-                                    val effectiveProjectId = if (localGitUrl.isNotBlank()) {
-                                        // Extract repo name from git URL
-                                        localGitUrl.split('/').last().removeSuffix(".git")
-                                    } else {
-                                        projectId
-                                    }
-
-                                    if (effectiveProjectId.isBlank()) {
-                                        viewModel.renderer.renderError("Please provide a project or Git URL")
-                                    } else {
-                                        viewModel.executeTask(effectiveProjectId, input, localGitUrl)
-                                    }
-                                }
-                            }
-                        }
-
-                        DevInEditorInput(
-                            initialText = "",
-                            placeholder = if (localGitUrl.isNotBlank()) {
-                                "Task will clone ${localGitUrl.split('/').last()} and execute..."
-                            } else {
-                                "Describe your coding task..."
-                            },
-                            callbacks = callbacks,
-                            completionManager = currentWorkspace?.completionManager,
-                            isCompactMode = true,
-                            isExecuting = viewModel.isExecuting,
-                            onStopClick = { viewModel.cancelTask() },
-                            onModelConfigChange = { },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .imePadding()
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                        )
-                    }
-
-                    // Connection status indicator
-                    RemoteConnectionStatusBar(
-                        isConnected = viewModel.isConnected,
-                        serverUrl = serverUrl,
-                        useServerConfig = useServerConfig,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
-                    )
-                }
+    Column(modifier = modifier.fillMaxSize()) {
+        cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
+            hasHistory = hasHistory,
+            hasDebugInfo = hasDebugInfo,
+            currentModelConfig = currentModelConfig,
+            selectedAgent = selectedAgent,
+            availableAgents = availableAgents,
+            useAgentMode = useAgentMode,
+            isTreeViewVisible = isTreeViewVisible,
+            currentAgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.fromString(selectedAgentType),
+            onOpenDirectory = onOpenDirectory,
+            onClearHistory = {
+                viewModel.clearHistory()
+                onClearHistory()
             },
-            second = {
-                // 右侧：TreeView + FileViewer
-                val hasFileViewer = viewModel.renderer.currentViewingFile != null
-                if (hasFileViewer) {
-                    ResizableSplitPane(
-                        modifier = Modifier.fillMaxSize(),
-                        initialSplitRatio = 0.4f,
-                        minRatio = 0.2f,
-                        maxRatio = 0.6f,
-                        first = {
-                            FileSystemTreeView(
-                                rootPath = currentWorkspace?.rootPath ?: "",
-                                onFileClick = { filePath ->
-                                    viewModel.renderer.openFileViewer(filePath)
-                                },
-                                onClose = { viewModel.closeTreeView() },
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        },
-                        second = {
-                            viewModel.renderer.currentViewingFile?.let { filePath ->
-                                FileViewerPanelWrapper(
-                                    filePath = filePath,
-                                    onClose = { viewModel.renderer.closeFileViewer() },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-                    )
-                } else {
-                    FileSystemTreeView(
-                        rootPath = currentWorkspace?.rootPath ?: "",
-                        onFileClick = { filePath ->
-                            viewModel.renderer.openFileViewer(filePath)
-                        },
-                        onClose = { viewModel.closeTreeView() },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+            onModelConfigChange = onModelConfigChange,
+            onAgentChange = onAgentChange,
+            onModeToggle = onModeToggle,
+            onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+            onAgentTypeChange = { type ->
+                onAgentTypeChange(type.getDisplayName())
+            },
+            onConfigureRemote = onConfigureRemote,
+            onShowModelConfig = onShowModelConfig,
+            onShowToolConfig = onShowToolConfig,
+            modifier = Modifier.statusBarsPadding()
+        )
+
+        // Chat 消息列表
+        AgentMessageList(
+            renderer = viewModel.renderer,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            onOpenFileViewer = { filePath ->
+                viewModel.renderer.openFileViewer(filePath)
             }
         )
-    } else {
-        // TreeView 未打开时的布局
-        Column(modifier = modifier.fillMaxSize()) {
-            // TopBar
-            cc.unitmesh.devins.ui.compose.chat.TopBarMenu(
-                hasHistory = hasHistory,
-                hasDebugInfo = hasDebugInfo,
-                currentModelConfig = currentModelConfig,
-                selectedAgent = selectedAgent,
-                availableAgents = availableAgents,
-                useAgentMode = useAgentMode,
-                isTreeViewVisible = isTreeViewVisible,
-                currentAgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.fromString(selectedAgentType),
-                onOpenDirectory = onOpenDirectory,
-                onClearHistory = {
-                    viewModel.clearHistory()
-                    onClearHistory()
-                },
-                onModelConfigChange = onModelConfigChange,
-                onAgentChange = onAgentChange,
-                onModeToggle = onModeToggle,
-                onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
-                onAgentTypeChange = { type ->
-                    onAgentTypeChange(type.getDisplayName())
-                },
-                onConfigureRemote = onConfigureRemote,
-                onShowModelConfig = onShowModelConfig,
-                onShowToolConfig = onShowToolConfig,
-                modifier = Modifier.statusBarsPadding()
-            )
 
-            // Chat 消息列表
-            AgentMessageList(
-                renderer = viewModel.renderer,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                onOpenFileViewer = { filePath ->
-                    viewModel.renderer.openFileViewer(filePath)
-                }
-            )
-
-            // Project selector or Git URL input
-            if (viewModel.availableProjects.isNotEmpty()) {
-                ProjectSelector(
-                    projects = viewModel.availableProjects,
-                    selectedProjectId = projectId,
-                    onProjectChange = onProjectChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                )
-            } else if (localGitUrl.isBlank()) {
-                // Show Git URL input if no projects and no gitUrl set
-                GitUrlInputCard(
-                    onGitUrlSubmit = { url ->
-                        localGitUrl = url
-                        onGitUrlChange(url)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                )
-            }
-
-            // 输入框 - 只在有项目或 gitUrl 时显示
-            val hasTarget = projectId.isNotBlank() || localGitUrl.isNotBlank()
-            if (hasTarget) {
-                val callbacks = remember(viewModel, projectId, localGitUrl) {
-                    object : EditorCallbacks {
-                        override fun onSubmit(input: String) {
-                            val effectiveProjectId = if (localGitUrl.isNotBlank()) {
-                                // Extract repo name from git URL
-                                localGitUrl.split('/').last().removeSuffix(".git")
-                            } else {
-                                projectId
-                            }
-
-                            if (effectiveProjectId.isBlank()) {
-                                viewModel.renderer.renderError("Please provide a project or Git URL")
-                            } else {
-                                viewModel.executeTask(effectiveProjectId, input, localGitUrl)
-                            }
-                        }
-                    }
-                }
-
-                DevInEditorInput(
-                    initialText = "",
-                    placeholder = if (localGitUrl.isNotBlank()) {
-                        "Task will clone ${localGitUrl.split('/').last()} and execute..."
-                    } else {
-                        "Describe your coding task..."
-                    },
-                    callbacks = callbacks,
-                    completionManager = currentWorkspace?.completionManager,
-                    isCompactMode = true,
-                    isExecuting = viewModel.isExecuting,
-                    onStopClick = { viewModel.cancelTask() },
-                    onModelConfigChange = { },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .imePadding()
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                )
-            }
-
-            // Connection status indicator
-            RemoteConnectionStatusBar(
-                isConnected = viewModel.isConnected,
-                serverUrl = serverUrl,
-                useServerConfig = useServerConfig,
+        // Project selector or Git URL input
+        if (viewModel.availableProjects.isNotEmpty()) {
+            ProjectSelector(
+                projects = viewModel.availableProjects,
+                selectedProjectId = projectId,
+                onProjectChange = onProjectChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             )
+        } else if (localGitUrl.isBlank()) {
+            // Show Git URL input if no projects and no gitUrl set
+            GitUrlInputCard(
+                onGitUrlSubmit = { url ->
+                    localGitUrl = url
+                    onGitUrlChange(url)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            )
         }
+
+        // 输入框 - 只在有项目或 gitUrl 时显示
+        val hasTarget = projectId.isNotBlank() || localGitUrl.isNotBlank()
+        if (hasTarget) {
+            val callbacks = remember(viewModel, projectId, localGitUrl) {
+                object : EditorCallbacks {
+                    override fun onSubmit(input: String) {
+                        val effectiveProjectId = if (localGitUrl.isNotBlank()) {
+                            // Extract repo name from git URL
+                            localGitUrl.split('/').last().removeSuffix(".git")
+                        } else {
+                            projectId
+                        }
+
+                        if (effectiveProjectId.isBlank()) {
+                            viewModel.renderer.renderError("Please provide a project or Git URL")
+                        } else {
+                            viewModel.executeTask(effectiveProjectId, input, localGitUrl)
+                        }
+                    }
+                }
+            }
+
+            DevInEditorInput(
+                initialText = "",
+                placeholder = if (localGitUrl.isNotBlank()) {
+                    "Task will clone ${localGitUrl.split('/').last()} and execute..."
+                } else {
+                    "Describe your coding task..."
+                },
+                callbacks = callbacks,
+                completionManager = currentWorkspace?.completionManager,
+                isCompactMode = true,
+                isExecuting = viewModel.isExecuting,
+                onStopClick = { viewModel.cancelTask() },
+                onModelConfigChange = { },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            )
+        }
+
+        // Connection status indicator
+        RemoteConnectionStatusBar(
+            isConnected = viewModel.isConnected,
+            serverUrl = serverUrl,
+            useServerConfig = useServerConfig,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+        )
     }
 }
 
