@@ -28,9 +28,19 @@ fun DesktopTitleBarTabs(
     onConfigureRemote: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    // 当切换到 Code Review 时自动隐藏 SessionSidebar
+    LaunchedEffect(currentAgentType) {
+        if (currentAgentType == AgentType.CODE_REVIEW) {
+            UIStateManager.setSessionSidebarVisible(false)
+        } else {
+            UIStateManager.setSessionSidebarVisible(true)
+        }
+    }
     // 从全局状态获取
     val workspacePath by UIStateManager.workspacePath.collectAsState()
     val isTreeViewVisible by UIStateManager.isTreeViewVisible.collectAsState()
+    val isSessionSidebarVisible by UIStateManager.isSessionSidebarVisible.collectAsState()
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -44,6 +54,31 @@ fun DesktopTitleBarTabs(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Sidebar Toggle (左侧第一个按钮)
+            IconButton(
+                onClick = { UIStateManager.toggleSessionSidebar() },
+                modifier = Modifier.size(28.dp)
+            ) {
+                Icon(
+                    imageVector = if (isSessionSidebarVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                    contentDescription = if (isSessionSidebarVisible) "Hide Sidebar" else "Show Sidebar",
+                    tint = if (isSessionSidebarVisible) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+
+            // 分隔线
+            Surface(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(20.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            ) {}
+
             (AgentType.entries - AgentType.LOCAL_CHAT)
                 .forEach { type ->
                     AgentTypeMenuItem(

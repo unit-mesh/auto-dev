@@ -56,7 +56,7 @@ fun CodeReviewAgentPanel(
     state: CodeReviewState,
     viewModel: CodeReviewViewModel,
     renderer: ComposeRenderer,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -65,26 +65,19 @@ fun CodeReviewAgentPanel(
     ) {
         // Header with Start/Stop button
         Card(
-            modifier = Modifier.Companion.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             ),
             shape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
         ) {
             Row(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Companion.CenterVertically
             ) {
-                Text(
-                    text = "AI Code Review",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Companion.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
                 when (state.aiProgress.stage) {
                     AnalysisStage.IDLE -> {
                         FilledTonalButton(
@@ -94,13 +87,12 @@ fun CodeReviewAgentPanel(
                             Icon(
                                 imageVector = AutoDevComposeIcons.PlayArrow,
                                 contentDescription = "Start",
-                                modifier = Modifier.Companion.size(18.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.Companion.width(4.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text("Start Review")
                         }
                     }
-
                     AnalysisStage.RUNNING_LINT,
                     AnalysisStage.ANALYZING_LINT,
                     AnalysisStage.GENERATING_FIX -> {
@@ -114,9 +106,9 @@ fun CodeReviewAgentPanel(
                             Icon(
                                 imageVector = AutoDevComposeIcons.Stop,
                                 contentDescription = "Stop",
-                                modifier = Modifier.Companion.size(18.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.Companion.width(4.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text("Stop")
                         }
                     }
@@ -130,7 +122,7 @@ fun CodeReviewAgentPanel(
                                 shape = RoundedCornerShape(4.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.Companion.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     verticalAlignment = Alignment.Companion.CenterVertically
                                 ) {
@@ -138,7 +130,7 @@ fun CodeReviewAgentPanel(
                                         imageVector = AutoDevComposeIcons.CheckCircle,
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.Companion.size(14.dp)
+                                        modifier = Modifier.size(14.dp)
                                     )
                                     Text(
                                         text = "Complete",
@@ -155,14 +147,14 @@ fun CodeReviewAgentPanel(
                                     containerColor = AutoDevColors.Indigo.c600,
                                     contentColor = Color.White
                                 ),
-                                modifier = Modifier.Companion.height(32.dp)
+                                modifier = Modifier.height(32.dp)
                             ) {
                                 Icon(
                                     imageVector = AutoDevComposeIcons.Refresh,
                                     contentDescription = null,
-                                    modifier = Modifier.Companion.size(14.dp)
+                                    modifier = Modifier.size(14.dp)
                                 )
-                                Spacer(modifier = Modifier.Companion.width(4.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = "Restart review",
                                     style = MaterialTheme.typography.labelSmall
@@ -180,7 +172,7 @@ fun CodeReviewAgentPanel(
                                 imageVector = AutoDevComposeIcons.Error,
                                 contentDescription = "Error",
                                 tint = AutoDevColors.Red.c600,
-                                modifier = Modifier.Companion.size(18.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                             Text(
                                 text = "Error",
@@ -201,20 +193,20 @@ fun CodeReviewAgentPanel(
             )
         ) {
             LinearProgressIndicator(
-                modifier = Modifier.Companion.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 color = AutoDevColors.Indigo.c600
             )
         }
 
         // Main content area
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
             if (state.aiProgress.stage == AnalysisStage.IDLE && state.aiProgress.lintResults.isEmpty()) {
                 Column(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxSize()
                         .padding(32.dp),
                     horizontalAlignment = Alignment.Companion.CenterHorizontally,
@@ -224,9 +216,9 @@ fun CodeReviewAgentPanel(
                         imageVector = AutoDevComposeIcons.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.Companion.size(48.dp)
+                        modifier = Modifier.size(48.dp)
                     )
-                    Spacer(modifier = Modifier.Companion.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Click 'Start Review' to analyze the code changes with AI",
                         style = MaterialTheme.typography.bodyMedium,
@@ -236,7 +228,7 @@ fun CodeReviewAgentPanel(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.Companion.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (state.aiProgress.lintResults.isNotEmpty() || state.aiProgress.lintOutput.isNotEmpty()) {
@@ -287,7 +279,7 @@ fun CollapsibleLintAnalysisCard(
     lintResults: List<LintFileResult>,
     lintOutput: String,
     isActive: Boolean,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(true) }
 
@@ -306,10 +298,10 @@ fun CollapsibleLintAnalysisCard(
         ),
         shape = RoundedCornerShape(6.dp)
     ) {
-        Column(modifier = Modifier.Companion.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             // Header
             Row(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth()
                     .clickable { isExpanded = !isExpanded }
                     .padding(12.dp),
@@ -324,7 +316,7 @@ fun CollapsibleLintAnalysisCard(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.Companion.size(20.dp)
+                        modifier = Modifier.size(20.dp)
                     )
 
                     Text(
@@ -343,7 +335,7 @@ fun CollapsibleLintAnalysisCard(
                                 text = "RUNNING",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.Companion.White,
-                                modifier = Modifier.Companion.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
                     }
@@ -385,7 +377,7 @@ fun CollapsibleLintAnalysisCard(
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 0.dp)
                 ) {
@@ -393,7 +385,7 @@ fun CollapsibleLintAnalysisCard(
                     if (lintResults.isNotEmpty()) {
                         lintResults.forEach { fileResult ->
                             FileLintResultCard(fileResult = fileResult)
-                            Spacer(modifier = Modifier.Companion.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     } else {
                         // Fallback to raw output
@@ -402,7 +394,7 @@ fun CollapsibleLintAnalysisCard(
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = FontFamily.Companion.Monospace,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.Companion.padding(bottom = 12.dp)
+                            modifier = Modifier.padding(bottom = 12.dp)
                         )
                     }
                 }
@@ -417,7 +409,7 @@ fun CollapsibleLintAnalysisCard(
 @Composable
 fun FileLintResultCard(
     fileResult: LintFileResult,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -428,10 +420,10 @@ fun FileLintResultCard(
         ),
         shape = RoundedCornerShape(4.dp)
     ) {
-        Column(modifier = Modifier.Companion.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             // File header
             Row(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth()
                     .clickable { isExpanded = !isExpanded }
                     .padding(8.dp),
@@ -446,7 +438,7 @@ fun FileLintResultCard(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.Companion.size(16.dp)
+                        modifier = Modifier.size(16.dp)
                     )
 
                     Text(
@@ -493,14 +485,14 @@ fun FileLintResultCard(
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 0.dp)
                 ) {
                     fileResult.issues.forEach { issue ->
                         LintIssueRow(issue = issue)
                     }
-                    Spacer(modifier = Modifier.Companion.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
@@ -511,7 +503,7 @@ fun FileLintResultCard(
  * Individual lint issue row
  */
 @Composable
-fun LintIssueRow(issue: LintIssue, modifier: Modifier = Modifier.Companion) {
+fun LintIssueRow(issue: LintIssue, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -529,10 +521,10 @@ fun LintIssueRow(issue: LintIssue, modifier: Modifier = Modifier.Companion) {
             imageVector = severityIcon,
             contentDescription = issue.severity.name,
             tint = severityColor,
-            modifier = Modifier.Companion.size(14.dp)
+            modifier = Modifier.size(14.dp)
         )
 
-        Column(modifier = Modifier.Companion.weight(1f)) {
+        Column(modifier = Modifier.weight(1f)) {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = "Line ${issue.line}:${issue.column}",
@@ -559,7 +551,7 @@ fun LintIssueRow(issue: LintIssue, modifier: Modifier = Modifier.Companion) {
                     text = "💡 $suggestion",
                     style = MaterialTheme.typography.bodySmall,
                     color = AutoDevColors.Green.c600,
-                    modifier = Modifier.Companion.padding(top = 2.dp)
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
         }
@@ -575,7 +567,7 @@ fun CollapsibleAnalysisCard(
     content: String,
     isActive: Boolean,
     icon: androidx.compose.ui.graphics.vector.ImageVector = AutoDevComposeIcons.Article,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(true) }
 
@@ -590,10 +582,10 @@ fun CollapsibleAnalysisCard(
         ),
         shape = RoundedCornerShape(6.dp)
     ) {
-        Column(modifier = Modifier.Companion.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             // Header
             Row(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth()
                     .clickable { isExpanded = !isExpanded }
                     .padding(12.dp),
@@ -608,14 +600,14 @@ fun CollapsibleAnalysisCard(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.Companion.size(20.dp)
+                        modifier = Modifier.size(20.dp)
                     )
 
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.Companion.size(18.dp)
+                        modifier = Modifier.size(18.dp)
                     )
 
                     Text(
@@ -634,7 +626,7 @@ fun CollapsibleAnalysisCard(
                                 text = "RUNNING",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.Companion.White,
-                                modifier = Modifier.Companion.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
                     }
@@ -652,7 +644,7 @@ fun CollapsibleAnalysisCard(
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = FontFamily.Companion.Monospace,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 0.dp)
                         .padding(bottom = 12.dp)
@@ -670,7 +662,7 @@ fun IssueBadge(
     count: Int,
     color: Color,
     label: String,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     Surface(
         color = color.copy(alpha = 0.15f),
@@ -678,7 +670,7 @@ fun IssueBadge(
         modifier = modifier
     ) {
         Row(
-            modifier = Modifier.Companion.padding(horizontal = 6.dp, vertical = 2.dp),
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(3.dp),
             verticalAlignment = Alignment.Companion.CenterVertically
         ) {
@@ -722,7 +714,7 @@ fun ProgressOutputCard(
 @Composable
 fun FixResultCard(fix: FixResult) {
     Card(
-        modifier = Modifier.Companion.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = when (fix.status) {
                 FixStatus.FIXED -> AutoDevColors.Green.c600.copy(alpha = 0.1f)
@@ -733,10 +725,10 @@ fun FixResultCard(fix: FixResult) {
         ),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
     ) {
-        Column(modifier = Modifier.Companion.padding(12.dp)) {
+        Column(modifier = Modifier.padding(12.dp)) {
             // Header row
             Row(
-                modifier = Modifier.Companion.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Companion.CenterVertically
             ) {
@@ -759,7 +751,7 @@ fun FixResultCard(fix: FixResult) {
                             FixStatus.SKIPPED -> AutoDevColors.Amber.c600
                             FixStatus.FAILED -> AutoDevColors.Red.c600
                         },
-                        modifier = Modifier.Companion.size(18.dp)
+                        modifier = Modifier.size(18.dp)
                     )
 
                     Text(
@@ -786,12 +778,12 @@ fun FixResultCard(fix: FixResult) {
                         text = fix.risk.name,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Companion.White,
-                        modifier = Modifier.Companion.padding(horizontal = 6.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.Companion.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Issue
             Text(
@@ -800,7 +792,7 @@ fun FixResultCard(fix: FixResult) {
                 color = AutoDevColors.Red.c600
             )
 
-            Spacer(modifier = Modifier.Companion.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // AI fix description
             Text(
@@ -811,7 +803,7 @@ fun FixResultCard(fix: FixResult) {
 
             // Fixed code
             fix.fixedCode?.let { code ->
-                Spacer(modifier = Modifier.Companion.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
@@ -821,7 +813,7 @@ fun FixResultCard(fix: FixResult) {
                         fontFamily = FontFamily.Companion.Monospace,
                         fontSize = 11.sp,
                         color = AutoDevColors.Green.c600,
-                        modifier = Modifier.Companion.padding(8.dp)
+                        modifier = Modifier.padding(8.dp)
                     )
                 }
             }

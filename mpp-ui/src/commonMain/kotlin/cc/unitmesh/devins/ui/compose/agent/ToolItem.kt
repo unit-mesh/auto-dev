@@ -59,10 +59,10 @@ fun ToolResultItem(
         shape = RoundedCornerShape(4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.Companion.padding(8.dp)) {
+        Column(modifier = Modifier.padding(8.dp)) {
             Row(
                 modifier =
-                    Modifier.Companion
+                    Modifier
                         .fillMaxWidth()
                         .clickable { if (displayOutput != null) expanded = !expanded },
                 verticalAlignment = Alignment.Companion.CenterVertically,
@@ -86,7 +86,7 @@ fun ToolResultItem(
                         } else {
                             MaterialTheme.colorScheme.onErrorContainer
                         },
-                    modifier = Modifier.Companion.weight(1f)
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "→ $summary",
@@ -110,16 +110,16 @@ fun ToolResultItem(
                             } else {
                                 MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f)
                             },
-                        modifier = Modifier.Companion.size(20.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
             if (expanded && displayOutput != null) {
-                Spacer(modifier = Modifier.Companion.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
-                    modifier = Modifier.Companion.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Companion.Top
                 ) {
@@ -138,7 +138,7 @@ fun ToolResultItem(
                         if (hasFullOutput) {
                             TextButton(
                                 onClick = { showFullOutput = !showFullOutput },
-                                modifier = Modifier.Companion.height(32.dp)
+                                modifier = Modifier.height(32.dp)
                             ) {
                                 Text(
                                     text = if (showFullOutput) "Show Less" else "Show Full Output",
@@ -152,7 +152,7 @@ fun ToolResultItem(
                     Row {
                         IconButton(
                             onClick = { clipboardManager.setText(AnnotatedString(displayOutput ?: "")) },
-                            modifier = Modifier.Companion.size(24.dp)
+                            modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
                                 imageVector = AutoDevComposeIcons.ContentCopy,
@@ -163,7 +163,7 @@ fun ToolResultItem(
                                     } else {
                                         MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f)
                                     },
-                                modifier = Modifier.Companion.size(16.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
 
@@ -179,7 +179,7 @@ fun ToolResultItem(
                                     }
                                 clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(blockText))
                             },
-                            modifier = Modifier.Companion.size(24.dp)
+                            modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
                                 imageVector = AutoDevComposeIcons.ContentCopy,
@@ -190,7 +190,7 @@ fun ToolResultItem(
                                     } else {
                                         MaterialTheme.colorScheme.error
                                     },
-                                modifier = Modifier.Companion.size(16.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
@@ -201,11 +201,11 @@ fun ToolResultItem(
                         CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         ),
-                    modifier = Modifier.Companion.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         text = formatOutput(displayOutput),
-                        modifier = Modifier.Companion.padding(8.dp),
+                        modifier = Modifier.padding(8.dp),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodyMedium,
                         fontFamily = FontFamily.Companion.Monospace

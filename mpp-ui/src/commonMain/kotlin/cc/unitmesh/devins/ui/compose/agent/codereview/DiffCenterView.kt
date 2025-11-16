@@ -73,7 +73,7 @@ fun CommitListView(
     commits: List<CommitInfo>,
     selectedIndex: Int,
     onCommitSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     hasMoreCommits: Boolean = false,
     isLoadingMore: Boolean = false,
     totalCommitCount: Int? = null,
@@ -96,17 +96,17 @@ fun CommitListView(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Companion.Bold,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.Companion.padding(horizontal = 8.dp, vertical = 12.dp)
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)
         )
 
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outlineVariant
         )
 
-        Spacer(modifier = Modifier.Companion.height(4.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         LazyColumn(
-            modifier = Modifier.Companion.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(commits.size) { index ->
@@ -126,13 +126,13 @@ fun CommitListView(
             if (isLoadingMore) {
                 item {
                     Box(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
                         contentAlignment = Alignment.Companion.Center
                     ) {
                         androidx.compose.material3.CircularProgressIndicator(
-                            modifier = Modifier.Companion.size(24.dp),
+                            modifier = Modifier.size(24.dp),
                             color = AutoDevColors.Indigo.c600
                         )
                     }
@@ -149,7 +149,7 @@ fun CommitListItem(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.Companion
+        modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
@@ -165,13 +165,13 @@ fun CommitListItem(
         )
     ) {
         Column(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp)
         ) {
             // Commit message (first line)
             Row(
-                modifier = Modifier.Companion.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Companion.CenterVertically
             ) {
@@ -182,7 +182,7 @@ fun CommitListItem(
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Companion.Ellipsis,
-                    modifier = Modifier.Companion.weight(1f)
+                    modifier = Modifier.weight(1f)
                 )
 
                 // Extract PR/issue number if present (e.g., #453)
@@ -196,17 +196,17 @@ fun CommitListItem(
                             text = prNumber,
                             style = MaterialTheme.typography.labelSmall,
                             color = AutoDevColors.Indigo.c600,
-                            modifier = Modifier.Companion.padding(horizontal = 6.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.Companion.height(6.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Author and timestamp
             Row(
-                modifier = Modifier.Companion.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Companion.CenterVertically
             ) {
@@ -226,7 +226,7 @@ fun CommitListItem(
             }
 
             // Short hash
-            Spacer(modifier = Modifier.Companion.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = commit.shortHash,
                 style = MaterialTheme.typography.labelSmall,
@@ -258,7 +258,7 @@ private fun formatRelativeTime(timestamp: Long): String {
 fun DiffCenterView(
     diffFiles: List<DiffFileInfo>,
     selectedCommit: CommitInfo?,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     onViewFile: ((String) -> Unit)? = null,
     workspaceRoot: String? = null,
     isLoadingDiff: Boolean = false
@@ -272,14 +272,14 @@ fun DiffCenterView(
         // Header with commit info
         if (selectedCommit != null) {
             Card(
-                modifier = Modifier.Companion.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
             ) {
                 Column(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp)
                 ) {
@@ -290,7 +290,7 @@ fun DiffCenterView(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.Companion.height(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -310,7 +310,7 @@ fun DiffCenterView(
                 }
             }
 
-            Spacer(modifier = Modifier.Companion.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         Text(
@@ -318,12 +318,12 @@ fun DiffCenterView(
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Companion.Medium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.Companion.padding(horizontal = 4.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
         )
 
         if (isLoadingDiff) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(32.dp),
                 contentAlignment = Alignment.Companion.Center
@@ -333,7 +333,7 @@ fun DiffCenterView(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     androidx.compose.material3.CircularProgressIndicator(
-                        modifier = Modifier.Companion.size(32.dp),
+                        modifier = Modifier.size(32.dp),
                         color = AutoDevColors.Indigo.c600
                     )
                     Text(
@@ -345,7 +345,7 @@ fun DiffCenterView(
             }
         } else if (diffFiles.isEmpty()) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(32.dp),
                 contentAlignment = Alignment.Companion.Center
@@ -358,7 +358,7 @@ fun DiffCenterView(
             }
         } else {
             LazyColumn(
-                modifier = Modifier.Companion.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(diffFiles.size) { index ->
@@ -520,7 +520,7 @@ fun CollapsibleFileDiffItem(
 @Composable
 fun DiffHunkView(hunk: DiffHunk) {
     Column(
-        modifier = Modifier.Companion
+        modifier = Modifier
             .fillMaxWidth()
             .background(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
@@ -534,7 +534,7 @@ fun DiffHunkView(hunk: DiffHunk) {
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            modifier = Modifier.Companion.padding(horizontal = 4.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
         )
 
         hunk.lines.forEach { line ->
@@ -576,7 +576,7 @@ fun DiffLineView(line: DiffLine) {
     }
 
     Row(
-        modifier = Modifier.Companion
+        modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor)
             .padding(horizontal = 4.dp, vertical = 1.dp)
@@ -587,11 +587,11 @@ fun DiffLineView(line: DiffLine) {
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 10.sp,
             color = AutoDevColors.Diff.Dark.lineNumber,
-            modifier = Modifier.Companion.width(32.dp),
+            modifier = Modifier.width(32.dp),
             textAlign = TextAlign.End
         )
 
-        Spacer(modifier = Modifier.Companion.width(4.dp))
+        Spacer(modifier = Modifier.width(4.dp))
 
         // New line number
         Text(
@@ -599,11 +599,11 @@ fun DiffLineView(line: DiffLine) {
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 10.sp,
             color = AutoDevColors.Diff.Dark.lineNumber,
-            modifier = Modifier.Companion.width(32.dp),
+            modifier = Modifier.width(32.dp),
             textAlign = TextAlign.End
         )
 
-        Spacer(modifier = Modifier.Companion.width(8.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         // Line prefix (+/-/ )
         Text(
@@ -611,7 +611,7 @@ fun DiffLineView(line: DiffLine) {
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 11.sp,
             color = textColor,
-            modifier = Modifier.Companion.width(12.dp)
+            modifier = Modifier.width(12.dp)
         )
 
         // Line content
@@ -620,7 +620,7 @@ fun DiffLineView(line: DiffLine) {
             fontFamily = FontFamily.Companion.Monospace,
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.Companion.weight(1f)
+            modifier = Modifier.weight(1f)
         )
     }
 }

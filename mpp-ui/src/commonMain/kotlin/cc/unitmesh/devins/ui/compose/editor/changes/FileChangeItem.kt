@@ -41,7 +41,7 @@ fun FileChangeItem(
     onClick: () -> Unit,
     onUndo: () -> Unit,
     onKeep: () -> Unit,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     Surface(
         modifier =
@@ -55,7 +55,7 @@ fun FileChangeItem(
     ) {
         Row(
             modifier =
-                Modifier.Companion
+                Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -63,7 +63,7 @@ fun FileChangeItem(
         ) {
             // File info
             Row(
-                modifier = Modifier.Companion.weight(1f),
+                modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.Companion.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -77,7 +77,7 @@ fun FileChangeItem(
                             ChangeType.RENAME -> Icons.Default.Create
                         },
                     contentDescription = change.changeType.name,
-                    modifier = Modifier.Companion.size(16.dp),
+                    modifier = Modifier.size(16.dp),
                     tint =
                         when (change.changeType) {
                             ChangeType.CREATE -> MaterialTheme.colorScheme.primary
@@ -89,7 +89,7 @@ fun FileChangeItem(
 
                 // File name and path - single line compact version
                 Row(
-                    modifier = Modifier.Companion.weight(1f),
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.Companion.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -100,7 +100,7 @@ fun FileChangeItem(
                         fontSize = 12.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Companion.Ellipsis,
-                        modifier = Modifier.Companion.weight(1f, fill = false)
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     Text(
                         text = "·",
@@ -115,7 +115,7 @@ fun FileChangeItem(
                         fontSize = 10.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Companion.Ellipsis,
-                        modifier = Modifier.Companion.weight(1f, fill = true)
+                        modifier = Modifier.weight(1f, fill = true)
                     )
                 }
 
@@ -132,7 +132,7 @@ fun FileChangeItem(
                             fontFamily = FontFamily.Companion.Monospace,
                             fontSize = 10.sp,
                             modifier =
-                                Modifier.Companion
+                                Modifier
                                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
                                     .background(MaterialTheme.colorScheme.primaryContainer)
                                     .padding(horizontal = 4.dp, vertical = 1.dp)
@@ -146,7 +146,7 @@ fun FileChangeItem(
                             fontFamily = FontFamily.Companion.Monospace,
                             fontSize = 10.sp,
                             modifier =
-                                Modifier.Companion
+                                Modifier
                                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
                                     .background(MaterialTheme.colorScheme.errorContainer)
                                     .padding(horizontal = 4.dp, vertical = 1.dp)
@@ -162,12 +162,12 @@ fun FileChangeItem(
                 // Keep button
                 IconButton(
                     onClick = onKeep,
-                    modifier = Modifier.Companion.size(24.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Keep",
-                        modifier = Modifier.Companion.size(14.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -175,12 +175,12 @@ fun FileChangeItem(
                 // Undo button
                 IconButton(
                     onClick = onUndo,
-                    modifier = Modifier.Companion.size(24.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Undo",
-                        modifier = Modifier.Companion.size(14.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }

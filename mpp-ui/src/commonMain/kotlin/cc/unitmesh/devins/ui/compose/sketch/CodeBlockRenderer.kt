@@ -35,7 +35,7 @@ fun CodeBlockRenderer(
             }
         }
     Card(
-        modifier = Modifier.Companion.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         colors =
             CardDefaults.cardColors(
@@ -44,7 +44,7 @@ fun CodeBlockRenderer(
     ) {
         Column(
             modifier =
-                Modifier.Companion
+                Modifier
                     .fillMaxWidth()
                     .padding(12.dp)
         ) {
@@ -53,7 +53,7 @@ fun CodeBlockRenderer(
                     text = displayName,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.Companion.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
 
@@ -65,7 +65,7 @@ fun CodeBlockRenderer(
                             fontFamily = codeFontFamily
                         ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.Companion.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

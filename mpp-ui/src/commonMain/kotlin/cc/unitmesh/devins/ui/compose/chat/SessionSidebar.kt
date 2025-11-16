@@ -92,28 +92,15 @@ fun SessionSidebar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Sessions",
+                    text = "Recent",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-
-                // New Chat Button
-                IconButton(
-                    onClick = onNewChat,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Add,
-                        contentDescription = "New Chat",
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
             }
 
             HorizontalDivider()
@@ -236,6 +223,29 @@ fun SessionSidebar(
             }
 
             HorizontalDivider()
+
+            // New Agent Button
+            Button(
+                onClick = onNewChat,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            ) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "New Agent",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
 
             // Settings at bottom
             Row(

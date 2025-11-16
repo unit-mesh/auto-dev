@@ -23,10 +23,7 @@ import kotlinx.coroutines.launch
  * - Right: AI code review messages (using AgentMessageList)
  */
 @Composable
-fun CodeReviewSideBySideView(
-    viewModel: CodeReviewViewModel,
-    modifier: Modifier = Modifier
-) {
+fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.state.collectAsState()
 
     Box(modifier = modifier.fillMaxSize()) {

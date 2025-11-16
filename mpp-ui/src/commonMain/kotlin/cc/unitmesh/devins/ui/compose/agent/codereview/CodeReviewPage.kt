@@ -22,12 +22,10 @@ import cc.unitmesh.llm.KoogLLMService
 @Composable
 fun CodeReviewPage(
     llmService: KoogLLMService?,
-    onBack: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
 
-    // Create ViewModel
     val viewModel = remember(currentWorkspace, llmService) {
         val workspace = currentWorkspace ?: WorkspaceManager.getCurrentOrEmpty()
         CodeReviewViewModel(
@@ -44,7 +42,6 @@ fun CodeReviewPage(
     Scaffold(
         topBar = {
             CodeReviewTopBar(
-                onBack = onBack,
                 onRefresh = { viewModel.refresh() },
                 workspace = currentWorkspace
             )
@@ -68,7 +65,6 @@ fun CodeReviewPage(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CodeReviewTopBar(
-    onBack: () -> Unit,
     onRefresh: () -> Unit,
     workspace: Workspace?
 ) {
@@ -87,15 +83,6 @@ private fun CodeReviewTopBar(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
             }
         },
         actions = {

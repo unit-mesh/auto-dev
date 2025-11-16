@@ -18,12 +18,12 @@ import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
 @Composable
 fun MessageItem(message: Message) {
     Column(
-        modifier = Modifier.Companion.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         // 消息标签
         MessageLabel(
             role = message.role,
-            modifier = Modifier.Companion.padding(vertical = 4.dp)
+            modifier = Modifier.padding(vertical = 4.dp)
         )
 
         // 消息内容 - 统一使用 SketchRenderer
@@ -34,7 +34,7 @@ fun MessageItem(message: Message) {
                     text = message.content,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.Companion.padding(start = 32.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
                 )
             }
 
@@ -42,14 +42,14 @@ fun MessageItem(message: Message) {
                 // 用户和 AI 消息都使用 SketchRenderer
                 Box(
                     modifier =
-                        Modifier.Companion
+                        Modifier
                             .fillMaxWidth()
                             .padding(start = 32.dp)
                 ) {
                     SketchRenderer.RenderResponse(
                         content = message.content,
                         isComplete = true,
-                        modifier = Modifier.Companion.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -94,7 +94,7 @@ fun StreamingMessageItem(
                 content = content,
                 isComplete = false,
                 onContentUpdate = onContentUpdate,
-                modifier = Modifier.Companion.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -103,7 +103,7 @@ fun StreamingMessageItem(
 @Composable
 fun MessageLabel(
     role: MessageRole,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     val (icon, label, color) =
         when (role) {

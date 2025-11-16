@@ -57,9 +57,6 @@ fun AgentInterfaceRouter(
         AgentType.CODE_REVIEW -> {
             CodeReviewPage(
                 llmService = llmService,
-                onBack = {
-                    onAgentTypeChange(AgentType.CODING)
-                },
                 modifier = modifier
             )
         }
@@ -101,7 +98,6 @@ fun AgentInterfaceRouter(
                 modifier = modifier
             )
         }
-
         AgentType.LOCAL_CHAT,
         AgentType.CODING -> {
             AgentChatInterface(

@@ -60,17 +60,17 @@ fun DiffViewDialog(
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp
         ) {
-            Column(modifier = Modifier.Companion.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     modifier =
-                        Modifier.Companion
+                        Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.Companion.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = change.getFileName(),
                             style = MaterialTheme.typography.titleMedium,
@@ -90,9 +90,9 @@ fun DiffViewDialog(
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Undo",
-                                modifier = Modifier.Companion.size(18.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.Companion.width(4.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text("Undo")
                         }
 
@@ -102,9 +102,9 @@ fun DiffViewDialog(
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "Keep",
-                                modifier = Modifier.Companion.size(18.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.Companion.width(4.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text("Keep")
                         }
 
@@ -122,7 +122,7 @@ fun DiffViewDialog(
                 // Diff content
                 Box(
                     modifier =
-                        Modifier.Companion
+                        Modifier
                             .fillMaxSize()
                             .padding(16.dp)
                 ) {
@@ -138,11 +138,11 @@ fun DiffViewDialog(
                     if (diffContent.isNotBlank()) {
                         DiffSketchRenderer.RenderDiff(
                             diffContent = diffContent,
-                            modifier = Modifier.Companion.fillMaxSize()
+                            modifier = Modifier.fillMaxSize()
                         )
                     } else {
                         Column(
-                            modifier = Modifier.Companion.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.Companion.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
@@ -154,10 +154,10 @@ fun DiffViewDialog(
                                         else -> Icons.Default.Edit
                                     },
                                 contentDescription = null,
-                                modifier = Modifier.Companion.size(48.dp),
+                                modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.Companion.height(16.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text =
                                     when (change.changeType) {
@@ -167,7 +167,7 @@ fun DiffViewDialog(
                                     },
                                 style = MaterialTheme.typography.titleMedium
                             )
-                            Spacer(modifier = Modifier.Companion.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             val stats = change.getDiffStats()
                             Text(
                                 text = "+${stats.addedLines} -${stats.deletedLines} lines",
