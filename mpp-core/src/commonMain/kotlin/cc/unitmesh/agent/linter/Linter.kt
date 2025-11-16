@@ -89,7 +89,42 @@ data class LinterSummary(
     val availableLinters: List<LinterAvailability>,
     val unavailableLinters: List<LinterAvailability>,
     val fileMapping: Map<String, List<String>> // file path -> linter names
-)
+) {
+    companion object {
+        fun format(linterSummary: cc.unitmesh.agent.linter.LinterSummary): String {
+            return buildString {
+                if (linterSummary.availableLinters.isNotEmpty()) {
+                    appendLine("**Available Linters (${linterSummary.availableLinters.size}):**")
+                    linterSummary.availableLinters.forEach { linter ->
+                        appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
+                        if (linter.supportedFiles.isNotEmpty()) {
+                            appendLine("  - Supported files: ${linter.supportedFiles.joinToString(", ")}")
+                        }
+                    }
+                    appendLine()
+                }
+
+                if (linterSummary.unavailableLinters.isNotEmpty()) {
+                    appendLine("**Unavailable Linters (${linterSummary.unavailableLinters.size}):**")
+                    linterSummary.unavailableLinters.forEach { linter ->
+                        appendLine("- **${linter.name}** (not installed)")
+                        linter.installationInstructions?.let {
+                            appendLine("  - Install: $it")
+                        }
+                    }
+                    appendLine()
+                }
+
+                if (linterSummary.fileMapping.isNotEmpty()) {
+                    appendLine("**File-Linter Mapping:**")
+                    linterSummary.fileMapping.forEach { (file, linters) ->
+                        appendLine("- `$file` → ${linters.joinToString(", ")}")
+                    }
+                }
+            }
+        }
+    }
+}
 
 /**
  * Linter availability information

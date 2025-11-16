@@ -5,6 +5,7 @@ import cc.unitmesh.agent.ReviewFinding
 import cc.unitmesh.agent.ReviewTask
 import cc.unitmesh.agent.Severity
 import cc.unitmesh.agent.conversation.ConversationManager
+import cc.unitmesh.agent.linter.LinterSummary
 import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
@@ -162,7 +163,7 @@ class CodeReviewAgentExecutor(
             if (linterSummary != null) {
                 appendLine("## Linter Information")
                 appendLine()
-                appendLine(formatLinterInfo(linterSummary))
+                appendLine(LinterSummary.format(linterSummary))
                 appendLine()
             }
 
@@ -176,42 +177,6 @@ class CodeReviewAgentExecutor(
                 appendLine("**Instructions**:")
                 appendLine("Please provide a thorough code review following the guidelines in the system prompt.")
                 appendLine("Use tools as needed to read files and gather information.")
-            }
-        }
-    }
-
-    /**
-     * Format linter information for display in user messages
-     */
-    private fun formatLinterInfo(linterSummary: cc.unitmesh.agent.linter.LinterSummary): String {
-        return buildString {
-            if (linterSummary.availableLinters.isNotEmpty()) {
-                appendLine("**Available Linters (${linterSummary.availableLinters.size}):**")
-                linterSummary.availableLinters.forEach { linter ->
-                    appendLine("- **${linter.name}** ${linter.version?.let { "($it)" } ?: ""}")
-                    if (linter.supportedFiles.isNotEmpty()) {
-                        appendLine("  - Supported files: ${linter.supportedFiles.joinToString(", ")}")
-                    }
-                }
-                appendLine()
-            }
-
-            if (linterSummary.unavailableLinters.isNotEmpty()) {
-                appendLine("**Unavailable Linters (${linterSummary.unavailableLinters.size}):**")
-                linterSummary.unavailableLinters.forEach { linter ->
-                    appendLine("- **${linter.name}** (not installed)")
-                    linter.installationInstructions?.let {
-                        appendLine("  - Install: $it")
-                    }
-                }
-                appendLine()
-            }
-
-            if (linterSummary.fileMapping.isNotEmpty()) {
-                appendLine("**File-Linter Mapping:**")
-                linterSummary.fileMapping.forEach { (file, linters) ->
-                    appendLine("- `$file` → ${linters.joinToString(", ")}")
-                }
             }
         }
     }
