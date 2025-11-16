@@ -73,11 +73,6 @@ fun main(args: Array<String>) {
                                 uiState.updateAgentType(newType)
                                 AutoDevLogger.info("AutoDevMain") { "🔄 Switch Agent Type: $newType" }
                             },
-                            workspacePath = uiState.workspacePath,
-                            isTreeViewVisible = uiState.isTreeViewVisible,
-                            onToggleTreeView = {
-                                uiState.toggleTreeView()
-                            },
                             onConfigureRemote = {
                                 uiState.showRemoteConfigDialog = true
                                 AutoDevLogger.info("AutoDevMain") { "☁️ Configure Remote" }
@@ -105,14 +100,10 @@ fun main(args: Array<String>) {
                                 uiState.updateAgentType(type)
                             },
                             onTreeViewVisibilityChanged = { visible ->
-                                if (visible != uiState.isTreeViewVisible) {
-                                    uiState.isTreeViewVisible = visible
-                                }
+                                // 已由全局状态管理，无需额外操作
                             },
                             onSidebarVisibilityChanged = { visible ->
-                                if (visible != uiState.showSessionSidebar) {
-                                    uiState.showSessionSidebar = visible
-                                }
+                                // 已由全局状态管理，无需额外操作
                             },
                             onWorkspacePathChanged = { path ->
                                 uiState.updateWorkspacePath(path)

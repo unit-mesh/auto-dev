@@ -26,6 +26,7 @@ import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.i18n.Strings
 import cc.unitmesh.devins.ui.platform.createFileChooser
+import cc.unitmesh.devins.ui.state.UIStateManager
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
@@ -89,7 +90,9 @@ private fun AutoDevContent(
 
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
 
-    var showSessionSidebar by remember { mutableStateOf(true) } // 默认显示（JVM 桌面端）
+    // 从全局状态管理器获取 UI 状态
+    val isTreeViewVisible by UIStateManager.isTreeViewVisible.collectAsState()
+    val showSessionSidebar by UIStateManager.isSessionSidebarVisible.collectAsState()
 
     LaunchedEffect(Unit) {
         chatHistoryManager.initialize()
@@ -104,7 +107,6 @@ private fun AutoDevContent(
     var showModelConfigDialog by remember { mutableStateOf(false) }
     var showToolConfigDialog by remember { mutableStateOf(false) }
     var selectedAgent by remember { mutableStateOf("Default") }
-    var isTreeViewVisible by remember { mutableStateOf(initialTreeViewVisible) } // TreeView visibility for agent mode
 
     // Unified Agent Type Selection (LOCAL, CODING, CODE_REVIEW, REMOTE)
     // Desktop: 由 Main.kt 管理，通过 initialAgentType 传递
@@ -169,17 +171,23 @@ private fun AutoDevContent(
         workspaceState?.let { workspace ->
             currentWorkspace = workspace
             workspace.rootPath?.let { path ->
+                UIStateManager.setWorkspacePath(path)
                 onWorkspacePathChanged(path)
             }
         }
     }
 
+    // 同步全局状态到回调（供 Desktop 窗口使用）
+
+    // 同步全局状态到回调（供 Desktop 窗口使用）
     LaunchedEffect(showSessionSidebar) {
         onSidebarVisibilityChanged(showSessionSidebar)
     }
 
     LaunchedEffect(messages.size) {
-        onHasHistoryChanged(messages.isNotEmpty())
+        val hasHistory = messages.isNotEmpty()
+        UIStateManager.setHasHistory(hasHistory)
+        onHasHistoryChanged(hasHistory)
     }
 
     LaunchedEffect(isTreeViewVisible) {
@@ -187,6 +195,10 @@ private fun AutoDevContent(
     }
 
     LaunchedEffect(Unit) {
+        // 初始化全局 UI 状态
+        UIStateManager.setTreeViewVisible(initialTreeViewVisible)
+        UIStateManager.setSessionSidebarVisible(true)
+
         if (!WorkspaceManager.hasActiveWorkspace()) {
             // Try to load last workspace first
             val lastWorkspace = try {
@@ -421,7 +433,7 @@ private fun AutoDevContent(
                         },
                         useSessionManagement = useSessionManagement,
                         showSessionSidebar = showSessionSidebar,
-                        onToggleSidebar = { showSessionSidebar = !showSessionSidebar },
+                        onToggleSidebar = { UIStateManager.toggleSessionSidebar() },
                         onOpenDirectory = { openDirectoryChooser() },
                         onClearHistory = {
                             chatHistoryManager.clearCurrentSession()
@@ -442,7 +454,7 @@ private fun AutoDevContent(
                         onAgentChange = { agent ->
                             selectedAgent = agent
                         },
-                        onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
+                        onToggleTreeView = { UIStateManager.toggleTreeView() },
                         onConfigureRemote = { showRemoteConfigDialog = true },
                         onSessionManagementToggle = {
                             useSessionManagement = !useSessionManagement
@@ -491,10 +503,7 @@ private fun AutoDevContent(
                         llmService = llmService,
                         isTreeViewVisible = isTreeViewVisible,
                         onConfigWarning = { showModelConfigDialog = true },
-                        onToggleTreeView = { newValue ->
-                            isTreeViewVisible = newValue
-                            onTreeViewVisibilityChanged(newValue)
-                        },
+                        onToggleTreeView = { /* 不需要，由全局状态管理 */ },
                         chatHistoryManager = chatHistoryManager,
                         selectedAgentType = selectedAgentType,
                         onAgentTypeChange = { type ->

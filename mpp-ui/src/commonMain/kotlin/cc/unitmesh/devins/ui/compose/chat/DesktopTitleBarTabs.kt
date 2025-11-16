@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.agent.AgentType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.state.UIStateManager
 
 /**
  * Desktop 标题栏（VSCode 风格）
@@ -24,12 +25,12 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 fun DesktopTitleBarTabs(
     currentAgentType: AgentType,
     onAgentTypeChange: (AgentType) -> Unit,
-    workspacePath: String = "",
-    isTreeViewVisible: Boolean = false,
-    onToggleTreeView: () -> Unit = {},
     onConfigureRemote: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    // 从全局状态获取
+    val workspacePath by UIStateManager.workspacePath.collectAsState()
+    val isTreeViewVisible by UIStateManager.isTreeViewVisible.collectAsState()
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -110,7 +111,7 @@ fun DesktopTitleBarTabs(
             }
 
             IconButton(
-                onClick = onToggleTreeView,
+                onClick = { UIStateManager.toggleTreeView() },
                 modifier = Modifier.size(28.dp)
             ) {
                 Icon(

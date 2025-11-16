@@ -10,15 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
+import cc.unitmesh.devins.ui.state.UIStateManager
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
 
 @Composable
 fun AgentChatInterface(
     llmService: KoogLLMService?,
-    isTreeViewVisible: Boolean = false,
+    isTreeViewVisible: Boolean = false, // 保留供外部读取，但内部使用全局状态
     onConfigWarning: () -> Unit,
-    onToggleTreeView: (Boolean) -> Unit = {},
+    onToggleTreeView: (Boolean) -> Unit = {}, // 保留供外部回调，但不再主动调用
     // 会话管理
     chatHistoryManager: cc.unitmesh.devins.llm.ChatHistoryManager? = null,
     // Agent 类型（LOCAL or CODING）
@@ -47,6 +48,9 @@ fun AgentChatInterface(
     onInternalNewChat: ((() -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    // 从全局状态管理器获取 TreeView 状态
+    val isTreeViewVisibleState by UIStateManager.isTreeViewVisible.collectAsState()
+
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
     val viewModel =
         remember(llmService, currentWorkspace?.rootPath, chatHistoryManager) {
@@ -87,23 +91,7 @@ fun AgentChatInterface(
         onInternalNewChat?.invoke(handleNewChat)
     }
 
-    // 同步外部 TreeView 状态到 ViewModel
-    LaunchedEffect(isTreeViewVisible) {
-        println("🔄 [AgentChatInterface] External isTreeViewVisible changed to: $isTreeViewVisible")
-        if (viewModel.isTreeViewVisible != isTreeViewVisible) {
-            viewModel.isTreeViewVisible = isTreeViewVisible
-        }
-    }
-
-    // 监听 ViewModel 状态变化并通知外部（仅当 ViewModel 内部改变时）
-    LaunchedEffect(viewModel.isTreeViewVisible) {
-        println("🔔 [AgentChatInterface] ViewModel isTreeViewVisible changed to: ${viewModel.isTreeViewVisible}")
-        if (viewModel.isTreeViewVisible != isTreeViewVisible) {
-            onToggleTreeView(viewModel.isTreeViewVisible)
-        }
-    }
-
-    if (viewModel.isTreeViewVisible) {
+    if (isTreeViewVisibleState) {
         ResizableSplitPane(
             modifier = modifier.fillMaxSize(),
             initialSplitRatio = 0.6f,
@@ -205,7 +193,7 @@ fun AgentChatInterface(
                                 onFileClick = { filePath ->
                                     viewModel.renderer.openFileViewer(filePath)
                                 },
-                                onClose = { viewModel.closeTreeView() },
+                                onClose = { UIStateManager.setTreeViewVisible(false) },
                                 modifier = Modifier.fillMaxSize()
                             )
                         },
@@ -225,7 +213,7 @@ fun AgentChatInterface(
                         onFileClick = { filePath ->
                             viewModel.renderer.openFileViewer(filePath)
                         },
-                        onClose = { viewModel.closeTreeView() },
+                        onClose = { UIStateManager.setTreeViewVisible(false) },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -240,7 +228,7 @@ fun AgentChatInterface(
                     currentModelConfig = currentModelConfig,
                     selectedAgent = selectedAgent,
                     availableAgents = availableAgents,
-                    isTreeViewVisible = isTreeViewVisible,
+                    isTreeViewVisible = isTreeViewVisibleState,
                     currentAgentType = selectedAgentType,
                     onAgentTypeChange = onAgentTypeChange,
                     onOpenDirectory = onOpenDirectory,
@@ -248,7 +236,7 @@ fun AgentChatInterface(
                     onModelConfigChange = onModelConfigChange,
                     onAgentChange = onAgentChange,
                     onModeToggle = onModeToggle,
-                    onToggleTreeView = { onToggleTreeView(!isTreeViewVisible) },
+                    onToggleTreeView = { UIStateManager.toggleTreeView() },
                     onConfigureRemote = onConfigureRemote,
                     onShowModelConfig = onShowModelConfig,
                     onShowToolConfig = onShowToolConfig,

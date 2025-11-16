@@ -2,22 +2,25 @@ package cc.unitmesh.devins.ui.compose.state
 
 import androidx.compose.runtime.*
 import cc.unitmesh.devins.ui.compose.agent.AgentType
+import cc.unitmesh.devins.ui.state.UIStateManager
 
 /**
  * Desktop UI State ViewModel
- * 管理桌面端 UI 的所有状态，方便跨平台状态管理
+ * 管理桌面端 UI 的所有状态，同步全局 UIStateManager
  */
 class DesktopUiState {
     // Agent Type
     var currentAgentType by mutableStateOf(AgentType.CODING)
 
-    // Sidebar & TreeView
-    var showSessionSidebar by mutableStateOf(true)
+    // Sidebar & TreeView - 从全局状态读取
+    val showSessionSidebar: Boolean
+        get() = UIStateManager.isSessionSidebarVisible.value
 
-    var isTreeViewVisible by mutableStateOf(false)
+    val isTreeViewVisible: Boolean
+        get() = UIStateManager.isTreeViewVisible.value
 
-    // Workspace
-    var workspacePath by mutableStateOf("")
+    val workspacePath: String
+        get() = UIStateManager.workspacePath.value
 
     // Agent
     var selectedAgent by mutableStateOf("Default")
@@ -40,15 +43,15 @@ class DesktopUiState {
     }
 
     fun toggleSessionSidebar() {
-        showSessionSidebar = !showSessionSidebar
+        UIStateManager.toggleSessionSidebar()
     }
 
     fun toggleTreeView() {
-        isTreeViewVisible = !isTreeViewVisible
+        UIStateManager.toggleTreeView()
     }
 
     fun updateWorkspacePath(path: String) {
-        workspacePath = path
+        UIStateManager.setWorkspacePath(path)
     }
 
     fun updateSelectedAgent(agent: String) {
