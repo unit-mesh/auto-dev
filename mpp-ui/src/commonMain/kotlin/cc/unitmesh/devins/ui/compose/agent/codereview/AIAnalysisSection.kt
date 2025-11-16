@@ -87,7 +87,7 @@ fun AIAnalysisSection(
                         }
                     }
                 }
-                
+
                 // Finding count badges
                 if (reviewFindings.isNotEmpty()) {
                     Row(
@@ -97,7 +97,7 @@ fun AIAnalysisSection(
                         val criticalCount = reviewFindings.count { it.severity == cc.unitmesh.agent.Severity.CRITICAL }
                         val highCount = reviewFindings.count { it.severity == cc.unitmesh.agent.Severity.HIGH }
                         val mediumCount = reviewFindings.count { it.severity == cc.unitmesh.agent.Severity.MEDIUM }
-                        
+
                         if (criticalCount > 0) {
                             Surface(
                                 color = AutoDevColors.Red.c600.copy(alpha = 0.15f),
@@ -165,7 +165,7 @@ fun AIAnalysisSection(
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
-                    
+
                     // Show structured findings
                     if (reviewFindings.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -195,13 +195,13 @@ fun ReviewFindingCard(finding: cc.unitmesh.agent.ReviewFinding) {
         cc.unitmesh.agent.Severity.LOW -> AutoDevColors.Green.c600
         cc.unitmesh.agent.Severity.INFO -> MaterialTheme.colorScheme.onSurfaceVariant
     }
-    
+
     val severityIcon = when (finding.severity) {
         cc.unitmesh.agent.Severity.CRITICAL, cc.unitmesh.agent.Severity.HIGH -> AutoDevComposeIcons.Error
         cc.unitmesh.agent.Severity.MEDIUM -> AutoDevComposeIcons.Warning
         else -> AutoDevComposeIcons.Info
     }
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -221,7 +221,7 @@ fun ReviewFindingCard(finding: cc.unitmesh.agent.ReviewFinding) {
                 tint = severityColor,
                 modifier = Modifier.size(16.dp)
             )
-            
+
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -242,13 +242,13 @@ fun ReviewFindingCard(finding: cc.unitmesh.agent.ReviewFinding) {
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
-                    
+
                     Text(
                         text = finding.category,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     finding.filePath?.let { path ->
                         Text(
                             text = "• $path${finding.lineNumber?.let { ":$it" } ?: ""}",
@@ -257,13 +257,13 @@ fun ReviewFindingCard(finding: cc.unitmesh.agent.ReviewFinding) {
                         )
                     }
                 }
-                
+
                 Text(
                     text = finding.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 finding.suggestion?.let { suggestion ->
                     Surface(
                         color = AutoDevColors.Green.c600.copy(alpha = 0.1f),

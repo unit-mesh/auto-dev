@@ -367,21 +367,19 @@ open class CodeReviewViewModel(
                 }
 
                 try {
-                    val agentResult = agent.executeTask(reviewTask)
-
-                    // Extract findings from agent result
-                    // The params in AgentStep is a Map<String, Any>
-                    val findings = agentResult.steps.firstOrNull()?.params?.let { params ->
-                        when (params) {
-                            is Map<*, *> -> {
-                                (params["findings"] as? List<*>)?.filterIsInstance<cc.unitmesh.agent.ReviewFinding>()
-                            }
-                            else -> null
+                    analysisOutputBuilder.appendLine()
+                    val agentResult = agent.execute(reviewTask) { progressMessage ->
+                        analysisOutputBuilder.append(progressMessage)
+                        updateState {
+                            it.copy(
+                                aiProgress = it.aiProgress.copy(
+                                    analysisOutput = analysisOutputBuilder.toString()
+                                )
+                            )
                         }
-                    } ?: emptyList()
+                    }
 
-                    analysisOutputBuilder.append(agentResult.message)
-
+                    val findings = cc.unitmesh.agent.ReviewFinding.parseFindings(agentResult.content)
                     updateState {
                         it.copy(
                             aiProgress = it.aiProgress.copy(

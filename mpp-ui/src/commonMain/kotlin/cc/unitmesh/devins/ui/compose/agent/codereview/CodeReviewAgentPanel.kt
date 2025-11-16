@@ -148,7 +148,7 @@ fun CodeReviewAgentPanel(
                                     )
                                 }
                             }
-                            
+
                             FilledTonalButton(
                                 onClick = { viewModel.startAnalysis() },
                                 colors = ButtonDefaults.filledTonalButtonColors(

@@ -252,7 +252,7 @@ class CodeReviewAgent(
         val conversationManager = cc.unitmesh.agent.conversation.ConversationManager(llmService, systemPrompt)
         val analysisOutput = StringBuilder()
         try {
-            conversationManager.sendMessage("Start analysis", compileDevIns = false).collect { chunk: String ->
+            conversationManager.sendMessage("Start analysis", compileDevIns = true).collect { chunk: String ->
                 analysisOutput.append(chunk)
                 onProgress(chunk)
             }
@@ -340,7 +340,14 @@ class CodeReviewAgent(
     }
 
     override fun buildSystemPrompt(context: CodeReviewContext, language: String): String {
-        return "You are a code review assistant. Analyze the code and provide feedback."
+        return CodeReviewAgentPromptRenderer().renderAnalysisPrompt(
+            reviewType = context.reviewType.name,
+            filePaths = context.filePaths,
+            codeContent = mapOf(),
+            lintResults = mapOf(),
+            diffContext = "",
+            language = language
+        )
     }
 
     private fun initializeWorkspace(projectPath: String) {

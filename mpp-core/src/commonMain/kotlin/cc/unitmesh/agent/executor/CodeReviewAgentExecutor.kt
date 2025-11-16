@@ -41,7 +41,7 @@ class CodeReviewAgentExecutor(
     suspend fun execute(
         task: ReviewTask,
         systemPrompt: String,
-        linterSummary: cc.unitmesh.agent.linter.LinterSummary? = null,
+        linterSummary: LinterSummary? = null,
         onProgress: (String) -> Unit = {}
     ): CodeReviewResult {
         resetExecution()
@@ -65,27 +65,27 @@ class CodeReviewAgentExecutor(
                 renderer.renderLLMResponseStart()
 
                 if (enableLLMStreaming) {
-                    // Streaming mode: receive and render chunks
                     if (currentIteration == 1) {
                         conversationManager!!.sendMessage(initialUserMessage, compileDevIns = false).cancellable().collect { chunk ->
                             llmResponse.append(chunk)
                             renderer.renderLLMResponseChunk(chunk)
+                            onProgress(chunk)
                         }
                     } else {
                         conversationManager!!.sendMessage(buildContinuationMessage(), compileDevIns = false).cancellable().collect { chunk ->
                             llmResponse.append(chunk)
                             renderer.renderLLMResponseChunk(chunk)
+                            onProgress(chunk)
                         }
                     }
                 } else {
-                    // Non-streaming mode: get complete response at once
                     val message = if (currentIteration == 1) initialUserMessage else buildContinuationMessage()
                     val response = llmService.sendPrompt(message)
                     llmResponse.append(response)
-                    // Simulate streaming output by rendering in chunks
                     response.split(Regex("(?<=[.!?。！？]\\s)")).forEach { sentence ->
                         if (sentence.isNotBlank()) {
                             renderer.renderLLMResponseChunk(sentence)
+                            onProgress(sentence)
                         }
                     }
                 }
@@ -95,6 +95,7 @@ class CodeReviewAgentExecutor(
             } catch (e: Exception) {
                 logger.error(e) { "LLM call failed: ${e.message}" }
                 renderer.renderError("LLM call failed: ${e.message}")
+                onProgress("❌ LLM call failed: ${e.message}")
                 break
             }
 
