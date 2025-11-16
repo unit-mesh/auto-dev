@@ -5,39 +5,14 @@ import cc.unitmesh.devins.compiler.template.TemplateCompiler
 
 /**
  * Renders system prompts for the code review agent using templates and context
- * 
- * This class implements the unified AgentPromptRenderer interface and uses
- * TemplateCompiler for consistent template processing across all agents
+ *
+ * Simplified to only two prompt templates:
+ * 1. Analysis Prompt - for analyzing code and lint results
+ * 2. Fix Generation Prompt - for generating actionable fixes
  */
-class CodeReviewAgentPromptRenderer : AgentPromptRenderer<CodeReviewContext> {
+class CodeReviewAgentPromptRenderer {
     val logger = getLogger("CodeReviewAgentPromptRenderer")
 
-    /**
-     * Render system prompt from context
-     *
-     * @param context The code review context
-     * @param language Language for the prompt (EN or ZH)
-     * @return The rendered system prompt
-     */
-    override fun render(context: CodeReviewContext, language: String): String {
-        val template = when (language.uppercase()) {
-            "ZH", "CN" -> CodeReviewAgentTemplate.ZH
-            else -> CodeReviewAgentTemplate.EN
-        }
-
-        val variableTable = context.toVariableTable()
-        val compiler = TemplateCompiler(variableTable)
-        val prompt = compiler.compile(template)
-
-        logger.debug { "Generated code review prompt (${prompt.length} chars)" }
-        logger.info { "System Prompt: $prompt" }
-        return prompt
-    }
-
-    /**
-     * Renders a data-driven analysis prompt (for UI scenarios where data is pre-collected)
-     * This prompt focuses on analyzing provided data rather than using tools
-     */
     fun renderAnalysisPrompt(
         reviewType: String,
         filePaths: List<String>,
@@ -71,11 +46,31 @@ $result
 
         val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
         variableTable.addVariable("reviewType", cc.unitmesh.devins.compiler.variable.VariableType.STRING, reviewType)
-        variableTable.addVariable("fileCount", cc.unitmesh.devins.compiler.variable.VariableType.STRING, filePaths.size.toString())
-        variableTable.addVariable("filePaths", cc.unitmesh.devins.compiler.variable.VariableType.STRING, filePaths.joinToString("\n- ", prefix = "- "))
-        variableTable.addVariable("codeContent", cc.unitmesh.devins.compiler.variable.VariableType.STRING, formattedFiles)
-        variableTable.addVariable("lintResults", cc.unitmesh.devins.compiler.variable.VariableType.STRING, formattedLintResults)
-        variableTable.addVariable("diffContext", cc.unitmesh.devins.compiler.variable.VariableType.STRING, if (diffContext.isNotBlank()) "\n\n### Diff Context\n$diffContext" else "")
+        variableTable.addVariable(
+            "fileCount",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            filePaths.size.toString()
+        )
+        variableTable.addVariable(
+            "filePaths",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            filePaths.joinToString("\n- ", prefix = "- ")
+        )
+        variableTable.addVariable(
+            "codeContent",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            formattedFiles
+        )
+        variableTable.addVariable(
+            "lintResults",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            formattedLintResults
+        )
+        variableTable.addVariable(
+            "diffContext",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            if (diffContext.isNotBlank()) "\n\n### Diff Context\n$diffContext" else ""
+        )
 
         val compiler = TemplateCompiler(variableTable)
         val prompt = compiler.compile(template)
@@ -85,130 +80,105 @@ $result
     }
 
     /**
-     * Renders intent analysis prompt (tool-driven approach for analyzing commit intent)
-     * This prompt guides the agent to use tools for understanding user intent
+     * Renders fix generation prompt for creating actionable fixes
+     * This is the second step in the code review process
      */
-    fun renderIntentAnalysisPrompt(
-        context: IntentAnalysisContext,
+    fun renderFixGenerationPrompt(
+        codeContent: Map<String, String>,
+        lintResults: List<LintFileResult>,
+        analysisOutput: String,
         language: String = "EN"
     ): String {
         val template = when (language.uppercase()) {
-            "ZH", "CN" -> IntentAnalysisTemplate.ZH
-            else -> IntentAnalysisTemplate.EN
+            "ZH", "CN" -> FixGenerationTemplate.ZH
+            else -> FixGenerationTemplate.EN
         }
 
-        val variableTable = context.toVariableTable()
+        // Format code content
+        val formattedCode = if (codeContent.isNotEmpty()) {
+            codeContent.entries.joinToString("\n\n") { (path, content) ->
+                """### File: $path
+```
+$content
+```"""
+            }
+        } else {
+            "No code content available."
+        }
+
+        // Format lint results
+        val formattedLintResults = if (lintResults.isNotEmpty()) {
+            lintResults.mapNotNull { fileResult ->
+                if (fileResult.issues.isNotEmpty()) {
+                    val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
+                    buildString {
+                        appendLine("### ${fileResult.filePath}")
+                        appendLine("Total Issues: $totalCount (${fileResult.errorCount} errors, ${fileResult.warningCount} warnings)")
+                        appendLine()
+
+                        // Group by severity
+                        val critical = fileResult.issues.filter { it.severity == LintSeverityUI.ERROR }
+                        val warnings = fileResult.issues.filter { it.severity == LintSeverityUI.WARNING }
+
+                        if (critical.isNotEmpty()) {
+                            appendLine("**Critical Issues:**")
+                            critical.forEach { issue ->
+                                appendLine("- Line ${issue.line}: ${issue.message}")
+                                val ruleText = issue.rule
+                                if (ruleText != null && ruleText.isNotBlank()) {
+                                    appendLine("  Rule: $ruleText")
+                                }
+                            }
+                            appendLine()
+                        }
+
+                        if (warnings.isNotEmpty()) {
+                            appendLine("**Warnings:**")
+                            warnings.take(5).forEach { issue ->
+                                appendLine("- Line ${issue.line}: ${issue.message}")
+                                val ruleText = issue.rule
+                                if (ruleText != null && ruleText.isNotBlank()) {
+                                    appendLine("  Rule: $ruleText")
+                                }
+                            }
+                            if (warnings.size > 5) {
+                                appendLine("... and ${warnings.size - 5} more warnings")
+                            }
+                        }
+                    }
+                } else {
+                    null
+                }
+            }.joinToString("\n\n")
+        } else {
+            "No lint issues found."
+        }
+
+        val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
+        variableTable.addVariable(
+            "codeContent",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            formattedCode
+        )
+        variableTable.addVariable(
+            "lintResults",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            formattedLintResults
+        )
+        variableTable.addVariable(
+            "analysisOutput",
+            cc.unitmesh.devins.compiler.variable.VariableType.STRING,
+            analysisOutput
+        )
+
         val compiler = TemplateCompiler(variableTable)
         val prompt = compiler.compile(template)
 
-        logger.debug { "Generated intent analysis prompt (${prompt.length} chars)" }
+        logger.debug { "Generated fix generation prompt (${prompt.length} chars)" }
         return prompt
     }
 }
 
-object CodeReviewAgentTemplate {
-    val EN = """
-# Code Review Agent
-
-You are an expert code reviewer. Analyze code and provide constructive, actionable feedback.
-
-## Available Tools
-
-${'$'}{toolList}
-
-## Tool Usage Format
-
-All tools use the DevIns format with JSON parameters:
-```
-<devin>
-/tool-name
-```json
-{"parameter": "value", "optional_param": 123}
-```
-</devin>
-```
-
-**IMPORTANT**: Execute ONLY ONE tool per response.
-
-## Review Process
-
-1. **Analyze linter results** (if provided in user message) to understand existing issues
-2. **Read the code** using available tools
-3. **Analyze** for issues beyond linter detection:
-   - Security vulnerabilities
-   - Performance bottlenecks
-   - Design issues
-   - Logic errors
-4. **Provide feedback** with severity levels and specific suggestions
-
-## Output Format
-
-Structure your findings as:
-1. **Summary**: Brief overview
-2. **Critical Issues** (CRITICAL/HIGH): Must fix
-3. **Recommendations** (MEDIUM): Should fix
-4. **Minor Issues** (LOW/INFO): Nice to fix
-
-For each finding:
-- Severity: CRITICAL/HIGH/MEDIUM/LOW/INFO
-- Category: Security/Performance/Style/Architecture/etc.
-- Description and location (file:line)
-- Suggested fix
-
-Be specific and actionable.
-""".trimIndent()
-
-    val ZH = """
-# 代码审查 Agent
-
-你是一位专业的代码审查专家。分析代码并提供建设性、可操作的反馈。
-
-## 可用工具
-
-${'$'}{toolList}
-
-## 工具使用格式
-
-所有工具都使用 DevIns 格式和 JSON 参数：
-```
-<devin>
-/tool-name
-```json
-{"parameter": "value", "optional_param": 123}
-```
-</devin>
-```
-
-**重要**：每次响应只执行一个工具。
-
-## 审查流程
-
-1. **分析 linter 结果**（如果在用户消息中提供）理解已有问题
-2. **阅读代码** 使用可用工具
-3. **分析** linters 无法检测的问题：
-   - 安全漏洞
-   - 性能瓶颈
-   - 设计问题
-   - 逻辑错误
-4. **提供反馈** 包含严重性级别和具体建议
-
-## 输出格式
-
-按以下结构组织发现：
-1. **总结**：简要概述
-2. **关键问题**（CRITICAL/HIGH）：必须修复
-3. **建议**（MEDIUM）：应该修复
-4. **次要问题**（LOW/INFO）：可以修复
-
-每个发现包括：
-- 严重性：CRITICAL/HIGH/MEDIUM/LOW/INFO
-- 类别：安全/性能/风格/架构等
-- 描述和位置（文件:行号）
-- 建议的修复
-
-保持具体和可操作。
-""".trimIndent()
-}
 
 object CodeReviewAnalysisTemplate {
     val EN = """
@@ -255,28 +225,10 @@ For CRITICAL/HIGH issues only, list in this compact format:
 **Problem**: {One sentence description}  
 **Fix**: {One sentence suggestion}
 
----
-
-## Analysis Guidelines
-
-1. **TWO-PART OUTPUT**: 
-   - Part 1 (Console Summary): 3-5 critical/high issues only, very brief
-   - Part 2 (Full Report): Complete analysis of up to 10 issues with details
-2. **Prioritize by severity** (Use strict criteria):
-   - **CRITICAL**: ONLY for issues that WILL cause security breaches, data loss, or system crashes
-     - Examples: SQL injection, exposed secrets, null pointer dereferences in critical paths
-   - **HIGH**: Issues that WILL cause incorrect behavior or significant performance degradation
-     - Examples: Logic errors with wrong results, resource leaks, race conditions
-   - **MEDIUM**: Issues that MAY cause problems under certain conditions
-     - Examples: Missing error handling, suboptimal algorithms, missing validations
-   - **LOW/INFO**: Code quality issues that don't affect functionality
-     - Examples: Code duplication, minor style inconsistencies, missing comments
-
 ## Output Requirements
 
 - Use proper Markdown formatting
-- Start with Summary, then list exactly 10 issues (or fewer if less than 10 significant issues exist)
-- Number issues from 1-10
+- Start with Summary, then list exactly 5 issues (or fewer if less than 5 significant issues exist)
 - Use clear section headers with emoji indicators (📊, 🚨)
 - Keep total output concise and focused
 """.trimIndent()
@@ -333,164 +285,168 @@ ${'$'}{diffContext}
 """.trimIndent()
 }
 
-object IntentAnalysisTemplate {
+/**
+ * Template for fix generation prompt
+ * Generates unified diff patches for identified issues
+ */
+object FixGenerationTemplate {
     val EN = """
-# Commit Intent Analysis Agent
+# Code Fix Generation - Unified Diff Format
 
-You are an expert software analyst. Your task is to analyze commits and understand the developer's intent.
+Generate **unified diff patches** for the critical issues identified in the analysis.
 
-## Available Tools
+## Original Code
 
-${'$'}{toolList}
+${'$'}{codeContent}
 
-## Tool Usage Format
+## Lint Issues
 
-All tools use the DevIns format with JSON parameters:
-```
-<devin>
-/tool-name
-```json
-{"parameter": "value", "optional_param": 123}
-```
-</devin>
-```
+${'$'}{lintResults}
 
-**IMPORTANT**: Execute ONLY ONE tool per response.
+## AI Analysis
 
-## Analysis Process
+${'$'}{analysisOutput}
 
-1. **Understand the commit context**:
-   - Review the commit message and code changes provided by the user
-   - Identify related issues/tickets mentioned in the commit
+## Your Task
 
-2. **Gather additional context** (use tools as needed):
-   - Read relevant source files to understand the codebase structure
-   - Read test files to understand expected behavior
-   - Read related files mentioned in the changes
-   - Search for related code patterns using grep
+Generate **unified diff patches** for the most critical issues. Use standard unified diff format.
 
-3. **Analyze user intent**:
-   - What problem is the developer trying to solve?
-   - What is the intended behavior or feature?
-   - How does this relate to the mentioned issues/tickets?
+### Required Format:
 
-4. **Create visualization**:
-   - Generate a Mermaid diagram showing:
-     * User's intent/goal
-     * Implementation approach
-     * Data flow or component interactions
-     * Key decision points
+For each fix, provide a brief explanation followed by the diff patch:
 
-5. **Evaluate implementation**:
-   - Does the implementation match the stated intent?
-   - Are there any gaps or inconsistencies?
-   - Are there potential issues or improvements?
+#### Fix #{number}: {Brief Title}
+**Issue**: {One-line description}
+**Location**: {file}:{line}
 
-## Output Format
-
----
-
-## Console Summary (Keep Brief)
-
-### 🎯 Intent Summary
-One sentence: What the developer intended to achieve.
-
-### 📊 Mermaid Diagram
-```mermaid
-graph TD
-    A[Intent] --> B[Implementation]
-    B --> C[Outcome]
+```diff
+diff --git a/{filepath} b/{filepath}
+index {old_hash}..{new_hash} {mode}
+--- a/{filepath}
++++ b/{filepath}
+@@ -{old_start},{old_count} +{new_start},{new_count} @@ {context}
+ {context line}
+-{removed line}
++{added line}
+ {context line}
 ```
 
-## Guidelines
+### Example:
 
-- Use tools to read files and understand context
-- Be specific and reference actual code/files
-- Focus on understanding WHY the changes were made, not just WHAT changed
-- Provide actionable insights for improvement
-- Keep the mermaid diagram clear and focused on intent flow
+#### Fix #1: Fix null pointer exception
+**Issue**: Missing null check for user parameter
+**Location**: src/User.kt:15
+
+```diff
+diff --git a/src/User.kt b/src/User.kt
+index abc1234..def5678 100644
+--- a/src/User.kt
++++ b/src/User.kt
+@@ -13,7 +13,10 @@ class UserService {
+     fun processUser(user: User?) {
+-        println(user.name)
++        if (user == null) {
++            throw IllegalArgumentException("User cannot be null")
++        }
++        println(user.name)
+     }
+ }
+```
+
+### Guidelines:
+
+1. **Use standard unified diff format** - Must be parseable by standard diff tools
+2. **Include context lines** - Show 3 lines of context before and after changes
+3. **Accurate line numbers** - Ensure @@ headers have correct line numbers
+4. **Complete hunks** - Each hunk should be self-contained and applicable
+5. **One fix per patch** - Separate different fixes into different diff blocks
+6. **Priority order** - Start with critical/high severity issues
+7. **Maximum 5 patches** - Focus on the most important fixes
+
+**IMPORTANT**:
+- Each diff MUST be in a ```diff code block
+- Use exact line numbers from the original code
+- Include enough context for patch to be applied correctly
+- DO NOT use any tools - all code is provided above
 """.trimIndent()
 
     val ZH = """
-# 提交意图分析 Agent
+# 代码修复生成 - 统一差异格式
 
-你是一位专业的软件分析专家。你的任务是分析提交并理解开发者的意图。
+为分析中识别的关键问题生成 **统一差异补丁**。
 
-## 可用工具
+## 原始代码
 
-${'$'}{toolList}
+${'$'}{codeContent}
 
-## 工具使用格式
+## Lint 问题
 
-所有工具都使用 DevIns 格式和 JSON 参数：
-```
-<devin>
-/tool-name
-```json
-{"parameter": "value", "optional_param": 123}
-```
-</devin>
-```
+${'$'}{lintResults}
 
-**重要**：每次响应只执行一个工具。
+## AI 分析
 
-## 分析流程
+${'$'}{analysisOutput}
 
-1. **理解提交上下文**：
-   - 审查用户提供的提交消息和代码更改
-   - 识别提交中提到的相关问题/工单
+## 你的任务
 
-2. **收集额外上下文**（根据需要使用工具）：
-   - 读取相关源文件以理解代码库结构
-   - 读取测试文件以理解预期行为
-   - 读取更改中提到的相关文件
-   - 使用 grep 搜索相关代码模式
+为最关键的问题生成 **统一差异补丁**。使用标准的统一差异格式。
 
-3. **分析用户意图**：
-   - 开发者试图解决什么问题？
-   - 预期的行为或功能是什么？
-   - 这与提到的问题/工单有何关系？
+### 必需格式：
 
-4. **创建可视化**：
-   - 生成 Mermaid 图表显示：
-     * 用户的意图/目标
-     * 实现方法
-     * 数据流或组件交互
-     * 关键决策点
+对于每个修复，提供简要说明，然后是差异补丁：
 
-5. **评估实现**：
-   - 实现是否符合声明的意图？
-   - 是否存在任何差距或不一致？
-   - 是否有潜在问题或改进空间？
+#### 修复 #{编号}: {简要标题}
+**问题**: {一行描述}
+**位置**: {文件}:{行号}
 
-## 输出格式
-
----
-
-## 控制台摘要（保持简短）
-
-### 🎯 意图总结
-一句话：开发者意图实现的目标。
-
-### 📊 Mermaid 图表
-```mermaid
-graph TD
-    A[意图] --> B[实现]
-    B --> C[结果]
+```diff
+diff --git a/{文件路径} b/{文件路径}
+index {旧哈希}..{新哈希} {模式}
+--- a/{文件路径}
++++ b/{文件路径}
+@@ -{旧起始},{旧计数} +{新起始},{新计数} @@ {上下文}
+ {上下文行}
+-{删除的行}
++{添加的行}
+ {上下文行}
 ```
 
-### ✅ 快速评估
-- **准确性**：高/中/低
-- **关键问题**：（如有，一句话）
+### 示例：
 
----
+#### 修复 #1: 修复空指针异常
+**问题**: 缺少用户参数的空检查
+**位置**: src/User.kt:15
 
-## 指南
+```diff
+diff --git a/src/User.kt b/src/User.kt
+index abc1234..def5678 100644
+--- a/src/User.kt
++++ b/src/User.kt
+@@ -13,7 +13,10 @@ class UserService {
+     fun processUser(user: User?) {
+-        println(user.name)
++        if (user == null) {
++            throw IllegalArgumentException("User cannot be null")
++        }
++        println(user.name)
+     }
+ }
+```
 
-- 使用工具读取文件并理解上下文
-- 具体说明并引用实际代码/文件
-- 专注于理解为什么进行更改，而不仅仅是更改了什么
-- 提供可操作的改进见解
-- 保持 mermaid 图表清晰并专注于意图流程
+### 指南：
+
+1. **使用标准统一差异格式** - 必须可被标准差异工具解析
+2. **包含上下文行** - 在更改前后显示 3 行上下文
+3. **准确的行号** - 确保 @@ 头部有正确的行号
+4. **完整的块** - 每个块应该是独立的且可应用的
+5. **每个补丁一个修复** - 将不同的修复分成不同的差异块
+6. **优先级顺序** - 从关键/高严重性问题开始
+7. **最多 5 个补丁** - 专注于最重要的修复
+
+**重要**:
+- 每个差异必须在 ```diff 代码块中
+- 使用原始代码的确切行号
+- 包含足够的上下文以正确应用补丁
+- 不要使用任何工具 - 所有代码都在上面提供
 """.trimIndent()
 }
