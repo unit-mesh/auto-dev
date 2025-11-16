@@ -20,15 +20,6 @@ import cc.unitmesh.indexer.DomainDictGenerator
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 
-/**
- * Compose ViewModel for Multi-Agent support (Coding Agent + Code Review Agent)
- *
- * Uses the new BaseRenderer architecture with ComposeRenderer
- * for consistent rendering across CLI, TUI, and Compose UI
- *
- * 支持会话管理：Agent 模式的对话也会保存到 ChatHistoryManager
- * 支持多 Agent 切换：CodingAgent 和 CodeReviewAgent
- */
 class CodingAgentViewModel(
     private val llmService: KoogLLMService?,
     private val projectPath: String,
@@ -43,7 +34,6 @@ class CodingAgentViewModel(
     var currentAgentType by mutableStateOf(AgentType.CODING)
         private set
 
-    // Lazy initialization of agents to handle async tool config loading
     private var _codingAgent: CodingAgent? = null
     private var _codeReviewAgent: CodeReviewAgent? = null
     private var agentInitialized = false

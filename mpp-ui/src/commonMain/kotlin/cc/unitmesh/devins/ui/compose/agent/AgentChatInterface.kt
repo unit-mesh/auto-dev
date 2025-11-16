@@ -98,6 +98,7 @@ fun AgentChatInterface(
         println("🔔 [AgentChatInterface] ViewModel isTreeViewVisible changed to: ${viewModel.isTreeViewVisible}")
         if (viewModel.isTreeViewVisible != isTreeViewVisible) {
             onToggleTreeView(viewModel.isTreeViewVisible)
+            viewModel.toggleTreeView()
         }
     }
 
@@ -116,7 +117,6 @@ fun AgentChatInterface(
                             currentModelConfig = currentModelConfig,
                             selectedAgent = selectedAgent,
                             availableAgents = availableAgents,
-                            useAgentMode = useAgentMode,
                             isTreeViewVisible = isTreeViewVisible,
                             currentAgentType = selectedAgentType,
                             onAgentTypeChange = onAgentTypeChange,
@@ -239,7 +239,6 @@ fun AgentChatInterface(
                     currentModelConfig = currentModelConfig,
                     selectedAgent = selectedAgent,
                     availableAgents = availableAgents,
-                    useAgentMode = useAgentMode,
                     isTreeViewVisible = isTreeViewVisible,
                     currentAgentType = selectedAgentType,
                     onAgentTypeChange = onAgentTypeChange,

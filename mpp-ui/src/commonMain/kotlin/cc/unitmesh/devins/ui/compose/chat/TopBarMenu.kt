@@ -18,7 +18,6 @@ fun TopBarMenu(
     currentModelConfig: ModelConfig?,
     selectedAgent: String,
     availableAgents: List<String>,
-    useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
     // 统一的 Agent 类型（LOCAL, CODING, CODE_REVIEW, REMOTE）
     currentAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
@@ -47,7 +46,6 @@ fun TopBarMenu(
             currentModelConfig = currentModelConfig,
             selectedAgent = selectedAgent,
             availableAgents = availableAgents,
-            useAgentMode = useAgentMode,
             isTreeViewVisible = isTreeViewVisible,
             currentAgentType = currentAgentType,
             onAgentTypeChange = onAgentTypeChange,
@@ -72,7 +70,6 @@ fun TopBarMenu(
             currentModelConfig = currentModelConfig,
             selectedAgent = selectedAgent,
             availableAgents = availableAgents,
-            useAgentMode = useAgentMode,
             isTreeViewVisible = isTreeViewVisible,
             currentAgentType = currentAgentType,
             onAgentTypeChange = onAgentTypeChange,

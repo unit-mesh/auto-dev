@@ -177,7 +177,6 @@ fun RemoteAgentChatInterface(
             currentModelConfig = currentModelConfig,
             selectedAgent = selectedAgent,
             availableAgents = availableAgents,
-            useAgentMode = useAgentMode,
             isTreeViewVisible = isTreeViewVisible,
             currentAgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.fromString(selectedAgentType),
             onOpenDirectory = onOpenDirectory,

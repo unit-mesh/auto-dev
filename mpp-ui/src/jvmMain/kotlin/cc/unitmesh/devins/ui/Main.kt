@@ -100,6 +100,7 @@ fun main(args: Array<String>) {
                             initialMode = mode,
                             showTopBarInContent = false, // Desktop 不在内容区域显示 TopBar
                             initialAgentType = uiState.currentAgentType, // 传递当前选中的 AgentType
+                            initialTreeViewVisible = uiState.isTreeViewVisible, // 传递初始 TreeView 状态
                             onAgentTypeChanged = { type ->
                                 uiState.updateAgentType(type)
                             },

@@ -39,6 +39,7 @@ fun AutoDevApp(
     initialMode: String = "auto",
     showTopBarInContent: Boolean = true,
     initialAgentType: AgentType = AgentType.CODING,
+    initialTreeViewVisible: Boolean = false,
     onAgentTypeChanged: (AgentType) -> Unit = {},
     onTreeViewVisibilityChanged: (Boolean) -> Unit = {},
     onSidebarVisibilityChanged: (Boolean) -> Unit = {},
@@ -54,6 +55,7 @@ fun AutoDevApp(
             initialMode = initialMode,
             showTopBarInContent = showTopBarInContent,
             initialAgentType = initialAgentType,
+            initialTreeViewVisible = initialTreeViewVisible,
             onAgentTypeChanged = onAgentTypeChanged,
             onTreeViewVisibilityChanged = onTreeViewVisibilityChanged,
             onSidebarVisibilityChanged = onSidebarVisibilityChanged,
@@ -71,6 +73,7 @@ private fun AutoDevContent(
     initialMode: String = "auto",
     showTopBarInContent: Boolean = true,
     initialAgentType: AgentType = AgentType.CODING,
+    initialTreeViewVisible: Boolean = false,
     onAgentTypeChanged: (AgentType) -> Unit = {},
     onTreeViewVisibilityChanged: (Boolean) -> Unit = {},
     onSidebarVisibilityChanged: (Boolean) -> Unit = {},
@@ -101,8 +104,7 @@ private fun AutoDevContent(
     var showModelConfigDialog by remember { mutableStateOf(false) }
     var showToolConfigDialog by remember { mutableStateOf(false) }
     var selectedAgent by remember { mutableStateOf("Default") }
-    var useAgentMode by remember { mutableStateOf(true) } // 恢复默认 Agent 模式（SessionSidebar 现在支持所有模式）
-    var isTreeViewVisible by remember { mutableStateOf(false) } // TreeView visibility for agent mode
+    var isTreeViewVisible by remember { mutableStateOf(initialTreeViewVisible) } // TreeView visibility for agent mode
 
     // Unified Agent Type Selection (LOCAL, CODING, CODE_REVIEW, REMOTE)
     // Desktop: 由 Main.kt 管理，通过 initialAgentType 传递
@@ -371,7 +373,7 @@ private fun AutoDevContent(
                     chatHistoryManager = chatHistoryManager,
                     currentSessionId = chatHistoryManager.getCurrentSession().id,
                     onSessionSelected = { sessionId ->
-                        if (useAgentMode && agentSessionSelectedHandler != null) {
+                        if (agentSessionSelectedHandler != null) {
                             agentSessionSelectedHandler?.invoke(sessionId)
                         } else {
                             chatHistoryManager.switchSession(sessionId)
@@ -380,7 +382,7 @@ private fun AutoDevContent(
                         }
                     },
                     onNewChat = {
-                        if (useAgentMode && agentNewChatHandler != null) {
+                        if (agentNewChatHandler != null) {
                             agentNewChatHandler?.invoke()
                         } else {
                             chatHistoryManager.createSession()
@@ -403,10 +405,7 @@ private fun AutoDevContent(
                     .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 根据平台决定是否在内容区域显示 TopBar
-                // Desktop: showTopBarInContent = false，TopBar 在窗口标题栏
-                // Mobile/Web: showTopBarInContent = true，TopBar 在内容区域
-                val shouldShowTopBar = !useAgentMode && showTopBarInContent
+                val shouldShowTopBar = !showTopBarInContent
 
                 if (shouldShowTopBar) {
                     TopBarMenu(
@@ -415,7 +414,6 @@ private fun AutoDevContent(
                         currentModelConfig = currentModelConfig,
                         selectedAgent = selectedAgent,
                         availableAgents = availableAgents,
-                        useAgentMode = useAgentMode,
                         isTreeViewVisible = isTreeViewVisible,
                         currentAgentType = selectedAgentType,
                         onAgentTypeChange = { type ->
@@ -444,7 +442,6 @@ private fun AutoDevContent(
                         onAgentChange = { agent ->
                             selectedAgent = agent
                         },
-                        onModeToggle = { useAgentMode = !useAgentMode },
                         onToggleTreeView = { isTreeViewVisible = !isTreeViewVisible },
                         onConfigureRemote = { showRemoteConfigDialog = true },
                         onSessionManagementToggle = {
@@ -459,7 +456,37 @@ private fun AutoDevContent(
                     )
                 }
 
-                if (useAgentMode) {
+                val isAndroid = Platform.isAndroid
+                if (isAndroid) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .imePadding()
+                                .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        DevInEditorInput(
+                            initialText = "",
+                            placeholder = "Type your message...",
+                            callbacks = callbacks,
+                            completionManager = currentWorkspace.completionManager,
+                            onModelConfigChange = { config ->
+                                currentModelConfig = config
+                                if (config.isValid()) {
+                                    try {
+                                        llmService = KoogLLMService.create(config)
+                                        println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
+                                    } catch (e: Exception) {
+                                        println("❌ 配置 LLM 服务失败: ${e.message}")
+                                        llmService = null
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
+                        )
+                    }
+                } else {
                     AgentInterfaceRouter(
                         llmService = llmService,
                         isTreeViewVisible = isTreeViewVisible,
@@ -492,13 +519,11 @@ private fun AutoDevContent(
                         currentModelConfig = currentModelConfig,
                         selectedAgent = selectedAgent,
                         availableAgents = availableAgents,
-                        useAgentMode = useAgentMode,
                         onOpenDirectory = { openDirectoryChooser() },
                         onClearHistory = {
                             chatHistoryManager.clearCurrentSession()
                             messages = emptyList()
                             currentStreamingOutput = ""
-                            println("🗑️ [SimpleAIChat] 聊天历史已清空")
                         },
                         onModelConfigChange = { config ->
                             currentModelConfig = config
@@ -513,13 +538,10 @@ private fun AutoDevContent(
                         },
                         onAgentChange = { agent ->
                             selectedAgent = agent
-                            println("🤖 切换 Agent: $agent")
                         },
-                        onModeToggle = { useAgentMode = !useAgentMode },
                         onConfigureRemote = { showRemoteConfigDialog = true },
                         onShowModelConfig = { showModelConfigDialog = true },
                         onShowToolConfig = { showToolConfigDialog = true },
-                        // Remote-specific parameters (only used when selectedAgentType is REMOTE)
                         serverUrl = serverUrl,
                         useServerConfig = useServerConfig,
                         projectId = remoteProjectId,
@@ -534,86 +556,10 @@ private fun AutoDevContent(
                         },
                         modifier = Modifier.fillMaxSize()
                     )
-                } else {
-                    val isCompactMode = messages.isNotEmpty() || isLLMProcessing
-
-                    if (isCompactMode) {
-                        MessageList(
-                            messages = messages,
-                            isLLMProcessing = isLLMProcessing,
-                            currentOutput = currentStreamingOutput,
-                            projectPath = currentWorkspace.rootPath,
-                            fileSystem = currentWorkspace.fileSystem,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                        )
-
-                        Column(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .imePadding()
-                                    .navigationBarsPadding()
-                                    .padding(horizontal = 12.dp, vertical = 8.dp) // 外部边距
-                        ) {
-                            DevInEditorInput(
-                                initialText = "",
-                                placeholder = "Type your message...",
-                                callbacks = callbacks,
-                                completionManager = currentWorkspace.completionManager,
-                                isCompactMode = true,
-                                onModelConfigChange = { config ->
-                                    currentModelConfig = config
-                                    if (config.isValid()) {
-                                        try {
-                                            llmService = KoogLLMService.create(config)
-                                            println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
-                                        } catch (e: Exception) {
-                                            println("❌ 切换模型失败: ${e.message}")
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    } else {
-                        val isAndroid = Platform.isAndroid
-                        Box(
-                            modifier =
-                                Modifier
-                                    .fillMaxSize()
-                                    .imePadding()
-                                    .padding(if (isAndroid) 16.dp else 4.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            DevInEditorInput(
-                                initialText = "",
-                                placeholder = "Type your message...",
-                                callbacks = callbacks,
-                                completionManager = currentWorkspace.completionManager,
-                                onModelConfigChange = { config ->
-                                    currentModelConfig = config
-                                    if (config.isValid()) {
-                                        try {
-                                            llmService = KoogLLMService.create(config)
-                                            println("✅ 切换模型: ${config.provider.displayName} / ${config.modelName}")
-                                        } catch (e: Exception) {
-                                            println("❌ 配置 LLM 服务失败: ${e.message}")
-                                            llmService = null
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(if (isAndroid) 1f else 0.9f)
-                            )
-                        }
-                    }
                 }
             }
         }
 
-        // Model Config Dialog
         if (showModelConfigDialog) {
             cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog(
                 currentConfig = currentModelConfig ?: ModelConfig(),
@@ -667,7 +613,6 @@ private fun AutoDevContent(
             )
         }
 
-        // Remote Server Config Dialog
         if (showRemoteConfigDialog) {
             cc.unitmesh.devins.ui.compose.config.RemoteServerConfigDialog(
                 currentConfig = cc.unitmesh.devins.ui.compose.config.RemoteServerConfig(
