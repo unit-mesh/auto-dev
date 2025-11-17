@@ -110,6 +110,8 @@ kotlin {
                 implementation(npm("web-tree-sitter", "0.22.2"))
                 // TreeSitter WASM artifacts
                 implementation(npm("@unit-mesh/treesitter-artifacts", "1.7.4"))
+
+                implementation(devNpm("copy-webpack-plugin", "12.0.2"))
             }
         }
 
