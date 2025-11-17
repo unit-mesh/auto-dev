@@ -11,10 +11,7 @@ fun createAgentCallbacks(
     return object : cc.unitmesh.devins.editor.EditorCallbacks {
         override fun onSubmit(text: String) {
             if (text.isBlank()) return
-
-            // Check if agent is already executing
             if (viewModel.isExecuting) {
-                println("Agent is already executing, ignoring new task")
                 return
             }
 

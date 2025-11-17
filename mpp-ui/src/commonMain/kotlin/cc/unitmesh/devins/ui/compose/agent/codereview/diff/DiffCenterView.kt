@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.ui.compose.agent.codereview
+package cc.unitmesh.devins.ui.compose.agent.codereview.diff
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,9 @@ import cc.unitmesh.devins.ui.compose.sketch.DiffLineType
 import kotlinx.datetime.Clock
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
+import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
+import cc.unitmesh.devins.ui.compose.agent.codereview.formatDate
 
 /**
  * Truncate a file path by showing first/last segments with ... in middle
@@ -117,7 +122,7 @@ fun CommitListView(
                 )
 
                 if (index == commits.size - 5 && hasMoreCommits && !isLoadingMore) {
-                    androidx.compose.runtime.LaunchedEffect(Unit) {
+                    LaunchedEffect(Unit) {
                         onLoadMore()
                     }
                 }
@@ -131,7 +136,7 @@ fun CommitListView(
                             .padding(16.dp),
                         contentAlignment = Alignment.Companion.Center
                     ) {
-                        androidx.compose.material3.CircularProgressIndicator(
+                        CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = AutoDevColors.Indigo.c600
                         )
@@ -332,7 +337,7 @@ fun DiffCenterView(
                     horizontalAlignment = Alignment.Companion.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    androidx.compose.material3.CircularProgressIndicator(
+                    CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
                         color = AutoDevColors.Indigo.c600
                     )
@@ -407,16 +412,16 @@ fun CollapsibleFileDiffItem(
                 ) {
                     Icon(
                         imageVector = when (file.changeType) {
-                            cc.unitmesh.agent.tool.tracking.ChangeType.CREATE -> AutoDevComposeIcons.Add
-                            cc.unitmesh.agent.tool.tracking.ChangeType.DELETE -> AutoDevComposeIcons.Delete
-                            cc.unitmesh.agent.tool.tracking.ChangeType.EDIT -> AutoDevComposeIcons.Edit
-                            cc.unitmesh.agent.tool.tracking.ChangeType.RENAME -> AutoDevComposeIcons.DriveFileRenameOutline
+                            ChangeType.CREATE -> AutoDevComposeIcons.Add
+                            ChangeType.DELETE -> AutoDevComposeIcons.Delete
+                            ChangeType.EDIT -> AutoDevComposeIcons.Edit
+                            ChangeType.RENAME -> AutoDevComposeIcons.DriveFileRenameOutline
                         },
                         contentDescription = file.changeType.name,
                         tint = when (file.changeType) {
-                            cc.unitmesh.agent.tool.tracking.ChangeType.CREATE -> AutoDevColors.Green.c600
-                            cc.unitmesh.agent.tool.tracking.ChangeType.DELETE -> AutoDevColors.Red.c600
-                            cc.unitmesh.agent.tool.tracking.ChangeType.EDIT -> AutoDevColors.Blue.c600
+                            ChangeType.CREATE -> AutoDevColors.Green.c600
+                            ChangeType.DELETE -> AutoDevColors.Red.c600
+                            ChangeType.EDIT -> AutoDevColors.Blue.c600
                             ChangeType.RENAME -> AutoDevColors.Amber.c600
                         },
                         modifier = Modifier.size(18.dp)

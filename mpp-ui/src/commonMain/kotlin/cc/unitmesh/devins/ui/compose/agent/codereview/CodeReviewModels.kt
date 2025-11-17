@@ -125,19 +125,6 @@ data class DiffRequest(
     val compareWith: String? = null
 )
 
-/**
- * Response containing diff information
- */
-data class DiffResponse(
-    val success: Boolean,
-    val error: String? = null,
-    val files: List<DiffFileInfo> = emptyList(),
-    val commitInfo: CommitInfo? = null
-)
-
-/**
- * Information about a commit
- */
 data class CommitInfo(
     val hash: String,
     val shortHash: String,
