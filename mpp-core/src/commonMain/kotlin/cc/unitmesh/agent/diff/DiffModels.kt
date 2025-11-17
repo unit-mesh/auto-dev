@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.ui.compose.sketch
+package cc.unitmesh.agent.diff
 
 /**
  * Diff 数据模型
@@ -42,7 +42,6 @@ data class FileDiff(
  */
 object DiffParser {
     /**
-     * 解析统一格式的 diff 内容（支持标准 Unified Diff 和 Git Diff 格式）
      */
     fun parse(diffContent: String): List<FileDiff> {
         val fileDiffs = mutableListOf<FileDiff>()

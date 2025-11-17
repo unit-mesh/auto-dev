@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview.analysis
 
+import cc.unitmesh.DiffLineType
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.codegraph.CodeGraphFactory
@@ -72,7 +73,7 @@ class CodeAnalyzer(private val workspace: Workspace) {
                 val modifiedLines = mutableSetOf<Int>()
                 diffFile.hunks.forEach { hunk ->
                     hunk.lines.forEach { line ->
-                        if (line.type == cc.unitmesh.devins.ui.compose.sketch.DiffLineType.ADDED) {
+                        if (line.type == DiffLineType.ADDED) {
                             line.newLineNumber?.let { modifiedLines.add(it) }
                         }
                     }

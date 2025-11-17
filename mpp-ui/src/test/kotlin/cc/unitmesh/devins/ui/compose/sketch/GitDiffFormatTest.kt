@@ -1,5 +1,7 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
+import cc.unitmesh.DiffLineType
+import cc.unitmesh.DiffParser
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -24,7 +26,7 @@ class GitDiffFormatTest {
             +    public String greet() {
             +        return "Hello, GNU patch!";
             +    }
-             
+
                  public static void main(String[] args) {
                      System.out.println(new App().greet());
                  }

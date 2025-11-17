@@ -7,9 +7,9 @@ import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.Linter
 import cc.unitmesh.agent.linter.LinterRegistry
 import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
-import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
-import cc.unitmesh.devins.ui.compose.sketch.DiffLine
-import cc.unitmesh.devins.ui.compose.sketch.DiffLineType
+import cc.unitmesh.DiffHunk
+import cc.unitmesh.DiffLine
+import cc.unitmesh.DiffLineType
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

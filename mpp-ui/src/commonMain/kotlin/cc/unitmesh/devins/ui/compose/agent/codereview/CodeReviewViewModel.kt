@@ -3,6 +3,7 @@ package cc.unitmesh.devins.ui.compose.agent.codereview
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import cc.unitmesh.DiffLineType
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.ToolConfigFile
@@ -13,7 +14,8 @@ import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.CodeAnalyzer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
-import cc.unitmesh.devins.ui.compose.sketch.DiffParser
+import cc.unitmesh.DiffParser
+import cc.unitmesh.FileDiff
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.llm.KoogLLMService
@@ -820,7 +822,7 @@ open class CodeReviewViewModel(
      */
     private suspend fun applyDiffPatchToFile(
         filePath: String,
-        fileDiff: cc.unitmesh.devins.ui.compose.sketch.FileDiff
+        fileDiff: FileDiff
     ): Boolean {
         try {
             // Read the current file content
@@ -834,7 +836,7 @@ open class CodeReviewViewModel(
 
                 hunk.lines.forEach { diffLine ->
                     when (diffLine.type) {
-                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.CONTEXT -> {
+                        DiffLineType.CONTEXT -> {
                             // Context line - verify it matches
                             if (oldLineIndex < currentLines.size) {
                                 if (currentLines[oldLineIndex].trim() != diffLine.content.trim()) {
@@ -845,18 +847,18 @@ open class CodeReviewViewModel(
                                 oldLineIndex++
                             }
                         }
-                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.DELETED -> {
+                        DiffLineType.DELETED -> {
                             // Delete line
                             if (oldLineIndex < currentLines.size) {
                                 currentLines.removeAt(oldLineIndex)
                             }
                         }
-                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.ADDED -> {
+                        DiffLineType.ADDED -> {
                             // Add line
                             currentLines.add(oldLineIndex, diffLine.content)
                             oldLineIndex++
                         }
-                        cc.unitmesh.devins.ui.compose.sketch.DiffLineType.HEADER -> {
+                        DiffLineType.HEADER -> {
                             // Skip header lines
                         }
                     }

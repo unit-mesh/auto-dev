@@ -2,7 +2,7 @@ package cc.unitmesh.devins.ui.compose.agent.codereview
 
 import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.tool.tracking.ChangeType
-import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
+import cc.unitmesh.DiffHunk
 import kotlinx.serialization.Serializable
 
 /**

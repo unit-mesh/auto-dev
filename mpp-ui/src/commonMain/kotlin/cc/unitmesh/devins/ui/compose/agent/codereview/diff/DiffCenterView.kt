@@ -42,9 +42,9 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
-import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
-import cc.unitmesh.devins.ui.compose.sketch.DiffLine
-import cc.unitmesh.devins.ui.compose.sketch.DiffLineType
+import cc.unitmesh.DiffHunk
+import cc.unitmesh.DiffLine
+import cc.unitmesh.DiffLineType
 import kotlinx.datetime.Clock
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
