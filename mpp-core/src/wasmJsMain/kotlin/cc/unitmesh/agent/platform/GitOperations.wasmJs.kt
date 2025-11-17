@@ -20,29 +20,29 @@ actual class GitOperations actual constructor(private val projectPath: String) {
      * Initialize wasm-git module
      */
     private suspend fun initialize() {
-        if (isInitialized) return
-        
-        try {
-            console.log("Initializing wasm-git...")
-            
-            // Load lg2 module
-            val config = js("({ locateFile: (s) => 'https://unpkg.com/wasm-git@0.0.13/' + s })")
-            val promise: Promise<LibGit2Module> = WasmGit.lg2(config.unsafeCast()).unsafeCast()
-            lg2Module = promise.await()
-            
-            console.log("wasm-git initialized successfully")
-            isInitialized = true
-            
-            // Try to change to project directory if it exists
-            try {
-                lg2Module?.FS?.chdir(projectPath)
-            } catch (e: Throwable) {
-                console.warn("Project directory not found: $projectPath")
-            }
-        } catch (e: Throwable) {
-            console.error("Failed to initialize wasm-git: ${e.message ?: "Unknown error"}")
-            throw e
-        }
+//        if (isInitialized) return
+//
+//        try {
+//            WasmConsole.log("Initializing wasm-git...")
+//
+//            // Load lg2 module
+//            val config = createLibGit2Config("https://unpkg.com/wasm-git@0.0.13/")
+//            val promise: Promise<LibGit2Module> = wasmGit.lg2(config)
+//            lg2Module = promise.await()
+//
+//            WasmConsole.log("wasm-git initialized successfully")
+//            isInitialized = true
+//
+//            // Try to change to project directory if it exists
+//            try {
+//                lg2Module?.FS?.chdir(projectPath)
+//            } catch (e: Throwable) {
+//                WasmConsole.warn("Project directory not found: $projectPath")
+//            }
+//        } catch (e: Throwable) {
+//            WasmConsole.error("Failed to initialize wasm-git: ${e.message ?: "Unknown error"}")
+//            throw e
+//        }
     }
     
     actual fun isSupported(): Boolean {
@@ -62,21 +62,21 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         
         return try {
             val dir = targetDir ?: repoUrl.substringAfterLast('/').removeSuffix(".git")
-            console.log("Cloning $repoUrl into $dir...")
+            WasmConsole.log("Cloning $repoUrl into $dir...")
             
             val exitCode = module.callMain(jsArrayOf("clone", repoUrl, dir))
             
             if (exitCode == 0) {
-                console.log("Clone successful")
+                WasmConsole.log("Clone successful")
                 // Change to cloned directory
                 module.FS.chdir(dir)
                 true
             } else {
-                console.error("Clone failed with exit code: $exitCode")
+                WasmConsole.error("Clone failed with exit code: $exitCode")
                 false
             }
         } catch (e: Throwable) {
-            console.error("Clone error: ${e.message}")
+            WasmConsole.error("Clone error: ${e.message}")
             false
         }
     }
@@ -91,7 +91,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(jsArrayOf("status", "--porcelain"))
             
             if (exitCode != 0) {
-                console.warn("git status failed with exit code: $exitCode")
+                WasmConsole.warn("git status failed with exit code: $exitCode")
                 return emptyList()
             }
             
@@ -100,7 +100,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             // TODO: Implement stdout capture mechanism
             emptyList()
         } catch (e: Throwable) {
-            console.error("Failed to get modified files: ${e.message}")
+            WasmConsole.error("Failed to get modified files: ${e.message}")
             emptyList()
         }
     }
@@ -115,14 +115,14 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(jsArrayOf("diff", filePath))
             
             if (exitCode != 0) {
-                console.warn("git diff failed with exit code: $exitCode")
+                WasmConsole.warn("git diff failed with exit code: $exitCode")
                 return null
             }
             
             // TODO: Implement stdout capture to get actual diff content
             null
         } catch (e: Throwable) {
-            console.error("Failed to get file diff: ${e.message}")
+            WasmConsole.error("Failed to get file diff: ${e.message}")
             null
         }
     }
@@ -141,14 +141,14 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             ))
             
             if (exitCode != 0) {
-                console.warn("git log failed with exit code: $exitCode")
+                WasmConsole.warn("git log failed with exit code: $exitCode")
                 return emptyList()
             }
             
             // TODO: Parse log output to create GitCommitInfo objects
             emptyList()
         } catch (e: Throwable) {
-            console.error("Failed to get recent commits: ${e.message}")
+            WasmConsole.error("Failed to get recent commits: ${e.message}")
             emptyList()
         }
     }
@@ -163,14 +163,14 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(jsArrayOf("rev-list", "--count", "HEAD"))
             
             if (exitCode != 0) {
-                console.warn("git rev-list failed with exit code: $exitCode")
+                WasmConsole.warn("git rev-list failed with exit code: $exitCode")
                 return null
             }
             
             // TODO: Parse output to get count
             null
         } catch (e: Throwable) {
-            console.error("Failed to get commit count: ${e.message}")
+            WasmConsole.error("Failed to get commit count: ${e.message}")
             null
         }
     }
@@ -185,14 +185,14 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(jsArrayOf("show", commitHash))
             
             if (exitCode != 0) {
-                console.warn("git show failed with exit code: $exitCode")
+                WasmConsole.warn("git show failed with exit code: $exitCode")
                 return null
             }
             
             // TODO: Parse diff output
             null
         } catch (e: Throwable) {
-            console.error("Failed to get commit diff: ${e.message}")
+            WasmConsole.error("Failed to get commit diff: ${e.message}")
             null
         }
     }
@@ -207,14 +207,14 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(jsArrayOf("diff", base, target))
             
             if (exitCode != 0) {
-                console.warn("git diff failed with exit code: $exitCode")
+                WasmConsole.warn("git diff failed with exit code: $exitCode")
                 return null
             }
             
             // TODO: Parse diff output
             null
         } catch (e: Throwable) {
-            console.error("Failed to get diff: ${e.message}")
+            WasmConsole.error("Failed to get diff: ${e.message}")
             null
         }
     }
@@ -228,11 +228,11 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         val module = lg2Module ?: return false
         
         return try {
-            console.log("Initializing git repository...")
+            WasmConsole.log("Initializing git repository...")
             val exitCode = module.callMain(jsArrayOf("init"))
             exitCode == 0
         } catch (e: Throwable) {
-            console.error("Failed to init repository: ${e.message}")
+            WasmConsole.error("Failed to init repository: ${e.message}")
             false
         }
     }
@@ -250,7 +250,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(args)
             exitCode == 0
         } catch (e: Throwable) {
-            console.error("Failed to add files: ${e.message}")
+            WasmConsole.error("Failed to add files: ${e.message}")
             false
         }
     }
@@ -267,7 +267,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(jsArrayOf("commit", "-m", message))
             exitCode == 0
         } catch (e: Throwable) {
-            console.error("Failed to commit: ${e.message}")
+            WasmConsole.error("Failed to commit: ${e.message}")
             false
         }
     }
@@ -284,7 +284,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = module.callMain(jsArrayOf("push", remote, branch))
             exitCode == 0
         } catch (e: Throwable) {
-            console.error("Failed to push: ${e.message}")
+            WasmConsole.error("Failed to push: ${e.message}")
             false
         }
     }
@@ -304,7 +304,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             exitCode = module.callMain(jsArrayOf("merge", "$remote/$branch"))
             exitCode == 0
         } catch (e: Throwable) {
-            console.error("Failed to pull: ${e.message}")
+            WasmConsole.error("Failed to pull: ${e.message}")
             false
         }
     }
@@ -321,7 +321,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val options = createReadFileOptions("utf8")
             module.FS.readFile(filePath, options)
         } catch (e: Throwable) {
-            console.error("Failed to read file: ${e.message}")
+            WasmConsole.error("Failed to read file: ${e.message}")
             null
         }
     }
@@ -338,7 +338,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             module.FS.writeFile(filePath, content)
             true
         } catch (e: Throwable) {
-            console.error("Failed to write file: ${e.message}")
+            WasmConsole.error("Failed to write file: ${e.message}")
             false
         }
     }

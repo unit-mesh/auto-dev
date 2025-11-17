@@ -274,6 +274,8 @@ kotlin {
                     }
                 }
 
+                implementation(npm("wasm-git", "0.0.13"))
+
                 // WASM browser dependencies
                 // SQLDelight - Web Worker driver (same as JS)
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")

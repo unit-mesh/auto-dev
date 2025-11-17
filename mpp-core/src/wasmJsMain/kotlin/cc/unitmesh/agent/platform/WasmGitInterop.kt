@@ -40,6 +40,13 @@ external interface EmscriptenFS : JsAny {
 }
 
 /**
+ * LibGit2 Module configuration
+ */
+external interface LibGit2Config : JsAny {
+    var locateFile: ((String) -> String)?
+}
+
+/**
  * LibGit2 Module
  */
 external interface LibGit2Module : JsAny {
@@ -58,9 +65,10 @@ external interface LibGit2Module : JsAny {
 }
 
 /**
- * Console for logging
+ * Console for logging (already defined in common wasm runtime)
  */
-external object console : JsAny {
+@JsName("console")
+external object WasmConsole : JsAny {
     fun log(message: String)
     fun error(message: String)
     fun warn(message: String)
@@ -69,13 +77,18 @@ external object console : JsAny {
 /**
  * Dynamic import for ES modules
  */
-@JsModule("wasm-git")
-external object WasmGit {
+external interface WasmGitModule : JsAny {
     /**
      * Load the lg2 module
      */
-    fun lg2(config: JsAny?): Promise<LibGit2Module>
+    fun lg2(config: LibGit2Config? = definedExternally): Promise<LibGit2Module>
 }
+
+/**
+ * Import wasm-git module
+ */
+@JsModule("wasm-git")
+external val wasmGit: WasmGitModule
 
 /**
  * Helper to create JS array
@@ -87,9 +100,34 @@ fun jsArrayOf(vararg elements: String): JsArray<JsString> {
 }
 
 /**
+ * Helper to create LibGit2 config
+ */
+fun createLibGit2Config(cdnUrl: String = "https://unpkg.com/wasm-git@0.0.13/"): LibGit2Config {
+    return createLibGit2ConfigInternal(cdnUrl)
+}
+
+/**
+ * Internal function to create config using external declaration
+ */
+private external fun createLibGit2ConfigInternal(cdnUrl: String): LibGit2Config
+
+/**
  * Helper to create JS object for file read options
  */
-fun createReadFileOptions(encoding: String = "utf8"): JsAny {
-    return js("({ encoding: encoding })").unsafeCast<JsAny>()
+external interface FileReadOptions : JsAny {
+    var encoding: String
 }
+
+/**
+ * Create file read options
+ */
+fun createReadFileOptions(encoding: String = "utf8"): FileReadOptions {
+    return createFileReadOptionsInternal(encoding)
+}
+
+/**
+ * Internal function to create file read options
+ */
+private external fun createFileReadOptionsInternal(encoding: String): FileReadOptions
+
 

@@ -203,6 +203,8 @@ kotlin {
 
         val wasmJsMain by getting {
             dependencies {
+                implementation(npm("wasm-git", "0.0.13"))
+
                 // Force kotlin-stdlib to 2.2.0 to match compiler version
                 implementation("org.jetbrains.kotlin:kotlin-stdlib") {
                     version {

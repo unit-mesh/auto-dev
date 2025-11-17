@@ -1,5 +1,6 @@
 // Webpack configuration to handle Node.js modules in browser environment
 // This file provides fallbacks for Node.js core modules when running tests in browser
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 config.resolve = config.resolve || {};
 config.resolve.fallback = config.resolve.fallback || {};
@@ -16,5 +17,17 @@ config.resolve.fallback.stream = false;
 config.resolve.fallback.util = false;
 config.resolve.fallback.buffer = false;
 config.resolve.fallback.process = false;
+
+config.plugins = config.plugins || [];
+config.plugins.push(
+    new CopyWebpackPlugin({
+        patterns: [
+            {
+                from: '../../node_modules/wasm-git/lg2.wasm',
+                to: 'lg2.wasm'
+            }
+        ]
+    })
+);
 
 console.log('Applied Node.js polyfills for browser tests');

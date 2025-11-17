@@ -15,6 +15,7 @@
     "code": "node dist/jsMain/typescript/index.js code",
     "test": "vitest run",
     "test:unit": "vitest run src/jsMain/typescript/**/*.test.ts",
+    "test:git": "npm run build:kotlin && node ../docs/test-scripts/test-git-nodejs.js",
     "test:cli": "node test-cli-completion.js",
     "test:all": "npm test && npm run test:completion && npm run test:cli",
     "test:ci": "npm run build && npm run test:integration",
@@ -50,7 +51,6 @@
     "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
     "@js-joda/core": "^5.6.5",
     "@modelcontextprotocol/sdk": "^1.0.4",
-    "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "diff": "^7.0.0",
     "dotenv": "^16.4.5",
@@ -61,9 +61,11 @@
     "ink-text-input": "^6.0.0",
     "node-fetch": "^3.3.2",
     "react": "^18.3.1",
-    "yaml": "^2.6.1"
+    "yaml": "^2.6.1",
+    "wasm-git": "0.0.13"
   },
   "devDependencies": {
+    "chalk": "^5.3.0",
     "@types/diff": "^6.0.0",
     "@types/node": "^20.11.24",
     "@types/react": "^18.3.12",

@@ -84,6 +84,14 @@ fun TopBarMenuDesktop(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    AgentType.entries.forEach { type ->
+                        AgentTypeTab(
+                            type = type,
+                            isSelected = type == currentAgentType,
+                            onClick = { onAgentTypeChange(type) }
+                        )
+                    }
+
                     if (currentAgentType == AgentType.REMOTE) {
                         IconButton(
                             onClick = onConfigureRemote,

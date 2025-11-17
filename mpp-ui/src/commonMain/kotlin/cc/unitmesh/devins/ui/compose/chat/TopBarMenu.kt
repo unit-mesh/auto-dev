@@ -40,7 +40,6 @@ fun TopBarMenu(
     modifier: Modifier = Modifier
 ) {
     if (Platform.isAndroid) {
-        // Android: 使用紧凑的 Dropdown 菜单风格
         TopBarMenuMobile(
             hasHistory = hasHistory,
             hasDebugInfo = hasDebugInfo,
@@ -62,9 +61,7 @@ fun TopBarMenu(
             onShowToolConfig = onShowToolConfig,
             modifier = modifier
         )
-    } else if (!Platform.isJvm) {
-        // WASM: 使用 Window Tab 风格
-        // JVM 平台不显示 TopBarMenu，因为已在窗口标题栏中显示
+    } else if (Platform.isWasm) {
         TopBarMenuDesktop(
             hasHistory = hasHistory,
             hasDebugInfo = hasDebugInfo,
