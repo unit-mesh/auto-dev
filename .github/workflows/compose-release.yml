@@ -272,9 +272,6 @@ jobs:
         if: runner.os != 'Windows'
         run: chmod +x gradlew
 
-      - name: Fix yarn lock issues
-        run: ./gradlew kotlinUpgradeYarnLock --no-daemon || echo "Yarn lock upgrade failed, continuing..."
-
       - name: Build Desktop package
         run: ./gradlew :mpp-ui:${{ matrix.task }} --no-daemon
 
