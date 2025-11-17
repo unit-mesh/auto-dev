@@ -93,6 +93,8 @@ configure(subprojects - project(":exts")
         - project(":mpp-ui")
         - project(":mpp-codegraph")
         - project(":mpp-server")
+        - project(":mpp-viewer")
+        - project(":mpp-viewer-web")
 ) {
     apply {
         plugin("idea")

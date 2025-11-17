@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoDev Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            overflow: hidden;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #editor {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-size: 16px;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top-color: #007acc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            color: #f48771;
+        }
+        .unsupported {
+            padding: 40px;
+            text-align: center;
+        }
+        .unsupported h2 {
+            margin-bottom: 16px;
+            color: #d4d4d4;
+        }
+        .unsupported p {
+            color: #858585;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="editor">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Initializing viewer...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monaco Editor from CDN (can be replaced with local copy for offline usage) -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
+    
+    <script>
+        let monacoEditor = null;
+        let isMonacoLoaded = false;
+        let pendingRequest = null;
+
+        // Configure Monaco Editor loader
+        require.config({ 
+            paths: { 
+                'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' 
+            } 
+        });
+
+        // Load Monaco Editor
+        require(['vs/editor/editor.main'], function() {
+            isMonacoLoaded = true;
+            console.log('Monaco Editor loaded');
+            
+            // Clear loading message
+            document.getElementById('editor').innerHTML = '';
+            
+            // Process pending request if any
+            if (pendingRequest) {
+                const request = pendingRequest;
+                pendingRequest = null;
+                showContent(JSON.stringify(request));
+            }
+        });
+
+        /**
+         * Show content in the viewer
+         * @param {string} jsonString - JSON string of ViewerRequest
+         */
+        window.showContent = function(jsonString) {
+            try {
+                const request = JSON.parse(jsonString);
+                
+                if (!isMonacoLoaded) {
+                    // Store request and wait for Monaco to load
+                    pendingRequest = request;
+                    return;
+                }
+                
+                if (request.type === 'CODE') {
+                    showCode(request);
+                } else if (request.type === 'MARKDOWN') {
+                    showMarkdown(request);
+                } else if (request.type === 'IMAGE') {
+                    showImage(request);
+                } else {
+                    showUnsupported(request);
+                }
+            } catch (e) {
+                console.error('Error showing content:', e);
+                showError('Error displaying content: ' + e.message);
+            }
+        };
+
+        /**
+         * Show code with syntax highlighting
+         */
+        function showCode(request) {
+            const editorDiv = document.getElementById('editor');
+            editorDiv.innerHTML = '';
+
+            // Dispose existing editor
+            if (monacoEditor) {
+                monacoEditor.dispose();
+                monacoEditor = null;
+            }
+
+            // Create Monaco Editor
+            monacoEditor = monaco.editor.create(editorDiv, {
+                value: request.content || '',
+                language: request.language || 'plaintext',
+                theme: 'vs-dark',
+                readOnly: request.readOnly !== false,
+                automaticLayout: true,
+                minimap: {
+                    enabled: true
+                },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                lineNumbers: 'on',
+                renderWhitespace: 'selection',
+                tabSize: 4,
+                insertSpaces: true,
+                wordWrap: 'off',
+                folding: true,
+                foldingHighlight: true,
+                foldingStrategy: 'indentation',
+                showFoldingControls: 'always',
+                matchBrackets: 'always',
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                formatOnPaste: true,
+                formatOnType: false,
+                // Performance optimizations
+                smoothScrolling: true,
+                cursorBlinking: 'smooth',
+                mouseWheelZoom: false
+            });
+
+            // Scroll to line number if specified
+            if (request.lineNumber) {
+                monacoEditor.revealLineInCenter(request.lineNumber);
+                monacoEditor.setPosition({
+                    lineNumber: request.lineNumber,
+                    column: 1
+                });
+            }
+
+            // Add file path as decoration if available
+            if (request.filePath) {
+                console.log('Viewing file:', request.filePath);
+            }
+        }
+
+        /**
+         * Show markdown content (basic implementation)
+         */
+        function showMarkdown(request) {
+            const editorDiv = document.getElementById('editor');
+            editorDiv.innerHTML = '<div class="loading">Markdown rendering not yet implemented</div>';
+            // TODO: Implement markdown rendering
+        }
+
+        /**
+         * Show image content
+         */
+        function showImage(request) {
+            const editorDiv = document.getElementById('editor');
+            editorDiv.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #1e1e1e;">
+                    <img src="data:image/png;base64,${request.content}" 
+                         style="max-width: 100%; max-height: 100%; object-fit: contain;" 
+                         alt="${request.fileName || 'Image'}" />
+                </div>
+            `;
+        }
+
+        /**
+         * Show unsupported content type message
+         */
+        function showUnsupported(request) {
+            const editorDiv = document.getElementById('editor');
+            editorDiv.innerHTML = `
+                <div class="unsupported">
+                    <h2>Unsupported Content Type</h2>
+                    <p>Content type "${request.type}" is not yet supported.</p>
+                    ${request.fileName ? `<p style="margin-top: 16px; color: #858585;">File: ${escapeHtml(request.fileName)}</p>` : ''}
+                </div>
+            `;
+        }
+
+        /**
+         * Show error message
+         */
+        function showError(message) {
+            const editorDiv = document.getElementById('editor');
+            editorDiv.innerHTML = `
+                <div class="loading error">
+                    <div>⚠️</div>
+                    <div>${escapeHtml(message)}</div>
+                </div>
+            `;
+        }
+
+        /**
+         * Clear the viewer content
+         */
+        window.clearContent = function() {
+            if (monacoEditor) {
+                monacoEditor.dispose();
+                monacoEditor = null;
+            }
+            document.getElementById('editor').innerHTML = '';
+        };
+
+        /**
+         * Escape HTML to prevent XSS
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /**
+         * Update editor theme
+         */
+        window.setTheme = function(theme) {
+            if (monacoEditor) {
+                monaco.editor.setTheme(theme === 'light' ? 'vs' : 'vs-dark');
+            }
+        };
+
+        /**
+         * Get Monaco Editor supported languages
+         */
+        window.getSupportedLanguages = function() {
+            if (isMonacoLoaded) {
+                return monaco.languages.getLanguages().map(lang => lang.id);
+            }
+            return [];
+        };
+
+        // Notify that the viewer is ready (for debugging)
+        alert('Viewer HTML loaded');
+    </script>
+</body>
+</html>
+

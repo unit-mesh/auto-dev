@@ -17,6 +17,7 @@ repositories {
     google()
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/")
+    maven("https://jogamp.org/deployment/maven")
 }
 
 sqldelight {
@@ -104,6 +105,7 @@ kotlin {
             dependencies {
                 implementation(project(":mpp-core"))
                 implementation(project(":mpp-codegraph"))
+                implementation(project(":mpp-viewer"))
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material3)
@@ -150,6 +152,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
+                implementation(project(":mpp-viewer-web"))
                 implementation(compose.desktop.currentOs)
                 // Rich text editor for Compose Desktop
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")

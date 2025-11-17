@@ -6,13 +6,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants
-import org.fife.ui.rtextarea.RTextScrollPane
+import cc.unitmesh.viewer.LanguageDetector
+import cc.unitmesh.viewer.ViewerRequest
+import cc.unitmesh.viewer.ViewerType
+import cc.unitmesh.viewer.web.ViewerWebView
+import cc.unitmesh.viewer.web.createWebViewerHost
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun FileViewerPanel(
@@ -20,31 +23,37 @@ fun FileViewerPanel(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var textArea by remember { mutableStateOf<RSyntaxTextArea?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var fileName by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var fileContent by remember { mutableStateOf<String?>(null) }
 
+    // Viewer host - will be initialized by ViewerWebView
+    var viewerHost by remember { mutableStateOf<cc.unitmesh.viewer.ViewerHost?>(null) }
+
     // 异步加载文件内容
     LaunchedEffect(filePath) {
+        println("[FileViewerPanel] Starting to load file: $filePath")
         isLoading = true
         errorMessage = null
         fileContent = null
 
-        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             try {
                 val file = File(filePath)
                 if (!file.exists()) {
+                    println("[FileViewerPanel] ERROR: File not found: $filePath")
                     errorMessage = "File not found: $filePath"
                     fileName = filePath
                     return@withContext
                 }
 
                 fileName = file.name
+                println("[FileViewerPanel] File exists: ${file.name}, size: ${file.length()} bytes")
 
                 // 检查是否是二进制文件
                 if (isBinaryFile(file)) {
+                    println("[FileViewerPanel] ERROR: Binary file detected: ${file.name}")
                     errorMessage = "Cannot open binary file: ${file.name}"
                     return@withContext
                 }
@@ -52,6 +61,7 @@ fun FileViewerPanel(
                 // 检查文件大小（限制 10MB）
                 val maxSize = 10 * 1024 * 1024 // 10MB
                 if (file.length() > maxSize) {
+                    println("[FileViewerPanel] ERROR: File too large: ${file.length() / 1024 / 1024}MB")
                     errorMessage = "File too large (${file.length() / 1024 / 1024}MB). Maximum size is 10MB."
                     return@withContext
                 }
@@ -59,15 +69,42 @@ fun FileViewerPanel(
                 // 异步读取文件
                 try {
                     fileContent = file.readText()
+                    println("[FileViewerPanel] SUCCESS: File content loaded, length: ${fileContent?.length} chars")
                 } catch (e: java.nio.charset.MalformedInputException) {
+                    println("[FileViewerPanel] ERROR: Cannot decode file: ${e.message}")
                     errorMessage = "Cannot decode file (likely binary): ${file.name}"
                 }
             } catch (e: Exception) {
+                println("[FileViewerPanel] ERROR: Exception loading file: ${e.message}")
+                e.printStackTrace()
                 errorMessage = "Error loading file: ${e.message}"
                 fileName = filePath
             } finally {
                 isLoading = false
+                println("[FileViewerPanel] Loading finished. isLoading=false, errorMessage=$errorMessage, fileContent length=${fileContent?.length}")
             }
+        }
+    }
+
+    // Prepare viewer request when file is loaded
+    val viewerRequest = remember(fileContent) {
+        if (fileContent != null) {
+            val file = File(filePath)
+            val language = LanguageDetector.detectLanguage(filePath)
+
+            val request = ViewerRequest(
+                type = ViewerType.CODE,
+                content = fileContent!!,
+                language = language,
+                fileName = file.name,
+                filePath = filePath,
+                readOnly = true
+            )
+            println("[FileViewerPanel] ViewerRequest created: type=${request.type}, language=${request.language}, contentLength=${request.content.length}")
+            request
+        } else {
+            println("[FileViewerPanel] ViewerRequest is null (fileContent is null)")
+            null
         }
     }
 
@@ -117,6 +154,7 @@ fun FileViewerPanel(
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 isLoading -> {
+                    println("[FileViewerPanel] UI: Showing loading state")
                     // Loading state
                     Column(
                         modifier =
@@ -138,6 +176,7 @@ fun FileViewerPanel(
                     }
                 }
                 errorMessage != null -> {
+                    println("[FileViewerPanel] UI: Showing error state: $errorMessage")
                     // Error state
                     Column(
                         modifier =
@@ -148,7 +187,7 @@ fun FileViewerPanel(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "❌ Error",
+                            text = "Error",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -160,40 +199,20 @@ fun FileViewerPanel(
                         )
                     }
                 }
-                fileContent != null -> {
-                    // RSyntaxTextArea content
-                    SwingPanel(
-                        background = MaterialTheme.colorScheme.surface,
+                fileContent != null && viewerRequest != null -> {
+                    println("[FileViewerPanel] UI: Showing WebView (fileContent=${fileContent?.length} chars, viewerRequest=$viewerRequest)")
+                    // WebView content with Monaco Editor
+                    ViewerWebView(
+                        initialRequest = viewerRequest,
                         modifier = Modifier.fillMaxSize(),
-                        factory = {
-                            val file = File(filePath)
-                            val area =
-                                RSyntaxTextArea().apply {
-                                    text = fileContent ?: ""
-                                    isEditable = false
-                                    syntaxEditingStyle = getSyntaxStyleForFile(file)
-                                    isCodeFoldingEnabled = true
-                                    antiAliasingEnabled = true
-                                    tabSize = 4
-                                    margin = java.awt.Insets(5, 5, 5, 5)
-                                }
-                            textArea = area
-
-                            RTextScrollPane(area).apply {
-                                isFoldIndicatorEnabled = true
-                            }
-                        },
-                        update = {
-                            // Update text if content changes
-                            textArea?.let { area ->
-                                if (area.text != fileContent) {
-                                    val file = File(filePath)
-                                    area.text = fileContent ?: ""
-                                    area.syntaxEditingStyle = getSyntaxStyleForFile(file)
-                                }
-                            }
+                        onHostCreated = { host ->
+                            println("[FileViewerPanel] WebViewerHost created and assigned")
+                            viewerHost = host
                         }
                     )
+                }
+                else -> {
+                    println("[FileViewerPanel] UI: No matching state! isLoading=$isLoading, errorMessage=$errorMessage, fileContent=${fileContent?.length}, viewerRequest=$viewerRequest")
                 }
             }
         }
@@ -257,44 +276,4 @@ private fun isBinaryFile(file: File): Boolean {
     }
 
     return false
-}
-
-private fun getSyntaxStyleForFile(file: File): String {
-    val extension = file.extension.lowercase()
-    val fileName = file.name.lowercase()
-
-    return when {
-        // 基于扩展名
-        extension == "java" -> SyntaxConstants.SYNTAX_STYLE_JAVA
-        extension in setOf("kt", "kts") -> SyntaxConstants.SYNTAX_STYLE_KOTLIN
-        extension == "js" -> SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT
-        extension == "ts" || extension == "tsx" -> SyntaxConstants.SYNTAX_STYLE_TYPESCRIPT
-        extension == "py" -> SyntaxConstants.SYNTAX_STYLE_PYTHON
-        extension == "xml" -> SyntaxConstants.SYNTAX_STYLE_XML
-        extension in setOf("html", "htm") -> SyntaxConstants.SYNTAX_STYLE_HTML
-        extension == "css" || extension == "scss" || extension == "sass" -> SyntaxConstants.SYNTAX_STYLE_CSS
-        extension == "json" -> SyntaxConstants.SYNTAX_STYLE_JSON
-        extension in setOf("yaml", "yml") -> SyntaxConstants.SYNTAX_STYLE_YAML
-        extension in setOf("md", "markdown") -> SyntaxConstants.SYNTAX_STYLE_MARKDOWN
-        extension == "sql" -> SyntaxConstants.SYNTAX_STYLE_SQL
-        extension in setOf("sh", "bash", "zsh") -> SyntaxConstants.SYNTAX_STYLE_UNIX_SHELL
-        extension in setOf("c", "h") -> SyntaxConstants.SYNTAX_STYLE_C
-        extension in setOf("cpp", "hpp", "cc", "cxx") -> SyntaxConstants.SYNTAX_STYLE_CPLUSPLUS
-        extension == "go" -> SyntaxConstants.SYNTAX_STYLE_GO
-        extension == "rs" -> SyntaxConstants.SYNTAX_STYLE_RUST
-        extension == "rb" -> SyntaxConstants.SYNTAX_STYLE_RUBY
-        extension == "php" -> SyntaxConstants.SYNTAX_STYLE_PHP
-        extension == "cs" -> SyntaxConstants.SYNTAX_STYLE_CSHARP
-        extension == "scala" -> SyntaxConstants.SYNTAX_STYLE_SCALA
-        extension == "gradle" -> SyntaxConstants.SYNTAX_STYLE_GROOVY
-        extension in setOf("properties", "ini", "conf", "toml") -> SyntaxConstants.SYNTAX_STYLE_PROPERTIES_FILE
-
-        // 基于文件名（无扩展名文件）
-        fileName == "dockerfile" -> SyntaxConstants.SYNTAX_STYLE_DOCKERFILE
-        fileName == "makefile" || fileName == "rakefile" -> SyntaxConstants.SYNTAX_STYLE_MAKEFILE
-        fileName in setOf("gradlew", "gradlew.bat") -> SyntaxConstants.SYNTAX_STYLE_UNIX_SHELL
-        fileName.startsWith(".") -> SyntaxConstants.SYNTAX_STYLE_PROPERTIES_FILE
-
-        else -> SyntaxConstants.SYNTAX_STYLE_NONE
-    }
 }
