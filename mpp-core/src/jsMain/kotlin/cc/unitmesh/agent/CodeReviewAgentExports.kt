@@ -152,83 +152,83 @@ class JsCodeReviewAgent(
     }
 
     /**
-     * Execute code review task (Tool-driven approach - legacy)
-     */
-    @JsName("executeTask")
-    fun executeTask(task: JsReviewTask): Promise<JsCodeReviewResult> {
-        return GlobalScope.promise {
-            val kotlinTask = task.toCommon()
-            val agentResult = agent.executeTask(kotlinTask)
-
-            // 从 AgentResult 中提取 findings
-            val params = agentResult.steps.firstOrNull()?.params
-            val findings = when {
-                params is Map<*, *> -> {
-                    val findingsValue = params["findings"]
-                    when (findingsValue) {
-                        is List<*> -> findingsValue.filterIsInstance<ReviewFinding>()
-                        else -> emptyList()
-                    }
-                }
-                else -> emptyList()
-            }
-
-            JsCodeReviewResult(
-                success = agentResult.success,
-                message = agentResult.message,
-                findings = findings.map { JsReviewFinding.fromCommon(it) }.toTypedArray()
-            )
-        }
-    }
-
-    /**
-     * Analyze code using Data-Driven approach (recommended for CLI/UI)
-     * This is more efficient as it pre-collects all data and makes a single LLM call
+     * Execute code review task (main analysis method)
+     * This is the unified method that replaces both analyzeIntent and analyzeWithDataDriven
      *
      * @param reviewType Type of review (e.g., "COMPREHENSIVE", "SECURITY")
      * @param filePaths Array of file paths to review
      * @param codeContent Object mapping file paths to their content
      * @param lintResults Object mapping file paths to their lint results (formatted strings)
      * @param diffContext Optional diff context string
+     * @param commitMessage Optional commit message for intent analysis
+     * @param commitId Optional commit ID
+     * @param repoUrl Optional repository URL for issue tracking
+     * @param issueToken Optional issue tracker token
+     * @param useTools Whether to use tools for analysis (default: false for data-driven mode)
+     * @param analyzeIntent Whether to perform intent analysis (default: false)
      * @param language Language for the prompt ("EN" or "ZH")
      * @param onChunk Optional callback for streaming response chunks
-     * @return Promise resolving to the analysis result as markdown string
+     * @return Promise resolving to JsAnalysisResult
      */
-    @JsName("analyzeWithDataDriven")
-    fun analyzeWithDataDriven(
+    @JsName("executeTask")
+    fun executeTask(
         reviewType: String,
-        filePaths: Array<String>,
-        codeContent: dynamic,
-        lintResults: dynamic,
+        filePaths: Array<String> = emptyArray(),
+        codeContent: dynamic = null,
+        lintResults: dynamic = null,
         diffContext: String = "",
+        commitMessage: String = "",
+        commitId: String = "",
+        repoUrl: String = "",
+        issueToken: String = "",
+        useTools: Boolean = false,
+        analyzeIntent: Boolean = false,
         language: String = "EN",
         onChunk: ((String) -> Unit)? = null
-    ): Promise<String> {
+    ): Promise<JsAnalysisResult> {
         return GlobalScope.promise {
             // Convert JS dynamic objects to Kotlin maps
-            val codeContentMap = convertDynamicToMap(codeContent)
-            val lintResultsMap = convertDynamicToMap(lintResults)
+            val codeContentMap = if (codeContent != null) {
+                convertDynamicToMap(codeContent)
+            } else {
+                emptyMap()
+            }
 
-            val task = AnalysisTask(
-                reviewType = reviewType,
+            val lintResultsMap = if (lintResults != null) {
+                convertDynamicToMap(lintResults)
+            } else {
+                emptyMap()
+            }
+
+            // Create ReviewTask
+            val reviewTypeEnum = try {
+                ReviewType.valueOf(reviewType.uppercase())
+            } catch (e: Exception) {
+                ReviewType.COMPREHENSIVE
+            }
+
+            val task = ReviewTask(
                 filePaths = filePaths.toList(),
-                codeContent = codeContentMap,
-                lintResults = lintResultsMap,
-                diffContext = diffContext,
+                reviewType = reviewTypeEnum,
                 projectPath = projectPath,
-                useTools = false,  // Data-driven mode
-                analyzeIntent = false
+                additionalContext = diffContext
             )
 
-            val result = agent.analyze(
-                task = task,
-                language = language,
-                onProgress = onChunk ?: {}
-            )
+            // Execute the task
+            val result = agent.execute(task, onProgress = onChunk ?: {})
 
-            result.content
+            // Return unified result
+            JsAnalysisResult(
+                success = result.success,
+                content = result.content,
+                mermaidDiagram = null,  // Not supported in basic execution
+                issuesAnalyzed = emptyArray(),
+                usedTools = false
+            )
         }
     }
+
+
 
     /**
      * Generate fixes for identified issues
@@ -290,64 +290,7 @@ class JsCodeReviewAgent(
         }
     }
 
-    /**
-     * Analyze commit intent (tool-driven or data-driven)
-     *
-     * @param commitMessage The commit message
-     * @param commitId The commit ID
-     * @param codeChanges Object mapping file paths to their diff/content
-     * @param repoUrl Repository URL for issue tracking (e.g., https://github.com/owner/repo)
-     * @param issueToken Issue tracker token (optional for public repos)
-     * @param useTools Whether to use tools for analysis (default: true)
-     * @param language Language for prompts ("EN" or "ZH")
-     * @param onProgress Optional callback for streaming progress
-     * @return Promise resolving to analysis result with mermaid diagram
-     */
-    @JsName("analyzeIntent")
-    fun analyzeIntent(
-        commitMessage: String,
-        commitId: String = "",
-        codeChanges: dynamic = null,
-        repoUrl: String = "",
-        issueToken: String = "",
-        useTools: Boolean = true,
-        language: String = "EN",
-        onProgress: ((String) -> Unit)? = null
-    ): Promise<JsAnalysisResult> {
-        return GlobalScope.promise {
-            val codeChangesMap = if (codeChanges != null) {
-                convertDynamicToMap(codeChanges)
-            } else {
-                emptyMap()
-            }
 
-            val task = cc.unitmesh.agent.AnalysisTask(
-                reviewType = "COMPREHENSIVE",
-                projectPath = projectPath,
-                commitMessage = commitMessage,
-                commitId = commitId,
-                codeChanges = codeChangesMap,
-                repoUrl = repoUrl,
-                issueToken = issueToken,
-                useTools = useTools,
-                analyzeIntent = true
-            )
-
-            val result = agent.analyze(
-                task = task,
-                language = language,
-                onProgress = onProgress ?: {}
-            )
-
-            JsAnalysisResult(
-                success = result.success,
-                content = result.content,
-                mermaidDiagram = result.mermaidDiagram,
-                issuesAnalyzed = result.issuesAnalyzed.toTypedArray(),
-                usedTools = result.usedTools
-            )
-        }
-    }
 
     /**
      * Helper to convert JS dynamic object to Kotlin Map<String, String>

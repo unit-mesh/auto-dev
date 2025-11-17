@@ -194,8 +194,6 @@ All tools use the DevIns format with JSON parameters:
 - ✅ Correct: One <devin> block with one tool call per response
 - ❌ Wrong: Multiple <devin> blocks or multiple tools in one response
 
-Use tools like /read-file, /glob, /grep to gather more context about the code if needed.
-
 ## Response Format
 
 For each tool call, respond with:
@@ -272,8 +270,6 @@ ${'$'}{toolList}
 {"parameter": "value", "optional_param": 123}
 ```
 </devin>
-
-使用像 /read-file、/glob、/grep 这样的工具来收集更多代码上下文（如果需要）。
 
 ## 重要：每次响应只执行一个工具
 

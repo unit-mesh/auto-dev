@@ -147,14 +147,19 @@ export async function runReview(
         console.log(semanticChalk.info('⚡ Streaming intent analysis...'));
         console.log();
 
-        // Call analyzeIntent with tool-driven approach
-        const intentResult = await reviewAgent.analyzeIntent(
+        // Call executeTask with analyzeIntent enabled
+        const intentResult = await reviewAgent.executeTask(
+          'COMPREHENSIVE',
+          filePaths,
+          codeChangesMap,
+          {},
+          '', // diffContext - not needed for intent analysis
           commitMessage,
           commitId,
-          codeChangesMap,
           repoUrl,
           '', // issueToken - could be added as an option
-          true, // useTools
+          true, // useTools = true for tool-driven approach
+          true, // analyzeIntent = true
           'EN',
           (chunk: string) => {
             // process.stdout.write(chunk);
@@ -209,17 +214,24 @@ export async function runReview(
       console.log();
 
       const llmStartTime = Date.now();
-      technicalReviewOutput = await reviewAgent.analyzeWithDataDriven(
+      const technicalResult = await reviewAgent.executeTask(
         reviewType,
         filePaths,
         codeContent,
         lintResults,
         diffContext,
+        '', // commitMessage
+        '', // commitId
+        '', // repoUrl
+        '', // issueToken
+        false, // useTools = false for data-driven mode
+        false, // analyzeIntent = false
         'EN',
         (chunk: string) => {
-          // process.stdout.write(chunk);
+          process.stdout.write(chunk);
         }
       );
+      technicalReviewOutput = technicalResult.content;
 
       const llmDuration = Date.now() - llmStartTime;
       console.log();
@@ -241,17 +253,24 @@ export async function runReview(
 
       const llmStartTime = Date.now();
 
-      technicalReviewOutput = await reviewAgent.analyzeWithDataDriven(
+      const technicalResult = await reviewAgent.executeTask(
         reviewType,
         filePaths,
         codeContent,
         lintResults,
         diffContext,
+        '', // commitMessage
+        '', // commitId
+        '', // repoUrl
+        '', // issueToken
+        false, // useTools = false for data-driven mode
+        false, // analyzeIntent = false
         'EN',
         (chunk: string) => {
-          // process.stdout.write(chunk);
+        //   process.stdout.write(chunk);
         }
       );
+      technicalReviewOutput = technicalResult.content;
 
       const llmDuration = Date.now() - llmStartTime;
       console.log();

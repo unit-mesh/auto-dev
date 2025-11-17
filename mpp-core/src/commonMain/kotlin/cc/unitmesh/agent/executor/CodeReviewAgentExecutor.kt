@@ -174,8 +174,7 @@ class CodeReviewAgentExecutor(
     }
 
     override fun buildContinuationMessage(): String {
-        return "Please continue with the code review based on the tool execution results above. " +
-                "Use additional tools if needed, or provide your final review if you have all the information."
+        return "Please continue with the code review based on the tool execution results above. "
     }
 
     private fun isReviewComplete(response: String): Boolean {
