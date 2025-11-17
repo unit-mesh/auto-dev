@@ -8,7 +8,6 @@ import cc.unitmesh.agent.policy.PolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.state.ToolExecutionState
-import cc.unitmesh.agent.state.ToolStateManager
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.impl.WriteFileTool
 import cc.unitmesh.agent.tool.registry.ToolRegistry
@@ -27,7 +26,6 @@ class ToolOrchestrator(
     private val registry: ToolRegistry,
     private val policyEngine: PolicyEngine,
     private val renderer: CodingAgentRenderer,
-    private val stateManager: ToolStateManager = ToolStateManager(),
     private val mcpConfigService: McpToolConfigService? = null
 ) {
     private val logger = getLogger("ToolOrchestrator")
@@ -43,16 +41,12 @@ class ToolOrchestrator(
         val toolCall = ToolCall.create(toolName, params)
         val startTime = Clock.System.now().toEpochMilliseconds()
         
-        // Update state to pending
-        stateManager.updateState(ToolExecutionState.Pending(toolCall.id, toolCall))
-        
         try {
             // Check permissions
             val policyDecision = policyEngine.checkPermission(toolCall, context)
             when (policyDecision) {
                 PolicyDecision.DENY -> {
                     val error = "Tool execution denied by policy: $toolName"
-                    stateManager.updateState(ToolExecutionState.Failed(toolCall.id, error, 0))
                     return ToolExecutionResult.failure(
                         context.executionId, toolName, error, startTime, Clock.System.now().toEpochMilliseconds()
                     )
@@ -67,10 +61,6 @@ class ToolOrchestrator(
                 }
             }
             
-            // Update state to executing
-            stateManager.updateState(ToolExecutionState.Executing(toolCall.id, startTime))
-            
-            // Check for cancellation
             yield()
             
             // **关键改动**: 检查是否是 Shell 工具且支持 PTY
@@ -183,12 +173,8 @@ class ToolOrchestrator(
                 val errorMsg = getErrorMessage(result)
                 ToolExecutionState.Failed(toolCall.id, errorMsg, endTime - startTime)
             }
-            stateManager.updateState(finalState)
-            
-            // 从 ToolResult 中提取 metadata
+
             val metadata = result.extractMetadata()
-            
-            // 如果是 live session，添加标记以便跳过输出渲染
             val finalMetadata = if (liveSession != null) {
                 metadata + mapOf("isLiveSession" to "true", "sessionId" to liveSession.sessionId)
             } else {
@@ -209,8 +195,7 @@ class ToolOrchestrator(
         } catch (e: Exception) {
             val endTime = Clock.System.now().toEpochMilliseconds()
             val error = "Tool execution failed: ${e.message}"
-            stateManager.updateState(ToolExecutionState.Failed(toolCall.id, error, endTime - startTime))
-            
+
             return ToolExecutionResult.failure(
                 context.executionId, toolName, error, startTime, endTime, context.currentRetry
             )
@@ -246,31 +231,7 @@ class ToolOrchestrator(
         
         return results
     }
-    
-    /**
-     * Get current execution state
-     */
-    fun getExecutionState(callId: String): ToolExecutionState? {
-        return stateManager.getState(callId)
-    }
-    
-    /**
-     * Get all execution states
-     */
-    fun getAllExecutionStates(): Map<String, ToolExecutionState> {
-        return stateManager.getAllStates()
-    }
-    
-    /**
-     * Clear execution history
-     */
-    fun clearHistory() {
-        stateManager.clear()
-    }
 
-    /**
-     * Internal tool execution - delegates to registry
-     */
     private suspend fun executeToolInternal(
         toolName: String,
         params: Map<String, Any>,
