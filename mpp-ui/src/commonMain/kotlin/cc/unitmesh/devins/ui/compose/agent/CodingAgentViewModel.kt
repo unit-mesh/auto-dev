@@ -136,7 +136,7 @@ class CodingAgentViewModel(
                 }
 
             // Debug: Print final status
-            println("🔍 [CodingAgentViewModel] Final MCP status:")
+            println("[DEBUG] [CodingAgentViewModel] Final MCP status:")
             println("   Preloaded servers: ${mcpPreloadingStatus.preloadedServers}")
             println("   Total cached: ${mcpPreloadingStatus.totalCachedConfigurations}")
             println("   Is preloading: ${McpToolConfigManager.isPreloading()}")
@@ -207,7 +207,7 @@ class CodingAgentViewModel(
     fun switchAgent(agentType: AgentType) {
         if (currentAgentType != agentType) {
             currentAgentType = agentType
-            println("🔄 [ViewModel] Switched to agent type: ${agentType.name}")
+            println("[INFO] [ViewModel] Switched to agent type: ${agentType.name}")
             // Note: Agents will be lazily initialized when needed
         }
     }
@@ -222,7 +222,7 @@ class CodingAgentViewModel(
         // Check if LLM service is configured
         if (!isConfigured()) {
             renderer.addUserMessage(task)
-            renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
+            renderer.renderError("WARNING: LLM model is not configured. Please configure your model to continue.")
             onConfigRequired?.invoke()
             return
         }
@@ -303,7 +303,7 @@ class CodingAgentViewModel(
                     }
                 }
             } catch (e: Exception) {
-                println("⚠️ Failed to save conversation history: ${e.message}")
+                println("[ERROR] Failed to save conversation history: ${e.message}")
             }
         }
     }
@@ -322,7 +322,7 @@ class CodingAgentViewModel(
             "init" -> {
                 // /init command requires LLM configuration
                 if (!isConfigured()) {
-                    renderer.renderError("⚠️ LLM model is not configured. Please configure your model to use /init command.")
+                    renderer.renderError("WARNING: LLM model is not configured. Please configure your model to use /init command.")
                     onConfigRequired?.invoke()
                     return
                 }
@@ -331,23 +331,23 @@ class CodingAgentViewModel(
             "clear" -> {
                 renderer.clearMessages()
                 chatHistoryManager?.clearCurrentSession()  // 同时清空会话历史
-                renderer.renderFinalResult(true, "✅ Chat history cleared", 0)
+                renderer.renderFinalResult(true, "SUCCESS: Chat history cleared", 0)
             }
             "help" -> {
                 val helpText =
                     buildString {
-                        appendLine("📖 Available Commands:")
+                        appendLine("HELP: Available Commands:")
                         appendLine("  /init [--force] - Initialize project domain dictionary")
                         appendLine("  /clear - Clear chat history")
                         appendLine("  /help - Show this help message")
                         appendLine("")
-                        appendLine("💡 You can also use @ for agents and other DevIns commands")
+                        appendLine("TIP: You can also use @ for agents and other DevIns commands")
                     }
                 renderer.renderFinalResult(true, helpText, 0)
             }
             else -> {
                 if (!isConfigured()) {
-                    renderer.renderError("⚠️ LLM model is not configured. Please configure your model to continue.")
+                    renderer.renderError("WARNING: LLM model is not configured. Please configure your model to continue.")
                     onConfigRequired?.invoke()
                     return
                 }
@@ -442,7 +442,7 @@ class CodingAgentViewModel(
 
                 // Start processing indicator
                 renderer.renderLLMResponseStart()
-                renderer.renderLLMResponseChunk("🚀 Starting domain dictionary generation...")
+                renderer.renderLLMResponseChunk("INFO: Starting domain dictionary generation...")
                 renderer.renderLLMResponseEnd()
 
                 // Load configuration
@@ -450,12 +450,12 @@ class CodingAgentViewModel(
                 val modelConfig = configWrapper.getActiveModelConfig()
 
                 if (modelConfig == null) {
-                    renderer.renderError("❌ No LLM configuration found. Please configure your model first.")
+                    renderer.renderError("ERROR: No LLM configuration found. Please configure your model first.")
                     return@launch
                 }
 
                 renderer.renderLLMResponseStart()
-                renderer.renderLLMResponseChunk("📊 Analyzing project code...")
+                renderer.renderLLMResponseChunk("INFO: Analyzing project code...")
                 renderer.renderLLMResponseEnd()
 
                 // Create domain dictionary generator
@@ -464,12 +464,12 @@ class CodingAgentViewModel(
 
                 // Check if domain dictionary already exists
                 if (!force && fileSystem.exists("prompts/domain.csv")) {
-                    renderer.renderError("⚠️ Domain dictionary already exists at prompts/domain.csv\nUse /init --force to regenerate")
+                    renderer.renderError("WARNING: Domain dictionary already exists at prompts/domain.csv\nUse /init --force to regenerate")
                     return@launch
                 }
 
                 renderer.renderLLMResponseStart()
-                renderer.renderLLMResponseChunk("🤖 Generating domain dictionary with AI...")
+                renderer.renderLLMResponseChunk("INFO: Generating domain dictionary with AI...")
                 renderer.renderLLMResponseEnd()
 
                 // Generate domain dictionary
@@ -478,16 +478,16 @@ class CodingAgentViewModel(
                 when (result) {
                     is cc.unitmesh.indexer.GenerationResult.Success -> {
                         renderer.renderLLMResponseStart()
-                        renderer.renderLLMResponseChunk("💾 Saving domain dictionary to prompts/domain.csv...")
+                        renderer.renderLLMResponseChunk("INFO: Saving domain dictionary to prompts/domain.csv...")
                         renderer.renderLLMResponseEnd()
-                        renderer.renderFinalResult(true, "✅ Domain dictionary generated successfully! File saved to prompts/domain.csv", 1)
+                        renderer.renderFinalResult(true, "SUCCESS: Domain dictionary generated successfully! File saved to prompts/domain.csv", 1)
                     }
                     is cc.unitmesh.indexer.GenerationResult.Error -> {
-                        renderer.renderError("❌ Domain dictionary generation failed: ${result.message}")
+                        renderer.renderError("ERROR: Domain dictionary generation failed: ${result.message}")
                     }
                 }
             } catch (e: Exception) {
-                renderer.renderError("❌ Domain dictionary generation failed: ${e.message}")
+                renderer.renderError("ERROR: Domain dictionary generation failed: ${e.message}")
             }
         }
     }

@@ -231,12 +231,23 @@ fun ToolErrorItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "❌ Error",
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    style = MaterialTheme.typography.bodyMedium,
-                    lineHeight = 18.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Error,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Error",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 18.sp
+                    )
+                }
                 TextButton(
                     onClick = onDismiss,
                     contentPadding = PaddingValues(0.dp),
@@ -282,13 +293,25 @@ fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
                 color = MaterialTheme.colorScheme.primary
             )
 
-            Text(
-                text = "🔧 ${toolCall.toolName} — ${toolCall.description}",
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.weight(1f)
-            )
+            ) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Build,
+                    contentDescription = "Tool",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "${toolCall.toolName} — ${toolCall.description}",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             // "Executing" badge
             Card(
