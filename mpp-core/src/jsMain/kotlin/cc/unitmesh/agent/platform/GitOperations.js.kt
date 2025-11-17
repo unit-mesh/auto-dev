@@ -156,12 +156,11 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     }
     
     private fun parseDiff(statsOutput: String, diffOutput: String): GitDiffInfo {
-        // Simplified parsing - just return empty for now
-        // Full implementation would mirror the JVM version
         return GitDiffInfo(
             files = emptyList(),
             totalAdditions = 0,
-            totalDeletions = 0
+            totalDeletions = 0,
+            originDiff = diffOutput
         )
     }
     
