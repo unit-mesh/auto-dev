@@ -157,7 +157,6 @@ class CodingAgent(
         return executor.execute(task, systemPrompt)
     }
 
-
     override fun buildSystemPrompt(context: CodingAgentContext, language: String): String {
         return promptRenderer.render(context, language)
     }

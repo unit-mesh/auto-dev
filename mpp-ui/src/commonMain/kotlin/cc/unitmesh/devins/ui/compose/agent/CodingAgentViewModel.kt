@@ -238,9 +238,8 @@ class CodingAgentViewModel(
 
         currentExecutionJob =
             scope.launch {
+                val codingAgent = initializeCodingAgent()
                 try {
-                    val codingAgent = initializeCodingAgent()
-                    chatHistoryManager?.addUserMessage(task)
                     val agentTask =
                         AgentTask(
                             requirement = task,
@@ -249,14 +248,17 @@ class CodingAgentViewModel(
 
                     val result = codingAgent.executeTask(agentTask)
 
-                    val resultSummary = "Agent task completed: $task"
-                    chatHistoryManager?.addAssistantMessage(resultSummary)
+                    // 保存完整的对话历史（包括用户消息和助手消息）
+                    saveConversationHistory(codingAgent)
 
                     // Result is already handled by the renderer
                     isExecuting = false
                     currentExecutionJob = null
                 } catch (e: CancellationException) {
-                    // Task was cancelled - reset all states and add cancellation message at the end
+                    // Task was cancelled - save conversation history before cleanup
+                    saveConversationHistory(codingAgent)
+                    
+                    // Reset all states and add cancellation message at the end
                     renderer.forceStop() // Stop all loading states
 
                     // Add cancellation message to timeline (will appear at the end)
@@ -264,11 +266,46 @@ class CodingAgentViewModel(
                     isExecuting = false
                     currentExecutionJob = null
                 } catch (e: Exception) {
+                    // Save conversation history even on error
+                    saveConversationHistory(codingAgent)
+                    
                     renderer.renderError(e.message ?: "Unknown error")
                     isExecuting = false
                     currentExecutionJob = null
                 }
             }
+    }
+
+    /**
+     * 保存 Agent 执行过程中的完整对话历史到 ChatHistoryManager
+     * 包括用户消息、助手响应、工具调用和结果等
+     */
+    private suspend fun saveConversationHistory(codingAgent: CodingAgent) {
+        chatHistoryManager?.let { manager ->
+            try {
+                val conversationHistory = codingAgent.getConversationHistory()
+                
+                // 获取 ChatHistoryManager 中已保存的消息数量
+                val existingMessagesCount = manager.getMessages().size
+                
+                // 过滤掉 SYSTEM 消息，保存所有 USER 和 ASSISTANT 消息
+                // 跳过已经保存的消息（根据数量判断）
+                val newMessages = conversationHistory
+                    .filter { it.role == MessageRole.USER || it.role == MessageRole.ASSISTANT }
+                    .drop(existingMessagesCount)
+                
+                // 按顺序保存新消息
+                newMessages.forEach { message ->
+                    when (message.role) {
+                        MessageRole.USER -> manager.addUserMessage(message.content)
+                        MessageRole.ASSISTANT -> manager.addAssistantMessage(message.content)
+                        else -> {} // 忽略 SYSTEM 消息
+                    }
+                }
+            } catch (e: Exception) {
+                println("⚠️ Failed to save conversation history: ${e.message}")
+            }
+        }
     }
 
     /**

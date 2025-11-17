@@ -59,24 +59,30 @@ class ChatHistoryManager {
     }
 
     /**
-     * 保存所有会话到磁盘
+     * 保存所有会话到磁盘（同步版本）
      * 只保存有消息的会话
-     * 在 WASM 平台使用 Dispatchers.Unconfined，确保同步执行
+     * 用于需要立即保存的场景（如添加消息后）
+     */
+    private suspend fun saveSessions() {
+        try {
+            // 过滤掉空会话（没有消息的会话）
+            val nonEmptySessions = sessions.values.filter { it.messages.isNotEmpty() }
+            SessionStorage.saveSessions(nonEmptySessions)
+
+            // 通知 UI 更新
+            _sessionsUpdateTrigger.value++
+        } catch (e: Exception) {
+            println("⚠️ Failed to save sessions: ${e.message}")
+        }
+    }
+
+    /**
+     * 保存所有会话到磁盘（异步版本）
+     * 用于不需要等待保存完成的场景（如切换会话、删除会话）
      */
     private fun saveSessionsAsync() {
-        // In WASM with Dispatchers.Unconfined, launch will execute immediately
-        // ensuring synchronous behavior for tests
         scope.launch {
-            try {
-                // 过滤掉空会话（没有消息的会话）
-                val nonEmptySessions = sessions.values.filter { it.messages.isNotEmpty() }
-                SessionStorage.saveSessions(nonEmptySessions)
-
-                // 通知 UI 更新
-                _sessionsUpdateTrigger.value++
-            } catch (e: Exception) {
-                println("⚠️ Failed to save sessions: ${e.message}")
-            }
+            saveSessions()
         }
     }
 
@@ -158,22 +164,24 @@ class ChatHistoryManager {
 
     /**
      * 添加用户消息到当前会话
+     * 立即同步保存到磁盘，确保消息不会丢失
      */
-    fun addUserMessage(content: String) {
+    suspend fun addUserMessage(content: String) {
         getCurrentSession().addUserMessage(content)
 
-        // 自动保存
-        saveSessionsAsync()
+        // 立即同步保存
+        saveSessions()
     }
 
     /**
      * 添加助手消息到当前会话
+     * 立即同步保存到磁盘，确保消息不会丢失
      */
-    fun addAssistantMessage(content: String) {
+    suspend fun addAssistantMessage(content: String) {
         getCurrentSession().addAssistantMessage(content)
 
-        // 自动保存
-        saveSessionsAsync()
+        // 立即同步保存
+        saveSessions()
     }
 
     /**
