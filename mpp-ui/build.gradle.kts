@@ -334,7 +334,7 @@ compose.desktop {
         mainClass = "cc.unitmesh.devins.ui.MainKt"
 
         jvmArgs += listOf(
-            "--add-modules", "java.naming"
+            "--add-modules", "java.naming,java.sql"
         )
 
         nativeDistributions {
@@ -345,7 +345,7 @@ compose.desktop {
             copyright = "© 2024 AutoDev Team. All rights reserved."
             vendor = "AutoDev Team"
 
-            modules("java.naming")
+            modules("java.naming", "java.sql")
 
             // Custom app icon
             macOS {
