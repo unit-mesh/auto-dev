@@ -3,7 +3,7 @@ package cc.unitmesh.devins.ui.compose.agent.codereview
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import cc.unitmesh.DiffLineType
+import cc.unitmesh.agent.diff.DiffLineType
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.ToolConfigFile
@@ -14,8 +14,8 @@ import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.CodeAnalyzer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
-import cc.unitmesh.DiffParser
-import cc.unitmesh.FileDiff
+import cc.unitmesh.agent.diff.DiffParser
+import cc.unitmesh.agent.diff.FileDiff
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.llm.KoogLLMService

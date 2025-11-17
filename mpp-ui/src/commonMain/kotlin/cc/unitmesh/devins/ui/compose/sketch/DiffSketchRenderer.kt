@@ -15,11 +15,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.DiffHunk
-import cc.unitmesh.DiffLine
-import cc.unitmesh.DiffLineType
-import cc.unitmesh.DiffParser
-import cc.unitmesh.FileDiff
+import cc.unitmesh.agent.diff.DiffHunk
+import cc.unitmesh.agent.diff.DiffLine
+import cc.unitmesh.agent.diff.DiffLineType
+import cc.unitmesh.agent.diff.DiffParser
+import cc.unitmesh.agent.diff.FileDiff
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 

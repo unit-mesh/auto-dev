@@ -1,7 +1,5 @@
-package cc.unitmesh.devins.ui.compose.sketch
+package cc.unitmesh.agent.diff
 
-import cc.unitmesh.DiffLineType
-import cc.unitmesh.DiffParser
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

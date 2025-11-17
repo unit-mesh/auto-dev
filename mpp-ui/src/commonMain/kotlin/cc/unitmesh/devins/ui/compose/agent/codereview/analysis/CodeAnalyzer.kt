@@ -1,6 +1,6 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview.analysis
 
-import cc.unitmesh.DiffLineType
+import cc.unitmesh.agent.diff.DiffLineType
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.codegraph.CodeGraphFactory
