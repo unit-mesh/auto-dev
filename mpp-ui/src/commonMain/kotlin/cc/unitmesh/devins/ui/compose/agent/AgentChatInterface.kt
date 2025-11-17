@@ -48,7 +48,6 @@ fun AgentChatInterface(
     onInternalNewChat: ((() -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    // 从全局状态管理器获取 TreeView 状态
     val isTreeViewVisibleState by UIStateManager.isTreeViewVisible.collectAsState()
 
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
@@ -65,9 +64,7 @@ fun AgentChatInterface(
             )
         }
 
-    // 同步 Agent 类型到 ViewModel
     LaunchedEffect(selectedAgentType) {
-        println("🎯 [AgentChatInterface] Agent type changed to: ${selectedAgentType.name}")
         viewModel.switchAgent(selectedAgentType)
     }
 
@@ -85,7 +82,6 @@ fun AgentChatInterface(
         }
     }
 
-    // 导出内部处理器给父组件（用于 SessionSidebar）
     LaunchedEffect(handleSessionSelected, handleNewChat) {
         onInternalSessionSelected?.invoke(handleSessionSelected)
         onInternalNewChat?.invoke(handleNewChat)
@@ -244,7 +240,6 @@ fun AgentChatInterface(
                 )
             }
 
-            // Chat 消息列表
             AgentMessageList(
                 renderer = viewModel.renderer,
                 modifier =
@@ -296,7 +291,6 @@ private fun ToolLoadingStatusBar(
     viewModel: CodingAgentViewModel,
     modifier: Modifier = Modifier
 ) {
-    // 直接观察状态变化，不使用 derivedStateOf
     val mcpPreloadingStatus = viewModel.mcpPreloadingStatus
     val mcpPreloadingMessage = viewModel.mcpPreloadingMessage
     val toolStatus by remember(mcpPreloadingStatus) {
@@ -349,7 +343,6 @@ private fun ToolLoadingStatusBar(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Status message with icon
             if (mcpPreloadingMessage.isNotEmpty()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -396,7 +389,6 @@ private fun ToolStatusChip(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Status indicator with better visual feedback
         Box(
             modifier =
                 Modifier
@@ -406,7 +398,6 @@ private fun ToolStatusChip(
                         shape = CircleShape
                     )
         ) {
-            // Add a subtle inner glow for loaded tools
             if (!isLoading && count > 0) {
                 Box(
                     modifier =
@@ -421,7 +412,6 @@ private fun ToolStatusChip(
             }
         }
 
-        // Label and count with better typography
         Text(
             text = "$label ($count/$total)",
             style = MaterialTheme.typography.labelMedium,
@@ -433,7 +423,6 @@ private fun ToolStatusChip(
                 }
         )
 
-        // Loading indicator - smaller and more subtle
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(10.dp),

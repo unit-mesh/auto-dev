@@ -74,13 +74,12 @@ class CodingAgentViewModel(
                         renderer.renderLLMResponseChunk(message.content)
                         renderer.renderLLMResponseEnd()
                     }
+
                     else -> {}
                 }
             }
         }
 
-        // Start MCP preloading immediately when ViewModel is created
-        // Only if llmService is configured
         if (llmService != null) {
             scope.launch {
                 startMcpPreloading()
@@ -96,7 +95,6 @@ class CodingAgentViewModel(
             mcpPreloadingMessage = "Loading MCP servers configuration..."
             val toolConfig = ConfigManager.loadToolConfig()
 
-            // Cache the tool configuration for UI display
             cachedToolConfig = toolConfig
 
             if (toolConfig.mcpServers.isEmpty()) {
@@ -134,16 +132,8 @@ class CodingAgentViewModel(
                 } else {
                     "MCP servers initialization completed (no tools loaded)"
                 }
-
-            // Debug: Print final status
-            println("[DEBUG] [CodingAgentViewModel] Final MCP status:")
-            println("   Preloaded servers: ${mcpPreloadingStatus.preloadedServers}")
-            println("   Total cached: ${mcpPreloadingStatus.totalCachedConfigurations}")
-            println("   Is preloading: ${McpToolConfigManager.isPreloading()}")
-            println("   Message: $mcpPreloadingMessage")
         } catch (e: Exception) {
             mcpPreloadingMessage = "Failed to load MCP servers: ${e.message}"
-            println("Error during MCP preloading: ${e.message}")
         }
     }
 
@@ -174,48 +164,16 @@ class CodingAgentViewModel(
         return _codingAgent!!
     }
 
-    /**
-     * Initialize the CodeReviewAgent with tool configuration
-     * Uses the same factory pattern as CodingAgent
-     * @throws IllegalStateException if llmService is not configured
-     */
-    private suspend fun initializeCodeReviewAgent(): CodeReviewAgent {
-        if (llmService == null) {
-            throw IllegalStateException("LLM service is not configured")
-        }
-
-        if (_codeReviewAgent == null) {
-            val toolConfig = ConfigManager.loadToolConfig()
-            val mcpToolConfigService = McpToolConfigService(toolConfig)
-
-            // Reuse the same pattern: create the agent directly
-            _codeReviewAgent = CodeReviewAgent(
-                projectPath = projectPath,
-                llmService = llmService,
-                maxIterations = maxIterations,
-                renderer = renderer,
-                mcpToolConfigService = mcpToolConfigService
-            )
-        }
-
-        return _codeReviewAgent!!
-    }
-
-    /**
-     * Switch to a different agent type
-     */
     fun switchAgent(agentType: AgentType) {
         if (currentAgentType != agentType) {
             currentAgentType = agentType
-            println("[INFO] [ViewModel] Switched to agent type: ${agentType.name}")
-            // Note: Agents will be lazily initialized when needed
         }
     }
+
     fun isConfigured(): Boolean = llmService != null
 
     fun executeTask(task: String, onConfigRequired: (() -> Unit)? = null) {
         if (isExecuting) {
-            println("Agent is already executing")
             return
         }
 
@@ -247,54 +205,32 @@ class CodingAgentViewModel(
                         )
 
                     val result = codingAgent.executeTask(agentTask)
-
-                    // 保存完整的对话历史（包括用户消息和助手消息）
-                    saveConversationHistory(codingAgent)
-
-                    // Result is already handled by the renderer
                     isExecuting = false
                     currentExecutionJob = null
                 } catch (e: CancellationException) {
-                    // Task was cancelled - save conversation history before cleanup
-                    saveConversationHistory(codingAgent)
-
-                    // Reset all states and add cancellation message at the end
                     renderer.forceStop() // Stop all loading states
-
-                    // Add cancellation message to timeline (will appear at the end)
                     renderer.renderError("Task cancelled by user")
                     isExecuting = false
                     currentExecutionJob = null
                 } catch (e: Exception) {
-                    // Save conversation history even on error
-                    saveConversationHistory(codingAgent)
-
                     renderer.renderError(e.message ?: "Unknown error")
                     isExecuting = false
                     currentExecutionJob = null
+                } finally {
+                    saveConversationHistory(codingAgent)
                 }
             }
     }
 
-    /**
-     * 保存 Agent 执行过程中的完整对话历史到 ChatHistoryManager
-     * 包括用户消息、助手响应、工具调用和结果等
-     */
     private suspend fun saveConversationHistory(codingAgent: CodingAgent) {
         chatHistoryManager?.let { manager ->
             try {
                 val conversationHistory = codingAgent.getConversationHistory()
-
-                // 获取 ChatHistoryManager 中已保存的消息数量
                 val existingMessagesCount = manager.getMessages().size
-
-                // 过滤掉 SYSTEM 消息，保存所有 USER 和 ASSISTANT 消息
-                // 跳过已经保存的消息（根据数量判断）
                 val newMessages = conversationHistory
                     .filter { it.role == MessageRole.USER || it.role == MessageRole.ASSISTANT }
                     .drop(existingMessagesCount)
 
-                // 按顺序保存新消息
                 newMessages.forEach { message ->
                     when (message.role) {
                         MessageRole.USER -> manager.addUserMessage(message.content)
@@ -308,9 +244,6 @@ class CodingAgentViewModel(
         }
     }
 
-    /**
-     * Handle built-in slash commands
-     */
     private fun handleBuiltinCommand(command: String, onConfigRequired: (() -> Unit)? = null) {
         val parts = command.substring(1).trim().split("\\s+".toRegex())
         val commandName = parts[0].lowercase()
@@ -320,7 +253,6 @@ class CodingAgentViewModel(
 
         when (commandName) {
             "init" -> {
-                // /init command requires LLM configuration
                 if (!isConfigured()) {
                     renderer.renderError("WARNING: LLM model is not configured. Please configure your model to use /init command.")
                     onConfigRequired?.invoke()
@@ -328,11 +260,13 @@ class CodingAgentViewModel(
                 }
                 handleInitCommand(args)
             }
+
             "clear" -> {
                 renderer.clearMessages()
                 chatHistoryManager?.clearCurrentSession()  // 同时清空会话历史
                 renderer.renderFinalResult(true, "SUCCESS: Chat history cleared", 0)
             }
+
             "help" -> {
                 val helpText =
                     buildString {
@@ -345,6 +279,7 @@ class CodingAgentViewModel(
                     }
                 renderer.renderFinalResult(true, helpText, 0)
             }
+
             else -> {
                 if (!isConfigured()) {
                     renderer.renderError("WARNING: LLM model is not configured. Please configure your model to continue.")
@@ -386,17 +321,6 @@ class CodingAgentViewModel(
         }
     }
 
-    /**
-     * Clear chat history
-     */
-    fun clearHistory() {
-        renderer.clearMessages()
-        chatHistoryManager?.clearCurrentSession()
-    }
-
-    /**
-     * Create new session and switch to it
-     */
     fun newSession() {
         renderer.clearMessages()
         chatHistoryManager?.createSession()
@@ -422,6 +346,7 @@ class CodingAgentViewModel(
                             renderer.renderLLMResponseChunk(message.content)
                             renderer.renderLLMResponseEnd()
                         }
+
                         else -> {}
                     }
                 }
@@ -480,8 +405,13 @@ class CodingAgentViewModel(
                         renderer.renderLLMResponseStart()
                         renderer.renderLLMResponseChunk("INFO: Saving domain dictionary to prompts/domain.csv...")
                         renderer.renderLLMResponseEnd()
-                        renderer.renderFinalResult(true, "SUCCESS: Domain dictionary generated successfully! File saved to prompts/domain.csv", 1)
+                        renderer.renderFinalResult(
+                            true,
+                            "SUCCESS: Domain dictionary generated successfully! File saved to prompts/domain.csv",
+                            1
+                        )
                     }
+
                     is cc.unitmesh.indexer.GenerationResult.Error -> {
                         renderer.renderError("ERROR: Domain dictionary generation failed: ${result.message}")
                     }
@@ -498,11 +428,6 @@ class CodingAgentViewModel(
     fun clearError() {
         renderer.clearError()
     }
-
-    /**
-     * Check if MCP servers are ready (preloading completed)
-     */
-    fun areMcpServersReady(): Boolean = !McpToolConfigManager.isPreloading()
 
     fun getToolLoadingStatus(): ToolLoadingStatus {
         val toolConfig = cachedToolConfig
@@ -560,13 +485,6 @@ class CodingAgentViewModel(
             mcpToolsTotal = mcpToolsTotal,
             isLoading = McpToolConfigManager.isPreloading()
         )
-    }
-
-    /**
-     * Dispose resources
-     */
-    fun dispose() {
-        scope.cancel()
     }
 }
 
