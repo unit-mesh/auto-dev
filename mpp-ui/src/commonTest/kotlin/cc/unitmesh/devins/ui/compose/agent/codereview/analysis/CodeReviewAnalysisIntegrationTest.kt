@@ -1,5 +1,11 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview.analysis
 
+import cc.unitmesh.agent.linter.LintFileResult
+import cc.unitmesh.agent.linter.LintIssue
+import cc.unitmesh.agent.linter.LintResult
+import cc.unitmesh.agent.linter.LintSeverity
+import cc.unitmesh.agent.linter.Linter
+import cc.unitmesh.agent.linter.LinterRegistry
 import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.devins.ui.compose.sketch.DiffHunk
 import cc.unitmesh.devins.ui.compose.sketch.DiffLine
@@ -174,18 +180,18 @@ class CodeReviewAnalysisIntegrationTest {
                 errorCount = 2,
                 warningCount = 1,
                 infoCount = 1,
-                issues = listOf<LintIssueUI>(
-                    LintIssueUI(
+                issues = listOf<LintIssue>(
+                    LintIssue(
                         line = 10,
                         column = 5,
-                        severity = cc.unitmesh.agent.linter.LintSeverity.ERROR,
+                        severity = LintSeverity.ERROR,
                         message = "Test error message",
                         rule = "test-rule-1"
                     ),
-                    LintIssueUI(
+                    LintIssue(
                         line = 15,
                         column = 8,
-                        severity = cc.unitmesh.agent.linter.LintSeverity.WARNING,
+                        severity = LintSeverity.WARNING,
                         message = "Test warning message",
                         rule = "test-rule-2"
                     )
@@ -220,7 +226,7 @@ class CodeReviewAnalysisIntegrationTest {
                 errorCount = 2,
                 warningCount = 1,
                 infoCount = 0,
-                issues = emptyList<LintIssueUI>()
+                issues = emptyList<LintIssue>()
             ),
             LintFileResult(
                 filePath = "/project/src/File2.kt",
@@ -228,7 +234,7 @@ class CodeReviewAnalysisIntegrationTest {
                 errorCount = 1,
                 warningCount = 3,
                 infoCount = 2,
-                issues = emptyList<LintIssueUI>()
+                issues = emptyList<LintIssue>()
             )
         )
 
