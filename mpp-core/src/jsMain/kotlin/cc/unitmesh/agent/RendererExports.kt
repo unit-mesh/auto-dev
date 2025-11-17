@@ -1,7 +1,6 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.render.CodingAgentRenderer
-import cc.unitmesh.agent.render.RendererType
 import kotlin.js.JsExport
 
 /**
@@ -41,13 +40,6 @@ object RendererFactory {
      */
     fun createRenderer(jsRenderer: JsCodingAgentRenderer): CodingAgentRenderer {
         return JsRendererAdapter(jsRenderer)
-    }
-
-    /**
-     * Get renderer type information for JS consumers
-     */
-    fun getRendererTypes(): Array<String> {
-        return RendererType.values().map { it.name }.toTypedArray()
     }
 }
 
