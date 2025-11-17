@@ -12,6 +12,7 @@ import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolResultFormatter
+import cc.unitmesh.agent.vcs.context.DiffContextCompressor
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.yield
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
@@ -37,6 +38,10 @@ class CodeReviewAgentExecutor(
 ) {
     private val logger = getLogger("CodeReviewAgentExecutor")
     private val findings = mutableListOf<ReviewFinding>()
+    private val diffCompressor = DiffContextCompressor(
+        maxLinesPerFile = 500,
+        maxTotalLines = 10000
+    )
 
     suspend fun execute(
         task: ReviewTask,
@@ -122,7 +127,10 @@ class CodeReviewAgentExecutor(
             if (task.patch != null) {
                 appendLine("## Code Changes (Git Diff)")
                 appendLine()
-                appendLine(task.patch)
+                
+                // Compress the patch to fit within context limits
+                val compressedPatch = diffCompressor.compress(task.patch)
+                appendLine(compressedPatch)
             } else if (task.filePaths.isNotEmpty()) {
                 // Fallback to file list if no diff info provided
                 appendLine("**Files to review** (${task.filePaths.size} files):")

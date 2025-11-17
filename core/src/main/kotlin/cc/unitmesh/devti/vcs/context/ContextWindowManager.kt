@@ -112,32 +112,6 @@ class ContextWindowManager(
         return false
     }
 
-    /**
-     * Calculate optimal strategy for a change based on available budget
-     */
-    fun selectStrategy(change: PrioritizedChange, diffContent: String?): DiffStrategy {
-        if (diffContent == null) {
-            return MetadataOnlyStrategy()
-        }
-
-        val tokens = tokenCounter.countTokens(diffContent)
-
-        return when {
-            // High priority and fits in budget -> full diff
-            change.priority.level >= FilePriority.HIGH.level && tokenBudget.hasCapacity(tokens) -> {
-                FullDiffStrategy()
-            }
-            // Medium priority or doesn't fit -> summary
-            change.priority.level >= FilePriority.MEDIUM.level -> {
-                SummaryDiffStrategy()
-            }
-            // Low priority -> metadata only
-            else -> {
-                MetadataOnlyStrategy()
-            }
-        }
-    }
-
     companion object {
         fun custom(maxTokens: Int): ContextWindowManager {
             return ContextWindowManager(TokenBudget.custom(maxTokens))
