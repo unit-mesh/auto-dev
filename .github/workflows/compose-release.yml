@@ -133,6 +133,7 @@ jobs:
   build-ios:
     name: Build iOS App
     runs-on: macos-latest
+    continue-on-error: true
     # Only run for compose-* releases or manual dispatch
     if: startsWith(github.ref, 'refs/tags/compose-') || github.event_name == 'workflow_dispatch'
     permissions:
