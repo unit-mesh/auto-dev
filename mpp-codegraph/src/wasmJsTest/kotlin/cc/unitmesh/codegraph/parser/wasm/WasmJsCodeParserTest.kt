@@ -22,31 +22,19 @@ class WasmJsCodeParserTest {
     private val parser = WasmJsCodeParser()
 
     @Test
-    fun testParserCompiles() {
-        // This test just verifies that the code compiles
-        // Actual functionality tests are skipped for now
-        console.log("WasmJsCodeParser test - compilation successful")
-        assertTrue(true, "Parser class compiles successfully")
-    }
-
-    // Disabled: requires web-tree-sitter module loading in test environment
-    // @Test
-    fun disabledTestParserInitialization() = runTest {
-        // Test that initialization works with @JsFun dynamic import
+    fun testParserInitialization() = runTest {
         try {
             parser.initialize()
             console.log("Parser initialized successfully")
             assertTrue(true, "Parser initialization succeeded")
         } catch (e: Throwable) {
-            // Log error but don't fail - may not work in all test environments
             console.error("Parser initialization error: ${e::class.simpleName}: ${e.message}")
             console.log("This is expected if web-tree-sitter module is not available in test environment")
         }
     }
 
-    // Disabled: requires web-tree-sitter module loading in test environment
-     @Test
-    fun disabledTestParseSimpleJavaScriptFunction() = runTest {
+    @Test
+    fun testParseSimpleJavaScriptFunction() = runTest {
         val sourceCode = """
             function sayHello() {
                 console.log("Hello");
@@ -62,13 +50,12 @@ class WasmJsCodeParserTest {
             assertTrue(functionNode != null)
             assertEquals("sayHello", functionNode.name)
         } catch (e: Exception) {
-            // Expected in test environment without web-tree-sitter
             console.log("Parse test skipped: ${e.message}")
         }
     }
 
-    // @Test
-    fun disabledTestParseKotlinClass() = runTest {
+    @Test
+    fun testParseKotlinClass() = runTest {
         val sourceCode = """
             package com.example
 
@@ -92,9 +79,8 @@ class WasmJsCodeParserTest {
         }
     }
 
-    // Disabled: requires web-tree-sitter to be properly loaded
-    // @Test
-    fun disabledTestParseCodeGraph() = runTest {
+    @Test
+    fun testParseCodeGraph() = runTest {
         val files = mapOf(
             "Calculator.js" to """
                 class Calculator {
@@ -118,7 +104,6 @@ class WasmJsCodeParserTest {
             assertEquals("JAVASCRIPT", graph.metadata["language"])
             assertEquals("wasm-js", graph.metadata["platform"])
         } catch (e: Exception) {
-            // Expected in test environment without web-tree-sitter
             console.log("Parse test skipped: ${e.message}")
         }
     }

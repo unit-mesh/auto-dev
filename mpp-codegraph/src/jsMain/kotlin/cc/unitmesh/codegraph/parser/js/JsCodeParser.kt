@@ -111,7 +111,7 @@ class JsCodeParser : CodeParser {
         return when (language) {
             Language.JAVA -> "tree-sitter-java.wasm"
             Language.KOTLIN -> "tree-sitter-kotlin.wasm"
-            Language.JAVASCRIPT -> "tree-sitter-javascript.wasm"
+            Language.JAVASCRIPT -> "tree-sitter-typescript.wasm"
             Language.TYPESCRIPT -> "tree-sitter-typescript.wasm"
             Language.PYTHON -> "tree-sitter-python.wasm"
             else -> throw IllegalArgumentException("Unsupported language: $language")

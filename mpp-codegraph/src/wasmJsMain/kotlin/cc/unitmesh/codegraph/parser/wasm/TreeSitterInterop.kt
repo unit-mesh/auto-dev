@@ -979,4 +979,9 @@ typealias TreeSitterTree = Tree
 typealias TreeSitterNode = SyntaxNode
 typealias TreeSitterPoint = Point
 
-
+// Console for debugging
+external object console : JsAny {
+    fun log(message: String)
+    fun error(message: String)
+    fun warn(message: String)
+}
