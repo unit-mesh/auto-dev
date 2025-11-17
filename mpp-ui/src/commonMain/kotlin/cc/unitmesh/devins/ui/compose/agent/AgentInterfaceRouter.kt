@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.ui.compose.agent.codereview.CodeReviewPage
 import cc.unitmesh.devins.ui.remote.RemoteAgentChatInterface
 import cc.unitmesh.llm.KoogLLMService

@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.ui.compose.agent
+package cc.unitmesh.agent
 
 /**
  * Unified Agent Type Enum

@@ -1,7 +1,7 @@
 package cc.unitmesh.devins.ui.config
 
 import cc.unitmesh.agent.mcp.McpServerConfig
-import cc.unitmesh.devins.ui.compose.agent.AgentType
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.llm.NamedModelConfig
 import kotlinx.serialization.Serializable

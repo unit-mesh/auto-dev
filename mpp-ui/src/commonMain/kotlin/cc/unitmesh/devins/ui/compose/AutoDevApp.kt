@@ -15,7 +15,7 @@ import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.app.UnifiedAppContent
 import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
-import cc.unitmesh.devins.ui.compose.agent.AgentType
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.ui.compose.chat.MessageList
 import cc.unitmesh.devins.ui.compose.chat.SessionSidebar
 import cc.unitmesh.devins.ui.compose.chat.TopBarMenu

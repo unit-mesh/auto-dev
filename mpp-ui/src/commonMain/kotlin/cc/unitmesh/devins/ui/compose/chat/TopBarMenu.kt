@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.compose.chat
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.llm.ModelConfig
 
@@ -20,8 +21,8 @@ fun TopBarMenu(
     availableAgents: List<String>,
     isTreeViewVisible: Boolean = false,
     // 统一的 Agent 类型（LOCAL, CODING, CODE_REVIEW, REMOTE）
-    currentAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
-    onAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
+    currentAgentType: AgentType = AgentType.CODING,
+    onAgentTypeChange: (AgentType) -> Unit = {},
     useSessionManagement: Boolean = false, // Session Management mode (仅 Remote 有效)
     // Sidebar 相关参数
     showSessionSidebar: Boolean = false,

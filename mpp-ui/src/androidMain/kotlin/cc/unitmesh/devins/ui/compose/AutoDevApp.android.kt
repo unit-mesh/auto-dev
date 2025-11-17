@@ -16,7 +16,7 @@ import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.app.AndroidNavLayout
 import cc.unitmesh.devins.ui.app.AppScreen
 import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
-import cc.unitmesh.devins.ui.compose.agent.AgentType
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.ui.compose.chat.*
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog

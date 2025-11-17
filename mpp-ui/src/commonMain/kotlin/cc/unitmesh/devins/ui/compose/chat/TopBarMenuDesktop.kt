@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
 import cc.unitmesh.llm.ModelConfig
@@ -24,8 +25,8 @@ fun TopBarMenuDesktop(
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
     // 统一的 Agent 类型（LOCAL, CODING, CODE_REVIEW, REMOTE）
-    currentAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
-    onAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
+    currentAgentType: AgentType = AgentType.CODING,
+    onAgentTypeChange: (AgentType) -> Unit = {},
     useSessionManagement: Boolean = false,
     // Sidebar 相关参数
     showSessionSidebar: Boolean = true,
@@ -83,7 +84,7 @@ fun TopBarMenuDesktop(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (currentAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE) {
+                    if (currentAgentType == AgentType.REMOTE) {
                         IconButton(
                             onClick = onConfigureRemote,
                             modifier = Modifier.size(24.dp)
@@ -235,7 +236,7 @@ fun TopBarMenuDesktop(
  */
 @Composable
 private fun AgentTypeTab(
-    type: cc.unitmesh.devins.ui.compose.agent.AgentType,
+    type: AgentType,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -271,10 +272,10 @@ private fun AgentTypeTab(
         ) {
             Icon(
                 imageVector = when (type) {
-                    cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE -> AutoDevComposeIcons.Cloud
-                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
-                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODING -> AutoDevComposeIcons.Code
-                    cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
+                    AgentType.REMOTE -> AutoDevComposeIcons.Cloud
+                    AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
+                    AgentType.CODING -> AutoDevComposeIcons.Code
+                    AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
                 },
                 contentDescription = null,
                 tint = contentColor,

@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.editor.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
 import cc.unitmesh.devins.ui.compose.agent.FileSystemTreeView
@@ -178,7 +179,7 @@ fun RemoteAgentChatInterface(
             selectedAgent = selectedAgent,
             availableAgents = availableAgents,
             isTreeViewVisible = isTreeViewVisible,
-            currentAgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.fromString(selectedAgentType),
+            currentAgentType = AgentType.fromString(selectedAgentType),
             onOpenDirectory = onOpenDirectory,
             onClearHistory = {
                 viewModel.clearHistory()

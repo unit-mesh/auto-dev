@@ -1,7 +1,7 @@
 package cc.unitmesh.devins.ui.compose.state
 
 import androidx.compose.runtime.*
-import cc.unitmesh.devins.ui.compose.agent.AgentType
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.ui.state.UIStateManager
 
 /**

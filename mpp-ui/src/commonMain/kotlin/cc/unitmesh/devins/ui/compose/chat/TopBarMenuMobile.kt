@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.settings.LanguageSwitcher
 import cc.unitmesh.devins.ui.compose.theme.ThemeManager
@@ -25,8 +26,8 @@ fun TopBarMenuMobile(
     useAgentMode: Boolean = true,
     isTreeViewVisible: Boolean = false,
     // 统一的 Agent 类型（LOCAL, CODING, CODE_REVIEW, REMOTE）
-    currentAgentType: cc.unitmesh.devins.ui.compose.agent.AgentType = cc.unitmesh.devins.ui.compose.agent.AgentType.CODING,
-    onAgentTypeChange: (cc.unitmesh.devins.ui.compose.agent.AgentType) -> Unit = {},
+    currentAgentType: AgentType = AgentType.CODING,
+    onAgentTypeChange: (AgentType) -> Unit = {},
     useSessionManagement: Boolean = false,
     onOpenDirectory: () -> Unit,
     onClearHistory: () -> Unit,
@@ -217,10 +218,10 @@ fun TopBarMenuMobile(
                                 leadingIcon = {
                                     Icon(
                                         imageVector = when (currentAgentType) {
-                                            cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE -> AutoDevComposeIcons.Cloud
-                                            cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
-                                            cc.unitmesh.devins.ui.compose.agent.AgentType.CODING -> AutoDevComposeIcons.Code
-                                            cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
+                                            AgentType.REMOTE -> AutoDevComposeIcons.Cloud
+                                            AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
+                                            AgentType.CODING -> AutoDevComposeIcons.Code
+                                            AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
                                         },
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp)
@@ -240,7 +241,7 @@ fun TopBarMenuMobile(
                                 expanded = agentTypeMenuExpanded,
                                 onDismissRequest = { agentTypeMenuExpanded = false }
                             ) {
-                                cc.unitmesh.devins.ui.compose.agent.AgentType.entries.forEach { type ->
+                                AgentType.entries.forEach { type ->
                                     DropdownMenuItem(
                                         text = { Text(type.getDisplayName()) },
                                         onClick = {
@@ -250,10 +251,10 @@ fun TopBarMenuMobile(
                                         leadingIcon = {
                                             Icon(
                                                 imageVector = when (type) {
-                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE -> AutoDevComposeIcons.Cloud
-                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
-                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.CODING -> AutoDevComposeIcons.Code
-                                                    cc.unitmesh.devins.ui.compose.agent.AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
+                                                    AgentType.REMOTE -> AutoDevComposeIcons.Cloud
+                                                    AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
+                                                    AgentType.CODING -> AutoDevComposeIcons.Code
+                                                    AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
                                                 },
                                                 contentDescription = null,
                                                 modifier = Modifier.size(20.dp)
@@ -273,7 +274,7 @@ fun TopBarMenuMobile(
                                 }
 
                                 // Configure Server (只在选择 Remote 时显示)
-                                if (currentAgentType == cc.unitmesh.devins.ui.compose.agent.AgentType.REMOTE) {
+                                if (currentAgentType == AgentType.REMOTE) {
                                     HorizontalDivider()
                                     DropdownMenuItem(
                                         text = {
