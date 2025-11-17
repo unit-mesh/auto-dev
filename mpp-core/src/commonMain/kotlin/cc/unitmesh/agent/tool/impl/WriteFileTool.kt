@@ -5,9 +5,9 @@ import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
-import cc.unitmesh.agent.tool.tracking.ChangeType
-import cc.unitmesh.agent.tool.tracking.FileChange
-import cc.unitmesh.agent.tool.tracking.FileChangeTracker
+import cc.unitmesh.agent.diff.ChangeType
+import cc.unitmesh.agent.diff.FileChange
+import cc.unitmesh.agent.diff.FileChangeTracker
 import kotlinx.serialization.Serializable
 
 /**

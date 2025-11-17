@@ -1,6 +1,5 @@
 package cc.unitmesh.devins.workspace
 
-import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.filesystem.EmptyFileSystem

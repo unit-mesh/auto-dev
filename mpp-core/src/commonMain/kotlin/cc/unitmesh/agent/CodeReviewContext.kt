@@ -57,27 +57,5 @@ data class CodeReviewContext(
             )
         }
 
-        /**
-         * Create CodeReviewContext with simple tool list formatting
-         *
-         * @param task The review task
-         * @param toolList List of available tools
-         * @param linterSummary Optional linter summary
-         * @return CodeReviewContext with simple tool list
-         */
-        fun fromTaskSimple(
-            task: ReviewTask,
-            toolList: List<ExecutableTool<*, *>>,
-            linterSummary: LinterSummary? = null
-        ): CodeReviewContext {
-            return CodeReviewContext(
-                projectPath = task.projectPath,
-                filePaths = task.filePaths,
-                reviewType = task.reviewType,
-                additionalContext = task.additionalContext,
-                toolList = AgentToolFormatter.formatToolListSimple(toolList),
-                linterSummary = linterSummary
-            )
-        }
     }
 }

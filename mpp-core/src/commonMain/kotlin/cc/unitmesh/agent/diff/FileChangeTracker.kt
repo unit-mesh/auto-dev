@@ -1,4 +1,4 @@
-package cc.unitmesh.agent.tool.tracking
+package cc.unitmesh.agent.diff
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -105,12 +105,12 @@ object FileChangeTracker {
     fun getChangesForFile(filePath: String): List<FileChange> {
         return _changes.value.filter { it.filePath == filePath }
     }
-    
+
     /**
      * Get the count of changes
      */
     fun getChangeCount(): Int = _changes.value.size
-    
+
     /**
      * Remove a specific change
      */

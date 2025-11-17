@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.agent.tool.tracking.ChangeType
+import cc.unitmesh.agent.diff.ChangeType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import cc.unitmesh.agent.diff.DiffHunk

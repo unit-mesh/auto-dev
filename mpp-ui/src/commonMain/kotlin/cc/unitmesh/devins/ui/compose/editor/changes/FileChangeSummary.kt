@@ -18,9 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cc.unitmesh.agent.tool.tracking.ChangeType
-import cc.unitmesh.agent.tool.tracking.FileChange
-import cc.unitmesh.agent.tool.tracking.FileChangeTracker
+import cc.unitmesh.agent.diff.ChangeType
+import cc.unitmesh.agent.diff.FileChange
+import cc.unitmesh.agent.diff.FileChangeTracker
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import kotlinx.coroutines.launch
 

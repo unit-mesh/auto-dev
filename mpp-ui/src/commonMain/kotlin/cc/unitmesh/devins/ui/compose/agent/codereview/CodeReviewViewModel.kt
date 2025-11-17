@@ -10,7 +10,7 @@ import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.language.LanguageDetector
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.agent.platform.GitOperations
-import cc.unitmesh.agent.tool.tracking.ChangeType
+import cc.unitmesh.agent.diff.ChangeType
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.CodeAnalyzer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
@@ -283,10 +283,10 @@ open class CodeReviewViewModel(
                     path = file.path,
                     oldPath = file.oldPath,
                     changeType = when (file.status) {
-                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> cc.unitmesh.agent.tool.tracking.ChangeType.CREATE
-                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> cc.unitmesh.agent.tool.tracking.ChangeType.DELETE
-                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
-                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> cc.unitmesh.agent.tool.tracking.ChangeType.RENAME
+                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> ChangeType.CREATE
+                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> ChangeType.DELETE
+                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> ChangeType.EDIT
+                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAME
                         cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.EDIT
                     },
                     hunks = hunks,
