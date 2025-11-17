@@ -217,7 +217,7 @@ export async function runReview(
         diffContext,
         'EN',
         (chunk: string) => {
-          process.stdout.write(chunk);
+          // process.stdout.write(chunk);
         }
       );
 
@@ -249,7 +249,7 @@ export async function runReview(
         diffContext,
         'EN',
         (chunk: string) => {
-          process.stdout.write(chunk);
+          // process.stdout.write(chunk);
         }
       );
 
