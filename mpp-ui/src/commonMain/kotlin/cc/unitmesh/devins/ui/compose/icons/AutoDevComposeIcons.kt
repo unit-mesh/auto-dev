@@ -44,7 +44,7 @@ object AutoDevComposeIcons {
     val ArrowDropDown: ImageVector get() = Icons.Default.ArrowDropDown
     val History: ImageVector get() = Icons.Default.History
     val Edit: ImageVector get() = Icons.Default.Edit
-    
+
     // Window Controls
     val Remove: ImageVector get() = Icons.Default.Remove  // Minimize button
     val Fullscreen: ImageVector get() = Icons.Default.Fullscreen  // Maximize/restore button

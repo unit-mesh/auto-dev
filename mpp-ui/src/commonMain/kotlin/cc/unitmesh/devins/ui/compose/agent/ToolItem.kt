@@ -68,14 +68,11 @@ fun ToolResultItem(
                 verticalAlignment = Alignment.Companion.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = if (success) "✓" else "✗",
-                    color =
-                        if (success) {
-                            MaterialTheme.colorScheme.onSecondaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onErrorContainer
-                        }
+                Icon(
+                    imageVector = if (success) AutoDevComposeIcons.Check else AutoDevComposeIcons.Error,
+                    contentDescription = if (success) "Success" else "Error",
+                    tint = if (success) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = toolName,

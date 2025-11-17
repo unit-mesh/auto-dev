@@ -229,10 +229,11 @@ fun TaskCompletedItem(
                     fontSize = 10.sp
                 )
             } else {
-                Text(
-                    text = "⚠️",
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp
+                Icon(
+                    imageVector = AutoDevComposeIcons.Warning,
+                    contentDescription = "Warning",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(16.dp)
                 )
             }
 
@@ -302,18 +303,23 @@ fun CombinedToolItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = when {
-                        isExecuting -> "●"
-                        success -> "✓"
-                        else -> "✗"
+                Icon(
+                    imageVector = when {
+                        isExecuting -> AutoDevComposeIcons.PlayArrow
+                        success -> AutoDevComposeIcons.CheckCircle
+                        else -> AutoDevComposeIcons.Error
                     },
-                    color = when {
+                    contentDescription = when {
+                        isExecuting -> "Executing"
+                        success -> "Success"
+                        else -> "Failed"
+                    },
+                    tint = when {
                         isExecuting -> MaterialTheme.colorScheme.primary
                         success -> Color(0xFF4CAF50)
                         else -> MaterialTheme.colorScheme.error
                     },
-                    fontWeight = FontWeight.Bold
+                    modifier = Modifier.size(16.dp)
                 )
 
                 // Tool name
@@ -359,7 +365,6 @@ fun CombinedToolItem(
                     }
                 }
 
-                // Expand/collapse icon (if there's content to show)
                 if (displayParams != null || displayOutput != null) {
                     Icon(
                         imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
@@ -533,9 +538,11 @@ fun ToolCallItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "●",
-                    color = MaterialTheme.colorScheme.primary,
+                Icon(
+                    imageVector = AutoDevComposeIcons.PlayArrow,
+                    contentDescription = "Tool Call",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = toolName,
@@ -723,18 +730,24 @@ fun TerminalOutputItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = if (isSuccess) "✓ Exit 0" else "✗ Exit $exitCode",
-                    color =
-                        if (isSuccess) {
-                            Color(0xFF4CAF50)
-                        } else {
-                            MaterialTheme.colorScheme.error
-                        },
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
-                )
+                ) {
+                    Icon(
+                        imageVector = if (isSuccess) AutoDevComposeIcons.CheckCircle else AutoDevComposeIcons.Error,
+                        contentDescription = if (isSuccess) "Success" else "Error",
+                        tint = if (isSuccess) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = if (isSuccess) "Exit 0" else "Exit $exitCode",
+                        color = if (isSuccess) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
                 Text(
                     text = "${executionTimeMs}ms",
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
