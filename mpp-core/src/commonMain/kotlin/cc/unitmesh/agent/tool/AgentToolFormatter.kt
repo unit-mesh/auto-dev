@@ -1,14 +1,18 @@
-package cc.unitmesh.agent
+package cc.unitmesh.agent.tool
 
 import cc.unitmesh.agent.logging.getLogger
-import cc.unitmesh.agent.tool.ExecutableTool
-import cc.unitmesh.agent.tool.ToolType
-import cc.unitmesh.agent.tool.toToolType
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 
 /**
  * Unified tool formatter for agent contexts
- * 
+ *
  * This class provides consistent tool list formatting across all agent types
  * (Coding, CodeReview, etc.). It handles both built-in tools and MCP tools.
  */
@@ -17,7 +21,7 @@ object AgentToolFormatter {
 
     /**
      * Format tool list with enhanced schema information for AI understanding
-     * 
+     *
      * @param toolList List of executable tools to format
      * @return Formatted string containing tool descriptions and schemas
      */
@@ -206,6 +210,7 @@ object AgentToolFormatter {
                         }
                         put(paramName, example)
                     }
+
                     type == "integer" -> {
                         val example = when (paramName) {
                             "startLine", "endLine" -> 1
@@ -215,6 +220,7 @@ object AgentToolFormatter {
                         }
                         put(paramName, example)
                     }
+
                     type == "boolean" -> put(paramName, false)
                     type == "array" -> put(paramName, buildJsonArray { add("example") })
                     else -> put(paramName, JsonPrimitive("example"))
@@ -228,4 +234,3 @@ ${exampleJson.toString()}
 ```"""
     }
 }
-

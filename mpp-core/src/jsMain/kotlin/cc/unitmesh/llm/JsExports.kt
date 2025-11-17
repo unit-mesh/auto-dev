@@ -2,7 +2,7 @@
 
 package cc.unitmesh.llm
 
-import cc.unitmesh.agent.AgentToolFormatter
+import cc.unitmesh.agent.tool.AgentToolFormatter
 import cc.unitmesh.agent.CodingAgentContext
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
