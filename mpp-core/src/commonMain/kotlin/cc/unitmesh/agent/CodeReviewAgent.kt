@@ -44,7 +44,8 @@ data class ReviewTask(
     val filePaths: List<String> = emptyList(),
     val reviewType: ReviewType = ReviewType.COMPREHENSIVE,
     val projectPath: String,
-    val additionalContext: String = ""
+    val additionalContext: String = "",
+    val patch: String? = null
 )
 
 @Serializable
@@ -204,8 +205,6 @@ class CodeReviewAgent(
         language: String,
         onProgress: (String) -> Unit
     ): AnalysisResult {
-        logger.info { "Using unified analysis approach with CodeReviewAgentPromptRenderer" }
-
         initializeWorkspace(task.projectPath)
         val linterSummary = if (task.filePaths.isNotEmpty()) {
             try {

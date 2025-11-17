@@ -293,7 +293,8 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         return GitDiffInfo(
             files = files,
             totalAdditions = totalAdditions,
-            totalDeletions = totalDeletions
+            totalDeletions = totalDeletions,
+            originDiff = diffOutput
         )
     }
     

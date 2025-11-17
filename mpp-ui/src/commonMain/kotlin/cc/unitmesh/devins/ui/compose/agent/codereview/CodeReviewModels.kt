@@ -21,7 +21,8 @@ data class CodeReviewState(
     // Infinite scroll support
     val hasMoreCommits: Boolean = false,
     val isLoadingMore: Boolean = false,
-    val totalCommitCount: Int? = null // Total available commits (if known)
+    val totalCommitCount: Int? = null,
+    val originDiff: String? = null
 )
 
 /**
@@ -33,7 +34,8 @@ data class DiffFileInfo(
     val oldPath: String? = null, // For renamed files
     val changeType: ChangeType = ChangeType.EDIT,
     val hunks: List<DiffHunk> = emptyList(),
-    val language: String? = null
+    val language: String? = null,
+    val Ω: String? = null
 )
 
 /**

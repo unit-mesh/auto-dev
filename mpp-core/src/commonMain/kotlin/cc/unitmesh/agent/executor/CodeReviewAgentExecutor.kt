@@ -3,19 +3,16 @@ package cc.unitmesh.agent.executor
 import cc.unitmesh.agent.CodeReviewResult
 import cc.unitmesh.agent.ReviewFinding
 import cc.unitmesh.agent.ReviewTask
-import cc.unitmesh.agent.Severity
 import cc.unitmesh.agent.conversation.ConversationManager
 import cc.unitmesh.agent.linter.LinterSummary
 import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
-import cc.unitmesh.agent.parser.ToolCallParser
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.ToolResultFormatter
 import cc.unitmesh.llm.KoogLLMService
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.yield
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
 
@@ -51,7 +48,12 @@ class CodeReviewAgentExecutor(
         conversationManager = ConversationManager(llmService, systemPrompt)
         val initialUserMessage = buildInitialUserMessage(task, linterSummary)
 
-        logger.info { "Starting code review: ${task.reviewType} for ${task.filePaths.size} files" }
+        val reviewTarget = when {
+            task.patch != null -> task.patch
+            task.filePaths.isNotEmpty() -> "${task.filePaths.size} files"
+            else -> "code"
+        }
+        logger.info { "Starting code review: ${task.reviewType} for $reviewTarget" }
 
         while (shouldContinue()) {
             yield()
@@ -110,13 +112,19 @@ class CodeReviewAgentExecutor(
         linterSummary: LinterSummary?
     ): String {
         return buildString {
-            appendLine("Please review the following code:")
+            appendLine("Please review the following code changes:")
             appendLine()
             appendLine("**Project Path**: ${task.projectPath}")
             appendLine("**Review Type**: ${task.reviewType}")
             appendLine()
 
-            if (task.filePaths.isNotEmpty()) {
+            // Add Git diff information if available
+            if (task.patch != null) {
+                appendLine("## Code Changes (Git Diff)")
+                appendLine()
+                appendLine(task.patch)
+            } else if (task.filePaths.isNotEmpty()) {
+                // Fallback to file list if no diff info provided
                 appendLine("**Files to review** (${task.filePaths.size} files):")
                 task.filePaths.forEach { filePath ->
                     appendLine("  - $filePath")
@@ -138,14 +146,19 @@ class CodeReviewAgentExecutor(
                 appendLine()
             }
 
-            if (task.filePaths.isNotEmpty()) {
-                appendLine("**Instructions**:")
+            appendLine("**Instructions**:")
+            if (task.patch != null) {
+                appendLine("1. First, analyze the linter results above (if provided)")
+                appendLine("2. Review the git diff changes shown above")
+                appendLine("3. Use the read-file tool ONLY if you need additional context beyond the diff")
+                appendLine("4. Provide a thorough code review following the guidelines in the system prompt")
+                appendLine("5. Focus on issues beyond what linters can detect")
+            } else if (task.filePaths.isNotEmpty()) {
                 appendLine("1. First, analyze the linter results above (if provided)")
                 appendLine("2. Use the read-file tool to read the content of each file")
                 appendLine("3. Provide a thorough code review following the guidelines in the system prompt")
                 appendLine("4. Focus on issues beyond what linters can detect")
             } else {
-                appendLine("**Instructions**:")
                 appendLine("Please provide a thorough code review following the guidelines in the system prompt.")
                 appendLine("Use tools as needed to read files and gather information.")
             }

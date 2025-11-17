@@ -12,9 +12,7 @@ import cc.unitmesh.agent.platform.GitOperations
 import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.CodeAnalyzer
-import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.DiffContextBuilder
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
-import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintResultFormatter
 import cc.unitmesh.devins.ui.compose.sketch.DiffParser
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.Workspace
@@ -35,8 +33,6 @@ open class CodeReviewViewModel(
     // Non-AI analysis components (extracted for testability)
     private val codeAnalyzer = CodeAnalyzer(workspace)
     private val lintExecutor = LintExecutor()
-    private val lintResultFormatter = LintResultFormatter()
-    private val diffContextBuilder = DiffContextBuilder()
 
     // State
     private val _state = MutableStateFlow(CodeReviewState())
@@ -67,7 +63,6 @@ open class CodeReviewViewModel(
             if (gitOps.isSupported()) {
                 loadCommitHistory()
             } else {
-                // Fallback to loading diff for platforms without git support
                 loadDiff()
             }
         }
@@ -87,15 +82,10 @@ open class CodeReviewViewModel(
         updateState { it.copy(isLoading = true, error = null) }
 
         try {
-            // Get total commit count
             val totalCount = gitOps.getTotalCommitCount()
-
-            // Get recent commits
             val gitCommits = gitOps.getRecentCommits(count)
 
             val hasMore = totalCount?.let { it > gitCommits.size } ?: false
-
-            // Convert GitCommitInfo to CommitInfo
             val commits = gitCommits.map { git ->
                 CommitInfo(
                     hash = git.hash,
@@ -132,9 +122,6 @@ open class CodeReviewViewModel(
         }
     }
 
-    /**
-     * Load more commits for infinite scroll
-     */
     suspend fun loadMoreCommits(batchSize: Int = 50) {
         if (currentState.isLoadingMore || !currentState.hasMoreCommits) {
             return
@@ -219,7 +206,6 @@ open class CodeReviewViewModel(
                 return
             }
 
-            // Convert to UI model using DiffParser
             val diffFiles = gitDiff.files.map { file ->
                 val parsedDiff = DiffParser.parse(file.diff)
                 val hunks = parsedDiff.firstOrNull()?.hunks ?: emptyList()
@@ -228,14 +214,14 @@ open class CodeReviewViewModel(
                     path = file.path,
                     oldPath = file.oldPath,
                     changeType = when (file.status) {
-                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> cc.unitmesh.agent.tool.tracking.ChangeType.CREATE
-                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> cc.unitmesh.agent.tool.tracking.ChangeType.DELETE
-                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
-                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> cc.unitmesh.agent.tool.tracking.ChangeType.RENAME
-                        cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> cc.unitmesh.agent.tool.tracking.ChangeType.EDIT
+                        cc.unitmesh.devins.workspace.GitFileStatus.ADDED -> ChangeType.CREATE
+                        cc.unitmesh.devins.workspace.GitFileStatus.DELETED -> ChangeType.DELETE
+                        cc.unitmesh.devins.workspace.GitFileStatus.MODIFIED -> ChangeType.EDIT
+                        cc.unitmesh.devins.workspace.GitFileStatus.RENAMED -> ChangeType.RENAME
+                        cc.unitmesh.devins.workspace.GitFileStatus.COPIED -> ChangeType.EDIT
                     },
                     hunks = hunks,
-                    language = LanguageDetector.detectLanguage(file.path)
+                    language = LanguageDetector.detectLanguage(file.path),
                 )
             }
 
@@ -244,7 +230,8 @@ open class CodeReviewViewModel(
                     isLoadingDiff = false,
                     diffFiles = diffFiles,
                     selectedFileIndex = 0,
-                    error = null
+                    error = null,
+                    originDiff = gitDiff.originDiff
                 )
             }
 
@@ -271,11 +258,9 @@ open class CodeReviewViewModel(
     suspend fun loadDiff(request: DiffRequest = DiffRequest()) {
         updateState { it.copy(isLoading = true, error = null) }
 
-        // Invalidate cache when loading new diff
         invalidateCodeCache()
 
         try {
-            // Get diff from workspace
             val gitDiff = workspace.getGitDiff(request.baseBranch, request.compareWith)
 
             if (gitDiff == null) {
@@ -288,7 +273,6 @@ open class CodeReviewViewModel(
                 return
             }
 
-            // Convert to UI model using DiffParser
             val diffFiles = gitDiff.files.map { file ->
                 val parsedDiff = DiffParser.parse(file.diff)
                 val hunks = parsedDiff.firstOrNull()?.hunks ?: emptyList()
@@ -312,7 +296,8 @@ open class CodeReviewViewModel(
                 it.copy(
                     isLoading = false,
                     diffFiles = diffFiles,
-                    error = null
+                    error = null,
+                    originDiff = gitDiff.originDiff
                 )
             }
         } catch (e: Exception) {
@@ -358,7 +343,8 @@ open class CodeReviewViewModel(
                 val reviewTask = cc.unitmesh.agent.ReviewTask(
                     filePaths = filePaths,
                     reviewType = cc.unitmesh.agent.ReviewType.COMPREHENSIVE,
-                    projectPath = workspace.rootPath ?: ""
+                    projectPath = workspace.rootPath ?: "",
+                    patch = currentState.originDiff
                 )
 
                 val analysisOutputBuilder = StringBuilder()
@@ -546,8 +532,6 @@ open class CodeReviewViewModel(
      */
     suspend fun analyzeModifiedCode(): Map<String, List<ModifiedCodeRange>> {
         val projectPath = workspace.rootPath ?: return emptyMap()
-
-        // Delegate to CodeAnalyzer with progress callback
         val modifiedRanges = codeAnalyzer.analyzeModifiedCode(
             diffFiles = currentState.diffFiles,
             projectPath = projectPath,
@@ -667,25 +651,6 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Format lint results for analysis prompt.
-     * Delegates to LintResultFormatter.
-     */
-    fun formatLintResults(): Map<String, String> {
-        return lintResultFormatter.formatLintResults(currentState.aiProgress.lintResults)
-    }
-
-    /**
-     * Build diff context showing what was changed.
-     * Delegates to DiffContextBuilder.
-     */
-    private fun buildDiffContext(): String {
-        return diffContextBuilder.buildDiffContext(
-            diffFiles = currentState.diffFiles,
-            modifiedCodeRanges = currentState.aiProgress.modifiedCodeRanges
-        )
-    }
-
-    /**
      * Generate fixes with structured context
      * Delegates to CodeReviewAgent for fix generation
      */
@@ -777,7 +742,7 @@ open class CodeReviewViewModel(
                 }
 
                 // Parse the diff patch to extract file path and changes
-                val fileDiffs = cc.unitmesh.devins.ui.compose.sketch.DiffParser.parse(diffPatch)
+                val fileDiffs = DiffParser.parse(diffPatch)
 
                 if (fileDiffs.isEmpty()) {
                     AutoDevLogger.warn("CodeReviewViewModel") {
@@ -920,7 +885,7 @@ open class CodeReviewViewModel(
         }
 
         // Parse the diff to log which files were rejected
-        val fileDiffs = cc.unitmesh.devins.ui.compose.sketch.DiffParser.parse(diffPatch)
+        val fileDiffs = DiffParser.parse(diffPatch)
         fileDiffs.forEach { fileDiff ->
             val targetPath = fileDiff.newPath ?: fileDiff.oldPath
             AutoDevLogger.info("CodeReviewViewModel") {

@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.workspace
 
+import cc.unitmesh.agent.tool.tracking.ChangeType
 import cc.unitmesh.devins.completion.CompletionManager
 import cc.unitmesh.devins.filesystem.DefaultFileSystem
 import cc.unitmesh.devins.filesystem.EmptyFileSystem
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.Clock
+import kotlinx.serialization.Serializable
 
 /**
  * 工作空间接口
@@ -83,15 +85,17 @@ data class GitCommitInfo(
 /**
  * Git Diff 信息
  */
+@Serializable
 data class GitDiffInfo(
     val files: List<GitDiffFile>,
     val totalAdditions: Int,
-    val totalDeletions: Int
+    val totalDeletions: Int,
+    val originDiff: String
 )
-
 /**
  * Git Diff 文件信息
  */
+@Serializable
 data class GitDiffFile(
     val path: String,
     val oldPath: String? = null,
@@ -104,6 +108,7 @@ data class GitDiffFile(
 /**
  * Git 文件状态
  */
+@Serializable
 enum class GitFileStatus {
     ADDED,
     DELETED,
