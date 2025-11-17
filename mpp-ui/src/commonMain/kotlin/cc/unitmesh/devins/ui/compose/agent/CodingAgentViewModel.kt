@@ -257,7 +257,7 @@ class CodingAgentViewModel(
                 } catch (e: CancellationException) {
                     // Task was cancelled - save conversation history before cleanup
                     saveConversationHistory(codingAgent)
-                    
+
                     // Reset all states and add cancellation message at the end
                     renderer.forceStop() // Stop all loading states
 
@@ -268,7 +268,7 @@ class CodingAgentViewModel(
                 } catch (e: Exception) {
                     // Save conversation history even on error
                     saveConversationHistory(codingAgent)
-                    
+
                     renderer.renderError(e.message ?: "Unknown error")
                     isExecuting = false
                     currentExecutionJob = null
@@ -284,16 +284,16 @@ class CodingAgentViewModel(
         chatHistoryManager?.let { manager ->
             try {
                 val conversationHistory = codingAgent.getConversationHistory()
-                
+
                 // 获取 ChatHistoryManager 中已保存的消息数量
                 val existingMessagesCount = manager.getMessages().size
-                
+
                 // 过滤掉 SYSTEM 消息，保存所有 USER 和 ASSISTANT 消息
                 // 跳过已经保存的消息（根据数量判断）
                 val newMessages = conversationHistory
                     .filter { it.role == MessageRole.USER || it.role == MessageRole.ASSISTANT }
                     .drop(existingMessagesCount)
-                
+
                 // 按顺序保存新消息
                 newMessages.forEach { message ->
                     when (message.role) {

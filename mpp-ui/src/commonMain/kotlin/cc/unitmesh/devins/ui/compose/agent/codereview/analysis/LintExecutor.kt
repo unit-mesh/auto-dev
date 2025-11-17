@@ -101,7 +101,7 @@ class LintExecutor {
                             )
                         )
 
-                        progressCallback?.invoke("  📄 ${result.filePath}\n")
+                        progressCallback?.invoke("${result.filePath}\n")
 
                         if (modifiedCodeRanges.isNotEmpty()) {
                             val totalIssues = result.issues.size

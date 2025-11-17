@@ -257,10 +257,8 @@ class GlobInvocation(
         result.appendLine()
 
         for (match in matches) {
-            val typeIndicator = if (match.isDirectory) "📁" else "📄"
             val path = match.relativePath.ifEmpty { match.path }
-
-            result.append("$typeIndicator $path")
+            result.append(path)
 
             if (params.includeFileInfo && !match.isDirectory) {
                 match.size?.let { size ->
