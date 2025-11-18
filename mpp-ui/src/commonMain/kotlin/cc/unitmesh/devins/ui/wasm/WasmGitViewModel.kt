@@ -4,6 +4,7 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.platform.GitOperations
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,7 +56,7 @@ data class GitCommitDisplay(
  * UI 状态
  */
 data class WasmGitUiState(
-    val repoUrl: String = "https://github.com/unit-mesh/untitled",
+    val repoUrl: String = "https://github.com/phodal-archive/mini-file",
     val targetDir: String = "",
     val isLoading: Boolean = false,
     val cloneSuccess: Boolean = false,
@@ -75,6 +76,11 @@ class WasmGitViewModel {
     val uiState: StateFlow<WasmGitUiState> = _uiState.asStateFlow()
 
     private var gitOps: GitOperations? = null
+
+    companion object {
+        private const val MAX_RETRY_ATTEMPTS = 3
+        private const val RETRY_DELAY_MS = 2000L
+    }
 
     init {
         addLog("Git client initialized", LogType.INFO)
@@ -140,30 +146,61 @@ class WasmGitViewModel {
                 gitOps = operations
                 addLog("Git operations ready", LogType.DEBUG)
 
-                // 执行克隆
+                // 执行克隆（带重试机制）
                 val targetDir = currentState.targetDir.ifBlank {
                     null
                 }
 
                 addLog("Cloning repository: ${currentState.repoUrl}", LogType.INFO)
 
-                val success = gitOps!!.performClone(currentState.repoUrl, targetDir)
-                    if (success) {
-                        addLog("Clone completed successfully!", LogType.SUCCESS)
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            cloneSuccess = true
-                        )
+                var success = false
+                var lastError: String? = null
 
-                        // 自动获取提交历史
-                        fetchCommitHistory()
-                    } else {
-                        addLog("Clone failed. Check the logs for details.", LogType.ERROR)
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            errorMessage = "Failed to clone repository"
-                        )
+                for (attempt in 1..MAX_RETRY_ATTEMPTS) {
+                    try {
+                        if (attempt > 1) {
+                            addLog("Retry attempt $attempt/$MAX_RETRY_ATTEMPTS (waiting ${RETRY_DELAY_MS}ms)...", LogType.WARNING)
+                            delay(RETRY_DELAY_MS)
+                        }
+
+                        success = gitOps!!.performClone(currentState.repoUrl, targetDir)
+
+                        if (success) {
+                            if (attempt > 1) {
+                                addLog("Clone succeeded on retry attempt $attempt", LogType.SUCCESS)
+                            }
+                            break
+                        } else {
+                            lastError = "Clone operation returned false"
+                            if (attempt < MAX_RETRY_ATTEMPTS) {
+                                addLog("Clone attempt $attempt failed, will retry...", LogType.WARNING)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        lastError = e.message ?: "Unknown error"
+                        if (attempt < MAX_RETRY_ATTEMPTS) {
+                            addLog("Clone attempt $attempt failed: $lastError", LogType.WARNING)
+                        }
                     }
+                }
+
+                if (success) {
+                    addLog("Clone completed successfully!", LogType.SUCCESS)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        cloneSuccess = true
+                    )
+
+                    // 自动获取提交历史
+                    fetchCommitHistory()
+                } else {
+                    val errorMsg = "Clone failed after $MAX_RETRY_ATTEMPTS attempts${lastError?.let { ": $it" } ?: ""}"
+                    addLog(errorMsg, LogType.ERROR)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = errorMsg
+                    )
+                }
             } catch (e: Exception) {
                 val errorMsg = "Exception: ${e.message ?: "Unknown error"}"
                 addLog(errorMsg, LogType.ERROR)

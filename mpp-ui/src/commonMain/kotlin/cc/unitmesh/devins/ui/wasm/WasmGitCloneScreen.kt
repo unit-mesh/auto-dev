@@ -87,7 +87,7 @@ fun WasmGitCloneScreen(
                         value = uiState.repoUrl,
                         onValueChange = { viewModel.updateRepoUrl(it) },
                         label = { Text("Repository URL") },
-                        placeholder = { Text("https://github.com/unit-mesh/untitled") },
+                        placeholder = { Text("https://github.com/phodal-archive/mini-file") },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.isLoading,
                         singleLine = true
