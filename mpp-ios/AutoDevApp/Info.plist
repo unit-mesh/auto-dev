@@ -22,15 +22,6 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	<key>NSDocumentsFolderUsageDescription</key>
-	<string>AutoDev 需要访问文档以管理项目文件</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>AutoDev 需要访问照片库以选择文件</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -60,5 +51,20 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	
+	<!-- 文件访问权限 -->
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>AutoDev 需要访问文档以管理项目文件</string>
+	
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AutoDev 需要访问照片库以选择文件</string>
+	
+	<!-- 网络访问权限 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
+

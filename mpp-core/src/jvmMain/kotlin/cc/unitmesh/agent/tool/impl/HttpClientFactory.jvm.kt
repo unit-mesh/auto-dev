@@ -4,7 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 
 /**
- * JVM and Android implementation of HttpClientFactory using CIO engine
+ * JVM implementation of HttpClientFactory using CIO engine
  * 
  * CIO (Coroutine I/O) engine is:
  * - Fully asynchronous and coroutine-based
@@ -31,3 +31,4 @@ actual object HttpClientFactory {
         }
     }
 }
+
