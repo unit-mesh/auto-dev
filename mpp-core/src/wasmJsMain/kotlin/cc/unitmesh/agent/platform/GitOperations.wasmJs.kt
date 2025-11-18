@@ -163,34 +163,17 @@ actual class GitOperations actual constructor(private val projectPath: String) {
 
         return try {
             commandOutputBuffer.clear()
-            val exitCode = module.callMain(
-                jsArrayOf(
-                    "log",
-                    "--pretty=format:%H|%an|%ae|%at|%s",
-                    "-n", count.toString()
-                )
-            ).await<JsNumber>().toInt()
+            // Use classic git log format (wasm-git doesn't support --pretty=format)
+            val exitCode = module.callMain(jsArrayOf("log")).await<JsNumber>().toInt()
 
             if (exitCode != 0) {
                 WasmConsole.warn("git log failed with exit code: $exitCode")
                 return emptyList()
             }
 
-            // Parse log output: hash|author|email|timestamp|subject
-            commandOutputBuffer
-                .filter { it.isNotBlank() }
-                .mapNotNull { line ->
-                    val parts = line.split("|")
-                    if (parts.size >= 5) {
-                        GitCommitInfo(
-                            hash = parts[0],
-                            author = parts[1],
-                            email = parts[2],
-                            date = parts[3].toLongOrNull() ?: 0L,
-                            message = parts.drop(4).joinToString("|")
-                        )
-                    } else null
-                }
+            // Parse classic git log output
+            val logOutput = commandOutputBuffer.joinToString("\n")
+            GitLogParser.parse(logOutput)
         } catch (e: Throwable) {
             WasmConsole.error("Failed to get recent commits: ${e.message}")
             emptyList()
