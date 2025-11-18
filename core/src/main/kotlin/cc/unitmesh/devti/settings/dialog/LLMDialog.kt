@@ -115,8 +115,9 @@ class LLMDialog(
             headersField.text = headersJson
 
             // Body without model and temperature (they are now explicit fields)
+            // Also keep stream if it was explicitly set in body (to support numeric values like 0/1)
             val bodyWithoutModelTemp = existingLlm.customRequest.body.filterKeys {
-                it != "model" && it != "temperature" && it != "stream"
+                it != "model" && it != "temperature"
             }
             val bodyJson = if (bodyWithoutModelTemp.isNotEmpty()) {
                 buildJsonObject {
@@ -265,23 +266,41 @@ class LLMDialog(
                 }
 
                 // Combine explicit parameters with additional body
+                // If stream is explicitly set in additional body, use that value
                 val body = mutableMapOf<String, JsonElement>().apply {
                     put("model", JsonPrimitive(modelField.text))
                     put("temperature", JsonPrimitive(temperature))
+                    // Use checkbox value as default
                     put("stream", JsonPrimitive(streamCheckbox.isSelected))
+                    // Additional body can override stream if explicitly set
                     putAll(additionalBody)
+                }
+
+                // Determine actual stream value (from body if set, otherwise from checkbox)
+                val actualStream = when (val streamValue = body["stream"]) {
+                    is JsonPrimitive -> {
+                        when {
+                            streamValue.booleanOrNull != null -> streamValue.boolean
+                            streamValue.isString -> streamValue.content.toBoolean()
+                            // Handle numeric values: 0 = false, any other number = true
+                            streamValue.intOrNull != null -> streamValue.int != 0
+                            streamValue.longOrNull != null -> streamValue.long != 0L
+                            else -> streamCheckbox.isSelected
+                        }
+                    }
+                    else -> streamCheckbox.isSelected
                 }
 
                 // Create a temporary LLM config for testing
                 val customRequest = CustomRequest(
                     headers = headers,
                     body = body,
-                    stream = streamCheckbox.isSelected
+                    stream = actualStream
                 )
 
                 // Get response resolver, use default if empty
                 val responseResolver = responseResolverField.text.trim().ifEmpty {
-                    if (streamCheckbox.isSelected) {
+                    if (actualStream) {
                         "\$.choices[0].delta.content"
                     } else {
                         "\$.choices[0].message.content"
@@ -382,11 +401,29 @@ class LLMDialog(
             }
 
             // Combine explicit parameters with additional body
+            // If stream is explicitly set in additional body, use that value
             val body = mutableMapOf<String, JsonElement>().apply {
                 put("model", JsonPrimitive(modelField.text))
                 put("temperature", JsonPrimitive(temperature))
+                // Use checkbox value as default
                 put("stream", JsonPrimitive(streamCheckbox.isSelected))
+                // Additional body can override stream if explicitly set
                 putAll(additionalBody)
+            }
+
+            // Determine actual stream value (from body if set, otherwise from checkbox)
+            val actualStream = when (val streamValue = body["stream"]) {
+                is JsonPrimitive -> {
+                    when {
+                        streamValue.booleanOrNull != null -> streamValue.boolean
+                        streamValue.isString -> streamValue.content.toBoolean()
+                        // Handle numeric values: 0 = false, any other number = true
+                        streamValue.intOrNull != null -> streamValue.int != 0
+                        streamValue.longOrNull != null -> streamValue.long != 0L
+                        else -> streamCheckbox.isSelected
+                    }
+                }
+                else -> streamCheckbox.isSelected
             }
 
             // Get existing LLMs
@@ -405,12 +442,12 @@ class LLMDialog(
             val customRequest = CustomRequest(
                 headers = headers,
                 body = body,
-                stream = streamCheckbox.isSelected
+                stream = actualStream
             )
 
             // Get response resolver, use default if empty
             val responseResolver = responseResolverField.text.trim().ifEmpty {
-                if (streamCheckbox.isSelected) {
+                if (actualStream) {
                     "\$.choices[0].delta.content"
                 } else {
                     "\$.choices[0].message.content"
