@@ -1,7 +1,11 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.context.AgentContextDiscovery
+import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.AgentToolFormatter
 import cc.unitmesh.agent.tool.ExecutableTool
+import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
+import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
 import cc.unitmesh.devins.compiler.variable.VariableTable
 
 /**
@@ -16,7 +20,7 @@ import cc.unitmesh.devins.compiler.variable.VariableTable
  * @property osInfo Operating system information
  * @property timestamp Current timestamp
  * @property toolList Available tools for the agent (as formatted string)
- * @property agentRules Project-specific agent rules from AGENTS.md
+ * @property agentRules Project-specific agent rules from AGENTS.md (auto-loaded if available)
  * @property buildTool Build tool information (e.g., "gradle + kotlin")
  * @property shell Shell path (e.g., "/bin/bash")
  */
@@ -53,20 +57,55 @@ data class CodingAgentContext(
     }
     
     companion object {
+        private val logger = getLogger("CodingAgentContext")
+        
         /**
          * Create CodingAgentContext from AgentTask
          * 
          * @param task The agent task
          * @param toolList List of available tools
-         * @return CodingAgentContext with formatted tool list
+         * @param fileSystem Optional file system for AGENTS.md discovery (default: DefaultToolFileSystem)
+         * @param loadAgentRules Whether to auto-load AGENTS.md files (default: true)
+         * @param fallbackFilenames Additional filenames to search for (e.g., CLAUDE.md)
+         * @param maxBytes Maximum bytes to load from context files (default: 32KB)
+         * @return CodingAgentContext with formatted tool list and optional agent rules
          */
-        fun fromTask(task: AgentTask, toolList: List<ExecutableTool<*, *>>): CodingAgentContext {
+        suspend fun fromTask(
+            task: AgentTask,
+            toolList: List<ExecutableTool<*, *>>,
+            fileSystem: ToolFileSystem? = null,
+            loadAgentRules: Boolean = true,
+            fallbackFilenames: List<String> = AgentContextDiscovery.DEFAULT_FALLBACK_FILENAMES,
+            maxBytes: Int = AgentContextDiscovery.DEFAULT_MAX_BYTES
+        ): CodingAgentContext {
+            val agentRules = if (loadAgentRules) {
+                try {
+                    val fs = fileSystem ?: DefaultToolFileSystem(projectPath = task.projectPath)
+                    val discovery = AgentContextDiscovery(fs, maxBytes)
+                    val rules = discovery.loadAgentContext(task.projectPath, fallbackFilenames)
+                    
+                    if (rules.isNotEmpty()) {
+                        logger.info { "Loaded agent rules from AGENTS.md (${rules.length} bytes)" }
+                    } else {
+                        logger.debug { "No AGENTS.md files found" }
+                    }
+                    
+                    rules
+                } catch (e: Exception) {
+                    logger.warn { "Failed to load agent rules: ${e.message}" }
+                    ""
+                }
+            } else {
+                ""
+            }
+            
             return CodingAgentContext(
                 projectPath = task.projectPath,
                 osInfo = Platform.getOSInfo(),
                 timestamp = Platform.getCurrentTimestamp().toString(),
                 shell = Platform.getDefaultShell(),
-                toolList = AgentToolFormatter.formatToolListForAI(toolList)
+                toolList = AgentToolFormatter.formatToolListForAI(toolList),
+                agentRules = agentRules
             )
         }
 

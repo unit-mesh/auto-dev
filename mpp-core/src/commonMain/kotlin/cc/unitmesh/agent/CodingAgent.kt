@@ -271,6 +271,7 @@ class CodingAgent(
 
         return CodingAgentContext.fromTask(
             task,
+            fileSystem = fileSystem,
             toolList = allTools
         )
     }
