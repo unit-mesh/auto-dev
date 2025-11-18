@@ -14,6 +14,11 @@ actual class GitOperations actual constructor(private val projectPath: String) {
 
     private val logger = getLogger("GitOperations")
 
+    actual suspend fun performClone(repoUrl: String, targetDir: String?): Boolean {
+        logger.warn { "Git clone not supported on Android" }
+        return false
+    }
+
     actual suspend fun getModifiedFiles(): List<String> {
         logger.warn { "Git operations not supported on Android" }
         return emptyList()
