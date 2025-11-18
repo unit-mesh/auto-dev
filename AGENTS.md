@@ -22,7 +22,8 @@ Rest:
 
 ## Kotlin Multiplatform \(KMP\) Best Practices for `mpp-core` and `mpp-ui`
 
-- Use `expect`/`actual` for platform-specific code \(e.g., file I/O on JVM/JS/Wasm\).
+- Use `expect`/`actual` for platform-specific code \(e.g., file I/O on JVM/JS/Wasm\). 
+  - （Platform.kt, FileSystem.kt）
 - Check export first, if some functions not working well with CLI (TypeScript)
 - 在 Kotlin/JS 的 @JsExport 中：
     - Avoid `Flow`, use `Promise`

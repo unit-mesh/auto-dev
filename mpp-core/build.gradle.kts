@@ -140,7 +140,18 @@ kotlin {
             }
         }
 
+        // Intermediate source set: Shared implementations for JVM and Android
+        val jvmAndroidMain by creating {
+            dependsOn(commonMain.get())
+        }
+
+        // Intermediate source set: Shared implementations for JS and Wasm
+        val jsCommonMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         androidMain {
+            dependsOn(jvmAndroidMain)
             dependencies {
                 // AndroidX DocumentFile for SAF support
                 implementation("androidx.documentfile:documentfile:1.0.1")
@@ -151,6 +162,7 @@ kotlin {
         }
 
         jvmMain {
+            dependsOn(jvmAndroidMain)
             repositories {
                 google()
                 mavenCentral()
@@ -179,6 +191,7 @@ kotlin {
         }
 
         jsMain {
+            dependsOn(jsCommonMain)
             dependencies {
                 // Ktor JS engine for JavaScript
                 implementation("io.ktor:ktor-client-js:3.2.2")
@@ -202,6 +215,7 @@ kotlin {
         }
 
         val wasmJsMain by getting {
+            dependsOn(jsCommonMain)
             dependencies {
                 implementation(devNpm("copy-webpack-plugin", "12.0.2"))
 

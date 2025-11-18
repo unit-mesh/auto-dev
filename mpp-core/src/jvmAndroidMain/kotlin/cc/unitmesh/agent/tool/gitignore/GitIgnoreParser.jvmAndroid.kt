@@ -1,17 +1,17 @@
 package cc.unitmesh.agent.tool.gitignore
 
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
 
 /**
- * JVM platform GitIgnore parser implementation
+ * JVM and Android platform GitIgnore parser implementation
+ * Both platforms use Java NIO for file operations
  */
 actual class GitIgnoreParser actual constructor(private val projectRoot: String) {
-    private val loader = JvmGitIgnoreLoader()
+    private val loader = JvmAndroidGitIgnoreLoader()
     private val parser = BaseGitIgnoreParser(projectRoot, loader)
     
     actual fun isIgnored(filePath: String): Boolean {
@@ -28,9 +28,10 @@ actual class GitIgnoreParser actual constructor(private val projectRoot: String)
 }
 
 /**
- * JVM implementation of GitIgnoreLoader using Java NIO
+ * JVM and Android implementation of GitIgnoreLoader using Java NIO
+ * Shared implementation since both platforms support Java NIO
  */
-class JvmGitIgnoreLoader : GitIgnoreLoader {
+class JvmAndroidGitIgnoreLoader : GitIgnoreLoader {
     override fun loadGitIgnoreFile(dirPath: String): String? {
         return try {
             val gitignorePath = Paths.get(dirPath, ".gitignore")
@@ -85,4 +86,3 @@ class JvmGitIgnoreLoader : GitIgnoreLoader {
         }
     }
 }
-
