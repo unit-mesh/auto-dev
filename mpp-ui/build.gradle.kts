@@ -274,6 +274,8 @@ kotlin {
                     }
                 }
 
+                implementation(devNpm("copy-webpack-plugin", "12.0.2"))
+
                 implementation(npm("wasm-git", "0.0.13"))
 
                 // WASM browser dependencies
