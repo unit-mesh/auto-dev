@@ -15,11 +15,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import autodev_intellij.mpp_ui.generated.resources.NotoColorEmoji
+import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.mcp.McpClientManagerFactory
 import cc.unitmesh.agent.mcp.McpConfig
@@ -40,6 +43,7 @@ import cc.unitmesh.llm.ModelConfig
 import cc.unitmesh.llm.PromptEnhancer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.Font
 
 /**
  * DevIn 编辑器输入组件
@@ -420,7 +424,8 @@ fun DevInEditorInput(
                                     .onPreviewKeyEvent { handleKeyEvent(it) },
                             textStyle =
                                 TextStyle(
-                                    fontFamily = FontFamily.Monospace,
+//                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoColorEmoji)) else FontFamily.Monospace,
                                     fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp, // 移动端更大
                                     color = MaterialTheme.colorScheme.onSurface,
                                     lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp // 增加行高
