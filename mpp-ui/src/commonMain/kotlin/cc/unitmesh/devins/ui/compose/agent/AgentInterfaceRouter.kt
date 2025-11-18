@@ -58,7 +58,10 @@ fun AgentInterfaceRouter(
         AgentType.CODE_REVIEW -> {
             CodeReviewPage(
                 llmService = llmService,
-                modifier = modifier
+                modifier = modifier,
+                onBack = {
+                    onAgentTypeChange(AgentType.CODING)
+                }
             )
         }
 

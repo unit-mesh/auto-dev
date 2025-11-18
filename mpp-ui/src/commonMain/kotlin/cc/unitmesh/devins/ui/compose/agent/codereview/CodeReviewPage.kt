@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.devins.workspace.WorkspaceManager
@@ -20,7 +21,8 @@ import cc.unitmesh.llm.KoogLLMService
 @Composable
 fun CodeReviewPage(
     llmService: KoogLLMService?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
 
@@ -41,7 +43,8 @@ fun CodeReviewPage(
         topBar = {
             CodeReviewTopBar(
                 onRefresh = { viewModel.refresh() },
-                workspace = currentWorkspace
+                workspace = currentWorkspace,
+                onBack = onBack,
             )
         },
         modifier = modifier,
@@ -64,7 +67,8 @@ fun CodeReviewPage(
 @Composable
 private fun CodeReviewTopBar(
     onRefresh: () -> Unit,
-    workspace: Workspace?
+    workspace: Workspace?,
+    onBack: () -> Unit
 ) {
     TopAppBar(
         title = {
@@ -79,6 +83,18 @@ private fun CodeReviewTopBar(
                         text = it.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        navigationIcon = {
+            if (Platform.isWasm) {
+
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
