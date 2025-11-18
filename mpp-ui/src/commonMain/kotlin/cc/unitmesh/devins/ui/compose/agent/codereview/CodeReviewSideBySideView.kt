@@ -45,7 +45,11 @@ fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier 
 
             state.commitHistory.isEmpty() -> {
                 if (Platform.name == "WebAssembly") {
-                    WasmGitCloneScreen()
+                    WasmGitCloneScreen(
+                        onCommitsFetched = {
+                            viewModel.refresh()
+                        }
+                    )
                 } else {
                     EmptyCommitView(
                         onLoadDiff = { viewModel.refresh() }

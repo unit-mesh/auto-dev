@@ -263,8 +263,7 @@ open class CodeReviewViewModel(
         invalidateCodeCache()
 
         try {
-            val gitDiff = workspace.getGitDiff(request.baseBranch, request.compareWith)
-
+            val gitDiff = gitOps.getDiff(request.baseBranch ?: "master", request.compareWith ?: "HEAD")
             if (gitDiff == null) {
                 updateState {
                     it.copy(

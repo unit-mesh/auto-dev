@@ -68,7 +68,7 @@ data class WasmGitUiState(
 /**
  * Wasm Git ViewModel
  * 管理 Git 操作和 UI 状态
- * 
+ *
  * @param gitOperations 共享的 GitOperations 实例（通过 WasmGitManager 获取）
  */
 class WasmGitViewModel(

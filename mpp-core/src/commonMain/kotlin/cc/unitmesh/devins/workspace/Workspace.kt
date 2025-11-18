@@ -54,19 +54,6 @@ interface Workspace {
      * 关闭工作空间
      */
     suspend fun close()
-
-    /**
-     * 获取最后一次 Git 提交信息（预留接口）
-     * 实际实现需要在平台特定代码中完成
-     */
-    suspend fun getLastCommit(): GitCommitInfo?
-
-    /**
-     * 获取 Git Diff（预留接口）
-     * @param base 基准分支或提交，null 表示 HEAD
-     * @param target 目标分支或提交，null 表示工作区
-     */
-    suspend fun getGitDiff(base: String? = null, target: String? = null): GitDiffInfo?
 }
 
 /**
@@ -178,18 +165,6 @@ class DefaultWorkspace private constructor(
 
     override suspend fun close() {
         _stateFlow.value = WorkspaceState(isInitialized = false)
-    }
-
-    override suspend fun getLastCommit(): GitCommitInfo? {
-        // TODO: 实现 Git 提交信息获取
-        // 需要在各个平台（JVM/JS/Native）中实现具体逻辑
-        return null
-    }
-
-    override suspend fun getGitDiff(base: String?, target: String?): GitDiffInfo? {
-        // TODO: 实现 Git Diff 获取
-        // 需要在各个平台（JVM/JS/Native）中实现具体逻辑
-        return null
     }
 
     companion object {

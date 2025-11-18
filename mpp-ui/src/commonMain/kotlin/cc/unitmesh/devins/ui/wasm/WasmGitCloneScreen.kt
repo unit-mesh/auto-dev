@@ -23,17 +23,18 @@ import kotlinx.coroutines.launch
 /**
  * Wasm 平台的 Git 克隆界面
  * 允许用户输入 Git 仓库 URL 并克隆，显示操作日志和提交历史
- * 
+ *
  * 使用全局共享的 GitOperations 实例（通过 WasmGitManager），
  * 避免重复初始化和目录丢失问题
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WasmGitCloneScreen(
-    viewModel: WasmGitViewModel = remember { 
+    viewModel: WasmGitViewModel = remember {
         WasmGitViewModel(gitOperations = WasmGitManager.getInstance())
     },
-    onClose: (() -> Unit)? = null
+    onClose: (() -> Unit)? = null,
+    onCommitsFetched: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -43,6 +44,13 @@ fun WasmGitCloneScreen(
     LaunchedEffect(uiState.logs.size) {
         if (uiState.logs.isNotEmpty()) {
             logListState.animateScrollToItem(uiState.logs.size - 1)
+        }
+    }
+
+    // 当成功获取 commits 后，触发回调返回主界面
+    LaunchedEffect(uiState.commits.size) {
+        if (uiState.commits.isNotEmpty() && uiState.cloneSuccess) {
+            onCommitsFetched?.invoke()
         }
     }
 

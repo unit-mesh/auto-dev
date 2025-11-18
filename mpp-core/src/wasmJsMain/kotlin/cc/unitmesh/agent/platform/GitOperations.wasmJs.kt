@@ -72,9 +72,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         }
     }
 
-    actual fun isSupported(): Boolean {
-        return true // wasm-git provides git functionality
-    }
+    actual fun isSupported(): Boolean = true
 
     /**
      * Clone a git repository (Wasm-specific functionality)
