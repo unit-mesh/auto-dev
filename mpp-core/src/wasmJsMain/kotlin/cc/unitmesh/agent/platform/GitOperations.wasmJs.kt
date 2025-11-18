@@ -16,7 +16,16 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     private var lg2Module: LibGit2Module? = null
     private var isInitialized = false
     private val commandOutputBuffer = mutableListOf<String>()
-    
+
+    actual suspend fun performClone(repoUrl: String, targetDir: String?): Boolean {
+        return try {
+            this.clone(repoUrl, targetDir)
+        } catch (e: Throwable) {
+            WasmConsole.error("Clone error: ${e.message ?: "Unknown error"}")
+            false
+        }
+    }
+
     /**
      * Initialize wasm-git module
      */
@@ -58,12 +67,13 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     }
     
     /**
-     * Clone a git repository
+     * Clone a git repository (Wasm-specific functionality)
      * @param repoUrl Repository URL (e.g., "https://github.com/user/repo.git")
      * @param targetDir Target directory name (optional, will be derived from URL if not provided)
      * @return true if successful
      */
     suspend fun clone(repoUrl: String, targetDir: String? = null): Boolean {
+        val repoUrl = "https://cors-anywhere.com/$repoUrl"
         initialize()
         
         val module = lg2Module ?: return false

@@ -42,6 +42,28 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             emptyList()
         }
     }
+
+
+    actual suspend fun performClone(repoUrl: String, targetDir: String?): Boolean {
+        return try {
+            val process = ProcessBuilder("git", "clone", repoUrl, targetDir)
+                .directory(File(projectPath))
+                .redirectErrorStream(true)
+                .start()
+
+            val output = process.inputStream.bufferedReader().readText()
+            process.waitFor()
+
+            if (output.isNotBlank()) {
+                logger.info { "Clone output: $output" }
+            }
+
+            true
+        } catch (e: Exception) {
+            logger.warn(e) { "Clone failed: ${e.message}" }
+            false
+        }
+    }
     
     actual suspend fun getFileDiff(filePath: String): String? = withContext(Dispatchers.IO) {
         try {

@@ -13,6 +13,7 @@ import cc.unitmesh.devins.workspace.GitDiffInfo
  * - JS/Wasm: 空实现或抛出异常
  */
 expect class GitOperations(projectPath: String) {
+    suspend fun performClone(repoUrl: String, targetDir: String?): Boolean
     /**
      * 获取 git 仓库中已修改的文件列表
      * @return 文件路径列表

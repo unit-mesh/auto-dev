@@ -8,6 +8,10 @@ import cc.unitmesh.devins.workspace.GitDiffInfo
  * Git operations are not supported on iOS
  */
 actual class GitOperations actual constructor(private val projectPath: String) {
+    actual suspend fun performClone(repoUrl: String, targetDir: String?): Boolean {
+        return false
+    }
+
     actual suspend fun getModifiedFiles(): List<String> {
         println("Git operations not supported on iOS")
         return emptyList()

@@ -40,6 +40,7 @@ fun TopBarMenuDesktop(
     onToggleTreeView: () -> Unit = {},
     onShowModelConfig: () -> Unit,
     onShowToolConfig: () -> Unit = {},
+    onShowGitClone: () -> Unit = {}, // Wasm Git Clone
     modifier: Modifier = Modifier
 ) {
     val currentTheme = ThemeManager.currentTheme

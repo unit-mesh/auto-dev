@@ -8,12 +8,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.agent.codereview.diff.CommitListView
 import cc.unitmesh.devins.ui.compose.agent.codereview.diff.DiffCenterView
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
+import cc.unitmesh.devins.ui.wasm.WasmGitCloneScreen
 import kotlinx.coroutines.launch
 
 /**
@@ -42,9 +44,13 @@ fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier 
             }
 
             state.commitHistory.isEmpty() -> {
-                EmptyCommitView(
-                    onLoadDiff = { viewModel.refresh() }
-                )
+                if (Platform.name == "WebAssembly") {
+                    WasmGitCloneScreen()
+                } else {
+                    EmptyCommitView(
+                        onLoadDiff = { viewModel.refresh() }
+                    )
+                }
             }
 
             else -> {

@@ -37,6 +37,7 @@ fun TopBarMenu(
     onToggleTreeView: () -> Unit = {},
     onShowModelConfig: () -> Unit,
     onShowToolConfig: () -> Unit = {},
+    onShowGitClone: () -> Unit = {}, // Wasm Git Clone
     modifier: Modifier = Modifier
 ) {
     if (Platform.isAndroid) {
@@ -59,6 +60,7 @@ fun TopBarMenu(
             onToggleTreeView = onToggleTreeView,
             onShowModelConfig = onShowModelConfig,
             onShowToolConfig = onShowToolConfig,
+            onShowGitClone = onShowGitClone,
             modifier = modifier
         )
     } else if (Platform.isWasm) {
@@ -83,6 +85,7 @@ fun TopBarMenu(
             onToggleTreeView = onToggleTreeView,
             onShowModelConfig = onShowModelConfig,
             onShowToolConfig = onShowToolConfig,
+            onShowGitClone = onShowGitClone,
             modifier = modifier
         )
     }

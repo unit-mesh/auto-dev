@@ -23,6 +23,25 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             false
         }
     }
+
+    actual suspend fun performClone(repoUrl: String, targetDir: String?): Boolean {
+        if (!isNodeJs) {
+            logger.warn { "Git operations require Node.js environment" }
+            return false
+        }
+
+        return try {
+            val dir = targetDir ?: repoUrl.substringAfterLast('/').removeSuffix(".git")
+            logger.info { "Cloning $repoUrl into $dir..." }
+
+            val output = execGitCommand("git clone $repoUrl $dir")
+            logger.info { "Clone output: $output" }
+            true
+        } catch (e: Throwable) {
+            logger.warn(e) { "Clone failed: ${e.message}" }
+            false
+        }
+    }
     
     actual suspend fun getModifiedFiles(): List<String> {
         if (!isNodeJs) {

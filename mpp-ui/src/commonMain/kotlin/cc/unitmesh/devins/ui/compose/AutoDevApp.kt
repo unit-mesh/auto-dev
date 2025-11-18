@@ -88,6 +88,9 @@ private fun AutoDevContent(
     var currentStreamingOutput by remember { mutableStateOf("") }
     var isLLMProcessing by remember { mutableStateOf(false) }
 
+    // Wasm Git Clone dialog state
+    var showWasmGitDialog by remember { mutableStateOf(false) }
+
     val chatHistoryManager = remember { ChatHistoryManager.getInstance() }
 
     // 从全局状态管理器获取 UI 状态
@@ -462,6 +465,9 @@ private fun AutoDevContent(
                         },
                         onShowModelConfig = { showModelConfigDialog = true },
                         onShowToolConfig = { showToolConfigDialog = true },
+                        onShowGitClone = {
+                            showWasmGitDialog = true
+                        },
                         modifier =
                             Modifier
                                 .statusBarsPadding() // 添加状态栏边距
@@ -664,6 +670,12 @@ private fun AutoDevContent(
 
                     showRemoteConfigDialog = false
                 }
+            )
+        }
+
+        if (showWasmGitDialog) {
+            cc.unitmesh.devins.ui.wasm.WasmGitCloneScreen(
+                onClose = { showWasmGitDialog = false }
             )
         }
 

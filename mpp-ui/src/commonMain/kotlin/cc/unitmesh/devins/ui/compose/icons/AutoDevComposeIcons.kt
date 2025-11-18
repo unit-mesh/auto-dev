@@ -80,6 +80,7 @@ object AutoDevComposeIcons {
 
     // Cloud & Network (Note: CloudOff and CloudQueue need to be defined/imported separately if not in Default)
     val Cloud: ImageVector get() = Icons.Default.Cloud
+    val CloudDownload: ImageVector get() = Icons.Default.CloudDownload
     val CloudOff: ImageVector get() = Icons.Default.Cloud // Fallback - CloudOff may not exist in Default
     val CloudQueue: ImageVector get() = Icons.Default.Cloud // Fallback - CloudQueue may not exist in Default
     val Computer: ImageVector get() = Icons.Default.Computer
