@@ -3,7 +3,6 @@ package cc.unitmesh.devins.ui.compose.editor
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -15,13 +14,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import autodev_intellij.mpp_ui.generated.resources.NotoColorEmoji
 import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
 import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.agent.Platform
