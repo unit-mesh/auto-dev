@@ -47,8 +47,10 @@ data class GitCommitDisplay(
         get() {
             val instant = Instant.fromEpochMilliseconds(date * 1000) // Git timestamp is in seconds
             val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-            return "${dateTime.year}-${dateTime.monthNumber.toString().padStart(2, '0')}-${dateTime.dayOfMonth.toString().padStart(2, '0')} " +
-                    "${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}"
+            return "${dateTime.year}-${
+                dateTime.monthNumber.toString().padStart(2, '0')
+            }-${dateTime.dayOfMonth.toString().padStart(2, '0')} " +
+                "${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}"
         }
 }
 
@@ -158,7 +160,10 @@ class WasmGitViewModel(
                 for (attempt in 1..MAX_RETRY_ATTEMPTS) {
                     try {
                         if (attempt > 1) {
-                            addLog("Retry attempt $attempt/$MAX_RETRY_ATTEMPTS (waiting ${RETRY_DELAY_MS}ms)...", LogType.WARNING)
+                            addLog(
+                                "Retry attempt $attempt/$MAX_RETRY_ATTEMPTS (waiting ${RETRY_DELAY_MS}ms)...",
+                                LogType.WARNING
+                            )
                             delay(RETRY_DELAY_MS)
                         }
 
@@ -217,31 +222,29 @@ class WasmGitViewModel(
     suspend fun fetchCommitHistory() {
         addLog("Fetching commit history...", LogType.INFO)
 
-        scope.launch {
-            try {
-                val commits = gitOperations.getRecentCommits(20)
+        try {
+            val commits = gitOperations.getRecentCommits(20)
 
-                if (commits.isEmpty()) {
-                    addLog("No commits found in repository", LogType.WARNING)
-                } else {
-                    addLog("Found ${commits.size} commits", LogType.SUCCESS)
+            if (commits.isEmpty()) {
+                addLog("No commits found in repository", LogType.WARNING)
+            } else {
+                addLog("Found ${commits.size} commits", LogType.SUCCESS)
 
-                    val displayCommits = commits.map { commit ->
-                        GitCommitDisplay(
-                            hash = commit.hash,
-                            author = commit.author,
-                            email = commit.email,
-                            date = commit.date,
-                            message = commit.message
-                        )
-                    }
-
-                    _uiState.value = _uiState.value.copy(commits = displayCommits)
+                val displayCommits = commits.map { commit ->
+                    GitCommitDisplay(
+                        hash = commit.hash,
+                        author = commit.author,
+                        email = commit.email,
+                        date = commit.date,
+                        message = commit.message
+                    )
                 }
-            } catch (e: Exception) {
-                val errorMsg = "Failed to fetch commits: ${e.message ?: "Unknown error"}"
-                addLog(errorMsg, LogType.ERROR)
+
+                _uiState.value = _uiState.value.copy(commits = displayCommits)
             }
+        } catch (e: Exception) {
+            val errorMsg = "Failed to fetch commits: ${e.message ?: "Unknown error"}"
+            addLog(errorMsg, LogType.ERROR)
         }
     }
 

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.diff.DiffLineType
 import cc.unitmesh.agent.CodeReviewAgent
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.language.LanguageDetector
@@ -17,6 +18,7 @@ import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
 import cc.unitmesh.agent.diff.DiffParser
 import cc.unitmesh.agent.diff.FileDiff
 import cc.unitmesh.devins.ui.config.ConfigManager
+import cc.unitmesh.devins.ui.wasm.WasmGitManager
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
@@ -29,7 +31,14 @@ open class CodeReviewViewModel(
     private var codeReviewAgent: CodeReviewAgent? = null
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val gitOps = GitOperations(workspace.rootPath ?: "")
+    
+    // 在 WebAssembly 平台使用共享的 GitOperations 实例
+    private val gitOps = if (Platform.name == "WebAssembly") {
+        WasmGitManager.getInstance()
+    } else {
+        GitOperations(workspace.rootPath ?: "")
+    }
+    
     private val analysisRepository = cc.unitmesh.devins.db.CodeReviewAnalysisRepository.getInstance()
 
     // Non-AI analysis components (extracted for testability)
@@ -462,8 +471,10 @@ open class CodeReviewViewModel(
     }
 
     open fun refresh() {
+        println("refresh() called, gitOps.isSupported() = ${gitOps.isSupported()}")
         scope.launch {
-            if (gitOps.isSupported() && currentState.commitHistory.isNotEmpty()) {
+            if (gitOps.isSupported()) {
+                // 如果支持 Git，就加载提交历史（无论当前是否有数据）
                 loadCommitHistory()
             } else {
                 loadDiff()

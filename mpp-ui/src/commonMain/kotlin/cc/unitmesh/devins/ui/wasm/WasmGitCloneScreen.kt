@@ -47,9 +47,8 @@ fun WasmGitCloneScreen(
         }
     }
 
-    // 当成功获取 commits 后，触发回调返回主界面
-    LaunchedEffect(uiState.commits.size) {
-        if (uiState.commits.isNotEmpty() && uiState.cloneSuccess) {
+    LaunchedEffect(uiState.commits) {
+        if (uiState.commits.isNotEmpty()) {
             onCommitsFetched?.invoke()
         }
     }
@@ -90,27 +89,11 @@ fun WasmGitCloneScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Clone Git Repository",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-
                     OutlinedTextField(
                         value = uiState.repoUrl,
                         onValueChange = { viewModel.updateRepoUrl(it) },
                         label = { Text("Repository URL") },
                         placeholder = { Text("https://github.com/phodal-archive/mini-file") },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !uiState.isLoading,
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = uiState.targetDir,
-                        onValueChange = { viewModel.updateTargetDir(it) },
-                        label = { Text("Target Directory (optional)") },
-                        placeholder = { Text("Leave empty for auto-naming") },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.isLoading,
                         singleLine = true
@@ -170,7 +153,7 @@ fun WasmGitCloneScreen(
 
                     if (uiState.cloneSuccess) {
                         Text(
-                            text = "✓ Repository cloned successfully!",
+                            text = "Repository cloned successfully!",
                             color = Color(0xFF4CAF50),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold
@@ -194,7 +177,7 @@ fun WasmGitCloneScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(12.dp),
+                            .padding(8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
