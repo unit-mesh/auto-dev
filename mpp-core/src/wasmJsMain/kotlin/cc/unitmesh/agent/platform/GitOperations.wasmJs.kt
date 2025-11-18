@@ -4,10 +4,8 @@ import cc.unitmesh.devins.workspace.GitCommitInfo
 import cc.unitmesh.devins.workspace.GitDiffInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
-import kotlin.js.Promise
 
 /**
  * WebAssembly 平台的 Git 操作实现
