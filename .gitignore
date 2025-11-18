@@ -242,3 +242,10 @@ fastlane/test_output
 *.p12
 *.provisionprofile
 Samples
+
+# Downloaded fonts (auto-downloaded by Gradle, don't commit)
+**/composeResources/font/*.ttf
+**/composeResources/font/*.otf
+NotoColorEmoji.ttf
+NotoSans*.ttf
+NotoSans*.otf

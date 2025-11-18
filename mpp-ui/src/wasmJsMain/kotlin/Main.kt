@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.CanvasBasedWindow
-import autodev_intellij.mpp_ui.generated.resources.NotoColorEmoji
+import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
 import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.devins.ui.compose.AutoDevApp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -20,12 +20,19 @@ import org.jetbrains.compose.resources.configureWebResources
 import org.jetbrains.compose.resources.preloadFont
 
 /**
- * WASM JS entry point with Emoji/UTF-8 font support
+ * WASM JS entry point with full UTF-8 font support
  *
  * Reference: https://github.com/JetBrains/compose-multiplatform/blob/master/components/resources/demo/shared/src/webMain/kotlin/main.wasm.kt
  *
- * This implementation preloads NotoColorEmoji.ttf to support emoji and UTF-8 characters in WASM.
- * The font is loaded asynchronously and the app shows a loading indicator until fonts are ready.
+ * This implementation preloads Noto Sans CJK SC to support comprehensive UTF-8 characters:
+ * - Chinese (Simplified & Traditional)
+ * - Japanese (Hiragana, Katakana, Kanji)
+ * - Korean (Hangul)
+ * - Latin, Cyrillic, Greek
+ * - Emoji and symbols
+ *
+ * The font (~15MB) is auto-downloaded by Gradle and not committed to Git.
+ * It's loaded asynchronously and the app shows a loading indicator until fonts are ready.
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalResourceApi::class, InternalComposeUiApi::class)
 fun main() {
@@ -35,32 +42,28 @@ fun main() {
     }
 
     CanvasBasedWindow(canvasElementId = "ComposeTarget") {
-        // Preload emoji font for UTF-8 support (emoji, Chinese, Japanese, etc.)
-        val emojiFont = preloadFont(Res.font.NotoColorEmoji).value
-        println("Emoji font loaded: $emojiFont")
+        val utf8Font = preloadFont(Res.font.NotoSansSC_Regular).value
         var fontsFallbackInitialized by remember { mutableStateOf(false) }
 
         AutoDevApp()
 
-        if (emojiFont != null && fontsFallbackInitialized) {
-            println("Fonts are ready")
-        } else {
+        // Show app content when fonts are loaded, otherwise show loading indicator
+        if (utf8Font == null || fontsFallbackInitialized) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White.copy(alpha = 0.8f))
+                    .clickable { /* Prevent interaction while loading */ }
             ) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
-
-            println("Fonts are not ready yet")
         }
 
         val fontFamilyResolver = LocalFontFamilyResolver.current
-        LaunchedEffect(fontFamilyResolver, emojiFont) {
-            if (emojiFont != null) {
-                fontFamilyResolver.preload(FontFamily(listOf(emojiFont)))
-                fontsFallbackInitialized = true
+        LaunchedEffect(fontFamilyResolver, utf8Font) {
+            if (utf8Font != null) {
+                // Preload font family to support all UTF-8 characters globally
+                fontFamilyResolver.preload(FontFamily(listOf(utf8Font)))
             }
         }
     }

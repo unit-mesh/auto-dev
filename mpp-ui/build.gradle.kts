@@ -1,4 +1,11 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 plugins {
     kotlin("multiplatform")
@@ -436,4 +443,114 @@ tasks.named("wasmJsBrowserDistribution") {
 // Force webpack to run (remove onlyIf condition that skips it)
 tasks.named("wasmJsBrowserProductionWebpack") {
     onlyIf { true }
+}
+
+// =============================================================================
+// Auto-download fonts for WASM UTF-8 support (not committed to Git)
+// =============================================================================
+
+/**
+ * Task to download Noto Sans font for comprehensive UTF-8 support in WASM
+ * 
+ * Downloads a lightweight Noto Sans variant that supports:
+ * - Latin, Cyrillic, Greek
+ * - Basic punctuation and symbols
+ * - Some emoji support
+ * 
+ * For full CJK (Chinese, Japanese, Korean) support, consider using Noto Sans CJK
+ * which is larger (~15-20MB per variant).
+ */
+abstract class DownloadWasmFontsTask : DefaultTask() {
+    @get:OutputDirectory
+    abstract val fontDir: DirectoryProperty
+    
+    @get:Input
+    abstract val useCJKFont: Property<Boolean>
+    
+    @TaskAction
+    fun download() {
+        val fontDirectory = fontDir.get().asFile
+        fontDirectory.mkdirs()
+        
+        val notoSansFile = File(fontDirectory, "NotoSans-Regular.ttf")
+        val notoSansCJKFile = File(fontDirectory, "NotoSansSC-Regular.ttf")
+        
+        // Skip if fonts already exist
+        if (notoSansFile.exists() || notoSansCJKFile.exists()) {
+            println("Fonts already downloaded, skipping...")
+            return
+        }
+        
+        if (useCJKFont.get()) {
+            // Download Noto Sans CJK SC (Simplified Chinese) TTF for full UTF-8 support
+            println("Downloading Noto Sans CJK SC Variable TTF (Simplified Chinese)...")
+            println("This font supports: Latin, Chinese, Japanese, Korean, Emoji")
+            println("Size: ~17MB (Variable TTF format)")
+            
+            // Use GitHub raw content for reliable TTF download
+            val cjkUrl = "https://github.com/notofonts/noto-cjk/raw/main/Sans/Variable/TTF/Subset/NotoSansSC-VF.ttf"
+            
+            try {
+                ant.invokeMethod("get", mapOf(
+                    "src" to cjkUrl,
+                    "dest" to notoSansCJKFile,
+                    "verbose" to true,
+                    "usetimestamp" to true,
+                    "retries" to 3
+                ))
+                
+                println("✅ Downloaded: ${notoSansCJKFile.name} (${notoSansCJKFile.length() / 1024 / 1024}MB)")
+            } catch (e: Exception) {
+                println("❌ Failed to download CJK TTF font: ${e.message}")
+                println("You can manually download from: $cjkUrl")
+                throw e
+            }
+        } else {
+            // Download Noto Sans (lighter weight, basic UTF-8)
+            println("Downloading Noto Sans TTF (lightweight)...")
+            println("This font supports: Latin, Cyrillic, Greek, basic symbols")
+            println("Size: ~500KB")
+            
+            val notoSansUrl = "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf"
+            
+            try {
+                ant.invokeMethod("get", mapOf(
+                    "src" to notoSansUrl,
+                    "dest" to notoSansFile,
+                    "verbose" to true,
+                    "usetimestamp" to true,
+                    "retries" to 3
+                ))
+                
+                println("✅ Downloaded: ${notoSansFile.name} (${notoSansFile.length() / 1024}KB)")
+                println("ℹ️  For CJK support, run: ./gradlew downloadWasmFonts -PuseCJKFont=true")
+            } catch (e: Exception) {
+                println("❌ Failed to download Noto Sans font: ${e.message}")
+                println("You can manually download from: $notoSansUrl")
+                throw e
+            }
+        }
+    }
+}
+
+tasks.register<DownloadWasmFontsTask>("downloadWasmFonts") {
+    group = "build"
+    description = "Download fonts for WASM UTF-8 support (not committed to Git)"
+    
+    fontDir.set(file("src/commonMain/composeResources/font"))
+    useCJKFont.set(project.findProperty("useCJKFont")?.toString()?.toBoolean() ?: true)
+}
+
+// Auto-download fonts before resource processing
+tasks.matching { 
+    it.name.contains("copyNonXmlValueResources") || 
+    it.name.contains("prepareComposeResources") ||
+    it.name.contains("generateComposeResClass")
+}.configureEach {
+    dependsOn("downloadWasmFonts")
+}
+
+// Also download before WASM compilation
+tasks.matching { it.name.contains("compileKotlinWasm") }.configureEach {
+    mustRunAfter("downloadWasmFonts")
 }

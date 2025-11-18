@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import autodev_intellij.mpp_ui.generated.resources.NotoColorEmoji
+import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
 import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.mcp.McpClientManagerFactory
@@ -424,8 +425,7 @@ fun DevInEditorInput(
                                     .onPreviewKeyEvent { handleKeyEvent(it) },
                             textStyle =
                                 TextStyle(
-//                                    fontFamily = FontFamily.Monospace,
-                                    fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoColorEmoji)) else FontFamily.Monospace,
+                                    fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
                                     fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp, // 移动端更大
                                     color = MaterialTheme.colorScheme.onSurface,
                                     lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp // 增加行高

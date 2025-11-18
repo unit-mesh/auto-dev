@@ -36,6 +36,11 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
+      - name: Download WASM Fonts for UTF-8 Support
+        run: |
+          echo "📦 Downloading Noto Sans SC TTF for full UTF-8 support..."
+          ./gradlew :mpp-ui:downloadWasmFonts --no-daemon --info
+
       - name: Build WASM Distribution
         run: |
           # Clean to ensure fresh build
