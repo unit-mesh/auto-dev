@@ -68,14 +68,16 @@ data class WasmGitUiState(
 /**
  * Wasm Git ViewModel
  * 管理 Git 操作和 UI 状态
+ * 
+ * @param gitOperations 共享的 GitOperations 实例（通过 WasmGitManager 获取）
  */
-class WasmGitViewModel {
+class WasmGitViewModel(
+    private val gitOperations: GitOperations = WasmGitManager.getInstance()
+) {
     private val scope = CoroutineScope(Dispatchers.Default)
 
     private val _uiState = MutableStateFlow(WasmGitUiState())
     val uiState: StateFlow<WasmGitUiState> = _uiState.asStateFlow()
-
-    private var gitOps: GitOperations? = null
 
     companion object {
         private const val MAX_RETRY_ATTEMPTS = 3
@@ -131,10 +133,8 @@ class WasmGitViewModel {
 
         scope.launch {
             try {
-                val operations = GitOperations(projectPath = "/workspace")
-
                 // 检查是否支持
-                if (!operations.isSupported()) {
+                if (!gitOperations.isSupported()) {
                     addLog("Error: Git operations not supported on this platform", LogType.ERROR)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -143,8 +143,7 @@ class WasmGitViewModel {
                     return@launch
                 }
 
-                gitOps = operations
-                addLog("Git operations ready", LogType.DEBUG)
+                addLog("Git operations ready (using shared instance)", LogType.DEBUG)
 
                 // 执行克隆（带重试机制）
                 val targetDir = currentState.targetDir.ifBlank {
@@ -163,7 +162,7 @@ class WasmGitViewModel {
                             delay(RETRY_DELAY_MS)
                         }
 
-                        success = gitOps!!.performClone(currentState.repoUrl, targetDir)
+                        success = gitOperations.performClone(currentState.repoUrl, targetDir)
 
                         if (success) {
                             if (attempt > 1) {
@@ -216,17 +215,11 @@ class WasmGitViewModel {
      * 获取提交历史
      */
     suspend fun fetchCommitHistory() {
-        val ops = gitOps
-        if (ops == null) {
-            addLog("No repository cloned yet", LogType.WARNING)
-            return
-        }
-
         addLog("Fetching commit history...", LogType.INFO)
 
         scope.launch {
             try {
-                val commits = ops.getRecentCommits(20)
+                val commits = gitOperations.getRecentCommits(20)
 
                 if (commits.isEmpty()) {
                     addLog("No commits found in repository", LogType.WARNING)
