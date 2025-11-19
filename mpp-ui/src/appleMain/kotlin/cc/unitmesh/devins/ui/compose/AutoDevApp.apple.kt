@@ -3,22 +3,19 @@ package cc.unitmesh.devins.ui.compose
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.completion.CompletionManager
-import cc.unitmesh.devins.filesystem.ProjectFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager
 import cc.unitmesh.devins.llm.Message
-import cc.unitmesh.devins.ui.app.MobileNavLayout
+import cc.unitmesh.devins.ui.app.AppleNavLayout
 import cc.unitmesh.devins.ui.app.AppScreen
 import cc.unitmesh.devins.ui.compose.agent.AgentChatInterface
 import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
-import cc.unitmesh.agent.AgentType
-import cc.unitmesh.devins.ui.compose.chat.*
+import cc.unitmesh.devins.ui.compose.chat.createChatCallbacks
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.editor.ModelConfigDialog
 import cc.unitmesh.devins.ui.compose.theme.AutoDevTheme
@@ -32,13 +29,13 @@ import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.launch
 
 /**
- * Android 专属的 AutoDevApp 实现
- *
- * 设计要点：
- * - BottomNavigation：Home/Chat/Tasks/Profile（4个入口）
- * - Drawer：完整导航 + 设置工具 + 用户信息
- * - TopBar：汉堡菜单 + 标题 + 操作按钮
- * - 全屏沉浸式 Chat 体验
+ * Apple (iOS/macOS) implementation of PlatformAutoDevApp
+ * 
+ * Features:
+ * - TabBar navigation (iOS style)
+ * - Multi-agent support (Chat, Coding, Code Review, Remote)
+ * - Settings sheet
+ * - Material 3 design
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +47,7 @@ actual fun PlatformAutoDevApp(
     val currentTheme = ThemeManager.currentTheme
 
     AutoDevTheme(themeMode = currentTheme) {
-        AndroidAutoDevContent(
+        AppleAutoDevContent(
             triggerFileChooser = triggerFileChooser,
             onFileChooserHandled = onFileChooserHandled,
             initialMode = initialMode
@@ -60,7 +57,7 @@ actual fun PlatformAutoDevApp(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AndroidAutoDevContent(
+private fun AppleAutoDevContent(
     triggerFileChooser: Boolean = false,
     onFileChooserHandled: () -> Unit = {},
     initialMode: String = "auto"
@@ -81,14 +78,13 @@ private fun AndroidAutoDevContent(
     // Dialog 状态
     var showModelConfigDialog by remember { mutableStateOf(false) }
     var showToolConfigDialog by remember { mutableStateOf(false) }
-    var showDebugDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
     // 导航状态 - 默认从 Chat 开始
     var currentScreen by remember { mutableStateOf(AppScreen.CHAT) }
 
-    // Session 管理（用于 Drawer 和登录）
+    // Session 管理
     val sessionClient = remember { SessionClient("http://localhost:8080") }
     val sessionViewModel = remember { SessionViewModel(sessionClient) }
 
@@ -120,16 +116,6 @@ private fun AndroidAutoDevContent(
         } catch (e: Exception) {
             println("⚠️ 加载配置失败: ${e.message}")
         }
-
-        // 初始化工作空间
-        if (!WorkspaceManager.hasActiveWorkspace()) {
-            val defaultPath = "/storage/emulated/0/Documents/AutoDev"
-            try {
-                WorkspaceManager.openWorkspace("Default Workspace", defaultPath)
-            } catch (e: Exception) {
-                println("⚠️ 打开工作空间失败: ${e.message}")
-            }
-        }
     }
 
     LaunchedEffect(workspaceState) {
@@ -138,7 +124,19 @@ private fun AndroidAutoDevContent(
         }
     }
 
-    // Chat callbacks（需要明确类型）
+    // 根据屏幕切换更新 Agent 类型
+    LaunchedEffect(currentScreen) {
+        val agentType = when (currentScreen) {
+            AppScreen.CHAT -> AgentType.LOCAL_CHAT
+            AppScreen.CODING -> AgentType.CODING
+            AppScreen.CODE_REVIEW -> AgentType.CODE_REVIEW
+            AppScreen.REMOTE -> AgentType.REMOTE
+            else -> null
+        }
+        agentType?.let { selectedAgentType = it }
+    }
+
+    // Chat callbacks
     val callbacks: cc.unitmesh.devins.editor.EditorCallbacks = createChatCallbacks(
         fileSystem = currentWorkspace.fileSystem,
         llmService = llmService,
@@ -151,28 +149,35 @@ private fun AndroidAutoDevContent(
             messages = messages + assistantMsg
             currentStreamingOutput = ""
         },
-        onProcessingChange = { isLLMProcessing = it },
-        onError = {
-            errorMessage = it
+        onProcessingChange = { isProcessing -> isLLMProcessing = isProcessing },
+        onError = { error ->
+            errorMessage = error
             showErrorDialog = true
         },
-        onConfigWarning = { showModelConfigDialog = true }
+        onConfigWarning = {
+            showModelConfigDialog = true
+        }
     )
 
-    MobileNavLayout(
+    // 主界面布局
+    AppleNavLayout(
         currentScreen = currentScreen,
-        onScreenChange = { currentScreen = it },
+        onScreenChange = { newScreen ->
+            currentScreen = newScreen
+        },
         sessionViewModel = sessionViewModel,
-        onShowSettings = { showModelConfigDialog = true },
-        onShowTools = { showToolConfigDialog = true },
-        onShowDebug = { showDebugDialog = true },
-        hasDebugInfo = compilerOutput.isNotEmpty(),
+        onShowSettings = {
+            showModelConfigDialog = true
+        },
+        onShowTools = {
+            showToolConfigDialog = true
+        },
         actions = {
             when (currentScreen) {
                 AppScreen.CHAT, AppScreen.CODING, AppScreen.CODE_REVIEW, AppScreen.REMOTE -> {
                     IconButton(onClick = { useAgentMode = !useAgentMode }) {
                         Icon(
-                            imageVector = if (useAgentMode) Icons.Default.SmartToy else Icons.AutoMirrored.Filled.Chat,
+                            imageVector = if (useAgentMode) Icons.Default.SmartToy else Icons.Filled.Chat,
                             contentDescription = if (useAgentMode) "Agent 模式" else "Chat 模式"
                         )
                     }
@@ -185,17 +190,14 @@ private fun AndroidAutoDevContent(
                         }
                     }
                 }
-
                 else -> {}
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier
-            .padding(paddingValues)
-            .fillMaxSize()) {
+        Box(modifier = Modifier.padding(paddingValues)) {
             when (currentScreen) {
                 AppScreen.CHAT, AppScreen.CODING, AppScreen.CODE_REVIEW, AppScreen.REMOTE -> {
-                    // 统一使用 AgentInterfaceRouter，避免直接依赖 AgentChatInterface
+                    // 统一通过 AgentInterfaceRouter 路由
                     AgentInterfaceRouter(
                         llmService = llmService,
                         isTreeViewVisible = isTreeViewVisible,
@@ -235,32 +237,35 @@ private fun AndroidAutoDevContent(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-
-                AppScreen.TASKS -> {
-                    TasksPlaceholderScreen()
-                }
-
+                
                 AppScreen.PROFILE -> {
-                    ProfileScreen(
-                        currentModelConfig = currentModelConfig,
-                        onShowModelConfig = { showModelConfigDialog = true },
-                        onShowToolConfig = { showToolConfigDialog = true }
-                    )
+                    // 个人中心
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        Text("个人中心", style = MaterialTheme.typography.headlineMedium)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("工作空间: ${currentWorkspace.rootPath ?: "未设置"}")
+                        Text("模型: ${currentModelConfig?.modelName ?: "未配置"}")
+                    }
                 }
-
+                
                 else -> {
+                    // 占位界面
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = androidx.compose.ui.Alignment.Center
                     ) {
-                        Text("屏幕开发中...")
+                        Text("${currentScreen.name} 功能开发中...")
                     }
                 }
             }
         }
     }
 
-    // Dialogs
+    // 配置对话框
     if (showModelConfigDialog) {
         ModelConfigDialog(
             currentConfig = currentModelConfig ?: ModelConfig(),
@@ -293,10 +298,11 @@ private fun AndroidAutoDevContent(
         )
     }
 
+    // 工具配置对话框（与 Android 保持一致）
     if (showToolConfigDialog) {
         cc.unitmesh.devins.ui.compose.config.ToolConfigDialog(
             onDismiss = { showToolConfigDialog = false },
-            onSave = { newConfig ->
+            onSave = { _ ->
                 println("✅ 工具配置已保存")
                 showToolConfigDialog = false
             },
@@ -304,6 +310,7 @@ private fun AndroidAutoDevContent(
         )
     }
 
+    // 错误对话框
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
@@ -311,198 +318,10 @@ private fun AndroidAutoDevContent(
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(onClick = { showErrorDialog = false }) {
-                    Text("关闭")
+                    Text("确定")
                 }
             }
         )
-    }
-}
-
-/**
- * Chat 模式屏幕（非 Agent 模式）
- */
-@Composable
-private fun ChatModeScreen(
-    messages: List<Message>,
-    currentStreamingOutput: String,
-    isLLMProcessing: Boolean,
-    callbacks: cc.unitmesh.devins.editor.EditorCallbacks,
-    completionManager: CompletionManager,
-    projectPath: String,
-    fileSystem: ProjectFileSystem,
-    onModelConfigChange: (ModelConfig) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        val isCompactMode = messages.isNotEmpty() || isLLMProcessing
-
-        if (isCompactMode) {
-            MessageList(
-                messages = messages,
-                isLLMProcessing = isLLMProcessing,
-                currentOutput = currentStreamingOutput,
-                projectPath = projectPath,
-                fileSystem = fileSystem,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
-
-            DevInEditorInput(
-                initialText = "",
-                placeholder = "输入消息...",
-                callbacks = callbacks,
-                completionManager = completionManager,
-                isCompactMode = true,
-                onModelConfigChange = onModelConfigChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .imePadding()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                DevInEditorInput(
-                    initialText = "",
-                    placeholder = "输入消息...",
-                    callbacks = callbacks,
-                    completionManager = completionManager,
-                    onModelConfigChange = onModelConfigChange,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProfileScreen(
-    currentModelConfig: ModelConfig?,
-    onShowModelConfig: () -> Unit,
-    onShowToolConfig: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(
-            text = "设置",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        // 模型配置
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onShowModelConfig
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "模型配置",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = currentModelConfig?.let {
-                            "${it.provider.displayName} / ${it.modelName}"
-                        } ?: "未配置",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Icon(Icons.Default.ChevronRight, contentDescription = null)
-            }
-        }
-
-        // 工具配置
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onShowToolConfig
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "工具配置",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "管理 MCP 工具和内置工具",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Icon(Icons.Default.ChevronRight, contentDescription = null)
-            }
-        }
-
-        // 关于
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "关于 AutoDev",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "版本：0.1.5",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "AI 驱动的开发助手",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-/**
- * Tasks 占位屏幕
- */
-@Composable
-private fun TasksPlaceholderScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Assignment,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = "任务管理",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Text(
-                text = "即将推出",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 

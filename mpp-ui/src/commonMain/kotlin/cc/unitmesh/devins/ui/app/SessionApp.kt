@@ -1,8 +1,6 @@
 package cc.unitmesh.devins.ui.app
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -163,7 +161,7 @@ private fun AndroidNavigationLayout(
 ) {
     val scope = rememberCoroutineScope()
 
-    AndroidNavLayout(
+    MobileNavLayout(
         currentScreen = currentScreen,
         onScreenChange = onScreenChange,
         sessionViewModel = sessionViewModel

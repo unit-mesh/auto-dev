@@ -132,7 +132,7 @@ private fun AndroidUnifiedLayout(
     val sessions by sessionViewModel.sessions.collectAsState()
     val currentProject by projectViewModel.currentProject.collectAsState()
 
-    AndroidNavLayout(
+    MobileNavLayout(
         currentScreen = currentScreen,
         onScreenChange = onScreenChange,
         sessionViewModel = sessionViewModel

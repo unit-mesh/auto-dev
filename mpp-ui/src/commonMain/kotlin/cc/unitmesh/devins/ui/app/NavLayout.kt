@@ -16,18 +16,18 @@ import kotlinx.coroutines.launch
 
 /**
  * NavLayout - 跨平台导航布局系统
- * 
+ *
  * 支持多平台导航模式：
  * 1. Android: Drawer + BottomNavigation
  * 2. iOS: TabBar (planned)
  * 3. Desktop: NavigationRail
- * 
+ *
  * 核心功能：
  * - 统一的导航状态管理
  * - 支持登录/登出
  * - 多屏幕切换
  * - 平台特定的 UI 适配
- * 
+ *
  * 设计原则：
  * - Android：Material 3 设计，Drawer + BottomNav
  * - iOS：原生 TabBar 风格（未来实现）
@@ -66,14 +66,14 @@ data class NavItem(
 
 /**
  * 默认导航配置
- * 
+ *
  * 主要功能（Bottom/Tab）：
  * - Chat: 本地 AI 对话
  * - Coding: 编码 Agent
  * - Review: 代码审查
  * - Remote: 远程服务器
  * - Profile: 个人中心
- * 
+ *
  * 次要功能（Drawer only）：
  * - Projects: 项目管理
  * - Tasks: 任务管理
@@ -121,7 +121,7 @@ val defaultNavItems = listOf(
         showInBottomNav = true,
         showInTabBar = true
     ),
-    
+
     // 次要功能 - 仅在 Drawer 显示
     NavItem(
         screen = AppScreen.PROJECTS,
@@ -157,7 +157,7 @@ val defaultNavItems = listOf(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AndroidNavLayout(
+fun MobileNavLayout(
     currentScreen: AppScreen,
     onScreenChange: (AppScreen) -> Unit,
     sessionViewModel: SessionViewModel,
@@ -297,7 +297,7 @@ private fun AndroidDrawerContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
-        
+
         defaultNavItems.filter { it.showInBottomNav }.forEach { navItem ->
             NavigationDrawerItem(
                 icon = { Icon(navItem.icon, contentDescription = navItem.label) },
@@ -322,7 +322,7 @@ private fun AndroidDrawerContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
-        
+
         defaultNavItems.filter { it.showInDrawer && !it.showInBottomNav }.forEach { navItem ->
             NavigationDrawerItem(
                 icon = { Icon(navItem.icon, contentDescription = navItem.label) },
@@ -346,7 +346,7 @@ private fun AndroidDrawerContent(
             onClick = onShowSettings,
             modifier = Modifier.padding(vertical = 2.dp)
         )
-        
+
         NavigationDrawerItem(
             icon = { Icon(Icons.Default.Build, contentDescription = "工具配置") },
             label = { Text("工具配置") },
@@ -354,7 +354,7 @@ private fun AndroidDrawerContent(
             onClick = onShowTools,
             modifier = Modifier.padding(vertical = 2.dp)
         )
-        
+
         if (hasDebugInfo) {
             NavigationDrawerItem(
                 icon = { Icon(Icons.Default.BugReport, contentDescription = "调试信息") },
@@ -385,7 +385,7 @@ private fun AndroidDrawerContent(
 
 /**
  * iOS/macOS 风格的导航布局（TabBar）
- * 
+ *
  * 注意：Compose Multiplatform 不直接支持原生 TabBar
  * 这里提供一个 Material 3 风格的实现，未来可以用 SwiftUI 替换
  */
@@ -402,7 +402,7 @@ fun AppleNavLayout(
 ) {
     val scope = rememberCoroutineScope()
     val currentUser by sessionViewModel.currentUser.collectAsState()
-    
+
     // iOS 风格：无 Drawer，使用 Sheet 或 Navigation
     var showSettingsSheet by remember { mutableStateOf(false) }
 
@@ -528,7 +528,7 @@ private fun AppleSettingsSheet(
                 leadingContent = { Icon(Icons.Default.Settings, contentDescription = "模型设置") },
                 modifier = Modifier.clickable { onShowSettings() }
             )
-            
+
             ListItem(
                 headlineContent = { Text("工具配置") },
                 leadingContent = { Icon(Icons.Default.Build, contentDescription = "工具配置") },
@@ -539,13 +539,13 @@ private fun AppleSettingsSheet(
 
             // 退出登录
             ListItem(
-                headlineContent = { 
+                headlineContent = {
                     Text(
                         "退出登录",
                         color = MaterialTheme.colorScheme.error
                     )
                 },
-                leadingContent = { 
+                leadingContent = {
                     Icon(
                         Icons.Default.ExitToApp,
                         contentDescription = "退出登录",
@@ -583,7 +583,7 @@ fun DesktopNavLayout(
             }
         ) {
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             defaultNavItems.filter { it.showInRail }.forEach { navItem ->
                 NavigationRailItem(
                     icon = { Icon(navItem.icon, contentDescription = navItem.label) },
