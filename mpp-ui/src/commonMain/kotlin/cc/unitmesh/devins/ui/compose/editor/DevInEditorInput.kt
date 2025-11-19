@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.editor
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -11,6 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
@@ -48,6 +54,15 @@ import org.jetbrains.compose.resources.Font
  * 完整的输入界面，包含底部工具栏
  *
  * Model configuration is now managed internally by ModelSelector via ConfigManager.
+ * 
+ * Mobile-friendly improvements:
+ * - No auto-focus on mobile (user taps to show keyboard)
+ * - IME-aware keyboard handling (ImeAction.Send on mobile)
+ * - Dismisses keyboard after sending message
+ * - Better height constraints for touch ergonomics
+ * 
+ * @param autoFocusOnMount Whether to automatically focus the input on mount (desktop only, default: false)
+ * @param dismissKeyboardOnSend Whether to dismiss keyboard after sending message (default: true)
  */
 @Composable
 fun DevInEditorInput(
@@ -59,7 +74,8 @@ fun DevInEditorInput(
     isExecuting: Boolean = false,
     onStopClick: () -> Unit = {},
     modifier: Modifier = Modifier,
-    onModelConfigChange: (ModelConfig) -> Unit = {}
+    onModelConfigChange: (ModelConfig) -> Unit = {},
+    dismissKeyboardOnSend: Boolean = true
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
     var highlightedText by remember { mutableStateOf(initialText) }
@@ -82,7 +98,49 @@ fun DevInEditorInput(
     val highlighter = remember { DevInSyntaxHighlighter() }
     val manager = completionManager ?: remember { CompletionManager() }
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
+    
+    val isMobile = Platform.isAndroid || Platform.isIOS
+    val isAndroid = Platform.isAndroid
+    
+    // Style constants based on mode
+    val inputShape = if (isAndroid && isCompactMode) 12.dp else 4.dp
+    val inputFontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp
+    val inputLineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
+    val maxLines = if (isAndroid && isCompactMode) 5 else 8
+    
+    // iOS: Use flexible sizing (wrapContent + maxHeight) to avoid keyboard constraint conflicts
+    // Android/Desktop: Use minHeight for touch targets + maxHeight for bounds
+    val minHeight = if (Platform.isIOS) {
+        null // iOS uses natural content height to avoid keyboard conflicts
+    } else if (isCompactMode) {
+        if (isAndroid) 52.dp else 56.dp
+    } else {
+        80.dp
+    }
+    
+    val maxHeight = if (isCompactMode) {
+        when {
+            Platform.isIOS -> 160.dp // iOS: generous max height, flexible min
+            isAndroid -> 120.dp
+            else -> 96.dp
+        }
+    } else {
+        when {
+            Platform.isIOS -> 200.dp // iOS: more room in non-compact mode
+            else -> 160.dp
+        }
+    }
+    
+    val padding = if (isCompactMode) {
+        when {
+            Platform.isIOS -> 14.dp // iOS: slightly more padding for comfort
+            else -> 12.dp
+        }
+    } else {
+        20.dp
+    }
 
     // Initialize MCP client manager with config
     LaunchedEffect(Unit) {
@@ -251,7 +309,10 @@ fun DevInEditorInput(
             showCompletion = false
         }
 
-        focusRequester.requestFocus()
+        // Don't force focus on mobile after completion
+        if (!isMobile) {
+            focusRequester.requestFocus()
+        }
     }
 
     // 增强当前输入的函数
@@ -291,8 +352,7 @@ fun DevInEditorInput(
 
         // 移动端：不拦截 Enter 键，让输入法和虚拟键盘正常工作
         // 桌面端：Enter 发送，Shift+Enter 换行
-        val isAndroid = Platform.isAndroid
-
+        
         return when {
             // 补全弹窗显示时的特殊处理
             showCompletion -> {
@@ -332,11 +392,14 @@ fun DevInEditorInput(
             }
 
             // 桌面端：Enter 发送消息（但不在移动端拦截）
-            !isAndroid && event.key == Key.Enter && !event.isShiftPressed -> {
+            !isAndroid && !Platform.isIOS && event.key == Key.Enter && !event.isShiftPressed -> {
                 if (textFieldValue.text.isNotBlank()) {
                     callbacks?.onSubmit(textFieldValue.text)
                     textFieldValue = TextFieldValue("")
                     showCompletion = false
+                    if (dismissKeyboardOnSend) {
+                        focusManager.clearFocus()
+                    }
                 }
                 true
             }
@@ -352,10 +415,17 @@ fun DevInEditorInput(
         }
     }
 
-    val isAndroid = Platform.isAndroid
-
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .then(
+                if (isMobile) {
+                    Modifier.clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) {
+                        focusManager.clearFocus()
+                    }
+                } else {
+                    Modifier
+                }
+            ),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         // File Change Summary - shown above the editor
@@ -365,13 +435,8 @@ fun DevInEditorInput(
             contentAlignment = if (isAndroid && isCompactMode) Alignment.Center else Alignment.TopStart
         ) {
             Surface(
-                modifier =
-                    if (isAndroid && isCompactMode) {
-                        Modifier.fillMaxWidth() // Android 紧凑模式：full width
-                    } else {
-                        Modifier.fillMaxWidth()
-                    },
-                shape = RoundedCornerShape(if (isAndroid && isCompactMode) 12.dp else 4.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(inputShape),
                 border =
                     androidx.compose.foundation.BorderStroke(
                         width = 1.dp,
@@ -388,28 +453,19 @@ fun DevInEditorInput(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .heightIn(
-                                    min =
-                                        if (isCompactMode) {
-                                            if (isAndroid) 48.dp else 56.dp
-                                        } else {
-                                            80.dp
-                                        },
-                                    max =
-                                        if (isCompactMode) {
-                                            // 移动端紧凑模式：允许自动扩展到 3 行
-                                            if (isAndroid) 120.dp else 96.dp
-                                        } else {
-                                            160.dp
-                                        }
-                                )
-                                .padding(
-                                    if (isCompactMode) {
-                                        if (isAndroid) 12.dp else 12.dp
+                                .then(
+                                    // iOS: Use wrapContentHeight + maxHeight only (no minHeight)
+                                    // to avoid conflicts with keyboard constraints
+                                    if (Platform.isIOS) {
+                                        Modifier
+                                            .wrapContentHeight()
+                                            .heightIn(max = maxHeight)
                                     } else {
-                                        20.dp
+                                        // Android/Desktop: Use traditional min/max constraints
+                                        Modifier.heightIn(min = minHeight!!, max = maxHeight)
                                     }
                                 )
+                                .padding(padding)
                     ) {
                         BasicTextField(
                             value = textFieldValue,
@@ -418,17 +474,39 @@ fun DevInEditorInput(
                                 Modifier
                                     .fillMaxWidth()
                                     .wrapContentHeight() // 允许高度自动撑开
-                                    .focusRequester(focusRequester)
+                                    .then(
+                                        if (!isMobile) {
+                                            Modifier.focusRequester(focusRequester)
+                                        } else {
+                                            Modifier
+                                        }
+                                    )
                                     .onPreviewKeyEvent { handleKeyEvent(it) },
                             textStyle =
                                 TextStyle(
                                     fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
-                                    fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp, // 移动端更大
+                                    fontSize = inputFontSize,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp // 增加行高
+                                    lineHeight = inputLineHeight
                                 ),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            maxLines = if (isAndroid && isCompactMode) 5 else 8, // 限制最大行数
+                            maxLines = maxLines,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = if (isMobile) ImeAction.Send else ImeAction.Default
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSend = {
+                                    if (textFieldValue.text.isNotBlank()) {
+                                        callbacks?.onSubmit(textFieldValue.text)
+                                        textFieldValue = TextFieldValue("")
+                                        showCompletion = false
+                                        if (dismissKeyboardOnSend) {
+                                            focusManager.clearFocus()
+                                        }
+                                    }
+                                }
+                            ),
                             decorationBox = { innerTextField ->
                                 Box(
                                     modifier =
@@ -443,8 +521,8 @@ fun DevInEditorInput(
                                             style =
                                                 TextStyle(
                                                     fontFamily = FontFamily.Monospace,
-                                                    fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
-                                                    lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
+                                                    fontSize = inputFontSize,
+                                                    lineHeight = inputLineHeight
                                                 ),
                                             modifier = Modifier.fillMaxWidth()
                                         )
@@ -457,9 +535,9 @@ fun DevInEditorInput(
                                             style =
                                                 TextStyle(
                                                     fontFamily = FontFamily.Monospace,
-                                                    fontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp,
+                                                    fontSize = inputFontSize,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                                    lineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
+                                                    lineHeight = inputLineHeight
                                                 )
                                         )
                                     }
@@ -503,6 +581,10 @@ fun DevInEditorInput(
                                 callbacks?.onSubmit(textFieldValue.text)
                                 textFieldValue = TextFieldValue("")
                                 showCompletion = false
+                                // Force dismiss keyboard on mobile
+                                if (isMobile) {
+                                    focusManager.clearFocus()
+                                }
                             }
                         },
                         sendEnabled = textFieldValue.text.isNotBlank(),
@@ -559,7 +641,8 @@ fun DevInEditorInput(
                 )
             }
 
-            if (showCompletion && completionItems.isNotEmpty()) {
+            // Only show completion popup on desktop, not on mobile
+            if (!isMobile && showCompletion && completionItems.isNotEmpty()) {
                 CompletionPopup(
                     items = completionItems,
                     selectedIndex = selectedCompletionIndex,
@@ -578,7 +661,6 @@ fun DevInEditorInput(
         }
     }
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
+    // No auto-focus on any platform - user must tap to show keyboard
+    // This provides consistent behavior across mobile and desktop
 }

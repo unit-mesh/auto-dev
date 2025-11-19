@@ -70,11 +70,20 @@ open class CodeReviewViewModel(
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
-            codeReviewAgent = initializeCodingAgent()
-            if (gitOps.isSupported()) {
-                loadCommitHistory()
-            } else {
-                loadDiff()
+            try {
+                codeReviewAgent = initializeCodingAgent()
+                if (gitOps.isSupported()) {
+                    loadCommitHistory()
+                } else {
+                    loadDiff()
+                }
+            } catch (e: Exception) {
+                AutoDevLogger.error("CodeReviewViewModel") {
+                    "Failed to initialize: ${e.message}"
+                }
+                updateState {
+                    it.copy(error = "Initialization failed: ${e.message}")
+                }
             }
         }
     }
@@ -919,7 +928,9 @@ open class CodeReviewViewModel(
             val toolConfig = ToolConfigFile.default()
 
             val configWrapper = ConfigManager.load()
-            val modelConfig = configWrapper.getActiveModelConfig()!!
+            val modelConfig = configWrapper.getActiveModelConfig()
+                ?: throw IllegalStateException("No active model configuration found. Please configure a model in settings.")
+
             val llmService = KoogLLMService.create(modelConfig)
 
             val mcpToolConfigService = McpToolConfigService(toolConfig)

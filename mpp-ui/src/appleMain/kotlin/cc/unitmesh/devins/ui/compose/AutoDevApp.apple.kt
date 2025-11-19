@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Apple (iOS/macOS) implementation of PlatformAutoDevApp
- * 
+ *
  * Features:
  * - TabBar navigation (iOS style)
  * - Multi-agent support (Chat, Coding, Code Review, Remote)
@@ -237,7 +237,7 @@ private fun AppleAutoDevContent(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                
+
                 AppScreen.PROFILE -> {
                     // 个人中心
                     Column(
@@ -251,7 +251,7 @@ private fun AppleAutoDevContent(
                         Text("模型: ${currentModelConfig?.modelName ?: "未配置"}")
                     }
                 }
-                
+
                 else -> {
                     // 占位界面
                     Box(

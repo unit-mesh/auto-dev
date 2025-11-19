@@ -5,6 +5,7 @@ import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.llm.NamedModelConfig
 import cc.unitmesh.yaml.YamlUtils
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.memScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import platform.Foundation.*
@@ -15,11 +16,19 @@ import platform.Foundation.*
  */
 actual object ConfigManager {
     @OptIn(ExperimentalForeignApi::class)
-    private val homeDir: String
-        get() = NSHomeDirectory()
+    private val fileManager = NSFileManager.defaultManager
 
+    @OptIn(ExperimentalForeignApi::class)
     private val configDir: String
-        get() = "$homeDir/.autodev"
+        get() {
+            val paths = NSSearchPathForDirectoriesInDomains(
+                NSApplicationSupportDirectory,
+                NSUserDomainMask,
+                true
+            )
+            val appSupportDir = paths.firstOrNull() as? String ?: NSHomeDirectory()
+            return "$appSupportDir/autodev"
+        }
 
     private val configFilePath: String
         get() = "$configDir/config.yaml"
@@ -31,7 +40,6 @@ actual object ConfigManager {
     actual suspend fun load(): AutoDevConfigWrapper =
         withContext(Dispatchers.Default) {
             try {
-                val fileManager = NSFileManager.defaultManager
                 if (!fileManager.fileExistsAtPath(configFilePath)) {
                     return@withContext createEmpty()
                 }
@@ -46,7 +54,8 @@ actual object ConfigManager {
                 val configFileData = parseYamlConfig(content)
                 AutoDevConfigWrapper(configFileData)
             } catch (e: Exception) {
-                println("Error loading config: ${e.message}")
+                println("❌ Exception loading config: ${e.message}")
+                e.printStackTrace()
                 createEmpty()
             }
         }
@@ -55,8 +64,6 @@ actual object ConfigManager {
     actual suspend fun save(configFile: ConfigFile) =
         withContext(Dispatchers.Default) {
             try {
-                val fileManager = NSFileManager.defaultManager
-
                 // Create config directory if it doesn't exist
                 if (!fileManager.fileExistsAtPath(configDir)) {
                     fileManager.createDirectoryAtPath(
@@ -81,7 +88,7 @@ actual object ConfigManager {
 
                 println("✅ Configuration saved to $configFilePath")
             } catch (e: Exception) {
-                println("Error saving config: ${e.message}")
+                println("❌ Error saving config: ${e.message}")
                 throw e
             }
         }
@@ -144,7 +151,6 @@ actual object ConfigManager {
     actual suspend fun loadToolConfig(): ToolConfigFile =
         withContext(Dispatchers.Default) {
             try {
-                val fileManager = NSFileManager.defaultManager
                 if (!fileManager.fileExistsAtPath(toolConfigFilePath)) {
                     return@withContext ToolConfigFile()
                 }
@@ -157,7 +163,7 @@ actual object ConfigManager {
 
                 kotlinx.serialization.json.Json.decodeFromString<ToolConfigFile>(content)
             } catch (e: Exception) {
-                println("Error loading tool config: ${e.message}")
+                println("❌ Error loading tool config: ${e.message}")
                 ToolConfigFile.default()
             }
         }
@@ -166,8 +172,6 @@ actual object ConfigManager {
     actual suspend fun saveToolConfig(toolConfig: ToolConfigFile) =
         withContext(Dispatchers.Default) {
             try {
-                val fileManager = NSFileManager.defaultManager
-
                 // Create config directory if it doesn't exist
                 if (!fileManager.fileExistsAtPath(configDir)) {
                     fileManager.createDirectoryAtPath(
@@ -192,7 +196,7 @@ actual object ConfigManager {
 
                 println("✅ Tool configuration saved to $toolConfigFilePath")
             } catch (e: Exception) {
-                println("Error saving tool config: ${e.message}")
+                println("❌ Error saving tool config: ${e.message}")
                 throw e
             }
         }
@@ -201,7 +205,6 @@ actual object ConfigManager {
 
     @OptIn(ExperimentalForeignApi::class)
     actual suspend fun exists(): Boolean {
-        val fileManager = NSFileManager.defaultManager
         return fileManager.fileExistsAtPath(configFilePath)
     }
 
