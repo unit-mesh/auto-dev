@@ -320,9 +320,18 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = GLT7C7U49T;
 				ENABLE_BITCODE = NO;
 				ENABLE_PREVIEWS = YES;
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"\"${SRCROOT}/../mpp-ui/build/bin/iosArm64/debugFramework\"",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"\"${SRCROOT}/../mpp-ui/build/bin/iosSimulatorArm64/debugFramework\"",
+					"\"${SRCROOT}/../mpp-ui/build/bin/iosX64/debugFramework\"",
+				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AutoDevApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -334,6 +343,10 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lsqlite3",
+					"-ObjC",
+					"-lc++",
+					"-framework",
+					AutoDevUI,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = cc.unitmesh.AutoDevApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -349,9 +362,18 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = GLT7C7U49T;
 				ENABLE_BITCODE = NO;
 				ENABLE_PREVIEWS = YES;
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"\"${SRCROOT}/../mpp-ui/build/bin/iosArm64/releaseFramework\"",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"\"${SRCROOT}/../mpp-ui/build/bin/iosSimulatorArm64/releaseFramework\"",
+					"\"${SRCROOT}/../mpp-ui/build/bin/iosX64/releaseFramework\"",
+				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AutoDevApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -363,6 +385,10 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lsqlite3",
+					"-ObjC",
+					"-lc++",
+					"-framework",
+					AutoDevUI,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = cc.unitmesh.AutoDevApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";

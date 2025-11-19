@@ -9,28 +9,21 @@ Pod::Spec.new do |spec|
 
   spec.ios.deployment_target    = '14.0'
   spec.libraries                = 'c++'
+  # Keep build outputs so CocoaPods treats the spec as non-empty
+  spec.preserve_paths           = 'build/bin/**/*'
 
   # Note: AutoDevUI framework already exports AutoDevCore (configured in build.gradle.kts)
   # No need to add AutoDevCore as a separate dependency to avoid duplicate symbols
 
-  # 根据架构选择正确的 framework
-  spec.vendored_frameworks      = 'build/bin/iosSimulatorArm64/debugFramework/AutoDevUI.framework'
-
-  # Pod 准备命令 - 在 pod install 时编译 framework
+  # Pod 准备命令 - 在 pod install 时编译 framework（作为兜底，主要通过 Podfile 的 FRAMEWORK_SEARCH_PATHS 进行链接）
   spec.prepare_command = <<-CMD
     set -e
     cd ..
 
-    # 检测架构
-    ARCH=$(uname -m)
-    if [ "$ARCH" = "arm64" ]; then
-      TARGET="IosSimulatorArm64"
-    else
-      TARGET="IosX64"
-    fi
-
-    echo "Building AutoDevUI for $TARGET..."
-    ./gradlew :mpp-ui:linkDebugFramework$TARGET
+    echo "Building AutoDevUI frameworks (simulator + device) ..."
+    ./gradlew :mpp-ui:linkDebugFrameworkIosSimulatorArm64 \
+               :mpp-ui:linkDebugFrameworkIosX64 \
+               :mpp-ui:linkDebugFrameworkIosArm64
   CMD
 end
 

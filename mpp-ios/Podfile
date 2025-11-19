@@ -33,29 +33,31 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     if target.name == 'Pods-AutoDevApp'
       target.build_configurations.each do |config|
-        # 检测架构和配置
-        arch = 'iosSimulatorArm64'  # 默认 Apple Silicon 模拟器
+        # 配置对应 Debug/Release 的目录名
         build_config = config.name.downcase.include?('debug') ? 'debug' : 'release'
 
-        # 添加框架搜索路径（只需要 mpp-ui，因为它已经包含了 mpp-core）
-        framework_paths = [
-          "$(inherited)",
-          "\"${PODS_ROOT}/../../mpp-ui/build/bin/#{arch}/#{build_config}Framework\""
+        # 为不同 SDK 设置搜索路径（设备与模拟器）
+        framework_search_sim = [
+          '$(inherited)',
+          "\"${PODS_ROOT}/../../mpp-ui/build/bin/iosSimulatorArm64/#{build_config}Framework\"",
+          "\"${PODS_ROOT}/../../mpp-ui/build/bin/iosX64/#{build_config}Framework\""
+        ]
+        framework_search_dev = [
+          '$(inherited)',
+          "\"${PODS_ROOT}/../../mpp-ui/build/bin/iosArm64/#{build_config}Framework\""
         ]
 
-        config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
-        config.build_settings['FRAMEWORK_SEARCH_PATHS'] = framework_paths
+        config.build_settings['FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]'] = framework_search_sim
+        config.build_settings['FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]'] = framework_search_dev
 
-        # 添加链接器标志
+        # 添加链接器标志（仅需 AutoDevUI，已 export AutoDevCore）
         ldflags = [
-          "$(inherited)",
-          "-ObjC",
-          "-lc++",
-          "-framework AutoDevUI",
-          "-lsqlite3"
+          '$(inherited)',
+          '-ObjC',
+          '-lc++',
+          '-framework AutoDevUI',
+          '-lsqlite3'
         ]
-
-        config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
         config.build_settings['OTHER_LDFLAGS'] = ldflags
       end
     end
@@ -66,12 +68,30 @@ post_install do |installer|
   app_project.targets.each do |target|
     if target.name == 'AutoDevApp'
       target.build_configurations.each do |config|
-        # 添加 sqlite3 库
-        config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
-        ldflags = config.build_settings['OTHER_LDFLAGS']
-        ldflags = [ldflags] unless ldflags.is_a?(Array)
-        ldflags << '-lsqlite3' unless ldflags.include?('-lsqlite3')
-        config.build_settings['OTHER_LDFLAGS'] = ldflags
+        # 配置 Debug/Release 名称
+        build_config = config.name.downcase.include?('debug') ? 'debug' : 'release'
+
+        # 添加 AutoDevUI 框架搜索路径（设备与模拟器）
+        framework_search_sim = [
+          '$(inherited)',
+          "\"${SRCROOT}/../mpp-ui/build/bin/iosSimulatorArm64/#{build_config}Framework\"",
+          "\"${SRCROOT}/../mpp-ui/build/bin/iosX64/#{build_config}Framework\""
+        ]
+        framework_search_dev = [
+          '$(inherited)',
+          "\"${SRCROOT}/../mpp-ui/build/bin/iosArm64/#{build_config}Framework\""
+        ]
+
+        config.build_settings['FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]'] = framework_search_sim
+        config.build_settings['FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]'] = framework_search_dev
+
+        # 添加链接器标志，确保链接 AutoDevUI 和 sqlite3
+        flags = config.build_settings['OTHER_LDFLAGS'] || ['$(inherited)']
+        flags = [flags] unless flags.is_a?(Array)
+        ['-ObjC','-lc++','-framework','AutoDevUI','-lsqlite3'].each do |f|
+          flags << f unless flags.include?(f)
+        end
+        config.build_settings['OTHER_LDFLAGS'] = flags
       end
     end
   end
