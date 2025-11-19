@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool
 
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.agent.tool.schema.ToolSchema
 import kotlinx.serialization.Serializable
 

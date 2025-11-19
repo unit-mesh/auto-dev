@@ -11,7 +11,7 @@ import cc.unitmesh.agent.orchestrator.ToolOrchestrator
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.state.ToolCall
 import cc.unitmesh.agent.tool.ToolResult
-import cc.unitmesh.agent.tool.ToolResultFormatter
+import cc.unitmesh.agent.tool.schema.ToolResultFormatter
 import cc.unitmesh.agent.vcs.context.DiffContextCompressor
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.yield

@@ -1,4 +1,4 @@
-package cc.unitmesh.agent.tool
+package cc.unitmesh.agent.tool.schema
 
 /**
  * Categories for organizing tools
@@ -15,35 +15,35 @@ enum class ToolCategory(
         tuiEmoji = "📁",
         composeIcon = "folder"
     ),
-    
+
     Search(
         displayName = "Search",
         description = "Tools for searching files and content",
         tuiEmoji = "🔍",
         composeIcon = "search"
     ),
-    
+
     Execution(
         displayName = "Execution",
         description = "Tools for executing commands and scripts",
         tuiEmoji = "⚡",
         composeIcon = "play_arrow"
     ),
-    
+
     Information(
         displayName = "Information",
         description = "Tools for gathering system and file information",
         tuiEmoji = "ℹ️",
         composeIcon = "info"
     ),
-    
+
     Utility(
         displayName = "Utility",
         description = "General utility tools",
         tuiEmoji = "🛠️",
         composeIcon = "build"
     ),
-    
+
     SubAgent(
         displayName = "Sub-Agent",
         description = "Specialized sub-agents for complex tasks",
@@ -57,7 +57,7 @@ enum class ToolCategory(
         tuiEmoji = "💬",
         composeIcon = "chat"
     );
-    
+
     companion object {
         /**
          * Get category by name

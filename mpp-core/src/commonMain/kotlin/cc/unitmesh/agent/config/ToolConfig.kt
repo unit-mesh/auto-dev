@@ -35,11 +35,6 @@ data class ToolConfigFile(
      * Maps server name to server config
      */
     val mcpServers: Map<String, McpServerConfig> = emptyMap(),
-    
-    /**
-     * Chat configuration
-     */
-    val chatConfig: ChatConfig = ChatConfig()
 ) {
     companion object {
         /**
@@ -51,25 +46,15 @@ data class ToolConfigFile(
                     "read-file", "write-file", "list-files", "edit-file", "patch-file",
                     "grep", "glob",
                     "shell",
+                    "web-fetch",
                     "error-recovery", "log-summary", "codebase-investigator"
                 ),
                 enabledMcpTools = emptyList(),
-                mcpServers = emptyMap(),
-                chatConfig = ChatConfig()
+                mcpServers = emptyMap()
             )
         }
     }
 }
-
-/**
- * Chat configuration settings
- */
-@Serializable
-data class ChatConfig(
-    val temperature: Double = 0.7,
-    val systemPrompt: String = "",
-    val maxTokens: Int = 128000
-)
 
 /**
  * Represents a tool item in the UI

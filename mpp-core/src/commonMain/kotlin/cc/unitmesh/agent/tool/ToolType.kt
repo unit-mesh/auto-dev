@@ -5,6 +5,7 @@ import cc.unitmesh.agent.subagent.ContentHandlerSchema
 import cc.unitmesh.agent.subagent.ErrorRecoverySchema
 import cc.unitmesh.agent.tool.impl.*
 import cc.unitmesh.agent.tool.impl.AskSubAgentSchema
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.agent.tool.schema.ToolSchema
 
 /**

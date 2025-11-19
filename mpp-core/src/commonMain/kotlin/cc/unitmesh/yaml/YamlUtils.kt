@@ -14,6 +14,7 @@ object YamlUtils {
      * Parse YAML string to a Map<String, Any>
      * Compatible with snakeyaml's Yaml.load() method
      */
+    @Suppress("UNCHECKED_CAST")
     fun load(yamlContent: String): Map<String, Any>? {
         if (yamlContent.isBlank()) return null
 
@@ -76,7 +77,6 @@ object YamlUtils {
                 result
             }
             is com.charleskorn.kaml.YamlTaggedNode -> yamlNodeToAny(node.innerNode)
-            else -> throw YamlParseException("Unsupported YAML node type: ${node::class.simpleName}")
         }
     }
 }

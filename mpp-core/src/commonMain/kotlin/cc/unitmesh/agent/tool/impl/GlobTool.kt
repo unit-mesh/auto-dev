@@ -8,6 +8,7 @@ import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.boolean
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -6,6 +6,7 @@ import cc.unitmesh.agent.tool.impl.http.HttpFetcherFactory
 import cc.unitmesh.agent.tool.impl.http.UrlParser
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.serialization.Serializable
 
@@ -128,10 +129,7 @@ class WebFetchInvocation(
             // Use LLM to process the content
             val result = StringBuilder()
             try {
-                llmService.streamPrompt(
-                    userPrompt = fallbackPrompt,
-                    compileDevIns = false
-                )?.collect { chunk ->
+                llmService.streamPrompt(userPrompt = fallbackPrompt, compileDevIns = false)?.collect { chunk ->
                     result.append(chunk)
                 }
             } catch (e: Exception) {

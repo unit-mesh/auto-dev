@@ -5,9 +5,6 @@ import cc.unitmesh.agent.logging.getLogger
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem
-import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
-import cc.unitmesh.agent.tool.provider.ToolDependencies
-import cc.unitmesh.agent.tool.provider.ToolProviderRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 import cc.unitmesh.llm.KoogLLMService

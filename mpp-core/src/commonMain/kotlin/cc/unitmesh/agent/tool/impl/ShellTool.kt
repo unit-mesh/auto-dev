@@ -5,6 +5,7 @@ import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.objectType
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutionConfig
 import cc.unitmesh.agent.tool.shell.ShellExecutor

@@ -4,6 +4,7 @@ import cc.unitmesh.agent.core.SubAgentManager
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import kotlinx.serialization.Serializable
 
 /**

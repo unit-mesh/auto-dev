@@ -1,6 +1,9 @@
-package cc.unitmesh.agent.tool
+package cc.unitmesh.agent.tool.schema
 
 import cc.unitmesh.agent.logging.getLogger
+import cc.unitmesh.agent.tool.ExecutableTool
+import cc.unitmesh.agent.tool.ToolType
+import cc.unitmesh.agent.tool.toToolType
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add

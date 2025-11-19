@@ -13,7 +13,7 @@ import cc.unitmesh.agent.orchestrator.ToolOrchestrator
 import cc.unitmesh.agent.policy.DefaultPolicyEngine
 import cc.unitmesh.agent.render.CodingAgentRenderer
 import cc.unitmesh.agent.render.DefaultCodingAgentRenderer
-import cc.unitmesh.agent.tool.AgentToolFormatter
+import cc.unitmesh.agent.tool.schema.AgentToolFormatter
 import cc.unitmesh.agent.tool.ToolResult
 import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
 import cc.unitmesh.agent.tool.filesystem.ToolFileSystem

@@ -1,6 +1,7 @@
 package cc.unitmesh.agent.mcp
 
 import cc.unitmesh.agent.tool.*
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 

@@ -2,7 +2,7 @@ package cc.unitmesh.agent.config
 
 import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.agent.tool.ExecutableTool
-import cc.unitmesh.agent.tool.ToolCategory
+import cc.unitmesh.agent.tool.schema.ToolCategory
 
 /**
  * Tool Configuration Manager

@@ -10,7 +10,7 @@ import cc.unitmesh.agent.CodingAgent
 import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.PreloadingStatus
-import cc.unitmesh.agent.tool.ToolCategory
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.filesystem.DefaultProjectFileSystem
 import cc.unitmesh.devins.llm.ChatHistoryManager

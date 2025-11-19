@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool
 
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

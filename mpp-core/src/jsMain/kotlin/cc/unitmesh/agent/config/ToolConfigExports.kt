@@ -1,8 +1,5 @@
 package cc.unitmesh.agent.config
 
-import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
-import cc.unitmesh.agent.tool.provider.BuiltinToolsProvider
-import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import kotlinx.serialization.json.Json
@@ -81,7 +78,6 @@ class JsToolConfigFile(
     val enabledBuiltinTools: Array<String>,
     val enabledMcpTools: Array<String>,
     val mcpServers: dynamic,
-    val chatConfig: JsChatConfig
 ) {
     fun toCommon(): ToolConfigFile {
         // Parse MCP servers from JS object
@@ -105,7 +101,6 @@ class JsToolConfigFile(
             enabledBuiltinTools = enabledBuiltinTools.toList(),
             enabledMcpTools = enabledMcpTools.toList(),
             mcpServers = mcpServersMap,
-            chatConfig = chatConfig.toCommon()
         )
     }
     

@@ -8,6 +8,7 @@ import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.diff.ChangeType
 import cc.unitmesh.agent.diff.FileChange
 import cc.unitmesh.agent.diff.FileChangeTracker
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import kotlinx.serialization.Serializable
 
 /**

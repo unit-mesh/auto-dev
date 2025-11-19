@@ -3,6 +3,7 @@ package cc.unitmesh.agent.core
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
+import cc.unitmesh.agent.tool.schema.ToolCategory
 
 /**
  * Agent 基类 - 所有 Agent 的顶层抽象

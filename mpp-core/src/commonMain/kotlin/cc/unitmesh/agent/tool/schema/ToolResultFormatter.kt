@@ -1,4 +1,4 @@
-package cc.unitmesh.agent.tool
+package cc.unitmesh.agent.tool.schema
 
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
 

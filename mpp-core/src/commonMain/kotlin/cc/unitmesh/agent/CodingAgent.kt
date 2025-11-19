@@ -28,6 +28,7 @@ import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 import cc.unitmesh.agent.logging.getLogger
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.CoroutineScope

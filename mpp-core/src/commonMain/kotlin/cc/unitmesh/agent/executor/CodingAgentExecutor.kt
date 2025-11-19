@@ -3,7 +3,7 @@ package cc.unitmesh.agent.executor
 import cc.unitmesh.agent.*
 import cc.unitmesh.agent.conversation.ConversationManager
 import cc.unitmesh.agent.core.SubAgentManager
-import cc.unitmesh.agent.tool.ToolResultFormatter
+import cc.unitmesh.agent.tool.schema.ToolResultFormatter
 import cc.unitmesh.agent.orchestrator.ToolExecutionResult
 import cc.unitmesh.agent.orchestrator.ToolOrchestrator
 import cc.unitmesh.agent.render.CodingAgentRenderer

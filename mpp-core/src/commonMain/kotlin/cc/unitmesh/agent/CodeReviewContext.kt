@@ -1,7 +1,7 @@
 package cc.unitmesh.agent
 
 import cc.unitmesh.agent.linter.LinterSummary
-import cc.unitmesh.agent.tool.AgentToolFormatter
+import cc.unitmesh.agent.tool.schema.AgentToolFormatter
 import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.devins.compiler.variable.VariableTable
 import cc.unitmesh.devins.compiler.variable.VariableType

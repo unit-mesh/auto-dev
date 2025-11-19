@@ -57,6 +57,10 @@ kotlin {
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
+        iosTarget.compilerOptions {
+            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+        
         iosTarget.binaries.framework {
             baseName = "AutoDevCore"
             isStatic = true

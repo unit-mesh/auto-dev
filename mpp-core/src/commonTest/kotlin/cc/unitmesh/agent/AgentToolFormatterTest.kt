@@ -1,8 +1,8 @@
 package cc.unitmesh.agent
 
-import cc.unitmesh.agent.tool.AgentToolFormatter
+import cc.unitmesh.agent.tool.schema.AgentToolFormatter
 import cc.unitmesh.agent.tool.ExecutableTool
-import cc.unitmesh.agent.tool.ToolCategory
+import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.agent.tool.ToolInvocation
 import cc.unitmesh.agent.tool.ToolMetadata
 import cc.unitmesh.agent.tool.ToolResult
