@@ -36,6 +36,7 @@ object AutoDevComposeIcons {
     val Check: ImageVector get() = Icons.Default.Check
     val CheckCircle: ImageVector get() = Icons.Default.CheckCircle
     val ContentCopy: ImageVector get() = Icons.Default.ContentCopy
+    val ContentPaste: ImageVector get() = Icons.Default.ContentPaste
     val Refresh: ImageVector get() = Icons.Default.Refresh
     val Stop: ImageVector get() = Icons.Default.Stop
     val PlayArrow: ImageVector get() = Icons.Default.PlayArrow

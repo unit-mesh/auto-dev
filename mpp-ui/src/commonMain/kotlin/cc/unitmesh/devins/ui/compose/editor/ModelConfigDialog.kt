@@ -14,6 +14,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -48,6 +50,7 @@ fun ModelConfigDialog(
     var expandedProvider by remember { mutableStateOf(false) }
     var expandedModel by remember { mutableStateOf(false) }
     var expandedAdvanced by remember { mutableStateOf(false) }
+    val clipboardManager = LocalClipboardManager.current
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -193,6 +196,18 @@ fun ModelConfigDialog(
                         value = modelName,
                         onValueChange = { modelName = it },
                         modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                clipboardManager.getText()?.let { clip ->
+                                    modelName = clip.text
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.ContentPaste,
+                                    contentDescription = "Paste"
+                                )
+                            }
+                        },
                         placeholder = {
                             Text(
                                 when (provider) {
@@ -235,11 +250,23 @@ fun ModelConfigDialog(
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
-                            IconButton(onClick = { showApiKey = !showApiKey }) {
-                                Icon(
-                                    imageVector = if (showApiKey) AutoDevComposeIcons.Visibility else AutoDevComposeIcons.VisibilityOff,
-                                    contentDescription = if (showApiKey) Strings.hideApiKey else Strings.showApiKey
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { showApiKey = !showApiKey }) {
+                                    Icon(
+                                        imageVector = if (showApiKey) AutoDevComposeIcons.Visibility else AutoDevComposeIcons.VisibilityOff,
+                                        contentDescription = if (showApiKey) Strings.hideApiKey else Strings.showApiKey
+                                    )
+                                }
+                                IconButton(onClick = {
+                                    clipboardManager.getText()?.let { clip ->
+                                        apiKey = clip.text
+                                    }
+                                }) {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.ContentPaste,
+                                        contentDescription = "Paste"
+                                    )
+                                }
                             }
                         },
                         placeholder = { Text(Strings.enterApiKey) },
@@ -268,6 +295,18 @@ fun ModelConfigDialog(
                         value = baseUrl,
                         onValueChange = { baseUrl = it },
                         modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                clipboardManager.getText()?.let { clip ->
+                                    baseUrl = clip.text
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.ContentPaste,
+                                    contentDescription = "Paste"
+                                )
+                            }
+                        },
                         placeholder = {
                             Text(
                                 when (provider) {
