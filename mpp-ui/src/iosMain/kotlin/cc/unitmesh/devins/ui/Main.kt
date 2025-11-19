@@ -1,7 +1,7 @@
 package cc.unitmesh.devins.ui
 
 import androidx.compose.ui.window.ComposeUIViewController
-import cc.unitmesh.devins.ui.compose.AutoDevApp
+import cc.unitmesh.devins.ui.compose.PlatformAutoDevApp
 import platform.UIKit.UIViewController
 
 /**
@@ -18,7 +18,7 @@ import platform.UIKit.UIViewController
  */
 fun MainViewController(): UIViewController {
     return ComposeUIViewController {
-        AutoDevApp()
+        PlatformAutoDevApp()
     }
 }
 

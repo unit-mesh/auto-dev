@@ -292,16 +292,6 @@ private fun DesktopNavigationLayout(
     }
 }
 
-enum class AppScreen {
-    LOGIN,
-    HOME,       // 新增：首页/仪表盘
-    CHAT,       // 新增：AI 对话
-    PROJECTS,
-    TASKS,
-    SESSIONS,
-    PROFILE
-}
-
 /**
  * SessionAppContext - Session 应用上下文
  *

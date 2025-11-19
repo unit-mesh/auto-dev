@@ -1,5 +1,7 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
-@androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composable
+
+@Composable
 actual fun FileViewerDialog(filePath: String, onClose: () -> Unit) {
 }

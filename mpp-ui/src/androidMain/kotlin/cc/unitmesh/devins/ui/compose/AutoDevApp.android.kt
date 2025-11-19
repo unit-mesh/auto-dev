@@ -84,8 +84,8 @@ private fun AndroidAutoDevContent(
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-    // 导航状态
-    var currentScreen by remember { mutableStateOf(AppScreen.HOME) }
+    // 导航状态 - 默认从 Chat 开始
+    var currentScreen by remember { mutableStateOf(AppScreen.CHAT) }
 
     // Session 管理（用于 Drawer 和登录）
     val sessionClient = remember { SessionClient("http://localhost:8080") }
@@ -168,7 +168,7 @@ private fun AndroidAutoDevContent(
         hasDebugInfo = compilerOutput.isNotEmpty(),
         actions = {
             when (currentScreen) {
-                AppScreen.HOME, AppScreen.CHAT -> {
+                AppScreen.CHAT, AppScreen.CODING, AppScreen.CODE_REVIEW, AppScreen.REMOTE -> {
                     IconButton(onClick = { useAgentMode = !useAgentMode }) {
                         Icon(
                             imageVector = if (useAgentMode) Icons.Default.SmartToy else Icons.AutoMirrored.Filled.Chat,
@@ -193,7 +193,7 @@ private fun AndroidAutoDevContent(
             .padding(paddingValues)
             .fillMaxSize()) {
             when (currentScreen) {
-                AppScreen.HOME, AppScreen.CHAT -> {
+                AppScreen.CHAT, AppScreen.CODING, AppScreen.CODE_REVIEW, AppScreen.REMOTE -> {
                     // HOME 和 CHAT 都显示主界面（Agent/Chat）
                     if (useAgentMode) {
                         // Agent 模式（使用原来的 AgentChatInterface）

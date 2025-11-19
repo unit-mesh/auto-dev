@@ -1,89 +1,155 @@
 package cc.unitmesh.devins.ui.app
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.ui.session.SessionViewModel
 import kotlinx.coroutines.launch
 
 /**
- * NavLayout - 统一的导航布局组件
- *
- * 支持多种导航模式：
+ * NavLayout - 跨平台导航布局系统
+ * 
+ * 支持多平台导航模式：
  * 1. Android: Drawer + BottomNavigation
- * 2. Desktop: NavigationRail
- *
- * 功能：
+ * 2. iOS: TabBar (planned)
+ * 3. Desktop: NavigationRail
+ * 
+ * 核心功能：
  * - 统一的导航状态管理
  * - 支持登录/登出
- * - 支持多屏幕切换
- * - 提供一致的用户体验
+ * - 多屏幕切换
+ * - 平台特定的 UI 适配
+ * 
+ * 设计原则：
+ * - Android：Material 3 设计，Drawer + BottomNav
+ * - iOS：原生 TabBar 风格（未来实现）
+ * - Desktop：侧边 NavigationRail
  */
+
+/**
+ * 应用主屏幕定义
+ */
+enum class AppScreen {
+    LOGIN,          // 登录
+    CHAT,           // 本地对话（Local Chat）
+    CODING,         // 编码 Agent
+    CODE_REVIEW,    // 代码审查
+    REMOTE,         // 远程服务器
+    PROJECTS,       // 项目管理
+    TASKS,          // 任务管理
+    SESSIONS,       // 会话历史
+    PROFILE,        // 个人中心
+    HOME            // 兼容旧代码
+}
 
 /**
  * 导航项配置
  */
 data class NavItem(
     val screen: AppScreen,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val label: String,
-    val showInBottomNav: Boolean = true,
-    val showInDrawer: Boolean = true
+    val description: String = "",
+    val showInBottomNav: Boolean = true,    // Android BottomNavigation
+    val showInTabBar: Boolean = true,        // iOS TabBar
+    val showInDrawer: Boolean = true,        // Android Drawer
+    val showInRail: Boolean = true           // Desktop NavigationRail
 )
 
 /**
- * 默认导航项（支持 Home + Chat）
+ * 默认导航配置
+ * 
+ * 主要功能（Bottom/Tab）：
+ * - Chat: 本地 AI 对话
+ * - Coding: 编码 Agent
+ * - Review: 代码审查
+ * - Remote: 远程服务器
+ * - Profile: 个人中心
+ * 
+ * 次要功能（Drawer only）：
+ * - Projects: 项目管理
+ * - Tasks: 任务管理
+ * - Sessions: 会话历史
  */
 val defaultNavItems = listOf(
-    NavItem(
-        screen = AppScreen.HOME,
-        icon = Icons.Default.Home,
-        label = "首页",
-        showInBottomNav = true,
-        showInDrawer = true
-    ),
+    // 主要功能 - 显示在底部导航
     NavItem(
         screen = AppScreen.CHAT,
-        icon = Icons.Default.Chat,
+        icon = Icons.AutoMirrored.Filled.Chat,
         label = "对话",
+        description = "本地 AI 对话",
         showInBottomNav = true,
-        showInDrawer = true
+        showInTabBar = true
     ),
+    NavItem(
+        screen = AppScreen.CODING,
+        icon = Icons.Default.Code,
+        label = "编码",
+        description = "Coding Agent",
+        showInBottomNav = true,
+        showInTabBar = true
+    ),
+    NavItem(
+        screen = AppScreen.CODE_REVIEW,
+        icon = Icons.Default.Reviews,
+        label = "审查",
+        description = "代码审查",
+        showInBottomNav = true,
+        showInTabBar = true
+    ),
+    NavItem(
+        screen = AppScreen.REMOTE,
+        icon = Icons.Default.Cloud,
+        label = "远程",
+        description = "远程服务器",
+        showInBottomNav = true,
+        showInTabBar = true
+    ),
+    NavItem(
+        screen = AppScreen.PROFILE,
+        icon = Icons.Default.Person,
+        label = "我的",
+        description = "个人中心",
+        showInBottomNav = true,
+        showInTabBar = true
+    ),
+    
+    // 次要功能 - 仅在 Drawer 显示
     NavItem(
         screen = AppScreen.PROJECTS,
         icon = Icons.Default.Folder,
         label = "项目",
-        showInBottomNav = false, // Android BottomNav 只显示 4 个
+        description = "项目管理",
+        showInBottomNav = false,
+        showInTabBar = false,
         showInDrawer = true
     ),
     NavItem(
         screen = AppScreen.TASKS,
         icon = Icons.Default.Assignment,
         label = "任务",
-        showInBottomNav = true,
+        description = "任务管理",
+        showInBottomNav = false,
+        showInTabBar = false,
         showInDrawer = true
     ),
     NavItem(
-        screen = AppScreen.PROFILE,
-        icon = Icons.Default.Person,
-        label = "我的",
-        showInBottomNav = true,
+        screen = AppScreen.SESSIONS,
+        icon = Icons.Default.History,
+        label = "会话",
+        description = "会话历史",
+        showInBottomNav = false,
+        showInTabBar = false,
         showInDrawer = true
     )
-)
-
-/**
- * NavLayout 配置
- */
-data class NavLayoutConfig(
-    val useDrawer: Boolean = false,
-    val useBottomNav: Boolean = false,
-    val showTopBar: Boolean = true,
-    val navItems: List<NavItem> = defaultNavItems
 )
 
 /**
@@ -110,7 +176,7 @@ fun AndroidNavLayout(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                DrawerContent(
+                AndroidDrawerContent(
                     currentScreen = currentScreen,
                     currentUser = currentUser,
                     onScreenChange = { screen ->
@@ -171,10 +237,10 @@ fun AndroidNavLayout(
 }
 
 /**
- * Drawer 内容（增强版，支持设置和工具）
+ * Android Drawer 内容
  */
 @Composable
-private fun DrawerContent(
+private fun AndroidDrawerContent(
     currentScreen: AppScreen,
     currentUser: String?,
     onScreenChange: (AppScreen) -> Unit,
@@ -212,7 +278,7 @@ private fun DrawerContent(
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = "AutoDev",
+                        text = "AutoDev v0.2.0",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -225,13 +291,45 @@ private fun DrawerContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         // 主导航项
-        defaultNavItems.filter { it.showInDrawer }.forEach { navItem ->
+        Text(
+            text = "主要功能",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        
+        defaultNavItems.filter { it.showInBottomNav }.forEach { navItem ->
+            NavigationDrawerItem(
+                icon = { Icon(navItem.icon, contentDescription = navItem.label) },
+                label = { Text(navItem.label) },
+                badge = if (navItem.description.isNotEmpty()) {
+                    { Text(navItem.description, style = MaterialTheme.typography.labelSmall) }
+                } else null,
+                selected = currentScreen == navItem.screen,
+                onClick = { onScreenChange(navItem.screen) },
+                modifier = Modifier.padding(vertical = 2.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 次要功能
+        Text(
+            text = "更多",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        
+        defaultNavItems.filter { it.showInDrawer && !it.showInBottomNav }.forEach { navItem ->
             NavigationDrawerItem(
                 icon = { Icon(navItem.icon, contentDescription = navItem.label) },
                 label = { Text(navItem.label) },
                 selected = currentScreen == navItem.screen,
                 onClick = { onScreenChange(navItem.screen) },
-                modifier = Modifier.padding(vertical = 4.dp)
+                modifier = Modifier.padding(vertical = 2.dp)
             )
         }
 
@@ -282,30 +380,183 @@ private fun DrawerContent(
                 unselectedIconColor = MaterialTheme.colorScheme.error
             )
         )
+    }
+}
 
-        Spacer(modifier = Modifier.height(16.dp))
+/**
+ * iOS/macOS 风格的导航布局（TabBar）
+ * 
+ * 注意：Compose Multiplatform 不直接支持原生 TabBar
+ * 这里提供一个 Material 3 风格的实现，未来可以用 SwiftUI 替换
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppleNavLayout(
+    currentScreen: AppScreen,
+    onScreenChange: (AppScreen) -> Unit,
+    sessionViewModel: SessionViewModel,
+    onShowSettings: () -> Unit = {},
+    onShowTools: () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    val currentUser by sessionViewModel.currentUser.collectAsState()
+    
+    // iOS 风格：无 Drawer，使用 Sheet 或 Navigation
+    var showSettingsSheet by remember { mutableStateOf(false) }
 
-        // 版本信息
-        Text(
-            text = "AutoDev v0.1.5",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(getScreenTitle(currentScreen)) },
+                actions = {
+                    actions()
+                    IconButton(onClick = { showSettingsSheet = true }) {
+                        Icon(Icons.Default.Settings, contentDescription = "设置")
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            // iOS 风格的 TabBar（使用 Material NavigationBar 模拟）
+            NavigationBar {
+                defaultNavItems.filter { it.showInTabBar }.forEach { navItem ->
+                    NavigationBarItem(
+                        icon = { Icon(navItem.icon, contentDescription = navItem.label) },
+                        label = { Text(navItem.label) },
+                        selected = currentScreen == navItem.screen,
+                        onClick = { onScreenChange(navItem.screen) }
+                    )
+                }
+            }
+        }
+    ) { paddingValues ->
+        content(paddingValues)
+    }
+
+    // Settings Sheet（iOS 风格）
+    if (showSettingsSheet) {
+        AppleSettingsSheet(
+            currentUser = currentUser,
+            onDismiss = { showSettingsSheet = false },
+            onShowSettings = {
+                onShowSettings()
+                showSettingsSheet = false
+            },
+            onShowTools = {
+                onShowTools()
+                showSettingsSheet = false
+            },
+            onLogout = {
+                scope.launch {
+                    sessionViewModel.logout()
+                }
+                showSettingsSheet = false
+            },
+            onNavigate = { screen ->
+                onScreenChange(screen)
+                showSettingsSheet = false
+            }
         )
     }
 }
 
 /**
- * 获取屏幕标题
+ * Apple 设置面板（模拟 iOS Sheet）
  */
-private fun getScreenTitle(screen: AppScreen): String {
-    return when (screen) {
-        AppScreen.LOGIN -> "登录"
-        AppScreen.HOME -> "首页"
-        AppScreen.CHAT -> "AI 对话"
-        AppScreen.PROJECTS -> "项目"
-        AppScreen.TASKS -> "任务"
-        AppScreen.SESSIONS -> "会话"
-        AppScreen.PROFILE -> "我的"
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppleSettingsSheet(
+    currentUser: String?,
+    onDismiss: () -> Unit,
+    onShowSettings: () -> Unit,
+    onShowTools: () -> Unit,
+    onLogout: () -> Unit,
+    onNavigate: (AppScreen) -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // 用户信息
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = "用户",
+                    modifier = Modifier.size(48.dp)
+                )
+                Column {
+                    Text(
+                        text = currentUser ?: "本地用户",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "AutoDev v0.2.0",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+            HorizontalDivider()
+
+            // 次要导航
+            defaultNavItems.filter { !it.showInTabBar && it.showInDrawer }.forEach { navItem ->
+                ListItem(
+                    headlineContent = { Text(navItem.label) },
+                    supportingContent = { Text(navItem.description) },
+                    leadingContent = { Icon(navItem.icon, contentDescription = navItem.label) },
+                    modifier = Modifier.clickable { onNavigate(navItem.screen) }
+                )
+            }
+
+            HorizontalDivider()
+
+            // 设置项
+            ListItem(
+                headlineContent = { Text("模型设置") },
+                leadingContent = { Icon(Icons.Default.Settings, contentDescription = "模型设置") },
+                modifier = Modifier.clickable { onShowSettings() }
+            )
+            
+            ListItem(
+                headlineContent = { Text("工具配置") },
+                leadingContent = { Icon(Icons.Default.Build, contentDescription = "工具配置") },
+                modifier = Modifier.clickable { onShowTools() }
+            )
+
+            HorizontalDivider()
+
+            // 退出登录
+            ListItem(
+                headlineContent = { 
+                    Text(
+                        "退出登录",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                },
+                leadingContent = { 
+                    Icon(
+                        Icons.Default.ExitToApp,
+                        contentDescription = "退出登录",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                modifier = Modifier.clickable { onLogout() }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
@@ -318,12 +569,22 @@ fun DesktopNavLayout(
     currentScreen: AppScreen,
     onScreenChange: (AppScreen) -> Unit,
     sessionViewModel: SessionViewModel,
+    onShowSettings: () -> Unit = {},
+    onShowTools: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
         // 左侧导航栏
-        NavigationRail {
-            defaultNavItems.forEach { navItem ->
+        NavigationRail(
+            header = {
+                IconButton(onClick = onShowSettings) {
+                    Icon(Icons.Default.Settings, contentDescription = "设置")
+                }
+            }
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            defaultNavItems.filter { it.showInRail }.forEach { navItem ->
                 NavigationRailItem(
                     icon = { Icon(navItem.icon, contentDescription = navItem.label) },
                     label = { Text(navItem.label) },
@@ -337,6 +598,50 @@ fun DesktopNavLayout(
         Box(modifier = Modifier.weight(1f)) {
             content()
         }
+    }
+}
+
+/**
+ * 获取屏幕标题
+ */
+fun getScreenTitle(screen: AppScreen): String {
+    return when (screen) {
+        AppScreen.LOGIN -> "登录"
+        AppScreen.HOME -> "首页"
+        AppScreen.CHAT -> "AI 对话"
+        AppScreen.CODING -> "编码 Agent"
+        AppScreen.CODE_REVIEW -> "代码审查"
+        AppScreen.REMOTE -> "远程服务器"
+        AppScreen.PROJECTS -> "项目管理"
+        AppScreen.TASKS -> "任务管理"
+        AppScreen.SESSIONS -> "会话历史"
+        AppScreen.PROFILE -> "个人中心"
+    }
+}
+
+/**
+ * Agent 类型到屏幕的映射
+ */
+fun agentTypeToScreen(agentType: AgentType): AppScreen {
+    return when (agentType) {
+        AgentType.LOCAL_CHAT -> AppScreen.CHAT
+        AgentType.CODING -> AppScreen.CODING
+        AgentType.CODE_REVIEW -> AppScreen.CODE_REVIEW
+        AgentType.REMOTE -> AppScreen.REMOTE
+        else -> AppScreen.CHAT
+    }
+}
+
+/**
+ * 屏幕到 Agent 类型的映射
+ */
+fun screenToAgentType(screen: AppScreen): AgentType? {
+    return when (screen) {
+        AppScreen.CHAT -> AgentType.LOCAL_CHAT
+        AppScreen.CODING -> AgentType.CODING
+        AppScreen.CODE_REVIEW -> AgentType.CODE_REVIEW
+        AppScreen.REMOTE -> AgentType.REMOTE
+        else -> null
     }
 }
 
