@@ -51,16 +51,6 @@ class RemoteCodingAgentViewModel(
         isTreeViewVisible = false
     }
 
-    init {
-        // Check server health on init
-        scope.launch {
-            checkConnection()
-        }
-    }
-
-    /**
-     * Check if server is reachable
-     */
     suspend fun checkConnection(): Boolean {
         return try {
             val health = client.healthCheck()
