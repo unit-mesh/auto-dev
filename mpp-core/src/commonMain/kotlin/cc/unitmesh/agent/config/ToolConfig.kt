@@ -7,22 +7,26 @@ import kotlinx.serialization.Serializable
  * Tool Configuration - Manages enabled tools for CodingAgent
  * 
  * Supports both:
- * - Built-in system tools (from ToolType)
- * - MCP (Model Context Protocol) tools from external servers
+ * - Built-in system tools (always enabled, cannot be disabled)
+ * - MCP (Model Context Protocol) tools from external servers (configurable)
  * 
  * Stored in ~/.autodev/mcp.json
  */
 @Serializable
 data class ToolConfigFile(
     /**
-     * List of enabled built-in tool names
+     * @deprecated Built-in tools are now always enabled and cannot be disabled.
+     * This field is kept for backward compatibility but is no longer used.
      * 
-     * Available tools:
-     * - File System: read-file, write-file, list-files, edit-file, patch-file
+     * Built-in tools include:
+     * - File System: read-file, write-file, edit-file
      * - Search: grep, glob
      * - Execution: shell
-     * - SubAgent: error-recovery, log-summary, codebase-investigator
+     * - Communication: web-fetch
+     * - Task Management: task-boundary
+     * - SubAgent: ask-agent
      */
+    @Deprecated("Built-in tools are always enabled")
     val enabledBuiltinTools: List<String> = emptyList(),
     
     /**
@@ -38,17 +42,14 @@ data class ToolConfigFile(
 ) {
     companion object {
         /**
-         * Default configuration with all built-in tools enabled
+         * Default configuration.
+         * 
+         * Note: Built-in tools are always enabled and don't need to be listed.
+         * The enabledBuiltinTools field is deprecated and ignored.
          */
         fun default(): ToolConfigFile {
             return ToolConfigFile(
-                enabledBuiltinTools = listOf(
-                    "read-file", "write-file", "list-files", "edit-file", "patch-file",
-                    "grep", "glob",
-                    "shell",
-                    "web-fetch",
-                    "error-recovery", "log-summary", "codebase-investigator"
-                ),
+                enabledBuiltinTools = emptyList(), // Deprecated: built-in tools are always enabled
                 enabledMcpTools = emptyList(),
                 mcpServers = emptyMap()
             )

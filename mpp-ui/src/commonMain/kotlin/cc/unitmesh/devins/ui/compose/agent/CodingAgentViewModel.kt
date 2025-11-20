@@ -424,25 +424,13 @@ class CodingAgentViewModel(
     fun getToolLoadingStatus(): ToolLoadingStatus {
         val toolConfig = cachedToolConfig
 
+        // Built-in tools are always enabled
         val allBuiltinTools = ToolType.ALL_TOOLS.filter { it.category != ToolCategory.SubAgent }
-        val builtinToolsEnabled =
-            if (toolConfig != null) {
-                allBuiltinTools.count { toolType ->
-                    toolType.name in toolConfig.enabledBuiltinTools
-                }
-            } else {
-                allBuiltinTools.size
-            }
+        val builtinToolsEnabled = allBuiltinTools.size // All built-in tools are always enabled
 
+        // Sub-agent tools are also always enabled (they are built-in)
         val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
-        val subAgentsEnabled =
-            if (toolConfig != null) {
-                subAgentTools.count { toolType ->
-                    toolType.name in toolConfig.enabledBuiltinTools
-                }
-            } else {
-                subAgentTools.size
-            }
+        val subAgentsEnabled = subAgentTools.size // All sub-agents are always enabled
 
         val mcpServersTotal = toolConfig?.mcpServers?.filter { !it.value.disabled }?.size ?: 0
         val mcpServersLoaded = mcpPreloadingStatus.preloadedServers.size

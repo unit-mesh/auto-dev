@@ -21,14 +21,9 @@ import cc.unitmesh.agent.config.McpServerLoadingStatus
 import cc.unitmesh.agent.config.McpServerState
 import cc.unitmesh.agent.config.McpToolConfigManager
 import cc.unitmesh.agent.config.ToolConfigFile
-import cc.unitmesh.agent.config.ToolConfigManager
 import cc.unitmesh.agent.config.ToolItem
 import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.agent.tool.schema.ToolCategory
-import cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem
-import cc.unitmesh.agent.tool.registry.BuiltinToolsProvider
-import cc.unitmesh.agent.tool.registry.ToolDependencies
-import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.llm.KoogLLMService
@@ -41,7 +36,7 @@ fun ToolConfigDialog(
     llmService: KoogLLMService? = null
 ) {
     var toolConfig by remember { mutableStateOf(ToolConfigFile.default()) }
-    var builtinToolsByCategory by remember { mutableStateOf<Map<ToolCategory, List<ToolItem>>>(emptyMap()) }
+    // Built-in tools are now always enabled and not configurable via UI
     var mcpTools by remember { mutableStateOf<Map<String, List<ToolItem>>>(emptyMap()) }
     var mcpLoadingState by remember { mutableStateOf(McpLoadingState()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -58,16 +53,10 @@ fun ToolConfigDialog(
     fun scheduleAutoSave() {
         hasUnsavedChanges = true
         autoSaveJob?.cancel()
-        autoSaveJob =
+                autoSaveJob =
             scope.launch {
                 kotlinx.coroutines.delay(2000) // Wait 2 seconds before auto-saving
                 try {
-                    val enabledBuiltinTools =
-                        builtinToolsByCategory.values
-                            .flatten()
-                            .filter { it.enabled }
-                            .map { it.name }
-
                     val enabledMcpTools =
                         mcpTools.values
                             .flatten()
@@ -79,7 +68,6 @@ fun ToolConfigDialog(
                         val newMcpServers = result.getOrThrow()
                         val updatedConfig =
                             toolConfig.copy(
-                                enabledBuiltinTools = enabledBuiltinTools,
                                 enabledMcpTools = enabledMcpTools,
                                 mcpServers = newMcpServers
                             )
@@ -99,18 +87,7 @@ fun ToolConfigDialog(
         scope.launch {
             try {
                 toolConfig = ConfigManager.loadToolConfig()
-                val provider = BuiltinToolsProvider()
-                val tools =
-                    provider.provide(
-                        ToolDependencies(
-                            fileSystem = DefaultToolFileSystem(),
-                            shellExecutor = DefaultShellExecutor(),
-                            subAgentManager = null,
-                            llmService = llmService
-                        )
-                    )
-                val allTools = ToolConfigManager.getBuiltinToolsByCategory(tools)
-                builtinToolsByCategory = ToolConfigManager.applyEnabledTools(allTools, toolConfig)
+                // Built-in tools are always enabled - no need to load them for configuration
 
                 mcpConfigJson = serializeMcpConfig(toolConfig.mcpServers)
 
@@ -282,22 +259,8 @@ fun ToolConfigDialog(
                     when (selectedTab) {
                         0 ->
                             ToolSelectionTab(
-                                builtinToolsByCategory = builtinToolsByCategory,
                                 mcpTools = mcpTools,
                                 mcpLoadingState = mcpLoadingState,
-                                onBuiltinToolToggle = { category, toolName, enabled ->
-                                    builtinToolsByCategory =
-                                        builtinToolsByCategory.mapValues { (cat, toolsList) ->
-                                            if (cat == category) {
-                                                toolsList.map {
-                                                    if (it.name == toolName) it.copy(enabled = enabled) else it
-                                                }
-                                            } else {
-                                                toolsList
-                                            }
-                                        }
-                                    scheduleAutoSave()
-                                },
                                 onMcpToolToggle = { toolName, enabled ->
                                     mcpTools =
                                         mcpTools.mapValues { (_, tools) ->
@@ -345,7 +308,7 @@ fun ToolConfigDialog(
                                             toolConfig = updatedConfig
 
                                             try {
-                                                ToolConfigManager.discoverMcpTools(
+                                                McpToolConfigManager.discoverMcpTools(
                                                     newMcpServers,
                                                     toolConfig.enabledMcpTools.toSet()
                                                 )
@@ -375,14 +338,12 @@ fun ToolConfigDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Summary
-                        val enabledBuiltin = builtinToolsByCategory.values.flatten().count { it.enabled }
-                        val totalBuiltin = builtinToolsByCategory.values.flatten().size
                         val enabledMcp = mcpTools.values.flatten().count { it.enabled }
                         val totalMcp = mcpTools.values.flatten().size
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Built-in: $enabledBuiltin/$totalBuiltin | MCP: $enabledMcp/$totalMcp",
+                                text = "MCP Tools: $enabledMcp/$totalMcp enabled | Built-in tools: Always enabled",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -414,12 +375,6 @@ fun ToolConfigDialog(
                                     try {
                                         autoSaveJob?.cancel()
 
-                                        val enabledBuiltinTools =
-                                            builtinToolsByCategory.values
-                                                .flatten()
-                                                .filter { it.enabled }
-                                                .map { it.name }
-
                                         val enabledMcpTools =
                                             mcpTools.values
                                                 .flatten()
@@ -438,7 +393,6 @@ fun ToolConfigDialog(
 
                                         val updatedConfig =
                                             toolConfig.copy(
-                                                enabledBuiltinTools = enabledBuiltinTools,
                                                 enabledMcpTools = enabledMcpTools,
                                                 mcpServers = newMcpServers
                                             )
@@ -463,10 +417,8 @@ fun ToolConfigDialog(
 
 @Composable
 private fun ToolSelectionTab(
-    builtinToolsByCategory: Map<ToolCategory, List<ToolItem>>,
     mcpTools: Map<String, List<ToolItem>>,
     mcpLoadingState: McpLoadingState,
-    onBuiltinToolToggle: (ToolCategory, String, Boolean) -> Unit,
     onMcpToolToggle: (String, Boolean) -> Unit
 ) {
     val expandedCategories = remember { mutableStateMapOf<String, Boolean>() }
@@ -475,32 +427,37 @@ private fun ToolSelectionTab(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 4.dp)
     ) {
-        // Built-in tools by category (collapsible)
-        builtinToolsByCategory.forEach { (category, tools) ->
-            val categoryKey = category.name
-            val isExpanded = expandedCategories.getOrPut(categoryKey) { true }
-
-            item {
-                CollapsibleCategoryHeader(
-                    category = category,
-                    icon = getCategoryIcon(category),
-                    isExpanded = isExpanded,
-                    toolCount = tools.size,
-                    enabledCount = tools.count { it.enabled },
-                    onToggle = {
-                        expandedCategories[categoryKey] = !isExpanded
-                    }
-                )
-            }
-
-            if (isExpanded) {
-                items(tools) { tool ->
-                    CompactToolItemRow(
-                        tool = tool,
-                        onToggle = { enabled ->
-                            onBuiltinToolToggle(category, tool.name, enabled)
-                        }
+        // Info banner about built-in tools
+        item {
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        AutoDevComposeIcons.Info,
+                        contentDescription = "Info",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
                     )
+                    Column {
+                        Text(
+                            text = "Built-in Tools Always Enabled",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "File operations, search, shell, and other essential tools are always available",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }

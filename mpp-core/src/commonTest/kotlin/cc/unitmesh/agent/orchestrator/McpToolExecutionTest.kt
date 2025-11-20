@@ -23,8 +23,9 @@ class McpToolExecutionTest {
     @Test
     fun testMcpToolNameWithoutPrefix() = runTest {
         // Test that MCP tools use actual tool names, not prefixed names
+        // Note: enabledBuiltinTools is deprecated and ignored (built-in tools are always enabled)
         val toolConfig = ToolConfigFile(
-            enabledBuiltinTools = listOf("read-file", "write-file"),
+            enabledBuiltinTools = emptyList(), // Deprecated: built-in tools are always enabled
             enabledMcpTools = listOf("list_directory", "read_file"), // Actual tool names
             mcpServers = mapOf(
                 "filesystem" to McpServerConfig(
@@ -48,8 +49,9 @@ class McpToolExecutionTest {
             return@runTest
         }
 
+        // Note: enabledBuiltinTools is deprecated and ignored (built-in tools are always enabled)
         val toolConfig = ToolConfigFile(
-            enabledBuiltinTools = listOf("read-file"),
+            enabledBuiltinTools = emptyList(), // Deprecated: built-in tools are always enabled
             enabledMcpTools = listOf("list_directory"),
             mcpServers = mapOf(
                 "filesystem" to McpServerConfig(

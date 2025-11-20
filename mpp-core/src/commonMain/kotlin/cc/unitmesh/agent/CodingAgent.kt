@@ -107,22 +107,18 @@ class CodingAgent(
     private var mcpToolsInitialized = false
 
     init {
-        // 注册 Agents（作为 Tools）- 根据配置决定是否启用
-        if (configService.isBuiltinToolEnabled("error-agent")) {
-            registerTool(errorRecoveryAgent)
-            toolRegistry.registerTool(errorRecoveryAgent)  // 同时注册到 ToolRegistry
-            subAgentManager.registerSubAgent(errorRecoveryAgent)  // 注册到 SubAgentManager
-        }
-        if (configService.isBuiltinToolEnabled("analysis-agent")) {
-            registerTool(analysisAgent)
-            toolRegistry.registerTool(analysisAgent)  // 同时注册到 ToolRegistry
-            subAgentManager.registerSubAgent(analysisAgent)  // 注册到 SubAgentManager
-        }
-        if (configService.isBuiltinToolEnabled("code-agent")) {
-            registerTool(codebaseInvestigatorAgent)
-            toolRegistry.registerTool(codebaseInvestigatorAgent)  // 同时注册到 ToolRegistry
-            subAgentManager.registerSubAgent(codebaseInvestigatorAgent)  // 注册到 SubAgentManager
-        }
+        // Register Sub-Agents (as Tools) - Always enabled as they are built-in tools
+        registerTool(errorRecoveryAgent)
+        toolRegistry.registerTool(errorRecoveryAgent)
+        subAgentManager.registerSubAgent(errorRecoveryAgent)
+        
+        registerTool(analysisAgent)
+        toolRegistry.registerTool(analysisAgent)
+        subAgentManager.registerSubAgent(analysisAgent)
+        
+        registerTool(codebaseInvestigatorAgent)
+        toolRegistry.registerTool(codebaseInvestigatorAgent)
+        subAgentManager.registerSubAgent(codebaseInvestigatorAgent)
 
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             initializeWorkspace(projectPath)

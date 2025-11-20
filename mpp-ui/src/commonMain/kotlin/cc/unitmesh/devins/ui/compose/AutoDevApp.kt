@@ -617,7 +617,7 @@ private fun AutoDevContent(
                 onDismiss = { showToolConfigDialog = false },
                 onSave = { newConfig ->
                     println("✅ 工具配置已保存")
-                    println("   启用的内置工具: ${newConfig.enabledBuiltinTools.size}")
+                    println("   内置工具: 始终启用 (全部)")
                     println("   启用的 MCP 工具: ${newConfig.enabledMcpTools.size}")
                     showToolConfigDialog = false
                 },

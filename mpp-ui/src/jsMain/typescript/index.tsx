@@ -86,7 +86,7 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
     // Debug: Log tool config details
     if (!quiet) {
       console.log('🔍 Debug: Tool config loaded');
-      console.log('  Enabled builtin tools:', toolConfig.enabledBuiltinTools.length);
+      console.log('  Built-in tools: Always enabled (all)');
       console.log('  Enabled MCP tools:', toolConfig.enabledMcpTools.length);
       console.log('  MCP servers in tool config:', Object.keys(toolConfig.mcpServers || {}).length);
     }
@@ -113,7 +113,7 @@ async function runCodingAgent(projectPath: string, task: string, quiet: boolean 
       console.log(`\n🚀 AutoDev Coding Agent`);
       console.log(`📦 Provider: ${activeConfig.provider}`);
       console.log(`🤖 Model: ${activeConfig.model}`);
-      console.log(`🔧 Enabled builtin tools: ${toolConfig.enabledBuiltinTools.length}`);
+      console.log(`🔧 Built-in tools: Always enabled (all)`);
       console.log(`🔌 Enabled MCP tools: ${toolConfig.enabledMcpTools.length}`);
       if (Object.keys(enabledMcpServers).length > 0) {
         console.log(`🔌 MCP Servers: ${Object.keys(enabledMcpServers).join(', ')}`);

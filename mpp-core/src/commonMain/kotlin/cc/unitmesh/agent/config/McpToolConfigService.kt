@@ -22,11 +22,16 @@ class McpToolConfigService(val toolConfig: ToolConfigFile) {
         }
     }
 
+    /**
+     * Built-in tools are always enabled and cannot be disabled.
+     * This method always returns true for backward compatibility.
+     * 
+     * @deprecated Built-in tools are now always enabled
+     */
+    @Deprecated("Built-in tools are always enabled", ReplaceWith("true"))
     fun isBuiltinToolEnabled(toolName: String): Boolean {
-        if (toolConfig.enabledBuiltinTools.isEmpty()) {
-            return true
-        }
-        return toolName in toolConfig.enabledBuiltinTools
+        // Built-in tools are always enabled
+        return true
     }
 
     fun isMcpToolEnabled(toolName: String): Boolean {
@@ -36,14 +41,16 @@ class McpToolConfigService(val toolConfig: ToolConfigFile) {
         return toolName in toolConfig.enabledMcpTools
     }
 
+    /**
+     * Built-in tools are always enabled and cannot be disabled.
+     * This method returns all tools without filtering.
+     * 
+     * @deprecated Built-in tools are now always enabled
+     */
+    @Deprecated("Built-in tools are always enabled", ReplaceWith("tools"))
     fun <T : ExecutableTool<*, *>> filterBuiltinTools(tools: List<T>): List<T> {
-        if (toolConfig.enabledBuiltinTools.isEmpty()) {
-            return tools
-        }
-
-        return tools.filter { tool ->
-            isBuiltinToolEnabled(tool.name)
-        }
+        // Built-in tools are always enabled - no filtering
+        return tools
     }
 
     fun <T : ExecutableTool<*, *>> filterMcpTools(tools: List<T>): List<T> {

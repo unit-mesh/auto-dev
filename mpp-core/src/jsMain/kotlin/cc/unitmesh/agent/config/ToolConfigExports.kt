@@ -52,19 +52,45 @@ object JsToolConfigManager {
 
     @JsName("getConfigSummary")
     fun getConfigSummary(config: JsToolConfigFile): String {
-        return ToolConfigManager.getConfigSummary(config.toCommon())
+        val config1 = config.toCommon()
+        return buildString {
+            this.appendLine("Built-in Tools: Always enabled (all)")
+            this.appendLine("MCP Tools: ${config1.enabledMcpTools.size} enabled")
+            this.appendLine("MCP Servers: ${config1.mcpServers.size} configured")
+
+            if (config1.enabledMcpTools.isNotEmpty()) {
+                this.appendLine("\nEnabled MCP Tools:")
+                config1.enabledMcpTools.forEach { toolName ->
+                    this.appendLine("  - $toolName")
+                }
+            }
+
+            if (config1.mcpServers.isNotEmpty()) {
+                this.appendLine("\nMCP Servers:")
+                config1.mcpServers.forEach { (name, server) ->
+                    val status = if (server.disabled) "disabled" else "enabled"
+                    this.appendLine("  - $name ($status)")
+                }
+            }
+        }
     }
     
+    /**
+     * Update tool configuration
+     * 
+     * @param currentConfig Current configuration
+     * @param enabledBuiltinTools Deprecated: Built-in tools are always enabled, this parameter is ignored
+     * @param enabledMcpTools List of enabled MCP tool names
+     * @return Updated configuration
+     */
     @JsName("updateToolConfig")
     fun updateToolConfig(
         currentConfig: JsToolConfigFile,
         enabledBuiltinTools: Array<String>,
         enabledMcpTools: Array<String>
     ): JsToolConfigFile {
-        val updated = ToolConfigManager.updateToolConfig(
-            currentConfig.toCommon(),
-            enabledBuiltinTools.toList(),
-            enabledMcpTools.toList()
+        val updated = currentConfig.toCommon().copy(
+            enabledMcpTools = enabledMcpTools.toList()
         )
         return JsToolConfigFile.fromCommon(updated)
     }
@@ -72,9 +98,13 @@ object JsToolConfigManager {
 
 /**
  * JS-friendly ToolConfigFile
+ * 
+ * Note: enabledBuiltinTools is deprecated and ignored. Built-in tools are always enabled.
+ * This field is kept for backward compatibility with existing JS/TS code.
  */
 @JsExport
 class JsToolConfigFile(
+    /** @deprecated Built-in tools are always enabled. This field is ignored. */
     val enabledBuiltinTools: Array<String>,
     val enabledMcpTools: Array<String>,
     val mcpServers: dynamic,
@@ -204,7 +234,7 @@ private suspend fun loadToolConfigFromFile(): ToolConfigFile {
         }
         val config = json.decodeFromString<ToolConfigFile>(content)
         console.log("✅ Tool config parsed successfully")
-        console.log("  Builtin tools:", config.enabledBuiltinTools.size)
+        console.log("  Built-in tools: Always enabled (all)")
         console.log("  MCP tools:", config.enabledMcpTools.size)
         console.log("  MCP servers:", config.mcpServers.size)
 

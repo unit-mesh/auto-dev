@@ -168,18 +168,10 @@ class ToolRegistry(
         val allBuiltinTools = ToolProviderRegistry.discoverTools(dependencies)
 
         logger.debug { "🔧 [ToolRegistry] All available built-in tools: ${allBuiltinTools.map { it.name }}" }
-        logger.debug { "🔧 [ToolRegistry] ConfigService available: ${configService != null}" }
-
-        val toolsToRegister = if (configService != null) {
-            val filtered = configService.filterBuiltinTools(allBuiltinTools)
-            logger.debug { "🔧 [ToolRegistry] Filtered tools: ${filtered.map { it.name }}" }
-            filtered
-        } else {
-            logger.debug { "🔧 [ToolRegistry] No config service, registering all tools" }
-            allBuiltinTools
-        }
-
-        toolsToRegister.forEach { tool ->
+        
+        // Built-in tools are always enabled and cannot be disabled
+        // They are essential for agent functionality
+        allBuiltinTools.forEach { tool ->
             try {
                 registerTool(tool)
             } catch (e: Exception) {
@@ -187,7 +179,7 @@ class ToolRegistry(
             }
         }
 
-        logger.info { "🔧 Registered ${toolsToRegister.size}/${allBuiltinTools.size} built-in tools" }
+        logger.info { "🔧 Registered ${allBuiltinTools.size} built-in tools (always enabled)" }
     }
 }
 
