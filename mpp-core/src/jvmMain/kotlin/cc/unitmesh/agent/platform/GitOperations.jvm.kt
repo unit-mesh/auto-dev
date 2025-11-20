@@ -238,6 +238,31 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     
     actual fun isSupported(): Boolean = true
     
+    actual suspend fun getRemoteUrl(remoteName: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val command = listOf("git", "remote", "get-url", remoteName)
+            
+            val process = ProcessBuilder(command)
+                .directory(File(projectPath))
+                .redirectErrorStream(true)
+                .start()
+            
+            val output = process.inputStream.bufferedReader().readText().trim()
+            val exitCode = process.waitFor()
+            
+            if (exitCode != 0 || output.isBlank()) {
+                logger.debug { "No remote URL found for '$remoteName'" }
+                return@withContext null
+            }
+            
+            logger.info { "Remote '$remoteName' URL: $output" }
+            output
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to get remote URL: ${e.message}" }
+            null
+        }
+    }
+    
     // Private helper methods
     
     private fun parseCommitLine(line: String): GitCommitInfo? {

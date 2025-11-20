@@ -39,5 +39,9 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     }
 
     actual fun isSupported(): Boolean = false
+    
+    actual suspend fun getRemoteUrl(remoteName: String): String? {
+        return null
+    }
 }
 

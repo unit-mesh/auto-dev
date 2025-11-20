@@ -10,6 +10,7 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import cc.unitmesh.llm.KoogLLMService
+import kotlinx.coroutines.launch
 
 /**
  * Code Review Page - Entry point for the Side-by-Side code review UI (redesigned)
@@ -47,6 +48,7 @@ fun CodeReviewPage(
                     onRefresh = { viewModel.refresh() },
                     workspace = currentWorkspace,
                     onBack = onBack,
+                    viewModel = viewModel
                 )
             },
             modifier = modifier,
@@ -76,8 +78,12 @@ fun CodeReviewPage(
 private fun CodeReviewTopBar(
     onRefresh: () -> Unit,
     workspace: Workspace?,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: CodeReviewViewModel
 ) {
+    var showIssueTrackerDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    
     TopAppBar(
         title = {
             Column {
@@ -108,6 +114,15 @@ private fun CodeReviewTopBar(
             }
         },
         actions = {
+            // Issue Tracker Settings button
+            IconButton(onClick = { showIssueTrackerDialog = true }) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Settings,
+                    contentDescription = "Issue Tracker Settings",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
             IconButton(onClick = onRefresh) {
                 Icon(
                     imageVector = AutoDevComposeIcons.Refresh,
@@ -121,4 +136,30 @@ private fun CodeReviewTopBar(
             titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     )
+    
+    // Issue Tracker Configuration Dialog
+    if (showIssueTrackerDialog) {
+        val currentConfig = remember {
+            mutableStateOf<cc.unitmesh.devins.ui.config.IssueTrackerConfig?>(null)
+        }
+        
+        LaunchedEffect(Unit) {
+            currentConfig.value = cc.unitmesh.devins.ui.config.ConfigManager.getIssueTracker()
+        }
+        
+        IssueTrackerConfigDialog(
+            onDismiss = { showIssueTrackerDialog = false },
+            onConfigured = {
+                // Reload issue service when configuration changes
+                scope.launch {
+                    try {
+                        viewModel.reloadIssueService()
+                    } catch (e: Exception) {
+                        // Handle error
+                    }
+                }
+            },
+            initialConfig = currentConfig.value
+        )
+    }
 }

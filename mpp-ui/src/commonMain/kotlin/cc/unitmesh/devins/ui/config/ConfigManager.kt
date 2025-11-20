@@ -120,4 +120,18 @@ expect object ConfigManager {
      * @return WorkspaceInfo or null if no workspace was saved
      */
     suspend fun getLastWorkspace(): WorkspaceInfo?
+    
+    /**
+     * Save issue tracker configuration
+     *
+     * @param issueTracker Issue tracker configuration
+     */
+    suspend fun saveIssueTracker(issueTracker: IssueTrackerConfig)
+    
+    /**
+     * Get issue tracker configuration
+     *
+     * @return IssueTrackerConfig or null if not configured
+     */
+    suspend fun getIssueTracker(): IssueTrackerConfig?
 }

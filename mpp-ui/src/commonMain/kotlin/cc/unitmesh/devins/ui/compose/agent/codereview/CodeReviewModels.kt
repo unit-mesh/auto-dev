@@ -3,6 +3,7 @@ package cc.unitmesh.devins.ui.compose.agent.codereview
 import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.diff.ChangeType
 import cc.unitmesh.agent.diff.DiffHunk
+import cc.unitmesh.agent.tracker.IssueInfo
 import kotlinx.serialization.Serializable
 
 /**
@@ -131,5 +132,7 @@ data class CommitInfo(
     val author: String,
     val timestamp: Long,
     val date: String,
-    val message: String
+    val message: String,
+    val issueInfo: IssueInfo? = null, // Issue information extracted from commit message
+    val isLoadingIssue: Boolean = false // Whether issue info is being loaded
 )

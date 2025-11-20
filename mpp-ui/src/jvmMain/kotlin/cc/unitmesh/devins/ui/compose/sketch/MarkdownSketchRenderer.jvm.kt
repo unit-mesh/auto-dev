@@ -5,15 +5,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
 import com.mikepenz.markdown.compose.components.MarkdownComponents
 import com.mikepenz.markdown.compose.components.markdownComponents
+import com.mikepenz.markdown.compose.elements.MarkdownCodeFence
+import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCode
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
-import com.mikepenz.markdown.compose.elements.MarkdownTable
-import com.mikepenz.markdown.compose.elements.highlightedCodeBlock
-import com.mikepenz.markdown.compose.elements.highlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
@@ -54,12 +54,17 @@ actual object MarkdownSketchRenderer {
                     )
                 },
                 codeFence = {
-                    MarkdownHighlightedCodeFence(
-                        content = it.content,
-                        node = it.node,
-                        highlightsBuilder = highlightsBuilder,
-                        showHeader = true, // optional enable header with code language + copy button
-                    )
+                    val style = LocalMarkdownTypography.current.code
+                    MarkdownCodeFence(it.content, it.node, style) { code, language, style ->
+                        /// render mermaid in here
+                        MarkdownHighlightedCode(
+                            code = code,
+                            language = language,
+                            style = style,
+                            highlightsBuilder = highlightsBuilder,
+                            showHeader = true,
+                        )
+                    }
                 },
             ),
             success = { state, components, modifier ->

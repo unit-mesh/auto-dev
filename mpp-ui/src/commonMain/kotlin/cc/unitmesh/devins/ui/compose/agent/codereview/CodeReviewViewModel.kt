@@ -44,6 +44,9 @@ open class CodeReviewViewModel(
     // Non-AI analysis components (extracted for testability)
     private val codeAnalyzer = CodeAnalyzer(workspace)
     private val lintExecutor = LintExecutor()
+    
+    // Issue tracker service
+    private val issueService = IssueService(workspace.rootPath ?: "")
 
     // State
     private val _state = MutableStateFlow(CodeReviewState())
@@ -81,6 +84,8 @@ open class CodeReviewViewModel(
             CoroutineScope(Dispatchers.Default).launch {
                 try {
                     codeReviewAgent = initializeCodingAgent()
+                    // Initialize issue service
+                    issueService.initialize(if (gitOps.isSupported()) gitOps else null)
                     if (gitOps.isSupported()) {
                         loadCommitHistory()
                     } else {
@@ -146,6 +151,8 @@ open class CodeReviewViewModel(
 
             if (commits.isNotEmpty()) {
                 loadCommitDiffInternal(commits[0].hash)
+                // Load issue info for first commit asynchronously
+                loadIssueForCommit(0)
             }
 
         } catch (e: Exception) {
@@ -191,6 +198,12 @@ open class CodeReviewViewModel(
                     hasMoreCommits = hasMore,
                     isLoadingMore = false
                 )
+            }
+            
+            // Load issue info for newly loaded commits asynchronously
+            val startIndex = currentCount
+            additionalCommits.forEachIndexed { offset, _ ->
+                loadIssueForCommit(startIndex + offset)
             }
 
         } catch (e: Exception) {
@@ -940,6 +953,82 @@ open class CodeReviewViewModel(
         }
     }
 
+    /**
+     * Load issue information for a specific commit asynchronously
+     * 
+     * @param commitIndex Index of the commit in commitHistory
+     */
+    private fun loadIssueForCommit(commitIndex: Int) {
+        val commit = currentState.commitHistory.getOrNull(commitIndex) ?: return
+        
+        // Skip if already loaded or loading
+        if (commit.issueInfo != null || commit.isLoadingIssue) {
+            return
+        }
+        
+        // Mark as loading
+        updateCommitAtIndex(commitIndex) { it.copy(isLoadingIssue = true) }
+        
+        // Load issue asynchronously
+        scope.launch {
+            try {
+                val issueDeferred = issueService.getIssueAsync(commit.hash, commit.message)
+                val issueInfo = issueDeferred.await()
+                
+                // Update commit with issue info
+                updateCommitAtIndex(commitIndex) { 
+                    it.copy(issueInfo = issueInfo, isLoadingIssue = false) 
+                }
+            } catch (e: Exception) {
+                AutoDevLogger.error("CodeReviewViewModel") {
+                    "Failed to load issue for commit ${commit.shortHash}: ${e.message}"
+                }
+                updateCommitAtIndex(commitIndex) { it.copy(isLoadingIssue = false) }
+            }
+        }
+    }
+    
+    /**
+     * Update a commit at a specific index
+     */
+    private fun updateCommitAtIndex(index: Int, update: (CommitInfo) -> CommitInfo) {
+        val commits = currentState.commitHistory
+        if (index !in commits.indices) return
+        
+        val updatedCommits = commits.toMutableList()
+        updatedCommits[index] = update(updatedCommits[index])
+        
+        updateState { it.copy(commitHistory = updatedCommits) }
+    }
+    
+    /**
+     * Reload issue service (called when configuration changes)
+     */
+    suspend fun reloadIssueService() {
+        try {
+            AutoDevLogger.info("CodeReviewViewModel") {
+                "Reloading issue service..."
+            }
+            issueService.reload(if (gitOps.isSupported()) gitOps else null)
+            
+            // Reload issues for all commits
+            currentState.commitHistory.forEachIndexed { index, commit ->
+                // Reset issue info
+                updateCommitAtIndex(index) { it.copy(issueInfo = null, isLoadingIssue = false) }
+                // Reload
+                loadIssueForCommit(index)
+            }
+            
+            AutoDevLogger.info("CodeReviewViewModel") {
+                "Issue service reloaded successfully"
+            }
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") {
+                "Failed to reload issue service: ${e.message}"
+            }
+        }
+    }
+    
     /**
      * Cleanup when ViewModel is disposed
      */

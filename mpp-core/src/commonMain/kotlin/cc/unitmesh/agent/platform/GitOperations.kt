@@ -60,4 +60,11 @@ expect class GitOperations(projectPath: String) {
      * @return true 表示支持，false 表示不支持
      */
     fun isSupported(): Boolean
+    
+    /**
+     * 获取 git remote URL
+     * @param remoteName remote 名称（默认为 "origin"）
+     * @return remote URL，如果获取失败返回 null
+     */
+    suspend fun getRemoteUrl(remoteName: String = "origin"): String?
 }

@@ -153,6 +153,26 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     
     actual fun isSupported(): Boolean = isNodeJs
     
+    actual suspend fun getRemoteUrl(remoteName: String): String? {
+        if (!isNodeJs) {
+            return null
+        }
+        
+        return try {
+            val output = execGitCommand("git remote get-url $remoteName")
+            val url = output.trim()
+            if (url.isNotBlank()) {
+                logger.info { "Remote '$remoteName' URL: $url" }
+                url
+            } else {
+                null
+            }
+        } catch (e: Throwable) {
+            logger.warn(e) { "Failed to get remote URL: ${e.message}" }
+            null
+        }
+    }
+    
     // Private helper methods
     
     private fun parseCommitLine(line: String): GitCommitInfo? {

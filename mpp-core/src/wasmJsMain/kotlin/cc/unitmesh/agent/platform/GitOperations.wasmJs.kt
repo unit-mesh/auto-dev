@@ -377,6 +377,27 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             false
         }
     }
+    
+    actual suspend fun getRemoteUrl(remoteName: String): String? {
+        initialize()
+        
+        val module = lg2Module ?: return null
+        
+        return try {
+            commandOutputBuffer.clear()
+            val exitCode = module.callMain(jsArrayOf("remote", "get-url", remoteName)).await<JsNumber>().toInt()
+            
+            if (exitCode != 0) {
+                WasmConsole.warn("git remote get-url failed with exit code: $exitCode")
+                return null
+            }
+            
+            commandOutputBuffer.firstOrNull()?.trim()?.takeIf { it.isNotBlank() }
+        } catch (e: Throwable) {
+            WasmConsole.error("Failed to get remote URL: ${e.message}")
+            null
+        }
+    }
 }
 
 fun debugObj(obj: LibGit2Module): Unit = js("console.log(obj)")

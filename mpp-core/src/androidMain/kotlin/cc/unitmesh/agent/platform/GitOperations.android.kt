@@ -45,4 +45,8 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     actual suspend fun getDiff(base: String, target: String): GitDiffInfo? {
         return null
     }
+    
+    actual suspend fun getRemoteUrl(remoteName: String): String? {
+        return null
+    }
 }

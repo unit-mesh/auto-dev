@@ -275,6 +275,19 @@ actual object ConfigManager {
         val wrapper = load()
         return wrapper.getLastWorkspace()
     }
+    
+    actual suspend fun saveIssueTracker(issueTracker: IssueTrackerConfig) {
+        val wrapper = load()
+        val configFile = wrapper.configFile
+        
+        val updatedConfigFile = configFile.copy(issueTracker = issueTracker)
+        save(updatedConfigFile)
+    }
+    
+    actual suspend fun getIssueTracker(): IssueTrackerConfig? {
+        val wrapper = load()
+        return wrapper.getIssueTracker()
+    }
 
     private fun createEmpty(): AutoDevConfigWrapper {
         return AutoDevConfigWrapper(ConfigFile(active = "", configs = emptyList()))
