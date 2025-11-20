@@ -32,7 +32,10 @@ class BuiltinToolsProvider : ToolProvider {
 
         // Search tools
         tools.add(GrepTool(dependencies.fileSystem))
-        tools.add(GlobTool(dependencies.fileSystem))
+        
+        // GlobTool with AnalysisAgent support for auto-summarization of large results
+        val analysisAgent = dependencies.subAgentManager?.getSubAgent<cc.unitmesh.agent.subagent.ContentHandlerContext, cc.unitmesh.agent.tool.ToolResult.AgentResult>("analysis-agent") as? cc.unitmesh.agent.subagent.AnalysisAgent
+        tools.add(GlobTool(dependencies.fileSystem, analysisAgent))
 
         if (dependencies.shellExecutor.isAvailable()) {
             tools.add(ShellTool(dependencies.shellExecutor))

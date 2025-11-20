@@ -86,8 +86,16 @@ class GlobInvocation(
     params: GlobParams,
     tool: GlobTool,
     private val fileSystem: ToolFileSystem,
-    private val gitIgnoreParser: GitIgnoreParser? = null
+    private val gitIgnoreParser: GitIgnoreParser? = null,
+    private val analysisAgent: cc.unitmesh.agent.subagent.AnalysisAgent? = null
 ) : BaseToolInvocation<GlobParams, ToolResult>(params, tool) {
+
+    companion object {
+        // Threshold for triggering AnalysisAgent (file count)
+        const val FILE_COUNT_THRESHOLD = 100
+        // Threshold for triggering AnalysisAgent (character count)
+        const val CHAR_COUNT_THRESHOLD = 10000
+    }
 
     override fun getDescription(): String {
         val searchPath = params.path ?: "project root"
@@ -118,7 +126,7 @@ class GlobInvocation(
             val limitedMatches = sortedMatches.take(params.maxResults)
             val resultText = formatResults(limitedMatches, matches.size)
 
-            val metadata = mapOf(
+            val metadata = mutableMapOf(
                 "pattern" to params.pattern,
                 "search_path" to searchPath,
                 "total_matches" to matches.size.toString(),
@@ -129,7 +137,49 @@ class GlobInvocation(
                 "respect_gitignore" to params.respectGitIgnore.toString()
             )
 
-            ToolResult.Success(resultText, metadata)
+            // Check if result is too long and should trigger AnalysisAgent
+            val shouldSummarize = limitedMatches.size >= FILE_COUNT_THRESHOLD || 
+                                  resultText.length >= CHAR_COUNT_THRESHOLD
+                                  
+            if (shouldSummarize && analysisAgent != null) {
+                metadata["triggered_analysis"] = "true"
+                metadata["original_result_length"] = resultText.length.toString()
+                
+                // Trigger AnalysisAgent to summarize the results
+                val analysisContext = cc.unitmesh.agent.subagent.ContentHandlerContext(
+                    content = resultText,
+                    contentType = "file-list",
+                    source = "glob",
+                    metadata = metadata.mapValues { it.value.toString() }
+                )
+                
+                val analysisResult = analysisAgent.execute(analysisContext) { progress ->
+                    // Log progress if needed
+                }
+                
+                if (analysisResult.success) {
+                    // Return summarized result with reference to full list
+                    val summarizedText = buildString {
+                        appendLine("⚠️ Large file list detected (${limitedMatches.size} files, ${resultText.length} chars)")
+                        appendLine("🤖 AnalysisAgent automatically triggered to provide a summary:")
+                        appendLine()
+                        appendLine(analysisResult.content)
+                        appendLine()
+                        appendLine("💡 Tip: Use more specific glob patterns to reduce result size:")
+                        appendLine("  - Instead of: **/*")
+                        appendLine("  - Try: src/**/*.kt or **/test/**/*.java")
+                        appendLine()
+                        appendLine("📋 Full file list available in metadata if needed.")
+                    }
+                    
+                    metadata["full_result"] = resultText
+                    metadata["analysis_metadata"] = analysisResult.metadata.toString()
+                    
+                    return@safeExecute ToolResult.Success(summarizedText, metadata.toMap())
+                }
+            }
+
+            ToolResult.Success(resultText, metadata.toMap())
         }
     }
 
@@ -284,12 +334,15 @@ class GlobInvocation(
 }
 
 class GlobTool(
-    private val fileSystem: ToolFileSystem
+    private val fileSystem: ToolFileSystem,
+    private val analysisAgent: cc.unitmesh.agent.subagent.AnalysisAgent? = null
 ) : BaseExecutableTool<GlobParams, ToolResult>() {
 
     override val name: String = "glob"
     override val description: String =
-        """Efficiently finds files matching specific glob patterns (e.g., `src/**/*.ts`, `**/*.md`), returning absolute paths sorted by modification time (newest first). Ideal for quickly locating files based on their name or path structure, especially in large codebases.""".trimIndent()
+        """Efficiently finds files matching specific glob patterns (e.g., `src/**/*.ts`, `**/*.md`), returning absolute paths sorted by modification time (newest first). Ideal for quickly locating files based on their name or path structure, especially in large codebases. 
+        
+⚠️ IMPORTANT: Avoid overly broad patterns like `**/*` as they can return too many files and waste context. Use specific patterns instead. When results are too large (100+ files), the system automatically triggers AnalysisAgent to provide a concise summary.""".trimIndent()
 
     override val metadata: ToolMetadata = ToolMetadata(
         displayName = "Find Files",
@@ -321,7 +374,7 @@ class GlobTool(
             null
         }
 
-        return GlobInvocation(params, this, fileSystem, gitIgnoreParser)
+        return GlobInvocation(params, this, fileSystem, gitIgnoreParser, analysisAgent)
     }
 
     private fun validateParameters(params: GlobParams) {

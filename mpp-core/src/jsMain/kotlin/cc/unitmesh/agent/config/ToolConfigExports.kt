@@ -128,7 +128,6 @@ class JsToolConfigFile(
         }
         
         return ToolConfigFile(
-            enabledBuiltinTools = enabledBuiltinTools.toList(),
             enabledMcpTools = enabledMcpTools.toList(),
             mcpServers = mcpServersMap,
         )
@@ -149,7 +148,7 @@ class JsToolConfigFile(
             }
             
             return JsToolConfigFile(
-                enabledBuiltinTools = config.enabledBuiltinTools.toTypedArray(),
+                enabledBuiltinTools = emptyArray(), // Deprecated: Built-in tools are always enabled
                 enabledMcpTools = config.enabledMcpTools.toTypedArray(),
                 mcpServers = mcpServersJs
             )

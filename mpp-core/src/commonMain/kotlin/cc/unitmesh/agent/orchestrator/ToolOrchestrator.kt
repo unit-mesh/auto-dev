@@ -253,10 +253,16 @@ class ToolOrchestrator(
                 ToolType.Glob -> executeGlobTool(tool, params, basicContext)
                 ToolType.Grep -> executeGrepTool(tool, params, basicContext)
                 ToolType.WebFetch -> executeWebFetchTool(tool, params, basicContext)
+                ToolType.AskAgent -> executeAskAgentTool(tool, params, basicContext)
                 else -> {
-                    // For new tools (task-boundary, ask-agent, etc.), use generic execution
-                    logger.debug { "Executing tool generically: $toolName" }
-                    executeGenericTool(tool, params, basicContext)
+                    // Handle special tools that need parameter conversion
+                    if (toolName == "task-boundary") {
+                        executeTaskBoundaryTool(tool, params, basicContext)
+                    } else {
+                        // For truly generic tools, use generic execution
+                        logger.debug { "Executing tool generically: $toolName" }
+                        executeGenericTool(tool, params, basicContext)
+                    }
                 }
             }
         }
@@ -509,6 +515,52 @@ class ToolOrchestrator(
             prompt = finalPrompt
         )
         val invocation = webFetchTool.createInvocation(webFetchParams)
+        return invocation.execute(context)
+    }
+
+    private suspend fun executeAskAgentTool(
+        tool: Tool,
+        params: Map<String, Any>,
+        context: cc.unitmesh.agent.tool.ToolExecutionContext
+    ): ToolResult {
+        val askAgentTool = tool as cc.unitmesh.agent.tool.impl.AskAgentTool
+        
+        val agentName = params["agentName"] as? String
+            ?: return ToolResult.Error("agentName parameter is required")
+        val question = params["question"] as? String
+            ?: return ToolResult.Error("question parameter is required")
+        val contextMap = params["context"] as? Map<*, *>
+        
+        val askAgentParams = cc.unitmesh.agent.tool.impl.AskSubAgentParams(
+            agentName = agentName,
+            question = question,
+            context = contextMap?.mapKeys { it.key.toString() }?.mapValues { it.value.toString() } ?: emptyMap()
+        )
+        
+        val invocation = askAgentTool.createInvocation(askAgentParams)
+        return invocation.execute(context)
+    }
+
+    private suspend fun executeTaskBoundaryTool(
+        tool: Tool,
+        params: Map<String, Any>,
+        context: cc.unitmesh.agent.tool.ToolExecutionContext
+    ): ToolResult {
+        val taskBoundaryTool = tool as cc.unitmesh.agent.tool.impl.TaskBoundaryTool
+        
+        val taskName = params["taskName"] as? String
+            ?: return ToolResult.Error("taskName parameter is required")
+        val status = params["status"] as? String
+            ?: return ToolResult.Error("status parameter is required")
+        val summary = params["summary"] as? String ?: ""
+        
+        val taskBoundaryParams = cc.unitmesh.agent.tool.impl.TaskBoundaryParams(
+            taskName = taskName,
+            status = status,
+            summary = summary
+        )
+        
+        val invocation = taskBoundaryTool.createInvocation(taskBoundaryParams)
         return invocation.execute(context)
     }
 

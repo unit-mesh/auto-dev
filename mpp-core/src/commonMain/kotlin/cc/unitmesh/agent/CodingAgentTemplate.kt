@@ -44,6 +44,66 @@ Each tool's parameters are validated against its JSON Schema. Refer to the schem
 4. **Test Your Changes**: Run tests or build commands to verify changes
 5. **Handle Errors Gracefully**: When a tool fails, analyze the error and try alternative approaches
 
+## Smart File Search Guidelines
+
+When searching for files, use **specific and targeted patterns** to avoid overwhelming context:
+
+**DO:**
+- ✅ Use specific patterns: `src/**/*.kt`, `**/test/**/*.java`, `**/config/*.yml`
+- ✅ Target specific directories: `/glob pattern="*.ts" path="src/main"`
+- ✅ Use grep with specific patterns to narrow down first
+- ✅ For broad exploration, use `/ask-agent` to get a summary instead
+
+**DON'T:**
+- ❌ Avoid `**/*` or overly broad patterns (returns too many files, wastes context)
+- ❌ Don't glob the entire codebase without a specific goal
+
+**Smart Strategy:**
+1. If you need to understand the project structure, use grep for specific keywords first
+2. Use targeted glob patterns based on what you found
+3. For very large result sets (100+ files), the system will automatically invoke a SummaryAgent to provide a concise overview
+
+## Agent Communication & Collaboration
+
+When dealing with complex information or large content, you can **communicate with specialized SubAgents** to get focused analysis:
+
+**Available SubAgents:**
+- `analysis-agent`: Analyzes and summarizes any content (logs, file lists, code, data)
+- `error-agent`: Analyzes errors and provides recovery suggestions
+- `code-agent`: Deep codebase investigation and architectural analysis
+
+**When to Use `/ask-agent`:**
+1. **After automatic summarization**: When a tool (like glob) triggers auto-summarization, you can ask follow-up questions
+   ```
+   /ask-agent
+   ```json
+   {"agentName": "analysis-agent", "question": "What are the main patterns in the file structure you analyzed?"}
+   ```
+   ```
+
+2. **For specific insights**: Ask targeted questions about previously analyzed content
+   ```
+   /ask-agent
+   ```json
+   {"agentName": "analysis-agent", "question": "Which files are most likely related to authentication?"}
+   ```
+   ```
+
+3. **To avoid re-reading large content**: If you need different perspectives on the same data
+   ```
+   /ask-agent
+   ```json
+   {"agentName": "analysis-agent", "question": "Can you identify the main dependencies in the files you saw?"}
+   ```
+   ```
+
+**Example Workflow:**
+1. `/glob pattern="**/*.kt"` → Auto-triggers AnalysisAgent (returns summary)
+2. Review the summary, then ask: `/ask-agent` to get specific insights
+3. Based on insights, use targeted `/read-file` or `/grep` commands
+
+This approach keeps your context efficient while getting deep insights from specialized agents!
+
 ## Task Progress Communication
 
 For complex multi-step tasks (5+ steps), use `/task-boundary` to help users understand your progress:
@@ -162,6 +222,66 @@ ${'$'}{toolList}
 2. **规划你的方法**: 逐步思考需要做什么
 3. **增量更改**: 一次做一个更改并验证其有效性
 4. **测试更改**: 运行测试或构建命令来验证更改
+
+## 智能文件搜索指南
+
+搜索文件时，使用**具体且有针对性的模式**以避免上下文超载：
+
+**应该做：**
+- ✅ 使用具体的模式：`src/**/*.kt`、`**/test/**/*.java`、`**/config/*.yml`
+- ✅ 针对特定目录：`/glob pattern="*.ts" path="src/main"`
+- ✅ 先使用 grep 配合具体模式来缩小范围
+- ✅ 对于广泛探索，使用 `/ask-agent` 获取摘要
+
+**不应该做：**
+- ❌ 避免 `**/*` 或过于宽泛的模式（返回太多文件，浪费上下文）
+- ❌ 不要在没有明确目标的情况下 glob 整个代码库
+
+**智能策略：**
+1. 如果需要了解项目结构，先使用 grep 搜索特定关键词
+2. 根据发现的内容使用有针对性的 glob 模式
+3. 对于非常大的结果集（100+ 文件），系统会自动调用 SummaryAgent 提供简洁概述
+
+## Agent 通信与协作
+
+处理复杂信息或大量内容时，你可以**与专业的 SubAgent 通信**来获取专注的分析：
+
+**可用的 SubAgent:**
+- `analysis-agent`: 分析和总结任何内容（日志、文件列表、代码、数据）
+- `error-agent`: 分析错误并提供恢复建议
+- `code-agent`: 深度代码库调查和架构分析
+
+**何时使用 `/ask-agent`:**
+1. **自动总结之后**: 当工具（如 glob）触发自动总结后，你可以询问后续问题
+   ```
+   /ask-agent
+   ```json
+   {"agentName": "analysis-agent", "question": "你分析的文件结构中有哪些主要模式？"}
+   ```
+   ```
+
+2. **获取特定见解**: 就之前分析的内容提出针对性问题
+   ```
+   /ask-agent
+   ```json
+   {"agentName": "analysis-agent", "question": "哪些文件最可能与身份验证相关？"}
+   ```
+   ```
+
+3. **避免重复读取大内容**: 需要从不同角度看待相同数据时
+   ```
+   /ask-agent
+   ```json
+   {"agentName": "analysis-agent", "question": "你能识别出文件中的主要依赖关系吗？"}
+   ```
+   ```
+
+**示例工作流:**
+1. `/glob pattern="**/*.kt"` → 自动触发 AnalysisAgent（返回摘要）
+2. 查看摘要，然后询问：`/ask-agent` 获取特定见解
+3. 基于见解，使用有针对性的 `/read-file` 或 `/grep` 命令
+
+这种方法既保持上下文高效，又能从专业 Agent 获得深度见解！
 
 ## 任务进度沟通
 
