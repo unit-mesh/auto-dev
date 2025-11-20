@@ -6,7 +6,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +39,17 @@ fun AgentMessageList(
         if (renderer.timeline.isNotEmpty() || renderer.currentStreamingOutput.isNotEmpty()) {
             coroutineScope.launch {
                 listState.animateScrollToItem(
+                    index = maxOf(0, listState.layoutInfo.totalItemsCount - 1)
+                )
+            }
+        }
+    }
+
+    // Additional effect to handle streaming content growth within the same item
+    LaunchedEffect(renderer.currentStreamingOutput.length) {
+        if (renderer.currentStreamingOutput.isNotEmpty()) {
+            coroutineScope.launch {
+                listState.scrollToItem(
                     index = maxOf(0, listState.layoutInfo.totalItemsCount - 1)
                 )
             }
@@ -155,10 +169,10 @@ fun MessageItem(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
-        Card(
+        Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            color = MaterialTheme.colorScheme.surface
         ) {
             PlatformMessageTextContainer(text = message.content) {
                 Column(modifier = Modifier.padding(8.dp)) {
@@ -193,8 +207,8 @@ expect fun PlatformMessageTextContainer(
 
 @Composable
 fun StreamingMessageItem(content: String) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(4.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -215,8 +229,8 @@ fun TaskCompletedItem(
     success: Boolean,
     message: String
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    Surface(
+        color = MaterialTheme.colorScheme.primaryContainer,
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(

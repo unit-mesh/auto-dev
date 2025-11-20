@@ -11,8 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,13 +50,10 @@ fun ToolResultItem(
     val displayOutput = if (showFullOutput) fullOutput else output
     val hasFullOutput = fullOutput != null && fullOutput != output
 
-    Card(
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Row(
@@ -193,11 +189,9 @@ fun ToolResultItem(
                     }
                 }
 
-                Card(
-                    colors =
-                        CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(4.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -218,11 +212,8 @@ fun ToolErrorItem(
     error: String,
     onDismiss: () -> Unit
 ) {
-    Card(
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer
-            ),
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -275,10 +266,10 @@ fun ToolErrorItem(
 
 @Composable
 fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    Surface(
+        color = MaterialTheme.colorScheme.primaryContainer,
         shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier
     ) {
         Row(
             modifier = Modifier
@@ -314,8 +305,8 @@ fun CurrentToolCallItem(toolCall: ComposeRenderer.ToolCallInfo) {
             }
 
             // "Executing" badge
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+            Surface(
+                color = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(

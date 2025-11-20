@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,8 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -75,18 +75,20 @@ fun CombinedToolItem(
 
     val isExecuting = success == null
 
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(4.dp),
+        modifier = Modifier
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Row(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .clickable { if (displayParams != null || displayOutput != null) expanded = !expanded },
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) { if (displayParams != null || displayOutput != null) expanded = !expanded },
                 verticalAlignment = Alignment.Companion.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -212,11 +214,9 @@ fun CombinedToolItem(
                         }
                     }
 
-                    Card(
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            ),
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.Companion.fillMaxWidth()
                     ) {
                         Text(
@@ -272,11 +272,9 @@ fun CombinedToolItem(
                         }
                     }
 
-                    Card(
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            ),
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.Companion.fillMaxWidth()
                     ) {
                         Text(
@@ -326,18 +324,18 @@ fun ToolCallItem(
                 ToolType.WriteFile
             )
 
-    Card(
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(4.dp),
+        modifier = Modifier
     ) {
         Column(modifier = Modifier.Companion.padding(8.dp)) {
             Row(
                 modifier = Modifier.Companion.fillMaxWidth()
-                    .clickable { if (displayParams != null) expanded = !expanded },
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { if (displayParams != null) expanded = !expanded },
                 verticalAlignment = Alignment.Companion.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -455,11 +453,9 @@ fun ToolCallItem(
                     }
                 }
 
-                Card(
-                    colors =
-                        CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(4.dp),
                     modifier = Modifier.Companion.fillMaxWidth()
                 ) {
                     Text(
@@ -535,20 +531,20 @@ fun TerminalOutputItem(
     val clipboardManager = LocalClipboardManager.current
     val isSuccess = exitCode == 0
 
-    Card(
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(4.dp),
+        modifier = Modifier
     ) {
         Column(modifier = Modifier.Companion.padding(8.dp)) {
             Row(
                 modifier =
                     Modifier.Companion
                         .fillMaxWidth()
-                        .clickable { expanded = !expanded },
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) { expanded = !expanded },
                 verticalAlignment = Alignment.Companion.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
