@@ -141,6 +141,7 @@ class CodeAnalyzer(private val workspace: Workspace) {
             progressCallback?.invoke("\n⚠️ Failed to analyze code structure: ${e.message}\n\n")
         }
 
+        println(modifiedRanges)
         return modifiedRanges
     }
 

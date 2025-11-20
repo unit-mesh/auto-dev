@@ -248,7 +248,18 @@ class JsCodeParser : CodeParser {
     private fun extractNodeText(node: dynamic, sourceCode: String): String {
         val startByte = node.startIndex as Int
         val endByte = node.endIndex as Int
-        return sourceCode.substring(startByte, endByte)
+        
+        // TreeSitter returns byte offsets, but String.substring uses character indices
+        // Convert byte offsets to character offsets
+        val bytes = sourceCode.encodeToByteArray()
+        
+        // Validate byte offsets
+        if (startByte < 0 || endByte > bytes.size || startByte > endByte) {
+            return ""
+        }
+        
+        // Extract the byte range and convert back to string
+        return bytes.sliceArray(startByte until endByte).decodeToString()
     }
     
     private fun mapNodeTypeToCodeElementType(nodeType: String): CodeElementType {

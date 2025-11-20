@@ -300,7 +300,8 @@ object DiffSketchRenderer {
                 when (line.type) {
                     DiffLineType.ADDED -> added++
                     DiffLineType.DELETED -> deleted++
-                    else -> {}
+                    DiffLineType.CONTEXT -> {}
+                    DiffLineType.HEADER -> {}
                 }
             }
         }

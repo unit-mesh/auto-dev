@@ -851,36 +851,55 @@ open class CodeReviewViewModel(
         try {
             // Read the current file content
             val currentContent = workspace.fileSystem.readFile(filePath) ?: ""
-            val currentLines = currentContent.lines().toMutableList()
+            // Handle empty content properly - String.lines() returns [""] for empty string
+            val currentLines = if (currentContent.isEmpty()) {
+                mutableListOf()
+            } else {
+                currentContent.lines().toMutableList()
+            }
+
+            // Track the offset between original line numbers and current line numbers
+            // This is needed because insertions/deletions shift subsequent line numbers
+            var lineOffset = 0
 
             // Apply each hunk
             fileDiff.hunks.forEach { hunk ->
-                // Simple implementation: find and replace based on old lines
-                var oldLineIndex = hunk.oldStartLine - 1
+                // Convert hunk's old line numbers to current line numbers using offset
+                // For new files, oldStartLine is 0, so we start at index 0
+                var currentLineIndex = maxOf(0, hunk.oldStartLine - 1) + lineOffset
+                var oldLineNum = maxOf(1, hunk.oldStartLine)
 
                 hunk.lines.forEach { diffLine ->
                     when (diffLine.type) {
                         DiffLineType.CONTEXT -> {
                             // Context line - verify it matches
-                            if (oldLineIndex < currentLines.size) {
-                                if (currentLines[oldLineIndex].trim() != diffLine.content.trim()) {
+                            if (currentLineIndex < currentLines.size) {
+                                if (currentLines[currentLineIndex].trim() != diffLine.content.trim()) {
                                     AutoDevLogger.warn("CodeReviewViewModel") {
-                                        "Context mismatch at line ${oldLineIndex + 1}: expected '${diffLine.content}', got '${currentLines[oldLineIndex]}'"
+                                        "Context mismatch at line ${oldLineNum}: expected '${diffLine.content}', got '${currentLines[currentLineIndex]}'"
                                     }
                                 }
-                                oldLineIndex++
+                                currentLineIndex++
+                                oldLineNum++
                             }
                         }
                         DiffLineType.DELETED -> {
                             // Delete line
-                            if (oldLineIndex < currentLines.size) {
-                                currentLines.removeAt(oldLineIndex)
+                            if (currentLineIndex < currentLines.size) {
+                                currentLines.removeAt(currentLineIndex)
+                                lineOffset-- // Deletion shifts subsequent lines up
+                                oldLineNum++
+                                // Don't increment currentLineIndex - the next line is now at this index
                             }
                         }
                         DiffLineType.ADDED -> {
                             // Add line
-                            currentLines.add(oldLineIndex, diffLine.content)
-                            oldLineIndex++
+                            if (currentLineIndex <= currentLines.size) {
+                                currentLines.add(currentLineIndex, diffLine.content)
+                                lineOffset++ // Insertion shifts subsequent lines down
+                                currentLineIndex++
+                                // Don't increment oldLineNum - added lines aren't in the old file
+                            }
                         }
                         DiffLineType.HEADER -> {
                             // Skip header lines
