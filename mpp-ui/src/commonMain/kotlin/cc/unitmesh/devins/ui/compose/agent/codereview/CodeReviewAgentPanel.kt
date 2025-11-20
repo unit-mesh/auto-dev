@@ -185,7 +185,6 @@ fun CodeReviewAgentPanel(
             }
         }
 
-        // Progress indicator
         if (state.aiProgress.stage in listOf(
                 AnalysisStage.RUNNING_LINT,
                 AnalysisStage.ANALYZING_LINT,
@@ -287,13 +286,13 @@ fun CollapsibleLintAnalysisCard(
     val totalErrors = lintResults.sumOf { it.errorCount }
     val totalWarnings = lintResults.sumOf { it.warningCount }
     val totalInfos = lintResults.sumOf { it.infoCount }
-    
+
     // Calculate chunk count and modified lines
     val totalChunks = diffFiles.sumOf { it.hunks.size }
     val modifiedLines = diffFiles.sumOf { file ->
         file.hunks.sumOf { hunk ->
             hunk.lines.count { line ->
-                line.type == cc.unitmesh.agent.diff.DiffLineType.ADDED || 
+                line.type == cc.unitmesh.agent.diff.DiffLineType.ADDED ||
                 line.type == cc.unitmesh.agent.diff.DiffLineType.DELETED
             }
         }
@@ -379,7 +378,7 @@ fun CollapsibleLintAnalysisCard(
                             label = "I"
                         )
                     }
-                    
+
                     // Chunk and line modification stats
                     if (totalChunks > 0) {
                         Text(
@@ -387,7 +386,7 @@ fun CollapsibleLintAnalysisCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                         )
-                        
+
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.Companion.CenterVertically
@@ -732,135 +731,6 @@ fun IssueBadge(
                 color = color,
                 fontSize = 10.sp
             )
-        }
-    }
-}
-
-/**
- * Deprecated: Kept for backward compatibility
- */
-@Composable
-fun ProgressOutputCard(
-    title: String,
-    content: String,
-    isActive: Boolean
-) {
-    CollapsibleAnalysisCard(
-        title = title,
-        content = content,
-        isActive = isActive
-    )
-}
-
-/**
- * Deprecated: Kept for backward compatibility
- */
-@Composable
-fun FixResultCard(fix: FixResult) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = when (fix.status) {
-                FixStatus.FIXED -> AutoDevColors.Green.c600.copy(alpha = 0.1f)
-                FixStatus.NO_ISSUE -> AutoDevColors.Blue.c600.copy(alpha = 0.1f)
-                FixStatus.SKIPPED -> AutoDevColors.Amber.c600.copy(alpha = 0.1f)
-                FixStatus.FAILED -> AutoDevColors.Red.c600.copy(alpha = 0.1f)
-            }
-        ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            // Header row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Companion.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.Companion.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Status icon
-                    Icon(
-                        imageVector = when (fix.status) {
-                            FixStatus.FIXED -> AutoDevComposeIcons.CheckCircle
-                            FixStatus.NO_ISSUE -> AutoDevComposeIcons.Info
-                            FixStatus.SKIPPED -> AutoDevComposeIcons.Warning
-                            FixStatus.FAILED -> AutoDevComposeIcons.Error
-                        },
-                        contentDescription = fix.status.name,
-                        tint = when (fix.status) {
-                            FixStatus.FIXED -> AutoDevColors.Green.c600
-                            FixStatus.NO_ISSUE -> AutoDevColors.Blue.c600
-                            FixStatus.SKIPPED -> AutoDevColors.Amber.c600
-                            FixStatus.FAILED -> AutoDevColors.Red.c600
-                        },
-                        modifier = Modifier.size(18.dp)
-                    )
-
-                    Text(
-                        text = "${fix.filePath}:${fix.line}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = FontFamily.Companion.Monospace,
-                        fontWeight = FontWeight.Companion.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                // Risk badge
-                Surface(
-                    color = when (fix.risk) {
-                        RiskLevel.CRITICAL -> AutoDevColors.Red.c600
-                        RiskLevel.HIGH -> AutoDevColors.Amber.c600
-                        RiskLevel.MEDIUM -> AutoDevColors.Amber.c500
-                        RiskLevel.LOW -> AutoDevColors.Green.c600
-                        RiskLevel.INFO -> AutoDevColors.Blue.c600
-                    },
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        text = fix.risk.name,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Companion.White,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Issue
-            Text(
-                text = "Issue: ${fix.lintIssue}",
-                style = MaterialTheme.typography.bodySmall,
-                color = AutoDevColors.Red.c600
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // AI fix description
-            Text(
-                text = "Fix: ${fix.aiFix}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            // Fixed code
-            fix.fixedCode?.let { code ->
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        text = code,
-                        fontFamily = FontFamily.Companion.Monospace,
-                        fontSize = 11.sp,
-                        color = AutoDevColors.Green.c600,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-            }
         }
     }
 }
