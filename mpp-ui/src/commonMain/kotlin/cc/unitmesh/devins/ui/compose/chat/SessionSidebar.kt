@@ -1,7 +1,6 @@
 package cc.unitmesh.devins.ui.compose.chat
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,12 +42,9 @@ fun SessionSidebar(
     onNewChat: () -> Unit,
     sessionClient: SessionClient? = null,
     onRemoteSessionSelected: ((Session) -> Unit)? = null,
-    onShowModelConfig: () -> Unit = {},
-    onShowToolConfig: () -> Unit = {},
-    onShowDebug: () -> Unit = {},
-    hasDebugInfo: Boolean = false,
     modifier: Modifier = Modifier,
-    onRenameSession: ((String, String) -> Unit)? = null
+    onRenameSession: ((String, String) -> Unit)? = null,
+    isExpanded: Boolean = true
 ) {
     val scope = rememberCoroutineScope()
 
@@ -78,223 +74,232 @@ fun SessionSidebar(
         }
     }
 
+    val width by animateDpAsState(if (isExpanded) 240.dp else 50.dp)
+
     Surface(
         modifier = modifier
             .fillMaxHeight()
-            .width(240.dp),
+            .width(width),
         color = MaterialTheme.colorScheme.surfaceContainer,
         shadowElevation = 1.dp
     ) {
+        if (isExpanded) {
+            ExpandedSessionSidebarContent(
+                localSessions = localSessions,
+                remoteSessions = remoteSessions,
+                isLoadingRemote = isLoadingRemote,
+                currentSessionId = currentSessionId,
+                onSessionSelected = onSessionSelected,
+                onNewChat = onNewChat,
+                onRemoteSessionSelected = onRemoteSessionSelected,
+                onRenameSession = onRenameSession,
+                chatHistoryManager = chatHistoryManager,
+                sessionClient = sessionClient,
+                scope = scope
+            )
+        } else {
+            CollapsedSessionSidebarContent(onNewChat = onNewChat)
+        }
+    }
+}
+
+@Composable
+private fun CollapsedSessionSidebarContent(onNewChat: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        // Top Actions
         Column(
-            modifier = Modifier.fillMaxSize()
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Recent",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            HorizontalDivider()
-
-            // Session List
-            val hasAnySessions = localSessions.isNotEmpty() || remoteSessions.isNotEmpty()
-
-            if (!hasAnySessions && !isLoadingRemote) {
-                // Empty state
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Icon(
-                            imageVector = AutoDevComposeIcons.Chat,
-                            contentDescription = null,
-                            modifier = Modifier.size(36.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                        )
-                        Text(
-                            text = "No history",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "Start a conversation",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f),
-                    contentPadding = PaddingValues(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(3.dp)
-                ) {
-                    // 本地会话
-                    if (localSessions.isNotEmpty()) {
-                        item {
-                            Text(
-                                text = "Local",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                            )
-                        }
-
-                        items(localSessions, key = { "local_${it.id}" }) { session ->
-                            LocalSessionItem(
-                                session = session,
-                                isSelected = session.id == currentSessionId,
-                                onSelect = { onSessionSelected(session.id) },
-                                onRename = { newTitle ->
-                                    onRenameSession?.invoke(session.id, newTitle)
-                                },
-                                onDelete = {
-                                    scope.launch {
-                                        chatHistoryManager.deleteSession(session.id)
-                                    }
-                                }
-                            )
-                        }
-                    }
-
-                    // 远程会话
-                    if (remoteSessions.isNotEmpty()) {
-                        item {
-                            Text(
-                                text = "Remote",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                            )
-                        }
-
-                        items(remoteSessions, key = { "remote_${it.id}" }) { session ->
-                            RemoteSessionItem(
-                                session = session,
-                                onSelect = {
-                                    onRemoteSessionSelected?.invoke(session)
-                                },
-                                onDelete = {
-                                    scope.launch {
-                                        try {
-                                            sessionClient?.deleteSession(session.id)
-                                            remoteSessions = remoteSessions.filter { it.id != session.id }
-                                        } catch (e: Exception) {
-                                            println("⚠️ 删除远程会话失败: ${e.message}")
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    }
-
-                    // Loading indicator
-                    if (isLoadingRemote) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(modifier = Modifier.size(20.dp))
-                            }
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider()
-
-            // New Agent Button
-            Button(
-                onClick = onNewChat,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            ) {
+            IconButton(onClick = onNewChat) {
                 Icon(
                     imageVector = AutoDevComposeIcons.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "New Agent",
-                    style = MaterialTheme.typography.labelLarge
+                    contentDescription = "New Chat",
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
+        }
+    }
+}
 
-            // Settings at bottom
-            Row(
+@Composable
+private fun ExpandedSessionSidebarContent(
+    localSessions: List<ChatSession>,
+    remoteSessions: List<Session>,
+    isLoadingRemote: Boolean,
+    currentSessionId: String?,
+    onSessionSelected: (String) -> Unit,
+    onNewChat: () -> Unit,
+    onRemoteSessionSelected: ((Session) -> Unit)?,
+    onRenameSession: ((String, String) -> Unit)?,
+    chatHistoryManager: ChatHistoryManager,
+    sessionClient: SessionClient?,
+    scope: kotlinx.coroutines.CoroutineScope
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Recent",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        HorizontalDivider()
+
+        // Session List
+        val hasAnySessions = localSessions.isNotEmpty() || remoteSessions.isNotEmpty()
+
+        if (!hasAnySessions && !isLoadingRemote) {
+            // Empty state
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .weight(1f)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                // Model Config
-                IconButton(
-                    onClick = onShowModelConfig,
-                    modifier = Modifier.size(28.dp)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        imageVector = AutoDevComposeIcons.Settings,
-                        contentDescription = "Model Config",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        imageVector = AutoDevComposeIcons.Chat,
+                        contentDescription = null,
+                        modifier = Modifier.size(36.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                    Text(
+                        text = "No history",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Start a conversation",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                contentPadding = PaddingValues(6.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                // 本地会话
+                if (localSessions.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Local",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
 
-                // Tool Config
-                IconButton(
-                    onClick = onShowToolConfig,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Build,
-                        contentDescription = "Tool Config",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                // Debug Info (if available)
-                if (hasDebugInfo) {
-                    IconButton(
-                        onClick = onShowDebug,
-                        modifier = Modifier.size(28.dp)
-                    ) {
-                        Icon(
-                            imageVector = AutoDevComposeIcons.BugReport,
-                            contentDescription = "Debug Info",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.secondary
+                    items(localSessions, key = { "local_${it.id}" }) { session ->
+                        LocalSessionItem(
+                            session = session,
+                            isSelected = session.id == currentSessionId,
+                            onSelect = { onSessionSelected(session.id) },
+                            onRename = { newTitle ->
+                                onRenameSession?.invoke(session.id, newTitle)
+                            },
+                            onDelete = {
+                                scope.launch {
+                                    chatHistoryManager.deleteSession(session.id)
+                                }
+                            }
                         )
                     }
                 }
+
+                // 远程会话
+                if (remoteSessions.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Remote",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
+
+                    items(remoteSessions, key = { "remote_${it.id}" }) { session ->
+                        RemoteSessionItem(
+                            session = session,
+                            onSelect = {
+                                onRemoteSessionSelected?.invoke(session)
+                            },
+                            onDelete = {
+                                scope.launch {
+                                    try {
+                                        sessionClient?.deleteSession(session.id)
+                                        // Note: This local update might be overwritten by the next fetch
+                                    } catch (e: Exception) {
+                                        println("⚠️ 删除远程会话失败: ${e.message}")
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+
+                // Loading indicator
+                if (isLoadingRemote) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                        }
+                    }
+                }
             }
+        }
+
+        HorizontalDivider()
+
+        // New Agent Button
+        Button(
+            onClick = onNewChat,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        ) {
+            Icon(
+                imageVector = AutoDevComposeIcons.Add,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "New Agent",
+                style = MaterialTheme.typography.labelLarge
+            )
         }
     }
 }

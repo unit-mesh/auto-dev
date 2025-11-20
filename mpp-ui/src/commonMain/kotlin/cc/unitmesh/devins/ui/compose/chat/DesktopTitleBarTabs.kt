@@ -61,7 +61,7 @@ fun DesktopTitleBarTabs(
             ) {
                 Icon(
                     imageVector = if (isSessionSidebarVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
-                    contentDescription = if (isSessionSidebarVisible) "Hide Sidebar" else "Show Sidebar",
+                    contentDescription = if (isSessionSidebarVisible) "Collapse Sidebar" else "Expand Sidebar",
                     tint = if (isSessionSidebarVisible) {
                         MaterialTheme.colorScheme.primary
                     } else {
@@ -125,12 +125,10 @@ fun DesktopTitleBarTabs(
             Spacer(modifier = Modifier.weight(0.4f))
         }
 
-        // Right: Action Buttons
         Row(
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Remote Config (only for REMOTE agent)
             if (currentAgentType == AgentType.REMOTE) {
                 IconButton(
                     onClick = onConfigureRemote,

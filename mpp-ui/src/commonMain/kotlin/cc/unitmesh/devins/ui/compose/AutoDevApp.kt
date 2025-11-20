@@ -383,36 +383,33 @@ private fun AutoDevContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (showSessionSidebar) {
-                SessionSidebar(
-                    chatHistoryManager = chatHistoryManager,
-                    currentSessionId = chatHistoryManager.getCurrentSession().id,
-                    onSessionSelected = { sessionId ->
-                        if (agentSessionSelectedHandler != null) {
-                            agentSessionSelectedHandler?.invoke(sessionId)
-                        } else {
-                            chatHistoryManager.switchSession(sessionId)
-                            messages = chatHistoryManager.getMessages()
-                            currentStreamingOutput = ""
-                        }
-                    },
-                    onNewChat = {
-                        if (agentNewChatHandler != null) {
-                            agentNewChatHandler?.invoke()
-                        } else {
-                            chatHistoryManager.createSession()
-                            messages = emptyList()
-                            currentStreamingOutput = ""
-                        }
-                    },
-                    onRenameSession = { sessionId, newTitle ->
-                        chatHistoryManager.renameSession(sessionId, newTitle)
-                    },
-                    onShowModelConfig = { showModelConfigDialog = true },
-                    onShowToolConfig = { showToolConfigDialog = true },
-                    hasDebugInfo = compilerOutput.isNotEmpty()
-                )
-            }
+            // Always show sidebar, but control its expanded state
+            SessionSidebar(
+                chatHistoryManager = chatHistoryManager,
+                currentSessionId = chatHistoryManager.getCurrentSession().id,
+                isExpanded = showSessionSidebar,
+                onSessionSelected = { sessionId ->
+                    if (agentSessionSelectedHandler != null) {
+                        agentSessionSelectedHandler?.invoke(sessionId)
+                    } else {
+                        chatHistoryManager.switchSession(sessionId)
+                        messages = chatHistoryManager.getMessages()
+                        currentStreamingOutput = ""
+                    }
+                },
+                onNewChat = {
+                    if (agentNewChatHandler != null) {
+                        agentNewChatHandler?.invoke()
+                    } else {
+                        chatHistoryManager.createSession()
+                        messages = emptyList()
+                        currentStreamingOutput = ""
+                    }
+                },
+                onRenameSession = { sessionId, newTitle ->
+                    chatHistoryManager.renameSession(sessionId, newTitle)
+                }
+            )
 
             Column(
                 modifier = Modifier

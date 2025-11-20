@@ -23,8 +23,6 @@ import androidx.compose.ui.window.FrameWindowScope
  */
 @Composable
 fun FrameWindowScope.DesktopWindowLayout(
-    title: String = "AutoDev",
-    showWindowControls: Boolean = true,
     onMinimize: () -> Unit = {},
     onMaximize: () -> Unit = {},
     onClose: () -> Unit = {},
@@ -65,15 +63,13 @@ private fun TitleBar(
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-//            if (showWindowControls) {
-                WindowControls(
-                    onMinimize = onMinimize,
-                    onMaximize = onMaximize,
-                    onClose = onClose
-                )
+            WindowControls(
+                onMinimize = onMinimize,
+                onMaximize = onMaximize,
+                onClose = onClose
+            )
 
-                Spacer(modifier = Modifier.width(12.dp))
-//            }
+            Spacer(modifier = Modifier.width(12.dp))
 
             content()
         }

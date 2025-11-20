@@ -55,8 +55,6 @@ fun main(args: Array<String>) {
                 undecorated = true,
             ) {
                 DesktopWindowLayout(
-                    title = "AutoDev",
-                    showWindowControls = true,
                     onMinimize = { windowState.isMinimized = true },
                     onMaximize = {
                         windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
