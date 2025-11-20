@@ -131,54 +131,5 @@ fun MessageList(
                 }
             }
         }
-
-        // 底部项目信息
-        ProjectInfoFooter(
-            projectPath = projectPath,
-            fileSystem = fileSystem,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 8.dp)
-        )
-    }
-}
-
-/**
- * 项目信息底部栏
- */
-@Composable
-private fun ProjectInfoFooter(
-    projectPath: String?,
-    fileSystem: ProjectFileSystem,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = if (projectPath != null) "📁 $projectPath" else "⚠️ No project selected",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-        )
-
-        if (projectPath != null) {
-            val commandCount =
-                remember(fileSystem) {
-                    try {
-                        cc.unitmesh.devins.command.SpecKitCommand.loadAll(fileSystem).size
-                    } catch (e: Exception) {
-                        0
-                    }
-                }
-
-            Text(
-                text = "✨ $commandCount SpecKit commands",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-            )
-        }
     }
 }
