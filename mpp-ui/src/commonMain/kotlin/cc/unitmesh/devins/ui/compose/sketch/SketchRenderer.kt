@@ -15,6 +15,7 @@ import cc.unitmesh.devins.parser.CodeFence
  * - Code -> CodeBlockRenderer
  * - Diff -> DiffSketchRenderer
  * - Thinking -> ThinkingBlockRenderer
+ * - Walkthrough -> WalkthroughBlockRenderer
  */
 object SketchRenderer : BaseContentRenderer() {
     /**
@@ -87,6 +88,16 @@ object SketchRenderer : BaseContentRenderer() {
                         if (fence.text.isNotBlank()) {
                             ThinkingBlockRenderer(
                                 thinkingContent = fence.text,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
+                    "walkthrough" -> {
+                        if (fence.text.isNotBlank()) {
+                            WalkthroughBlockRenderer(
+                                walkthroughContent = fence.text,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))

@@ -16,6 +16,8 @@ class CodeFence(
         val devinEndRegex = Regex("</devin>")
         val thinkingStartRegex = Regex("<thinking>")
         val thinkingEndRegex = Regex("</thinking>")
+        val walkthroughStartRegex = Regex("<!--\\s*walkthrough_start\\s*-->")
+        val walkthroughEndRegex = Regex("<!--\\s*walkthrough_end\\s*-->")
 
         fun parse(content: String): CodeFence {
             val languageRegex = Regex("\\s*```([\\w#+ ]*)")
@@ -49,6 +51,21 @@ class CodeFence(
                 }
 
                 return CodeFence("thinking", thinkingContent, isComplete, "thinking")
+            }
+
+            // Check for <!-- walkthrough_start --> HTML comment
+            val walkthroughStartMatch = walkthroughStartRegex.find(content)
+            if (walkthroughStartMatch != null) {
+                val endMatch = walkthroughEndRegex.find(content)
+                val isComplete = endMatch != null
+
+                val walkthroughContent = if (isComplete) {
+                    content.substring(walkthroughStartMatch.range.last + 1, endMatch!!.range.first).trim()
+                } else {
+                    content.substring(walkthroughStartMatch.range.last + 1).trim()
+                }
+
+                return CodeFence("walkthrough", walkthroughContent, isComplete, "walkthrough")
             }
 
             var codeStarted = false
@@ -101,10 +118,11 @@ class CodeFence(
                 processedContent = preProcessDevinBlock(content)
             }
 
-            // Parse both <devin> and <thinking> tags
+            // Parse <devin>, <thinking> and <!-- walkthrough_start --> tags
             val tagMatches = mutableListOf<Pair<String, MatchResult>>()
             devinStartRegex.findAll(processedContent).forEach { tagMatches.add("devin" to it) }
             thinkingStartRegex.findAll(processedContent).forEach { tagMatches.add("thinking" to it) }
+            walkthroughStartRegex.findAll(processedContent).forEach { tagMatches.add("walkthrough" to it) }
             
             // Sort by position
             tagMatches.sortBy { it.second.range.first }
@@ -119,7 +137,12 @@ class CodeFence(
                     }
 
                     // Find the corresponding end tag
-                    val endRegex = if (tagType == "devin") devinEndRegex else thinkingEndRegex
+                    val endRegex = when (tagType) {
+                        "devin" -> devinEndRegex
+                        "thinking" -> thinkingEndRegex
+                        "walkthrough" -> walkthroughEndRegex
+                        else -> devinEndRegex
+                    }
                     val endMatch = endRegex.find(processedContent, startMatch.range.last + 1)
                     val isComplete = endMatch != null
 
@@ -146,7 +169,7 @@ class CodeFence(
             }
 
             return codeFences.filter {
-                if (it.languageId == "devin" || it.languageId == "thinking") {
+                if (it.languageId == "devin" || it.languageId == "thinking" || it.languageId == "walkthrough") {
                     return@filter true
                 }
                 return@filter it.text.isNotEmpty()

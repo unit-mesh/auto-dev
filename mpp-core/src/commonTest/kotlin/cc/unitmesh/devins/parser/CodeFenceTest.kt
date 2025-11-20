@@ -248,5 +248,196 @@ class CodeFenceTest {
         val codeBlock = result.find { it.languageId == "python" }
         assertTrue(codeBlock != null)
     }
+
+    // Walkthrough HTML comment tests
+    @Test
+    fun testParseWalkthroughBlock() {
+        val content = """
+            <!-- walkthrough_start -->
+            ## Walkthrough
+            
+            This is a code review summary.
+            
+            ## Changes
+            
+            | File | Summary |
+            |------|---------|
+            | test.kt | Added feature |
+            <!-- walkthrough_end -->
+        """.trimIndent()
+
+        val result = CodeFence.parseAll(content)
+
+        assertEquals(1, result.size)
+        assertEquals("walkthrough", result[0].languageId)
+        assertTrue(result[0].text.contains("## Walkthrough"))
+        assertTrue(result[0].text.contains("## Changes"))
+        assertTrue(result[0].isComplete)
+    }
+
+    @Test
+    fun testParseIncompleteWalkthroughBlock() {
+        val content = """
+            <!-- walkthrough_start -->
+            ## Walkthrough
+            
+            This walkthrough is incomplete
+        """.trimIndent()
+
+        val result = CodeFence.parseAll(content)
+
+        assertEquals(1, result.size)
+        assertEquals("walkthrough", result[0].languageId)
+        assertTrue(result[0].text.contains("## Walkthrough"))
+        assertFalse(result[0].isComplete)
+    }
+
+    @Test
+    fun testParseWalkthroughWithWhitespace() {
+        val content = """
+            <!--  walkthrough_start  -->
+            Content here
+            <!--  walkthrough_end  -->
+        """.trimIndent()
+
+        val result = CodeFence.parseAll(content)
+
+        assertEquals(1, result.size)
+        assertEquals("walkthrough", result[0].languageId)
+        assertEquals("Content here", result[0].text)
+        assertTrue(result[0].isComplete)
+    }
+
+    @Test
+    fun testParseMixedContentWithWalkthrough() {
+        val content = """
+            Here is the review:
+            
+            <!-- walkthrough_start -->
+            ## Walkthrough
+            Summary of changes
+            
+            ## Changes
+            | File | Summary |
+            |------|---------|
+            | src/Main.kt | Added logging |
+            <!-- walkthrough_end -->
+            
+            Additional comments here.
+        """.trimIndent()
+
+        val result = CodeFence.parseAll(content)
+
+        assertTrue(result.size >= 2, "Expected at least 2 blocks, got ${result.size}")
+        
+        val walkthroughBlock = result.find { it.languageId == "walkthrough" }
+        assertTrue(walkthroughBlock != null, "Should have a walkthrough block")
+        assertTrue(walkthroughBlock!!.text.contains("## Walkthrough"))
+        assertTrue(walkthroughBlock.text.contains("## Changes"))
+        assertTrue(walkthroughBlock.isComplete)
+    }
+
+    @Test
+    fun testParseWalkthroughWithMermaidDiagram() {
+        val content = """
+            <!-- walkthrough_start -->
+            ## Walkthrough
+            
+            This change adds a new feature.
+            
+            ## Changes
+            
+            | File | Summary |
+            |------|---------|
+            | feature.kt | New feature implementation |
+            
+            ## Sequence Diagram
+            
+            ```mermaid
+            sequenceDiagram
+                User->>System: Request
+                System-->>User: Response
+            ```
+            <!-- walkthrough_end -->
+        """.trimIndent()
+
+        val result = CodeFence.parseAll(content)
+
+        assertEquals(1, result.size)
+        assertEquals("walkthrough", result[0].languageId)
+        assertTrue(result[0].text.contains("## Walkthrough"))
+        assertTrue(result[0].text.contains("## Changes"))
+        assertTrue(result[0].text.contains("mermaid"))
+        assertTrue(result[0].isComplete)
+    }
+
+    @Test
+    fun testParseSingleWalkthroughTag() {
+        val content = "<!-- walkthrough_start -->"
+        
+        val fence = CodeFence.parse(content)
+        
+        assertEquals("walkthrough", fence.languageId)
+        assertTrue(fence.text.isEmpty())
+        assertFalse(fence.isComplete)
+    }
+
+    @Test
+    fun testParseCompleteWalkthroughTag() {
+        val content = "<!-- walkthrough_start -->content<!-- walkthrough_end -->"
+        
+        val fence = CodeFence.parse(content)
+        
+        assertEquals("walkthrough", fence.languageId)
+        assertEquals("content", fence.text)
+        assertTrue(fence.isComplete)
+    }
+
+    @Test
+    fun testParseWalkthroughAndThinkingBlocks() {
+        val content = """
+            <thinking>
+            I need to review this
+            </thinking>
+            
+            <!-- walkthrough_start -->
+            ## Walkthrough
+            Review complete
+            <!-- walkthrough_end -->
+        """.trimIndent()
+
+        val result = CodeFence.parseAll(content)
+
+        assertEquals(2, result.size)
+        assertEquals("thinking", result[0].languageId)
+        assertEquals("walkthrough", result[1].languageId)
+        assertTrue(result.all { it.isComplete })
+    }
+
+    @Test
+    fun testParseAllThreeSpecialBlockTypes() {
+        val content = """
+            <thinking>
+            Analyzing code
+            </thinking>
+            
+            <devin>
+            /file:test.kt
+            </devin>
+            
+            <!-- walkthrough_start -->
+            ## Walkthrough
+            Summary here
+            <!-- walkthrough_end -->
+        """.trimIndent()
+
+        val result = CodeFence.parseAll(content)
+
+        assertEquals(3, result.size)
+        assertEquals("thinking", result[0].languageId)
+        assertEquals("devin", result[1].languageId)
+        assertEquals("walkthrough", result[2].languageId)
+        assertTrue(result.all { it.isComplete })
+    }
 }
 
