@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.chat
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -7,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.AgentType
@@ -26,6 +28,7 @@ fun DesktopTitleBarTabs(
     currentAgentType: AgentType,
     onAgentTypeChange: (AgentType) -> Unit,
     onConfigureRemote: () -> Unit = {},
+    onDoubleClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // 当切换到 Code Review 时自动隐藏 SessionSidebar
@@ -46,6 +49,11 @@ fun DesktopTitleBarTabs(
             .fillMaxWidth()
             .height(40.dp)
             .padding(horizontal = 8.dp, vertical = 4.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = { onDoubleClick() }
+                )
+            }
     ) {
         // Center: Workspace Indicator
         if (workspacePath.isNotEmpty()) {

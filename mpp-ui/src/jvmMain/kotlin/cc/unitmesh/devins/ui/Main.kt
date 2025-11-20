@@ -74,6 +74,13 @@ fun main(args: Array<String>) {
                             onConfigureRemote = {
                                 uiState.showRemoteConfigDialog = true
                                 AutoDevLogger.info("AutoDevMain") { "☁️ Configure Remote" }
+                            },
+                            onDoubleClick = {
+                                windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
+                                    WindowPlacement.Floating
+                                } else {
+                                    WindowPlacement.Maximized
+                                }
                             }
                         )
                     }
