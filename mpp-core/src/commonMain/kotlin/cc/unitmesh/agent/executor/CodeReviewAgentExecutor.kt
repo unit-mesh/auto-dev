@@ -273,13 +273,11 @@ class CodeReviewAgentExecutor(
             ?.lastOrNull { it.role == cc.unitmesh.devins.llm.MessageRole.ASSISTANT }
             ?.content ?: "No review generated"
 
-        val parsedFindings = ReviewFinding.parseFindings(finalResponse)
-        findings.addAll(parsedFindings)
-
+        // No longer parse findings from text - just return the content
         return CodeReviewResult(
             success = true,
             message = finalResponse,
-            findings = findings.toList()
+            findings = emptyList() // Findings parsing removed as it was unreliable
         )
     }
 }

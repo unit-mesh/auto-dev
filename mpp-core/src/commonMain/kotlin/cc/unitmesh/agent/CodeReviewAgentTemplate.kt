@@ -53,44 +53,115 @@ ${'$'}{diffContext}
 
 ## Your Task
 
+**⚠️ CRITICAL: You MUST strictly follow the output format below. Do NOT use any other format.**
+
 Generate a comprehensive summary of the changes in the following format.
 
-**OUTPUT FORMAT**:
+**OUTPUT FORMAT REQUIREMENTS**:
 
-<!-- This is an auto-generated comment: summarize by coderabbit.ai -->
+**Step 1: Output the start marker (REQUIRED)**
+```
 <!-- walkthrough_start -->
+```
 
+**Step 2: Walkthrough Section (REQUIRED)**
+```markdown
 ## Walkthrough
 
-{Provide a high-level summary of the PR/Changes. Explain the "Why" and "What" of the changes. Mention key architectural decisions, new components, or significant refactorings. Keep it to 2-3 paragraphs.}
+{Provide 2-3 paragraphs explaining:
+1. Why these changes were made (Why)
+2. What was changed (What)
+3. Key architectural decisions or significant refactorings}
+```
 
+**Step 3: Changes Table (REQUIRED)**
+```markdown
 ## Changes
 
 | Cohort / File(s) | Summary |
 |---|---|
-| **{Component Name}** <br> `{File Path}` | {Concise summary of the changes in this file. Focus on business logic and behavior changes.} |
-| ... | ... |
+| **{Component Name}** <br> `{File Path}` | {Concise summary of changes. Focus on business logic and behavior.} |
+```
 
+**Step 4: Sequence Diagram (IF APPLICABLE)**
+```markdown
 ## Sequence Diagram(s)
 
-{If the changes involve interaction between multiple components, user flows, or complex logic, provide a Mermaid sequence diagram. If not applicable, omit this section or provide a simple class diagram if relevant.}
+{If changes involve multi-component interaction, user flows, or complex logic, provide a Mermaid diagram.
+Omit this section if not applicable.}
 
-```mermaid
+\`\`\`mermaid
 sequenceDiagram
     actor User
     participant ComponentA
     participant ComponentB
     ...
+\`\`\`
 ```
 
+**Step 5: Output the end marker (REQUIRED)**
+```
 <!-- walkthrough_end -->
+```
 
-## Output Requirements
+**COMPLETE EXAMPLE OUTPUT**:
 
-- **Strictly follow the format above.**
-- The "Changes" table should group files logically if possible, or list them individually.
-- The Sequence Diagram is highly recommended for feature changes.
-- Do NOT list individual low-level code issues (typos, formatting) in this phase. Focus on the *structure* and *intent*.
+```markdown
+<!-- walkthrough_start -->
+
+## Walkthrough
+
+This change introduces an artifact-centric Code Review System featuring six serializable artifact types. The main goal is to provide a structured review process with support for asynchronous and parallel reviews.
+
+Core improvements include: CodeReviewAgentManager for review orchestration and session lifecycle management, enhanced three-phase review prompts, and comprehensive test coverage. All components support Kotlin Multiplatform.
+
+The key architectural decision was to use a sealed interface design for artifact types, ensuring type safety and extensibility. StateFlow enables reactive state updates, while SupervisorJob provides fault isolation.
+
+## Changes
+
+| Cohort / File(s) | Summary |
+|---|---|
+| **Artifact Model** <br> `mpp-core/.../CodeReviewArtifact.kt` | Introduces sealed CodeReviewArtifact interface and six data classes: ReviewPlanArtifact, AnalysisSummaryArtifact, VisualProofArtifact, FixSuggestionArtifact, MetricsReportArtifact, IssueTrackingArtifact. Supports kotlinx.serialization and toMarkdown() formatting. |
+| **Agent Manager** <br> `mpp-core/.../CodeReviewAgentManager.kt` | Implements async review execution, session tracking via StateFlow, lifecycle management. Provides submitReview(), submitParallelReviews(), cancelReview() methods. |
+| **Templates** <br> `mpp-core/.../CodeReviewAgentTemplate.kt` | Refactored to three-phase workflow (Strategic Planning, Information Gathering, Analysis Generation). Establishes standardized severity taxonomy (CRITICAL/HIGH/MEDIUM/LOW). |
+
+## Sequence Diagram(s)
+
+\`\`\`mermaid
+sequenceDiagram
+    actor User
+    participant Manager as CodeReviewAgentManager
+    participant Agent as CodeReviewAgent
+    participant LLM as LLM/Service
+
+    User->>Manager: submitReview(agent, task)
+    Manager->>Manager: generateReviewPlan()
+    Manager->>Agent: Execute Phase 1
+    Agent->>LLM: Request analysis
+    LLM-->>Agent: Return findings
+    Manager->>Manager: generateFixSuggestions()
+    Manager-->>User: Return artifacts
+\`\`\`
+
+<!-- walkthrough_end -->
+```
+
+## Output Requirements (MUST COMPLY)
+
+1. **Strict Format** - MUST include `<!-- walkthrough_start -->` and `<!-- walkthrough_end -->` markers
+2. **Required Sections** - Walkthrough and Changes table are REQUIRED, cannot be omitted
+3. **Changes Table** - Group files logically by component when possible
+4. **Sequence Diagram** - Only provide when there are multi-component interactions
+5. **NO Other Formats** - Do NOT output "Top Priority Issues" list or any other format
+6. **Focus on Structure** - Do NOT list low-level code issues (typos, formatting, etc.)
+
+**Validation Checklist**:
+- [ ] Output starts with `<!-- walkthrough_start -->`
+- [ ] Contains `## Walkthrough` section (2-3 paragraphs)
+- [ ] Contains `## Changes` table
+- [ ] Output ends with `<!-- walkthrough_end -->`
+- [ ] Does NOT use other formats (e.g., "Top Priority Issues")
+
 """.trimIndent()
 
     val ZH = """
@@ -148,43 +219,114 @@ ${'$'}{diffContext}
 
 ## 你的任务
 
+**⚠️ 重要：你必须严格遵循以下输出格式。不要使用任何其他格式。**
+
 按照以下格式生成变更的综合摘要。
 
-**输出格式**：
+**输出格式要求**：
 
+**第一步：必须输出以下标记**
+```
 <!-- walkthrough_start -->
+```
 
+**第二步：Walkthrough 部分（必需）**
+```markdown
 ## Walkthrough
 
-{提供 PR/变更的高级摘要。解释变更的“原因”和“内容”。提及关键架构决策、新组件或重大重构。保持在 2-3 段。}
+{提供 2-3 段高级摘要，解释：
+1. 为什么做这些变更（Why）
+2. 变更了什么（What）
+3. 关键架构决策或重大重构}
+```
 
+**第三步：Changes 表格（必需）**
+```markdown
 ## Changes
 
 | 模块 / 文件 | 摘要 |
 |---|---|
 | **{组件名称}** <br> `{文件路径}` | {该文件中变更的简要摘要。关注业务逻辑和行为变更。} |
-| ... | ... |
+```
 
+**第四步：Sequence Diagram（如适用）**
+```markdown
 ## Sequence Diagram(s)
 
-{如果变更涉及多个组件之间的交互、用户流程或复杂逻辑，请提供 Mermaid 时序图。如果不适用，可以省略此部分或提供简单的类图。}
+{如果变更涉及多个组件交互、用户流程或复杂逻辑，提供 Mermaid 时序图。
+如果不适用，可以省略此部分。}
 
-```mermaid
+\`\`\`mermaid
 sequenceDiagram
     actor User
     participant ComponentA
     participant ComponentB
     ...
+\`\`\`
 ```
 
+**第五步：必须输出结束标记**
+```
 <!-- walkthrough_end -->
+```
 
-## 输出要求
+**完整示例输出**：
 
-- **严格遵循上述格式。**
-- “Changes”表应尽可能按逻辑分组文件，或单独列出。
-- 强烈建议对功能变更使用时序图。
-- 在此阶段**不要**列出个别的低级代码问题（拼写错误、格式化）。专注于**结构**和**意图**。
+```markdown
+<!-- walkthrough_start -->
+
+## Walkthrough
+
+本次变更引入了基于 artifact 的代码审查系统，包含六种可序列化的 artifact 类型。主要目标是提供结构化的审查流程，支持异步和并行审查。
+
+核心改进包括：CodeReviewAgentManager 用于审查编排和会话生命周期管理，增强的三阶段审查提示，以及全面的测试覆盖。所有组件都支持 Kotlin Multiplatform。
+
+关键架构决策是采用 sealed interface 设计 artifact 类型，确保类型安全和可扩展性。使用 StateFlow 实现响应式状态更新，SupervisorJob 提供故障隔离。
+
+## Changes
+
+| 模块 / 文件 | 摘要 |
+|---|---|
+| **Artifact Model** <br> `mpp-core/.../CodeReviewArtifact.kt` | 引入 sealed CodeReviewArtifact 接口和六个数据类：ReviewPlanArtifact、AnalysisSummaryArtifact、VisualProofArtifact、FixSuggestionArtifact、MetricsReportArtifact、IssueTrackingArtifact。支持 kotlinx.serialization 和 toMarkdown() 格式化。 |
+| **Agent Manager** <br> `mpp-core/.../CodeReviewAgentManager.kt` | 实现异步审查执行、会话跟踪（StateFlow）、生命周期管理。提供 submitReview()、submitParallelReviews()、cancelReview() 等方法。 |
+| **Templates** <br> `mpp-core/.../CodeReviewAgentTemplate.kt` | 重构为三阶段工作流（战略规划、信息收集、分析生成）。建立标准化严重性分类（CRITICAL/HIGH/MEDIUM/LOW）。 |
+
+## Sequence Diagram(s)
+
+\`\`\`mermaid
+sequenceDiagram
+    actor User
+    participant Manager as CodeReviewAgentManager
+    participant Agent as CodeReviewAgent
+    participant LLM as LLM/Service
+
+    User->>Manager: submitReview(agent, task)
+    Manager->>Manager: generateReviewPlan()
+    Manager->>Agent: Execute Phase 1
+    Agent->>LLM: Request analysis
+    LLM-->>Agent: Return findings
+    Manager->>Manager: generateFixSuggestions()
+    Manager-->>User: Return artifacts
+\`\`\`
+
+<!-- walkthrough_end -->
+```
+
+## 输出要求（必须遵守）
+
+1. **严格遵循格式** - 必须包含 `<!-- walkthrough_start -->` 和 `<!-- walkthrough_end -->` 标记
+2. **必需部分** - Walkthrough 和 Changes 表格是必需的，不能省略
+3. **Changes 表格** - 尽可能按逻辑分组文件，每个组件一行
+4. **Sequence Diagram** - 仅在有多组件交互时提供
+5. **禁止其他格式** - 不要输出"最高优先级问题"列表或其他格式
+6. **专注结构和意图** - 不要列出低级代码问题（拼写、格式化等）
+
+**验证清单**：
+- [ ] 输出以 `<!-- walkthrough_start -->` 开始
+- [ ] 包含 `## Walkthrough` 部分（2-3 段）
+- [ ] 包含 `## Changes` 表格
+- [ ] 输出以 `<!-- walkthrough_end -->` 结束
+- [ ] 没有使用其他格式（如"最高优先级问题"）
 """.trimIndent()
 }
 

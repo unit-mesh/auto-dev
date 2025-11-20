@@ -245,7 +245,6 @@ fun CodeReviewAgentPanel(
                         item {
                             AIAnalysisSection(
                                 analysisOutput = state.aiProgress.analysisOutput,
-                                reviewFindings = state.aiProgress.reviewFindings,
                                 isActive = state.aiProgress.stage == AnalysisStage.ANALYZING_LINT
                             )
                         }

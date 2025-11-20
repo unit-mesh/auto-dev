@@ -31,14 +31,14 @@ open class CodeReviewViewModel(
     private var codeReviewAgent: CodeReviewAgent? = null
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    
+
     // 在 WebAssembly 平台使用共享的 GitOperations 实例
     private val gitOps = if (Platform.name == "WebAssembly") {
         WasmGitManager.getInstance()
     } else {
         GitOperations(workspace.rootPath ?: "")
     }
-    
+
     private val analysisRepository = cc.unitmesh.devins.db.CodeReviewAnalysisRepository.getInstance()
 
     // Non-AI analysis components (extracted for testability)
@@ -106,7 +106,7 @@ open class CodeReviewViewModel(
         if (projectPath.isNullOrEmpty()) {
             throw IllegalStateException("Cannot initialize coding agent: workspace root path is null or empty")
         }
-        
+
         return createCodeReviewAgent(projectPath)
     }
 
@@ -399,16 +399,6 @@ open class CodeReviewViewModel(
                             )
                         }
                     }
-
-                    val findings = cc.unitmesh.agent.ReviewFinding.parseFindings(agentResult.content)
-                    updateState {
-                        it.copy(
-                            aiProgress = it.aiProgress.copy(
-                                analysisOutput = analysisOutputBuilder.toString(),
-                                reviewFindings = findings
-                            )
-                        )
-                    }
                 } catch (e: Exception) {
                     AutoDevLogger.error("CodeReviewViewModel") { "Failed to execute review task: ${e.message}" }
                     analysisOutputBuilder.append("\n❌ Error: ${e.message}")
@@ -447,7 +437,6 @@ open class CodeReviewViewModel(
                     )
                 }
 
-                // Save error state to cache as well
                 saveCurrentAnalysisResults()
             }
         }
@@ -945,7 +934,7 @@ open class CodeReviewViewModel(
             if (projectPath.isEmpty()) {
                 throw IllegalArgumentException("Project path cannot be empty")
             }
-            
+
             try {
                 val toolConfig = ToolConfigFile.default()
 

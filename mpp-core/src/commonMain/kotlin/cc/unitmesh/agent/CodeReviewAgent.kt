@@ -338,40 +338,7 @@ data class ReviewFinding(
     val filePath: String? = null,
     val lineNumber: Int? = null,
     val suggestion: String? = null
-) {
-    companion object {
-        fun parseFindings(content: String): List<ReviewFinding> {
-            val findings = mutableListOf<ReviewFinding>()
-
-            val cleanContent = content.replace(Regex("<!-- walkthrough_start -->.*?<!-- walkthrough_end -->"), "")
-            val lines = cleanContent.lines()
-            var currentSeverity = Severity.INFO
-
-            for (line in lines) {
-                when {
-                    line.contains("CRITICAL", ignoreCase = true) -> currentSeverity = Severity.CRITICAL
-                    line.contains("HIGH", ignoreCase = true) -> currentSeverity = Severity.HIGH
-                    line.contains("MEDIUM", ignoreCase = true) -> currentSeverity = Severity.MEDIUM
-                    line.contains("LOW", ignoreCase = true) -> currentSeverity = Severity.LOW
-                    line.startsWith("-") || line.startsWith("*") || line.startsWith("####") -> {
-                        val description = line.trimStart('-', '*', '#', ' ')
-                        if (description.length > 10) {
-                            findings.add(
-                                ReviewFinding(
-                                    severity = currentSeverity,
-                                    category = "General",
-                                    description = description
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-
-            return findings
-        }
-    }
-}
+)
 
 enum class Severity {
     CRITICAL, HIGH, MEDIUM, LOW, INFO

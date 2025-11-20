@@ -21,7 +21,6 @@ import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 @Composable
 fun AIAnalysisSection(
     analysisOutput: String,
-    reviewFindings: List<cc.unitmesh.agent.ReviewFinding>,
     isActive: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -87,61 +86,6 @@ fun AIAnalysisSection(
                         }
                     }
                 }
-
-                // Finding count badges
-                if (reviewFindings.isNotEmpty()) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val criticalCount = reviewFindings.count { it.severity == cc.unitmesh.agent.Severity.CRITICAL }
-                        val highCount = reviewFindings.count { it.severity == cc.unitmesh.agent.Severity.HIGH }
-                        val mediumCount = reviewFindings.count { it.severity == cc.unitmesh.agent.Severity.MEDIUM }
-
-                        if (criticalCount > 0) {
-                            Surface(
-                                color = AutoDevColors.Red.c600.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text(
-                                    text = "$criticalCount",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = AutoDevColors.Red.c600,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                        if (highCount > 0) {
-                            Surface(
-                                color = AutoDevColors.Amber.c600.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text(
-                                    text = "$highCount",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = AutoDevColors.Amber.c600,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                        if (mediumCount > 0) {
-                            Surface(
-                                color = AutoDevColors.Blue.c600.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text(
-                                    text = "$mediumCount",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = AutoDevColors.Blue.c600,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                    }
-                }
             }
 
             AnimatedVisibility(
@@ -160,21 +104,6 @@ fun AIAnalysisSection(
                     if (analysisOutput.isNotBlank()) {
                         Text(
                             text = analysisOutput,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
-                    // Show structured findings
-                    if (reviewFindings.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        reviewFindings.forEach { finding ->
-                            ReviewFindingCard(finding)
-                        }
-                    } else if (analysisOutput.isBlank()) {
-                        Text(
-                            text = "No analysis results yet...",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 8.dp)
