@@ -38,7 +38,7 @@ Each tool's parameters are validated against its JSON Schema. Refer to the schem
 
 ## Task Execution Guidelines
 
-1. **Gather Context First**: Before making changes, use /read-file and /glob to understand the codebase
+1. **Gather Context First**: Before making changes understand the codebase
 2. **Plan Your Approach**: Think step-by-step about what needs to be done
 3. **Make Incremental Changes**: Make one change at a time and verify it works
 4. **Test Your Changes**: Run tests or build commands to verify changes
@@ -158,7 +158,7 @@ ${'$'}{toolList}
 
 ## 任务执行指南
 
-1. **先获取上下文**: 在进行更改之前，使用 /read-file 和 /glob 来了解代码库
+1. **先获取上下文**: 在进行更改之前，先来了解代码库
 2. **规划你的方法**: 逐步思考需要做什么
 3. **增量更改**: 一次做一个更改并验证其有效性
 4. **测试更改**: 运行测试或构建命令来验证更改

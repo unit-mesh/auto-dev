@@ -309,17 +309,6 @@ private fun ToolLoadingStatusBar(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Built-in Tools Status
-            ToolStatusChip(
-                label = "Built-in",
-                count = toolStatus.builtinToolsEnabled,
-                total = toolStatus.builtinToolsTotal,
-                isLoading = false,
-                color = MaterialTheme.colorScheme.primary,
-                tooltip = "Core tools: read-file, write-file, grep, glob, shell"
-            )
-
-            // SubAgents Status
             ToolStatusChip(
                 label = "SubAgents",
                 count = toolStatus.subAgentsEnabled,
@@ -329,7 +318,6 @@ private fun ToolLoadingStatusBar(
                 tooltip = "AI agents: error-recovery, log-summary, codebase-investigator"
             )
 
-            // MCP Tools Status (async)
             ToolStatusChip(
                 label = "MCP Tools",
                 count = toolStatus.mcpToolsEnabled,

@@ -15,21 +15,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ToolConfigFile(
     /**
-     * @deprecated Built-in tools are now always enabled and cannot be disabled.
-     * This field is kept for backward compatibility but is no longer used.
-     * 
-     * Built-in tools include:
-     * - File System: read-file, write-file, edit-file
-     * - Search: grep, glob
-     * - Execution: shell
-     * - Communication: web-fetch
-     * - Task Management: task-boundary
-     * - SubAgent: ask-agent
-     */
-    @Deprecated("Built-in tools are always enabled")
-    val enabledBuiltinTools: List<String> = emptyList(),
-    
-    /**
      * List of enabled MCP tool names (tool names, not server names)
      */
     val enabledMcpTools: List<String> = emptyList(),
@@ -49,7 +34,6 @@ data class ToolConfigFile(
          */
         fun default(): ToolConfigFile {
             return ToolConfigFile(
-                enabledBuiltinTools = emptyList(), // Deprecated: built-in tools are always enabled
                 enabledMcpTools = emptyList(),
                 mcpServers = emptyMap()
             )

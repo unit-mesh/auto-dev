@@ -30,7 +30,6 @@ class CodingAgentViewModel(
 
     val renderer = ComposeRenderer()
 
-    // Current agent type
     var currentAgentType by mutableStateOf(AgentType.CODING)
         private set
 
@@ -42,24 +41,13 @@ class CodingAgentViewModel(
         private set
     private var currentExecutionJob: Job? = null
 
-    // MCP preloading state
     var mcpPreloadingStatus by mutableStateOf(PreloadingStatus(false, emptyList(), 0))
         private set
     var mcpPreloadingMessage by mutableStateOf("")
         private set
 
-    // TreeView state
     var isTreeViewVisible by mutableStateOf(false)
 
-    fun toggleTreeView() {
-        isTreeViewVisible = !isTreeViewVisible
-    }
-
-    fun closeTreeView() {
-        isTreeViewVisible = false
-    }
-
-    // Cached tool configuration for UI display
     private var cachedToolConfig: cc.unitmesh.agent.config.ToolConfigFile? = null
 
     init {
@@ -166,7 +154,6 @@ class CodingAgentViewModel(
             return
         }
 
-        // Check if LLM service is configured
         if (!isConfigured()) {
             renderer.addUserMessage(task)
             renderer.renderError("WARNING: LLM model is not configured. Please configure your model to continue.")
@@ -216,27 +203,29 @@ class CodingAgentViewModel(
             try {
                 // Get timeline snapshot with metadata from renderer
                 val timelineMessages = renderer.getTimelineSnapshot()
-                
+
                 // Get existing messages count to avoid duplicates
                 val existingMessagesCount = manager.getMessages().size
-                
+
                 // Only save new messages
                 val newMessages = timelineMessages.drop(existingMessagesCount)
-                
+
                 newMessages.forEach { message ->
                     when (message.role) {
                         MessageRole.USER -> {
                             // Save user message with metadata
                             manager.getCurrentSession().messages.add(message)
                         }
+
                         MessageRole.ASSISTANT -> {
                             // Save assistant message with metadata
                             manager.getCurrentSession().messages.add(message)
                         }
+
                         else -> {} // Ignore SYSTEM messages
                     }
                 }
-                
+
                 // Trigger save to disk
                 if (newMessages.isNotEmpty()) {
                     manager.getCurrentSession().updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
@@ -423,15 +412,8 @@ class CodingAgentViewModel(
 
     fun getToolLoadingStatus(): ToolLoadingStatus {
         val toolConfig = cachedToolConfig
-
-        // Built-in tools are always enabled
-        val allBuiltinTools = ToolType.ALL_TOOLS.filter { it.category != ToolCategory.SubAgent }
-        val builtinToolsEnabled = allBuiltinTools.size // All built-in tools are always enabled
-
-        // Sub-agent tools are also always enabled (they are built-in)
         val subAgentTools = ToolType.byCategory(ToolCategory.SubAgent)
         val subAgentsEnabled = subAgentTools.size // All sub-agents are always enabled
-
         val mcpServersTotal = toolConfig?.mcpServers?.filter { !it.value.disabled }?.size ?: 0
         val mcpServersLoaded = mcpPreloadingStatus.preloadedServers.size
 
@@ -455,8 +437,6 @@ class CodingAgentViewModel(
             }
 
         return ToolLoadingStatus(
-            builtinToolsEnabled = builtinToolsEnabled,
-            builtinToolsTotal = allBuiltinTools.size,
             subAgentsEnabled = subAgentsEnabled,
             subAgentsTotal = subAgentTools.size,
             mcpServersLoaded = mcpServersLoaded,
@@ -472,8 +452,6 @@ class CodingAgentViewModel(
  * Data class to hold tool loading status information
  */
 data class ToolLoadingStatus(
-    val builtinToolsEnabled: Int = 0,
-    val builtinToolsTotal: Int = 0,
     val subAgentsEnabled: Int = 0,
     val subAgentsTotal: Int = 0,
     val mcpServersLoaded: Int = 0,
