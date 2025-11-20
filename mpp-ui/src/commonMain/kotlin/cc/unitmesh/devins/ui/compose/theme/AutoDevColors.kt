@@ -148,23 +148,31 @@ object AutoDevColors {
     // ========================================================================
     // Diff Colors - Diff 显示专用颜色
     // ========================================================================
+    data class DiffColors(
+        val addedBg: Color,
+        val addedBorder: Color,
+        val deletedBg: Color,
+        val deletedBorder: Color,
+        val lineNumber: Color
+    )
+
     object Diff {
         // 深色主题
-        object Dark {
-            val addedBg = Green.c300.copy(alpha = 0.15f)
-            val addedBorder = Green.c300.copy(alpha = 0.3f)
-            val deletedBg = Red.c300.copy(alpha = 0.15f)
-            val deletedBorder = Red.c300.copy(alpha = 0.3f)
-            val lineNumber = Neutral.c500
-        }
+        val Dark = DiffColors(
+            addedBg = Green.c300.copy(alpha = 0.15f),
+            addedBorder = Green.c300.copy(alpha = 0.3f),
+            deletedBg = Red.c300.copy(alpha = 0.15f),
+            deletedBorder = Red.c300.copy(alpha = 0.3f),
+            lineNumber = Neutral.c500
+        )
 
         // 亮色主题
-        object Light {
-            val addedBg = Green.c600.copy(alpha = 0.1f)
-            val addedBorder = Green.c600.copy(alpha = 0.3f)
-            val deletedBg = Red.c600.copy(alpha = 0.1f)
-            val deletedBorder = Red.c600.copy(alpha = 0.3f)
-            val lineNumber = Neutral.c600
-        }
+        val Light = DiffColors(
+            addedBg = Green.c600.copy(alpha = 0.1f),
+            addedBorder = Green.c600.copy(alpha = 0.3f),
+            deletedBg = Red.c600.copy(alpha = 0.1f),
+            deletedBorder = Red.c600.copy(alpha = 0.3f),
+            lineNumber = Neutral.c600
+        )
     }
 }

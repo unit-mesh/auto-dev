@@ -1,7 +1,9 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
@@ -28,7 +30,11 @@ actual object MarkdownSketchRenderer {
         isDarkTheme: Boolean,
         modifier: Modifier
     ) {
-        val highlightsBuilder = Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
+        val isDarkTheme = isSystemInDarkTheme()
+        val highlightsBuilder = remember(isDarkTheme) {
+            Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
+        }
+
         Markdown(
             markdown,
             modifier = modifier,
@@ -39,8 +45,22 @@ actual object MarkdownSketchRenderer {
                 heading3 = CurrentComponentsBridge.heading5,
                 heading4 = CurrentComponentsBridge.heading6,
                 heading5 = CurrentComponentsBridge.heading6,
-                codeBlock = highlightedCodeFence,
-                codeFence = highlightedCodeBlock,
+                codeBlock = {
+                    MarkdownHighlightedCodeBlock(
+                        content = it.content,
+                        node = it.node,
+                        highlightsBuilder = highlightsBuilder,
+                        showHeader = true, // optional enable header with code language + copy button
+                    )
+                },
+                codeFence = {
+                    MarkdownHighlightedCodeFence(
+                        content = it.content,
+                        node = it.node,
+                        highlightsBuilder = highlightsBuilder,
+                        showHeader = true, // optional enable header with code language + copy button
+                    )
+                },
             ),
             success = { state, components, modifier ->
                 MarkdownSuccess(state, components, modifier)
