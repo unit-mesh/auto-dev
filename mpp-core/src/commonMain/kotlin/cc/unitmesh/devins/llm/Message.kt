@@ -19,7 +19,8 @@ enum class MessageRole {
 data class Message(
     val role: MessageRole,
     val content: String,
-    val timestamp: Long = Clock.System.now().toEpochMilliseconds()
+    val timestamp: Long = Clock.System.now().toEpochMilliseconds(),
+    val metadata: MessageMetadata? = null
 )
 
 /**

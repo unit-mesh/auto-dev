@@ -589,4 +589,260 @@ class ComposeRenderer : BaseRenderer() {
             timestamp = tokenInfo.timestamp
         )
     }
+    
+    /**
+     * Convert a TimelineItem to MessageMetadata for persistence
+     */
+    private fun toMessageMetadata(item: TimelineItem): cc.unitmesh.devins.llm.MessageMetadata? {
+        return when (item) {
+            is TimelineItem.MessageItem -> {
+                cc.unitmesh.devins.llm.MessageMetadata(
+                    itemType = cc.unitmesh.devins.llm.TimelineItemType.MESSAGE,
+                    tokenInfoTotal = item.tokenInfo?.totalTokens,
+                    tokenInfoInput = item.tokenInfo?.inputTokens,
+                    tokenInfoOutput = item.tokenInfo?.outputTokens
+                )
+            }
+            is TimelineItem.CombinedToolItem -> {
+                cc.unitmesh.devins.llm.MessageMetadata(
+                    itemType = cc.unitmesh.devins.llm.TimelineItemType.COMBINED_TOOL,
+                    toolName = item.toolName,
+                    description = item.description,
+                    details = item.details,
+                    fullParams = item.fullParams,
+                    filePath = item.filePath,
+                    toolType = item.toolType?.name,
+                    success = item.success,
+                    summary = item.summary,
+                    output = item.output,
+                    fullOutput = item.fullOutput,
+                    executionTimeMs = item.executionTimeMs
+                )
+            }
+            is TimelineItem.ToolCallItem -> {
+                cc.unitmesh.devins.llm.MessageMetadata(
+                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_CALL,
+                    toolName = item.toolName,
+                    description = item.description,
+                    details = item.details,
+                    fullParams = item.fullParams,
+                    filePath = item.filePath,
+                    toolType = item.toolType?.name
+                )
+            }
+            is TimelineItem.ToolResultItem -> {
+                cc.unitmesh.devins.llm.MessageMetadata(
+                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_RESULT,
+                    toolName = item.toolName,
+                    success = item.success,
+                    summary = item.summary,
+                    output = item.output,
+                    fullOutput = item.fullOutput
+                )
+            }
+            is TimelineItem.ToolErrorItem -> {
+                cc.unitmesh.devins.llm.MessageMetadata(
+                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_ERROR,
+                    taskMessage = item.error
+                )
+            }
+            is TimelineItem.TaskCompleteItem -> {
+                cc.unitmesh.devins.llm.MessageMetadata(
+                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TASK_COMPLETE,
+                    taskSuccess = item.success,
+                    taskMessage = item.message
+                )
+            }
+            is TimelineItem.TerminalOutputItem -> {
+                cc.unitmesh.devins.llm.MessageMetadata(
+                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TERMINAL_OUTPUT,
+                    command = item.command,
+                    output = item.output,
+                    exitCode = item.exitCode,
+                    executionTimeMs = item.executionTimeMs
+                )
+            }
+            is TimelineItem.LiveTerminalItem -> {
+                // Live terminal items are not persisted (they're runtime-only)
+                null
+            }
+        }
+    }
+    
+    /**
+     * Convert MessageMetadata back to a TimelineItem
+     */
+    private fun fromMessageMetadata(
+        metadata: cc.unitmesh.devins.llm.MessageMetadata,
+        message: cc.unitmesh.devins.llm.Message
+    ): TimelineItem? {
+        return when (metadata.itemType) {
+            cc.unitmesh.devins.llm.TimelineItemType.MESSAGE -> {
+                val totalTokens = metadata.tokenInfoTotal
+                val tokenInfo = if (totalTokens != null) {
+                    TokenInfo(
+                        totalTokens = totalTokens,
+                        inputTokens = metadata.tokenInfoInput ?: 0,
+                        outputTokens = metadata.tokenInfoOutput ?: 0
+                    )
+                } else null
+                
+                TimelineItem.MessageItem(
+                    message = message,
+                    tokenInfo = tokenInfo,
+                    itemTimestamp = message.timestamp
+                )
+            }
+            cc.unitmesh.devins.llm.TimelineItemType.COMBINED_TOOL -> {
+                TimelineItem.CombinedToolItem(
+                    toolName = metadata.toolName ?: "",
+                    description = metadata.description ?: "",
+                    details = metadata.details,
+                    fullParams = metadata.fullParams,
+                    filePath = metadata.filePath,
+                    toolType = metadata.toolType?.toToolType(),
+                    success = metadata.success,
+                    summary = metadata.summary,
+                    output = metadata.output,
+                    fullOutput = metadata.fullOutput,
+                    executionTimeMs = metadata.executionTimeMs,
+                    itemTimestamp = message.timestamp
+                )
+            }
+            cc.unitmesh.devins.llm.TimelineItemType.TOOL_CALL -> {
+                TimelineItem.ToolCallItem(
+                    toolName = metadata.toolName ?: "",
+                    description = metadata.description ?: "",
+                    details = metadata.details,
+                    fullParams = metadata.fullParams,
+                    filePath = metadata.filePath,
+                    toolType = metadata.toolType?.toToolType(),
+                    itemTimestamp = message.timestamp
+                )
+            }
+            cc.unitmesh.devins.llm.TimelineItemType.TOOL_RESULT -> {
+                TimelineItem.ToolResultItem(
+                    toolName = metadata.toolName ?: "",
+                    success = metadata.success ?: false,
+                    summary = metadata.summary ?: "",
+                    output = metadata.output,
+                    fullOutput = metadata.fullOutput,
+                    itemTimestamp = message.timestamp
+                )
+            }
+            cc.unitmesh.devins.llm.TimelineItemType.TOOL_ERROR -> {
+                TimelineItem.ToolErrorItem(
+                    error = metadata.taskMessage ?: "Unknown error",
+                    itemTimestamp = message.timestamp
+                )
+            }
+            cc.unitmesh.devins.llm.TimelineItemType.TASK_COMPLETE -> {
+                TimelineItem.TaskCompleteItem(
+                    success = metadata.taskSuccess ?: false,
+                    message = metadata.taskMessage ?: "",
+                    itemTimestamp = message.timestamp
+                )
+            }
+            cc.unitmesh.devins.llm.TimelineItemType.TERMINAL_OUTPUT -> {
+                TimelineItem.TerminalOutputItem(
+                    command = metadata.command ?: "",
+                    output = message.content,
+                    exitCode = metadata.exitCode ?: 0,
+                    executionTimeMs = metadata.executionTimeMs ?: 0,
+                    itemTimestamp = message.timestamp
+                )
+            }
+            cc.unitmesh.devins.llm.TimelineItemType.LIVE_TERMINAL -> {
+                // Live terminal items cannot be reconstructed from storage
+                null
+            }
+        }
+    }
+    
+    /**
+     * Load timeline from a list of messages
+     * This is used when switching sessions or loading history
+     */
+    fun loadFromMessages(messages: List<cc.unitmesh.devins.llm.Message>) {
+        _timeline.clear()
+        
+        messages.forEach { message ->
+            val messageMetadata = message.metadata
+            val timelineItem = if (messageMetadata != null) {
+                // Try to reconstruct from metadata
+                fromMessageMetadata(messageMetadata, message)
+            } else {
+                // Fallback: create a simple MessageItem for messages without metadata
+                TimelineItem.MessageItem(
+                    message = message,
+                    tokenInfo = null,
+                    itemTimestamp = message.timestamp
+                )
+            }
+            
+            timelineItem?.let { _timeline.add(it) }
+        }
+    }
+    
+    /**
+     * Get current timeline as messages with metadata
+     * This is used when saving conversation history
+     */
+    fun getTimelineSnapshot(): List<cc.unitmesh.devins.llm.Message> {
+        return _timeline.mapNotNull { item ->
+            when (item) {
+                is TimelineItem.MessageItem -> {
+                    // Return the original message with metadata
+                    item.message.copy(
+                        metadata = toMessageMetadata(item)
+                    )
+                }
+                is TimelineItem.CombinedToolItem -> {
+                    // Create a message representing the tool call and result
+                    val content = buildString {
+                        append("[${item.toolName}] ")
+                        append(item.description)
+                        if (item.summary != null) {
+                            append(" → ${item.summary}")
+                        }
+                    }
+                    cc.unitmesh.devins.llm.Message(
+                        role = MessageRole.ASSISTANT,
+                        content = content,
+                        timestamp = item.itemTimestamp,
+                        metadata = toMessageMetadata(item)
+                    )
+                }
+                is TimelineItem.TerminalOutputItem -> {
+                    cc.unitmesh.devins.llm.Message(
+                        role = MessageRole.ASSISTANT,
+                        content = item.output,
+                        timestamp = item.itemTimestamp,
+                        metadata = toMessageMetadata(item)
+                    )
+                }
+                is TimelineItem.TaskCompleteItem -> {
+                    cc.unitmesh.devins.llm.Message(
+                        role = MessageRole.ASSISTANT,
+                        content = item.message,
+                        timestamp = item.itemTimestamp,
+                        metadata = toMessageMetadata(item)
+                    )
+                }
+                is TimelineItem.ToolErrorItem -> {
+                    cc.unitmesh.devins.llm.Message(
+                        role = MessageRole.ASSISTANT,
+                        content = item.error,
+                        timestamp = item.itemTimestamp,
+                        metadata = toMessageMetadata(item)
+                    )
+                }
+                // Skip deprecated items and live terminal items
+                is TimelineItem.ToolCallItem,
+                is TimelineItem.ToolResultItem,
+                is TimelineItem.LiveTerminalItem -> null
+            }
+        }
+    }
 }
+

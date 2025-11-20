@@ -66,19 +66,7 @@ class CodingAgentViewModel(
         // Load historical messages from chatHistoryManager
         chatHistoryManager?.let { manager ->
             val messages = manager.getMessages()
-            messages.forEach { message ->
-                when (message.role) {
-                    MessageRole.USER -> renderer.addUserMessage(message.content)
-                    MessageRole.ASSISTANT -> {
-                        // Add assistant message to renderer
-                        renderer.renderLLMResponseStart()
-                        renderer.renderLLMResponseChunk(message.content)
-                        renderer.renderLLMResponseEnd()
-                    }
-
-                    else -> {}
-                }
-            }
+            renderer.loadFromMessages(messages)
         }
 
         if (llmService != null) {
@@ -226,18 +214,32 @@ class CodingAgentViewModel(
     private suspend fun saveConversationHistory(codingAgent: CodingAgent) {
         chatHistoryManager?.let { manager ->
             try {
-                val conversationHistory = codingAgent.getConversationHistory()
+                // Get timeline snapshot with metadata from renderer
+                val timelineMessages = renderer.getTimelineSnapshot()
+                
+                // Get existing messages count to avoid duplicates
                 val existingMessagesCount = manager.getMessages().size
-                val newMessages = conversationHistory
-                    .filter { it.role == MessageRole.USER || it.role == MessageRole.ASSISTANT }
-                    .drop(existingMessagesCount)
-
+                
+                // Only save new messages
+                val newMessages = timelineMessages.drop(existingMessagesCount)
+                
                 newMessages.forEach { message ->
                     when (message.role) {
-                        MessageRole.USER -> manager.addUserMessage(message.content)
-                        MessageRole.ASSISTANT -> manager.addAssistantMessage(message.content)
-                        else -> {} // 忽略 SYSTEM 消息
+                        MessageRole.USER -> {
+                            // Save user message with metadata
+                            manager.getCurrentSession().messages.add(message)
+                        }
+                        MessageRole.ASSISTANT -> {
+                            // Save assistant message with metadata
+                            manager.getCurrentSession().messages.add(message)
+                        }
+                        else -> {} // Ignore SYSTEM messages
                     }
+                }
+                
+                // Trigger save to disk
+                if (newMessages.isNotEmpty()) {
+                    manager.getCurrentSession().updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
                 }
             } catch (e: Exception) {
                 println("[ERROR] Failed to save conversation history: ${e.message}")
@@ -339,18 +341,7 @@ class CodingAgentViewModel(
 
                 // Load messages from the switched session
                 val messages = manager.getMessages()
-                messages.forEach { message ->
-                    when (message.role) {
-                        MessageRole.USER -> renderer.addUserMessage(message.content)
-                        MessageRole.ASSISTANT -> {
-                            renderer.renderLLMResponseStart()
-                            renderer.renderLLMResponseChunk(message.content)
-                            renderer.renderLLMResponseEnd()
-                        }
-
-                        else -> {}
-                    }
-                }
+                renderer.loadFromMessages(messages)
             }
         }
     }
