@@ -121,8 +121,7 @@ class JsToolConfigFile(
             return JsToolConfigFile(
                 enabledBuiltinTools = config.enabledBuiltinTools.toTypedArray(),
                 enabledMcpTools = config.enabledMcpTools.toTypedArray(),
-                mcpServers = mcpServersJs,
-                chatConfig = JsChatConfig.fromCommon(config.chatConfig)
+                mcpServers = mcpServersJs
             )
         }
         
