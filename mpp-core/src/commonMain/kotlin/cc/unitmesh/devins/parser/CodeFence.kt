@@ -14,23 +14,41 @@ class CodeFence(
         private var lastTxtBlock: CodeFence? = null
         val devinStartRegex = Regex("<devin>")
         val devinEndRegex = Regex("</devin>")
+        val thinkingStartRegex = Regex("<thinking>")
+        val thinkingEndRegex = Regex("</thinking>")
 
         fun parse(content: String): CodeFence {
             val languageRegex = Regex("\\s*```([\\w#+ ]*)")
             val lines = content.lines()
 
-            val startMatch = devinStartRegex.find(content)
-            if (startMatch != null) {
+            // Check for <devin> tag first
+            val devinStartMatch = devinStartRegex.find(content)
+            if (devinStartMatch != null) {
                 val endMatch = devinEndRegex.find(content)
                 val isComplete = endMatch != null
 
                 val devinContent = if (isComplete) {
-                    content.substring(startMatch.range.last + 1, endMatch!!.range.first).trim()
+                    content.substring(devinStartMatch.range.last + 1, endMatch!!.range.first).trim()
                 } else {
-                    content.substring(startMatch.range.last + 1).trim()
+                    content.substring(devinStartMatch.range.last + 1).trim()
                 }
 
                 return CodeFence("devin", devinContent, isComplete, "devin")
+            }
+
+            // Check for <thinking> tag
+            val thinkingStartMatch = thinkingStartRegex.find(content)
+            if (thinkingStartMatch != null) {
+                val endMatch = thinkingEndRegex.find(content)
+                val isComplete = endMatch != null
+
+                val thinkingContent = if (isComplete) {
+                    content.substring(thinkingStartMatch.range.last + 1, endMatch!!.range.first).trim()
+                } else {
+                    content.substring(thinkingStartMatch.range.last + 1).trim()
+                }
+
+                return CodeFence("thinking", thinkingContent, isComplete, "thinking")
             }
 
             var codeStarted = false
@@ -83,30 +101,40 @@ class CodeFence(
                 processedContent = preProcessDevinBlock(content)
             }
 
-            val startMatches = devinStartRegex.findAll(processedContent)
-            for (startMatch in startMatches) {
-                if (startMatch.range.first > currentIndex) {
-                    val beforeText = processedContent.substring(currentIndex, startMatch.range.first)
-                    if (beforeText.trim().isNotEmpty()) {
-                        parseMarkdownContent(beforeText, codeFences)
+            // Parse both <devin> and <thinking> tags
+            val tagMatches = mutableListOf<Pair<String, MatchResult>>()
+            devinStartRegex.findAll(processedContent).forEach { tagMatches.add("devin" to it) }
+            thinkingStartRegex.findAll(processedContent).forEach { tagMatches.add("thinking" to it) }
+            
+            // Sort by position
+            tagMatches.sortBy { it.second.range.first }
+
+            for ((tagType, startMatch) in tagMatches) {
+                if (startMatch.range.first >= currentIndex) {
+                    if (startMatch.range.first > currentIndex) {
+                        val beforeText = processedContent.substring(currentIndex, startMatch.range.first)
+                        if (beforeText.trim().isNotEmpty()) {
+                            parseMarkdownContent(beforeText, codeFences)
+                        }
                     }
-                }
 
-                // 在整个内容中查找对应的结束标签
-                val endMatch = devinEndRegex.find(processedContent, startMatch.range.last + 1)
-                val isComplete = endMatch != null
+                    // Find the corresponding end tag
+                    val endRegex = if (tagType == "devin") devinEndRegex else thinkingEndRegex
+                    val endMatch = endRegex.find(processedContent, startMatch.range.last + 1)
+                    val isComplete = endMatch != null
 
-                val devinContent = if (isComplete) {
-                    processedContent.substring(startMatch.range.last + 1, endMatch!!.range.first).trim()
-                } else {
-                    processedContent.substring(startMatch.range.last + 1).trim()
-                }
+                    val tagContent = if (isComplete) {
+                        processedContent.substring(startMatch.range.last + 1, endMatch!!.range.first).trim()
+                    } else {
+                        processedContent.substring(startMatch.range.last + 1).trim()
+                    }
 
-                codeFences.add(CodeFence("devin", devinContent, isComplete, "devin"))
-                currentIndex = if (isComplete) {
-                    endMatch!!.range.last + 1
-                } else {
-                    processedContent.length
+                    codeFences.add(CodeFence(tagType, tagContent, isComplete, tagType))
+                    currentIndex = if (isComplete) {
+                        endMatch!!.range.last + 1
+                    } else {
+                        processedContent.length
+                    }
                 }
             }
 
@@ -118,7 +146,7 @@ class CodeFence(
             }
 
             return codeFences.filter {
-                if (it.languageId == "devin") {
+                if (it.languageId == "devin" || it.languageId == "thinking") {
                     return@filter true
                 }
                 return@filter it.text.isNotEmpty()

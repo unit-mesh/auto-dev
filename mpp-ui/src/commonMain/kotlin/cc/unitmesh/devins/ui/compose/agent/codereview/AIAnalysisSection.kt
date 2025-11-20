@@ -7,9 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,13 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
 /**
- * Parse thinking content from text enclosed in <thinking> tags
+ * Displays AI analysis output with support for streaming content.
+ * Uses `isActive` to determine if content is still being streamed (incomplete).
  */
 @Composable
 fun AIAnalysisSection(
@@ -107,11 +105,10 @@ fun AIAnalysisSection(
                         .padding(bottom = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Show analysis output with markdown rendering (Thinking block is handled internally by SketchRenderer)
                     if (analysisOutput.isNotBlank()) {
                         SketchRenderer.RenderResponse(
                             content = analysisOutput,
-                            isComplete = true,
+                            isComplete = !isActive,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -120,110 +117,3 @@ fun AIAnalysisSection(
         }
     }
 }
-
-@Composable
-fun ReviewFindingCard(finding: cc.unitmesh.agent.ReviewFinding) {
-    val severityColor = when (finding.severity) {
-        cc.unitmesh.agent.Severity.CRITICAL -> AutoDevColors.Red.c600
-        cc.unitmesh.agent.Severity.HIGH -> AutoDevColors.Amber.c600
-        cc.unitmesh.agent.Severity.MEDIUM -> AutoDevColors.Blue.c600
-        cc.unitmesh.agent.Severity.LOW -> AutoDevColors.Green.c600
-        cc.unitmesh.agent.Severity.INFO -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    val severityIcon = when (finding.severity) {
-        cc.unitmesh.agent.Severity.CRITICAL, cc.unitmesh.agent.Severity.HIGH -> AutoDevComposeIcons.Error
-        cc.unitmesh.agent.Severity.MEDIUM -> AutoDevComposeIcons.Warning
-        else -> AutoDevComposeIcons.Info
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        shape = RoundedCornerShape(4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = severityIcon,
-                contentDescription = finding.severity.name,
-                tint = severityColor,
-                modifier = Modifier.size(16.dp)
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        color = severityColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = finding.severity.name,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = severityColor,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-
-                    Text(
-                        text = finding.category,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    finding.filePath?.let { path ->
-                        Text(
-                            text = "• $path${finding.lineNumber?.let { ":$it" } ?: ""}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                Text(
-                    text = finding.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                finding.suggestion?.let { suggestion ->
-                    Surface(
-                        color = AutoDevColors.Green.c600.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(6.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.Info,
-                                contentDescription = "Suggestion",
-                                tint = AutoDevColors.Green.c600,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = suggestion,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-

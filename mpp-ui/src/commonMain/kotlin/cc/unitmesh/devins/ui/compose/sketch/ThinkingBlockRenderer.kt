@@ -22,9 +22,9 @@ fun ThinkingBlockRenderer(
     thinkingContent: String,
     modifier: Modifier = Modifier
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(true) }
     val scrollState = rememberScrollState()
-    
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -50,7 +50,7 @@ fun ThinkingBlockRenderer(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.size(14.dp)
                 )
-                
+
                 Text(
                     text = "💭 Thinking process",
                     style = MaterialTheme.typography.labelSmall,
@@ -58,10 +58,10 @@ fun ThinkingBlockRenderer(
                     fontSize = 11.sp
                 )
             }
-            
+
             if (isExpanded) {
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 // Scrollable container with max 5 lines height
                 Box(
                     modifier = Modifier
