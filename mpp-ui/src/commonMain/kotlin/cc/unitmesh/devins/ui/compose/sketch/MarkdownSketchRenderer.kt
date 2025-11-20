@@ -35,8 +35,5 @@ expect object MarkdownSketchRenderer {
      * 渲染单个 Markdown 内容块（不使用 CodeFence 解析）
      */
     @Composable
-    fun RenderMarkdown(
-        markdown: String,
-        modifier: Modifier = Modifier
-    )
+    fun RenderMarkdown(markdown: String, modifier: Modifier = Modifier)
 }

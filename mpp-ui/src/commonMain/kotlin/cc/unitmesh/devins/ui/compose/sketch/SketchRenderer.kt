@@ -67,7 +67,10 @@ object SketchRenderer : BaseContentRenderer() {
                 )
             }
 
-            codeFences.forEach { fence ->
+            codeFences.forEachIndexed { index, fence ->
+                val isLastBlock = index == codeFences.lastIndex
+                val blockIsComplete = fence.isComplete && (isComplete || !isLastBlock)
+                
                 when (fence.languageId.lowercase()) {
                     "markdown", "md", "" -> {
                         if (fence.text.isNotBlank()) {
@@ -88,6 +91,7 @@ object SketchRenderer : BaseContentRenderer() {
                         if (fence.text.isNotBlank()) {
                             ThinkingBlockRenderer(
                                 thinkingContent = fence.text,
+                                isComplete = blockIsComplete,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))

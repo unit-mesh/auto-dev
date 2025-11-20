@@ -16,14 +16,41 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 /**
  * Renderer for <thinking> blocks - displays model's reasoning process
  * with special styling (gray, small text, collapsible, max 5 lines scrollable)
+ * 
+ * @param thinkingContent The thinking content to display
+ * @param isComplete Whether the content is complete (false for streaming)
+ * @param modifier Modifier for the component
  */
 @Composable
 fun ThinkingBlockRenderer(
     thinkingContent: String,
+    isComplete: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(true) }
     val scrollState = rememberScrollState()
+    var userHasScrolled by remember { mutableStateOf(false) }
+    
+    // Track if user manually scrolled away from bottom
+    LaunchedEffect(scrollState.value, scrollState.maxValue) {
+        if (scrollState.maxValue > 0) {
+            val isAtBottom = scrollState.value >= scrollState.maxValue - 10 // 10dp tolerance
+            if (!isAtBottom && scrollState.isScrollInProgress) {
+                userHasScrolled = true
+            } else if (isAtBottom) {
+                userHasScrolled = false
+            }
+        }
+    }
+    
+    // Auto-scroll to bottom during streaming (when not complete)
+    LaunchedEffect(thinkingContent, isComplete) {
+        if (!isComplete && isExpanded && thinkingContent.isNotBlank() && !userHasScrolled) {
+            // Scroll to bottom when content changes during streaming
+            // Only if user hasn't manually scrolled up
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
 
     Card(
         modifier = modifier.fillMaxWidth(),
