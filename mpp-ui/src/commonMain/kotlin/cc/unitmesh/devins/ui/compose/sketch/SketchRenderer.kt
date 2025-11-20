@@ -70,7 +70,7 @@ object SketchRenderer : BaseContentRenderer() {
             codeFences.forEachIndexed { index, fence ->
                 val isLastBlock = index == codeFences.lastIndex
                 val blockIsComplete = fence.isComplete && (isComplete || !isLastBlock)
-                
+
                 when (fence.languageId.lowercase()) {
                     "markdown", "md", "" -> {
                         if (fence.text.isNotBlank()) {
@@ -102,7 +102,8 @@ object SketchRenderer : BaseContentRenderer() {
                         if (fence.text.isNotBlank()) {
                             WalkthroughBlockRenderer(
                                 walkthroughContent = fence.text,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                isComplete = fence.isComplete
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }
