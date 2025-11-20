@@ -147,8 +147,8 @@ private fun ExpandedSessionSidebarContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.Start,
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -156,7 +156,47 @@ private fun ExpandedSessionSidebarContent(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
+
+            // Sidebar Toggle
+            IconButton(
+                onClick = { cc.unitmesh.devins.ui.state.UIStateManager.toggleSessionSidebar() },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.MenuOpen,
+                    contentDescription = "Collapse Sidebar",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
+
+        HorizontalDivider()
+
+        // New Agent Button (Moved to top)
+        Button(
+            onClick = onNewChat,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        ) {
+            Icon(
+                imageVector = AutoDevComposeIcons.Add,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "New Agent",
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+
+        HorizontalDivider()
 
         HorizontalDivider()
 
@@ -279,28 +319,7 @@ private fun ExpandedSessionSidebarContent(
 
         HorizontalDivider()
 
-        // New Agent Button
-        Button(
-            onClick = onNewChat,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        ) {
-            Icon(
-                imageVector = AutoDevComposeIcons.Add,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "New Agent",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
+
     }
 }
 

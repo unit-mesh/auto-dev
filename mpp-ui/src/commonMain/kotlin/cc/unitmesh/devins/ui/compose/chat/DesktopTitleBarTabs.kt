@@ -41,58 +41,17 @@ fun DesktopTitleBarTabs(
     val isTreeViewVisible by UIStateManager.isTreeViewVisible.collectAsState()
     val isSessionSidebarVisible by UIStateManager.isSessionSidebarVisible.collectAsState()
 
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .height(40.dp)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Sidebar Toggle (左侧第一个按钮)
-            IconButton(
-                onClick = { UIStateManager.toggleSessionSidebar() },
-                modifier = Modifier.size(28.dp)
-            ) {
-                Icon(
-                    imageVector = if (isSessionSidebarVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
-                    contentDescription = if (isSessionSidebarVisible) "Collapse Sidebar" else "Expand Sidebar",
-                    tint = if (isSessionSidebarVisible) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            // 分隔线
-            Surface(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(20.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
-            ) {}
-
-            (AgentType.entries - AgentType.LOCAL_CHAT)
-                .forEach { type ->
-                    AgentTypeMenuItem(
-                        type = type,
-                        isSelected = type == currentAgentType,
-                        onClick = { onAgentTypeChange(type) }
-                    )
-                }
-        }
-
+        // Center: Workspace Indicator
         if (workspacePath.isNotEmpty()) {
             Surface(
                 modifier = Modifier
-                    .weight(0.4f)
+                    .align(Alignment.Center)
                     .height(28.dp)
                     .padding(horizontal = 8.dp),
                 shape = RoundedCornerShape(6.dp),
@@ -100,7 +59,6 @@ fun DesktopTitleBarTabs(
             ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxSize()
                         .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -116,47 +74,92 @@ fun DesktopTitleBarTabs(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
-        } else {
-            Spacer(modifier = Modifier.weight(0.4f))
         }
 
+        // Left and Right content
         Row(
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (currentAgentType == AgentType.REMOTE) {
+            // Left: Sidebar Toggle + Agent Tabs
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Sidebar Toggle (Left side)
                 IconButton(
-                    onClick = onConfigureRemote,
+                    onClick = { UIStateManager.toggleSessionSidebar() },
                     modifier = Modifier.size(28.dp)
                 ) {
                     Icon(
-                        imageVector = AutoDevComposeIcons.Settings,
-                        contentDescription = "Configure Remote Server",
-                        tint = MaterialTheme.colorScheme.secondary,
+                        imageVector = if (isSessionSidebarVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
+                        contentDescription = if (isSessionSidebarVisible) "Collapse Sidebar" else "Expand Sidebar",
+                        tint = if (isSessionSidebarVisible) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                         modifier = Modifier.size(16.dp)
                     )
                 }
+
+                // Divider
+                Surface(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(20.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                ) {}
+
+                (AgentType.entries - AgentType.LOCAL_CHAT)
+                    .forEach { type ->
+                        AgentTypeMenuItem(
+                            type = type,
+                            isSelected = type == currentAgentType,
+                            onClick = { onAgentTypeChange(type) }
+                        )
+                    }
             }
 
-            IconButton(
-                onClick = { UIStateManager.toggleTreeView() },
-                modifier = Modifier.size(28.dp)
+            // Right: Settings + Explorer (Text Buttons)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = if (isTreeViewVisible) AutoDevComposeIcons.MenuOpen else AutoDevComposeIcons.Menu,
-                    contentDescription = if (isTreeViewVisible) "Hide Explorer" else "Show Explorer",
-                    tint = if (isTreeViewVisible) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                    modifier = Modifier.size(16.dp)
-                )
+                if (currentAgentType == AgentType.REMOTE) {
+                    TextButton(
+                        onClick = onConfigureRemote,
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.height(28.dp)
+                    ) {
+                        Text(
+                            text = "Remote",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                TextButton(
+                    onClick = { UIStateManager.toggleTreeView() },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    Text(
+                        text = if (isTreeViewVisible) "Hide Files" else "Files",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isTreeViewVisible) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                }
             }
         }
     }
