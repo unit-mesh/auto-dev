@@ -1,5 +1,7 @@
 package cc.unitmesh.agent.render
 
+import cc.unitmesh.llm.compression.TokenInfo
+
 interface CodingAgentRenderer {
     fun renderIterationHeader(current: Int, max: Int)
     fun renderLLMResponseStart()
@@ -21,6 +23,8 @@ interface CodingAgentRenderer {
     fun renderRepeatWarning(toolName: String, count: Int)
 
     fun renderRecoveryAdvice(recoveryAdvice: String)
+
+    fun updateTokenInfo(tokenInfo: TokenInfo) {}
 
     fun renderUserConfirmationRequest(toolName: String, params: Map<String, Any>)
 

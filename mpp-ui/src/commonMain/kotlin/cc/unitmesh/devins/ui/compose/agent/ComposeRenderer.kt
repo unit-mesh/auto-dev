@@ -581,7 +581,7 @@ class ComposeRenderer : BaseRenderer() {
      * Update token information from LLM response
      * Called when StreamFrame.End is received with token metadata
      */
-    fun updateTokenInfo(tokenInfo: TokenInfo) {
+    override fun updateTokenInfo(tokenInfo: TokenInfo) {
         _lastMessageTokenInfo = tokenInfo
         // Accumulate total tokens
         _totalTokenInfo = TokenInfo(
