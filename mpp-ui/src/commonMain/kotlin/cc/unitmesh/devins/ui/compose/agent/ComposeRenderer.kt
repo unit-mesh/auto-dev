@@ -96,18 +96,6 @@ class ComposeRenderer : BaseRenderer() {
             val executionTimeMs: Long? = null, // 执行时间
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
-
-//        @Deprecated("Use CombinedToolItem instead")
-//        data class ToolCallItem(
-//            val toolName: String,
-//            val description: String,
-//            val details: String? = null,
-//            val fullParams: String? = null, // 完整的原始参数，用于折叠展示
-//            val filePath: String? = null, // 文件路径，用于点击查看
-//            val toolType: ToolType? = null, // 工具类型，用于判断是否可点击
-//            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-//        ) : TimelineItem(itemTimestamp)
-
         @Deprecated("Use CombinedToolItem instead")
         data class ToolResultItem(
             val toolName: String,
@@ -275,7 +263,7 @@ class ComposeRenderer : BaseRenderer() {
 
         // Find existing task or create new one
         val existingIndex = _tasks.indexOfFirst { it.taskName == taskName }
-        
+
         if (existingIndex >= 0) {
             // Update existing task
             val existingTask = _tasks[existingIndex]

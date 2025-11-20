@@ -3,14 +3,32 @@ package cc.unitmesh.devins.ui.compose.sketch
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.parser.CodeFence
 
 /**
+ * Parse thinking content from text enclosed in <thinking> tags
+ */
+private fun parseThinkingContent(text: String): Pair<String?, String> {
+    val thinkingRegex = Regex("<thinking>([\\s\\S]*?)</thinking>", RegexOption.IGNORE_CASE)
+    val match = thinkingRegex.find(text)
+
+    return if (match != null) {
+        val thinkingContent = match.groupValues[1].trim()
+        val remainingContent = text.replace(match.value, "").trim()
+        Pair(thinkingContent, remainingContent)
+    } else {
+        Pair(null, text)
+    }
+}
+
+/**
  * Sketch 渲染器 - 主渲染器
  *
  * 负责解析和分发不同类型的内容块到对应的子渲染器：
+ * - <thinking> tags -> ThinkingBlockRenderer
  * - Markdown/Text -> TextBlockRenderer
  * - Code -> CodeBlockRenderer
  * - Diff -> DiffSketchRenderer
@@ -52,8 +70,21 @@ object SketchRenderer : BaseContentRenderer() {
         onRenderUpdate: ((RenderMetadata) -> Unit)?,
         modifier: Modifier
     ) {
+        // Parse thinking content first
+        val (thinkingContent, mainContent) = remember(content) {
+            parseThinkingContent(content)
+        }
+
         Column(modifier = modifier) {
-            val codeFences = CodeFence.parseAll(content)
+            if (thinkingContent != null) {
+                ThinkingBlockRenderer(
+                    thinkingContent = thinkingContent
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            // Parse and render main content
+            val codeFences = CodeFence.parseAll(mainContent)
 
             // 通知外层当前渲染的块数量和最后一个块类型
             if (codeFences.isNotEmpty()) {

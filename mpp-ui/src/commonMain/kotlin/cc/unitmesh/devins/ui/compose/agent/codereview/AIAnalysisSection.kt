@@ -7,7 +7,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,9 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
+/**
+ * Parse thinking content from text enclosed in <thinking> tags
+ */
 @Composable
 fun AIAnalysisSection(
     analysisOutput: String,
@@ -100,13 +107,12 @@ fun AIAnalysisSection(
                         .padding(bottom = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Show analysis output first if available
+                    // Show analysis output with markdown rendering (Thinking block is handled internally by SketchRenderer)
                     if (analysisOutput.isNotBlank()) {
-                        Text(
-                            text = analysisOutput,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 8.dp)
+                        SketchRenderer.RenderResponse(
+                            content = analysisOutput,
+                            isComplete = true,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }

@@ -102,7 +102,7 @@ class CodeReviewAgentExecutor(
             }
         }
 
-        onProgress("✅ Review complete")
+        onProgress("")
 
         return buildResult()
     }
