@@ -21,6 +21,7 @@ actual object MarkdownSketchRenderer {
     actual fun RenderResponse(
         content: String,
         isComplete: Boolean,
+        isDarkTheme: Boolean,
         modifier: Modifier
     ) {
         val scrollState = rememberScrollState()
@@ -190,6 +191,7 @@ actual object MarkdownSketchRenderer {
     @Composable
     actual fun RenderMarkdown(
         markdown: String,
+        isDarkTheme: Boolean,
         modifier: Modifier
     ) {
         Markdown(

@@ -19,6 +19,7 @@ expect object MarkdownSketchRenderer {
     fun RenderResponse(
         content: String,
         isComplete: Boolean = false,
+        isDarkTheme: Boolean = false,
         modifier: Modifier = Modifier
     )
 
@@ -35,5 +36,9 @@ expect object MarkdownSketchRenderer {
      * 渲染单个 Markdown 内容块（不使用 CodeFence 解析）
      */
     @Composable
-    fun RenderMarkdown(markdown: String, modifier: Modifier = Modifier)
+    fun RenderMarkdown(
+        markdown: String,
+        isDarkTheme: Boolean = false,
+        modifier: Modifier = Modifier
+    )
 }

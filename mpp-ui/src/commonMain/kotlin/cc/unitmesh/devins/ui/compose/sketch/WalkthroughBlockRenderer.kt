@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -25,6 +26,8 @@ fun WalkthroughBlockRenderer(
     modifier: Modifier = Modifier,
     isComplete: Boolean = true
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -42,7 +45,12 @@ fun WalkthroughBlockRenderer(
             if (!isComplete) {
                 Text(text = walkthroughContent, modifier)
             } else {
-                MarkdownSketchRenderer.RenderMarkdown(walkthroughContent, modifier)
+                Text(text = walkthroughContent, modifier)
+//                MarkdownSketchRenderer.RenderMarkdown(
+//                    markdown = walkthroughContent,
+//                    isDarkTheme = isDarkTheme,
+//                    modifier = modifier
+//                )
             }
         }
     }
