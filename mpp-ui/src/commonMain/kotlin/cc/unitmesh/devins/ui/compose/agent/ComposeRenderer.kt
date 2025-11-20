@@ -65,6 +65,10 @@ class ComposeRenderer : BaseRenderer() {
     private var _currentViewingFile by mutableStateOf<String?>(null)
     val currentViewingFile: String? get() = _currentViewingFile
 
+    // Task tracking from task-boundary tool
+    private val _tasks = mutableStateListOf<TaskInfo>()
+    val tasks: List<TaskInfo> = _tasks
+
     // Timeline data structures for chronological rendering
     sealed class TimelineItem(val timestamp: Long = Clock.System.now().toEpochMilliseconds()) {
         data class MessageItem(
@@ -223,6 +227,11 @@ class ComposeRenderer : BaseRenderer() {
         val params = parseParamsString(paramsStr)
         val toolType = toolName.toToolType()
 
+        // Handle task-boundary tool - update task list
+        if (toolName == "task-boundary") {
+            updateTaskFromToolCall(params)
+        }
+
         // Extract file path for read/write operations
         val filePath =
             when (toolType) {
@@ -253,6 +262,44 @@ class ComposeRenderer : BaseRenderer() {
                 description = toolInfo.description,
                 details = toolInfo.details
             )
+    }
+
+    /**
+     * Update task list from task-boundary tool call
+     */
+    private fun updateTaskFromToolCall(params: Map<String, String>) {
+        val taskName = params["taskName"] ?: return
+        val statusStr = params["status"] ?: "WORKING"
+        val summary = params["summary"] ?: ""
+        val status = TaskStatus.fromString(statusStr)
+
+        // Find existing task or create new one
+        val existingIndex = _tasks.indexOfFirst { it.taskName == taskName }
+        
+        if (existingIndex >= 0) {
+            // Update existing task
+            val existingTask = _tasks[existingIndex]
+            _tasks[existingIndex] = existingTask.copy(
+                status = status,
+                summary = summary,
+                timestamp = Clock.System.now().toEpochMilliseconds()
+            )
+        } else {
+            // Add new task
+            _tasks.add(
+                TaskInfo(
+                    taskName = taskName,
+                    status = status,
+                    summary = summary
+                )
+            )
+        }
+
+        // Remove completed or cancelled tasks after a delay (keep them visible briefly)
+        if (status == TaskStatus.COMPLETED || status == TaskStatus.CANCELLED) {
+            // Keep completed tasks visible for review
+            // You could add auto-removal logic here if desired
+        }
     }
 
     override fun renderToolResult(

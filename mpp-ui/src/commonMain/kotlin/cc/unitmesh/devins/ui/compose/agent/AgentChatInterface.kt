@@ -119,17 +119,51 @@ fun AgentChatInterface(
                         )
                     }
 
-                    // Chat 消息列表
-                    AgentMessageList(
-                        renderer = viewModel.renderer,
-                        modifier =
-                            Modifier
+                    // Chat 消息列表 和 Task Panel
+                    val activeTasks = remember(viewModel.renderer.tasks) {
+                        viewModel.renderer.tasks.filter { 
+                            it.status != TaskStatus.COMPLETED && it.status != TaskStatus.CANCELLED 
+                        }
+                    }
+                    
+                    if (activeTasks.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                        onOpenFileViewer = { filePath ->
-                            viewModel.renderer.openFileViewer(filePath)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            AgentMessageList(
+                                renderer = viewModel.renderer,
+                                modifier = Modifier
+                                    .weight(0.65f)
+                                    .fillMaxHeight(),
+                                onOpenFileViewer = { filePath ->
+                                    viewModel.renderer.openFileViewer(filePath)
+                                }
+                            )
+                            
+                            TaskPanel(
+                                tasks = activeTasks,
+                                modifier = Modifier
+                                    .weight(0.35f)
+                                    .fillMaxHeight()
+                                    .padding(end = 12.dp),
+                                onClose = { /* Tasks auto-hide when completed */ }
+                            )
                         }
-                    )
+                    } else {
+                        AgentMessageList(
+                            renderer = viewModel.renderer,
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                            onOpenFileViewer = { filePath ->
+                                viewModel.renderer.openFileViewer(filePath)
+                            }
+                        )
+                    }
 
                     val callbacks =
                         remember(viewModel) {
@@ -242,16 +276,51 @@ fun AgentChatInterface(
                 )
             }
 
-            AgentMessageList(
-                renderer = viewModel.renderer,
-                modifier =
-                    Modifier
+            // Chat 消息列表 和 Task Panel
+            val activeTasks = remember(viewModel.renderer.tasks) {
+                viewModel.renderer.tasks.filter { 
+                    it.status != TaskStatus.COMPLETED && it.status != TaskStatus.CANCELLED 
+                }
+            }
+            
+            if (activeTasks.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                onOpenFileViewer = { filePath ->
-                    viewModel.renderer.openFileViewer(filePath)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    AgentMessageList(
+                        renderer = viewModel.renderer,
+                        modifier = Modifier
+                            .weight(0.65f)
+                            .fillMaxHeight(),
+                        onOpenFileViewer = { filePath ->
+                            viewModel.renderer.openFileViewer(filePath)
+                        }
+                    )
+                    
+                    TaskPanel(
+                        tasks = activeTasks,
+                        modifier = Modifier
+                            .weight(0.35f)
+                            .fillMaxHeight()
+                            .padding(end = 12.dp),
+                        onClose = { /* Tasks auto-hide when completed */ }
+                    )
                 }
-            )
+            } else {
+                AgentMessageList(
+                    renderer = viewModel.renderer,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                    onOpenFileViewer = { filePath ->
+                        viewModel.renderer.openFileViewer(filePath)
+                    }
+                )
+            }
 
             val callbacks =
                 remember(viewModel) {
