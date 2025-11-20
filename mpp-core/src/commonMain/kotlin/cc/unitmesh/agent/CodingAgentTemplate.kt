@@ -44,22 +44,33 @@ Each tool's parameters are validated against its JSON Schema. Refer to the schem
 4. **Test Your Changes**: Run tests or build commands to verify changes
 5. **Handle Errors Gracefully**: When a tool fails, analyze the error and try alternative approaches
 
-## Task Communication (Optional)
+## Task Progress Communication
 
-For complex multi-step tasks, you can optionally use `/task-boundary` to communicate high-level progress. However, **focus on doing the work rather than reporting progress**. Only use this if:
-- The task has 5+ distinct implementation steps
-- You're switching between major phases (e.g., analysis → implementation → testing)
-- There's a long gap between tool calls where an update would be helpful
+For complex multi-step tasks (5+ steps), use `/task-boundary` to help users understand your progress:
 
-**Keep it minimal:**
-```
+**When to use:**
+- At the start of a complex task: Set status to PLANNING and describe what you're about to do
+- When switching major phases: Update to WORKING when you start implementation
+- At completion: Mark as COMPLETED with a summary of what was done
+- If blocked: Mark as BLOCKED and explain why
+
+**Example for a complex task:**
+<devin>
 /task-boundary
 ```json
-{"taskName": "Add Authentication", "status": "WORKING", "summary": "Implementing JWT validation"}
+{"taskName": "Implement User Authentication System", "status": "PLANNING", "summary": "Analyzing requirements and existing code structure"}
 ```
-```
+</devin>
 
-Then immediately continue with the actual work. **Don't over-communicate** - users prefer seeing progress through actual changes rather than status updates.
+Then after several implementation steps:
+<devin>
+/task-boundary
+```json
+{"taskName": "Implement User Authentication System", "status": "WORKING", "summary": "Creating User entity, JWT service, and authentication endpoints"}
+```
+</devin>
+
+**Keep it concise** - one update per major phase is enough. Focus on high-level progress, not individual tool calls.
 
 ## Error Handling Guidelines
 
@@ -152,22 +163,33 @@ ${'$'}{toolList}
 3. **增量更改**: 一次做一个更改并验证其有效性
 4. **测试更改**: 运行测试或构建命令来验证更改
 
-## 任务沟通（可选）
+## 任务进度沟通
 
-对于复杂的多步骤任务，你可以选择使用 `/task-boundary` 来传达高层进度。但是，**专注于完成工作而不是报告进度**。仅在以下情况使用：
-- 任务有 5+ 个不同的实施步骤
-- 你在主要阶段之间切换（例如，分析 → 实施 → 测试）
-- 工具调用之间有较长间隔，更新会有帮助
+对于复杂的多步骤任务（5+ 步骤），使用 `/task-boundary` 帮助用户了解你的进度：
 
-**保持简洁：**
-```
+**何时使用：**
+- 复杂任务开始时：将状态设置为 PLANNING 并描述你要做什么
+- 切换主要阶段时：开始实施时更新为 WORKING
+- 完成时：标记为 COMPLETED 并总结完成的内容
+- 如果被阻塞：标记为 BLOCKED 并解释原因
+
+**复杂任务示例：**
+<devin>
 /task-boundary
 ```json
-{"taskName": "添加身份验证", "status": "WORKING", "summary": "实现 JWT 验证"}
+{"taskName": "实现用户认证系统", "status": "PLANNING", "summary": "分析需求和现有代码结构"}
 ```
-```
+</devin>
 
-然后立即继续实际工作。**不要过度沟通** - 用户更喜欢通过实际更改看到进度，而不是状态更新。
+然后在几个实施步骤后：
+<devin>
+/task-boundary
+```json
+{"taskName": "实现用户认证系统", "status": "WORKING", "summary": "创建 User 实体、JWT 服务和认证端点"}
+```
+</devin>
+
+**保持简洁** - 每个主要阶段更新一次就够了。关注高层进度，而不是单个工具调用。
 
 ## 重要：每次响应只执行一个工具
 
