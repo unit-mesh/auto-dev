@@ -236,7 +236,8 @@ fun CodeReviewAgentPanel(
                             CollapsibleLintAnalysisCard(
                                 lintResults = state.aiProgress.lintResults,
                                 lintOutput = state.aiProgress.lintOutput,
-                                isActive = state.aiProgress.stage == AnalysisStage.RUNNING_LINT
+                                isActive = state.aiProgress.stage == AnalysisStage.RUNNING_LINT,
+                                diffFiles = state.diffFiles
                             )
                         }
                     }
@@ -278,6 +279,7 @@ fun CollapsibleLintAnalysisCard(
     lintResults: List<LintFileResult>,
     lintOutput: String,
     isActive: Boolean,
+    diffFiles: List<DiffFileInfo> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(true) }
@@ -285,6 +287,17 @@ fun CollapsibleLintAnalysisCard(
     val totalErrors = lintResults.sumOf { it.errorCount }
     val totalWarnings = lintResults.sumOf { it.warningCount }
     val totalInfos = lintResults.sumOf { it.infoCount }
+    
+    // Calculate chunk count and modified lines
+    val totalChunks = diffFiles.sumOf { it.hunks.size }
+    val modifiedLines = diffFiles.sumOf { file ->
+        file.hunks.sumOf { hunk ->
+            hunk.lines.count { line ->
+                line.type == cc.unitmesh.agent.diff.DiffLineType.ADDED || 
+                line.type == cc.unitmesh.agent.diff.DiffLineType.DELETED
+            }
+        }
+    }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -340,7 +353,7 @@ fun CollapsibleLintAnalysisCard(
                     }
                 }
 
-                // Issue counts
+                // Issue counts and modification stats
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.Companion.CenterVertically
@@ -365,6 +378,38 @@ fun CollapsibleLintAnalysisCard(
                             color = AutoDevColors.Blue.c600,
                             label = "I"
                         )
+                    }
+                    
+                    // Chunk and line modification stats
+                    if (totalChunks > 0) {
+                        Text(
+                            text = "|",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                        )
+                        
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.Companion.CenterVertically
+                        ) {
+                            Text(
+                                text = "$totalChunks chunks",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Companion.Medium
+                            )
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                            Text(
+                                text = "$modifiedLines lines",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Companion.Medium
+                            )
+                        }
                     }
                 }
             }
