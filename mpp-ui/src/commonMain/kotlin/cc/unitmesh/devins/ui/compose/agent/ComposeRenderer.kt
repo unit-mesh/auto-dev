@@ -6,6 +6,8 @@ import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
+import cc.unitmesh.devins.llm.TimelineItemType
+import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer.TimelineItem.*
 import cc.unitmesh.llm.compression.TokenInfo
 import kotlinx.datetime.Clock
 
@@ -56,7 +58,7 @@ class ComposeRenderer : BaseRenderer() {
     // Token tracking
     private var _totalTokenInfo by mutableStateOf(TokenInfo())
     val totalTokenInfo: TokenInfo get() = _totalTokenInfo
-    
+
     private var _lastMessageTokenInfo by mutableStateOf<TokenInfo?>(null)
 
     // File viewer state
@@ -91,16 +93,16 @@ class ComposeRenderer : BaseRenderer() {
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
-        @Deprecated("Use CombinedToolItem instead")
-        data class ToolCallItem(
-            val toolName: String,
-            val description: String,
-            val details: String? = null,
-            val fullParams: String? = null, // 完整的原始参数，用于折叠展示
-            val filePath: String? = null, // 文件路径，用于点击查看
-            val toolType: ToolType? = null, // 工具类型，用于判断是否可点击
-            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
-        ) : TimelineItem(itemTimestamp)
+//        @Deprecated("Use CombinedToolItem instead")
+//        data class ToolCallItem(
+//            val toolName: String,
+//            val description: String,
+//            val details: String? = null,
+//            val fullParams: String? = null, // 完整的原始参数，用于折叠展示
+//            val filePath: String? = null, // 文件路径，用于点击查看
+//            val toolType: ToolType? = null, // 工具类型，用于判断是否可点击
+//            val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
+//        ) : TimelineItem(itemTimestamp)
 
         @Deprecated("Use CombinedToolItem instead")
         data class ToolResultItem(
@@ -574,7 +576,7 @@ class ComposeRenderer : BaseRenderer() {
 
         return params
     }
-    
+
     /**
      * Update token information from LLM response
      * Called when StreamFrame.End is received with token metadata
@@ -589,7 +591,7 @@ class ComposeRenderer : BaseRenderer() {
             timestamp = tokenInfo.timestamp
         )
     }
-    
+
     /**
      * Convert a TimelineItem to MessageMetadata for persistence
      */
@@ -603,6 +605,7 @@ class ComposeRenderer : BaseRenderer() {
                     tokenInfoOutput = item.tokenInfo?.outputTokens
                 )
             }
+
             is TimelineItem.CombinedToolItem -> {
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.COMBINED_TOOL,
@@ -619,17 +622,17 @@ class ComposeRenderer : BaseRenderer() {
                     executionTimeMs = item.executionTimeMs
                 )
             }
-            is TimelineItem.ToolCallItem -> {
-                cc.unitmesh.devins.llm.MessageMetadata(
-                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_CALL,
-                    toolName = item.toolName,
-                    description = item.description,
-                    details = item.details,
-                    fullParams = item.fullParams,
-                    filePath = item.filePath,
-                    toolType = item.toolType?.name
-                )
-            }
+//            is TimelineItem.ToolCallItem -> {
+//                cc.unitmesh.devins.llm.MessageMetadata(
+//                    itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_CALL,
+//                    toolName = item.toolName,
+//                    description = item.description,
+//                    details = item.details,
+//                    fullParams = item.fullParams,
+//                    filePath = item.filePath,
+//                    toolType = item.toolType?.name
+//                )
+//            }
             is TimelineItem.ToolResultItem -> {
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_RESULT,
@@ -640,12 +643,14 @@ class ComposeRenderer : BaseRenderer() {
                     fullOutput = item.fullOutput
                 )
             }
+
             is TimelineItem.ToolErrorItem -> {
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.TOOL_ERROR,
                     taskMessage = item.error
                 )
             }
+
             is TimelineItem.TaskCompleteItem -> {
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.TASK_COMPLETE,
@@ -653,6 +658,7 @@ class ComposeRenderer : BaseRenderer() {
                     taskMessage = item.message
                 )
             }
+
             is TimelineItem.TerminalOutputItem -> {
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.TERMINAL_OUTPUT,
@@ -662,13 +668,14 @@ class ComposeRenderer : BaseRenderer() {
                     executionTimeMs = item.executionTimeMs
                 )
             }
+
             is TimelineItem.LiveTerminalItem -> {
                 // Live terminal items are not persisted (they're runtime-only)
                 null
             }
         }
     }
-    
+
     /**
      * Convert MessageMetadata back to a TimelineItem
      */
@@ -677,7 +684,7 @@ class ComposeRenderer : BaseRenderer() {
         message: cc.unitmesh.devins.llm.Message
     ): TimelineItem? {
         return when (metadata.itemType) {
-            cc.unitmesh.devins.llm.TimelineItemType.MESSAGE -> {
+            TimelineItemType.MESSAGE -> {
                 val totalTokens = metadata.tokenInfoTotal
                 val tokenInfo = if (totalTokens != null) {
                     TokenInfo(
@@ -686,14 +693,15 @@ class ComposeRenderer : BaseRenderer() {
                         outputTokens = metadata.tokenInfoOutput ?: 0
                     )
                 } else null
-                
+
                 TimelineItem.MessageItem(
                     message = message,
                     tokenInfo = tokenInfo,
                     itemTimestamp = message.timestamp
                 )
             }
-            cc.unitmesh.devins.llm.TimelineItemType.COMBINED_TOOL -> {
+
+            TimelineItemType.COMBINED_TOOL -> {
                 TimelineItem.CombinedToolItem(
                     toolName = metadata.toolName ?: "",
                     description = metadata.description ?: "",
@@ -709,18 +717,8 @@ class ComposeRenderer : BaseRenderer() {
                     itemTimestamp = message.timestamp
                 )
             }
-            cc.unitmesh.devins.llm.TimelineItemType.TOOL_CALL -> {
-                TimelineItem.ToolCallItem(
-                    toolName = metadata.toolName ?: "",
-                    description = metadata.description ?: "",
-                    details = metadata.details,
-                    fullParams = metadata.fullParams,
-                    filePath = metadata.filePath,
-                    toolType = metadata.toolType?.toToolType(),
-                    itemTimestamp = message.timestamp
-                )
-            }
-            cc.unitmesh.devins.llm.TimelineItemType.TOOL_RESULT -> {
+
+            TimelineItemType.TOOL_RESULT -> {
                 TimelineItem.ToolResultItem(
                     toolName = metadata.toolName ?: "",
                     success = metadata.success ?: false,
@@ -730,20 +728,23 @@ class ComposeRenderer : BaseRenderer() {
                     itemTimestamp = message.timestamp
                 )
             }
-            cc.unitmesh.devins.llm.TimelineItemType.TOOL_ERROR -> {
+
+            TimelineItemType.TOOL_ERROR -> {
                 TimelineItem.ToolErrorItem(
                     error = metadata.taskMessage ?: "Unknown error",
                     itemTimestamp = message.timestamp
                 )
             }
-            cc.unitmesh.devins.llm.TimelineItemType.TASK_COMPLETE -> {
-                TimelineItem.TaskCompleteItem(
+
+            TimelineItemType.TASK_COMPLETE -> {
+                TaskCompleteItem(
                     success = metadata.taskSuccess ?: false,
                     message = metadata.taskMessage ?: "",
                     itemTimestamp = message.timestamp
                 )
             }
-            cc.unitmesh.devins.llm.TimelineItemType.TERMINAL_OUTPUT -> {
+
+            TimelineItemType.TERMINAL_OUTPUT -> {
                 TimelineItem.TerminalOutputItem(
                     command = metadata.command ?: "",
                     output = message.content,
@@ -752,20 +753,17 @@ class ComposeRenderer : BaseRenderer() {
                     itemTimestamp = message.timestamp
                 )
             }
-            cc.unitmesh.devins.llm.TimelineItemType.LIVE_TERMINAL -> {
-                // Live terminal items cannot be reconstructed from storage
-                null
-            }
+            else -> null
         }
     }
-    
+
     /**
      * Load timeline from a list of messages
      * This is used when switching sessions or loading history
      */
     fun loadFromMessages(messages: List<cc.unitmesh.devins.llm.Message>) {
         _timeline.clear()
-        
+
         messages.forEach { message ->
             val messageMetadata = message.metadata
             val timelineItem = if (messageMetadata != null) {
@@ -779,11 +777,11 @@ class ComposeRenderer : BaseRenderer() {
                     itemTimestamp = message.timestamp
                 )
             }
-            
+
             timelineItem?.let { _timeline.add(it) }
         }
     }
-    
+
     /**
      * Get current timeline as messages with metadata
      * This is used when saving conversation history
@@ -797,6 +795,7 @@ class ComposeRenderer : BaseRenderer() {
                         metadata = toMessageMetadata(item)
                     )
                 }
+
                 is TimelineItem.CombinedToolItem -> {
                     // Create a message representing the tool call and result
                     val content = buildString {
@@ -813,6 +812,7 @@ class ComposeRenderer : BaseRenderer() {
                         metadata = toMessageMetadata(item)
                     )
                 }
+
                 is TimelineItem.TerminalOutputItem -> {
                     cc.unitmesh.devins.llm.Message(
                         role = MessageRole.ASSISTANT,
@@ -821,6 +821,7 @@ class ComposeRenderer : BaseRenderer() {
                         metadata = toMessageMetadata(item)
                     )
                 }
+
                 is TimelineItem.TaskCompleteItem -> {
                     cc.unitmesh.devins.llm.Message(
                         role = MessageRole.ASSISTANT,
@@ -829,6 +830,7 @@ class ComposeRenderer : BaseRenderer() {
                         metadata = toMessageMetadata(item)
                     )
                 }
+
                 is TimelineItem.ToolErrorItem -> {
                     cc.unitmesh.devins.llm.Message(
                         role = MessageRole.ASSISTANT,
@@ -838,7 +840,7 @@ class ComposeRenderer : BaseRenderer() {
                     )
                 }
                 // Skip deprecated items and live terminal items
-                is TimelineItem.ToolCallItem,
+//                is TimelineItem.ToolCallItem,
                 is TimelineItem.ToolResultItem,
                 is TimelineItem.LiveTerminalItem -> null
             }

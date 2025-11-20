@@ -105,11 +105,8 @@ class CommandProcessor : BaseDevInsNodeProcessor() {
         context: CompilerContext
     ): ProcessResult {
         context.logger.info("[$name] Processing file command with arguments: $arguments")
-        
-        // 标记为本地命令
+
         context.result.isLocalCommand = true
-        
-        // 生成文件命令的模板输出
         val output = "{{FILE_CONTENT:$arguments}}"
         context.appendOutput(output)
         

@@ -16,7 +16,6 @@ import cc.unitmesh.devins.ui.compose.agent.ToolErrorItem
 import cc.unitmesh.devins.ui.compose.agent.MessageItem
 import cc.unitmesh.devins.ui.compose.agent.TaskCompletedItem
 import cc.unitmesh.devins.ui.compose.agent.TerminalOutputItem
-import cc.unitmesh.devins.ui.compose.agent.ToolCallItem
 import cc.unitmesh.devins.ui.compose.agent.ToolResultItem
 
 @Preview
@@ -129,24 +128,6 @@ fun Preview_CombinedToolItem_FileRead() {
                 fullOutput = "fun main() { println(\"hello\") }\n// more lines...",
                 executionTimeMs = 5L,
                 onOpenFileViewer = { /* preview click noop */ }
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun Preview_ToolCallItem() {
-    MaterialTheme {
-        Surface {
-            ToolCallItem(
-                toolName = "Glob",
-                description = "pattern matcher",
-                details = "pattern=**/*.kt",
-                fullParams = "pattern=**/*.kt root=./",
-                filePath = null,
-                toolType = null,
-                onOpenFileViewer = null
             )
         }
     }

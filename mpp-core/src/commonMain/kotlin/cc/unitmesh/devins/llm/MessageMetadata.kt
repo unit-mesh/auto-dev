@@ -9,7 +9,6 @@ import kotlinx.serialization.Serializable
 enum class TimelineItemType {
     MESSAGE,
     COMBINED_TOOL,
-    TOOL_CALL,
     TOOL_RESULT,
     TOOL_ERROR,
     TASK_COMPLETE,
