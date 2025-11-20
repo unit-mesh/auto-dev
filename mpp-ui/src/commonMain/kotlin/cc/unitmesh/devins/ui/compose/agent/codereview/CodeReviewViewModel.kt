@@ -379,7 +379,8 @@ open class CodeReviewViewModel(
                     filePaths = filePaths,
                     reviewType = cc.unitmesh.agent.ReviewType.COMPREHENSIVE,
                     projectPath = workspace.rootPath ?: "",
-                    patch = currentState.originDiff
+                    patch = currentState.originDiff,
+                    lintResults = currentState.aiProgress.lintResults
                 )
 
                 val analysisOutputBuilder = StringBuilder()

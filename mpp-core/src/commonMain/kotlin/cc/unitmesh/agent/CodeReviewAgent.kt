@@ -46,7 +46,8 @@ data class ReviewTask(
     val reviewType: ReviewType = ReviewType.COMPREHENSIVE,
     val projectPath: String,
     val additionalContext: String = "",
-    val patch: String? = null
+    val patch: String? = null,
+    val lintResults: List<cc.unitmesh.agent.linter.LintFileResult>? = null
 )
 
 @Serializable
@@ -265,7 +266,38 @@ class CodeReviewAgent(
     }
 
     private suspend fun buildContext(task: ReviewTask): CodeReviewContext {
-        val linterSummary = if (task.filePaths.isNotEmpty()) {
+        val linterSummary = if (task.lintResults != null) {
+            // Use provided lint results (already filtered)
+            logger.info { "Using provided lint results: ${task.lintResults.size} files" }
+            val fileIssues = task.lintResults.map { result ->
+                cc.unitmesh.agent.linter.FileLintSummary(
+                    filePath = result.filePath,
+                    linterName = result.linterName,
+                    totalIssues = result.issues.size,
+                    errorCount = result.errorCount,
+                    warningCount = result.warningCount,
+                    infoCount = result.infoCount,
+                    topIssues = result.issues.take(5),
+                    hasMoreIssues = result.issues.size > 5
+                )
+            }
+            
+            val totalIssues = fileIssues.sumOf { it.totalIssues }
+            val errorCount = fileIssues.sumOf { it.errorCount }
+            val warningCount = fileIssues.sumOf { it.warningCount }
+            val infoCount = fileIssues.sumOf { it.infoCount }
+            
+            LinterSummary(
+                totalFiles = task.filePaths.size,
+                filesWithIssues = fileIssues.size,
+                totalIssues = totalIssues,
+                errorCount = errorCount,
+                warningCount = warningCount,
+                infoCount = infoCount,
+                fileIssues = fileIssues,
+                executedLinters = fileIssues.map { it.linterName }.distinct()
+            )
+        } else if (task.filePaths.isNotEmpty()) {
             try {
                 LinterRegistry.getInstance().getLinterSummaryForFiles(task.filePaths, task.projectPath)
             } catch (e: Exception) {
