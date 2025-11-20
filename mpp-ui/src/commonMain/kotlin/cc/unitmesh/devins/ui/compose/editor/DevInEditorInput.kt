@@ -75,7 +75,8 @@ fun DevInEditorInput(
     onStopClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {},
-    dismissKeyboardOnSend: Boolean = true
+    dismissKeyboardOnSend: Boolean = true,
+    renderer: cc.unitmesh.devins.ui.compose.agent.ComposeRenderer? = null
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
     var highlightedText by remember { mutableStateOf(initialText) }
@@ -624,6 +625,7 @@ fun DevInEditorInput(
                         onSettingsClick = {
                             showToolConfig = true
                         },
+                        totalTokenInfo = renderer?.totalTokenInfo,
                         onModelConfigChange = onModelConfigChange
                     )
                 }

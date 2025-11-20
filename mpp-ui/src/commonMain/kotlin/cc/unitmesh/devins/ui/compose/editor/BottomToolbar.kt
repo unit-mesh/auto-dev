@@ -27,6 +27,7 @@ fun BottomToolbar(
     onAtClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     workspacePath: String? = null,
+    totalTokenInfo: cc.unitmesh.llm.compression.TokenInfo? = null,
     modifier: Modifier = Modifier,
     onModelConfigChange: (ModelConfig) -> Unit = {}
 ) {
@@ -104,6 +105,31 @@ fun BottomToolbar(
                 ModelSelector(
                     onConfigChange = onModelConfigChange
                 )
+            }
+
+            // Display total token usage
+            if (totalTokenInfo != null && totalTokenInfo.totalTokens > 0) {
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "Token",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Text(
+                            text = "${totalTokenInfo.totalTokens}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                    }
+                }
             }
         }
 

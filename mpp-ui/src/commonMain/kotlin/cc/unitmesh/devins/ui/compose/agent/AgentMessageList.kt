@@ -62,7 +62,10 @@ fun AgentMessageList(
         items(renderer.timeline) { timelineItem ->
             when (timelineItem) {
                 is ComposeRenderer.TimelineItem.MessageItem -> {
-                    MessageItem(message = timelineItem.message)
+                    MessageItem(
+                        message = timelineItem.message,
+                        tokenInfo = timelineItem.tokenInfo
+                    )
                 }
 
                 is ComposeRenderer.TimelineItem.CombinedToolItem -> {
@@ -162,7 +165,10 @@ expect fun LiveTerminalItem(
 )
 
 @Composable
-fun MessageItem(message: Message) {
+fun MessageItem(
+    message: Message,
+    tokenInfo: cc.unitmesh.llm.compression.TokenInfo? = null
+) {
     val isUser = message.role == MessageRole.USER
 
     Row(
@@ -181,6 +187,17 @@ fun MessageItem(message: Message) {
                         fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
                         style = MaterialTheme.typography.bodyMedium
                     )
+
+                    // Display token info if available (only for assistant messages)
+                    if (!isUser && tokenInfo != null && tokenInfo.totalTokens > 0) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text ="${tokenInfo.inputTokens} + ${tokenInfo.outputTokens} (${tokenInfo.totalTokens} tokens)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
                 }
             }
         }

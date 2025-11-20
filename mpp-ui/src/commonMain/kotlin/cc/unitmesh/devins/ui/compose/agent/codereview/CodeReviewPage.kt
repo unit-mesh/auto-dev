@@ -39,27 +39,35 @@ fun CodeReviewPage(
         }
     }
 
-    Scaffold(
-        topBar = {
-            CodeReviewTopBar(
-                onRefresh = { viewModel.refresh() },
-                workspace = currentWorkspace,
-                onBack = onBack,
-            )
-        },
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            CodeReviewSideBySideView(
-                viewModel = viewModel,
-                modifier = Modifier.fillMaxSize()
-            )
+    val notMobile = (Platform.isAndroid || Platform.isIOS).not()
+    if (notMobile) {
+        Scaffold(
+            topBar = {
+                CodeReviewTopBar(
+                    onRefresh = { viewModel.refresh() },
+                    workspace = currentWorkspace,
+                    onBack = onBack,
+                )
+            },
+            modifier = modifier,
+            containerColor = MaterialTheme.colorScheme.surface
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                CodeReviewSideBySideView(
+                    viewModel = viewModel,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
+    } else {
+        CodeReviewSideBySideView(
+            viewModel = viewModel,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 

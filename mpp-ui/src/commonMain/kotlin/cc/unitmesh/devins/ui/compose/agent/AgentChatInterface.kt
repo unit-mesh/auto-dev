@@ -151,6 +151,7 @@ fun AgentChatInterface(
                                 isExecuting = viewModel.isExecuting,
                                 onStopClick = { viewModel.cancelTask() },
                                 onModelConfigChange = { /* Handle model config change if needed */ },
+                                renderer = viewModel.renderer,
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
@@ -269,6 +270,7 @@ fun AgentChatInterface(
                 isExecuting = viewModel.isExecuting,
                 onStopClick = { viewModel.cancelTask() },
                 onModelConfigChange = { /* Handle model config change if needed */ },
+                renderer = viewModel.renderer,
                 modifier =
                     Modifier
                         .fillMaxWidth()

@@ -50,6 +50,18 @@ class CodingAgentExecutor(
     ): AgentResult {
         resetExecution()
         conversationManager = ConversationManager(llmService, systemPrompt)
+        
+        // Set up token tracking callback to update renderer
+        conversationManager?.onTokenUpdate = { tokenInfo ->
+            // Update renderer if it supports token tracking
+            try {
+                val updateMethod = renderer::class.members.find { it.name == "updateTokenInfo" }
+                updateMethod?.call(renderer, tokenInfo)
+            } catch (e: Exception) {
+                // Renderer doesn't support token tracking, ignore
+            }
+        }
+        
         val initialUserMessage = buildInitialUserMessage(task)
 
         onProgress("🚀 CodingAgent started")

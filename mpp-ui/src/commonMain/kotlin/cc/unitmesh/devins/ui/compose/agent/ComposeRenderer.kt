@@ -6,6 +6,7 @@ import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.toToolType
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
+import cc.unitmesh.llm.compression.TokenInfo
 import kotlinx.datetime.Clock
 
 /**
@@ -52,6 +53,12 @@ class ComposeRenderer : BaseRenderer() {
     private var _currentExecutionTime by mutableStateOf(0L)
     val currentExecutionTime: Long get() = _currentExecutionTime
 
+    // Token tracking
+    private var _totalTokenInfo by mutableStateOf(TokenInfo())
+    val totalTokenInfo: TokenInfo get() = _totalTokenInfo
+    
+    private var _lastMessageTokenInfo by mutableStateOf<TokenInfo?>(null)
+
     // File viewer state
     private var _currentViewingFile by mutableStateOf<String?>(null)
     val currentViewingFile: String? get() = _currentViewingFile
@@ -60,6 +67,7 @@ class ComposeRenderer : BaseRenderer() {
     sealed class TimelineItem(val timestamp: Long = Clock.System.now().toEpochMilliseconds()) {
         data class MessageItem(
             val message: Message,
+            val tokenInfo: TokenInfo? = null,
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
 
@@ -194,13 +202,15 @@ class ComposeRenderer : BaseRenderer() {
                         Message(
                             role = MessageRole.ASSISTANT,
                             content = finalContent
-                        )
+                        ),
+                    tokenInfo = _lastMessageTokenInfo
                 )
             )
         }
 
         _currentStreamingOutput = ""
         _isProcessing = false
+        _lastMessageTokenInfo = null // Reset after use
     }
 
     override fun renderToolCall(
@@ -408,6 +418,8 @@ class ComposeRenderer : BaseRenderer() {
         _isProcessing = false
         _executionStartTime = 0L
         _currentExecutionTime = 0L
+        _totalTokenInfo = TokenInfo()
+        _lastMessageTokenInfo = null
     }
 
     fun clearError() {
@@ -561,5 +573,20 @@ class ComposeRenderer : BaseRenderer() {
         }
 
         return params
+    }
+    
+    /**
+     * Update token information from LLM response
+     * Called when StreamFrame.End is received with token metadata
+     */
+    fun updateTokenInfo(tokenInfo: TokenInfo) {
+        _lastMessageTokenInfo = tokenInfo
+        // Accumulate total tokens
+        _totalTokenInfo = TokenInfo(
+            totalTokens = _totalTokenInfo.totalTokens + tokenInfo.totalTokens,
+            inputTokens = _totalTokenInfo.inputTokens + tokenInfo.inputTokens,
+            outputTokens = _totalTokenInfo.outputTokens + tokenInfo.outputTokens,
+            timestamp = tokenInfo.timestamp
+        )
     }
 }

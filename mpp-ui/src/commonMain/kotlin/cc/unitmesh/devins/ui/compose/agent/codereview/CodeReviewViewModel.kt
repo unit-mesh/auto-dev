@@ -69,20 +69,31 @@ open class CodeReviewViewModel(
     private var currentMetrics: PerformanceMetrics? = null
 
     init {
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                codeReviewAgent = initializeCodingAgent()
-                if (gitOps.isSupported()) {
-                    loadCommitHistory()
-                } else {
-                    loadDiff()
-                }
-            } catch (e: Exception) {
-                AutoDevLogger.error("CodeReviewViewModel") {
-                    "Failed to initialize: ${e.message}"
-                }
-                updateState {
-                    it.copy(error = "Initialization failed: ${e.message}")
+        // Validate workspace has a valid root path
+        if (workspace.rootPath.isNullOrEmpty()) {
+            AutoDevLogger.warn("CodeReviewViewModel") {
+                "Workspace root path is null or empty, skipping agent initialization"
+            }
+            updateState {
+                it.copy(error = "No workspace path configured. Please open a project first.")
+            }
+        } else {
+            CoroutineScope(Dispatchers.Default).launch {
+                try {
+                    codeReviewAgent = initializeCodingAgent()
+                    if (gitOps.isSupported()) {
+                        loadCommitHistory()
+                    } else {
+                        loadDiff()
+                    }
+                } catch (e: Exception) {
+                    AutoDevLogger.error("CodeReviewViewModel") {
+                        "Failed to initialize: ${e.message}"
+                    }
+                    e.printStackTrace()
+                    updateState {
+                        it.copy(error = "Initialization failed: ${e.message}")
+                    }
                 }
             }
         }
@@ -91,7 +102,12 @@ open class CodeReviewViewModel(
     suspend fun initializeCodingAgent(): CodeReviewAgent {
         codeReviewAgent?.let { return it }
 
-        return createCodeReviewAgent(workspace.rootPath ?: "")
+        val projectPath = workspace.rootPath
+        if (projectPath.isNullOrEmpty()) {
+            throw IllegalStateException("Cannot initialize coding agent: workspace root path is null or empty")
+        }
+        
+        return createCodeReviewAgent(projectPath)
     }
 
 
@@ -925,27 +941,39 @@ open class CodeReviewViewModel(
 
     companion object {
         suspend fun createCodeReviewAgent(projectPath: String): CodeReviewAgent {
-            val toolConfig = ToolConfigFile.default()
+            // Validate project path
+            if (projectPath.isEmpty()) {
+                throw IllegalArgumentException("Project path cannot be empty")
+            }
+            
+            try {
+                val toolConfig = ToolConfigFile.default()
 
-            val configWrapper = ConfigManager.load()
-            val modelConfig = configWrapper.getActiveModelConfig()
-                ?: throw IllegalStateException("No active model configuration found. Please configure a model in settings.")
+                val configWrapper = ConfigManager.load()
+                val modelConfig = configWrapper.getActiveModelConfig()
+                    ?: throw IllegalStateException("No active model configuration found. Please configure a model in settings.")
 
-            val llmService = KoogLLMService.create(modelConfig)
+                val llmService = KoogLLMService.create(modelConfig)
 
-            val mcpToolConfigService = McpToolConfigService(toolConfig)
-            // Create renderer
-            val renderer = ComposeRenderer()
-            val agent = CodeReviewAgent(
-                projectPath = projectPath,
-                llmService = llmService,
-                maxIterations = 50,
-                renderer = renderer,
-                mcpToolConfigService = mcpToolConfigService,
-                enableLLMStreaming = true
-            )
+                val mcpToolConfigService = McpToolConfigService(toolConfig)
+                // Create renderer
+                val renderer = ComposeRenderer()
+                val agent = CodeReviewAgent(
+                    projectPath = projectPath,
+                    llmService = llmService,
+                    maxIterations = 50,
+                    renderer = renderer,
+                    mcpToolConfigService = mcpToolConfigService,
+                    enableLLMStreaming = true
+                )
 
-            return agent
+                return agent
+            } catch (e: Exception) {
+                AutoDevLogger.error("CodeReviewViewModel") {
+                    "Failed to create CodeReviewAgent: ${e.message}"
+                }
+                throw IllegalStateException("Failed to create CodeReviewAgent: ${e.message}", e)
+            }
         }
     }
 }

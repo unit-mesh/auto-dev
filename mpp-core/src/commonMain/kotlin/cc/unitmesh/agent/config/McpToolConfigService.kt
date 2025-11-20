@@ -13,7 +13,12 @@ class McpToolConfigService(val toolConfig: ToolConfigFile) {
 
     init {
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
-            McpToolConfigManager.init(toolConfig)
+            try {
+                McpToolConfigManager.init(toolConfig)
+            } catch (e: Exception) {
+                logger.warn { "Failed to initialize MCP tool config manager: ${e.message}" }
+                // Continue execution - MCP tools are optional
+            }
         }
     }
 
