@@ -242,6 +242,9 @@ class ToolOrchestrator(
         if (tool != null) {
             // Convert orchestration context to basic tool context
             val basicContext = context.toBasicContext()
+            
+            // Use new ExecutableTool architecture for most tools
+            // Only special-case tools that need custom handling (shell with PTY, etc.)
             return when (val toolType = toolName.toToolType()) {
                 ToolType.Shell -> executeShellTool(tool, params, basicContext)
                 ToolType.ReadFile -> executeReadFileTool(tool, params, basicContext)
@@ -250,7 +253,11 @@ class ToolOrchestrator(
                 ToolType.Glob -> executeGlobTool(tool, params, basicContext)
                 ToolType.Grep -> executeGrepTool(tool, params, basicContext)
                 ToolType.WebFetch -> executeWebFetchTool(tool, params, basicContext)
-                else -> ToolResult.Error("Tool not implemented: ${toolType?.displayName ?: "unknown"}")
+                else -> {
+                    // For new tools (task-boundary, ask-agent, etc.), use generic execution
+                    logger.debug { "Executing tool generically: $toolName" }
+                    executeGenericTool(tool, params, basicContext)
+                }
             }
         }
 
@@ -518,6 +525,35 @@ class ToolOrchestrator(
             is ToolResult.Error -> result.message
             is ToolResult.AgentResult -> if (!result.success) result.content else ""
             else -> "Unknown error"
+        }
+    }
+
+    /**
+     * Execute generic tool using ExecutableTool interface
+     * This handles new tools like task-boundary, ask-agent, etc. without needing specific implementations
+     */
+    private suspend fun executeGenericTool(
+        tool: Tool,
+        params: Map<String, Any>,
+        context: cc.unitmesh.agent.tool.ToolExecutionContext
+    ): ToolResult {
+        return try {
+            // Cast to ExecutableTool (all new tools should implement this)
+            @Suppress("UNCHECKED_CAST")
+            val executableTool = tool as? ExecutableTool<Any, ToolResult>
+            
+            if (executableTool == null) {
+                return ToolResult.Error("Tool ${tool.name} does not implement ExecutableTool interface")
+            }
+            
+            // Create invocation with params
+            val invocation = executableTool.createInvocation(params)
+            
+            // Execute the tool
+            invocation.execute(context)
+        } catch (e: Exception) {
+            logger.error(e) { "Error executing generic tool ${tool.name}" }
+            ToolResult.Error("Error executing tool ${tool.name}: ${e.message}")
         }
     }
 }
