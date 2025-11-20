@@ -43,12 +43,20 @@ fun ThinkingBlockRenderer(
         }
     }
     
-    // Auto-scroll to bottom during streaming (when not complete)
-    LaunchedEffect(thinkingContent, isComplete) {
-        if (!isComplete && isExpanded && thinkingContent.isNotBlank() && !userHasScrolled) {
-            // Scroll to bottom when content changes during streaming
-            // Only if user hasn't manually scrolled up
-            scrollState.animateScrollTo(scrollState.maxValue)
+    // Auto-scroll to bottom during streaming
+    LaunchedEffect(thinkingContent) {
+        if (!isComplete && isExpanded && !userHasScrolled && thinkingContent.isNotBlank()) {
+            // Multiple attempts to scroll as layout updates
+            // This ensures we scroll even when content is very long
+            repeat(3) { attempt ->
+                kotlinx.coroutines.delay(if (attempt == 0) 16 else 50)
+                
+                val targetScroll = scrollState.maxValue
+                if (targetScroll > scrollState.value) {
+                    // Use scrollTo for immediate feedback, not animate
+                    scrollState.scrollTo(targetScroll)
+                }
+            }
         }
     }
 
