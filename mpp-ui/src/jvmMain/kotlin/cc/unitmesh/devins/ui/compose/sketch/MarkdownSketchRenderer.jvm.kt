@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mikepenz.markdown.compose.MarkdownElement
+import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
 import com.mikepenz.markdown.compose.components.MarkdownComponents
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.compose.elements.MarkdownTable
+import com.mikepenz.markdown.compose.elements.highlightedCodeBlock
+import com.mikepenz.markdown.compose.elements.highlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
@@ -30,27 +33,14 @@ actual object MarkdownSketchRenderer {
             markdown,
             modifier = modifier,
             components = markdownComponents(
-                table = {
-                    println(it.content)
-                    MarkdownTable(it.content, it.node, style = it.typography.table)
-                },
-                codeBlock = {
-                    MarkdownHighlightedCodeBlock(
-                        content = it.content,
-                        node = it.node,
-                        highlightsBuilder = highlightsBuilder,
-                        showHeader = true,
-                    )
-                },
-                codeFence = {
-                    println(it.content)
-                    MarkdownHighlightedCodeFence(
-                        content = it.content,
-                        node = it.node,
-                        highlightsBuilder = highlightsBuilder,
-                        showHeader = true,
-                    )
-                },
+                table = CurrentComponentsBridge.table,
+                heading1 = CurrentComponentsBridge.heading3,
+                heading2 = CurrentComponentsBridge.heading4,
+                heading3 = CurrentComponentsBridge.heading5,
+                heading4 = CurrentComponentsBridge.heading6,
+                heading5 = CurrentComponentsBridge.heading6,
+                codeBlock = highlightedCodeFence,
+                codeFence = highlightedCodeBlock,
             ),
             success = { state, components, modifier ->
                 MarkdownSuccess(state, components, modifier)

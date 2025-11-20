@@ -174,8 +174,8 @@ kotlin {
                 // CodeHighlight
                 implementation("dev.snipme:highlights:1.1.0")
                 // Multiplatform Markdown Renderer for JVM
-                implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-code:0.38.1")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-jvm:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
 
                 // Logback for JVM logging backend with file storage

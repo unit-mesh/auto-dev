@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
@@ -119,7 +121,6 @@ kotlin {
 //                implementation(project(":mpp-linter"))
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
                 // kotlinx-io for cross-platform file system operations
                 implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.8.0")
@@ -130,6 +131,7 @@ kotlin {
                 // Kotlin Logging for multiplatform logging
                 implementation("io.github.oshai:kotlin-logging:7.0.13")
 
+                runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
                 // Koog AI Framework - JVM only for now
                 implementation("ai.koog:koog-agents:0.5.2")
                 // Koog needs these executors

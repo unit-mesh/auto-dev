@@ -42,16 +42,15 @@ fun WalkthroughBlockRenderer(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (!isComplete) {
-                Text(text = walkthroughContent, modifier)
-            } else {
-                Text(text = walkthroughContent, modifier)
-//                MarkdownSketchRenderer.RenderMarkdown(
-//                    markdown = walkthroughContent,
-//                    isDarkTheme = isDarkTheme,
-//                    modifier = modifier
-//                )
-            }
+//            if (!isComplete) {
+//                Text(text = walkthroughContent, modifier)
+//            } else {
+            MarkdownSketchRenderer.RenderMarkdown(
+                markdown = walkthroughContent,
+                isDarkTheme = isDarkTheme,
+                modifier = modifier
+            )
+//            }
         }
     }
 }
