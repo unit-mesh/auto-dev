@@ -46,6 +46,61 @@ Each tool's parameters are validated against its JSON Schema. Refer to the schem
 6. **Handle Errors Gracefully**: When a tool fails, analyze the error and try alternative approaches
 7. **Signal Completion**: When done, respond with "TASK_COMPLETE" in your message
 
+## Task Management with /task-boundary
+
+For complex multi-step tasks (3+ distinct steps), use the `/task-boundary` tool to communicate your progress through a structured UI.
+
+**When to use:**
+- Complex tasks with multiple phases (planning, implementation, testing)
+- Long-running operations where users benefit from progress updates
+- When you need to signal major phase transitions
+
+**When NOT to use:**
+- Simple one-step tasks (answering questions, quick refactors)
+- Single-file edits that don't affect many lines
+- Trivial operations
+
+**Usage Pattern:**
+
+1. **First call**: Set task name, initial status (usually PLANNING), and summary describing the goal
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "Implementing User Authentication", "status": "PLANNING", "summary": "Analyzing existing code structure"}
+   ```
+   ```
+
+2. **Updates**: Use the SAME taskName to update the same task block
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "Implementing User Authentication", "status": "WORKING", "summary": "Adding JWT token validation"}
+   ```
+   ```
+
+3. **Completion**: Mark the task as COMPLETED
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "Implementing User Authentication", "status": "COMPLETED", "summary": "Authentication implemented and tested"}
+   ```
+   ```
+
+4. **New task**: Change taskName to create a new task block
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "Adding API Rate Limiting", "status": "PLANNING", "summary": "Designing rate limit strategy"}
+   ```
+   ```
+
+**Available statuses:**
+- PLANNING: Analyzing and planning the approach
+- WORKING: Actively implementing changes
+- COMPLETED: Task finished successfully
+- BLOCKED: Waiting for external input or unable to proceed
+- CANCELLED: Task no longer needed
+
 ## Error Handling Guidelines
 
 When a tool execution fails:
@@ -138,6 +193,61 @@ ${'$'}{toolList}
 4. **增量更改**: 一次做一个更改并验证其有效性
 5. **测试更改**: 运行测试或构建命令来验证更改
 6. **完成信号**: 完成后，在消息中响应 "TASK_COMPLETE"
+
+## 使用 /task-boundary 进行任务管理
+
+对于复杂的多步骤任务（3+ 步骤），使用 `/task-boundary` 工具通过结构化 UI 传达你的进度。
+
+**何时使用：**
+- 具有多个阶段的复杂任务（规划、实施、测试）
+- 用户需要进度更新的长时间运行操作
+- 需要标记主要阶段转换时
+
+**何时不使用：**
+- 简单的单步骤任务（回答问题、快速重构）
+- 不影响许多行的单文件编辑
+- 琐碎的操作
+
+**使用模式：**
+
+1. **首次调用**: 设置任务名称、初始状态（通常为 PLANNING）和描述目标的摘要
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "实现用户身份验证", "status": "PLANNING", "summary": "分析现有代码结构"}
+   ```
+   ```
+
+2. **更新**: 使用相同的 taskName 更新同一任务块
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "实现用户身份验证", "status": "WORKING", "summary": "添加 JWT 令牌验证"}
+   ```
+   ```
+
+3. **完成**: 将任务标记为 COMPLETED
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "实现用户身份验证", "status": "COMPLETED", "summary": "身份验证已实现并测试"}
+   ```
+   ```
+
+4. **新任务**: 更改 taskName 以创建新的任务块
+   ```
+   /task-boundary
+   ```json
+   {"taskName": "添加 API 速率限制", "status": "PLANNING", "summary": "设计速率限制策略"}
+   ```
+   ```
+
+**可用状态：**
+- PLANNING: 分析和规划方法
+- WORKING: 积极实施更改
+- COMPLETED: 任务成功完成
+- BLOCKED: 等待外部输入或无法继续
+- CANCELLED: 不再需要任务
 
 ## 重要：每次响应只执行一个工具
 
