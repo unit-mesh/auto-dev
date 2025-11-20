@@ -967,23 +967,32 @@ open class CodeReviewViewModel(
         }
         
         // Mark as loading
-        updateCommitAtIndex(commitIndex) { it.copy(isLoadingIssue = true) }
+        updateCommitAtIndex(commitIndex) { it.copy(isLoadingIssue = true, issueLoadError = null) }
         
         // Load issue asynchronously
         scope.launch {
             try {
                 val issueDeferred = issueService.getIssueAsync(commit.hash, commit.message)
-                val issueInfo = issueDeferred.await()
+                val result = issueDeferred.await()
                 
-                // Update commit with issue info
+                // Update commit with issue info or error
                 updateCommitAtIndex(commitIndex) { 
-                    it.copy(issueInfo = issueInfo, isLoadingIssue = false) 
+                    it.copy(
+                        issueInfo = result.issueInfo, 
+                        isLoadingIssue = false,
+                        issueLoadError = result.error
+                    ) 
                 }
             } catch (e: Exception) {
                 AutoDevLogger.error("CodeReviewViewModel") {
                     "Failed to load issue for commit ${commit.shortHash}: ${e.message}"
                 }
-                updateCommitAtIndex(commitIndex) { it.copy(isLoadingIssue = false) }
+                updateCommitAtIndex(commitIndex) { 
+                    it.copy(
+                        isLoadingIssue = false,
+                        issueLoadError = "Failed to load issue"
+                    ) 
+                }
             }
         }
     }
@@ -1002,6 +1011,30 @@ open class CodeReviewViewModel(
     }
     
     /**
+     * Detect repository information from Git remote URL
+     * @return Pair of (owner, repo) or null if not detected
+     */
+    suspend fun detectRepositoryFromGit(): Pair<String, String>? {
+        return try {
+            if (!gitOps.isSupported()) {
+                return null
+            }
+            
+            val remoteUrl = gitOps.getRemoteUrl("origin")
+            if (remoteUrl != null) {
+                cc.unitmesh.agent.tracker.GitHubIssueTracker.parseRepoUrl(remoteUrl)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            AutoDevLogger.warn("CodeReviewViewModel") {
+                "Failed to detect repository from Git: ${e.message}"
+            }
+            null
+        }
+    }
+    
+    /**
      * Reload issue service (called when configuration changes)
      */
     suspend fun reloadIssueService() {
@@ -1014,7 +1047,7 @@ open class CodeReviewViewModel(
             // Reload issues for all commits
             currentState.commitHistory.forEachIndexed { index, commit ->
                 // Reset issue info
-                updateCommitAtIndex(index) { it.copy(issueInfo = null, isLoadingIssue = false) }
+                updateCommitAtIndex(index) { it.copy(issueInfo = null, isLoadingIssue = false, issueLoadError = null) }
                 // Reload
                 loadIssueForCommit(index)
             }

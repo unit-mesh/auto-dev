@@ -139,7 +139,7 @@ class AutoDevConfigWrapper(val configFile: ConfigFile) {
         return configFile.lastWorkspace
     }
     
-    fun getIssueTracker(): IssueTrackerConfig? {
-        return configFile.issueTracker
+    fun getIssueTracker(): IssueTrackerConfig {
+        return configFile.issueTracker ?: IssueTrackerConfig()
     }
 }

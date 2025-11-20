@@ -29,10 +29,7 @@ fun FrameWindowScope.DesktopWindowLayout(
     titleBarContent: @Composable RowScope.() -> Unit = {},
     content: @Composable () -> Unit
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             WindowDraggableArea {
                 TitleBar(

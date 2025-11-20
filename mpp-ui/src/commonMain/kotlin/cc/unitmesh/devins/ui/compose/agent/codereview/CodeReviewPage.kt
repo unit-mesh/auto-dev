@@ -139,12 +139,17 @@ private fun CodeReviewTopBar(
     
     // Issue Tracker Configuration Dialog
     if (showIssueTrackerDialog) {
-        val currentConfig = remember {
-            mutableStateOf<cc.unitmesh.devins.ui.config.IssueTrackerConfig?>(null)
+        var currentConfig by remember {
+            mutableStateOf(cc.unitmesh.devins.ui.config.IssueTrackerConfig())
+        }
+        var autoDetectedRepo by remember {
+            mutableStateOf<Pair<String, String>?>(null)
         }
         
         LaunchedEffect(Unit) {
-            currentConfig.value = cc.unitmesh.devins.ui.config.ConfigManager.getIssueTracker()
+            currentConfig = cc.unitmesh.devins.ui.config.ConfigManager.getIssueTracker()
+            // Try to auto-detect repo from Git
+            autoDetectedRepo = viewModel.detectRepositoryFromGit()
         }
         
         IssueTrackerConfigDialog(
@@ -159,7 +164,8 @@ private fun CodeReviewTopBar(
                     }
                 }
             },
-            initialConfig = currentConfig.value
+            initialConfig = currentConfig,
+            autoDetectedRepo = autoDetectedRepo
         )
     }
 }

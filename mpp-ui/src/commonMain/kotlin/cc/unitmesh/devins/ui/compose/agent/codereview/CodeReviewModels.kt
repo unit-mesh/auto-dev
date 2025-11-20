@@ -134,5 +134,6 @@ data class CommitInfo(
     val date: String,
     val message: String,
     val issueInfo: IssueInfo? = null, // Issue information extracted from commit message
-    val isLoadingIssue: Boolean = false // Whether issue info is being loaded
+    val isLoadingIssue: Boolean = false, // Whether issue info is being loaded
+    val issueLoadError: String? = null // Error message if issue loading failed (e.g., needs token)
 )

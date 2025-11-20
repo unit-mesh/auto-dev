@@ -29,6 +29,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.state.collectAsState()
+    var showConfigDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Box(modifier = modifier.fillMaxSize()) {
         when {
@@ -61,10 +63,41 @@ fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier 
             else -> {
                 ThreeColumnLayout(
                     state = state,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    onShowConfigDialog = { showConfigDialog = true }
                 )
             }
         }
+    }
+    
+    // Issue Tracker Configuration Dialog
+    if (showConfigDialog) {
+        var currentConfig by remember { 
+            mutableStateOf(cc.unitmesh.devins.ui.config.IssueTrackerConfig()) 
+        }
+        var autoDetectedRepo by remember { 
+            mutableStateOf<Pair<String, String>?>(null) 
+        }
+        
+        LaunchedEffect(Unit) {
+            currentConfig = cc.unitmesh.devins.ui.config.ConfigManager.getIssueTracker()
+            autoDetectedRepo = viewModel.detectRepositoryFromGit()
+        }
+        
+        IssueTrackerConfigDialog(
+            onDismiss = { showConfigDialog = false },
+            onConfigured = {
+                scope.launch {
+                    try {
+                        viewModel.reloadIssueService()
+                    } catch (e: Exception) {
+                        // Handle error
+                    }
+                }
+            },
+            initialConfig = currentConfig,
+            autoDetectedRepo = autoDetectedRepo
+        )
     }
 }
 
@@ -74,7 +107,8 @@ fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier 
 @Composable
 private fun ThreeColumnLayout(
     state: CodeReviewState,
-    viewModel: CodeReviewViewModel
+    viewModel: CodeReviewViewModel,
+    onShowConfigDialog: () -> Unit
 ) {
     val renderer = remember { ComposeRenderer() }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
@@ -123,7 +157,8 @@ private fun ThreeColumnLayout(
                             fileToView = filePath
                         },
                         workspaceRoot = viewModel.workspace.rootPath,
-                        isLoadingDiff = state.isLoadingDiff
+                        isLoadingDiff = state.isLoadingDiff,
+                        onConfigureToken = onShowConfigDialog
                     )
 
                     // File viewer dialog

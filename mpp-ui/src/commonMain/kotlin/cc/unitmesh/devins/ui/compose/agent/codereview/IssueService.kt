@@ -40,18 +40,32 @@ class IssueService(private val workspacePath: String) {
         try {
             val config = ConfigManager.getIssueTracker()
             
+            // If no config or disabled, try to auto-detect and create default config
             if (config == null || !config.enabled) {
+                // Try to auto-detect from Git
+                if (gitOps != null && gitOps.isSupported()) {
+                    val autoDetectedConfig = autoDetectRepoFromGit(gitOps)
+                    if (autoDetectedConfig != null) {
+                        AutoDevLogger.info("IssueService") {
+                            "Auto-detected GitHub repo: ${autoDetectedConfig.repoOwner}/${autoDetectedConfig.repoName}"
+                        }
+                        issueTracker = createIssueTracker(autoDetectedConfig)
+                        isInitialized = true
+                        return
+                    }
+                }
+                
                 AutoDevLogger.info("IssueService") {
-                    "Issue tracker not configured or disabled"
+                    "Issue tracker not configured or disabled, and auto-detection failed"
                 }
                 issueTracker = NoOpIssueTracker()
                 isInitialized = true
                 return
             }
             
-            // Try to auto-detect repo from Git remote if not configured
-            val finalConfig = if (config.repoOwner.isBlank() || config.repoName.isBlank()) {
-                gitOps?.let { autoDetectRepo(it, config) } ?: config
+            // Always try to auto-detect repo from Git remote (override config)
+            val finalConfig = if (gitOps != null && gitOps.isSupported()) {
+                autoDetectRepo(gitOps, config)
             } else {
                 config
             }
@@ -61,7 +75,7 @@ class IssueService(private val workspacePath: String) {
             
             isInitialized = true
             AutoDevLogger.info("IssueService") {
-                "Issue tracker initialized: ${finalConfig.type}"
+                "Issue tracker initialized: ${finalConfig.type} (${finalConfig.repoOwner}/${finalConfig.repoName})"
             }
         } catch (e: Exception) {
             AutoDevLogger.error("IssueService") {
@@ -69,6 +83,35 @@ class IssueService(private val workspacePath: String) {
             }
             issueTracker = NoOpIssueTracker()
             isInitialized = true
+        }
+    }
+    
+    /**
+     * Auto-detect repository from Git remote URL (without existing config)
+     */
+    private suspend fun autoDetectRepoFromGit(gitOps: GitOperations): IssueTrackerConfig? {
+        return try {
+            val remoteUrl = gitOps.getRemoteUrl("origin")
+            if (remoteUrl != null) {
+                val parsed = GitHubIssueTracker.parseRepoUrl(remoteUrl)
+                if (parsed != null) {
+                    // Create a default config with auto-detected repo info
+                    // Token will be loaded from config if exists, otherwise empty (public repo)
+                    return IssueTrackerConfig(
+                        type = "github",
+                        token = ConfigManager.getIssueTracker()?.token ?: "",
+                        repoOwner = parsed.first,
+                        repoName = parsed.second,
+                        enabled = true
+                    )
+                }
+            }
+            null
+        } catch (e: Exception) {
+            AutoDevLogger.warn("IssueService") {
+                "Failed to auto-detect repo from Git: ${e.message}"
+            }
+            null
         }
     }
     
@@ -173,18 +216,27 @@ class IssueService(private val workspacePath: String) {
     }
     
     /**
+     * Result of issue fetch attempt
+     */
+    data class IssueResult(
+        val issueInfo: IssueInfo?,
+        val error: String? = null,
+        val needsToken: Boolean = false
+    )
+    
+    /**
      * Get issue information asynchronously
      * Uses cache to avoid repeated API calls
      * 
      * @param commitHash Commit hash
      * @param commitMessage Commit message
-     * @return Deferred<IssueInfo?> that resolves to issue info or null
+     * @return Deferred<IssueResult> that resolves to issue result
      */
-    fun getIssueAsync(commitHash: String, commitMessage: String): Deferred<IssueInfo?> {
+    fun getIssueAsync(commitHash: String, commitMessage: String): Deferred<IssueResult> {
         return CoroutineScope(Dispatchers.Default).async {
             // Check cache first
             if (issueCache.containsKey(commitHash)) {
-                return@async issueCache[commitHash]
+                return@async IssueResult(issueInfo = issueCache[commitHash])
             }
             
             // Ensure initialized
@@ -196,7 +248,7 @@ class IssueService(private val workspacePath: String) {
             val issueId = extractIssueId(commitMessage, commitHash)
             if (issueId == null) {
                 issueCache[commitHash] = null
-                return@async null
+                return@async IssueResult(issueInfo = null)
             }
             
             // Fetch issue info
@@ -214,13 +266,23 @@ class IssueService(private val workspacePath: String) {
                     }
                 }
                 
-                issueInfo
+                IssueResult(issueInfo = issueInfo)
             } catch (e: Exception) {
                 AutoDevLogger.error("IssueService") {
                     "Failed to fetch issue #$issueId: ${e.message}"
                 }
                 issueCache[commitHash] = null
-                null
+                
+                // Check if it's an authentication error
+                val needsToken = e.message?.contains("401") == true || 
+                                 e.message?.contains("403") == true ||
+                                 e.message?.contains("authentication") == true
+                
+                IssueResult(
+                    issueInfo = null,
+                    error = if (needsToken) "Authentication required" else "Failed to fetch issue",
+                    needsToken = needsToken
+                )
             }
         }
     }
@@ -230,7 +292,8 @@ class IssueService(private val workspacePath: String) {
      * Prefer getIssueAsync for better performance
      */
     suspend fun getIssue(commitHash: String, commitMessage: String): IssueInfo? {
-        return getIssueAsync(commitHash, commitMessage).await()
+        val result = getIssueAsync(commitHash, commitMessage).await()
+        return result.issueInfo
     }
     
     /**

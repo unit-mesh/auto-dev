@@ -31,17 +31,20 @@ import kotlinx.coroutines.launch
 fun IssueTrackerConfigDialog(
     onDismiss: () -> Unit,
     onConfigured: () -> Unit = {},
-    initialConfig: IssueTrackerConfig? = null
+    initialConfig: IssueTrackerConfig = IssueTrackerConfig(),
+    autoDetectedRepo: Pair<String, String>? = null // (owner, name)
 ) {
-    var type by remember { mutableStateOf(initialConfig?.type ?: "github") }
-    var token by remember { mutableStateOf(initialConfig?.token ?: "") }
-    var repoOwner by remember { mutableStateOf(initialConfig?.repoOwner ?: "") }
-    var repoName by remember { mutableStateOf(initialConfig?.repoName ?: "") }
-    var serverUrl by remember { mutableStateOf(initialConfig?.serverUrl ?: "") }
-    var enabled by remember { mutableStateOf(initialConfig?.enabled ?: true) }
+    var type by remember { mutableStateOf(initialConfig.type) }
+    var token by remember { mutableStateOf(initialConfig.token) }
+    // Use auto-detected values if available
+    var repoOwner by remember { mutableStateOf(autoDetectedRepo?.first ?: initialConfig.repoOwner) }
+    var repoName by remember { mutableStateOf(autoDetectedRepo?.second ?: initialConfig.repoName) }
+    var serverUrl by remember { mutableStateOf(initialConfig.serverUrl) }
+    var enabled by remember { mutableStateOf(initialConfig.enabled) }
     var showToken by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val isAutoDetected = autoDetectedRepo != null
     
     val scope = rememberCoroutineScope()
     
@@ -172,16 +175,50 @@ fun IssueTrackerConfigDialog(
                         singleLine = true
                     )
                     
-                    Text(
-                        text = when (type) {
-                            "github" -> "Create a personal access token at: https://github.com/settings/tokens"
-                            "gitlab" -> "Create a personal access token in your GitLab settings"
-                            "jira" -> "Create an API token in your Atlassian account settings"
-                            else -> "API token for authentication"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    // Clickable link for creating token
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Info,
+                            contentDescription = "Info",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        when (type) {
+                            "github" -> {
+                                Text(
+                                    text = "Create token at: github.com/settings/tokens",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                                )
+                            }
+                            "gitlab" -> {
+                                Text(
+                                    text = "Create a personal access token in your GitLab settings",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            "jira" -> {
+                                Text(
+                                    text = "Create an API token in your Atlassian account settings",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            else -> {
+                                Text(
+                                    text = "API token for authentication",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                     
                     // Repository fields (for GitHub/GitLab)
                     if (type == "github" || type == "gitlab") {
@@ -191,29 +228,75 @@ fun IssueTrackerConfigDialog(
                             fontWeight = FontWeight.Bold
                         )
                         
-                        OutlinedTextField(
-                            value = repoOwner,
-                            onValueChange = { repoOwner = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = { Text("Repository Owner") },
-                            placeholder = { Text("e.g., unitmesh") },
-                            singleLine = true
-                        )
-                        
-                        OutlinedTextField(
-                            value = repoName,
-                            onValueChange = { repoName = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = { Text("Repository Name") },
-                            placeholder = { Text("e.g., auto-dev") },
-                            singleLine = true
-                        )
-                        
-                        Text(
-                            text = "Leave empty to auto-detect from Git remote URL",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (isAutoDetected) {
+                            // Show auto-detected repo as read-only info
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.CheckCircle,
+                                            contentDescription = "Auto-detected",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Text(
+                                            text = "Auto-detected from Git remote",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                    Text(
+                                        text = "$repoOwner/$repoName",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "Repository information is automatically detected from your Git configuration",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        } else {
+                            OutlinedTextField(
+                                value = repoOwner,
+                                onValueChange = { repoOwner = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Repository Owner") },
+                                placeholder = { Text("e.g., unitmesh") },
+                                singleLine = true
+                            )
+                            
+                            OutlinedTextField(
+                                value = repoName,
+                                onValueChange = { repoName = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Repository Name") },
+                                placeholder = { Text("e.g., auto-dev") },
+                                singleLine = true
+                            )
+                            
+                            Text(
+                                text = "Repository not detected automatically. Please enter manually.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                     
                     // Server URL (for GitLab/Jira)

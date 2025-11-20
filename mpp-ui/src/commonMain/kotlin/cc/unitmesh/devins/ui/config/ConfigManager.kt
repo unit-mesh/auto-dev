@@ -131,7 +131,7 @@ expect object ConfigManager {
     /**
      * Get issue tracker configuration
      *
-     * @return IssueTrackerConfig or null if not configured
+     * @return IssueTrackerConfig (returns default config if not set)
      */
-    suspend fun getIssueTracker(): IssueTrackerConfig?
+    suspend fun getIssueTracker(): IssueTrackerConfig
 }

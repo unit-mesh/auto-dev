@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -252,6 +255,52 @@ fun CommitListItem(
     }
 }
 
+/**
+ * Inline compact issue chip (shown next to commit message)
+ */
+@Composable
+fun InlineIssueChip(issueInfo: cc.unitmesh.agent.tracker.IssueInfo) {
+    Surface(
+        color = when (issueInfo.status.lowercase()) {
+            "open" -> AutoDevColors.Green.c600.copy(alpha = 0.15f)
+            "closed" -> AutoDevColors.Neutral.c600.copy(alpha = 0.15f)
+            else -> AutoDevColors.Indigo.c600.copy(alpha = 0.15f)
+        },
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = when (issueInfo.status.lowercase()) {
+                    "open" -> AutoDevComposeIcons.BugReport
+                    "closed" -> AutoDevComposeIcons.CheckCircle
+                    else -> AutoDevComposeIcons.Info
+                },
+                contentDescription = issueInfo.status,
+                tint = when (issueInfo.status.lowercase()) {
+                    "open" -> AutoDevColors.Green.c600
+                    "closed" -> AutoDevColors.Neutral.c600
+                    else -> AutoDevColors.Indigo.c600
+                },
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = "#${issueInfo.id}",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = when (issueInfo.status.lowercase()) {
+                    "open" -> AutoDevColors.Green.c600
+                    "closed" -> AutoDevColors.Neutral.c600
+                    else -> AutoDevColors.Indigo.c600
+                }
+            )
+        }
+    }
+}
+
 private fun formatRelativeTime(timestamp: Long): String {
     val now = Clock.System.now().toEpochMilliseconds()
     val diff = now - timestamp
@@ -390,7 +439,8 @@ fun DiffCenterView(
     modifier: Modifier = Modifier,
     onViewFile: ((String) -> Unit)? = null,
     workspaceRoot: String? = null,
-    isLoadingDiff: Boolean = false
+    isLoadingDiff: Boolean = false,
+    onConfigureToken: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -412,12 +462,62 @@ fun DiffCenterView(
                         .fillMaxWidth()
                         .padding(12.dp)
                 ) {
-                    Text(
-                        text = selectedCommit.message.lines().firstOrNull() ?: selectedCommit.message,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Companion.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    // Commit message with inline issue info
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Companion.Top
+                    ) {
+                        Text(
+                            text = selectedCommit.message.lines().firstOrNull() ?: selectedCommit.message,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Companion.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        // Inline issue indicator
+                        when {
+                            selectedCommit.isLoadingIssue -> {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = AutoDevColors.Indigo.c600
+                                )
+                            }
+                            selectedCommit.issueInfo != null -> {
+                                InlineIssueChip(issueInfo = selectedCommit.issueInfo)
+                            }
+                            selectedCommit.issueLoadError != null -> {
+                                Button(
+                                    onClick = onConfigureToken,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                    ),
+                                    modifier = Modifier.height(32.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = AutoDevComposeIcons.Settings,
+                                            contentDescription = "Configure",
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Text(
+                                            text = "Configure Token",
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
@@ -437,25 +537,8 @@ fun DiffCenterView(
                         )
                     }
                     
-                    // Issue information
-                    if (selectedCommit.isLoadingIssue) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.Companion.CenterVertically
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = AutoDevColors.Indigo.c600
-                            )
-                            Text(
-                                text = "Loading issue information...",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    } else if (selectedCommit.issueInfo != null) {
+                    // Expanded issue information (if available)
+                    if (selectedCommit.issueInfo != null) {
                         Spacer(modifier = Modifier.height(8.dp))
                         IssueInfoCard(issueInfo = selectedCommit.issueInfo)
                     }

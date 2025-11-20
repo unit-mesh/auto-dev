@@ -235,7 +235,7 @@ actual object ConfigManager {
         save(updatedConfigFile)
     }
     
-    actual suspend fun getIssueTracker(): IssueTrackerConfig? {
+    actual suspend fun getIssueTracker(): IssueTrackerConfig {
         val wrapper = load()
         return wrapper.getIssueTracker()
     }
