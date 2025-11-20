@@ -52,6 +52,9 @@ class ChatHistoryManager {
 
             println("✅ Loaded ${sessions.size} chat sessions from disk")
             initialized = true
+            
+            // 通知 UI 更新，确保初始加载的会话能够显示
+            _sessionsUpdateTrigger.value++
         } catch (e: Exception) {
             println("⚠️ Failed to initialize ChatHistoryManager: ${e.message}")
             initialized = true
