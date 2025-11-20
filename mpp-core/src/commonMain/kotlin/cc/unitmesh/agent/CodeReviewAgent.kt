@@ -342,7 +342,9 @@ data class ReviewFinding(
     companion object {
         fun parseFindings(content: String): List<ReviewFinding> {
             val findings = mutableListOf<ReviewFinding>()
-            val lines = content.lines()
+
+            val cleanContent = content.replace(Regex("<!-- walkthrough_start -->.*?<!-- walkthrough_end -->"), "")
+            val lines = cleanContent.lines()
             var currentSeverity = Severity.INFO
 
             for (line in lines) {

@@ -2,9 +2,9 @@ package cc.unitmesh.agent
 
 object CodeReviewAnalysisTemplate {
     val EN = """
-# Code Review Analysis
+# Code Review - Phase 1: Walkthrough & Summary
 
-You are an expert code reviewer. Analyze the provided code and linter results to identify the **TOP 10 HIGHEST PRIORITY** issues.
+You are an expert code reviewer. Your task is to provide a high-level walkthrough of the changes, summarizing the intent, implementation details, and flow.
 
 ## Available Tools
 
@@ -53,39 +53,50 @@ ${'$'}{diffContext}
 
 ## Your Task
 
-Provide a **CONCISE SUMMARY** of the top 3-5 critical/high priority issues of all significant issues.
+Generate a comprehensive summary of the changes in the following format.
 
-**OUTPUT STRUCTURE**:
-1. **Console Summary** (Brief - for terminal display)
+**OUTPUT FORMAT**:
 
----
+<!-- This is an auto-generated comment: summarize by coderabbit.ai -->
+<!-- walkthrough_start -->
 
-##  Console Summary (Keep this SHORT)
+## Walkthrough
 
-### 📊 Quick Summary
-One sentence overview of code quality.
+{Provide a high-level summary of the PR/Changes. Explain the "Why" and "What" of the changes. Mention key architectural decisions, new components, or significant refactorings. Keep it to 2-3 paragraphs.}
 
-### ⚠️ Top Priority Issues (Max 5)
-For CRITICAL/HIGH issues only, list in this compact format:
+## Changes
 
-#### #{number}. {Title}
-**Severity**: CRITICAL | HIGH  
-**Location**: `{file}:{line}` in `{method/class}`  
-**Problem**: {One sentence description}  
-**Fix**: {One sentence suggestion}
+| Cohort / File(s) | Summary |
+|---|---|
+| **{Component Name}** <br> `{File Path}` | {Concise summary of the changes in this file. Focus on business logic and behavior changes.} |
+| ... | ... |
+
+## Sequence Diagram(s)
+
+{If the changes involve interaction between multiple components, user flows, or complex logic, provide a Mermaid sequence diagram. If not applicable, omit this section or provide a simple class diagram if relevant.}
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant ComponentA
+    participant ComponentB
+    ...
+```
+
+<!-- walkthrough_end -->
 
 ## Output Requirements
 
-- Use proper Markdown formatting
-- Start with Summary, then list exactly 5 issues (or fewer if less than 5 significant issues exist)
-- Use clear section headers with emoji indicators (📊, 🚨)
-- Keep total output concise and focused
+- **Strictly follow the format above.**
+- The "Changes" table should group files logically if possible, or list them individually.
+- The Sequence Diagram is highly recommended for feature changes.
+- Do NOT list individual low-level code issues (typos, formatting) in this phase. Focus on the *structure* and *intent*.
 """.trimIndent()
 
     val ZH = """
-# 代码审查分析
+# 代码审查 - 第一阶段：流程与总结
 
-你是一位专业的代码审查专家。分析提供的代码和 linter 结果，识别 **优先级最高的前 10 个问题**。
+你是一位专业的代码审查专家。你的任务是提供变更的高级流程演练，总结意图、实现细节和流程。
 
 ## 可用工具
 
@@ -137,32 +148,43 @@ ${'$'}{diffContext}
 
 ## 你的任务
 
-### ⚠️ 最高优先级问题（最多 5 个）
-仅列出 CRITICAL/HIGH 问题，使用此简洁格式：
+按照以下格式生成变更的综合摘要。
 
-#### #{编号}. {标题}
-**严重性**: CRITICAL | HIGH  
-**位置**: `{文件}:{行号}` 在 `{方法/类}`  
-**问题**: {一句话描述}  
-**修复**: {一句话建议}
+**输出格式**：
 
-1. **按严重性排序**（使用严格标准）：
-   - **CRITICAL**：仅用于必然导致安全漏洞、数据丢失或系统崩溃的问题
-     - 示例：SQL 注入、泄露的密钥、关键路径中的空指针解引用
-   - **HIGH**：必然导致错误行为或显著性能下降的问题
-     - 示例：产生错误结果的逻辑错误、资源泄漏、竞态条件
-   - **MEDIUM**：在特定条件下可能导致问题
-     - 示例：缺少错误处理、次优算法、缺少验证
-   - **LOW/INFO**：不影响功能的代码质量问题
-     - 示例：代码重复、轻微样式不一致、缺少注释
-3. **严重性评估规则**：
-   - 除非有明确的 critical/high 影响证据，否则默认为 MEDIUM
-   - Linter 警告应为 LOW/INFO，除非它们指示实际的 bug
-   - 样式问题、命名约定、格式化 → 始终为 LOW/INFO
-   - 缺少空检查 → MEDIUM（除非证明会导致崩溃 → HIGH）
-   - 性能问题 → MEDIUM（除非通过测量证明是瓶颈 → HIGH）
-4. **具体说明**：始终引用确切的 文件:行号 位置
+<!-- walkthrough_start -->
 
+## Walkthrough
+
+{提供 PR/变更的高级摘要。解释变更的“原因”和“内容”。提及关键架构决策、新组件或重大重构。保持在 2-3 段。}
+
+## Changes
+
+| 模块 / 文件 | 摘要 |
+|---|---|
+| **{组件名称}** <br> `{文件路径}` | {该文件中变更的简要摘要。关注业务逻辑和行为变更。} |
+| ... | ... |
+
+## Sequence Diagram(s)
+
+{如果变更涉及多个组件之间的交互、用户流程或复杂逻辑，请提供 Mermaid 时序图。如果不适用，可以省略此部分或提供简单的类图。}
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant ComponentA
+    participant ComponentB
+    ...
+```
+
+<!-- walkthrough_end -->
+
+## 输出要求
+
+- **严格遵循上述格式。**
+- “Changes”表应尽可能按逻辑分组文件，或单独列出。
+- 强烈建议对功能变更使用时序图。
+- 在此阶段**不要**列出个别的低级代码问题（拼写错误、格式化）。专注于**结构**和**意图**。
 """.trimIndent()
 }
 
