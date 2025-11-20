@@ -80,9 +80,9 @@ private fun ThreeColumnLayout(
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     ResizableSplitPane(
         modifier = Modifier.fillMaxSize(),
-        initialSplitRatio = 0.25f,
-        minRatio = 0.15f,
-        maxRatio = 0.4f,
+        initialSplitRatio = 0.18f,
+        minRatio = 0.12f,
+        maxRatio = 0.35f,
         first = {
             // Left: Commit history list
             CommitListView(
@@ -109,9 +109,9 @@ private fun ThreeColumnLayout(
             // Center + Right: Diff view and AI messages
             ResizableSplitPane(
                 modifier = Modifier.fillMaxSize(),
-                initialSplitRatio = 0.55f,
-                minRatio = 0.3f,
-                maxRatio = 0.8f,
+                initialSplitRatio = 0.35f,
+                minRatio = 0.25f,
+                maxRatio = 0.65f,
                 first = {
                     // Center: Diff viewer
                     var fileToView by remember { mutableStateOf<String?>(null) }

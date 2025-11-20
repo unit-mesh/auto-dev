@@ -78,9 +78,9 @@ Generate a comprehensive summary of the changes in the following format.
 ```markdown
 ## Changes
 
-| Cohort / File(s) | Summary |
-|---|---|
-| **{Component Name}** <br> `{File Path}` | {Concise summary of changes. Focus on business logic and behavior.} |
+| Cohort |File(s) | Summary |
+|---|---|---|
+| **{Component Name}** | `{File Path}` | {Concise summary of changes. Focus on business logic and behavior.} |
 ```
 
 **Step 4: Sequence Diagram (IF APPLICABLE)**
@@ -119,11 +119,11 @@ The key architectural decision was to use a sealed interface design for artifact
 
 ## Changes
 
-| Cohort / File(s) | Summary |
-|---|---|
-| **Artifact Model** <br> `mpp-core/.../CodeReviewArtifact.kt` | Introduces sealed CodeReviewArtifact interface and six data classes: ReviewPlanArtifact, AnalysisSummaryArtifact, VisualProofArtifact, FixSuggestionArtifact, MetricsReportArtifact, IssueTrackingArtifact. Supports kotlinx.serialization and toMarkdown() formatting. |
-| **Agent Manager** <br> `mpp-core/.../CodeReviewAgentManager.kt` | Implements async review execution, session tracking via StateFlow, lifecycle management. Provides submitReview(), submitParallelReviews(), cancelReview() methods. |
-| **Templates** <br> `mpp-core/.../CodeReviewAgentTemplate.kt` | Refactored to three-phase workflow (Strategic Planning, Information Gathering, Analysis Generation). Establishes standardized severity taxonomy (CRITICAL/HIGH/MEDIUM/LOW). |
+| Cohort | File(s) | Summary |
+|---|---|---|
+| **Artifact Model** | `mpp-core/.../CodeReviewArtifact.kt` | Introduces sealed CodeReviewArtifact interface and six data classes: ReviewPlanArtifact, AnalysisSummaryArtifact, VisualProofArtifact, FixSuggestionArtifact, MetricsReportArtifact, IssueTrackingArtifact. Supports kotlinx.serialization and toMarkdown() formatting. |
+| **Agent Manager** | `mpp-core/.../CodeReviewAgentManager.kt` | Implements async review execution, session tracking via StateFlow, lifecycle management. Provides submitReview(), submitParallelReviews(), cancelReview() methods. |
+| **Templates** | `mpp-core/.../CodeReviewAgentTemplate.kt` | Refactored to three-phase workflow (Strategic Planning, Information Gathering, Analysis Generation). Establishes standardized severity taxonomy (CRITICAL/HIGH/MEDIUM/LOW). |
 
 ## Sequence Diagram(s)
 
@@ -244,9 +244,9 @@ ${'$'}{diffContext}
 ```markdown
 ## Changes
 
-| 模块 / 文件 | 摘要 |
+| 模块 | 文件 | 摘要 |
 |---|---|
-| **{组件名称}** <br> `{文件路径}` | {该文件中变更的简要摘要。关注业务逻辑和行为变更。} |
+| **{组件名称}**  | `{文件路径}` | {该文件中变更的简要摘要。关注业务逻辑和行为变更。} |
 ```
 
 **第四步：Sequence Diagram（如适用）**
@@ -285,11 +285,11 @@ sequenceDiagram
 
 ## Changes
 
-| 模块 / 文件 | 摘要 |
-|---|---|
-| **Artifact Model** <br> `mpp-core/.../CodeReviewArtifact.kt` | 引入 sealed CodeReviewArtifact 接口和六个数据类：ReviewPlanArtifact、AnalysisSummaryArtifact、VisualProofArtifact、FixSuggestionArtifact、MetricsReportArtifact、IssueTrackingArtifact。支持 kotlinx.serialization 和 toMarkdown() 格式化。 |
-| **Agent Manager** <br> `mpp-core/.../CodeReviewAgentManager.kt` | 实现异步审查执行、会话跟踪（StateFlow）、生命周期管理。提供 submitReview()、submitParallelReviews()、cancelReview() 等方法。 |
-| **Templates** <br> `mpp-core/.../CodeReviewAgentTemplate.kt` | 重构为三阶段工作流（战略规划、信息收集、分析生成）。建立标准化严重性分类（CRITICAL/HIGH/MEDIUM/LOW）。 |
+| 模块 | 文件 | 摘要 |
+|---|---|---|
+| **Artifact Model** | `mpp-core/.../CodeReviewArtifact.kt` | 引入 sealed CodeReviewArtifact 接口和六个数据类：ReviewPlanArtifact、AnalysisSummaryArtifact、VisualProofArtifact、FixSuggestionArtifact、MetricsReportArtifact、IssueTrackingArtifact。支持 kotlinx.serialization 和 toMarkdown() 格式化。 |
+| **Agent Manager** | `mpp-core/.../CodeReviewAgentManager.kt` | 实现异步审查执行、会话跟踪（StateFlow）、生命周期管理。提供 submitReview()、submitParallelReviews()、cancelReview() 等方法。 |
+| **Templates** | `mpp-core/.../CodeReviewAgentTemplate.kt` | 重构为三阶段工作流（战略规划、信息收集、分析生成）。建立标准化严重性分类（CRITICAL/HIGH/MEDIUM/LOW）。 |
 
 ## Sequence Diagram(s)
 

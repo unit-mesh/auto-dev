@@ -88,7 +88,7 @@ fun CommitListView(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(8.dp)
+            .padding(6.dp)
     ) {
         val displayText = when {
             totalCommitCount != null -> "Commits (${commits.size}/$totalCommitCount)"
@@ -98,10 +98,10 @@ fun CommitListView(
 
         Text(
             text = displayText,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Companion.Bold,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp)
         )
 
         HorizontalDivider(
@@ -172,13 +172,13 @@ fun CommitListItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
+                .padding(8.dp)
         ) {
             // Commit message (first line)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Companion.CenterVertically
+                verticalAlignment = Alignment.Companion.Top
             ) {
                 Text(
                     text = commit.message.lines().firstOrNull() ?: commit.message,
@@ -201,27 +201,46 @@ fun CommitListItem(
                             text = prNumber,
                             style = MaterialTheme.typography.labelSmall,
                             color = AutoDevColors.Indigo.c600,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            // Author and timestamp
+            // Author, hash and timestamp in one compact row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Companion.CenterVertically
             ) {
-                Text(
-                    text = commit.author,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Companion.Ellipsis
-                )
+                // Author and hash together
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.Companion.CenterVertically,
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    Text(
+                        text = commit.author,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Companion.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                    Text(
+                        text = commit.shortHash,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = FontFamily.Companion.Monospace,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                }
 
                 Text(
                     text = formatRelativeTime(commit.timestamp),
@@ -229,15 +248,6 @@ fun CommitListItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
-
-            // Short hash
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = commit.shortHash,
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = FontFamily.Companion.Monospace,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
         }
     }
 }
