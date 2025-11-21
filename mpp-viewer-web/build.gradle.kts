@@ -1,3 +1,10 @@
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import java.net.URL
+
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
@@ -54,5 +61,52 @@ kotlin {
             }
         }
     }
+}
+
+// Task to download Mermaid.js library
+abstract class DownloadMermaidTask : DefaultTask() {
+    @get:Input
+    val mermaidVersion = "11.4.0"
+    
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+    
+    @TaskAction
+    fun download() {
+        val output = outputFile.get().asFile
+        
+        if (output.exists()) {
+            logger.lifecycle("Mermaid.js already exists: ${output.absolutePath}")
+            return
+        }
+        
+        output.parentFile.mkdirs()
+        
+        logger.lifecycle("Downloading mermaid.min.js version $mermaidVersion...")
+        val jsUrl = "https://cdn.jsdelivr.net/npm/mermaid@$mermaidVersion/dist/mermaid.min.js"
+        
+        try {
+            URL(jsUrl).openStream().use { input ->
+                output.outputStream().use { outputStream ->
+                    input.copyTo(outputStream)
+                }
+            }
+            logger.lifecycle("Downloaded: ${output.absolutePath}")
+        } catch (e: Exception) {
+            logger.error("Failed to download Mermaid.js: ${e.message}")
+            throw e
+        }
+    }
+}
+
+val downloadMermaid = tasks.register<DownloadMermaidTask>("downloadMermaid") {
+    group = "build"
+    description = "Download Mermaid.js library"
+    outputFile.set(file("src/commonMain/resources/mermaid/mermaid.min.js"))
+}
+
+// Make jvmProcessResources depend on downloadMermaid
+tasks.named("jvmProcessResources") {
+    dependsOn(downloadMermaid)
 }
 

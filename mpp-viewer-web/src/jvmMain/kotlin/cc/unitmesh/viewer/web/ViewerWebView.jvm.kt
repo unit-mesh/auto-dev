@@ -4,22 +4,16 @@ package cc.unitmesh.viewer.web
  * JVM implementation: Load viewer HTML from resources
  */
 actual fun getViewerHtml(): String {
-    println("[ViewerWebView.jvm] Loading viewer.html from resources")
-    
     return try {
-        // Try to load from resources
         val resource = object {}.javaClass.getResource("/viewer.html")
         
         if (resource != null) {
             val html = resource.readText()
-            println("[ViewerWebView.jvm] Successfully loaded viewer.html (${html.length} chars)")
             html
         } else {
-            println("[ViewerWebView.jvm] WARNING: viewer.html not found in resources, using fallback")
             getFallbackHtml()
         }
     } catch (e: Exception) {
-        println("[ViewerWebView.jvm] ERROR loading viewer.html: ${e.message}")
         e.printStackTrace()
         getFallbackHtml()
     }
@@ -132,4 +126,5 @@ private fun getFallbackHtml(): String {
 </html>
     """.trimIndent()
 }
+
 

@@ -109,6 +109,16 @@ object SketchRenderer : BaseContentRenderer() {
                         }
                     }
 
+                    "mermaid", "mmd" -> {
+                        if (fence.text.isNotBlank()) {
+                            MermaidBlockRenderer(
+                                mermaidCode = fence.text,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
                     else -> {
                         CodeBlockRenderer(
                             code = fence.text,
