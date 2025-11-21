@@ -2,6 +2,7 @@ package cc.unitmesh.devins.ui.compose.sketch
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -56,14 +57,21 @@ actual object MarkdownSketchRenderer {
                 codeFence = {
                     val style = LocalMarkdownTypography.current.code
                     MarkdownCodeFence(it.content, it.node, style) { code, language, style ->
-                        /// render mermaid in here
-                        MarkdownHighlightedCode(
-                            code = code,
-                            language = language,
-                            style = style,
-                            highlightsBuilder = highlightsBuilder,
-                            showHeader = true,
-                        )
+                        // Render mermaid diagrams with MermaidRenderer
+                        if (language?.lowercase() == "mermaid") {
+                            cc.unitmesh.viewer.web.MermaidRenderer(
+                                mermaidCode = code,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            MarkdownHighlightedCode(
+                                code = code,
+                                language = language,
+                                style = style,
+                                highlightsBuilder = highlightsBuilder,
+                                showHeader = true,
+                            )
+                        }
                     }
                 },
             ),

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mermaid Diagram Viewer</title>
+    <title>Mermaid Viewer</title>
     <style>
         * {
             margin: 0;
@@ -11,393 +11,106 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background: #1e1e1e;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: transparent;
             color: #d4d4d4;
-            overflow: hidden;
-        }
-        #container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        #header {
-            padding: 12px 16px;
-            border-bottom: 1px solid #3c3c3c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #252526;
-        }
-        #header .title {
-            color: #cccccc;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        #header .actions {
-            display: flex;
-            gap: 8px;
-        }
-        #header button {
-            padding: 4px 12px;
-            background: #0e639c;
-            color: white;
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background 0.2s;
-        }
-        #header button:hover {
-            background: #1177bb;
-        }
-        #header button:active {
-            background: #0d5a8f;
+            overflow: auto;
         }
         #mermaidContainer {
-            flex: 1;
-            overflow: auto;
-            padding: 20px;
+            padding: 16px;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #1e1e1e;
         }
-        .loading {
+        .mermaid {
+            width: 100%;
             display: flex;
-            align-items: center;
             justify-content: center;
-            height: 100%;
-            font-size: 14px;
-            flex-direction: column;
-            gap: 16px;
-            color: #858585;
         }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #333;
-            border-top-color: #007acc;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .mermaid > svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
         }
         .error {
             color: #f48771;
-            text-align: center;
-            padding: 20px;
-        }
-        .error-details {
-            margin-top: 16px;
-            padding: 16px;
-            background: #2d2d30;
-            border-radius: 4px;
-            text-align: left;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 12px;
-            max-width: 600px;
-            overflow-x: auto;
-        }
-        .error-details pre {
-            margin: 0;
+            font-family: monospace;
             white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .success {
-            color: #4ec9b0;
-        }
-        /* Mermaid diagram styling */
-        #mermaidContainer svg {
-            max-width: 100%;
-            height: auto;
+            padding: 16px;
+            background: rgba(244, 135, 113, 0.1);
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <div id="header">
-            <span class="title">Mermaid Diagram</span>
-            <div class="actions">
-                <button id="copyBtn" title="Copy diagram code">Copy Code</button>
-                <button id="exportBtn" title="Export as SVG">Export SVG</button>
-            </div>
-        </div>
-        <div id="mermaidContainer">
-            <div class="loading">
-                <div class="spinner"></div>
-                <div>Initializing Mermaid...</div>
-            </div>
-        </div>
-    </div>
+    <div id="mermaidContainer"></div>
 
-    <script>
-        // Immediate alert to verify JavaScript is executing
-        alert('JavaScript is running! Page loaded successfully!');
-        console.log('=== Mermaid HTML Script Starting ===');
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"></script>
     
     <script>
-        let currentMermaidCode = '';
-        let isMermaidReady = false;
-        
-        // Log function for debugging
-        function log(message, data) {
-            const logMessage = data ? `${message}: ${JSON.stringify(data)}` : message;
-            console.log(`[Mermaid] ${logMessage}`);
-            
-            // Send to native code via JSBridge
-            try {
-                if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
-                    window.kmpJsBridge.callNative(
-                        'mermaidLog',
-                        logMessage,
-                        function(result) { console.log('Log sent:', result); }
-                    );
-                }
-            } catch (e) {
-                console.error('Failed to send log:', e);
-            }
-        }
-
-        log('HTML loaded, starting initialization');
-        alert('Mermaid HTML: Page loaded!');
-
-        // Initialize Mermaid from CDN (for now, until we fix local resource loading)
-        function loadMermaid() {
-            log('Loading Mermaid.js from CDN...');
-            alert('Loading Mermaid.js from CDN...');
-            
-            const cdnScript = document.createElement('script');
-            cdnScript.src = 'https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js';
-            cdnScript.onload = function() {
-                alert('Mermaid.js loaded successfully!');
-                initializeMermaid();
-            };
-            cdnScript.onerror = function(error) {
-                const errorMsg = 'Failed to load Mermaid.js from CDN: ' + (error.message || 'Unknown error');
-                alert(errorMsg);
-                showError(errorMsg);
-            };
-            document.head.appendChild(cdnScript);
-        }
-
-        // Initialize Mermaid configuration
-        function initializeMermaid() {
-            try {
-                log('Initializing Mermaid with dark theme');
-                mermaid.initialize({ 
-                    startOnLoad: false,
-                    theme: 'dark',
-                    themeVariables: {
-                        darkMode: true,
-                        background: '#1e1e1e',
-                        primaryColor: '#007acc',
-                        primaryTextColor: '#d4d4d4',
-                        primaryBorderColor: '#3c3c3c',
-                        lineColor: '#858585',
-                        secondaryColor: '#2d2d30',
-                        tertiaryColor: '#252526',
-                        fontSize: '16px'
-                    },
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                    logLevel: 'debug',
-                    securityLevel: 'loose'
-                });
-                
-                isMermaidReady = true;
-                log('Mermaid initialized successfully');
-                alert('Mermaid: Initialized successfully!');
-                
-                // Clear loading state
-                document.getElementById('mermaidContainer').innerHTML = 
-                    '<div class="loading success">✓ Mermaid ready</div>';
-                
-                // Notify native code that we're ready
-                try {
-                    if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
-                        window.kmpJsBridge.callNative(
-                            'mermaidReady',
-                            'true',
-                            function(result) { console.log('Ready sent:', result); }
-                        );
-                    }
-                } catch (e) {
-                    console.error('Failed to send ready:', e);
-                }
-            } catch (e) {
-                log('Failed to initialize Mermaid', e.message);
-                alert('Mermaid ERROR: ' + e.message);
-                showError('Failed to initialize Mermaid: ' + e.message);
-                try {
-                    if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
-                        window.kmpJsBridge.callNative(
-                            'mermaidReady',
-                            'false',
-                            function(result) { console.log('Error sent:', result); }
-                        );
-                    }
-                } catch (err) {
-                    console.error('Failed to send error:', err);
-                }
-            }
-        }
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: false,
+            theme: 'dark',
+            themeVariables: {
+                darkMode: true,
+                background: 'transparent',
+                primaryColor: '#007acc',
+                primaryTextColor: '#d4d4d4',
+                primaryBorderColor: '#3c3c3c',
+                lineColor: '#858585',
+                secondaryColor: '#2d2d30',
+                tertiaryColor: '#252526',
+                fontSize: '14px'
+            },
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            securityLevel: 'loose'
+        });
 
         /**
          * Render Mermaid diagram
          * @param {string} code - Mermaid diagram code
          */
         window.renderMermaid = async function(code) {
-            log('renderMermaid called', { codeLength: code.length });
-            alert('renderMermaid called! Code length: ' + code.length);
-            
-            if (!isMermaidReady) {
-                log('Mermaid not ready yet');
-                alert('ERROR: Mermaid not ready yet!');
-                showError('Mermaid is not ready. Please wait...');
-                return;
-            }
-
-            currentMermaidCode = code;
             const container = document.getElementById('mermaidContainer');
             
-            // Show loading
-            container.innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div>Rendering diagram...</div>
-                </div>
-            `;
-
             try {
-                log('Rendering diagram...');
-                alert('Starting to render diagram...');
-                
-                // Generate unique ID for this diagram
                 const diagramId = 'mermaid-' + Date.now();
-                
-                // Render the diagram
                 const { svg } = await mermaid.render(diagramId, code);
                 
-                log('Diagram rendered successfully', { svgLength: svg.length });
-                alert('SUCCESS! Diagram rendered! SVG length: ' + svg.length);
-                
-                // Display the rendered SVG
                 container.innerHTML = svg;
                 
                 // Notify native code of success
-                try {
-                    if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
-                        window.kmpJsBridge.callNative(
-                            'mermaidRenderCallback',
-                            JSON.stringify({ success: true, message: 'Diagram rendered successfully' }),
-                            function(result) { console.log('Render success sent:', result); }
-                        );
-                    }
-                } catch (e) {
-                    console.error('Failed to send render success:', e);
+                if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                    window.kmpJsBridge.callNative(
+                        'mermaidRenderCallback',
+                        JSON.stringify({ success: true }),
+                        function() {}
+                    );
                 }
                 
-            } catch (error) {
-                log('Failed to render diagram', error.message);
-                alert('ERROR rendering diagram: ' + error.message);
-                showError('Failed to render diagram: ' + error.message, code);
-                
-                // Notify native code of error
-                try {
-                    if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
-                        window.kmpJsBridge.callNative(
-                            'mermaidRenderCallback',
-                            JSON.stringify({ success: false, message: error.message }),
-                            function(result) { console.log('Render error sent:', result); }
-                        );
+                // Auto-adjust height
+                setTimeout(() => {
+                    const svg = container.querySelector('svg');
+                    if (svg) {
+                        const height = svg.getBoundingClientRect().height;
+                        document.body.style.height = Math.max(height + 32, 200) + 'px';
                     }
-                } catch (e) {
-                    console.error('Failed to send render error:', e);
+                }, 100);
+                
+            } catch (error) {
+                container.innerHTML = `<div class="error">Failed to render diagram:\n${error.message}</div>`;
+                
+                if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                    window.kmpJsBridge.callNative(
+                        'mermaidRenderCallback',
+                        JSON.stringify({ success: false, message: error.message }),
+                        function() {}
+                    );
                 }
             }
         };
-
-        /**
-         * Show error message
-         */
-        function showError(message, code) {
-            const container = document.getElementById('mermaidContainer');
-            container.innerHTML = `
-                <div class="error">
-                    <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-                    <div style="font-size: 16px; margin-bottom: 8px;">Error</div>
-                    <div style="font-size: 13px;">${escapeHtml(message)}</div>
-                    ${code ? `
-                        <div class="error-details">
-                            <pre>${escapeHtml(code)}</pre>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        /**
-         * Escape HTML to prevent XSS
-         */
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        /**
-         * Copy diagram code to clipboard
-         */
-        document.getElementById('copyBtn').addEventListener('click', function() {
-            if (!currentMermaidCode) {
-                log('No diagram code to copy');
-                return;
-            }
-            
-            navigator.clipboard.writeText(currentMermaidCode).then(() => {
-                log('Code copied to clipboard');
-                this.textContent = 'Copied!';
-                setTimeout(() => {
-                    this.textContent = 'Copy Code';
-                }, 2000);
-            }).catch(err => {
-                log('Failed to copy', err.message);
-                this.textContent = 'Failed';
-                setTimeout(() => {
-                    this.textContent = 'Copy Code';
-                }, 2000);
-            });
-        });
-
-        /**
-         * Export diagram as SVG
-         */
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            const svg = document.querySelector('#mermaidContainer svg');
-            if (!svg) {
-                log('No diagram to export');
-                return;
-            }
-            
-            const svgData = new XMLSerializer().serializeToString(svg);
-            const blob = new Blob([svgData], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'mermaid-diagram.svg';
-            a.click();
-            
-            URL.revokeObjectURL(url);
-            log('Diagram exported as SVG');
-        });
-
-        // Start loading Mermaid
-        loadMermaid();
     </script>
 </body>
 </html>
-

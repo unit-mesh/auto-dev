@@ -22,14 +22,9 @@ import java.io.File
 import kotlin.math.max
 
 fun main() = application {
-    // Add temp directory removal hook for cleanup
-    Runtime.getRuntime().addShutdownHook(Thread {
-        println("[MermaidPreview] Cleaning up KCEF...")
-    })
-
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Mermaid Renderer Test with KCEF",
+        title = "Mermaid Renderer",
         state = rememberWindowState(width = 1200.dp, height = 800.dp)
     ) {
         var restartRequired by remember { mutableStateOf(false) }
@@ -40,16 +35,13 @@ fun main() = application {
         // Initialize KCEF
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
-                println("[MermaidPreview] Starting KCEF initialization...")
                 KCEF.init(builder = {
                     installDir(File("kcef-bundle"))
                     progress {
                         onDownloading {
                             downloading = max(it, 0F)
-                            println("[MermaidPreview] Downloading KCEF: $it%")
                         }
                         onInitialized {
-                            println("[MermaidPreview] KCEF initialized successfully!")
                             initialized = true
                         }
                     }
@@ -57,19 +49,15 @@ fun main() = application {
                         cachePath = File("kcef-cache").absolutePath
                     }
                 }, onError = {
-                    it?.printStackTrace()
                     error = "KCEF initialization failed: ${it?.message}"
-                    println("[MermaidPreview] ERROR: ${it?.message}")
                 }, onRestartRequired = {
                     restartRequired = true
-                    println("[MermaidPreview] Restart required!")
                 })
             }
         }
 
         DisposableEffect(Unit) {
             onDispose {
-                println("[MermaidPreview] Disposing KCEF...")
                 KCEF.disposeBlocking()
             }
         }
@@ -112,7 +100,6 @@ fun main() = application {
                         }
                     }
                     else -> {
-                        println("[MermaidPreview] KCEF ready, showing MermaidRenderer")
                         MainMermaidContent()
                     }
                 }
@@ -132,15 +119,10 @@ fun MainMermaidContent() {
             D --> B
     """.trimIndent()
 
-    println("[MainMermaidContent] Rendering with code: ${examples.take(50)}...")
-
     Row(modifier = Modifier.fillMaxSize()) {
         MermaidRenderer(
             mermaidCode = examples,
-            modifier = Modifier.fillMaxSize(),
-            onRenderComplete = { success, message ->
-                println("[MainMermaidContent] Render complete: success=$success, message=$message")
-            }
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
