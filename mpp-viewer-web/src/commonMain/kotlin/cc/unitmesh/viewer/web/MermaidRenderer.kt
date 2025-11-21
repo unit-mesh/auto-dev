@@ -3,7 +3,9 @@ package cc.unitmesh.viewer.web
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -36,8 +38,10 @@ fun MermaidRenderer(
     modifier: Modifier = Modifier,
     onRenderComplete: ((success: Boolean, message: String) -> Unit)? = null
 ) {
+    val data = getMermaidHtml()
+    println(data)
     val webViewState = rememberWebViewStateWithHTMLData(
-        data = getMermaidHtml()
+        data = data
     )
 
     val webViewNavigator = rememberWebViewNavigator()
@@ -60,6 +64,7 @@ fun MermaidRenderer(
     }
 
     LaunchedEffect(webViewState.isLoading, mermaidCode, isDarkTheme) {
+        println(webViewState.loadingState)
         if (!webViewState.isLoading && webViewState.loadingState is com.multiplatform.webview.web.LoadingState.Finished) {
             // Small delay to ensure everything is initialized
             kotlinx.coroutines.delay(500)
@@ -72,7 +77,7 @@ fun MermaidRenderer(
                 .replace("\n", "\\n")
 
             val theme = if (isDarkTheme) "dark" else "default"
-            
+
             val jsCode = """
                 if (typeof renderMermaid === 'function') {
                     renderMermaid(`$escapedCode`, '$theme');
@@ -86,10 +91,10 @@ fun MermaidRenderer(
     WebView(
         state = webViewState,
         navigator = webViewNavigator,
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize()
+            .width(300.dp)
+            .height(300.dp),
         captureBackPresses = false,
         webViewJsBridge = jsBridge
     )
 }
-
-

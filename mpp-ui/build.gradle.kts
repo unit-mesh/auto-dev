@@ -584,3 +584,17 @@ tasks.matching {
 tasks.matching { it.name.contains("compileKotlinWasm") }.configureEach {
     mustRunAfter("downloadWasmFonts")
 }
+
+// Configure JVM args for all JavaExec tasks (required for KCEF/WebView on desktop)
+// This ensures that when running with `./gradlew :mpp-ui:run`, JCEF can access AWT internals
+afterEvaluate {
+    tasks.withType<JavaExec> {
+        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
+
+        if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+        }
+    }
+}

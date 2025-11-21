@@ -130,7 +130,6 @@ fun MainMermaidContent() {
             }
         }
         
-        // Mermaid diagram
         Box(modifier = Modifier.fillMaxSize()) {
             MermaidRenderer(
                 mermaidCode = examples,
