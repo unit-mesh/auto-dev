@@ -75,13 +75,51 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     actual fun isSupported(): Boolean = true
 
     /**
+     * Retry a suspend operation with exponential backoff
+     * @param maxAttempts Maximum number of retry attempts (default: 3)
+     * @param initialDelayMs Initial delay in milliseconds (default: 1000)
+     * @param maxDelayMs Maximum delay in milliseconds (default: 8000)
+     * @param factor Multiplier for exponential backoff (default: 2.0)
+     * @param operation The suspend operation to retry
+     * @return Result of the operation
+     * @throws Exception if all retry attempts fail
+     */
+    private suspend fun <T> retryWithExponentialBackoff(
+        maxAttempts: Int = 3,
+        initialDelayMs: Long = 1000,
+        maxDelayMs: Long = 8000,
+        factor: Double = 2.0,
+        operation: suspend (attempt: Int) -> T
+    ): T {
+        var currentDelay = initialDelayMs
+        var lastException: Throwable? = null
+
+        repeat(maxAttempts) { attempt ->
+            try {
+                return operation(attempt + 1)
+            } catch (e: Throwable) {
+                lastException = e
+                
+                if (attempt < maxAttempts - 1) {
+                    WasmConsole.warn("Attempt ${attempt + 1} failed: ${e.message}. Retrying in ${currentDelay}ms...")
+                    kotlinx.coroutines.delay(currentDelay)
+                    currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelayMs)
+                } else {
+                    WasmConsole.error("All $maxAttempts attempts failed. Last error: ${e.message}")
+                }
+            }
+        }
+
+        throw lastException ?: Exception("Operation failed after $maxAttempts attempts")
+    }
+
+    /**
      * Clone a git repository (Wasm-specific functionality)
      * @param repoUrl Repository URL (e.g., "https://github.com/user/repo.git")
      * @param targetDir Target directory name (optional, will be derived from URL if not provided)
      * @return true if successful
      */
     suspend fun clone(repoUrl: String, targetDir: String? = null): Boolean {
-        val repoUrl = "https://cors-anywhere.com/$repoUrl"
         initialize()
 
         val module = lg2Module ?: return false
@@ -90,23 +128,37 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val dir = targetDir ?: repoUrl.substringAfterLast('/').removeSuffix(".git")
             WasmConsole.log("Cloning $repoUrl into $dir...")
 
-            commandOutputBuffer.clear()
-            val exitCode = module.callMain(jsArrayOf("clone", repoUrl, dir)).await<JsNumber>().toInt()
+            // Use retry mechanism for clone operation to handle transient network failures
+            retryWithExponentialBackoff(
+                maxAttempts = 3,
+                initialDelayMs = 1000,
+                maxDelayMs = 8000
+            ) { attempt ->
+                WasmConsole.log("Clone attempt $attempt...")
+                
+                // Use CORS proxy for cross-origin requests
+                val proxiedUrl = "https://cors-anywhere.com/$repoUrl"
+                
+                commandOutputBuffer.clear()
+                val exitCode = module.callMain(jsArrayOf("clone", proxiedUrl, dir)).await<JsNumber>().toInt()
 
-            if (exitCode == 0) {
-                WasmConsole.log("Clone successful")
-                // Change to cloned directory
-                module.FS.chdir(dir)
-                true
-            } else {
-                WasmConsole.error("Clone failed with exit code: $exitCode")
-                false
+                if (exitCode == 0) {
+                    WasmConsole.log("Clone successful")
+                    // Change to cloned directory
+                    module.FS.chdir(dir)
+                    true
+                } else {
+                    val errorMsg = "Clone failed with exit code: $exitCode"
+                    WasmConsole.error(errorMsg)
+                    throw Exception(errorMsg)
+                }
             }
         } catch (e: Throwable) {
-            WasmConsole.error("Clone error: ${e.message}")
+            WasmConsole.error("Clone error after all retries: ${e.message}")
             false
         }
     }
+
 
     actual suspend fun getModifiedFiles(): List<String> {
         initialize()
