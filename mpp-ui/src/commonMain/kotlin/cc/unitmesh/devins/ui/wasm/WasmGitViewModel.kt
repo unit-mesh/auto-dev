@@ -1,10 +1,11 @@
 package cc.unitmesh.devins.ui.wasm
 
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.agent.platform.GitCloneErrorType
+import cc.unitmesh.agent.platform.GitCloneException
 import cc.unitmesh.agent.platform.GitOperations
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,11 +82,6 @@ class WasmGitViewModel(
     private val _uiState = MutableStateFlow(WasmGitUiState())
     val uiState: StateFlow<WasmGitUiState> = _uiState.asStateFlow()
 
-    companion object {
-        private const val MAX_RETRY_ATTEMPTS = 3
-        private const val RETRY_DELAY_MS = 2000L
-    }
-
     init {
         addLog("Git client initialized", LogType.INFO)
         addLog("Default repository: ${_uiState.value.repoUrl}", LogType.DEBUG)
@@ -147,58 +143,71 @@ class WasmGitViewModel(
 
                 addLog("Git operations ready (using shared instance)", LogType.DEBUG)
 
-                // 执行克隆（带重试机制）
-                val targetDir = currentState.targetDir.ifBlank {
-                    null
-                }
+                // 执行克隆
+                val targetDir = currentState.targetDir.ifBlank { null }
 
                 addLog("Cloning repository: ${currentState.repoUrl}", LogType.INFO)
 
-                var success = false
-                var lastError: String? = null
+                try {
+                    val success = gitOperations.performClone(currentState.repoUrl, targetDir)
 
-                for (attempt in 1..MAX_RETRY_ATTEMPTS) {
-                    try {
-                        if (attempt > 1) {
-                            addLog(
-                                "Retry attempt $attempt/$MAX_RETRY_ATTEMPTS (waiting ${RETRY_DELAY_MS}ms)...",
-                                LogType.WARNING
-                            )
-                            delay(RETRY_DELAY_MS)
-                        }
+                    if (success) {
+                        addLog("Clone completed successfully!", LogType.SUCCESS)
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            cloneSuccess = true
+                        )
 
-                        success = gitOperations.performClone(currentState.repoUrl, targetDir)
-
-                        if (success) {
-                            if (attempt > 1) {
-                                addLog("Clone succeeded on retry attempt $attempt", LogType.SUCCESS)
+                        // 自动获取提交历史
+                        fetchCommitHistory()
+                    }
+                } catch (e: GitCloneException) {
+                    // Handle specific Git clone errors with user-friendly messages
+                    val userMessage = when (e.errorType) {
+                        GitCloneErrorType.CORS_ERROR -> {
+                            addLog("All clone attempts failed", LogType.ERROR)
+                            
+                            // Show detailed errors from all attempts
+                            e.message?.let { msg ->
+                                msg.lines().forEach { line ->
+                                    if (line.isNotBlank()) {
+                                        addLog(line, LogType.WARNING)
+                                    }
+                                }
                             }
-                            break
-                        } else {
-                            lastError = "Clone operation returned false"
-                            if (attempt < MAX_RETRY_ATTEMPTS) {
-                                addLog("Clone attempt $attempt failed, will retry...", LogType.WARNING)
-                            }
+                            
+                            addLog("", LogType.INFO)
+                            addLog("Suggestions:", LogType.INFO)
+                            addLog("1. Download the repository as a ZIP file from GitHub", LogType.INFO)
+                            addLog("2. Use a backend proxy server", LogType.INFO)
+                            addLog("3. Clone on server side instead of in browser", LogType.INFO)
+                            
+                            "Clone failed due to CORS restrictions. Please download as ZIP or use a backend proxy."
                         }
-                    } catch (e: Exception) {
-                        lastError = e.message ?: "Unknown error"
-                        if (attempt < MAX_RETRY_ATTEMPTS) {
-                            addLog("Clone attempt $attempt failed: $lastError", LogType.WARNING)
+                        GitCloneErrorType.NETWORK_ERROR -> {
+                            addLog("Network error: ${e.message}", LogType.ERROR)
+                            addLog("Please check your internet connection", LogType.WARNING)
+                            
+                            "Network error: ${e.message}. Please check your connection and try again."
+                        }
+                        GitCloneErrorType.INITIALIZATION_ERROR -> {
+                            addLog("Git initialization failed: ${e.message}", LogType.ERROR)
+                            
+                            "Git module failed to initialize. Please refresh the page and try again."
+                        }
+                        GitCloneErrorType.CLONE_FAILED -> {
+                            addLog("Clone failed: ${e.message}", LogType.ERROR)
+                            
+                            "Clone failed: ${e.message}"
                         }
                     }
-                }
-
-                if (success) {
-                    addLog("Clone completed successfully!", LogType.SUCCESS)
+                    
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        cloneSuccess = true
+                        errorMessage = userMessage
                     )
-
-                    // 自动获取提交历史
-                    fetchCommitHistory()
-                } else {
-                    val errorMsg = "Clone failed after $MAX_RETRY_ATTEMPTS attempts${lastError?.let { ": $it" } ?: ""}"
+                } catch (e: Exception) {
+                    val errorMsg = "Unexpected error: ${e.message ?: "Unknown error"}"
                     addLog(errorMsg, LogType.ERROR)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -206,7 +215,7 @@ class WasmGitViewModel(
                     )
                 }
             } catch (e: Exception) {
-                val errorMsg = "Exception: ${e.message ?: "Unknown error"}"
+                val errorMsg = "Failed to start clone: ${e.message ?: "Unknown error"}"
                 addLog(errorMsg, LogType.ERROR)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,

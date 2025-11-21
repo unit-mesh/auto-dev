@@ -24,9 +24,15 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     actual suspend fun performClone(repoUrl: String, targetDir: String?): Boolean {
         return try {
             this.clone(repoUrl, targetDir)
+        } catch (e: GitCloneException) {
+            WasmConsole.error("Clone error (${e.errorType}): ${e.message}")
+            throw e
         } catch (e: Throwable) {
             WasmConsole.error("Clone error: ${e.message ?: "Unknown error"}")
-            false
+            throw GitCloneException(
+                e.message ?: "Unknown error",
+                GitCloneErrorType.CLONE_FAILED
+            )
         }
     }
 
@@ -118,45 +124,69 @@ actual class GitOperations actual constructor(private val projectPath: String) {
      * @param repoUrl Repository URL (e.g., "https://github.com/user/repo.git")
      * @param targetDir Target directory name (optional, will be derived from URL if not provided)
      * @return true if successful
+     * @throws GitCloneException with detailed error message for UI to handle
      */
     suspend fun clone(repoUrl: String, targetDir: String? = null): Boolean {
         initialize()
 
-        val module = lg2Module ?: return false
+        val module = lg2Module ?: throw GitCloneException(
+            "Git module not initialized",
+            GitCloneErrorType.INITIALIZATION_ERROR
+        )
 
-        return try {
-            val dir = targetDir ?: repoUrl.substringAfterLast('/').removeSuffix(".git")
-            WasmConsole.log("Cloning $repoUrl into $dir...")
+        val dir = targetDir ?: repoUrl.substringAfterLast('/').removeSuffix(".git")
+        WasmConsole.log("Cloning $repoUrl into $dir...")
 
-            // Use retry mechanism for clone operation to handle transient network failures
-            retryWithExponentialBackoff(
-                maxAttempts = 3,
-                initialDelayMs = 1000,
-                maxDelayMs = 8000
-            ) { attempt ->
-                WasmConsole.log("Clone attempt $attempt...")
-                
-                // Use CORS proxy for cross-origin requests
-                val proxiedUrl = "https://cors-anywhere.com/$repoUrl"
-                
+        // List of CORS proxies to try, including direct access
+        val corsProxies = listOf(
+            CorsProxy("cors anywhere", "https://cors-anywhere.com/"),  // Try direct access first
+            CorsProxy("corsproxy.io", "https://corsproxy.io/?"),
+            CorsProxy("allorigins.win", "https://api.allorigins.win/raw?url="),
+        )
+
+        val errors = mutableListOf<String>()
+
+        // Try each CORS proxy with timeout
+        for (proxy in corsProxies) {
+            val url = if (proxy.prefix.isEmpty()) repoUrl else "${proxy.prefix}$repoUrl"
+            
+            try {
+                WasmConsole.log("Trying ${proxy.name}: $url")
                 commandOutputBuffer.clear()
-                val exitCode = module.callMain(jsArrayOf("clone", proxiedUrl, dir)).await<JsNumber>().toInt()
+                
+                // Short timeout per proxy attempt (10 seconds)
+                val result = kotlinx.coroutines.withTimeout(10000L) {
+                    module.callMain(jsArrayOf("clone", url, dir)).await<JsNumber>()
+                }
+                
+                val exitCode = result.toInt()
 
                 if (exitCode == 0) {
-                    WasmConsole.log("Clone successful")
-                    // Change to cloned directory
+                    WasmConsole.log("Clone successful using ${proxy.name}")
                     module.FS.chdir(dir)
-                    true
+                    return true
                 } else {
-                    val errorMsg = "Clone failed with exit code: $exitCode"
-                    WasmConsole.error(errorMsg)
-                    throw Exception(errorMsg)
+                    val error = "Exit code: $exitCode"
+                    errors.add("${proxy.name}: $error")
+                    WasmConsole.warn("Clone failed with ${proxy.name} ($error)")
                 }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                val error = "Timeout after 10s"
+                errors.add("${proxy.name}: $error")
+                WasmConsole.warn("Clone timeout with ${proxy.name}")
+            } catch (e: Throwable) {
+                val error = e.message ?: "Unknown error"
+                errors.add("${proxy.name}: $error")
+                WasmConsole.warn("Clone error with ${proxy.name}: $error")
             }
-        } catch (e: Throwable) {
-            WasmConsole.error("Clone error after all retries: ${e.message}")
-            false
         }
+
+        // All proxies failed
+        val errorSummary = errors.joinToString("\n")
+        throw GitCloneException(
+            "Failed to clone using all available methods:\n$errorSummary",
+            GitCloneErrorType.CORS_ERROR
+        )
     }
 
 
@@ -525,3 +555,13 @@ actual class GitOperations actual constructor(private val projectPath: String) {
 }
 
 fun debugObj(obj: LibGit2Module): Unit = js("console.log(obj)")
+
+/**
+ * CORS proxy configuration
+ * @param name Display name for logging
+ * @param prefix URL prefix to add before the repository URL (empty for direct access)
+ */
+private data class CorsProxy(
+    val name: String,
+    val prefix: String
+)

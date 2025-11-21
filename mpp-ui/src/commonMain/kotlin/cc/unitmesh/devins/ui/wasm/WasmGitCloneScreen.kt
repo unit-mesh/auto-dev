@@ -56,7 +56,7 @@ fun WasmGitCloneScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Git Repository Clone (WebAssembly) by https://cors-anywhere.com/") },
+                title = { Text("Git Repository Clone (WebAssembly) by CORS Server") },
                 actions = {
                     if (onClose != null) {
                         IconButton(onClick = onClose) {
