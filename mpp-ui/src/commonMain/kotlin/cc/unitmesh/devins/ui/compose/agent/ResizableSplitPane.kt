@@ -8,6 +8,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -30,6 +31,7 @@ import kotlin.math.roundToInt
  * @param minRatio The minimum split ratio for the first pane
  * @param maxRatio The maximum split ratio for the first pane
  * @param dividerWidth The width of the divider in dp
+ * @param saveKey Optional key for saving/restoring split ratio across app sessions. If null, state is not persisted.
  * @param first The first composable (left side)
  * @param second The second composable (right side)
  */
@@ -40,10 +42,16 @@ fun ResizableSplitPane(
     minRatio: Float = 0.2f,
     maxRatio: Float = 0.8f,
     dividerWidth: Int = 8,
+    saveKey: String? = null,
     first: @Composable () -> Unit,
     second: @Composable () -> Unit
 ) {
-    var splitRatio by remember { mutableStateOf(initialSplitRatio.coerceIn(minRatio, maxRatio)) }
+    // Use rememberSaveable when saveKey is provided for persistent state
+    var splitRatio by if (saveKey != null) {
+        rememberSaveable(key = saveKey) { mutableStateOf(initialSplitRatio.coerceIn(minRatio, maxRatio)) }
+    } else {
+        remember { mutableStateOf(initialSplitRatio.coerceIn(minRatio, maxRatio)) }
+    }
     var isDragging by remember { mutableStateOf(false) }
     var containerWidth by remember { mutableStateOf(0) }
     

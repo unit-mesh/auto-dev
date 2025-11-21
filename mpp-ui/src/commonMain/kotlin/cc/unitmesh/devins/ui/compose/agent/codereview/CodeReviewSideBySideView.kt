@@ -117,6 +117,7 @@ private fun ThreeColumnLayout(
         initialSplitRatio = 0.18f,
         minRatio = 0.12f,
         maxRatio = 0.35f,
+        saveKey = "code_review_outer_split",
         first = {
             // Left: Commit history list
             CommitListView(
@@ -146,6 +147,7 @@ private fun ThreeColumnLayout(
                 initialSplitRatio = 0.35f,
                 minRatio = 0.25f,
                 maxRatio = 0.65f,
+                saveKey = "code_review_inner_split",
                 first = {
                     // Center: Diff viewer
                     var fileToView by remember { mutableStateOf<String?>(null) }
