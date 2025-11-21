@@ -171,52 +171,65 @@ sealed class FileTreeNode(open val name: String, open val path: String) {
  * Build a simpler tree structure that groups files by directories
  */
 fun buildFileTreeStructure(files: List<DiffFileInfo>): List<FileTreeNode> {
-    val root = mutableMapOf<String, FileTreeNode.Directory>()
+    val rootDirectories = mutableMapOf<String, FileTreeNode.Directory>()
+    val rootFiles = mutableListOf<FileTreeNode.File>()
 
     files.forEach { fileInfo ->
         val segments = fileInfo.path.split("/")
 
         if (segments.size == 1) {
-            // File in root
-            root[segments[0]] = FileTreeNode.Directory(
+            // File in root - create File node, not Directory!
+            val fileNode = FileTreeNode.File(
                 name = segments[0],
                 path = fileInfo.path,
-                children = mutableListOf()
+                fileInfo = fileInfo
             )
+            rootFiles.add(fileNode)
         } else {
-            // File in subdirectory
+            // File in subdirectory - build directory tree
             var currentPath = ""
-            var currentLevel = root
+            var currentDir: FileTreeNode.Directory? = null
 
+            // Navigate/create directory structure
             for (i in 0 until segments.size - 1) {
                 val segment = segments[i]
                 currentPath = if (currentPath.isEmpty()) segment else "$currentPath/$segment"
 
-                if (!currentLevel.containsKey(segment)) {
-                    val dir = FileTreeNode.Directory(segment, currentPath)
-                    currentLevel[segment] = dir
-                }
+                if (i == 0) {
+                    // First level - check root directories
+                    if (!rootDirectories.containsKey(segment)) {
+                        rootDirectories[segment] = FileTreeNode.Directory(segment, currentPath)
+                    }
+                    currentDir = rootDirectories[segment]
+                } else {
+                    // Nested levels - check current directory's children
+                    val existingDir = currentDir!!.children
+                        .filterIsInstance<FileTreeNode.Directory>()
+                        .find { it.name == segment }
 
-                val dir = currentLevel[segment] as FileTreeNode.Directory
-                currentLevel = dir.children
-                    .filterIsInstance<FileTreeNode.Directory>()
-                    .associateBy { it.name }
-                    .toMutableMap()
+                    if (existingDir == null) {
+                        val newDir = FileTreeNode.Directory(segment, currentPath)
+                        currentDir.children.add(newDir)
+                        currentDir = newDir
+                    } else {
+                        currentDir = existingDir
+                    }
+                }
             }
 
             // Add file to its parent directory
             val fileName = segments.last()
             val fileNode = FileTreeNode.File(fileName, fileInfo.path, fileInfo)
-
-            // Find parent and add
-            val parentPath = segments.dropLast(1).joinToString("/")
-            val parent = findDirectoryByPath(root, parentPath)
-            parent?.children?.add(fileNode)
+            currentDir?.children?.add(fileNode)
         }
     }
 
-    return root.values
-        .sortedWith(compareBy({ it !is FileTreeNode.Directory }, { it.name }))
+    // Combine directories and files, directories first, then sorted by name
+    val allNodes = mutableListOf<FileTreeNode>()
+    allNodes.addAll(rootDirectories.values.sortedBy { it.name })
+    allNodes.addAll(rootFiles.sortedBy { it.name })
+
+    return allNodes
 }
 
 fun findDirectoryByPath(

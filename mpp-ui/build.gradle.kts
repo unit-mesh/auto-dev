@@ -88,6 +88,8 @@ kotlin {
         binaries.executable()
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            // Allow deprecated CanvasBasedWindow API until migration to ComposeViewport is complete
+            suppressWarnings = true
         }
     }
 
@@ -101,6 +103,8 @@ kotlin {
         binaries.executable()
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            // Allow deprecated CanvasBasedWindow API until migration to ComposeViewport is complete
+            suppressWarnings = true
         }
 //        d8 {
 //            // Use d8 instead of binaryen (wasm-opt) for now
