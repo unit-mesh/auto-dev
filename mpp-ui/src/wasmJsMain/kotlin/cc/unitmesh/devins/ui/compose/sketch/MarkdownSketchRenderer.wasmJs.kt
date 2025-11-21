@@ -196,11 +196,11 @@ actual object MarkdownSketchRenderer {
     @Composable
     actual fun RenderMarkdown(
         markdown: String,
+        isComplete: Boolean,
         isDarkTheme: Boolean,
         modifier: Modifier
     ) {
-        // 对于 JS 平台，使用简单的文本渲染
-        // 实际的 Markdown 渲染可以在 TypeScript/React 侧完成（针对 CLI）
+        // 对于 WASM 平台，使用简单的文本渲染
         SelectionContainer {
             Text(
                 text = markdown,

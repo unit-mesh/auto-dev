@@ -1,9 +1,14 @@
 package cc.unitmesh.viewer.web
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.multiplatform.webview.jsbridge.IJsMessageHandler
 import com.multiplatform.webview.jsbridge.JsMessage
 import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
@@ -20,12 +25,14 @@ import com.multiplatform.webview.web.rememberWebViewStateWithHTMLData
  * with local mermaid.js for fast rendering.
  *
  * @param mermaidCode The Mermaid diagram code to render
+ * @param isDarkTheme Whether to use dark theme
  * @param modifier The modifier for layout
  * @param onRenderComplete Callback when rendering completes (success/failure)
  */
 @Composable
 fun MermaidRenderer(
     mermaidCode: String,
+    isDarkTheme: Boolean = true,
     modifier: Modifier = Modifier,
     onRenderComplete: ((success: Boolean, message: String) -> Unit)? = null
 ) {
@@ -52,21 +59,23 @@ fun MermaidRenderer(
         })
     }
 
-    LaunchedEffect(webViewState.isLoading, mermaidCode) {
+    LaunchedEffect(webViewState.isLoading, mermaidCode, isDarkTheme) {
         if (!webViewState.isLoading && webViewState.loadingState is com.multiplatform.webview.web.LoadingState.Finished) {
             // Small delay to ensure everything is initialized
             kotlinx.coroutines.delay(500)
 
-            // Execute JavaScript to render the diagram
+            // Execute JavaScript to render the diagram with theme
             val escapedCode = mermaidCode
                 .replace("\\", "\\\\")
                 .replace("`", "\\`")
                 .replace("$", "\\$")
                 .replace("\n", "\\n")
 
+            val theme = if (isDarkTheme) "dark" else "default"
+            
             val jsCode = """
                 if (typeof renderMermaid === 'function') {
-                    renderMermaid(`$escapedCode`);
+                    renderMermaid(`$escapedCode`, '$theme');
                 }
             """.trimIndent()
 
@@ -74,13 +83,20 @@ fun MermaidRenderer(
         }
     }
 
-    WebView(
-        state = webViewState,
-        navigator = webViewNavigator,
-        modifier = modifier.fillMaxSize(),
-        captureBackPresses = false,
-        webViewJsBridge = jsBridge
-    )
+    /// padding 4px, white backgorund
+    Box(
+        modifier = modifier.fillMaxSize().padding(12.dp)
+                .background(androidx.compose.ui.graphics.Color.White),
+        contentAlignment = Alignment.Center,
+    ) {
+        WebView(
+            state = webViewState,
+            navigator = webViewNavigator,
+            modifier = modifier.fillMaxSize(),
+            captureBackPresses = false,
+            webViewJsBridge = jsBridge
+        )
+    }
 }
 
 

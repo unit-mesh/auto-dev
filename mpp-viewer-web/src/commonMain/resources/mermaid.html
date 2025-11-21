@@ -49,31 +49,110 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"></script>
     
     <script>
-        // Initialize Mermaid
-        mermaid.initialize({ 
-            startOnLoad: false,
-            theme: 'dark',
-            themeVariables: {
-                darkMode: true,
-                background: 'transparent',
-                primaryColor: '#007acc',
-                primaryTextColor: '#d4d4d4',
-                primaryBorderColor: '#3c3c3c',
-                lineColor: '#858585',
-                secondaryColor: '#2d2d30',
-                tertiaryColor: '#252526',
-                fontSize: '14px'
+        // Theme configurations based on IntelliJ IDEA color schemes
+        const themes = {
+            dark: {
+                theme: 'dark',
+                themeVariables: {
+                    darkMode: true,
+                    background: 'transparent',
+                    // Primary colors - based on Darcula scheme
+                    primaryColor: '#8888C6',
+                    primaryTextColor: '#d4d4d4',
+                    primaryBorderColor: '#6897BB',
+                    // Line and edge colors
+                    lineColor: '#0F9795',
+                    edgeLabelBackground: '#2d2d30',
+                    // Secondary colors
+                    secondaryColor: '#364135',
+                    secondaryTextColor: '#d4d4d4',
+                    secondaryBorderColor: '#3c3c3c',
+                    // Tertiary colors
+                    tertiaryColor: '#252526',
+                    tertiaryTextColor: '#d4d4d4',
+                    tertiaryBorderColor: '#3c3c3c',
+                    // Node colors
+                    nodeBorder: '#6897BB',
+                    mainBkg: '#2d2d30',
+                    // Text colors
+                    textColor: '#d4d4d4',
+                    titleColor: '#20999D',
+                    // Note colors
+                    noteBkgColor: '#364135',
+                    noteTextColor: '#d4d4d4',
+                    noteBorderColor: '#3c3c3c',
+                    // Font
+                    fontSize: '14px',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }
             },
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-            securityLevel: 'loose'
-        });
+            default: {
+                theme: 'default',
+                themeVariables: {
+                    darkMode: false,
+                    background: 'transparent',
+                    // Primary colors - based on IntelliJ Light scheme
+                    primaryColor: '#0033B3',
+                    primaryTextColor: '#000000',
+                    primaryBorderColor: '#174AD4',
+                    // Line and edge colors
+                    lineColor: '#008080',
+                    edgeLabelBackground: '#ffffff',
+                    // Secondary colors
+                    secondaryColor: '#EDFCED',
+                    secondaryTextColor: '#000000',
+                    secondaryBorderColor: '#cccccc',
+                    // Tertiary colors
+                    tertiaryColor: '#f5f5f5',
+                    tertiaryTextColor: '#000000',
+                    tertiaryBorderColor: '#cccccc',
+                    // Node colors
+                    nodeBorder: '#174AD4',
+                    mainBkg: '#ffffff',
+                    // Text colors
+                    textColor: '#000000',
+                    titleColor: '#007E8A',
+                    // Note colors
+                    noteBkgColor: '#EDFCED',
+                    noteTextColor: '#000000',
+                    noteBorderColor: '#cccccc',
+                    // Font
+                    fontSize: '14px',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }
+            }
+        };
+
+        let currentTheme = 'dark';
+
+        // Initialize with default theme
+        function initMermaid(themeName) {
+            currentTheme = themeName || 'dark';
+            const themeConfig = themes[currentTheme];
+            
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: themeConfig.theme,
+                themeVariables: themeConfig.themeVariables,
+                securityLevel: 'loose'
+            });
+        }
+
+        // Initialize with dark theme by default
+        initMermaid('dark');
 
         /**
          * Render Mermaid diagram
          * @param {string} code - Mermaid diagram code
+         * @param {string} themeName - Theme name ('dark' or 'default')
          */
-        window.renderMermaid = async function(code) {
+        window.renderMermaid = async function(code, themeName) {
             const container = document.getElementById('mermaidContainer');
+            
+            // Reinitialize if theme changed
+            if (themeName && themeName !== currentTheme) {
+                initMermaid(themeName);
+            }
             
             try {
                 const diagramId = 'mermaid-' + Date.now();

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import cc.unitmesh.agent.Platform
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
@@ -28,6 +29,7 @@ actual object MarkdownSketchRenderer {
     @Composable
     actual fun RenderMarkdown(
         markdown: String,
+        isComplete: Boolean,
         isDarkTheme: Boolean,
         modifier: Modifier
     ) {
@@ -57,19 +59,21 @@ actual object MarkdownSketchRenderer {
                 codeFence = {
                     val style = LocalMarkdownTypography.current.code
                     MarkdownCodeFence(it.content, it.node, style) { code, language, style ->
-                        // Render mermaid diagrams with MermaidRenderer
-                        if (language?.lowercase() == "mermaid") {
+                        // Only render mermaid diagrams when content is complete and on JVM platform
+                        // Show code block during streaming or for other languages
+                        MarkdownHighlightedCode(
+                            code = code,
+                            language = language,
+                            style = style,
+                            highlightsBuilder = highlightsBuilder,
+                            showHeader = true,
+                        )
+
+                        if (language?.lowercase() == "mermaid" && isComplete) {
                             cc.unitmesh.viewer.web.MermaidRenderer(
                                 mermaidCode = code,
+                                isDarkTheme = isDarkTheme,
                                 modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            MarkdownHighlightedCode(
-                                code = code,
-                                language = language,
-                                style = style,
-                                highlightsBuilder = highlightsBuilder,
-                                showHeader = true,
                             )
                         }
                     }

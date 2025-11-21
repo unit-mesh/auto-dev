@@ -1,10 +1,8 @@
 package cc.unitmesh.viewer.web
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,9 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.multiplatform.webview.web.WebView
-import com.multiplatform.webview.web.rememberWebViewNavigator
-import com.multiplatform.webview.web.rememberWebViewStateWithHTMLData
 import dev.datlag.kcef.KCEF
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -110,6 +105,9 @@ fun main() = application {
 
 @Composable
 fun MainMermaidContent() {
+    val systemIsDark = isSystemInDarkTheme()
+    var isDarkTheme by remember { mutableStateOf(systemIsDark) }
+    
     val examples = """
         graph TD
             A[Start] --> B{Is it working?}
@@ -119,11 +117,27 @@ fun MainMermaidContent() {
             D --> B
     """.trimIndent()
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        MermaidRenderer(
-            mermaidCode = examples,
-            modifier = Modifier.fillMaxSize()
-        )
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Theme toggle button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(onClick = { isDarkTheme = !isDarkTheme }) {
+                Text(if (isDarkTheme) "Switch to Light" else "Switch to Dark")
+            }
+        }
+        
+        // Mermaid diagram
+        Box(modifier = Modifier.fillMaxSize()) {
+            MermaidRenderer(
+                mermaidCode = examples,
+                isDarkTheme = isDarkTheme,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 

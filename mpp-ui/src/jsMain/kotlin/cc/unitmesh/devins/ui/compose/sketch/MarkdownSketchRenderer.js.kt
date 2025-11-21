@@ -196,6 +196,7 @@ actual object MarkdownSketchRenderer {
     @Composable
     actual fun RenderMarkdown(
         markdown: String,
+        isComplete: Boolean,
         isDarkTheme: Boolean,
         modifier: Modifier
     ) {

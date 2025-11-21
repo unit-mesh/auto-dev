@@ -34,10 +34,15 @@ expect object MarkdownSketchRenderer {
 
     /**
      * 渲染单个 Markdown 内容块（不使用 CodeFence 解析）
+     * @param markdown Markdown 内容
+     * @param isComplete 内容是否完整（流式传输时为 false）
+     * @param isDarkTheme 是否使用暗色主题
+     * @param modifier 修饰符
      */
     @Composable
     fun RenderMarkdown(
         markdown: String,
+        isComplete: Boolean = true,
         isDarkTheme: Boolean = false,
         modifier: Modifier = Modifier
     )
