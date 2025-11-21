@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.parser.ToolCallParser
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.devins.ui.compose.agent.CombinedToolItem
+import cc.unitmesh.devins.workspace.WorkspaceManager
 import kotlinx.serialization.json.Json
 
 /**
@@ -32,6 +33,9 @@ fun DevInBlockRenderer(
             val toolCalls = parser.parseToolCalls(wrappedContent)
 
             if (toolCalls.isNotEmpty()) {
+                // Get workspace root path for resolving relative paths
+                val workspaceRoot = WorkspaceManager.currentWorkspace?.rootPath
+                
                 toolCalls.forEach { toolCall ->
                     // Extract details for rendering
                     val toolName = toolCall.toolName
@@ -44,7 +48,9 @@ fun DevInBlockRenderer(
                     val fullParams = formatParamsAsJson(params)
                     
                     // Extract file path if available (for ReadFile/WriteFile)
-                    val filePath = params["path"] as? String
+                    // Resolve relative path to absolute path using workspace root
+                    val relativePath = params["path"] as? String
+                    val filePath = resolveAbsolutePath(relativePath, workspaceRoot)
                     
                     // Map tool name to ToolType
                     val toolType = ToolType.fromName(toolName)
@@ -81,6 +87,23 @@ fun DevInBlockRenderer(
             )
         }
     }
+}
+
+/**
+ * Resolve relative path to absolute path using workspace root
+ */
+private fun resolveAbsolutePath(relativePath: String?, workspaceRoot: String?): String? {
+    if (relativePath == null) return null
+    if (workspaceRoot == null) return relativePath
+    
+    // If already an absolute path, return as-is
+    if (relativePath.startsWith("/") || relativePath.matches(Regex("^[A-Za-z]:.*"))) {
+        return relativePath
+    }
+    
+    // Combine workspace root with relative path
+    val separator = if (workspaceRoot.endsWith("/") || workspaceRoot.endsWith("\\")) "" else "/"
+    return "$workspaceRoot$separator$relativePath"
 }
 
 /**
