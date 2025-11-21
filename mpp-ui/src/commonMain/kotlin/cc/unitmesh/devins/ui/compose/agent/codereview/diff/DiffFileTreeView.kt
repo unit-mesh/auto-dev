@@ -68,10 +68,109 @@ fun FileTreeView(
     }
 }
 
+fun buildFileTree(files: List<DiffFileInfo>): List<FileTreeNode> {
+    val root = mutableMapOf<String, FileTreeNode.Directory>()
+
+    files.forEach { fileInfo ->
+        val segments = fileInfo.path.split("/")
+        var currentMap = root
+        var currentPath = ""
+
+        // Build directory structure
+        for (i in 0 until segments.size - 1) {
+            val segment = segments[i]
+            currentPath = if (currentPath.isEmpty()) segment else "$currentPath/$segment"
+
+            if (!currentMap.containsKey(segment)) {
+                val dir = FileTreeNode.Directory(segment, currentPath)
+                currentMap[segment] = dir
+            }
+
+            val dir = currentMap[segment] as FileTreeNode.Directory
+            currentMap = dir.children.associateBy { it.name }.toMutableMap() as MutableMap<String, FileTreeNode.Directory>
+        }
+
+        // Add file
+        val fileName = segments.last()
+        val fileNode = FileTreeNode.File(fileName, fileInfo.path, fileInfo)
+        currentMap[fileName] = FileTreeNode.Directory(fileName, fileInfo.path) // dummy
+
+        // Add to parent directory
+        if (segments.size > 1) {
+            val parentPath = segments.dropLast(1).joinToString("/")
+            findDirectory(root.values.toList(), parentPath)?.children?.add(fileNode)
+        } else {
+            root[fileName] = FileTreeNode.Directory(fileName, fileInfo.path)
+        }
+    }
+
+    return root.values.toList()
+}
+
+/**
+ * Build tree structure from flat file list
+ */
+
+fun findDirectory(nodes: List<FileTreeNode>, path: String): FileTreeNode.Directory? {
+    nodes.forEach { node ->
+        if (node is FileTreeNode.Directory) {
+            if (node.path == path) return node
+            findDirectory(node.children, path)?.let { return it }
+        }
+    }
+    return null
+}
+
+
+/**
+ * Truncate a file path by showing first/last segments with ... in middle
+ * Examples:
+ * - "src/main/kotlin/com/example/project/VeryLongFileName.kt" -> "src/.../VeryLongFileName.kt"
+ * - "short/path.kt" -> "short/path.kt"
+ */
+fun truncateFilePath(path: String): String {
+    val segments = path.split("/")
+
+    // If path is short enough, return as is
+    if (segments.size <= 2) return path
+
+    // Always use format: first/.../ last
+    val first = segments.first()
+    val last = segments.last()
+    return "$first/.../$last"
+}
+
+
+/**
+ * View mode for file changes display
+ */
+enum class FileViewMode {
+    LIST,  // Flat list of files
+    TREE   // Tree structure grouped by directory
+}
+
+/**
+ * Tree node for file display
+ */
+sealed class FileTreeNode(open val name: String, open val path: String) {
+    data class Directory(
+        override val name: String,
+        override val path: String,
+        val children: MutableList<FileTreeNode> = mutableListOf()
+    ) : FileTreeNode(name, path)
+
+    data class File(
+        override val name: String,
+        override val path: String,
+        val fileInfo: DiffFileInfo
+    ) : FileTreeNode(name, path)
+}
+
+
 /**
  * Build a simpler tree structure that groups files by directories
  */
-private fun buildFileTreeStructure(files: List<DiffFileInfo>): List<FileTreeNode> {
+fun buildFileTreeStructure(files: List<DiffFileInfo>): List<FileTreeNode> {
     val root = mutableMapOf<String, FileTreeNode.Directory>()
 
     files.forEach { fileInfo ->
@@ -120,7 +219,7 @@ private fun buildFileTreeStructure(files: List<DiffFileInfo>): List<FileTreeNode
         .sortedWith(compareBy({ it !is FileTreeNode.Directory }, { it.name }))
 }
 
-private fun findDirectoryByPath(
+fun findDirectoryByPath(
     nodes: Map<String, FileTreeNode.Directory>,
     targetPath: String
 ): FileTreeNode.Directory? {
