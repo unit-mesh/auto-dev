@@ -232,9 +232,9 @@ class JsCodeReviewAgent(
 
     /**
      * Generate fixes for identified issues
-     * Uses code content, lint results, and analysis output to provide actionable fixes
+     * Uses git patch, lint results, and analysis output to provide actionable fixes
      *
-     * @param codeContent Object mapping file paths to their content
+     * @param patch Git diff/patch content showing the changes
      * @param lintResults Array of JS lint results
      * @param analysisOutput The AI analysis output from previous analysis step
      * @param language Language for the prompt ("EN" or "ZH")
@@ -243,16 +243,13 @@ class JsCodeReviewAgent(
      */
     @JsName("generateFixes")
     fun generateFixes(
-        codeContent: dynamic,
+        patch: String,
         lintResults: Array<JsLintFileResult>,
         analysisOutput: String,
         language: String = "EN",
         onChunk: ((String) -> Unit)? = null
     ): Promise<String> {
         return GlobalScope.promise {
-            // Convert JS dynamic object to Kotlin map
-            val codeContentMap = convertDynamicToMap(codeContent)
-
             // Convert JS lint results to Kotlin LintFileResult
             val kotlinLintResults = lintResults.map { jsResult ->
                 LintFileResult(
@@ -279,7 +276,7 @@ class JsCodeReviewAgent(
             }
 
             val result = agent.generateFixes(
-                codeContent = codeContentMap,
+                patch = patch,
                 lintResults = kotlinLintResults,
                 analysisOutput = analysisOutput,
                 language = language,

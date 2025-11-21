@@ -161,7 +161,7 @@ export async function runReview(
       const fixStartTime = Date.now();
 
       const fixOutput = await reviewAgent.generateFixes(
-        codeContent,
+        diffContent,  // Use git diff/patch instead of full code content
         convertLintResultsToArray(lintResults, filePaths),
         analysisContent,
         'EN',

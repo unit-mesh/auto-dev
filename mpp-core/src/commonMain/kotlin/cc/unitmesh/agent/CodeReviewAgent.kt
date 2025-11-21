@@ -194,23 +194,48 @@ class CodeReviewAgent(
     }
 
     suspend fun generateFixes(
-        codeContent: Map<String, String>,
+        patch: String,
         lintResults: List<cc.unitmesh.agent.linter.LintFileResult>,
         analysisOutput: String,
         language: String = "EN",
         onProgress: (String) -> Unit = {}
     ): AnalysisResult {
-        logger.info { "Starting fix generation - ${codeContent.size} files, ${lintResults.size} lint results" }
+        logger.info { "Starting fix generation from patch" }
 
         try {
+            // 1. Extract changed code hunks from the patch
+            val extractor = cc.unitmesh.agent.vcs.context.ChangedCodeExtractor()
+            val changedHunks = extractor.extractChangedHunks(patch, contextLines = 3)
+            
+            if (changedHunks.isEmpty()) {
+                logger.warn { "No changed code hunks extracted from patch" }
+                return AnalysisResult(
+                    success = false,
+                    content = "No code changes found in patch.",
+                    usedTools = false
+                )
+            }
+            
+            logger.info { "Extracted changes from ${changedHunks.size} files, ${changedHunks.values.sumOf { it.size }} total hunks" }
+            
+            // Log hunk summary for debugging
+            logger.debug { extractor.formatHunksSummary(changedHunks) }
+            
+            // 2. Filter lint results to only include files that were actually changed
+            val relevantFiles = changedHunks.keys
+            val filteredLintResults = lintResults.filter { it.filePath in relevantFiles }
+            
+            logger.info { "Filtered lint results: ${lintResults.size} -> ${filteredLintResults.size} (only changed files)" }
+            
+            // 3. Generate optimized prompt with only changed code blocks
             val prompt = promptRenderer.renderFixGenerationPrompt(
-                codeContent = codeContent,
-                lintResults = lintResults,
+                changedHunks = changedHunks,
+                lintResults = filteredLintResults,
                 analysisOutput = analysisOutput,
                 language = language
             )
 
-            logger.debug { "Fix generation prompt size: ${prompt.length} chars" }
+            logger.debug { "Fix generation prompt size: ${prompt.length} chars (optimized from full file content)" }
 
             val fixOutput = StringBuilder()
             try {

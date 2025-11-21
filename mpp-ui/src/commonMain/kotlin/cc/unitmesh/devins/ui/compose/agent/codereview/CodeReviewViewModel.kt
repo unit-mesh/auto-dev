@@ -704,13 +704,20 @@ open class CodeReviewViewModel(
                 it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
             }
 
-            // Collect code snippets around issues for better context
-            fixOutputBuilder.appendLine("📖 Collecting code context...")
+            // Get git diff/patch for changed code context
+            val patch = currentState.originDiff
+            if (patch.isNullOrBlank()) {
+                fixOutputBuilder.appendLine("❌ Error: No git diff available for fix generation")
+                updateState {
+                    it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
+                }
+                return
+            }
+
+            fixOutputBuilder.appendLine("📖 Using git diff for code context...")
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
             }
-
-            val codeContent = collectCodeContent()
 
             fixOutputBuilder.appendLine("✅ Generating fixes with AI...")
             fixOutputBuilder.appendLine()
@@ -721,9 +728,9 @@ open class CodeReviewViewModel(
             // Initialize agent if needed
             val agent = initializeCodingAgent()
 
-            // Delegate to CodeReviewAgent
+            // Delegate to CodeReviewAgent with patch instead of full code content
             val result = agent.generateFixes(
-                codeContent = codeContent,
+                patch = patch,
                 lintResults = currentState.aiProgress.lintResults,
                 analysisOutput = currentState.aiProgress.analysisOutput,
                 language = "ZH",

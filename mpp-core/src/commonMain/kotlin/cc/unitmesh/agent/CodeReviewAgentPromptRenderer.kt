@@ -71,9 +71,14 @@ $result
     /**
      * Renders fix generation prompt for creating actionable fixes
      * This is the second step in the code review process
+     * 
+     * @param changedHunks Map of file paths to changed code hunks (extracted from diff)
+     * @param lintResults Lint results for the changed files
+     * @param analysisOutput The analysis output from Phase 1
+     * @param language Language for the prompt (EN or ZH)
      */
     fun renderFixGenerationPrompt(
-        codeContent: Map<String, String>,
+        changedHunks: Map<String, List<cc.unitmesh.agent.vcs.context.CodeHunk>>,
         lintResults: List<LintFileResult>,
         analysisOutput: String,
         language: String = "EN"
@@ -83,70 +88,105 @@ $result
             else -> FixGenerationTemplate.EN
         }
 
-        // Format code content
-        val formattedCode = if (codeContent.isNotEmpty()) {
-            codeContent.entries.joinToString("\n\n") { (path, content) ->
-                """### File: $path
-```
-$content
-```"""
+        // Format changed code blocks (not full files!)
+        val formattedChangedCode = if (changedHunks.isNotEmpty()) {
+            changedHunks.entries.joinToString("\n\n") { (filePath, hunks) ->
+                buildString {
+                    appendLine("### File: $filePath")
+                    appendLine()
+                    
+                    hunks.forEachIndexed { index, hunk ->
+                        appendLine("#### Changed Block #${index + 1}")
+                        appendLine("**Location**: Lines ${hunk.newStartLine}-${hunk.newStartLine + hunk.newLineCount - 1}")
+                        appendLine("**Changes**: +${hunk.addedLines.size} lines, -${hunk.deletedLines.size} lines")
+                        appendLine()
+                        appendLine("```diff")
+                        appendLine(hunk.header)
+                        
+                        // Show context before
+                        hunk.contextBefore.forEach { line ->
+                            appendLine(" $line")
+                        }
+                        
+                        // Show deleted lines
+                        hunk.deletedLines.forEach { line ->
+                            appendLine("-$line")
+                        }
+                        
+                        // Show added lines
+                        hunk.addedLines.forEach { line ->
+                            appendLine("+$line")
+                        }
+                        
+                        // Show context after
+                        hunk.contextAfter.forEach { line ->
+                            appendLine(" $line")
+                        }
+                        
+                        appendLine("```")
+                        appendLine()
+                    }
+                }
             }
         } else {
-            "No code content available."
+            "No changed code blocks available."
         }
 
-        // Format lint results
+        // Format lint results - only for files in changedHunks
+        val relevantFiles = changedHunks.keys
         val formattedLintResults = if (lintResults.isNotEmpty()) {
-            lintResults.mapNotNull { fileResult ->
-                if (fileResult.issues.isNotEmpty()) {
-                    val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
-                    buildString {
-                        appendLine("### ${fileResult.filePath}")
-                        appendLine("Total Issues: $totalCount (${fileResult.errorCount} errors, ${fileResult.warningCount} warnings)")
-                        appendLine()
-
-                        val critical = fileResult.issues.filter { it.severity == LintSeverity.ERROR }
-                        val warnings = fileResult.issues.filter { it.severity == LintSeverity.WARNING }
-
-                        if (critical.isNotEmpty()) {
-                            appendLine("**Critical Issues:**")
-                            critical.forEach { issue ->
-                                appendLine("- Line ${issue.line}: ${issue.message}")
-                                val ruleText = issue.rule
-                                if (ruleText != null && ruleText.isNotBlank()) {
-                                    appendLine("  Rule: $ruleText")
-                                }
-                            }
+            lintResults
+                .filter { it.filePath in relevantFiles }
+                .mapNotNull { fileResult ->
+                    if (fileResult.issues.isNotEmpty()) {
+                        val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
+                        buildString {
+                            appendLine("### ${fileResult.filePath}")
+                            appendLine("Total Issues: $totalCount (${fileResult.errorCount} errors, ${fileResult.warningCount} warnings)")
                             appendLine()
-                        }
 
-                        if (warnings.isNotEmpty()) {
-                            appendLine("**Warnings:**")
-                            warnings.take(5).forEach { issue ->
-                                appendLine("- Line ${issue.line}: ${issue.message}")
-                                val ruleText = issue.rule
-                                if (ruleText != null && ruleText.isNotBlank()) {
-                                    appendLine("  Rule: $ruleText")
+                            val critical = fileResult.issues.filter { it.severity == LintSeverity.ERROR }
+                            val warnings = fileResult.issues.filter { it.severity == LintSeverity.WARNING }
+
+                            if (critical.isNotEmpty()) {
+                                appendLine("**Critical Issues:**")
+                                critical.forEach { issue ->
+                                    appendLine("- Line ${issue.line}: ${issue.message}")
+                                    val ruleText = issue.rule
+                                    if (ruleText != null && ruleText.isNotBlank()) {
+                                        appendLine("  Rule: $ruleText")
+                                    }
+                                }
+                                appendLine()
+                            }
+
+                            if (warnings.isNotEmpty()) {
+                                appendLine("**Warnings:**")
+                                warnings.take(5).forEach { issue ->
+                                    appendLine("- Line ${issue.line}: ${issue.message}")
+                                    val ruleText = issue.rule
+                                    if (ruleText != null && ruleText.isNotBlank()) {
+                                        appendLine("  Rule: $ruleText")
+                                    }
+                                }
+                                if (warnings.size > 5) {
+                                    appendLine("... and ${warnings.size - 5} more warnings")
                                 }
                             }
-                            if (warnings.size > 5) {
-                                appendLine("... and ${warnings.size - 5} more warnings")
-                            }
                         }
+                    } else {
+                        null
                     }
-                } else {
-                    null
-                }
-            }.joinToString("\n\n")
+                }.joinToString("\n\n")
         } else {
             "No lint issues found."
         }
 
         val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
         variableTable.addVariable(
-            "codeContent",
+            "changedCode",
             VariableType.STRING,
-            formattedCode
+            formattedChangedCode
         )
         variableTable.addVariable(
             "lintResults",
@@ -162,9 +202,10 @@ $content
         val compiler = TemplateCompiler(variableTable)
         val prompt = compiler.compile(template)
 
-        logger.debug { "Generated fix generation prompt (${prompt.length} chars)" }
+        logger.debug { "Generated fix generation prompt (${prompt.length} chars) for ${changedHunks.size} files" }
         return prompt
     }
+
 }
 
 
