@@ -1,11 +1,7 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -13,15 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import cc.unitmesh.devins.parser.CodeFence
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
@@ -38,8 +31,6 @@ import dev.snipme.highlights.model.SyntaxThemes
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import kotlin.io.encoding.Base64
@@ -107,18 +98,18 @@ actual object MarkdownSketchRenderer {
                         val style = LocalMarkdownTypography.current.code
                         MarkdownCodeFence(it.content, it.node, style) { code, language, style ->
                             // Render Mermaid diagrams using remote Kroki service
+                            MarkdownHighlightedCode(
+                                code = code,
+                                language = language,
+                                style = style,
+                                highlightsBuilder = highlightsBuilder,
+                                showHeader = true,
+                            )
+
                             if (language?.lowercase() == "mermaid" && isComplete) {
                                 RemoteMermaidRenderer(
                                     mermaidCode = code,
                                     modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp)
-                                )
-                            } else {
-                                MarkdownHighlightedCode(
-                                    code = code,
-                                    language = language,
-                                    style = style,
-                                    highlightsBuilder = highlightsBuilder,
-                                    showHeader = true,
                                 )
                             }
                         }
@@ -198,7 +189,7 @@ fun RemoteMermaidRenderer(
             val client = HttpClient()
             val response: HttpResponse = client.get(url)
             val bytes = response.readBytes()
-            
+
             // Decode PNG bytes to ImageBitmap
             // Note: decodeToImageBitmap is from compose-resources
             imageBitmap = bytes.decodeToImageBitmap()
@@ -220,7 +211,6 @@ fun RemoteMermaidRenderer(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Error rendering diagram", color = MaterialTheme.colorScheme.error)
                 Text(error ?: "", style = MaterialTheme.typography.bodySmall)
-                // Fallback to showing code
                 Text(mermaidCode, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(8.dp))
             }
         } else {
