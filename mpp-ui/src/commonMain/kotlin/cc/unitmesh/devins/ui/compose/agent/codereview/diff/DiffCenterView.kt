@@ -28,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,195 +47,11 @@ import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import cc.unitmesh.agent.diff.DiffHunk
 import cc.unitmesh.agent.diff.DiffLine
 import cc.unitmesh.agent.diff.DiffLineType
-import kotlinx.datetime.Clock
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
-import cc.unitmesh.devins.ui.compose.agent.codereview.formatDate
 import androidx.compose.foundation.lazy.items
-
-/**
- * Left panel: Commit history list (GitHub-style) with infinite scroll
- */
-@Composable
-fun CommitListView(
-    commits: List<CommitInfo>,
-    selectedIndex: Int,
-    onCommitSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    hasMoreCommits: Boolean = false,
-    isLoadingMore: Boolean = false,
-    totalCommitCount: Int? = null,
-    onLoadMore: () -> Unit = {}
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(6.dp)
-    ) {
-        val displayText = when {
-            totalCommitCount != null -> "Commits (${commits.size}/$totalCommitCount)"
-            hasMoreCommits -> "Commits (${commits.size}+)"
-            else -> "Commits (${commits.size})"
-        }
-
-        Text(
-            text = displayText,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Companion.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp)
-        )
-
-        HorizontalDivider(
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(commits.size) { index ->
-                CommitListItem(
-                    commit = commits[index],
-                    isSelected = index == selectedIndex,
-                    onClick = { onCommitSelected(index) }
-                )
-
-                if (index == commits.size - 5 && hasMoreCommits && !isLoadingMore) {
-                    LaunchedEffect(Unit) {
-                        onLoadMore()
-                    }
-                }
-            }
-
-            if (isLoadingMore) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Companion.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = AutoDevColors.Indigo.c600
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CommitListItem(
-    commit: CommitInfo,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                AutoDevColors.Indigo.c600.copy(alpha = 0.1f)
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        ),
-        shape = RoundedCornerShape(6.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 2.dp else 0.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            // Commit message (first line)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Companion.Top
-            ) {
-                Text(
-                    text = commit.message.lines().firstOrNull() ?: commit.message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Companion.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Companion.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // Extract PR/issue number if present (e.g., #453)
-                val prNumber = Regex("#(\\d+)").find(commit.message)?.value
-                if (prNumber != null) {
-                    Surface(
-                        color = AutoDevColors.Indigo.c600.copy(alpha = 0.15f),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = prNumber,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = AutoDevColors.Indigo.c600,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Author, hash and timestamp in one compact row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Companion.CenterVertically
-            ) {
-                // Author and hash together
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.Companion.CenterVertically,
-                    modifier = Modifier.weight(1f, fill = false)
-                ) {
-                    Text(
-                        text = commit.author,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Companion.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
-                    Text(
-                        text = "•",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                    Text(
-                        text = commit.shortHash,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Companion.Monospace,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                }
-
-                Text(
-                    text = formatRelativeTime(commit.timestamp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-            }
-        }
-    }
-}
 
 /**
  * Inline compact issue chip (shown next to commit message)
@@ -281,23 +96,6 @@ fun InlineIssueChip(issueInfo: cc.unitmesh.agent.tracker.IssueInfo) {
                 }
             )
         }
-    }
-}
-
-private fun formatRelativeTime(timestamp: Long): String {
-    val now = Clock.System.now().toEpochMilliseconds()
-    val diff = now - timestamp
-
-    return when {
-        diff < 60_000 -> "just now"
-        diff < 3600_000 -> "${diff / 60_000} minutes ago"
-        diff < 86400_000 -> {
-            val hours = diff / 3600_000
-            if (hours < 12) "$hours hours ago" else "Today ${formatDate(timestamp).split(" ").lastOrNull() ?: ""}"
-        }
-
-        diff < 172800_000 -> "Yesterday"
-        else -> formatDate(timestamp)
     }
 }
 
