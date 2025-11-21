@@ -312,6 +312,11 @@ kotlin {
 
                 // i18n4k - WASM
                 implementation("de.comahe.i18n4k:i18n4k-core-wasm-js:0.11.1")
+
+                // Multiplatform Markdown Renderer for WASM
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.38.1")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
+                implementation("com.mikepenz:multiplatform-markdown-renderer-code:0.38.1")
             }
         }
     }
