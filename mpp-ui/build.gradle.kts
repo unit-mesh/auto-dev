@@ -378,6 +378,10 @@ compose.desktop {
                 iconFile.set(project.file("src/jvmMain/resources/icon-512.png"))
             }
         }
+
+        buildTypes.release.proguard {
+            configurationFiles.from(project.file("proguard-rules.pro"))
+        }
     }
 }
 
