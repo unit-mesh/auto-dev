@@ -260,7 +260,8 @@ fun CodeReviewAgentPanel(
                                 },
                                 onRejectFix = { diffPatch ->
                                     viewModel.rejectDiffPatch(diffPatch)
-                                }
+                                },
+                                workspace = viewModel.workspace
                             )
                         }
                     }
