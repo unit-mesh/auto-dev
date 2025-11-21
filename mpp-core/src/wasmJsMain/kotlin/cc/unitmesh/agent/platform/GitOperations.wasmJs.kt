@@ -203,21 +203,74 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         val module = lg2Module ?: return null
 
         return try {
+            // Step 1: Get list of changed files using diff --name-status
             commandOutputBuffer.clear()
-            val exitCode = module.callMain(jsArrayOf("show", commitHash)).await<JsNumber>().toInt()
+            var exitCode = module.callMain(jsArrayOf("diff", "--name-status", "$commitHash^", commitHash)).await<JsNumber>().toInt()
 
             if (exitCode != 0) {
-                WasmConsole.warn("git show failed with exit code: $exitCode")
+                WasmConsole.warn("git diff --name-status failed with exit code: $exitCode")
                 return null
             }
 
-            val diff = commandOutputBuffer.joinToString("\n")
-            // TODO: Parse diff to extract file changes, additions, and deletions
+            val changedFiles = commandOutputBuffer
+                .filter { it.isNotBlank() }
+                .mapNotNull { line ->
+                    // Format: "M\tfilename" or "A\tfilename" or "D\tfilename"
+                    val parts = line.split("\t", limit = 2)
+                    if (parts.size == 2) {
+                        Pair(parts[0], parts[1]) // (status, filename)
+                    } else null
+                }
+
+            // Step 2: Get the actual diff for context
+            commandOutputBuffer.clear()
+            exitCode = module.callMain(jsArrayOf("diff", "$commitHash^", commitHash)).await<JsNumber>().toInt()
+            val diffContent = if (exitCode == 0) {
+                commandOutputBuffer.joinToString("\n")
+            } else {
+                ""
+            }
+
+            // Step 3: For each modified/added file, read its full content
+            val filesWithContent = buildString {
+                for ((status, filename) in changedFiles) {
+                    appendLine("=" .repeat(80))
+                    appendLine("File: $filename (Status: $status)")
+                    appendLine("=" .repeat(80))
+                    
+                    when (status) {
+                        "D" -> {
+                            appendLine("[File Deleted]")
+                        }
+                        "A", "M" -> {
+                            // Try to read the file content from current working directory
+                            val content = try {
+                                val fileData = module.FS.readFile(filename).toIntArray()
+                                val bytes = fileData.map { it.toByte() }.toByteArray()
+                                bytes.decodeToString()
+                            } catch (e: Throwable) {
+                                "[Unable to read file: ${e.message}]"
+                            }
+                            appendLine(content)
+                        }
+                    }
+                    appendLine()
+                }
+                
+                // Also include the diff for reference
+                if (diffContent.isNotBlank()) {
+                    appendLine("=" .repeat(80))
+                    appendLine("Git Diff Output:")
+                    appendLine("=" .repeat(80))
+                    appendLine(diffContent)
+                }
+            }
+
             GitDiffInfo(
-                files = emptyList(),
-                totalAdditions = 0,
-                totalDeletions = 0,
-                originDiff = diff
+                files = changedFiles.map { it.second },
+                totalAdditions = 0, // Could be parsed from diff output if needed
+                totalDeletions = 0, // Could be parsed from diff output if needed
+                originDiff = filesWithContent
             )
         } catch (e: Throwable) {
             WasmConsole.error("Failed to get commit diff: ${e.message}")
