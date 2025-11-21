@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  *
  * 支持多平台导航模式：
  * 1. Android: Drawer + BottomNavigation
- * 2. iOS: TabBar (planned)
+ * 2. iOS/macOS: TabBar (Material 3 风格)
  * 3. Desktop: NavigationRail
  *
  * 核心功能：
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
  *
  * 设计原则：
  * - Android：Material 3 设计，Drawer + BottomNav
- * - iOS：原生 TabBar 风格（未来实现）
+ * - iOS/macOS：Material 3 TabBar + Settings Sheet
  * - Desktop：侧边 NavigationRail
  */
 
@@ -384,10 +384,10 @@ private fun AndroidDrawerContent(
 }
 
 /**
- * iOS/macOS 风格的导航布局（TabBar）
+ * Apple (iOS/macOS) 导航布局
  *
- * 注意：Compose Multiplatform 不直接支持原生 TabBar
- * 这里提供一个 Material 3 风格的实现，未来可以用 SwiftUI 替换
+ * 使用 Material 3 组件实现的 TabBar 风格导航
+ * 包含底部 TabBar 和设置 Sheet
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -403,7 +403,7 @@ fun AppleNavLayout(
     val scope = rememberCoroutineScope()
     val currentUser by sessionViewModel.currentUser.collectAsState()
 
-    // iOS 风格：无 Drawer，使用 Sheet 或 Navigation
+    // Apple 风格：无 Drawer，使用 Settings Sheet
     var showSettingsSheet by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -419,7 +419,7 @@ fun AppleNavLayout(
             )
         },
         bottomBar = {
-            // iOS 风格的 TabBar（使用 Material NavigationBar 模拟）
+            // Apple 风格的 TabBar
             NavigationBar {
                 defaultNavItems.filter { it.showInTabBar }.forEach { navItem ->
                     NavigationBarItem(
@@ -435,7 +435,7 @@ fun AppleNavLayout(
         content(paddingValues)
     }
 
-    // Settings Sheet（iOS 风格）
+    // Settings Sheet
     if (showSettingsSheet) {
         AppleSettingsSheet(
             currentUser = currentUser,
@@ -463,7 +463,7 @@ fun AppleNavLayout(
 }
 
 /**
- * Apple 设置面板（模拟 iOS Sheet）
+ * Apple 设置面板（Bottom Sheet）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

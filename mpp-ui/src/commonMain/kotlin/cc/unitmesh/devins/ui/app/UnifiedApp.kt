@@ -353,13 +353,13 @@ private fun DesktopMainLayout(
                     SidebarItem(
                         icon = Icons.Default.Settings,
                         title = "Settings",
-                        onClick = { /* TODO: 打开设置 */ }
+                        onClick = { /* 设置功能 - 待扩展 */ }
                     )
 
                     SidebarItem(
                         icon = Icons.Default.Person,
                         title = sessionViewModel.currentUser.collectAsState().value ?: "Profile",
-                        onClick = { /* TODO: 打开个人信息 */ }
+                        onClick = { /* 个人信息 - 待扩展 */ }
                     )
 
                     SidebarItem(

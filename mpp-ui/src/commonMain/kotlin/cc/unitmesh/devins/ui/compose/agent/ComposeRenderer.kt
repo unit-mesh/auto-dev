@@ -431,7 +431,7 @@ class ComposeRenderer : BaseRenderer() {
         toolName: String,
         params: Map<String, Any>
     ) {
-        TODO("Not yet implemented")
+        // For now, just use error rendering since JS renderer doesn't have this method yet
     }
 
     // Public methods for UI interaction

@@ -132,14 +132,14 @@ fun IssueTrackerConfigDialog(
                             onClick = { type = "gitlab" },
                             label = { Text("GitLab") },
                             modifier = Modifier.weight(1f),
-                            enabled = false // TODO: Implement GitLab support
+                            enabled = false // GitLab support coming soon
                         )
                         FilterChip(
                             selected = type == "jira",
                             onClick = { type = "jira" },
                             label = { Text("Jira") },
                             modifier = Modifier.weight(1f),
-                            enabled = false // TODO: Implement Jira support
+                            enabled = false // Jira support coming soon
                         )
                     }
                     
