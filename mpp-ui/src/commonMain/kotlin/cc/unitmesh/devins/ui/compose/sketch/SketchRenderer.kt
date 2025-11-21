@@ -119,6 +119,17 @@ object SketchRenderer : BaseContentRenderer() {
                         }
                     }
 
+                    "devin" -> {
+                        if (fence.text.isNotBlank()) {
+                            DevInBlockRenderer(
+                                devinContent = fence.text,
+                                isComplete = blockIsComplete,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
                     else -> {
                         CodeBlockRenderer(
                             code = fence.text,
