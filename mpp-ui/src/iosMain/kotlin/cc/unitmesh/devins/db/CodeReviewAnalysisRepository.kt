@@ -14,8 +14,13 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
         prettyPrint = false
     }
     
-    actual fun saveAnalysisResult(projectPath: String, commitHash: String, progress: AIAnalysisProgress) {
-        val existing = queries.selectByProjectAndCommit(projectPath, commitHash).executeAsOneOrNull()
+    actual fun saveAnalysisResult(remoteUrl: String?, projectPath: String, commitHash: String, progress: AIAnalysisProgress) {
+        // Try to find existing record using remoteUrl first, then projectPath
+        val existing = if (!remoteUrl.isNullOrBlank()) {
+            queries.selectByRemoteAndCommit(remoteUrl, commitHash).executeAsOneOrNull()
+        } else {
+            queries.selectByProjectAndCommit(projectPath, commitHash).executeAsOneOrNull()
+        }
         val now = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
         
         if (existing != null) {
@@ -31,10 +36,12 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
                 id = existing.id
             )
         } else {
-            // Insert new record
-            val id = "${projectPath}_${commitHash}_${now}"
+            // Insert new record with remoteUrl as primary identifier
+            val identifier = if (!remoteUrl.isNullOrBlank()) remoteUrl else projectPath
+            val id = "${identifier}_${commitHash}_${now}"
             queries.insert(
                 id = id,
+                remoteUrl = remoteUrl ?: "",
                 projectPath = projectPath,
                 commitHash = commitHash,
                 stage = progress.stage.name,
@@ -49,8 +56,13 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
         }
     }
     
-    actual fun getAnalysisResult(projectPath: String, commitHash: String): AIAnalysisProgress? {
-        val record = queries.selectByProjectAndCommit(projectPath, commitHash).executeAsOneOrNull()
+    actual fun getAnalysisResult(remoteUrl: String?, projectPath: String, commitHash: String): AIAnalysisProgress? {
+        // Try remoteUrl first, fallback to projectPath
+        val record = if (!remoteUrl.isNullOrBlank()) {
+            queries.selectByRemoteAndCommit(remoteUrl, commitHash).executeAsOneOrNull()
+        } else {
+            null
+        } ?: queries.selectByProjectAndCommit(projectPath, commitHash).executeAsOneOrNull()
             ?: return null
         
         return AIAnalysisProgress(
@@ -71,8 +83,15 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
         )
     }
     
-    actual fun getAnalysisResultsByProject(projectPath: String): List<Pair<String, AIAnalysisProgress>> {
-        return queries.selectByProject(projectPath).executeAsList().mapNotNull { record ->
+    actual fun getAnalysisResultsByProject(remoteUrl: String?, projectPath: String): List<Pair<String, AIAnalysisProgress>> {
+        // Try remoteUrl first, fallback to projectPath
+        val records = if (!remoteUrl.isNullOrBlank()) {
+            queries.selectByRemote(remoteUrl).executeAsList()
+        } else {
+            queries.selectByProject(projectPath).executeAsList()
+        }
+        
+        return records.mapNotNull { record ->
             try {
                 val progress = AIAnalysisProgress(
                     stage = AnalysisStage.valueOf(record.stage),
@@ -97,8 +116,13 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
         }
     }
     
-    actual fun deleteAnalysisResult(projectPath: String, commitHash: String) {
-        queries.deleteByProjectAndCommit(projectPath, commitHash)
+    actual fun deleteAnalysisResult(remoteUrl: String?, projectPath: String, commitHash: String) {
+        // Try remoteUrl first, fallback to projectPath
+        if (!remoteUrl.isNullOrBlank()) {
+            queries.deleteByRemoteAndCommit(remoteUrl, commitHash)
+        } else {
+            queries.deleteByProjectAndCommit(projectPath, commitHash)
+        }
     }
     
     actual fun deleteOldAnalysis(keepCount: Long) {

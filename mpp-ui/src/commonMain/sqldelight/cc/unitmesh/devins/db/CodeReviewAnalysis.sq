@@ -1,6 +1,7 @@
 -- CodeReviewAnalysisDb 表：存储 Code Review 分析结果
 CREATE TABLE IF NOT EXISTS CodeReviewAnalysisDb (
     id TEXT PRIMARY KEY NOT NULL,
+    remoteUrl TEXT NOT NULL DEFAULT '',
     projectPath TEXT NOT NULL,
     commitHash TEXT NOT NULL,
     stage TEXT NOT NULL,
@@ -13,8 +14,10 @@ CREATE TABLE IF NOT EXISTS CodeReviewAnalysisDb (
     updatedAt INTEGER NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_analysis_remote ON CodeReviewAnalysisDb(remoteUrl);
 CREATE INDEX IF NOT EXISTS idx_analysis_project ON CodeReviewAnalysisDb(projectPath);
 CREATE INDEX IF NOT EXISTS idx_analysis_commit ON CodeReviewAnalysisDb(commitHash);
+CREATE INDEX IF NOT EXISTS idx_analysis_remote_commit ON CodeReviewAnalysisDb(remoteUrl, commitHash);
 CREATE INDEX IF NOT EXISTS idx_analysis_project_commit ON CodeReviewAnalysisDb(projectPath, commitHash);
 CREATE INDEX IF NOT EXISTS idx_analysis_updated ON CodeReviewAnalysisDb(updatedAt DESC);
 
@@ -22,11 +25,19 @@ CREATE INDEX IF NOT EXISTS idx_analysis_updated ON CodeReviewAnalysisDb(updatedA
 selectAll:
 SELECT * FROM CodeReviewAnalysisDb ORDER BY updatedAt DESC;
 
--- 根据项目路径查询
+-- 根据 remote URL 查询
+selectByRemote:
+SELECT * FROM CodeReviewAnalysisDb WHERE remoteUrl = ? ORDER BY updatedAt DESC;
+
+-- 根据项目路径查询（fallback）
 selectByProject:
 SELECT * FROM CodeReviewAnalysisDb WHERE projectPath = ? ORDER BY updatedAt DESC;
 
--- 根据项目路径和 commit hash 查询
+-- 根据 remote URL 和 commit hash 查询（优先）
+selectByRemoteAndCommit:
+SELECT * FROM CodeReviewAnalysisDb WHERE remoteUrl = ? AND commitHash = ? LIMIT 1;
+
+-- 根据项目路径和 commit hash 查询（fallback）
 selectByProjectAndCommit:
 SELECT * FROM CodeReviewAnalysisDb WHERE projectPath = ? AND commitHash = ? LIMIT 1;
 
@@ -36,8 +47,8 @@ SELECT * FROM CodeReviewAnalysisDb WHERE id = ?;
 
 -- 插入分析结果
 insert:
-INSERT INTO CodeReviewAnalysisDb(id, projectPath, commitHash, stage, lintOutput, lintResults, modifiedCodeRanges, analysisOutput, fixOutput, createdAt, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO CodeReviewAnalysisDb(id, remoteUrl, projectPath, commitHash, stage, lintOutput, lintResults, modifiedCodeRanges, analysisOutput, fixOutput, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- 更新分析结果
 update:
@@ -55,7 +66,11 @@ WHERE id = ?;
 delete:
 DELETE FROM CodeReviewAnalysisDb WHERE id = ?;
 
--- 根据项目和 commit 删除
+-- 根据 remote URL 和 commit 删除
+deleteByRemoteAndCommit:
+DELETE FROM CodeReviewAnalysisDb WHERE remoteUrl = ? AND commitHash = ?;
+
+-- 根据项目和 commit 删除（fallback）
 deleteByProjectAndCommit:
 DELETE FROM CodeReviewAnalysisDb WHERE projectPath = ? AND commitHash = ?;
 

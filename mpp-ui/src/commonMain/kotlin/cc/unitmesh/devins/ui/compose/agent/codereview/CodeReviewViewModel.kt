@@ -40,6 +40,9 @@ open class CodeReviewViewModel(
     }
 
     private val analysisRepository = cc.unitmesh.devins.db.CodeReviewAnalysisRepository.getInstance()
+    
+    // Cache remote URL for repository operations
+    private var cachedRemoteUrl: String? = null
 
     // Non-AI analysis components (extracted for testability)
     private val codeAnalyzer = CodeAnalyzer(workspace)
@@ -83,6 +86,23 @@ open class CodeReviewViewModel(
         } else {
             CoroutineScope(Dispatchers.Default).launch {
                 try {
+                    // Fetch and cache remote URL
+                    cachedRemoteUrl = try {
+                        if (gitOps.isSupported()) {
+                            gitOps.getRemoteUrl("origin")
+                        } else {
+                            null
+                        }
+                    } catch (e: Exception) {
+                        AutoDevLogger.warn("CodeReviewViewModel") {
+                            "Failed to get remote URL: ${e.message}"
+                        }
+                        null
+                    }
+                    AutoDevLogger.info("CodeReviewViewModel") {
+                        "Cached remote URL: ${cachedRemoteUrl ?: "(not available)"}"
+                    }
+                    
                     codeReviewAgent = initializeCodingAgent()
                     // Initialize issue service
                     issueService.initialize(if (gitOps.isSupported()) gitOps else null)
@@ -525,13 +545,14 @@ open class CodeReviewViewModel(
             ) {
                 try {
                     analysisRepository.saveAnalysisResult(
+                        remoteUrl = cachedRemoteUrl,
                         projectPath = projectPath,
                         commitHash = currentCommit.hash,
                         progress = currentState.aiProgress
                     )
 
                     AutoDevLogger.info("CodeReviewViewModel") {
-                        "Saved analysis results to database for commit ${currentCommit.shortHash}"
+                        "Saved analysis results to database for commit ${currentCommit.shortHash} (remoteUrl: ${cachedRemoteUrl ?: "N/A"})"
                     }
                 } catch (e: Exception) {
                     AutoDevLogger.error("CodeReviewViewModel") {
@@ -549,14 +570,18 @@ open class CodeReviewViewModel(
         val projectPath = workspace.rootPath ?: return
 
         try {
-            val cachedProgress = analysisRepository.getAnalysisResult(projectPath, commitHash)
+            val cachedProgress = analysisRepository.getAnalysisResult(
+                remoteUrl = cachedRemoteUrl,
+                projectPath = projectPath,
+                commitHash = commitHash
+            )
             if (cachedProgress != null) {
                 updateState {
                     it.copy(aiProgress = cachedProgress)
                 }
 
                 AutoDevLogger.info("CodeReviewViewModel") {
-                    "Restored analysis results from database for commit ${commitHash.take(7)}"
+                    "Restored analysis results from database for commit ${commitHash.take(7)} (remoteUrl: ${cachedRemoteUrl ?: "N/A"})"
                 }
             }
         } catch (e: Exception) {
