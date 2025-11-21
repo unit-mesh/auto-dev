@@ -2,6 +2,8 @@ package cc.unitmesh.agent.platform
 
 import cc.unitmesh.devins.workspace.GitCommitInfo
 import cc.unitmesh.devins.workspace.GitDiffInfo
+import cc.unitmesh.devins.workspace.GitDiffFile
+import cc.unitmesh.devins.workspace.GitFileStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.await
@@ -267,7 +269,24 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             }
 
             GitDiffInfo(
-                files = changedFiles.map { it.second },
+                files = changedFiles.map { (status, filename) ->
+                    val fileStatus = when (status) {
+                        "A" -> GitFileStatus.ADDED
+                        "D" -> GitFileStatus.DELETED
+                        "M" -> GitFileStatus.MODIFIED
+                        "R" -> GitFileStatus.RENAMED
+                        "C" -> GitFileStatus.COPIED
+                        else -> GitFileStatus.MODIFIED
+                    }
+                    GitDiffFile(
+                        path = filename,
+                        oldPath = null,
+                        status = fileStatus,
+                        additions = 0,
+                        deletions = 0,
+                        diff = ""
+                    )
+                },
                 totalAdditions = 0, // Could be parsed from diff output if needed
                 totalDeletions = 0, // Could be parsed from diff output if needed
                 originDiff = filesWithContent
