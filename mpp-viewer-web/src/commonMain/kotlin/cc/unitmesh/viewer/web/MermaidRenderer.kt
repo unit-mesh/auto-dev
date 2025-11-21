@@ -3,11 +3,16 @@ package cc.unitmesh.viewer.web
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -38,6 +43,9 @@ fun MermaidRenderer(
     modifier: Modifier = Modifier,
     onRenderComplete: ((success: Boolean, message: String) -> Unit)? = null
 ) {
+    // Track dynamic height from rendered content
+    var webViewHeight by remember { mutableStateOf(200.dp) }
+    
     val data = getMermaidHtml()
     println(data)
     val webViewState = rememberWebViewStateWithHTMLData(
@@ -58,6 +66,30 @@ fun MermaidRenderer(
                 callback: (String) -> Unit
             ) {
                 onRenderComplete?.invoke(true, message.params)
+                callback("ok")
+            }
+        })
+        
+        // Handler for height updates
+        jsBridge.register(object : IJsMessageHandler {
+            override fun methodName(): String = "mermaidHeightCallback"
+
+            override fun handle(
+                message: JsMessage,
+                navigator: WebViewNavigator?,
+                callback: (String) -> Unit
+            ) {
+                try {
+                    val height = message.params.toDoubleOrNull()
+                    if (height != null) {
+                        // Apply min/max constraints for safety
+                        val constrainedHeight = height.coerceIn(200.0, 2000.0)
+                        webViewHeight = constrainedHeight.dp
+                        println("MermaidRenderer: Updated height to ${constrainedHeight}dp")
+                    }
+                } catch (e: Exception) {
+                    println("MermaidRenderer: Failed to parse height: ${e.message}")
+                }
                 callback("ok")
             }
         })
@@ -91,9 +123,9 @@ fun MermaidRenderer(
     WebView(
         state = webViewState,
         navigator = webViewNavigator,
-        modifier = modifier.fillMaxSize()
-            .width(300.dp)
-            .height(300.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(webViewHeight),
         captureBackPresses = false,
         webViewJsBridge = jsBridge
     )

@@ -169,12 +169,22 @@
                     );
                 }
                 
-                // Auto-adjust height
+                // Auto-adjust height and notify native code
                 setTimeout(() => {
                     const svg = container.querySelector('svg');
                     if (svg) {
                         const height = svg.getBoundingClientRect().height;
-                        document.body.style.height = Math.max(height + 32, 200) + 'px';
+                        const totalHeight = Math.max(height + 32, 200);
+                        document.body.style.height = totalHeight + 'px';
+                        
+                        // Notify native code of height change
+                        if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                            window.kmpJsBridge.callNative(
+                                'mermaidHeightCallback',
+                                totalHeight.toString(),
+                                function() {}
+                            );
+                        }
                     }
                 }, 100);
                 
