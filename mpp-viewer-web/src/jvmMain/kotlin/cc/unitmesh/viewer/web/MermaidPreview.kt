@@ -31,7 +31,7 @@ fun main() = application {
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
                 KCEF.init(builder = {
-                    installDir(File("kcef-bundle"))
+                    // 不指定 installDir，让 KCEF 自动检测并使用 JBR 的 bundled JCEF
                     progress {
                         onDownloading {
                             downloading = max(it, 0F)

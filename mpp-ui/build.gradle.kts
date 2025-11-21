@@ -165,6 +165,10 @@ kotlin {
             dependencies {
                 implementation(project(":mpp-viewer-web"))
                 implementation(compose.desktop.currentOs)
+                
+                // WebView support (KCEF) - needed for MermaidRenderer initialization
+                implementation("io.github.kevinnzou:compose-webview-multiplatform:2.0.3")
+                
                 // Rich text editor for Compose Desktop
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")
 
@@ -355,8 +359,21 @@ compose.desktop {
         mainClass = "cc.unitmesh.devins.ui.MainKt"
 
         jvmArgs += listOf(
-            "--add-modules", "java.naming,java.sql"
+            "--add-modules", "java.naming,java.sql",
+            // JCEF (Java Chromium Embedded Framework) requires access to internal AWT classes
+            "--add-exports", "java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-exports", "java.desktop/java.awt.peer=ALL-UNNAMED",
+            "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED"
         )
+        
+        // macOS-specific JVM args for JCEF
+        if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+            jvmArgs += listOf(
+                "--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED",
+                "--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED"
+            )
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

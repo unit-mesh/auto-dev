@@ -83,20 +83,13 @@ fun MermaidRenderer(
         }
     }
 
-    /// padding 4px, white backgorund
-    Box(
-        modifier = modifier.fillMaxSize().padding(12.dp)
-                .background(androidx.compose.ui.graphics.Color.White),
-        contentAlignment = Alignment.Center,
-    ) {
-        WebView(
-            state = webViewState,
-            navigator = webViewNavigator,
-            modifier = modifier.fillMaxSize(),
-            captureBackPresses = false,
-            webViewJsBridge = jsBridge
-        )
-    }
+    WebView(
+        state = webViewState,
+        navigator = webViewNavigator,
+        modifier = modifier.fillMaxSize(),
+        captureBackPresses = false,
+        webViewJsBridge = jsBridge
+    )
 }
 
 
