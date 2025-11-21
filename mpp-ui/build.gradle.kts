@@ -46,6 +46,7 @@ kotlin {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
         }
     }
 
@@ -53,6 +54,7 @@ kotlin {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
         }
     }
 
@@ -76,6 +78,9 @@ kotlin {
             export(compose.material3)
             export(compose.ui)
         }
+        iosTarget.compilations.getByName("main").compileTaskProvider.configure {
+            compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
+        }
     }
 
     js(IR) {
@@ -88,6 +93,7 @@ kotlin {
         binaries.executable()
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
             // Allow deprecated CanvasBasedWindow API until migration to ComposeViewport is complete
             suppressWarnings = true
         }
@@ -103,6 +109,7 @@ kotlin {
         binaries.executable()
         compilerOptions {
             freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
             // Allow deprecated CanvasBasedWindow API until migration to ComposeViewport is complete
             suppressWarnings = true
         }
@@ -133,7 +140,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
                 // DateTime for KMP
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
 
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
 
@@ -165,10 +172,10 @@ kotlin {
             dependencies {
                 implementation(project(":mpp-viewer-web"))
                 implementation(compose.desktop.currentOs)
-                
+
                 // WebView support (KCEF) - needed for MermaidRenderer initialization
                 implementation("io.github.kevinnzou:compose-webview-multiplatform:2.0.3")
-                
+
                 // Rich text editor for Compose Desktop
                 implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13")
 
@@ -366,7 +373,7 @@ compose.desktop {
             "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
             "--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED"
         )
-        
+
         // macOS-specific JVM args for JCEF
         if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
             jvmArgs += listOf(
