@@ -66,7 +66,40 @@
 <body>
     <div id="mermaidContainer"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"></script>
+    <script>
+        // Script loading state
+        let mermaidLoaded = false;
+        let loadingTimeout = null;
+
+        // Set a timeout for script loading (10 seconds)
+        loadingTimeout = setTimeout(function () {
+            if (!mermaidLoaded) {
+                console.error('Mermaid.js failed to load within timeout');
+                showLoadingError('Failed to load Mermaid library: CDN timeout or unreachable. Please check your network connection.');
+            }
+        }, 10000);
+
+        // Function to show loading error
+        function showLoadingError(message) {
+            const container = document.getElementById('mermaidContainer');
+            container.innerHTML = '<div class="error">' + message + '</div>';
+
+            // Notify native code of the error
+            if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                window.kmpJsBridge.callNative(
+                    'mermaidRenderCallback',
+                    JSON.stringify({ success: false, message: message }),
+                    function () { }
+                );
+            }
+        }
+    </script>
+
+    <!-- Load mermaid.js with error handling -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"
+        onload="mermaidLoaded = true; clearTimeout(loadingTimeout);"
+        onerror="clearTimeout(loadingTimeout); showLoadingError('Failed to load Mermaid library from CDN. The server might be down or unreachable.');">
+        </script>
 
     <script>
         // Theme configurations based on IntelliJ IDEA color schemes
@@ -168,6 +201,21 @@
          */
         window.renderMermaid = async function (code, themeName) {
             const container = document.getElementById('mermaidContainer');
+
+            // Check if mermaid is loaded
+            if (typeof mermaid === 'undefined') {
+                const errorMsg = 'Mermaid library not loaded. Cannot render diagram.';
+                container.innerHTML = '<div class="error">' + errorMsg + '</div>';
+
+                if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                    window.kmpJsBridge.callNative(
+                        'mermaidRenderCallback',
+                        JSON.stringify({ success: false, message: errorMsg }),
+                        function () { }
+                    );
+                }
+                return;
+            }
 
             // Reinitialize if theme changed
             if (themeName && themeName !== currentTheme) {

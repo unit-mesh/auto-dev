@@ -186,16 +186,32 @@ fun RemoteMermaidRenderer(
             val base64Code = Base64.UrlSafe.encode(mermaidCode.encodeToByteArray())
             val url = "https://kroki.io/mermaid/png/$base64Code"
 
-            val client = HttpClient()
-            val response: HttpResponse = client.get(url)
-            val bytes = response.readBytes()
+            // Use withTimeout to prevent hanging if Kroki server is down
+            kotlinx.coroutines.withTimeout(10000L) { // 10 second timeout
+                val client = HttpClient {
+                    // Configure request timeout
+                    install(io.ktor.client.plugins.HttpTimeout) {
+                        requestTimeoutMillis = 8000 // 8 second request timeout
+                        connectTimeoutMillis = 5000 // 5 second connection timeout
+                        socketTimeoutMillis = 8000  // 8 second socket timeout
+                    }
+                }
 
-            // Decode PNG bytes to ImageBitmap
-            // Note: decodeToImageBitmap is from compose-resources
-            imageBitmap = bytes.decodeToImageBitmap()
+                try {
+                    val response: HttpResponse = client.get(url)
+                    val bytes = response.readBytes()
+
+                    // Decode PNG bytes to ImageBitmap
+                    // Note: decodeToImageBitmap is from compose-resources
+                    imageBitmap = bytes.decodeToImageBitmap()
+                } finally {
+                    client.close()
+                }
+            }
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            error = "Rendering timeout: Kroki service might be unavailable or slow"
         } catch (e: Exception) {
-            error = "Failed to render diagram: ${e.message}"
-            e.printStackTrace()
+            error = "Failed to render diagram: ${e.message ?: "Unknown error"}"
         } finally {
             isLoading = false
         }
