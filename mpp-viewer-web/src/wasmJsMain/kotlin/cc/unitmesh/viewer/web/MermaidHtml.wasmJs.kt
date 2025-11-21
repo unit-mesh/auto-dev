@@ -1,0 +1,301 @@
+package cc.unitmesh.viewer.web
+
+/**
+ * WASM JS implementation: Inline Mermaid HTML content
+ * 
+ * Since WASM JS doesn't have direct file system access like JVM,
+ * we inline the mermaid.html content directly into the code.
+ */
+actual fun getMermaidHtml(): String {
+    return """
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: transparent;
+            color: #d4d4d4;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        html {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        #mermaidContainer {
+            padding: 16px;
+            min-height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .mermaid {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            transform-origin: center center;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .mermaid>svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .error {
+            color: #f48771;
+            font-family: monospace;
+            white-space: pre-wrap;
+            padding: 16px;
+            background: rgba(244, 135, 113, 0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mermaidContainer"></div>
+
+    <script>
+        // Script loading state
+        let mermaidLoaded = false;
+        let loadingTimeout = null;
+
+        // Set a timeout for script loading (10 seconds)
+        loadingTimeout = setTimeout(function () {
+            if (!mermaidLoaded) {
+                console.error('Mermaid.js failed to load within timeout');
+                showLoadingError('Failed to load Mermaid library: CDN timeout or unreachable. Please check your network connection.');
+            }
+        }, 10000);
+
+        // Function to show loading error
+        function showLoadingError(message) {
+            const container = document.getElementById('mermaidContainer');
+            container.innerHTML = '<div class="error">' + message + '</div>';
+
+            // Notify native code of the error
+            if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                window.kmpJsBridge.callNative(
+                    'mermaidRenderCallback',
+                    JSON.stringify({ success: false, message: message }),
+                    function () { }
+                );
+            }
+        }
+    </script>
+
+    <!-- Load mermaid.js with error handling -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"
+        onload="mermaidLoaded = true; clearTimeout(loadingTimeout);"
+        onerror="clearTimeout(loadingTimeout); showLoadingError('Failed to load Mermaid library from CDN. The server might be down or unreachable.');">
+        </script>
+
+    <script>
+        // Theme configurations based on IntelliJ IDEA color schemes
+        const themes = {
+            dark: {
+                theme: 'dark',
+                themeVariables: {
+                    darkMode: true,
+                    background: 'transparent',
+                    // Primary colors - based on Darcula scheme
+                    primaryColor: '#8888C6',
+                    primaryTextColor: '#d4d4d4',
+                    primaryBorderColor: '#6897BB',
+                    // Line and edge colors
+                    lineColor: '#0F9795',
+                    edgeLabelBackground: '#2d2d30',
+                    // Secondary colors
+                    secondaryColor: '#364135',
+                    secondaryTextColor: '#d4d4d4',
+                    secondaryBorderColor: '#3c3c3c',
+                    // Tertiary colors
+                    tertiaryColor: '#252526',
+                    tertiaryTextColor: '#d4d4d4',
+                    tertiaryBorderColor: '#3c3c3c',
+                    // Node colors
+                    nodeBorder: '#6897BB',
+                    mainBkg: '#2d2d30',
+                    // Text colors
+                    textColor: '#d4d4d4',
+                    titleColor: '#20999D',
+                    // Note colors
+                    noteBkgColor: '#364135',
+                    noteTextColor: '#d4d4d4',
+                    noteBorderColor: '#3c3c3c',
+                    // Font
+                    fontSize: '14px',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }
+            },
+            default: {
+                theme: 'default',
+                themeVariables: {
+                    darkMode: false,
+                    background: 'transparent',
+                    // Primary colors - based on IntelliJ Light scheme
+                    primaryColor: '#0033B3',
+                    primaryTextColor: '#000000',
+                    primaryBorderColor: '#174AD4',
+                    // Line and edge colors
+                    lineColor: '#008080',
+                    edgeLabelBackground: '#ffffff',
+                    // Secondary colors
+                    secondaryColor: '#EDFCED',
+                    secondaryTextColor: '#000000',
+                    secondaryBorderColor: '#cccccc',
+                    // Tertiary colors
+                    tertiaryColor: '#f5f5f5',
+                    tertiaryTextColor: '#000000',
+                    tertiaryBorderColor: '#cccccc',
+                    // Node colors
+                    nodeBorder: '#174AD4',
+                    mainBkg: '#ffffff',
+                    // Text colors
+                    textColor: '#000000',
+                    titleColor: '#007E8A',
+                    // Note colors
+                    noteBkgColor: '#EDFCED',
+                    noteTextColor: '#000000',
+                    noteBorderColor: '#cccccc',
+                    // Font
+                    fontSize: '14px',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }
+            }
+        };
+
+        let currentTheme = 'dark';
+
+        // Initialize with default theme
+        function initMermaid(themeName) {
+            currentTheme = themeName || 'dark';
+            const themeConfig = themes[currentTheme];
+
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: themeConfig.theme,
+                themeVariables: themeConfig.themeVariables,
+                securityLevel: 'loose'
+            });
+        }
+
+        // Initialize with dark theme by default
+        initMermaid('dark');
+
+        /**
+         * Render Mermaid diagram
+         * @param {string} code - Mermaid diagram code
+         * @param {string} themeName - Theme name ('dark' or 'default')
+         */
+        window.renderMermaid = async function (code, themeName) {
+            const container = document.getElementById('mermaidContainer');
+
+            // Check if mermaid is loaded
+            if (typeof mermaid === 'undefined') {
+                const errorMsg = 'Mermaid library not loaded. Cannot render diagram.';
+                container.innerHTML = '<div class="error">' + errorMsg + '</div>';
+
+                if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                    window.kmpJsBridge.callNative(
+                        'mermaidRenderCallback',
+                        JSON.stringify({ success: false, message: errorMsg }),
+                        function () { }
+                    );
+                }
+                return;
+            }
+
+            // Reinitialize if theme changed
+            if (themeName && themeName !== currentTheme) {
+                initMermaid(themeName);
+            }
+
+            try {
+                const diagramId = 'mermaid-' + Date.now();
+                const { svg } = await mermaid.render(diagramId, code);
+
+                container.innerHTML = svg;
+
+                // Notify native code of success
+                if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                    window.kmpJsBridge.callNative(
+                        'mermaidRenderCallback',
+                        JSON.stringify({ success: true }),
+                        function () { }
+                    );
+                }
+
+                // Auto-adjust height and notify native code
+                setTimeout(() => {
+                    const svg = container.querySelector('svg');
+                    if (svg) {
+                        const height = svg.getBoundingClientRect().height;
+                        const totalHeight = Math.max(height + 32, 200);
+                        document.body.style.height = totalHeight + 'px';
+
+                        // Notify native code of height change
+                        if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                            window.kmpJsBridge.callNative(
+                                'mermaidHeightCallback',
+                                totalHeight.toString(),
+                                function () { }
+                            );
+                        }
+                    }
+                }, 100);
+
+            } catch (error) {
+                container.innerHTML = `<div class="error">Failed to render diagram:\n${'$'}{error.message}</div>`;
+
+                if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
+                    window.kmpJsBridge.callNative(
+                        'mermaidRenderCallback',
+                        JSON.stringify({ success: false, message: error.message }),
+                        function () { }
+                    );
+                }
+            }
+        };
+
+        /**
+         * Set zoom level for the diagram
+         * @param {number} zoom - Zoom level (e.g., 1.0 = 100%, 1.5 = 150%)
+         */
+        window.setZoomLevel = function (zoom) {
+            const container = document.getElementById('mermaidContainer');
+            if (container) {
+                const mermaidDiv = container.querySelector('.mermaid, svg');
+                if (mermaidDiv) {
+                    mermaidDiv.style.transform = `scale(${'$'}{zoom})`;
+                }
+            }
+        };
+    </script>
+</body>
+
+</html>
+    """.trimIndent()
+}
+

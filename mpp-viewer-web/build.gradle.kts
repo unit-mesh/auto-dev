@@ -29,6 +29,12 @@ kotlin {
         }
     }
 
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
+
     sourceSets {
         commonMain {
             dependencies {
@@ -59,6 +65,12 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation(compose.desktop.currentOs)
+            }
+        }
+
+        val wasmJsMain by getting {
+            dependencies {
+                // WASM-specific dependencies if needed
             }
         }
     }
@@ -127,8 +139,8 @@ val downloadMermaid = tasks.register<DownloadMermaidTask>("downloadMermaid") {
     outputFile.set(file("src/commonMain/resources/mermaid/mermaid.min.js"))
 }
 
-// Make jvmProcessResources depend on downloadMermaid
-tasks.named("jvmProcessResources") {
+// Make processResources tasks depend on downloadMermaid
+tasks.matching { it.name.contains("processResources", ignoreCase = true) }.configureEach {
     dependsOn(downloadMermaid)
 }
 

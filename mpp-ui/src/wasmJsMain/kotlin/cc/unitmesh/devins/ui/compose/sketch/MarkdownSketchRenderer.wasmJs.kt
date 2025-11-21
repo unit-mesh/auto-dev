@@ -107,10 +107,14 @@ actual object MarkdownSketchRenderer {
                             )
 
                             if (language?.lowercase() == "mermaid" && isComplete) {
-                                RemoteMermaidRenderer(
+                                cc.unitmesh.viewer.web.MermaidRenderer(
                                     mermaidCode = code,
                                     modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp)
                                 )
+//                                RemoteMermaidRenderer(
+//                                    mermaidCode = code,
+//                                    modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp)
+//                                )
                             }
                         }
                     },

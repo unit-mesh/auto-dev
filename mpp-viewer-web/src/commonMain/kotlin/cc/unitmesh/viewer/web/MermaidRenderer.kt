@@ -251,22 +251,6 @@ private fun MermaidWebView(
         })
     }
 
-    // Add timeout detection for rendering
-    LaunchedEffect(webViewState.isLoading, mermaidCode) {
-        if (!webViewState.isLoading && webViewState.loadingState is com.multiplatform.webview.web.LoadingState.Finished) {
-            // Wait for mermaid to load and render, with timeout
-            val timeoutJob = kotlinx.coroutines.launch {
-                delay(15000) // 15 second timeout
-                println("MermaidRenderer: Rendering timeout - CDN might be unavailable")
-                onRenderComplete?.invoke(false, "Rendering timeout: Mermaid library may not have loaded from CDN")
-            }
-            
-            // Cancel timeout if render completes (this will be cancelled when component unmounts or re-renders)
-            kotlinx.coroutines.delay(100)
-            // The timeout job will be automatically cancelled when the LaunchedEffect restarts
-        }
-    }
-
     LaunchedEffect(webViewState.isLoading, mermaidCode, isDarkTheme, zoomLevel) {
         println(webViewState.loadingState)
         if (!webViewState.isLoading && webViewState.loadingState is com.multiplatform.webview.web.LoadingState.Finished) {
