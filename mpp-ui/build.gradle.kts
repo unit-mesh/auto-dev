@@ -308,6 +308,7 @@ kotlin {
 
                 // SQLDelight - Web Worker driver (same as JS)
                 implementation(npm("sql.js", "1.8.0"))
+                implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.1.0"))
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
                 implementation("app.cash.sqldelight:web-worker-driver-wasm-js:2.1.0")
 
