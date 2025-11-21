@@ -11,9 +11,6 @@ import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.AgentType
 import cc.unitmesh.devins.editor.EditorCallbacks
 import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
-import cc.unitmesh.devins.ui.compose.agent.FileSystemTreeView
-import cc.unitmesh.devins.ui.compose.agent.FileViewerPanelWrapper
-import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.editor.DevInEditorInput
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.workspace.WorkspaceManager
