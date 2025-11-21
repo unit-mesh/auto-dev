@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,9 +52,21 @@ fun DesktopTitleBarTabs(
             .height(40.dp)
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = { onDoubleClick() }
-                )
+                awaitPointerEventScope {
+                    var lastClickTime = 0L
+                    while (true) {
+                        val event = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Main)
+                        val change = event.changes.firstOrNull() ?: continue
+                        
+                        if (change.changedToUp()) {
+                            val currentTime = event.changes.first().uptimeMillis
+                            if (currentTime - lastClickTime < 500) {
+                                onDoubleClick()
+                            }
+                            lastClickTime = currentTime
+                        }
+                    }
+                }
             }
     ) {
         // Center: Workspace Indicator
