@@ -3,7 +3,7 @@
 # AutoDev iOS App - 完整构建脚本
 # 
 # 这个脚本会:
-# 1. 编译 Kotlin Multiplatform Framework (mpp-core 和 mpp-ui)
+# 1. 编译 Kotlin Multiplatform Framework (mpp-ui, 自动包含 mpp-core)
 # 2. 安装 CocoaPods 依赖
 # 3. 构建 iOS 应用 (可选)
 # 4. 打开 Xcode 项目或直接运行到模拟器
@@ -152,15 +152,8 @@ fi
 
 echo -e "${BLUE}📦 步骤 ${STEP_NUM}/4: 编译 Kotlin Framework...${NC}"
 
-echo -e "${YELLOW}  编译 mpp-core...${NC}"
-./gradlew :mpp-core:link${BUILD_CONFIG}Framework${GRADLE_TARGET} --console=plain
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ mpp-core 编译失败${NC}"
-    exit 1
-fi
-
-echo -e "${YELLOW}  编译 mpp-ui...${NC}"
+# 只需要编译 mpp-ui，它会传递依赖编译 mpp-core
+echo -e "${YELLOW}  编译 mpp-ui (包含 mpp-core)...${NC}"
 ./gradlew :mpp-ui:link${BUILD_CONFIG}Framework${GRADLE_TARGET} --console=plain
 
 if [ $? -ne 0 ]; then
@@ -174,7 +167,6 @@ echo -e "${GREEN}✅ Framework 编译成功!${NC}"
 GRADLE_TARGET_LOWER=$(echo "$GRADLE_TARGET" | tr '[:upper:]' '[:lower:]')
 BUILD_CONFIG_LOWER=$(echo "$BUILD_CONFIG" | tr '[:upper:]' '[:lower:]')
 echo -e "${CYAN}  Framework 位置:${NC}"
-echo -e "    mpp-core: ${YELLOW}mpp-core/build/bin/${GRADLE_TARGET_LOWER}/${BUILD_CONFIG_LOWER}Framework/AutoDevCore.framework${NC}"
 echo -e "    mpp-ui:   ${YELLOW}mpp-ui/build/bin/${GRADLE_TARGET_LOWER}/${BUILD_CONFIG_LOWER}Framework/AutoDevUI.framework${NC}"
 echo ""
 
@@ -227,7 +219,7 @@ if [ "$ACTION" = "open" ]; then
     echo -e "${GREEN}╚════════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "${BLUE}下一步:${NC}"
-    echo -e "  1. 在 Xcode 中选择模拟器 (例如: iPhone 15 Pro)"
+    echo -e "  1. 在 Xcode 中选择目标设备"
     echo -e "  2. 点击 Run 按钮 (⌘R)"
     echo -e "  3. 享受 AutoDev iOS App! 🚀"
     echo ""
@@ -238,10 +230,26 @@ elif [ "$ACTION" = "build" ] || [ "$ACTION" = "run" ]; then
 
     SCHEME="AutoDevApp"
     WORKSPACE="AutoDevApp.xcworkspace"
+    CODE_SIGN_ARGS=""
 
     if [ "$TARGET_TYPE" = "device" ]; then
-        DESTINATION="generic/platform=iOS"
+        # 尝试自动检测连接的设备
+        echo -e "${YELLOW}  正在检测连接的设备...${NC}"
+        # 查找真实的 iPhone 设备 ID (排除模拟器)
+        DEVICE_ID=$(xcrun xctrace list devices 2>&1 | grep -v "Simulator" | grep -oE "[0-9A-F]{8}-[0-9A-F]{16}" | head -n 1)
+        
+        if [ -n "$DEVICE_ID" ]; then
+            DESTINATION="id=$DEVICE_ID"
+            echo -e "${GREEN}✓ 找到设备: ${DEVICE_ID}${NC}"
+        else
+            DESTINATION="generic/platform=iOS"
+            echo -e "${YELLOW}⚠️  未找到特定设备，使用通用 iOS 设备目标${NC}"
+        fi
         SDK="iphoneos"
+        
+        # 真机编译需要签名，允许 Xcode 自动管理
+        echo -e "${YELLOW}  真机构建: 启用代码签名 (Automatic Signing)${NC}"
+        CODE_SIGN_ARGS="-allowProvisioningUpdates"
     else
         # 获取可用的模拟器
         SIMULATOR=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
@@ -251,6 +259,9 @@ elif [ "$ACTION" = "build" ] || [ "$ACTION" = "run" ]; then
         fi
         DESTINATION="id=$SIMULATOR"
         SDK="iphonesimulator"
+        
+        # 模拟器构建禁用签名以避免问题
+        CODE_SIGN_ARGS="CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
     fi
 
     echo -e "${YELLOW}  解析 Swift Package 依赖...${NC}"
@@ -277,18 +288,32 @@ elif [ "$ACTION" = "build" ] || [ "$ACTION" = "run" ]; then
     echo ""
 
     # 构建应用
-    xcodebuild \
-        -workspace "$WORKSPACE" \
-        -scheme "$SCHEME" \
-        -configuration "$BUILD_CONFIG" \
-        -sdk "$SDK" \
-        -destination "$DESTINATION" \
-        -derivedDataPath "./build" \
-        build \
-        CODE_SIGN_IDENTITY="" \
-        CODE_SIGNING_REQUIRED=NO \
-        CODE_SIGNING_ALLOWED=NO \
-        | tee build.log
+    # 注意: 我们不使用 eval，而是根据情况传递参数
+    if [ "$TARGET_TYPE" = "device" ]; then
+        xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration "$BUILD_CONFIG" \
+            -sdk "$SDK" \
+            -destination "$DESTINATION" \
+            -derivedDataPath "./build" \
+            -allowProvisioningUpdates \
+            build \
+            | tee build.log
+    else
+        xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration "$BUILD_CONFIG" \
+            -sdk "$SDK" \
+            -destination "$DESTINATION" \
+            -derivedDataPath "./build" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build \
+            | tee build.log
+    fi
 
     BUILD_RESULT=${PIPESTATUS[0]}
 
@@ -315,35 +340,47 @@ elif [ "$ACTION" = "build" ] || [ "$ACTION" = "run" ]; then
     echo ""
 
     if [ "$ACTION" = "run" ]; then
-        # 运行到模拟器
-        echo -e "${BLUE}🚀 运行应用到模拟器...${NC}"
+        if [ "$TARGET_TYPE" = "device" ]; then
+            # 真机运行
+            if command -v ios-deploy &> /dev/null; then
+                echo -e "${BLUE}🚀 使用 ios-deploy 安装并运行到设备...${NC}"
+                ios-deploy --debug --bundle "$APP_PATH" --id "$DEVICE_ID"
+            else
+                echo -e "${YELLOW}⚠️  未找到 ios-deploy 工具，无法自动安装到真机${NC}"
+                echo -e "请使用以下命令安装: ${CYAN}brew install ios-deploy${NC}"
+                echo -e "或者打开 Xcode 手动运行: ${CYAN}open AutoDevApp.xcworkspace${NC}"
+            fi
+        else
+            # 运行到模拟器
+            echo -e "${BLUE}🚀 运行应用到模拟器...${NC}"
 
-        # 启动模拟器
-        echo -e "${YELLOW}  启动模拟器...${NC}"
-        xcrun simctl boot "$SIMULATOR" 2>/dev/null || true
-        sleep 2
+            # 启动模拟器
+            echo -e "${YELLOW}  启动模拟器...${NC}"
+            xcrun simctl boot "$SIMULATOR" 2>/dev/null || true
+            sleep 2
 
-        # 卸载旧版本（如果存在）
-        BUNDLE_ID="cc.unitmesh.AutoDevApp"
-        xcrun simctl uninstall "$SIMULATOR" "$BUNDLE_ID" 2>/dev/null || true
+            # 卸载旧版本（如果存在）
+            BUNDLE_ID="cc.unitmesh.AutoDevApp"
+            xcrun simctl uninstall "$SIMULATOR" "$BUNDLE_ID" 2>/dev/null || true
 
-        # 安装应用
-        echo -e "${YELLOW}  安装应用到模拟器...${NC}"
-        xcrun simctl install "$SIMULATOR" "$APP_PATH"
+            # 安装应用
+            echo -e "${YELLOW}  安装应用到模拟器...${NC}"
+            xcrun simctl install "$SIMULATOR" "$APP_PATH"
 
-        if [ $? -ne 0 ]; then
-            echo -e "${RED}❌ 应用安装失败${NC}"
-            exit 1
+            if [ $? -ne 0 ]; then
+                echo -e "${RED}❌ 应用安装失败${NC}"
+                exit 1
+            fi
+
+            # 启动应用
+            echo -e "${YELLOW}  启动应用...${NC}"
+            xcrun simctl launch --console "$SIMULATOR" "$BUNDLE_ID"
+
+            # 打开模拟器窗口
+            open -a Simulator
+
+            echo -e "${GREEN}✅ 应用已启动!${NC}"
         fi
-
-        # 启动应用
-        echo -e "${YELLOW}  启动应用...${NC}"
-        xcrun simctl launch --console "$SIMULATOR" "$BUNDLE_ID"
-
-        # 打开模拟器窗口
-        open -a Simulator
-
-        echo -e "${GREEN}✅ 应用已启动!${NC}"
     fi
 
     echo ""
@@ -357,8 +394,11 @@ elif [ "$ACTION" = "build" ] || [ "$ACTION" = "run" ]; then
         echo -e "  ${CYAN}${APP_PATH}${NC}"
         echo ""
         echo -e "${BLUE}下一步:${NC}"
-        echo -e "  运行应用: ${YELLOW}./build-ios-app.sh --run${NC}"
+        if [ "$TARGET_TYPE" = "device" ]; then
+             echo -e "  运行应用: 打开 Xcode 或安装 ios-deploy"
+        else
+             echo -e "  运行应用: ${YELLOW}./build-ios-app.sh --run${NC}"
+        fi
         echo ""
     fi
 fi
-
