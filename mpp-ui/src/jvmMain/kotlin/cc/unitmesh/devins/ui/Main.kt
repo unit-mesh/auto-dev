@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
     application {
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
-        
+
         // KCEF 初始化状态
         var kcefInitialized by remember { mutableStateOf(false) }
         var kcefDownloading by remember { mutableStateOf(0F) }
@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
 
         // 使用 ViewModel 管理 UI 状态
         val uiState = rememberDesktopUiState()
-        
+
         // 初始化 KCEF（用于 WebView/Mermaid 渲染）
         // 从 v1.9.40 开始，如果使用 JetBrains Runtime JDK，可以直接使用 bundled JCEF，无需下载
         LaunchedEffect(Unit) {
@@ -63,7 +63,7 @@ fun main(args: Array<String>) {
                             }
                             onInitialized {
                                 val javaHome = System.getProperty("java.home", "unknown")
-                                val isJbr = javaHome.contains("jbr", ignoreCase = true) || 
+                                val isJbr = javaHome.contains("jbr", ignoreCase = true) ||
                                             javaHome.contains("jetbrains", ignoreCase = true)
                                 if (isJbr) {
                                     AutoDevLogger.info("AutoDevMain") { "✅ KCEF initialized using JBR bundled JCEF (no download needed)" }
@@ -92,7 +92,7 @@ fun main(args: Array<String>) {
                 }
             }
         }
-        
+
         // 清理 KCEF
         DisposableEffect(Unit) {
             onDispose {
@@ -136,9 +136,9 @@ fun main(args: Array<String>) {
                         ) {
                             CircularProgressIndicator()
                             if (kcefDownloading > 0F) {
-                                Text("Preparing WebView: ${kcefDownloading.toInt()}%")
+                                Text("Preparing: ${kcefDownloading.toInt()}%")
                             } else {
-                                Text("Initializing WebView...")
+                                Text("Initializing...")
                             }
                             Text(
                                 "(First launch may take a moment)",
@@ -149,7 +149,7 @@ fun main(args: Array<String>) {
                     }
                     return@Window
                 }
-                
+
                 DesktopWindowLayout(
                     onMinimize = { windowState.isMinimized = true },
                     onMaximize = {

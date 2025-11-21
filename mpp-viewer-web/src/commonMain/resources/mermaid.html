@@ -33,12 +33,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
         }
 
         .mermaid {
             width: 100%;
             display: flex;
             justify-content: center;
+            transform-origin: center center;
+            transition: transform 0.2s ease-in-out;
         }
 
         .mermaid>svg {
@@ -212,6 +217,20 @@
                         JSON.stringify({ success: false, message: error.message }),
                         function () { }
                     );
+                }
+            }
+        };
+
+        /**
+         * Set zoom level for the diagram
+         * @param {number} zoom - Zoom level (e.g., 1.0 = 100%, 1.5 = 150%)
+         */
+        window.setZoomLevel = function (zoom) {
+            const container = document.getElementById('mermaidContainer');
+            if (container) {
+                const mermaidDiv = container.querySelector('.mermaid, svg');
+                if (mermaidDiv) {
+                    mermaidDiv.style.transform = `scale(${zoom})`;
                 }
             }
         };
