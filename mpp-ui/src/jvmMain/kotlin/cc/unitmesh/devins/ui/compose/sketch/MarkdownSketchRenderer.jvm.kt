@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import cc.unitmesh.agent.Platform
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
@@ -15,11 +14,18 @@ import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownCodeFence
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCode
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
-import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import cc.unitmesh.viewer.web.MermaidRenderer
+import com.mikepenz.markdown.model.DefaultMarkdownTypography
+import com.mikepenz.markdown.model.MarkdownTypography
 
 /**
  * JVM 平台的 Markdown Sketch 渲染器实现
@@ -38,9 +44,31 @@ actual object MarkdownSketchRenderer {
             Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
         }
 
+        val typography = DefaultMarkdownTypography(
+            h1 = MaterialTheme.typography.headlineMedium,
+            h2 = MaterialTheme.typography.headlineSmall,
+            h3 = MaterialTheme.typography.titleLarge,
+            h4 = MaterialTheme.typography.titleMedium,
+            h5 = MaterialTheme.typography.titleSmall,
+            h6 = MaterialTheme.typography.labelLarge,
+            text = MaterialTheme.typography.bodyMedium,
+            code = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+            quote = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+            paragraph = MaterialTheme.typography.bodyMedium,
+            ordered = MaterialTheme.typography.bodyMedium,
+            bullet = MaterialTheme.typography.bodyMedium,
+            list = MaterialTheme.typography.bodyMedium,
+            table = MaterialTheme.typography.bodyMedium,
+            inlineCode = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+            textLink = TextLinkStyles(
+                style = SpanStyle(color = MaterialTheme.colorScheme.primary)
+            )
+        )
+
         Markdown(
             markdown,
             modifier = modifier,
+            typography = typography,
             components = markdownComponents(
                 table = CurrentComponentsBridge.table,
                 heading1 = CurrentComponentsBridge.heading3,
@@ -70,7 +98,7 @@ actual object MarkdownSketchRenderer {
                         )
 
                         if (language?.lowercase() == "mermaid" && isComplete) {
-                            cc.unitmesh.viewer.web.MermaidRenderer(
+                            MermaidRenderer(
                                 mermaidCode = code,
                                 isDarkTheme = isDarkTheme,
                                 modifier = Modifier.fillMaxSize()
