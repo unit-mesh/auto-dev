@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,29 +11,42 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: transparent;
             color: #d4d4d4;
-            overflow: auto;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
         }
+
+        html {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
         #mermaidContainer {
             padding: 16px;
-            min-height: 100vh;
+            min-height: auto;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+
         .mermaid {
             width: 100%;
             display: flex;
             justify-content: center;
         }
-        .mermaid > svg {
+
+        .mermaid>svg {
             max-width: 100%;
             height: auto;
             display: block;
         }
+
         .error {
             color: #f48771;
             font-family: monospace;
@@ -43,11 +57,12 @@
         }
     </style>
 </head>
+
 <body>
     <div id="mermaidContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"></script>
-    
+
     <script>
         // Theme configurations based on IntelliJ IDEA color schemes
         const themes = {
@@ -129,8 +144,8 @@
         function initMermaid(themeName) {
             currentTheme = themeName || 'dark';
             const themeConfig = themes[currentTheme];
-            
-            mermaid.initialize({ 
+
+            mermaid.initialize({
                 startOnLoad: false,
                 theme: themeConfig.theme,
                 themeVariables: themeConfig.themeVariables,
@@ -146,29 +161,29 @@
          * @param {string} code - Mermaid diagram code
          * @param {string} themeName - Theme name ('dark' or 'default')
          */
-        window.renderMermaid = async function(code, themeName) {
+        window.renderMermaid = async function (code, themeName) {
             const container = document.getElementById('mermaidContainer');
-            
+
             // Reinitialize if theme changed
             if (themeName && themeName !== currentTheme) {
                 initMermaid(themeName);
             }
-            
+
             try {
                 const diagramId = 'mermaid-' + Date.now();
                 const { svg } = await mermaid.render(diagramId, code);
-                
+
                 container.innerHTML = svg;
-                
+
                 // Notify native code of success
                 if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
                     window.kmpJsBridge.callNative(
                         'mermaidRenderCallback',
                         JSON.stringify({ success: true }),
-                        function() {}
+                        function () { }
                     );
                 }
-                
+
                 // Auto-adjust height and notify native code
                 setTimeout(() => {
                     const svg = container.querySelector('svg');
@@ -176,30 +191,31 @@
                         const height = svg.getBoundingClientRect().height;
                         const totalHeight = Math.max(height + 32, 200);
                         document.body.style.height = totalHeight + 'px';
-                        
+
                         // Notify native code of height change
                         if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
                             window.kmpJsBridge.callNative(
                                 'mermaidHeightCallback',
                                 totalHeight.toString(),
-                                function() {}
+                                function () { }
                             );
                         }
                     }
                 }, 100);
-                
+
             } catch (error) {
                 container.innerHTML = `<div class="error">Failed to render diagram:\n${error.message}</div>`;
-                
+
                 if (window.kmpJsBridge && window.kmpJsBridge.callNative) {
                     window.kmpJsBridge.callNative(
                         'mermaidRenderCallback',
                         JSON.stringify({ success: false, message: error.message }),
-                        function() {}
+                        function () { }
                     );
                 }
             }
         };
     </script>
 </body>
+
 </html>
