@@ -65,6 +65,10 @@ config.plugins.push(
             {
                 from: '../../node_modules/@unit-mesh/treesitter-artifacts/wasm/*.wasm',
                 to: 'wasm/[name][ext]'
+            },
+            {
+                from: '../../node_modules/sql.js/dist/sql-wasm.wasm',
+                to: 'sql-wasm.wasm'
             }
         ]
     })

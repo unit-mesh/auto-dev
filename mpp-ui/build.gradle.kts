@@ -31,6 +31,7 @@ sqldelight {
     databases {
         create("DevInsDatabase") {
             packageName.set("cc.unitmesh.devins.db")
+//            generateAsync = true
         }
     }
 }
@@ -305,9 +306,10 @@ kotlin {
 
                 implementation(npm("wasm-git", "0.0.13"))
 
-                // WASM browser dependencies
                 // SQLDelight - Web Worker driver (same as JS)
+                implementation(npm("sql.js", "1.8.0"))
                 implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
+                implementation("app.cash.sqldelight:web-worker-driver-wasm-js:2.1.0")
 
                 // Ktor HTTP Client JS engine (works for WASM too)
                 implementation("io.ktor:ktor-client-js:3.2.2")
