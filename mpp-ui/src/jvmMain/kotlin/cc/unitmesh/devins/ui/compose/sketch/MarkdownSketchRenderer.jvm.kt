@@ -70,7 +70,14 @@ actual object MarkdownSketchRenderer {
             modifier = modifier,
             typography = typography,
             components = markdownComponents(
-                table = CurrentComponentsBridge.table,
+                table = { tableContent ->
+                    val style = LocalMarkdownTypography.current.table
+                    MarkdownTable(
+                        content = tableContent.content,
+                        node = tableContent.node,
+                        style = style,
+                    )
+                },
                 heading1 = CurrentComponentsBridge.heading3,
                 heading2 = CurrentComponentsBridge.heading4,
                 heading3 = CurrentComponentsBridge.heading5,
