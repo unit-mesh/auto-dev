@@ -49,9 +49,24 @@
 
 # Ktor (Android/Platform support)
 -dontwarn io.ktor.**
+-keep class io.ktor.** { *; }
+-keep class io.ktor.client.** { *; }
+-keep class io.ktor.client.engine.cio.** { *; }
+-keep class io.ktor.network.** { *; }
+-keep class io.ktor.utils.io.** { *; }
+
+# Keep ServiceLoader implementations for Ktor
+-keepnames class io.ktor.client.engine.cio.CIOEngineContainer
+-keep class * extends io.ktor.client.engine.HttpClientEngineContainer
+
 
 # SLF4J
 -dontwarn org.slf4j.**
+-keep class org.slf4j.** { *; }
+
+# Kotlin Coroutines
+-keep class kotlinx.coroutines.** { *; }
+
 
 # General platform/optional dependencies
 -dontwarn android.**
@@ -71,3 +86,7 @@
 
 
 
+
+# KEEP EVERYTHING - Disable ProGuard Stripping
+-keep class * { *; }
+-dontwarn **

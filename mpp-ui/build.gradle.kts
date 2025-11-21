@@ -381,6 +381,8 @@ compose.desktop {
 
         buildTypes.release.proguard {
             configurationFiles.from(project.file("proguard-rules.pro"))
+            optimize = false
+            obfuscate = false
         }
     }
 }
