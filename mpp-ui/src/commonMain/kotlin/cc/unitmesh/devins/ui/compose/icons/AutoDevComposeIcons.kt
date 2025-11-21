@@ -27,6 +27,7 @@ object AutoDevComposeIcons {
     val KeyboardArrowUp: ImageVector get() = Icons.Default.KeyboardArrowUp
     val KeyboardArrowDown: ImageVector get() = Icons.Default.KeyboardArrowDown
     val AccountTree: ImageVector get() = Icons.Default.AccountTree
+    val List: ImageVector get() = Icons.Default.List
 
     // Actions
     val Send: ImageVector get() = Icons.Default.Send
