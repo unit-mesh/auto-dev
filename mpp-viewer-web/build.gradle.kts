@@ -63,6 +63,27 @@ kotlin {
     }
 }
 
+// Desktop configuration for KCEF (Chromium Embedded Framework)
+compose.desktop {
+    application {
+        mainClass = "cc.unitmesh.viewer.web.MermaidPreviewKt"
+    }
+}
+
+// Add JVM flags for KCEF
+afterEvaluate {
+    tasks.withType<JavaExec> {
+        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
+
+        if (System.getProperty("os.name").contains("Mac")) {
+            jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+        }
+    }
+}
+
 // Task to download Mermaid.js library
 abstract class DownloadMermaidTask : DefaultTask() {
     @get:Input

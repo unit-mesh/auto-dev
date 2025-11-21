@@ -129,7 +129,7 @@ fun MermaidRenderer(
     }
 
     WebView(
-        rememberWebViewState("https://www.phodal.com"),
+        state = webViewState,
         navigator = webViewNavigator,
         modifier = modifier.fillMaxSize(),
         captureBackPresses = true,
