@@ -27,30 +27,13 @@ fun WalkthroughBlockRenderer(
 ) {
     val isDarkTheme = isSystemInDarkTheme()
 
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        ),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-//            if (!isComplete) {
-//                Text(text = walkthroughContent, modifier)
-//            } else {
-            MarkdownSketchRenderer.RenderMarkdown(
-                markdown = walkthroughContent,
-                isDarkTheme = isDarkTheme,
-                modifier = modifier
-            )
-//            }
-        }
+    Box(modifier = modifier.fillMaxWidth()) {
+        MarkdownSketchRenderer.RenderMarkdown(
+            markdown = walkthroughContent,
+            isComplete = isComplete,
+            isDarkTheme = isDarkTheme,
+            modifier = modifier
+        )
     }
 }
 
