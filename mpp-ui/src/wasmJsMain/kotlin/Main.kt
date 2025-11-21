@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.CanvasBasedWindow
+import androidx.compose.ui.window.ComposeViewport
 import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
 import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.devins.ui.compose.AutoDevApp
@@ -35,13 +36,14 @@ import org.jetbrains.compose.resources.preloadFont
  * It's loaded asynchronously and the app shows a loading indicator until fonts are ready.
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalResourceApi::class, InternalComposeUiApi::class)
+@Suppress("DEPRECATION")
 fun main() {
     // Configure web resources path mapping (required for WASM)
     configureWebResources {
         resourcePathMapping { path -> "./$path" }
     }
 
-    CanvasBasedWindow(canvasElementId = "ComposeTarget") {
+    ComposeViewport {
         val utf8Font = preloadFont(Res.font.NotoSansSC_Regular).value
         var fontsFallbackInitialized by remember { mutableStateOf(false) }
 
