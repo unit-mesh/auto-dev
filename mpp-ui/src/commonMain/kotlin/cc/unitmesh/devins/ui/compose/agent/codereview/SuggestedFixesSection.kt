@@ -5,9 +5,13 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,7 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import cc.unitmesh.agent.diff.DiffParser
+import cc.unitmesh.agent.diff.DiffUtils
 import cc.unitmesh.agent.linter.LinterRegistry
 import cc.unitmesh.devins.parser.CodeFence
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
@@ -140,7 +147,8 @@ fun SuggestedFixesSection(
                                 diffPatch = diffPatch,
                                 onApply = { onApplyFix(diffPatch) },
                                 onReject = { onRejectFix(diffPatch) },
-                                workspace = workspace
+                                workspace = workspace,
+                                isGenerating = isActive  // 传递生成状态
                             )
                         }
                     } else if (fixOutput.isNotBlank()) {
@@ -175,7 +183,8 @@ private fun DiffPatchCard(
     onApply: () -> Unit,
     onReject: () -> Unit,
     modifier: Modifier = Modifier,
-    workspace: Workspace? = null
+    workspace: Workspace? = null,
+    isGenerating: Boolean = false  // 是否正在流式生成
 ) {
     var isExpanded by remember { mutableStateOf(true) }
     var isApplied by remember { mutableStateOf(false) }
@@ -183,14 +192,19 @@ private fun DiffPatchCard(
     var isApplying by remember { mutableStateOf(false) }
     var applyError by remember { mutableStateOf<String?>(null) }
     var showCompareDialog by remember { mutableStateOf(false) }
-    var beforeContent by remember { mutableStateOf<String?>(null) }
-    var afterContent by remember { mutableStateOf<String?>(null) }
+    var diffContentForDialog by remember { mutableStateOf<String?>(null) }
+    var filePathForDialog by remember { mutableStateOf<String?>(null) }
     
     val scope = rememberCoroutineScope()
 
     // 提取文件路径
     val filePath = remember(diffPatch) {
         extractFilePathFromDiff(diffPatch)
+    }
+    
+    // 检查 patch 是否完整（用于流式生成时禁用按钮）
+    val isPatchComplete = remember(diffPatch, isGenerating) {
+        !isGenerating && isDiffPatchComplete(diffPatch)
     }
 
     Card(
@@ -235,7 +249,7 @@ private fun DiffPatchCard(
                         modifier = Modifier.size(16.dp)
                     )
 
-                    Text(
+                Text(
                         text = filePath ?: "Unknown file",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
@@ -249,6 +263,7 @@ private fun DiffPatchCard(
                         isRejected -> StatusBadge("Rejected", AutoDevColors.Red.c600)
                         applyError != null -> StatusBadge("Failed", AutoDevColors.Red.c600)
                         isApplying -> StatusBadge("Applying...", AutoDevColors.Blue.c600)
+                        !isPatchComplete -> StatusBadge("Generating...", AutoDevColors.Amber.c600)
                     }
                 }
 
@@ -258,28 +273,33 @@ private fun DiffPatchCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // View button
+                        // View button - 只在 patch 完整时启用
                         IconButton(
                             onClick = {
                                 scope.launch {
-                                    prepareCompareView(diffPatch, workspace) { before, after ->
-                                        beforeContent = before
-                                        afterContent = after
+                                    prepareDiffForDialog(diffPatch, workspace) { diff, path ->
+                                        diffContentForDialog = diff
+                                        filePathForDialog = path
                                         showCompareDialog = true
                                     }
                                 }
                             },
+                            enabled = isPatchComplete,  // 生成中禁用
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
                                 imageVector = AutoDevComposeIcons.Visibility,
                                 contentDescription = "View changes",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = if (isPatchComplete) {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                                },
                                 modifier = Modifier.size(18.dp)
                             )
                         }
 
-                        // Apply button
+                        // Apply button - 只在 patch 完整时启用
                         FilledTonalButton(
                             onClick = {
                                 scope.launch {
@@ -300,10 +320,12 @@ private fun DiffPatchCard(
                                     )
                                 }
                             },
-                            enabled = !isApplying,
+                            enabled = isPatchComplete && !isApplying,  // 生成中或应用中禁用
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = AutoDevColors.Green.c600,
-                                contentColor = Color.White
+                                contentColor = Color.White,
+                                disabledContainerColor = AutoDevColors.Green.c600.copy(alpha = 0.3f),
+                                disabledContentColor = Color.White.copy(alpha = 0.5f)
                             ),
                             modifier = Modifier.height(32.dp)
                         ) {
@@ -324,14 +346,16 @@ private fun DiffPatchCard(
                             Text("Apply", style = MaterialTheme.typography.labelMedium)
                         }
 
-                        // Reject button
+                        // Reject button - 只在 patch 完整时启用
                         OutlinedButton(
                             onClick = {
                                 isRejected = true
                                 onReject()
                             },
+                            enabled = isPatchComplete,  // 生成中禁用
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             modifier = Modifier.height(32.dp)
                         ) {
@@ -390,10 +414,10 @@ private fun DiffPatchCard(
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    HorizontalDivider()
-                    
-                    DiffSketchRenderer.RenderDiff(
-                        diffContent = diffPatch,
+            HorizontalDivider()
+
+            DiffSketchRenderer.RenderDiff(
+                diffContent = diffPatch,
                         modifier = Modifier.fillMaxWidth(),
                         onAccept = null, // Actions moved to header
                         onReject = null
@@ -404,12 +428,15 @@ private fun DiffPatchCard(
     }
 
     // Compare dialog
-    if (showCompareDialog && beforeContent != null && afterContent != null) {
+    if (showCompareDialog && diffContentForDialog != null) {
         CompareDialog(
-            fileName = filePath ?: "Unknown",
-            beforeContent = beforeContent!!,
-            afterContent = afterContent!!,
-            onDismiss = { showCompareDialog = false }
+            fileName = filePathForDialog ?: filePath ?: "Unknown",
+            diffContent = diffContentForDialog!!,
+            onDismiss = { 
+                showCompareDialog = false
+                diffContentForDialog = null
+                filePathForDialog = null
+            }
         )
     }
 }
@@ -431,90 +458,144 @@ private fun StatusBadge(text: String, color: Color) {
 }
 
 /**
- * 对比视图对话框
+ * 对比视图对话框 - 参考 DiffViewDialog 的实现
  */
 @Composable
 private fun CompareDialog(
     fileName: String,
-    beforeContent: String,
-    afterContent: String,
+    diffContent: String,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Visibility,
-                    contentDescription = null,
-                    tint = AutoDevColors.Blue.c600
-                )
-                Text("Compare Changes: $fileName")
-            }
-        },
-        text = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Before
-                Card(
-                    modifier = Modifier.weight(1f),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .widthIn(min = 600.dp, max = 1200.dp)
+                .heightIn(min = 400.dp, max = 900.dp)
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.9f),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        Text(
-                            text = "Before",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = AutoDevColors.Red.c600
-                        )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Visibility,
+                                contentDescription = null,
+                                tint = AutoDevColors.Blue.c600,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Compare Changes",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = beforeContent,
+                            text = fileName,
                             style = MaterialTheme.typography.bodySmall,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                    }
+
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Close,
+                            contentDescription = "Close"
                         )
                     }
                 }
+
+                HorizontalDivider()
+
+                // Diff content with scroll support
+                val verticalScrollState = rememberScrollState()
+                val horizontalScrollState = rememberScrollState()
                 
-                // After
-                Card(
-                    modifier = Modifier.weight(1f),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(verticalScrollState)
+                        .horizontalScroll(horizontalScrollState)
+                        .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        Text(
-                            text = "After",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = AutoDevColors.Green.c600
+                    if (diffContent.isNotBlank()) {
+                        DiffSketchRenderer.RenderDiff(
+                            diffContent = diffContent,
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        Spacer(Modifier.height(4.dp))
+                    } else {
                         Text(
-                            text = afterContent,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            text = "No changes to display",
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Close")
             }
         }
-    )
+    }
+}
+
+/**
+ * 检查 diff patch 是否完整（可以安全应用）
+ */
+private fun isDiffPatchComplete(diffPatch: String): Boolean {
+    if (diffPatch.isBlank()) return false
+    
+    try {
+        // 尝试用 DiffParser 解析
+        val fileDiffs = DiffParser.parse(diffPatch)
+        
+        // 检查是否有至少一个文件和一个 hunk
+        if (fileDiffs.isEmpty()) return false
+        
+        val firstDiff = fileDiffs[0]
+        
+        // 必须有文件路径和至少一个 hunk
+        if ((firstDiff.newPath == null && firstDiff.oldPath == null) || firstDiff.hunks.isEmpty()) {
+            return false
+        }
+        
+        // 检查每个 hunk 是否有实际的变更内容
+        firstDiff.hunks.forEach { hunk ->
+            if (hunk.lines.isEmpty()) return false
+            
+            // 至少应该有一个添加或删除的行
+            val hasChanges = hunk.lines.any { 
+                it.type == cc.unitmesh.agent.diff.DiffLineType.ADDED || 
+                it.type == cc.unitmesh.agent.diff.DiffLineType.DELETED 
+            }
+            if (!hasChanges) return false
+        }
+        
+        return true
+    } catch (e: Exception) {
+        // 解析失败说明 patch 不完整或格式错误
+        return false
+    }
 }
 
 /**
@@ -538,12 +619,12 @@ private fun extractFilePathFromDiff(diffPatch: String): String? {
 }
 
 /**
- * 准备对比视图的内容
+ * 准备对话框的 diff 内容 - 应用 patch 并生成完整的 unified diff
  */
-private suspend fun prepareCompareView(
+private suspend fun prepareDiffForDialog(
     diffPatch: String,
     workspace: Workspace?,
-    onReady: (before: String, after: String) -> Unit
+    onReady: (diffContent: String, filePath: String) -> Unit
 ) {
     try {
         val fileDiffs = DiffParser.parse(diffPatch)
@@ -552,36 +633,59 @@ private suspend fun prepareCompareView(
         val fileDiff = fileDiffs[0]
         val filePath = fileDiff.newPath ?: fileDiff.oldPath ?: return
 
-        // Read current content
-        val currentContent = workspace.fileSystem.readFile(filePath) ?: ""
+        // Read current file content (before)
+        val beforeContent = workspace.fileSystem.readFile(filePath) ?: ""
         
-        // Simulate what content would look like after applying the patch
-        val beforeLines = currentContent.lines()
+        // Apply patch to get after content
+        val beforeLines = if (beforeContent.isEmpty()) {
+            mutableListOf()
+        } else {
+            beforeContent.lines().toMutableList()
+        }
+        
         val afterLines = beforeLines.toMutableList()
+        var lineOffset = 0
         
-        // Apply changes to create "after" preview
+        // Apply each hunk to create the "after" content
         fileDiff.hunks.forEach { hunk ->
-            val startLine = maxOf(0, hunk.oldStartLine - 1)
+            var currentLineIndex = maxOf(0, hunk.oldStartLine - 1) + lineOffset
+
             hunk.lines.forEach { diffLine ->
                 when (diffLine.type) {
+                    cc.unitmesh.agent.diff.DiffLineType.CONTEXT -> {
+                        if (currentLineIndex < afterLines.size) {
+                            currentLineIndex++
+                        }
+                    }
                     cc.unitmesh.agent.diff.DiffLineType.DELETED -> {
-                        // Would be removed
+                        if (currentLineIndex < afterLines.size) {
+                            afterLines.removeAt(currentLineIndex)
+                            lineOffset--
+                        }
                     }
                     cc.unitmesh.agent.diff.DiffLineType.ADDED -> {
-                        // Would be added (simplified)
+                        if (currentLineIndex <= afterLines.size) {
+                            afterLines.add(currentLineIndex, diffLine.content)
+                            lineOffset++
+                            currentLineIndex++
+                        }
                     }
-                    else -> {}
+                    cc.unitmesh.agent.diff.DiffLineType.HEADER -> {}
                 }
             }
         }
 
-        // For simplicity, show first 10 lines of each
-        val beforePreview = beforeLines.take(10).joinToString("\n")
-        val afterPreview = "Applied changes preview\n(Full diff shown above)"
+        // Generate unified diff from before and after
+        val afterContent = afterLines.joinToString("\n")
+        val unifiedDiff = DiffUtils.generateUnifiedDiff(
+            beforeContent,
+            afterContent,
+            filePath
+        )
         
-        onReady(beforePreview, afterPreview)
+        onReady(unifiedDiff, filePath)
     } catch (e: Exception) {
-        // Ignore errors
+        // Ignore errors - dialog won't show
     }
 }
 

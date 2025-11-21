@@ -132,52 +132,81 @@ $result
             "No changed code blocks available."
         }
 
-        // Format lint results - only for files in changedHunks
+        // Format lint results - only for files in changedHunks, with priority separation
         val relevantFiles = changedHunks.keys
-        val formattedLintResults = if (lintResults.isNotEmpty()) {
-            lintResults
-                .filter { it.filePath in relevantFiles }
-                .mapNotNull { fileResult ->
-                    if (fileResult.issues.isNotEmpty()) {
+        val relevantLintResults = lintResults.filter { it.filePath in relevantFiles }
+        
+        // Separate files by priority: Error files vs Warning-only files
+        val filesWithErrors = relevantLintResults.filter { it.errorCount > 0 }.sortedByDescending { it.errorCount }
+        val filesWithWarningsOnly = relevantLintResults.filter { it.errorCount == 0 && it.warningCount > 0 }
+        
+        val formattedLintResults = if (relevantLintResults.isNotEmpty()) {
+            buildString {
+                // Section 1: Files with ERRORS (🚨 CRITICAL PRIORITY)
+                if (filesWithErrors.isNotEmpty()) {
+                    appendLine("## 🚨 CRITICAL PRIORITY - Files with Errors (MUST FIX FIRST)")
+                    appendLine()
+                    appendLine("**${filesWithErrors.size} file(s) with compilation/lint errors:**")
+                    appendLine()
+                    
+                    filesWithErrors.forEach { fileResult ->
                         val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
-                        buildString {
-                            appendLine("### ${fileResult.filePath}")
-                            appendLine("Total Issues: $totalCount (${fileResult.errorCount} errors, ${fileResult.warningCount} warnings)")
+                        appendLine("### ❌ ${fileResult.filePath}")
+                        appendLine("**Priority: CRITICAL** - ${fileResult.errorCount} error(s), ${fileResult.warningCount} warning(s)")
+                        appendLine()
+
+                        val critical = fileResult.issues.filter { it.severity == LintSeverity.ERROR }
+                        if (critical.isNotEmpty()) {
+                            appendLine("**🔴 ERRORS (Fix Required):**")
+                            critical.forEach { issue ->
+                                appendLine("- Line ${issue.line}: ${issue.message}")
+                                val ruleText = issue.rule
+                                if (ruleText != null && ruleText.isNotBlank()) {
+                                    appendLine("  Rule: `$ruleText`")
+                                }
+                            }
                             appendLine()
-
-                            val critical = fileResult.issues.filter { it.severity == LintSeverity.ERROR }
-                            val warnings = fileResult.issues.filter { it.severity == LintSeverity.WARNING }
-
-                            if (critical.isNotEmpty()) {
-                                appendLine("**Critical Issues:**")
-                                critical.forEach { issue ->
-                                    appendLine("- Line ${issue.line}: ${issue.message}")
-                                    val ruleText = issue.rule
-                                    if (ruleText != null && ruleText.isNotBlank()) {
-                                        appendLine("  Rule: $ruleText")
-                                    }
-                                }
-                                appendLine()
-                            }
-
-                            if (warnings.isNotEmpty()) {
-                                appendLine("**Warnings:**")
-                                warnings.take(5).forEach { issue ->
-                                    appendLine("- Line ${issue.line}: ${issue.message}")
-                                    val ruleText = issue.rule
-                                    if (ruleText != null && ruleText.isNotBlank()) {
-                                        appendLine("  Rule: $ruleText")
-                                    }
-                                }
-                                if (warnings.size > 5) {
-                                    appendLine("... and ${warnings.size - 5} more warnings")
-                                }
-                            }
                         }
-                    } else {
-                        null
+
+                        val warnings = fileResult.issues.filter { it.severity == LintSeverity.WARNING }
+                        if (warnings.isNotEmpty()) {
+                            appendLine("**⚠️ Warnings (Fix if related to errors):**")
+                            warnings.take(3).forEach { issue ->
+                                appendLine("- Line ${issue.line}: ${issue.message}")
+                            }
+                            if (warnings.size > 3) {
+                                appendLine("... and ${warnings.size - 3} more warnings")
+                            }
+                            appendLine()
+                        }
                     }
-                }.joinToString("\n\n")
+                    appendLine("---")
+                    appendLine()
+                }
+                
+                // Section 2: Files with WARNINGS only (Lower priority)
+                if (filesWithWarningsOnly.isNotEmpty()) {
+                    appendLine("## ⚠️ LOWER PRIORITY - Files with Warnings Only")
+                    appendLine()
+                    appendLine("**${filesWithWarningsOnly.size} file(s) with warnings (optional fixes):**")
+                    appendLine()
+                    
+                    filesWithWarningsOnly.forEach { fileResult ->
+                        appendLine("### ${fileResult.filePath}")
+                        appendLine("${fileResult.warningCount} warning(s) - Fix these only after addressing all errors")
+                        appendLine()
+                        
+                        val warnings = fileResult.issues.filter { it.severity == LintSeverity.WARNING }
+                        warnings.take(3).forEach { issue ->
+                            appendLine("- Line ${issue.line}: ${issue.message}")
+                        }
+                        if (warnings.size > 3) {
+                            appendLine("... and ${warnings.size - 3} more warnings")
+                        }
+                        appendLine()
+                    }
+                }
+            }
         } else {
             "No lint issues found."
         }

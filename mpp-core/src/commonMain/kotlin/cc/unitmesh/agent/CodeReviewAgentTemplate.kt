@@ -340,18 +340,31 @@ object FixGenerationTemplate {
 
 Generate **unified diff patches** for the critical issues identified in the analysis.
 
+## 🚨 PRIORITY RULES
+
+**ABSOLUTE PRIORITY: Fix files with ERRORS first!**
+
+1. **🔴 ERRORS (CRITICAL)** - Files with compilation/lint errors MUST be fixed first
+   - These will break the build or cause runtime failures
+   - Fix ALL errors in a file before moving to warnings
+   
+2. **⚠️ WARNINGS (LOWER PRIORITY)** - Only fix after all errors are resolved
+   - These are best practices or potential issues
+   - Can be skipped if time/complexity is high
+
 ## Important Constraints
 
 1. **ONE PATCH PER FILE** - If a file has multiple issues, combine all fixes into a single unified diff
 2. **Only fix changed code** - Focus ONLY on the code blocks shown below (user's changes)
-3. **Maximum 5 files** - Prioritize the most critical issues
+3. **Maximum 5 files** - Start with error files, then warnings if space permits
 4. **Use exact line numbers** - Line numbers must match the code blocks provided
+5. **ERRORS FIRST** - Always prioritize files marked with 🚨 CRITICAL PRIORITY
 
 ## Changed Code Blocks (User's Changes)
 
 ${'$'}{changedCode}
 
-## Lint Issues (Filtered to changed files)
+## Lint Issues (Prioritized by Severity)
 
 ${'$'}{lintResults}
 
@@ -361,11 +374,18 @@ ${'$'}{analysisOutput}
 
 ## Your Task
 
+**Step 1: Identify priority files**
+- Look for files marked with "🚨 CRITICAL PRIORITY" or "❌" (errors)
+- These MUST be fixed first
+
+**Step 2: Generate fixes in priority order**
+
 For each file that needs fixes:
 
 1. Identify all issues in that file from the analysis
 2. **Combine** all fixes for that file into **ONE** unified diff patch
 3. Ensure the patch applies cleanly to the changed code blocks above
+4. Start with ERROR files, then WARNING files if you have remaining slots
 
 ### Required Format:
 
@@ -419,20 +439,32 @@ index abc1234..def5678 100644
 
 ### Guidelines:
 
-1. **ONE unified diff per file** - Combine multiple fixes for the same file
-2. **Use standard unified diff format** - Must be parseable by standard diff tools
-3. **Include context lines** - Show 3 lines of context before and after changes
-4. **Accurate line numbers** - Ensure @@ headers have correct line numbers
-5. **Complete hunks** - Each hunk should be self-contained and applicable
-6. **Priority order** - Start with critical/high severity issues
-7. **Maximum 5 files** - Focus on the most important fixes
+1. **🚨 ERROR FILES FIRST** - Always fix files with errors before warnings
+2. **ONE unified diff per file** - Combine multiple fixes for the same file
+3. **Use standard unified diff format** - Must be parseable by standard diff tools
+4. **Include context lines** - Show 3 lines of context before and after changes
+5. **Accurate line numbers** - Ensure @@ headers have correct line numbers
+6. **Complete hunks** - Each hunk should be self-contained and applicable
+7. **Maximum 5 files** - Prioritize error files, then warnings if space permits
 
 **CRITICAL RULES**:
+- 🔴 **ERRORS FIRST** - Files with errors have absolute priority
 - ✅ ONE unified diff per file (combine multiple fixes)
 - ✅ Only modify code in the "Changed Code Blocks" section
 - ✅ Include 3 lines of context before/after each change
+- ⚠️ Warnings can be skipped if all 5 slots are used by error fixes
 - ❌ DO NOT use any tools
 - ❌ DO NOT generate multiple patches for the same file
+
+**Example Priority:**
+```
+Fix order:
+1. file_with_2_errors.kt (🔴 CRITICAL)
+2. file_with_1_error.kt (🔴 CRITICAL)
+3. file_with_error_and_warnings.kt (🔴 CRITICAL)
+4. file_with_warnings_only.kt (⚠️ Lower priority)
+5. another_warnings_file.kt (⚠️ Lower priority)
+```
 """.trimIndent()
 
     val ZH = """
@@ -440,18 +472,31 @@ index abc1234..def5678 100644
 
 为分析中识别的关键问题生成 **统一差异补丁**。
 
+## 🚨 优先级规则
+
+**绝对优先：先修复有 ERROR 的文件！**
+
+1. **🔴 ERRORS（关键）** - 有编译/lint 错误的文件必须优先修复
+   - 这些会导致构建失败或运行时错误
+   - 先修复文件中的所有错误，再考虑警告
+   
+2. **⚠️ WARNINGS（较低优先级）** - 只在所有错误解决后修复
+   - 这些是最佳实践或潜在问题
+   - 如果时间/复杂度高可以跳过
+
 ## 重要约束
 
 1. **每个文件一个补丁** - 如果一个文件有多个问题，将所有修复合并到一个统一差异中
 2. **只修复改动的代码** - 只关注下面显示的代码块（用户的改动）
-3. **最多 5 个文件** - 优先处理最关键的问题
+3. **最多 5 个文件** - 从错误文件开始，如果有空间再修复警告
 4. **使用精确的行号** - 行号必须与提供的代码块匹配
+5. **错误优先** - 始终优先处理标记为 🚨 关键优先级的文件
 
 ## 改动的代码块（用户的改动）
 
 ${'$'}{changedCode}
 
-## Lint 问题（已过滤到改动的文件）
+## Lint 问题（按严重性优先级排序）
 
 ${'$'}{lintResults}
 
@@ -461,11 +506,18 @@ ${'$'}{analysisOutput}
 
 ## 你的任务
 
+**步骤 1：识别优先级文件**
+- 查找标记为"🚨 关键优先级"或"❌"（错误）的文件
+- 这些必须优先修复
+
+**步骤 2：按优先级顺序生成修复**
+
 对于每个需要修复的文件：
 
 1. 从分析中识别该文件的所有问题
 2. **合并**该文件的所有修复到**一个**统一差异补丁中
 3. 确保补丁可以干净地应用到上面的改动代码块
+4. 从 ERROR 文件开始，如果还有剩余位置再处理 WARNING 文件
 
 ### 必需格式：
 
@@ -519,19 +571,31 @@ index abc1234..def5678 100644
 
 ### 指南：
 
-1. **每个文件一个统一差异** - 合并同一文件的多个修复
-2. **使用标准统一差异格式** - 必须可被标准差异工具解析
-3. **包含上下文行** - 在更改前后显示 3 行上下文
-4. **准确的行号** - 确保 @@ 头部有正确的行号
-5. **完整的块** - 每个块应该是独立的且可应用的
-6. **优先级顺序** - 从关键/高严重性问题开始
-7. **最多 5 个文件** - 专注于最重要的修复
+1. **🚨 错误文件优先** - 始终先修复有错误的文件，再修复警告
+2. **每个文件一个统一差异** - 合并同一文件的多个修复
+3. **使用标准统一差异格式** - 必须可被标准差异工具解析
+4. **包含上下文行** - 在更改前后显示 3 行上下文
+5. **准确的行号** - 确保 @@ 头部有正确的行号
+6. **完整的块** - 每个块应该是独立的且可应用的
+7. **最多 5 个文件** - 优先错误文件，如果有空间再处理警告
 
 **关键规则**:
+- 🔴 **错误优先** - 有错误的文件拥有绝对优先级
 - ✅ 每个文件一个统一差异（合并多个修复）
 - ✅ 只修改"改动的代码块"部分中的代码
 - ✅ 在每个更改前后包含 3 行上下文
+- ⚠️ 如果所有 5 个位置都被错误修复占用，警告可以跳过
 - ❌ 不要使用任何工具
 - ❌ 不要为同一文件生成多个补丁
+
+**优先级示例：**
+```
+修复顺序：
+1. file_with_2_errors.kt (🔴 关键)
+2. file_with_1_error.kt (🔴 关键)
+3. file_with_error_and_warnings.kt (🔴 关键)
+4. file_with_warnings_only.kt (⚠️ 较低优先级)
+5. another_warnings_file.kt (⚠️ 较低优先级)
+```
 """.trimIndent()
 }
