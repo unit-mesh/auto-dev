@@ -2,6 +2,7 @@ package cc.unitmesh.agent.mcp
 
 
 import cc.unitmesh.agent.logging.getLogger
+import cc.unitmesh.agent.tool.shell.ShellEnvironmentUtils
 import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import io.modelcontextprotocol.kotlin.sdk.client.Client
@@ -88,9 +89,13 @@ actual class McpClientManager {
             processBuilder.directory(File(cwd))
         }
 
-        // Set environment variables
+        // Inherit login shell environment to resolve tools like npx, node, etc.
+        val environment = processBuilder.environment()
+        ShellEnvironmentUtils.applyLoginEnvironment(environment)
+
+        // Set user-specified environment variables (these override inherited ones)
         serverConfig.env?.let { env ->
-            processBuilder.environment().putAll(env)
+            environment.putAll(env)
         }
 
         val process = processBuilder.start()
@@ -212,4 +217,3 @@ actual object McpClientManagerFactory {
         return McpClientManager()
     }
 }
-
