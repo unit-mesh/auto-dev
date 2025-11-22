@@ -21,12 +21,14 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
         command: String,
         config: ShellExecutionConfig
     ): ShellResult = withContext(Dispatchers.IO) {
+        logger().info { "Executing command: $command" }
         val startTime = System.currentTimeMillis()
         if (!validateCommand(command)) {
             throw ToolException("Command not allowed: $command", ToolErrorType.PERMISSION_DENIED)
         }
 
         val processCommand = prepareCommand(command, config.shell)
+        logger().info { "Effective command: $processCommand" }
 
         val environment = HashMap<String, String>(System.getenv())
         environment.putAll(config.environment)

@@ -27,7 +27,7 @@ abstract class ShellBasedLinter(private val shellExecutor: ShellExecutor) : Lint
     abstract fun parseOutput(output: String, filePath: String): List<LintIssue>
 
     override suspend fun isAvailable(): Boolean {
-        logger.info { "Shell executor: ${shellExecutor::class.simpleName}" }
+        logger.info { "Shell executor: ${shellExecutor::class.simpleName}, getVersionCommand: ${getVersionCommand()}" }
         return try {
             val config = ShellExecutionConfig(timeoutMs = 5000L)
             val result = shellExecutor.execute(getVersionCommand(), config)
