@@ -104,7 +104,7 @@ fun PlantUmlRenderer(
                     androidx.compose.foundation.Image(
                         bitmap = bitmap,
                         contentDescription = "PlantUML Diagram",
-                        contentScale = ContentScale.FillWidth,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier.Companion.fillMaxWidth()
                     )
 
