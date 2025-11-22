@@ -81,6 +81,7 @@ $result
         changedHunks: Map<String, List<cc.unitmesh.agent.vcs.context.CodeHunk>>,
         lintResults: List<LintFileResult>,
         analysisOutput: String,
+        userFeedback: String = "",
         language: String = "EN"
     ): String {
         val template = when (language.uppercase()) {
@@ -226,6 +227,11 @@ $result
             "analysisOutput",
             VariableType.STRING,
             analysisOutput
+        )
+        variableTable.addVariable(
+            "userFeedback",
+            VariableType.STRING,
+            if (userFeedback.isNotBlank()) "\n\n### User Feedback/Instructions\n$userFeedback" else ""
         )
 
         val compiler = TemplateCompiler(variableTable)

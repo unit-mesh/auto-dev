@@ -45,7 +45,8 @@ fun AutoDevApp(
     onTreeViewVisibilityChanged: (Boolean) -> Unit = {},
     onSidebarVisibilityChanged: (Boolean) -> Unit = {},
     onWorkspacePathChanged: (String) -> Unit = {},
-    onHasHistoryChanged: (Boolean) -> Unit = {}
+    onHasHistoryChanged: (Boolean) -> Unit = {},
+    onNotification: (String, String) -> Unit = { _, _ -> }
 ) {
     val currentTheme = ThemeManager.currentTheme
 
@@ -61,7 +62,8 @@ fun AutoDevApp(
             onTreeViewVisibilityChanged = onTreeViewVisibilityChanged,
             onSidebarVisibilityChanged = onSidebarVisibilityChanged,
             onWorkspacePathChanged = onWorkspacePathChanged,
-            onHasHistoryChanged = onHasHistoryChanged
+            onHasHistoryChanged = onHasHistoryChanged,
+            onNotification = onNotification
         )
     }
 }
@@ -79,7 +81,8 @@ private fun AutoDevContent(
     onTreeViewVisibilityChanged: (Boolean) -> Unit = {},
     onSidebarVisibilityChanged: (Boolean) -> Unit = {},
     onWorkspacePathChanged: (String) -> Unit = {},
-    onHasHistoryChanged: (Boolean) -> Unit = {}
+    onHasHistoryChanged: (Boolean) -> Unit = {},
+    onNotification: (String, String) -> Unit = { _, _ -> }
 ) {
     val scope = rememberCoroutineScope()
     var compilerOutput by remember { mutableStateOf("") }
@@ -566,6 +569,7 @@ private fun AutoDevContent(
                             remoteGitUrl = url
                             println("📦 Git URL: $url")
                         },
+                        onNotification = onNotification,
                         modifier = Modifier.fillMaxSize()
                     )
                 }

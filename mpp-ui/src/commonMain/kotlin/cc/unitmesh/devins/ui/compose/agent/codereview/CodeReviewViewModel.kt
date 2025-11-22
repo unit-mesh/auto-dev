@@ -24,7 +24,10 @@ import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 open class CodeReviewViewModel(
     val workspace: Workspace,
@@ -57,6 +60,10 @@ open class CodeReviewViewModel(
 
     var currentState by mutableStateOf(CodeReviewState())
         internal set
+
+    // Notification events
+    private val _notificationEvent = kotlinx.coroutines.flow.MutableSharedFlow<Pair<String, String>>()
+    val notificationEvent = _notificationEvent.asSharedFlow()
 
     // Control execution
     private var currentJob: Job? = null
@@ -447,17 +454,16 @@ open class CodeReviewViewModel(
 
                 updateState {
                     it.copy(
-                        aiProgress = it.aiProgress.copy(stage = AnalysisStage.GENERATING_FIX)
+                        aiProgress = it.aiProgress.copy(stage = AnalysisStage.WAITING_FOR_USER_INPUT)
                     )
                 }
 
-                generateFixes()
+                _notificationEvent.emit("Analysis Complete" to "Code analysis finished. Please review and provide instructions.")
 
-                updateState {
-                    it.copy(
-                        aiProgress = it.aiProgress.copy(stage = AnalysisStage.COMPLETED)
-                    )
-                }
+                // Wait for user input, do not generate fixes automatically
+                // generateFixes()
+
+                saveCurrentAnalysisResults()
 
                 saveCurrentAnalysisResults()
 
@@ -758,6 +764,7 @@ open class CodeReviewViewModel(
                 patch = patch,
                 lintResults = currentState.aiProgress.lintResults,
                 analysisOutput = currentState.aiProgress.analysisOutput,
+                userFeedback = currentState.aiProgress.userFeedback,
                 language = "ZH",
                 onProgress = { chunk ->
                     fixOutputBuilder.append(chunk)
@@ -790,6 +797,41 @@ open class CodeReviewViewModel(
     }
 
 
+
+    fun proceedToGenerateFixes(feedback: String) {
+        // Cancel any existing job if needed, though usually we are in WAITING state
+        currentJob?.cancel()
+        
+        updateState {
+            it.copy(
+                aiProgress = it.aiProgress.copy(
+                    userFeedback = feedback,
+                    stage = AnalysisStage.GENERATING_FIX
+                )
+            )
+        }
+
+        currentJob = CoroutineScope(Dispatchers.Default).launch {
+            try {
+                generateFixes()
+                
+                updateState {
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(stage = AnalysisStage.COMPLETED)
+                    )
+                }
+                
+                saveCurrentAnalysisResults()
+            } catch (e: Exception) {
+                updateState {
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(stage = AnalysisStage.ERROR),
+                        error = "Fix generation failed: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
 
     private fun updateState(update: (CodeReviewState) -> CodeReviewState) {
         currentState = update(currentState)

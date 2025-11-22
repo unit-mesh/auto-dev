@@ -51,7 +51,8 @@ data class AIAnalysisProgress(
     val modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap(),
     val analysisOutput: String = "",
     val reviewFindings: List<cc.unitmesh.agent.ReviewFinding> = emptyList(),
-    val fixOutput: String = ""
+    val fixOutput: String = "",
+    val userFeedback: String = ""
 )
 
 /**
@@ -74,6 +75,7 @@ enum class AnalysisStage {
     IDLE,
     RUNNING_LINT,
     ANALYZING_LINT,
+    WAITING_FOR_USER_INPUT,
     GENERATING_FIX,
     COMPLETED,
     ERROR

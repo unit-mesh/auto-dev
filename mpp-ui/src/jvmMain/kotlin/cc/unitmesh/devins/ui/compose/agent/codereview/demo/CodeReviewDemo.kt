@@ -168,7 +168,7 @@ fun CodeReviewDemoApp() {
 
 @Composable
 private fun CodeReviewDemoContent(viewModel: CodeReviewViewModel) {
-    val state by viewModel.state.collectAsState()
+
 
     Row(modifier = Modifier.fillMaxSize()) {
         Box(

@@ -95,6 +95,7 @@ fun CodeReviewAgentPanel(
                     }
                     AnalysisStage.RUNNING_LINT,
                     AnalysisStage.ANALYZING_LINT,
+                    AnalysisStage.WAITING_FOR_USER_INPUT,
                     AnalysisStage.GENERATING_FIX -> {
                         FilledTonalButton(
                             onClick = { viewModel.cancelAnalysis() },
@@ -246,6 +247,19 @@ fun CodeReviewAgentPanel(
                             AIAnalysisSection(
                                 analysisOutput = state.aiProgress.analysisOutput,
                                 isActive = state.aiProgress.stage == AnalysisStage.ANALYZING_LINT
+                            )
+                        }
+                    }
+
+                    if (state.aiProgress.stage == AnalysisStage.WAITING_FOR_USER_INPUT) {
+                        item {
+                            UserInputSection(
+                                onGenerate = { feedback ->
+                                    viewModel.proceedToGenerateFixes(feedback)
+                                },
+                                onCancel = {
+                                    viewModel.cancelAnalysis()
+                                }
                             )
                         }
                     }

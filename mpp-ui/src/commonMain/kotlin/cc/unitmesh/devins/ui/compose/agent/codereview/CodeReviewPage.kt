@@ -24,6 +24,7 @@ fun CodeReviewPage(
     llmService: KoogLLMService?,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    onNotification: (String, String) -> Unit = { _, _ -> }
 ) {
     val currentWorkspace by WorkspaceManager.workspaceFlow.collectAsState()
 
@@ -32,6 +33,12 @@ fun CodeReviewPage(
         CodeReviewViewModel(
             workspace = workspace
         )
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.notificationEvent.collect { (title, message) ->
+            onNotification(title, message)
+        }
     }
 
     DisposableEffect(viewModel) {

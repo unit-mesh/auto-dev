@@ -52,6 +52,7 @@ fun AgentInterfaceRouter(
     gitUrl: String = "",
     onProjectChange: (String) -> Unit = {},
     onGitUrlChange: (String) -> Unit = {},
+    onNotification: (String, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     when (selectedAgentType) {
@@ -61,7 +62,8 @@ fun AgentInterfaceRouter(
                 modifier = modifier,
                 onBack = {
                     onAgentTypeChange(AgentType.CODING)
-                }
+                },
+                onNotification = onNotification
             )
         }
 

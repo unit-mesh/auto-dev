@@ -197,6 +197,7 @@ class CodeReviewAgent(
         patch: String,
         lintResults: List<cc.unitmesh.agent.linter.LintFileResult>,
         analysisOutput: String,
+        userFeedback: String = "",
         language: String = "EN",
         onProgress: (String) -> Unit = {}
     ): AnalysisResult {
@@ -232,6 +233,7 @@ class CodeReviewAgent(
                 changedHunks = changedHunks,
                 lintResults = filteredLintResults,
                 analysisOutput = analysisOutput,
+                userFeedback = userFeedback,
                 language = language
             )
 

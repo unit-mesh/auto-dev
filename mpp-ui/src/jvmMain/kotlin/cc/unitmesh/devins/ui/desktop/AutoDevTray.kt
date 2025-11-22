@@ -20,11 +20,11 @@ import javax.imageio.ImageIO
  */
 @Composable
 fun ApplicationScope.AutoDevTray(
+    trayState: androidx.compose.ui.window.TrayState,
     isWindowVisible: Boolean,
     onShowWindow: () -> Unit,
     onExit: () -> Unit
 ) {
-    val trayState = rememberTrayState()
 
     Tray(
         state = trayState,

@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberTrayState
 import androidx.compose.ui.window.rememberWindowState
 import cc.unitmesh.agent.logging.AutoDevLogger
 import cc.unitmesh.devins.ui.compose.AutoDevApp
@@ -34,6 +35,7 @@ fun main(args: Array<String>) {
     val mode = args.find { it.startsWith("--mode=") }?.substringAfter("--mode=") ?: "auto"
 
     application {
+        val trayState = rememberTrayState()
         var isWindowVisible by remember { mutableStateOf(true) }
         var triggerFileChooser by remember { mutableStateOf(false) }
 
@@ -112,6 +114,7 @@ fun main(args: Array<String>) {
             )
 
         AutoDevTray(
+            trayState = trayState,
             isWindowVisible = isWindowVisible,
             onShowWindow = { isWindowVisible = true },
             onExit = ::exitApplication
@@ -208,6 +211,9 @@ fun main(args: Array<String>) {
                             },
                             onWorkspacePathChanged = { path ->
                                 uiState.updateWorkspacePath(path)
+                            },
+                            onNotification = { title, message ->
+                                trayState.sendNotification(androidx.compose.ui.window.Notification(title, message))
                             }
                         )
                     }
