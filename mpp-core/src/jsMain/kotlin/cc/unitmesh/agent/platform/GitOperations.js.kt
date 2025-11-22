@@ -92,8 +92,11 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         }
 
         return try {
-            val output = execGitCommand("git log -n $count --pretty=format:%H|%an|%ae|%ct|%s")
-            output.lines()
+            // Use special delimiters to handle multi-line commit messages
+            // %x1f = Unit Separator (ASCII 31), %x00 = Null (ASCII 0)
+            val output = execGitCommand("git log -n $count --pretty=format:%H%x1f%an%x1f%ae%x1f%ct%x1f%B%x00")
+            // Split by null character (record separator)
+            output.split("\u0000")
                 .filter { it.isNotBlank() }
                 .mapNotNull { parseCommitLine(it) }
         } catch (e: Throwable) {
@@ -177,7 +180,8 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     
     private fun parseCommitLine(line: String): GitCommitInfo? {
         return try {
-            val parts = line.split("|")
+            // Split by Unit Separator (ASCII 31)
+            val parts = line.split("\u001f")
             if (parts.size < 5) return null
             
             GitCommitInfo(
@@ -185,7 +189,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
                 author = parts[1],
                 email = parts[2],
                 date = parts[3].toLongOrNull() ?: 0L,
-                message = parts[4],
+                message = parts[4].trim(), // %B includes full commit message (subject + body)
                 shortHash = parts[0].take(7)
             )
         } catch (e: Throwable) {
