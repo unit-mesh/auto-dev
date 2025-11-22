@@ -87,6 +87,22 @@ Generate a comprehensive summary of the changes in the following format.
 ```markdown
 ## Sequence Diagram(s)
 
+${if (Platform.isJvm) """
+{If changes involve multi-component interaction, user flows, or complex logic, provide a PlantUML diagram.
+Omit this section if not applicable.}
+
+\`\`\`plantuml
+@startuml
+actor User
+participant "ComponentA" as A
+participant "ComponentB" as B
+User -> A: action
+A -> B: request
+B --> A: response
+A --> User: result
+@enduml
+\`\`\`
+""" else """
 {If changes involve multi-component interaction, user flows, or complex logic, provide a Mermaid diagram.
 Omit this section if not applicable.}
 
@@ -97,6 +113,7 @@ sequenceDiagram
     participant ComponentB
     ...
 \`\`\`
+"""}
 ```
 
 **Step 5: Output the end marker (REQUIRED)**
@@ -127,6 +144,24 @@ The key architectural decision was to use a sealed interface design for artifact
 
 ## Sequence Diagram(s)
 
+${if (Platform.isJvm) """
+\`\`\`plantuml
+@startuml
+actor User
+participant "CodeReviewAgentManager" as Manager
+participant "CodeReviewAgent" as Agent
+participant "LLM/Service" as LLM
+
+User -> Manager: submitReview(agent, task)
+Manager -> Manager: generateReviewPlan()
+Manager -> Agent: Execute Phase 1
+Agent -> LLM: Request analysis
+LLM --> Agent: Return findings
+Manager -> Manager: generateFixSuggestions()
+Manager --> User: Return artifacts
+@enduml
+\`\`\`
+""" else """
 \`\`\`mermaid
 sequenceDiagram
     actor User
@@ -142,6 +177,7 @@ sequenceDiagram
     Manager->>Manager: generateFixSuggestions()
     Manager-->>User: Return artifacts
 \`\`\`
+"""}
 
 <!-- walkthrough_end -->
 ```
@@ -253,6 +289,22 @@ ${'$'}{diffContext}
 ```markdown
 ## Sequence Diagram(s)
 
+${if (Platform.isJvm) """
+{如果变更涉及多个组件交互、用户流程或复杂逻辑，提供 PlantUML 时序图。
+如果不适用，可以省略此部分。}
+
+\`\`\`plantuml
+@startuml
+actor User
+participant "ComponentA" as A
+participant "ComponentB" as B
+User -> A: action
+A -> B: request
+B --> A: response
+A --> User: result
+@enduml
+\`\`\`
+""" else """
 {如果变更涉及多个组件交互、用户流程或复杂逻辑，提供 Mermaid 时序图。
 如果不适用，可以省略此部分。}
 
@@ -263,6 +315,7 @@ sequenceDiagram
     participant ComponentB
     ...
 \`\`\`
+"""}
 ```
 
 **第五步：必须输出结束标记**
@@ -293,6 +346,24 @@ sequenceDiagram
 
 ## Sequence Diagram(s)
 
+${if (Platform.isJvm) """
+\`\`\`plantuml
+@startuml
+actor User
+participant "CodeReviewAgentManager" as Manager
+participant "CodeReviewAgent" as Agent
+participant "LLM/Service" as LLM
+
+User -> Manager: submitReview(agent, task)
+Manager -> Manager: generateReviewPlan()
+Manager -> Agent: Execute Phase 1
+Agent -> LLM: Request analysis
+LLM --> Agent: Return findings
+Manager -> Manager: generateFixSuggestions()
+Manager --> User: Return artifacts
+@enduml
+\`\`\`
+""" else """
 \`\`\`mermaid
 sequenceDiagram
     actor User
@@ -308,6 +379,7 @@ sequenceDiagram
     Manager->>Manager: generateFixSuggestions()
     Manager-->>User: Return artifacts
 \`\`\`
+"""}
 
 <!-- walkthrough_end -->
 ```

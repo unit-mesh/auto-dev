@@ -24,6 +24,7 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import cc.unitmesh.viewer.web.MermaidRenderer
+import cc.unitmesh.viewer.web.PlantUmlRenderer
 import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import com.mikepenz.markdown.model.MarkdownTypography
 
@@ -104,9 +105,18 @@ actual object MarkdownSketchRenderer {
                             showHeader = true,
                         )
 
-                        if (language?.lowercase() == "mermaid" && isComplete) {
+                        val language = language?.lowercase()
+                        if (language == "mermaid" && isComplete) {
                             MermaidRenderer(
                                 mermaidCode = code,
+                                isDarkTheme = isDarkTheme,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
+                        if ((language == "plantuml" || language == "puml") && isComplete) {
+                            PlantUmlRenderer(
+                                code = code,
                                 isDarkTheme = isDarkTheme,
                                 modifier = Modifier.fillMaxSize()
                             )
