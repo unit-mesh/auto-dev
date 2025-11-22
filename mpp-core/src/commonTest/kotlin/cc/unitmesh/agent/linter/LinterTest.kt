@@ -250,8 +250,8 @@ class LinterTest {
     
     @Test
     fun testLinterSummaryTruncation() = runTest {
-        // Mock linter with many issues to test truncation
-        val manyIssues = (1..10).map { i ->
+        // Mock linter with many issues to test truncation (now 10 limit instead of 5)
+        val manyIssues = (1..15).map { i ->
             LintIssue(i * 5, 0, LintSeverity.WARNING, "Warning $i", "rule-$i")
         }
         
@@ -267,11 +267,11 @@ class LinterTest {
         val summary = registry.getLinterSummaryForFiles(listOf("Verbose.kt"), ".")
         
         assertEquals(1, summary.filesWithIssues)
-        assertEquals(10, summary.totalIssues)
+        assertEquals(15, summary.totalIssues)
         
-        // Should only show top 5 issues
+        // Should only show top 10 issues (changed from 5)
         val fileIssue = summary.fileIssues.first()
-        assertEquals(5, fileIssue.topIssues.size)
+        assertEquals(10, fileIssue.topIssues.size)
         assertTrue(fileIssue.hasMoreIssues)
         
         val formatted = LinterSummary.format(summary)
@@ -279,7 +279,8 @@ class LinterTest {
         println(formatted)
         println("=== End ===\n")
         
-        assertTrue(formatted.contains("and 5 more issues"))
+        // Should show 10 more issues (15 total - 5 displayed for warnings)
+        assertTrue(formatted.contains("and 10 more issues"))
     }
 }
 
