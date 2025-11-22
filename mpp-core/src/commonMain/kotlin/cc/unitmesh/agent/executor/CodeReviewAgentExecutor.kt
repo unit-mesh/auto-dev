@@ -15,6 +15,7 @@ import cc.unitmesh.agent.tool.schema.ToolResultFormatter
 import cc.unitmesh.agent.vcs.context.DiffContextCompressor
 import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.yield
+import kotlinx.serialization.json.Json
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
 
 /**
@@ -51,6 +52,7 @@ class CodeReviewAgentExecutor(
     ): CodeReviewResult {
         resetExecution()
         conversationManager = ConversationManager(llmService, systemPrompt)
+        logger.info(Json {  }.encodeToString(linterSummary))
         val initialUserMessage = buildInitialUserMessage(task, linterSummary)
 
         val reviewTarget = when {

@@ -93,6 +93,7 @@ interface Linter {
  * Summary of lint issues found in files
  * Focused on what matters: which files have issues, what severity, and what the issues are
  */
+@Serializable
 data class LinterSummary(
     val totalFiles: Int,
     val filesWithIssues: Int,
@@ -166,6 +167,7 @@ data class LinterSummary(
 /**
  * Per-file lint issue summary
  */
+@Serializable
 data class FileLintSummary(
     val filePath: String,
     val linterName: String,
