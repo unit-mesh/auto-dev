@@ -86,14 +86,13 @@ fun PlantUmlRenderer(
             )
         } else {
             imageBitmap?.let { bitmap ->
-                Box(modifier = Modifier.Companion.fillMaxWidth()) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     // Image display
                     androidx.compose.foundation.Image(
                         bitmap = bitmap,
                         contentDescription = "PlantUML Diagram",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxWidth()
-                            .widthIn(min = 400.dp)
+                        contentScale = ContentScale.FillWidth,
+                        modifier = Modifier.widthIn(min = 800.dp)
                     )
 
                     // Download button overlay (always visible)

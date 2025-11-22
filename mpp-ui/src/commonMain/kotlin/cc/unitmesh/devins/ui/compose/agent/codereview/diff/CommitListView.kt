@@ -35,7 +35,7 @@ import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import kotlinx.datetime.Clock
 
 /**
- * Left panel: Commit history list (GitHub-style) with infinite scroll
+ * Left panel: Commit history list (GitHub-style) with infinite scroll and Git Graph
  */
 @Composable
 fun CommitListView(
@@ -46,8 +46,15 @@ fun CommitListView(
     hasMoreCommits: Boolean = false,
     isLoadingMore: Boolean = false,
     totalCommitCount: Int? = null,
-    onLoadMore: () -> Unit = {}
+    onLoadMore: () -> Unit = {},
+    showGraph: Boolean = true
 ) {
+    // Build graph structure from commit messages
+    val graphStructure = if (showGraph && commits.isNotEmpty()) {
+        GitGraphBuilder.buildGraph(commits.map { it.message })
+    } else {
+        GitGraphStructure(emptyMap(), emptyList(), 0)
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -82,7 +89,9 @@ fun CommitListView(
                 CommitListItem(
                     commit = commits[index],
                     isSelected = index == selectedIndex,
-                    onClick = { onCommitSelected(index) }
+                    onClick = { onCommitSelected(index) },
+                    graphNode = if (showGraph) graphStructure.nodes[index] else null,
+                    graphStructure = graphStructure
                 )
 
                 if (index == commits.size - 5 && hasMoreCommits && !isLoadingMore) {
@@ -115,7 +124,9 @@ fun CommitListView(
 fun CommitListItem(
     commit: CommitInfo,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    graphNode: GitGraphNode? = null,
+    graphStructure: GitGraphStructure = GitGraphStructure(emptyMap(), emptyList(), 0)
 ) {
     Card(
         modifier = Modifier.Companion
@@ -133,11 +144,27 @@ fun CommitListItem(
             defaultElevation = if (isSelected) 2.dp else 0.dp
         )
     ) {
-        Column(
-            modifier = Modifier.Companion
-                .fillMaxWidth()
-                .padding(8.dp)
+        Row(
+            modifier = Modifier.Companion.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Git Graph Column
+            if (graphNode != null && graphStructure.maxColumns > 0) {
+                GitGraphColumn(
+                    node = graphNode,
+                    graphStructure = graphStructure,
+                    rowHeight = 72.dp,
+                    columnWidth = 16.dp,
+                    modifier = Modifier.Companion.padding(start = 4.dp)
+                )
+            }
+            
+            // Commit info
+            Column(
+                modifier = Modifier.Companion
+                    .weight(1f)
+                    .padding(8.dp)
+            ) {
             // Commit message (first line)
             Row(
                 modifier = Modifier.Companion.fillMaxWidth(),
@@ -212,6 +239,7 @@ fun CommitListItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
+        }
         }
     }
 }
