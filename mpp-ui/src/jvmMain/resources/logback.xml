@@ -77,8 +77,11 @@
     <logger name="kotlinx.coroutines" level="WARN" />
     <logger name="ai.koog" level="INFO" />
 
+    <!-- Apache HTTP Client Wire Logging - Silence verbose output -->
+    <logger name="org.apache.hc.client5.http.wire" level="WARN" />
+
     <!-- 根日志级别 -->
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE_ALL" />
         <appender-ref ref="FILE_ERROR" />
