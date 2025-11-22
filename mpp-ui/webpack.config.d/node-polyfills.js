@@ -69,6 +69,10 @@ config.plugins.push(
             {
                 from: '../../node_modules/sql.js/dist/sql-wasm.wasm',
                 to: 'sql-wasm.wasm'
+            },
+            {
+                from: '../../node_modules/sql.js/dist/worker.sql-wasm.js',
+                to: 'sqljs.worker.js'
             }
         ]
     })
