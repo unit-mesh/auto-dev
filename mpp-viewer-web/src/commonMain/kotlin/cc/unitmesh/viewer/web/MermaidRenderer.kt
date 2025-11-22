@@ -47,12 +47,10 @@ fun MermaidRenderer(
     modifier: Modifier = Modifier,
     onRenderComplete: ((success: Boolean, message: String) -> Unit)? = null
 ) {
-    // Track dynamic height from rendered content
     var webViewHeight by remember { mutableStateOf(200.dp) }
     var showFullscreen by remember { mutableStateOf(false) }
     
     Box(modifier = modifier) {
-        // Main WebView display
         MermaidWebView(
             mermaidCode = mermaidCode,
             isDarkTheme = isDarkTheme,
@@ -66,7 +64,6 @@ fun MermaidRenderer(
             onRenderComplete = onRenderComplete
         )
         
-        // Expand button (top-right corner)
         IconButton(
             onClick = { showFullscreen = true },
             modifier = Modifier
@@ -82,7 +79,6 @@ fun MermaidRenderer(
         }
     }
     
-    // Fullscreen dialog
     if (showFullscreen) {
         MermaidFullscreenDialog(
             mermaidCode = mermaidCode,
@@ -94,9 +90,7 @@ fun MermaidRenderer(
     }
 }
 
-/**
- * Fullscreen Mermaid viewer with zoom controls
- */
+
 @Composable
 fun MermaidFullscreenDialog(
     mermaidCode: String,
@@ -120,7 +114,6 @@ fun MermaidFullscreenDialog(
             color = MaterialTheme.colorScheme.background
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Top toolbar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -129,7 +122,6 @@ fun MermaidFullscreenDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Zoom controls
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -168,7 +160,6 @@ fun MermaidFullscreenDialog(
                         }
                     }
                     
-                    // Close button
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
@@ -194,9 +185,6 @@ fun MermaidFullscreenDialog(
     }
 }
 
-/**
- * Internal WebView component for Mermaid rendering
- */
 @Composable
 private fun MermaidWebView(
     mermaidCode: String,
@@ -213,7 +201,6 @@ private fun MermaidWebView(
     val jsBridge = rememberWebViewJsBridge()
 
     LaunchedEffect(Unit) {
-        // Handler for render callback
         jsBridge.register(object : IJsMessageHandler {
             override fun methodName(): String = "mermaidRenderCallback"
 
@@ -227,7 +214,6 @@ private fun MermaidWebView(
             }
         })
         
-        // Handler for height updates
         jsBridge.register(object : IJsMessageHandler {
             override fun methodName(): String = "mermaidHeightCallback"
 

@@ -111,10 +111,6 @@ actual object MarkdownSketchRenderer {
                                     mermaidCode = code,
                                     modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp)
                                 )
-//                                RemoteMermaidRenderer(
-//                                    mermaidCode = code,
-//                                    modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp)
-//                                )
                             }
                         }
                     },

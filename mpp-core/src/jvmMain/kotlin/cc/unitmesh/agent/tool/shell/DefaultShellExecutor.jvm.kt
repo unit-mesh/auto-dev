@@ -69,6 +69,11 @@ actual class DefaultShellExecutor : ShellExecutor {
                     environment().putAll(config.environment)
                 }
                 
+                // Augment PATH to include common tool installation directories
+                // This is critical for production builds where the app doesn't inherit
+                // the user's full shell environment (e.g., Homebrew paths)
+                augmentEnvironmentPath(environment(), config.environment)
+                
                 // Redirect error stream if not inheriting IO
                 if (!config.inheritIO) {
                     redirectErrorStream(false)
@@ -189,6 +194,68 @@ actual class DefaultShellExecutor : ShellExecutor {
                 process.waitFor(500, TimeUnit.MILLISECONDS)
             }
         }
+    }
+    
+    /**
+     * Augment the PATH environment variable to include common tool installation directories.
+     * 
+     * This is essential for production builds where the app runs as a standalone bundle
+     * and doesn't inherit the user's full shell environment. Common package managers like
+     * Homebrew install tools in non-standard paths that need to be explicitly added.
+     * 
+     * @param processEnv The process environment map (will be modified)
+     * @param configEnv The user-provided environment from config (should not override if PATH is set)
+     */
+    private fun augmentEnvironmentPath(
+        processEnv: MutableMap<String, String>,
+        configEnv: Map<String, String>
+    ) {
+        // Don't augment if user explicitly set PATH in config
+        if (configEnv.containsKey("PATH")) {
+            return
+        }
+        
+        val os = System.getProperty("os.name").lowercase()
+        val currentPath = processEnv["PATH"] ?: System.getenv("PATH") ?: ""
+        
+        // Determine additional paths based on OS
+        val additionalPaths = when {
+            os.contains("mac") || os.contains("darwin") -> listOf(
+                "/opt/homebrew/bin",        // Homebrew (Apple Silicon)
+                "/opt/homebrew/sbin",
+                "/usr/local/bin",           // Homebrew (Intel)
+                "/usr/local/sbin"
+            )
+            os.contains("linux") -> listOf(
+                "/usr/local/bin",
+                "/home/linuxbrew/.linuxbrew/bin",  // Linuxbrew
+                "/home/linuxbrew/.linuxbrew/sbin"
+            )
+            else -> emptyList()  // Windows - use default PATH
+        }
+        
+        if (additionalPaths.isEmpty()) {
+            return
+        }
+        
+        // Filter to only include paths that actually exist
+        val existingAdditionalPaths = additionalPaths.filter { path ->
+            File(path).exists()
+        }
+        
+        if (existingAdditionalPaths.isEmpty()) {
+            return
+        }
+        
+        // Build the augmented PATH by prepending additional paths to current PATH
+        // This ensures tools in these directories are found first
+        val pathSeparator = if (os.contains("windows")) ";" else ":"
+        val augmentedPath = (existingAdditionalPaths + currentPath.split(pathSeparator))
+            .filter { it.isNotBlank() }
+            .distinct()
+            .joinToString(pathSeparator)
+        
+        processEnv["PATH"] = augmentedPath
     }
     
     private fun prepareCommand(command: String, shell: String?): List<String> {
