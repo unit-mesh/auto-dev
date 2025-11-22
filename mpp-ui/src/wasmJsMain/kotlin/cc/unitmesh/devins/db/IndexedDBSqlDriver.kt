@@ -4,10 +4,8 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
-import cc.unitmesh.devins.ui.platform.BrowserStorage
+import cc.unitmesh.devins.ui.platform.IndexedDBStorage
 import org.khronos.webgl.Uint8Array
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.js.toJsString
 
 private fun createEmptyConfig(): SqlJsConfig = js("({})")
@@ -15,8 +13,7 @@ private fun setUint8Array(array: Uint8Array, index: Int, value: Byte): Unit = js
 private fun getUint8Array(array: Uint8Array, index: Int): Byte = js("array[index]")
 private fun getUint8ArrayLength(array: Uint8Array): Int = js("array.length")
 
-@OptIn(ExperimentalEncodingApi::class)
-class LocalStorageSqlDriver(
+class IndexedDBSqlDriver(
     private val dbName: String = "devins.db"
 ) : SqlDriver {
 
@@ -56,39 +53,55 @@ class LocalStorageSqlDriver(
         println("LocalStorageSqlDriver: Calling initSqlJs...")
         initSqlJs(config).then { sqlJs ->
             println("LocalStorageSqlDriver: initSqlJs resolved successfully")
-            val savedDb = BrowserStorage.getItem(dbName)
-            if (savedDb != null) {
-                try {
-                    val binary = Base64.decode(savedDb)
-                    // Convert Kotlin ByteArray to JS Int8Array
-                    val uint8Array = Uint8Array(binary.size)
-                    for (i in binary.indices) {
-                        setUint8Array(uint8Array, i, binary[i])
+
+            // Load from IndexedDB
+            IndexedDBStorage.loadBinary(dbName).then { savedDb ->
+                if (savedDb != null) {
+                    try {
+                        db = sqlJs.Database.create(savedDb)
+                        println("Loaded database from IndexedDB (size: ${savedDb.length} bytes)")
+                    } catch (e: Exception) {
+                        println("Failed to load database: ${e.message}")
+                        db = sqlJs.Database.create()
                     }
-                    db = sqlJs.Database.create(uint8Array)
-                    println("Loaded database from LocalStorage (size: ${binary.size} bytes)")
-                } catch (e: Exception) {
-                    println("Failed to load database: ${e.message}")
+                } else {
                     db = sqlJs.Database.create()
+                    println("Created new database (no existing data in IndexedDB)")
                 }
-            } else {
+
+                // Process queued commands
+                if (commandQueue.isNotEmpty()) {
+                    println("Processing ${commandQueue.size} queued commands...")
+                    commandQueue.forEach { it() }
+                    commandQueue.clear()
+                    println("Queued commands processed.")
+                }
+
+                initCallback?.invoke()
+                initCallback = null
+
+                // Notify all listeners to refresh data
+                listeners.values.flatten().forEach { it.queryResultsChanged() }
+
+                null
+            }.catch { error ->
+                println("Failed to load from IndexedDB: $error")
                 db = sqlJs.Database.create()
-                println("Created new database (no existing data in LocalStorage)")
+                println("Created new database after IndexedDB error")
+
+                // Still process queued commands even if load failed
+                if (commandQueue.isNotEmpty()) {
+                    println("Processing ${commandQueue.size} queued commands...")
+                    commandQueue.forEach { it() }
+                    commandQueue.clear()
+                }
+
+                initCallback?.invoke()
+                initCallback = null
+                listeners.values.flatten().forEach { it.queryResultsChanged() }
+
+                null
             }
-
-            // Process queued commands
-            if (commandQueue.isNotEmpty()) {
-                println("Processing ${commandQueue.size} queued commands...")
-                commandQueue.forEach { it() }
-                commandQueue.clear()
-                println("Queued commands processed.")
-            }
-
-            initCallback?.invoke()
-            initCallback = null
-
-            // Notify all listeners to refresh data
-            listeners.values.flatten().forEach { it.queryResultsChanged() }
 
             null
         }.catch { error ->
@@ -105,17 +118,16 @@ class LocalStorageSqlDriver(
         val database = db ?: return
         try {
             val binary = database.export()
-            val length = getUint8ArrayLength(binary)
-            val byteArray = ByteArray(length)
-            for (i in 0 until length) {
-                val byte = getUint8Array(binary, i)
-                byteArray[i] = byte
+            IndexedDBStorage.saveBinary(dbName, binary).then {
+                val length = getUint8ArrayLength(binary)
+                println("Saved database to IndexedDB (size: $length bytes)")
+                null
+            }.catch { error ->
+                println("Failed to save database to IndexedDB: $error")
+                null
             }
-            val base64 = Base64.encode(byteArray)
-            BrowserStorage.setItem(dbName, base64)
-            println("Saved database to LocalStorage (size: ${base64.length} chars)")
         } catch (e: Exception) {
-            println("Failed to save database: ${e.message}")
+            println("Failed to export database: ${e.message}")
         }
     }
 
@@ -152,14 +164,26 @@ class LocalStorageSqlDriver(
         try {
             val boundValues = JsArray<JsAny?>()
             val binder = object : SqlPreparedStatement {
-                override fun bindBoolean(index: Int, boolean: Boolean?) { boundValues[index - 1] = boolean?.toJsBoolean() }
+                override fun bindBoolean(index: Int, boolean: Boolean?) {
+                    boundValues[index - 1] = boolean?.toJsBoolean()
+                }
+
                 override fun bindBytes(index: Int, bytes: ByteArray?) {
                     // TODO: Handle bytes binding if needed, complex in Wasm
                     boundValues[index - 1] = null
                 }
-                override fun bindDouble(index: Int, double: Double?) { boundValues[index - 1] = double?.toJsNumber() }
-                override fun bindLong(index: Int, long: Long?) { boundValues[index - 1] = long?.toDouble()?.toJsNumber() }
-                override fun bindString(index: Int, string: String?) { boundValues[index - 1] = string?.toJsString() }
+
+                override fun bindDouble(index: Int, double: Double?) {
+                    boundValues[index - 1] = double?.toJsNumber()
+                }
+
+                override fun bindLong(index: Int, long: Long?) {
+                    boundValues[index - 1] = long?.toDouble()?.toJsNumber()
+                }
+
+                override fun bindString(index: Int, string: String?) {
+                    boundValues[index - 1] = string?.toJsString()
+                }
             }
             binders?.invoke(binder)
 
@@ -208,11 +232,25 @@ class LocalStorageSqlDriver(
 
         val boundValues = JsArray<JsAny?>()
         val binder = object : SqlPreparedStatement {
-            override fun bindBoolean(index: Int, boolean: Boolean?) { boundValues[index - 1] = boolean?.toJsBoolean() }
-            override fun bindBytes(index: Int, bytes: ByteArray?) { boundValues[index - 1] = null }
-            override fun bindDouble(index: Int, double: Double?) { boundValues[index - 1] = double?.toJsNumber() }
-            override fun bindLong(index: Int, long: Long?) { boundValues[index - 1] = long?.toDouble()?.toJsNumber() }
-            override fun bindString(index: Int, string: String?) { boundValues[index - 1] = string?.toJsString() }
+            override fun bindBoolean(index: Int, boolean: Boolean?) {
+                boundValues[index - 1] = boolean?.toJsBoolean()
+            }
+
+            override fun bindBytes(index: Int, bytes: ByteArray?) {
+                boundValues[index - 1] = null
+            }
+
+            override fun bindDouble(index: Int, double: Double?) {
+                boundValues[index - 1] = double?.toJsNumber()
+            }
+
+            override fun bindLong(index: Int, long: Long?) {
+                boundValues[index - 1] = long?.toDouble()?.toJsNumber()
+            }
+
+            override fun bindString(index: Int, string: String?) {
+                boundValues[index - 1] = string?.toJsString()
+            }
         }
         binders?.invoke(binder)
 
