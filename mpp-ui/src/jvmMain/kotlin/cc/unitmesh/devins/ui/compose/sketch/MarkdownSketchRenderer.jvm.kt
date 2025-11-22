@@ -2,12 +2,10 @@ package cc.unitmesh.devins.ui.compose.sketch
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +16,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.ui.platform.createFileChooser
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
@@ -31,7 +31,9 @@ import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.sourceforge.plantuml.FileFormat
 import net.sourceforge.plantuml.FileFormatOption
@@ -106,16 +108,6 @@ actual object MarkdownSketchRenderer {
                 codeFence = {
                     val style = LocalMarkdownTypography.current.code
                     MarkdownCodeFence(it.content, it.node, style) { code, language, style ->
-                        // Only render mermaid diagrams when content is complete and on JVM platform
-                        // Show code block during streaming or for other languages
-                        MarkdownHighlightedCode(
-                            code = code,
-                            language = language,
-                            style = style,
-                            highlightsBuilder = highlightsBuilder,
-                            showHeader = true,
-                        )
-
                         val language = language?.lowercase()
                         if ((language == "plantuml" || language == "puml") && isComplete) {
                             PlantUmlRenderer(
@@ -123,6 +115,14 @@ actual object MarkdownSketchRenderer {
                                 isDarkTheme = isDarkTheme,
                                 modifier = Modifier.fillMaxSize(),
                                 null
+                            )
+                        } else {
+                            MarkdownHighlightedCode(
+                                code = code,
+                                language = language,
+                                style = style,
+                                highlightsBuilder = highlightsBuilder,
+                                showHeader = true,
                             )
                         }
                     }
@@ -165,27 +165,39 @@ fun PlantUmlRenderer(
     onRenderComplete: ((success: Boolean, message: String) -> Unit)?
 ) {
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var pngBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var svgBytes by remember { mutableStateOf<ByteArray?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    var showDownloadMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(code, isDarkTheme) {
         isLoading = true
         error = null
         try {
-            val pngBytes = withContext(Dispatchers.IO) {
+            withContext(Dispatchers.IO) {
                 val reader = SourceStringReader(code)
-                val os = ByteArrayOutputStream()
-                // Use PNG format for better font rendering
-                reader.generateImage(os, FileFormatOption(FileFormat.PNG))
-                os.toByteArray()
+
+                // Generate high-quality PNG with scale 2.0
+                val pngOs = ByteArrayOutputStream()
+                val pngOption = FileFormatOption(FileFormat.PNG).withScale(2.0)
+                reader.generateImage(pngOs, pngOption)
+                pngBytes = pngOs.toByteArray()
+
+                // Generate SVG
+                val svgOs = ByteArrayOutputStream()
+                val svgOption = FileFormatOption(FileFormat.SVG)
+                reader.generateImage(svgOs, svgOption)
+                svgBytes = svgOs.toByteArray()
             }
 
-            if (pngBytes.isEmpty()) {
+            val bytes = pngBytes
+            if (bytes == null || bytes.isEmpty()) {
                 error = "No image generated"
                 onRenderComplete?.invoke(false, "No image generated")
             } else {
                 // Convert PNG bytes to ImageBitmap
-                val skiaImage = org.jetbrains.skia.Image.makeFromEncoded(pngBytes)
+                val skiaImage = org.jetbrains.skia.Image.makeFromEncoded(bytes)
                 imageBitmap = skiaImage.toComposeImageBitmap()
                 onRenderComplete?.invoke(true, "Success")
             }
@@ -203,13 +215,70 @@ fun PlantUmlRenderer(
         } else if (error != null) {
             Text(text = "Error: $error", color = Color.Red, modifier = Modifier.align(Alignment.Center))
         } else {
-            imageBitmap?.let {
-                Image(
-                    bitmap = it,
-                    contentDescription = "PlantUML Diagram",
-                    modifier = Modifier.fillMaxSize()
-                )
+            imageBitmap?.let { bitmap ->
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Box {
+                            IconButton(onClick = { showDownloadMenu = true }) {
+                                Icon(Icons.Default.Download, contentDescription = "Download")
+                            }
+
+                            DropdownMenu(
+                                expanded = showDownloadMenu,
+                                onDismissRequest = { showDownloadMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Download PNG") },
+                                    onClick = {
+                                        showDownloadMenu = false
+                                        pngBytes?.let { bytes ->
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                saveDiagram(bytes, "png")
+                                            }
+                                        }
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Download SVG") },
+                                    onClick = {
+                                        showDownloadMenu = false
+                                        svgBytes?.let { bytes ->
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                saveDiagram(bytes, "svg")
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Image display
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = "PlantUML Diagram",
+                        contentScale = androidx.compose.ui.layout.ContentScale.FillWidth,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
+    }
+}
+
+private suspend fun saveDiagram(bytes: ByteArray, format: String) {
+    try {
+        val fileChooser = createFileChooser()
+        fileChooser.saveFile(
+            title = "Save PlantUML Diagram",
+            defaultFileName = "plantuml-diagram.$format",
+            fileExtension = format,
+            data = bytes
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }

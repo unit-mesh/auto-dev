@@ -5,7 +5,9 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.dialogs.openFileSaver
 import io.github.vinceglb.filekit.path
+import io.github.vinceglb.filekit.write
 
 /**
  * FileKit 实现的跨平台文件选择器 - iOS 平台
@@ -45,6 +47,28 @@ class FileKitChooser : FileChooser {
         )
 
         return result?.path
+    }
+
+    override suspend fun saveFile(
+        title: String,
+        initialDirectory: String?,
+        defaultFileName: String,
+        fileExtension: String,
+        data: ByteArray
+    ): String? {
+        val directory = initialDirectory?.let { PlatformFile(it) }
+        
+        // Extract filename without extension
+        val baseName = defaultFileName.substringBeforeLast(".")
+        
+        val file = FileKit.openFileSaver(
+            suggestedName = baseName,
+            extension = fileExtension,
+            directory = directory
+        ) ?: return null
+
+        file.write(data)
+        return file.path
     }
 }
 

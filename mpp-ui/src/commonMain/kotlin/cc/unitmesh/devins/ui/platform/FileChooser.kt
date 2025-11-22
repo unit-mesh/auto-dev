@@ -28,6 +28,23 @@ interface FileChooser {
         title: String = "Choose Directory",
         initialDirectory: String? = null
     ): String?
+
+    /**
+     * 保存文件
+     * @param title 对话框标题
+     * @param initialDirectory 初始目录路径
+     * @param defaultFileName 默认文件名
+     * @param fileExtension 文件扩展名，如 "png", "svg"
+     * @param data 要保存的字节数据
+     * @return 保存的文件路径，如果取消则返回 null
+     */
+    suspend fun saveFile(
+        title: String = "Save File",
+        initialDirectory: String? = null,
+        defaultFileName: String,
+        fileExtension: String,
+        data: ByteArray
+    ): String?
 }
 
 /**

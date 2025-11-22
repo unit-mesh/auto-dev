@@ -4,6 +4,7 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.download
 
 /**
  * FileKit implementation for JS platform
@@ -55,6 +56,24 @@ class FileKitChooser : FileChooser {
         // Reference: https://filekit.mintlify.app/dialogs/directory-picker
         // Supported platforms: Android, iOS, macOS, JVM (NOT JS/WASM)
         return null
+    }
+
+    override suspend fun saveFile(
+        title: String,
+        initialDirectory: String?,
+        defaultFileName: String,
+        fileExtension: String,
+        data: ByteArray
+    ): String? {
+        // On JS/browser, use FileKit.download() to trigger browser download
+        // Reference: https://filekit.mintlify.app/file-saver
+        FileKit.download(
+            bytes = data,
+            fileName = defaultFileName
+        )
+        
+        // Return the filename as path (browser doesn't expose actual file path)
+        return defaultFileName
     }
 }
 
