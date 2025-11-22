@@ -9,10 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -23,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.platform.FileChooser
+import cc.unitmesh.devins.ui.compose.agent.codereview.FileViewerDialog
 import com.mikepenz.markdown.annotator.AnnotatorSettings
 import com.mikepenz.markdown.annotator.annotatorSettings
 import com.mikepenz.markdown.annotator.buildMarkdownAnnotatedString
@@ -50,7 +48,6 @@ fun MarkdownTable(
     node: ASTNode,
     style: TextStyle,
     annotatorSettings: AnnotatorSettings = annotatorSettings(),
-    onOpenFile: (String) -> Unit = {},
     headerBlock: @Composable (String, ASTNode, Dp, TextStyle) -> Unit = { content, header, tableWidth, style ->
         MarkdownTableHeader(
             content = content,
@@ -70,6 +67,8 @@ fun MarkdownTable(
         )
     },
 ) {
+    var showFileViewerDialog by remember { mutableStateOf(false) }
+    var selectedFilePath by remember { mutableStateOf<String?>(null) }
     val tableMaxWidth = LocalMarkdownDimens.current.tableMaxWidth
     val tableCellWidth = LocalMarkdownDimens.current.tableCellWidth
     val tableCornerSize = LocalMarkdownDimens.current.tableCornerSize
@@ -115,7 +114,10 @@ fun MarkdownTable(
         val scrollable = maxWidth <= tableWidth
         CompositionLocalProvider(
             LocalMarkdownColumnWeights provides columnWeights,
-            LocalOnOpenFile provides onOpenFile,
+            LocalOnOpenFile provides { filePath ->
+                selectedFilePath = filePath
+                showFileViewerDialog = true
+            },
         ) {
             Column(
                 modifier = if (scrollable) {
@@ -133,6 +135,14 @@ fun MarkdownTable(
                 }
             }
         }
+    }
+
+    // Show file viewer dialog
+    if (showFileViewerDialog && selectedFilePath != null) {
+        FileViewerDialog(
+            filePath = selectedFilePath!!,
+            onClose = { showFileViewerDialog = false }
+        )
     }
 }
 
