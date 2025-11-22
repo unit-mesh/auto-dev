@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.platform.FileChooser
 import com.mikepenz.markdown.annotator.AnnotatorSettings
 import com.mikepenz.markdown.annotator.annotatorSettings
 import com.mikepenz.markdown.annotator.buildMarkdownAnnotatedString
@@ -158,7 +159,10 @@ fun MarkdownTableHeader(
         modifier = Modifier.widthIn(tableWidth).height(IntrinsicSize.Max)
     ) {
         header.children.filter { it.type == CELL }.forEachIndexed { idx, cell ->
-            val weight = if (weights.size == header.children.count { it.type == CELL }) weights[idx] else 1f / (header.children.count { it.type == CELL }).coerceAtLeast(1)
+            val weight =
+                if (weights.size == header.children.count { it.type == CELL }) weights[idx] else 1f / (header.children.count { it.type == CELL }).coerceAtLeast(
+                    1
+                )
             Column(
                 modifier = Modifier.padding(tableCellPadding).weight(weight),
             ) {
@@ -221,6 +225,19 @@ fun MarkdownTableRow(
                     val filePath = extractBacktickedPath(raw)
                     if (filePath != null) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                modifier = Modifier.size(16.dp),
+                                onClick = {
+                                    val root = WorkspaceManager.getCurrentOrEmpty().rootPath
+                                    val abs = if (root != null) root + "/" + filePath else filePath
+                                    onOpenFile(abs)
+                                }) {
+                                Icon(
+                                    modifier = Modifier.size(16.dp),
+                                    imageVector = AutoDevComposeIcons.Visibility, contentDescription = "View File"
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
                             MarkdownTableBasicText(
                                 content = content,
                                 cell = cell,
@@ -229,14 +246,6 @@ fun MarkdownTableRow(
                                 overflow = overflow,
                                 annotatorSettings = annotatorSettings
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            IconButton(onClick = {
-                                val root = WorkspaceManager.getCurrentOrEmpty().rootPath
-                                val abs = if (root != null) root + "/" + filePath else filePath
-                                onOpenFile(abs)
-                            }) {
-                                Icon(imageVector = AutoDevComposeIcons.Visibility, contentDescription = "View File")
-                            }
                         }
                     } else {
                         MarkdownTableBasicText(
@@ -277,9 +286,23 @@ fun MarkdownTableBasicText(
 
 /**
  * Extract backticked file path from markdown cell content
+ * Supports paths like:
+ * - `mpp-core/.../CodeReviewArtifact.kt`
+ * - `src/main/kotlin/MyFile.kt`
+ * - `path/to/file-name_v2.kt`
  */
 private fun extractBacktickedPath(raw: String): String? {
-    val pathRegex = Regex("`([\\w\\-./]+)`")
+    // Match backticked content that looks like a file path
+    // Supports: alphanumeric, dots, slashes, hyphens, underscores, ellipsis (...), brackets, parentheses
+    val pathRegex = Regex("`([\\w\\-_./@()\\[\\]]+(?:\\.{3})?[\\w\\-_./@()\\[\\]]*)`")
     val match = pathRegex.find(raw)
-    return match?.groupValues?.getOrNull(1)
+    val candidate = match?.groupValues?.getOrNull(1)
+
+    // Filter: must contain at least one slash or a file extension
+    return if (candidate != null && (candidate.contains('/') || candidate.contains('.'))) {
+        // Expand ellipsis if present (e.g., mpp-core/.../File.kt -> mpp-core/src/.../File.kt)
+        candidate
+    } else {
+        null
+    }
 }
