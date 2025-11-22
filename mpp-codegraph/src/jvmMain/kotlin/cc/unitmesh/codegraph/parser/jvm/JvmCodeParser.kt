@@ -5,10 +5,12 @@ import cc.unitmesh.codegraph.parser.CodeParser
 import cc.unitmesh.codegraph.parser.Language
 import org.treesitter.TSNode
 import org.treesitter.TSParser
+import org.treesitter.TreeSitterCSharp
 import org.treesitter.TreeSitterJava
 import org.treesitter.TreeSitterKotlin
 import org.treesitter.TreeSitterJavascript
 import org.treesitter.TreeSitterPython
+import org.treesitter.TreeSitterRust
 import java.util.*
 
 /**
@@ -76,6 +78,8 @@ class JvmCodeParser : CodeParser {
             Language.JAVA -> TreeSitterJava()
             Language.KOTLIN -> TreeSitterKotlin()
             Language.JAVASCRIPT, Language.TYPESCRIPT -> TreeSitterJavascript()
+            Language.CSHARP -> TreeSitterCSharp()
+            Language.RUST -> TreeSitterRust()
             Language.PYTHON -> TreeSitterPython()
             else -> throw IllegalArgumentException("Unsupported language: $language")
         }
@@ -106,7 +110,7 @@ class JvmCodeParser : CodeParser {
         parentName: String = ""
     ) {
         when (node.type) {
-            // Java/Kotlin class-like structures
+            // Java class-like structures
             "class_declaration", "interface_declaration", "enum_declaration",
             // JavaScript/TypeScript class
             "class", "class_declaration",
@@ -206,7 +210,7 @@ class JvmCodeParser : CodeParser {
     private fun extractName(node: TSNode, sourceCode: String): String {
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
-            if (child.type == "identifier") {
+            if (child.type == "identifier" || child.type == "type_identifier") {
                 return extractNodeText(child, sourceCode)
             }
         }

@@ -346,7 +346,7 @@ fun CollapsibleLintAnalysisCard(
                     )
 
                     Text(
-                        text = "Lint Analysis",
+                        text = "Code Analysis",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Companion.Bold,
                         color = MaterialTheme.colorScheme.onSurface
