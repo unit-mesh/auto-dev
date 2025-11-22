@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -178,9 +179,9 @@ fun PlantUmlRenderer(
             withContext(Dispatchers.IO) {
                 val reader = SourceStringReader(code)
 
-                // Generate high-quality PNG with scale 2.0
+                // Generate high-quality PNG with scale 4.0 for better display on 4K screens
                 val pngOs = ByteArrayOutputStream()
-                val pngOption = FileFormatOption(FileFormat.PNG).withScale(2.0)
+                val pngOption = FileFormatOption(FileFormat.PNG).withScale(4.0)
                 reader.generateImage(pngOs, pngOption)
                 pngBytes = pngOs.toByteArray()
 
@@ -216,46 +217,7 @@ fun PlantUmlRenderer(
             Text(text = "Error: $error", color = Color.Red, modifier = Modifier.align(Alignment.Center))
         } else {
             imageBitmap?.let { bitmap ->
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Box {
-                            IconButton(onClick = { showDownloadMenu = true }) {
-                                Icon(Icons.Default.Download, contentDescription = "Download")
-                            }
-
-                            DropdownMenu(
-                                expanded = showDownloadMenu,
-                                onDismissRequest = { showDownloadMenu = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Download PNG") },
-                                    onClick = {
-                                        showDownloadMenu = false
-                                        pngBytes?.let { bytes ->
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                saveDiagram(bytes, "png")
-                                            }
-                                        }
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Download SVG") },
-                                    onClick = {
-                                        showDownloadMenu = false
-                                        svgBytes?.let { bytes ->
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                saveDiagram(bytes, "svg")
-                                            }
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-
+                Box(modifier = Modifier.fillMaxWidth()) {
                     // Image display
                     Image(
                         bitmap = bitmap,
@@ -263,6 +225,49 @@ fun PlantUmlRenderer(
                         contentScale = androidx.compose.ui.layout.ContentScale.FillWidth,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    // Download button overlay (always visible)
+                    Box(modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
+                        IconButton(
+                            onClick = { showDownloadMenu = true },
+                            modifier = Modifier
+                                .size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Download,
+                                contentDescription = "Download",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showDownloadMenu,
+                            onDismissRequest = { showDownloadMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Download PNG") },
+                                onClick = {
+                                    showDownloadMenu = false
+                                    pngBytes?.let { bytes ->
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            saveDiagram(bytes, "png")
+                                        }
+                                    }
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Download SVG") },
+                                onClick = {
+                                    showDownloadMenu = false
+                                    svgBytes?.let { bytes ->
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            saveDiagram(bytes, "svg")
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
