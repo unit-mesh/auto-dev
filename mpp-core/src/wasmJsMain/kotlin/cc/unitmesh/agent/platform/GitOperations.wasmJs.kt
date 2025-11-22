@@ -53,7 +53,6 @@ actual class GitOperations actual constructor(private val projectPath: String) {
 
             val config = createModuleConfig(
                 onPrint = { text ->
-                    WasmConsole.log("[Git] $text")
                     commandOutputBuffer.add(text)
                 },
                 onPrintErr = { text ->
@@ -66,7 +65,6 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             WasmConsole.log("wasm-git initialized successfully")
             isInitialized = true
 
-            // Try to change to project directory if it exists
             try {
                 lg2Module?.FS?.chdir(projectPath)
             } catch (e: Throwable) {
@@ -105,7 +103,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
                 return operation(attempt + 1)
             } catch (e: Throwable) {
                 lastException = e
-                
+
                 if (attempt < maxAttempts - 1) {
                     WasmConsole.warn("Attempt ${attempt + 1} failed: ${e.message}. Retrying in ${currentDelay}ms...")
                     kotlinx.coroutines.delay(currentDelay)
@@ -149,16 +147,16 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         // Try each CORS proxy with timeout
         for (proxy in corsProxies) {
             val url = if (proxy.prefix.isEmpty()) repoUrl else "${proxy.prefix}$repoUrl"
-            
+
             try {
                 WasmConsole.log("Trying ${proxy.name}: $url")
                 commandOutputBuffer.clear()
-                
+
                 // Short timeout per proxy attempt (10 seconds)
                 val result = kotlinx.coroutines.withTimeout(10000L) {
                     module.callMain(jsArrayOf("clone", url, dir)).await<JsNumber>()
                 }
-                
+
                 val exitCode = result.toInt()
 
                 if (exitCode == 0) {
@@ -289,7 +287,9 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         return try {
             // Step 1: Get list of changed files using diff --name-status
             commandOutputBuffer.clear()
-            var exitCode = module.callMain(jsArrayOf("diff", "--name-status", "$commitHash^", commitHash)).await<JsNumber>().toInt()
+            var exitCode =
+                module.callMain(jsArrayOf("diff", "--name-status", "$commitHash^", commitHash)).await<JsNumber>()
+                    .toInt()
 
             if (exitCode != 0) {
                 WasmConsole.warn("git diff --name-status failed with exit code: $exitCode")
@@ -318,14 +318,15 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             // Step 3: For each modified/added file, read its full content
             val filesWithContent = buildString {
                 for ((status, filename) in changedFiles) {
-                    appendLine("=" .repeat(80))
+                    appendLine("=".repeat(80))
                     appendLine("File: $filename (Status: $status)")
-                    appendLine("=" .repeat(80))
-                    
+                    appendLine("=".repeat(80))
+
                     when (status) {
                         "D" -> {
                             appendLine("[File Deleted]")
                         }
+
                         "A", "M" -> {
                             // Try to read the file content from current working directory
                             val content = try {
@@ -340,12 +341,12 @@ actual class GitOperations actual constructor(private val projectPath: String) {
                     }
                     appendLine()
                 }
-                
+
                 // Also include the diff for reference
                 if (diffContent.isNotBlank()) {
-                    appendLine("=" .repeat(80))
+                    appendLine("=".repeat(80))
                     appendLine("Git Diff Output:")
-                    appendLine("=" .repeat(80))
+                    appendLine("=".repeat(80))
                     appendLine(diffContent)
                 }
             }
@@ -531,21 +532,21 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             false
         }
     }
-    
+
     actual suspend fun getRemoteUrl(remoteName: String): String? {
         initialize()
-        
+
         val module = lg2Module ?: return null
-        
+
         return try {
             commandOutputBuffer.clear()
             val exitCode = module.callMain(jsArrayOf("remote", "get-url", remoteName)).await<JsNumber>().toInt()
-            
+
             if (exitCode != 0) {
                 WasmConsole.warn("git remote get-url failed with exit code: $exitCode")
                 return null
             }
-            
+
             commandOutputBuffer.firstOrNull()?.trim()?.takeIf { it.isNotBlank() }
         } catch (e: Throwable) {
             WasmConsole.error("Failed to get remote URL: ${e.message}")
