@@ -204,19 +204,6 @@ class LinterRegistry {
         return linters.values.toList()
     }
 
-    /**
-     * Find suitable linters for a file based on extension
-     */
-    fun findLintersForFile(filePath: String): List<Linter> {
-        val extension = filePath.substringAfterLast('.', "")
-        return linters.values.filter { linter ->
-            linter.supportedExtensions.any { it.equals(extension, ignoreCase = true) }
-        }
-    }
-
-    /**
-     * Find suitable linters for multiple files
-     */
     fun findLintersForFiles(filePaths: List<String>): List<Linter> {
         val extensions = filePaths.map { it.substringAfterLast('.', "") }.toSet()
         return linters.values.filter { linter ->
@@ -226,10 +213,6 @@ class LinterRegistry {
         }.distinctBy { it.name }
     }
 
-    /**
-     * Get summary of linters for specific files
-     * Actually runs linters and collects real issues
-     */
     suspend fun getLinterSummaryForFiles(filePaths: List<String>, projectPath: String = "."): LinterSummary {
         if (filePaths.isEmpty()) {
             return LinterSummary(
@@ -345,7 +328,6 @@ class LinterRegistry {
         fun getInstance(): LinterRegistry {
             if (instance == null) {
                 instance = LinterRegistry()
-                // Register default linters
                 registerPlatformLinters(instance!!)
             }
             return instance!!

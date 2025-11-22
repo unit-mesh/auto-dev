@@ -7,28 +7,27 @@ import cc.unitmesh.agent.logging.getLogger
 /**
  * Base class for linters that run as shell commands
  */
-abstract class ShellBasedLinter(
-    private val shellExecutor: ShellExecutor
-) : Linter {
-    
+abstract class ShellBasedLinter(private val shellExecutor: ShellExecutor) : Linter {
+
     private val logger = getLogger("ShellBasedLinter")
-    
+
     /**
      * Get the command to check if linter is installed
      */
     abstract fun getVersionCommand(): String
-    
+
     /**
      * Get the command to lint a file
      */
     abstract fun getLintCommand(filePath: String, projectPath: String): String
-    
+
     /**
      * Parse the output of the linter into LintIssues
      */
     abstract fun parseOutput(output: String, filePath: String): List<LintIssue>
-    
+
     override suspend fun isAvailable(): Boolean {
+        logger.info { "Shell executor: ${shellExecutor::class.simpleName}" }
         return try {
             val config = ShellExecutionConfig(timeoutMs = 5000L)
             val result = shellExecutor.execute(getVersionCommand(), config)
