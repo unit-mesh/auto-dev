@@ -146,7 +146,7 @@ fun CommitListItem(
                 GitGraphColumn(
                     node = graphNode,
                     graphStructure = graphStructure,
-                    rowHeight = 72.dp,
+                    rowHeight = 58.dp,
                     columnWidth = 16.dp,
                     modifier = Modifier.Companion.padding(start = 4.dp)
                 )
@@ -155,7 +155,7 @@ fun CommitListItem(
             Column(
                 modifier = Modifier.Companion
                     .weight(1f)
-                    .padding(8.dp)
+                    .padding(6.dp)
             ) {
             // Commit message (first line)
             Row(
@@ -165,10 +165,10 @@ fun CommitListItem(
             ) {
                 Text(
                     text = commit.message.lines().firstOrNull() ?: commit.message,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Companion.Medium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
+                    maxLines = 1,
                     overflow = TextOverflow.Companion.Ellipsis,
                     modifier = Modifier.Companion.weight(1f)
                 )
@@ -178,19 +178,19 @@ fun CommitListItem(
                 if (prNumber != null) {
                     Surface(
                         color = AutoDevColors.Indigo.c600.copy(alpha = 0.15f),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
                     ) {
                         Text(
                             text = prNumber,
                             style = MaterialTheme.typography.labelSmall,
                             color = AutoDevColors.Indigo.c600,
-                            modifier = Modifier.Companion.padding(horizontal = 4.dp, vertical = 1.dp)
+                            modifier = Modifier.Companion.padding(horizontal = 3.dp, vertical = 1.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.Companion.height(4.dp))
+            Spacer(modifier = Modifier.Companion.height(3.dp))
 
             // Author, hash and timestamp in one compact row
             Row(
@@ -200,13 +200,13 @@ fun CommitListItem(
             ) {
                 // Author and hash together
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
                     verticalAlignment = Alignment.Companion.CenterVertically,
                     modifier = Modifier.Companion.weight(1f, fill = false)
                 ) {
                     Text(
                         text = commit.author,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Companion.Ellipsis,

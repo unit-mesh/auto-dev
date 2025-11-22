@@ -415,12 +415,36 @@ open class CodeReviewViewModel(
                 }
 
                 val agent = initializeCodingAgent()
+                
+                // Build additional context including issue information if available
+                val additionalContext = buildString {
+                    val currentCommit = currentState.commitHistory.getOrNull(currentState.selectedCommitIndex)
+                    if (currentCommit?.issueInfo != null) {
+                        val issue = currentCommit.issueInfo
+                        appendLine("## Related Issue Information")
+                        appendLine()
+                        appendLine("**Issue #${issue.id}**: ${issue.title}")
+                        appendLine("**Status**: ${issue.status}")
+                        if (issue.description.isNotBlank()) {
+                            appendLine()
+                            appendLine("**Description**:")
+                            appendLine(issue.description)
+                        }
+                        if (issue.labels.isNotEmpty()) {
+                            appendLine()
+                            appendLine("**Labels**: ${issue.labels.joinToString(", ")}")
+                        }
+                        appendLine()
+                    }
+                }
+                
                 val reviewTask = cc.unitmesh.agent.ReviewTask(
                     filePaths = filePaths,
                     reviewType = cc.unitmesh.agent.ReviewType.COMPREHENSIVE,
                     projectPath = workspace.rootPath ?: "",
                     patch = currentState.originDiff,
-                    lintResults = currentState.aiProgress.lintResults
+                    lintResults = currentState.aiProgress.lintResults,
+                    additionalContext = additionalContext
                 )
 
                 val analysisOutputBuilder = StringBuilder()
