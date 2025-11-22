@@ -23,7 +23,10 @@ data class CodeReviewState(
     val hasMoreCommits: Boolean = false,
     val isLoadingMore: Boolean = false,
     val totalCommitCount: Int? = null,
-    val originDiff: String? = null
+    val originDiff: String? = null,
+    // Test coverage
+    val relatedTests: Map<String, List<TestFileInfo>> = emptyMap(),
+    val isLoadingTests: Boolean = false
 )
 
 /**

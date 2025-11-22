@@ -331,6 +331,9 @@ open class CodeReviewViewModel(
                 )
             }
 
+            // Find related tests
+            findRelatedTests()
+
             // Auto-start analysis if agent is available (for automatic testing)
             if (codeReviewAgent != null && diffFiles.isNotEmpty()) {
                 AutoDevLogger.info("CodeReviewViewModel") {
@@ -395,6 +398,9 @@ open class CodeReviewViewModel(
                     originDiff = gitDiff.originDiff
                 )
             }
+            
+            // Find related tests
+            findRelatedTests()
         } catch (e: Exception) {
             updateState {
                 it.copy(
@@ -792,6 +798,49 @@ open class CodeReviewViewModel(
         }
 
         return codeContent
+    }
+
+    /**
+     * Find related test files for all changed files
+     */
+    suspend fun findRelatedTests() {
+        if (currentState.diffFiles.isEmpty()) return
+        
+        updateState { it.copy(isLoadingTests = true) }
+        
+        try {
+            val testMap = mutableMapOf<String, List<TestFileInfo>>()
+            
+            for (diffFile in currentState.diffFiles) {
+                if (diffFile.changeType == ChangeType.DELETE) continue
+                
+                val testFiles = TestFinderFactory.findTests(
+                    sourceFile = diffFile.path,
+                    language = diffFile.language,
+                    workspace = workspace
+                )
+                
+                if (testFiles.isNotEmpty()) {
+                    testMap[diffFile.path] = testFiles
+                }
+            }
+            
+            updateState { 
+                it.copy(
+                    relatedTests = testMap,
+                    isLoadingTests = false
+                )
+            }
+            
+            AutoDevLogger.info("CodeReviewViewModel") {
+                "Found ${testMap.values.sumOf { it.size }} test files for ${testMap.size} changed files"
+            }
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") {
+                "Failed to find related tests: ${e.message}"
+            }
+            updateState { it.copy(isLoadingTests = false) }
+        }
     }
 
     /**

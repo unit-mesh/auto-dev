@@ -49,6 +49,8 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
+import cc.unitmesh.devins.ui.compose.agent.codereview.TestFileInfo
+import cc.unitmesh.devins.ui.compose.agent.codereview.QualityReviewPanel
 import androidx.compose.foundation.lazy.items
 
 @Composable
@@ -59,7 +61,10 @@ fun DiffCenterView(
     onViewFile: ((String) -> Unit)? = null,
     workspaceRoot: String? = null,
     isLoadingDiff: Boolean = false,
-    onConfigureToken: () -> Unit = {}
+    onConfigureToken: () -> Unit = {},
+    // Test coverage data
+    relatedTests: Map<String, List<TestFileInfo>> = emptyMap(),
+    isLoadingTests: Boolean = false
 ) {
     var viewMode by remember { mutableStateOf(FileViewMode.LIST) }
 
@@ -301,6 +306,20 @@ fun DiffCenterView(
                         workspaceRoot = workspaceRoot
                     )
                 }
+            }
+            
+            // Quality Review Panel - Show test coverage
+            if (!isLoadingDiff && diffFiles.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Collect all related tests for the selected file
+                val currentFile = diffFiles.getOrNull(0) // Can be improved to use selectedFileIndex
+                val allTests = relatedTests.values.flatten()
+                
+                QualityReviewPanel(
+                    testFiles = allTests,
+                    onTestFileClick = onViewFile
+                )
             }
         }
     }

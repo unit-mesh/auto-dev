@@ -147,16 +147,19 @@ private fun ThreeColumnLayout(
                 first = {
                     // Center: Diff viewer
                     var fileToView by remember { mutableStateOf<String?>(null) }
+                    val onViewFile: (String) -> Unit = { filePath -> fileToView = filePath }
+                    val workspaceRoot = viewModel.workspace.rootPath
+                    val onConfigureToken = onShowConfigDialog
 
                     DiffCenterView(
                         diffFiles = state.diffFiles,
-                        selectedCommits = state.selectedCommitIndices.mapNotNull { state.commitHistory.getOrNull(it) }.sortedBy { it.timestamp }.reversed(), // Sort by newest first for display consistency
-                        onViewFile = { filePath ->
-                            fileToView = filePath
-                        },
-                        workspaceRoot = viewModel.workspace.rootPath,
+                        selectedCommits = state.selectedCommitIndices.mapNotNull { state.commitHistory.getOrNull(it) },
+                        onViewFile = onViewFile,
+                        workspaceRoot = workspaceRoot,
                         isLoadingDiff = state.isLoadingDiff,
-                        onConfigureToken = onShowConfigDialog
+                        onConfigureToken = onConfigureToken,
+                        relatedTests = state.relatedTests,
+                        isLoadingTests = state.isLoadingTests
                     )
 
                     // File viewer dialog
