@@ -67,4 +67,11 @@ expect class GitOperations(projectPath: String) {
      * @return remote URL，如果获取失败返回 null
      */
     suspend fun getRemoteUrl(remoteName: String = "origin"): String?
+    
+    /**
+     * 检查 commit 是否有父提交（不是根提交）
+     * @param commitHash commit hash
+     * @return true 表示有父提交，false 表示是根提交
+     */
+    suspend fun hasParent(commitHash: String): Boolean
 }

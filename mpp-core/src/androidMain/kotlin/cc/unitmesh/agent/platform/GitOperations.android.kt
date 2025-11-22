@@ -49,4 +49,8 @@ actual class GitOperations actual constructor(private val projectPath: String) {
     actual suspend fun getRemoteUrl(remoteName: String): String? {
         return null
     }
+    
+    actual suspend fun hasParent(commitHash: String): Boolean {
+        return false
+    }
 }

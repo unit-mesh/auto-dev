@@ -176,6 +176,19 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         }
     }
     
+    actual suspend fun hasParent(commitHash: String): Boolean {
+        if (!isNodeJs) {
+            return false
+        }
+        
+        return try {
+            execGitCommand("git rev-parse $commitHash^")
+            true
+        } catch (e: Throwable) {
+            false
+        }
+    }
+    
     // Private helper methods
     
     private fun parseCommitLine(line: String): GitCommitInfo? {
@@ -184,13 +197,15 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val parts = line.split("\u001f")
             if (parts.size < 5) return null
             
+            val hash = parts[0].trim() // Trim to remove any leading/trailing whitespace or newlines
+            
             GitCommitInfo(
-                hash = parts[0],
-                author = parts[1],
-                email = parts[2],
+                hash = hash,
+                author = parts[1].trim(),
+                email = parts[2].trim(),
                 date = parts[3].toLongOrNull() ?: 0L,
                 message = parts[4].trim(), // %B includes full commit message (subject + body)
-                shortHash = parts[0].take(7)
+                shortHash = hash.take(7)
             )
         } catch (e: Throwable) {
             logger.warn { "Failed to parse commit line: $line" }

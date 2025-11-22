@@ -163,7 +163,11 @@ actual class GitOperations actual constructor(private val projectPath: String) {
                 .start()
             
             val statsOutput = statsProcess.inputStream.bufferedReader().readText()
-            statsProcess.waitFor()
+            val statsExitCode = statsProcess.waitFor()
+            
+            if (statsExitCode != 0) {
+                logger.warn { "Git show --numstat failed with exit code $statsExitCode. Output: ${statsOutput.take(500)}" }
+            }
             
             // Get actual diff
             val diffCommand = listOf(
@@ -182,7 +186,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = diffProcess.waitFor()
             
             if (exitCode != 0) {
-                logger.warn { "Git show failed with exit code $exitCode" }
+                logger.warn { "Git show failed with exit code $exitCode. Command: ${diffCommand.joinToString(" ")}. Output: ${diffOutput.take(500)}" }
                 return@withContext null
             }
             
@@ -212,7 +216,7 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val exitCode = process.waitFor()
             
             if (exitCode != 0) {
-                logger.warn { "Git diff failed with exit code $exitCode" }
+                logger.warn { "Git diff --numstat failed with exit code $exitCode. Command: ${command.joinToString(" ")}. Output: ${output.take(500)}" }
                 return@withContext null
             }
             
@@ -266,6 +270,26 @@ actual class GitOperations actual constructor(private val projectPath: String) {
         }
     }
     
+    actual suspend fun hasParent(commitHash: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            // Try to get the parent commit hash
+            val command = listOf("git", "rev-parse", "$commitHash^")
+            
+            val process = ProcessBuilder(command)
+                .directory(File(projectPath))
+                .redirectErrorStream(true)
+                .start()
+            
+            val exitCode = process.waitFor()
+            
+            // If exit code is 0, parent exists; if 128, it's a root commit
+            exitCode == 0
+        } catch (e: Exception) {
+            logger.debug { "Failed to check parent for commit $commitHash: ${e.message}" }
+            false
+        }
+    }
+    
     // Private helper methods
     
     private fun parseCommitLine(line: String): GitCommitInfo? {
@@ -274,13 +298,15 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             val parts = line.split("\u001f")
             if (parts.size < 5) return null
             
+            val hash = parts[0].trim() // Trim to remove any leading/trailing whitespace or newlines
+            
             GitCommitInfo(
-                hash = parts[0],
-                author = parts[1],
-                email = parts[2],
+                hash = hash,
+                author = parts[1].trim(),
+                email = parts[2].trim(),
                 date = parts[3].toLongOrNull() ?: 0L,
                 message = parts[4].trim(), // %B includes full commit message (subject + body)
-                shortHash = parts[0].take(7)
+                shortHash = hash.take(7)
             )
         } catch (e: Exception) {
             logger.warn { "Failed to parse commit line: $line" }

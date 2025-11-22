@@ -553,6 +553,20 @@ actual class GitOperations actual constructor(private val projectPath: String) {
             null
         }
     }
+    
+    actual suspend fun hasParent(commitHash: String): Boolean {
+        initialize()
+
+        val module = lg2Module ?: return false
+
+        return try {
+            commandOutputBuffer.clear()
+            val exitCode = module.callMain(jsArrayOf("rev-parse", "$commitHash^")).await<JsNumber>().toInt()
+            exitCode == 0
+        } catch (e: Throwable) {
+            false
+        }
+    }
 }
 
 fun debugObj(obj: LibGit2Module): Unit = js("console.log(obj)")
