@@ -12,13 +12,13 @@ import cc.unitmesh.devins.workspace.Workspace
 interface TestFinder {
     /**
      * Find test files related to the given source file
-     * 
+     *
      * @param sourceFile Path to the source file (relative to project root)
      * @param workspace Project workspace
      * @return List of related test files
      */
     suspend fun findTestFiles(sourceFile: String, workspace: Workspace): List<TestFileInfo>
-    
+
     /**
      * Check if this finder is applicable for the given language
      */
@@ -30,18 +30,19 @@ interface TestFinder {
  */
 object TestFinderFactory {
     private val finders = listOf(
+        ComposeKmpTestFinder(),  // Highest priority for Compose KMP projects
         JavaKotlinTestFinder(),
         PythonTestFinder(),
         JavaScriptTestFinder()
     )
-    
+
     /**
      * Get test finder for the given language
      */
     fun getTestFinder(language: String?): TestFinder? {
         return finders.firstOrNull { it.isApplicable(language) }
     }
-    
+
     /**
      * Find tests using all applicable finders
      */
@@ -73,13 +74,13 @@ abstract class BaseTestFinder : TestFinder {
                     exists = false
                 )
             }
-            
+
             val parser = CodeGraphFactory.createParser()
             val nodes = parser.parseNodes(content, filePath, language)
-            
+
             // Build tree structure from nodes
             val testCases = buildTestTree(nodes)
-            
+
             TestFileInfo(
                 filePath = filePath,
                 language = language.name,
@@ -96,21 +97,21 @@ abstract class BaseTestFinder : TestFinder {
             )
         }
     }
-    
+
     /**
      * Build hierarchical test tree from flat list of code nodes
      */
     private fun buildTestTree(nodes: List<CodeNode>): List<TestCaseNode> {
         // Find all test classes (top-level and nested)
-        val classNodes = nodes.filter { 
-            it.type == CodeElementType.CLASS || it.type == CodeElementType.INTERFACE 
+        val classNodes = nodes.filter {
+            it.type == CodeElementType.CLASS || it.type == CodeElementType.INTERFACE
         }
-        
+
         // Find all test methods/functions
-        val methodNodes = nodes.filter { 
-            it.type == CodeElementType.METHOD || it.type == CodeElementType.FUNCTION 
+        val methodNodes = nodes.filter {
+            it.type == CodeElementType.METHOD || it.type == CodeElementType.FUNCTION
         }
-        
+
         // If no classes found, return methods as top-level nodes (for languages like Python)
         if (classNodes.isEmpty()) {
             return methodNodes.map { method ->
@@ -122,14 +123,14 @@ abstract class BaseTestFinder : TestFinder {
                 )
             }
         }
-        
+
         // Build tree: classes with their methods as children
         return classNodes.map { classNode ->
             val classMethods = methodNodes.filter { method ->
                 // Check if method belongs to this class based on line ranges
                 method.startLine >= classNode.startLine && method.endLine <= classNode.endLine
             }
-            
+
             val childMethods = classMethods.map { method ->
                 TestCaseNode(
                     name = method.name,
@@ -138,7 +139,7 @@ abstract class BaseTestFinder : TestFinder {
                     endLine = method.endLine
                 )
             }
-            
+
             TestCaseNode(
                 name = classNode.name,
                 type = TestNodeType.CLASS,
@@ -149,7 +150,7 @@ abstract class BaseTestFinder : TestFinder {
             )
         }
     }
-    
+
     /**
      * Convert relative path from src to test
      * E.g., "src/main/java/com/example/Foo.java" -> "src/test/java/com/example/FooTest.java"
@@ -168,17 +169,17 @@ class JavaKotlinTestFinder : BaseTestFinder() {
     override fun isApplicable(language: String?): Boolean {
         return language?.lowercase() in listOf("java", "kotlin")
     }
-    
+
     override suspend fun findTestFiles(sourceFile: String, workspace: Workspace): List<TestFileInfo> {
         val results = mutableListOf<TestFileInfo>()
-        
+
         // Determine language
         val language = when {
             sourceFile.endsWith(".java") -> Language.JAVA
             sourceFile.endsWith(".kt") -> Language.KOTLIN
             else -> return emptyList()
         }
-        
+
         // Try different test path conventions
         val testPaths = listOf(
             // Standard Maven/Gradle: src/main/java -> src/test/java
@@ -190,14 +191,14 @@ class JavaKotlinTestFinder : BaseTestFinder() {
             convertPathToTest(sourceFile, "/commonMain/", "/commonTest/", "Test"),
             convertPathToTest(sourceFile, "/jvmMain/", "/jvmTest/", "Test"),
         )
-        
+
         for (testPath in testPaths) {
             val testFile = parseTestFile(testPath, language, workspace)
             if (testFile.exists) {
                 results.add(testFile)
             }
         }
-        
+
         return results
     }
 }
@@ -209,32 +210,32 @@ class PythonTestFinder : BaseTestFinder() {
     override fun isApplicable(language: String?): Boolean {
         return language?.lowercase() == "python"
     }
-    
+
     override suspend fun findTestFiles(sourceFile: String, workspace: Workspace): List<TestFileInfo> {
         val results = mutableListOf<TestFileInfo>()
-        
+
         // Python test conventions:
         // 1. test_foo.py for foo.py
         // 2. foo_test.py for foo.py
         // 3. tests/test_foo.py for src/foo.py
-        
+
         val baseName = sourceFile.substringAfterLast("/").removeSuffix(".py")
         val dir = sourceFile.substringBeforeLast("/", "")
-        
+
         val testPaths = listOf(
             "$dir/test_$baseName.py",
             "$dir/${baseName}_test.py",
             "tests/test_$baseName.py",
             "test/test_$baseName.py",
         )
-        
+
         for (testPath in testPaths) {
             val testFile = parseTestFile(testPath, Language.PYTHON, workspace)
             if (testFile.exists) {
                 results.add(testFile)
             }
         }
-        
+
         return results
     }
 }
@@ -246,10 +247,10 @@ class JavaScriptTestFinder : BaseTestFinder() {
     override fun isApplicable(language: String?): Boolean {
         return language?.lowercase() in listOf("javascript", "typescript", "jsx", "tsx")
     }
-    
+
     override suspend fun findTestFiles(sourceFile: String, workspace: Workspace): List<TestFileInfo> {
         val results = mutableListOf<TestFileInfo>()
-        
+
         // Determine language and extension
         val (language, extension) = when {
             sourceFile.endsWith(".ts") -> Language.TYPESCRIPT to ".ts"
@@ -257,29 +258,30 @@ class JavaScriptTestFinder : BaseTestFinder() {
             sourceFile.endsWith(".jsx") -> Language.JAVASCRIPT to ".jsx"
             else -> Language.JAVASCRIPT to ".js"
         }
-        
+
         // JavaScript test conventions:
         // 1. foo.test.js/foo.spec.js
         // 2. __tests__/foo.js
         // 3. foo.test.ts for TypeScript
-        
+
         val baseName = sourceFile.substringAfterLast("/").removeSuffix(extension)
         val dir = sourceFile.substringBeforeLast("/", "")
-        
+
         val testPaths = listOf(
             "$dir/$baseName.test$extension",
             "$dir/$baseName.spec$extension",
             "$dir/__tests__/$baseName$extension",
             "$dir/__tests__/$baseName.test$extension",
         )
-        
+
         for (testPath in testPaths) {
             val testFile = parseTestFile(testPath, language, workspace)
             if (testFile.exists) {
                 results.add(testFile)
             }
         }
-        
+
         return results
     }
 }
+
