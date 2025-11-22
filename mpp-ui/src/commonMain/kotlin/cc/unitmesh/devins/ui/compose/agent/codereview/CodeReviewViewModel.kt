@@ -43,14 +43,14 @@ open class CodeReviewViewModel(
     }
 
     private val analysisRepository = cc.unitmesh.devins.db.CodeReviewAnalysisRepository.getInstance()
-    
+
     // Cache remote URL for repository operations
     private var cachedRemoteUrl: String? = null
 
     // Non-AI analysis components (extracted for testability)
     private val codeAnalyzer = CodeAnalyzer(workspace)
     private val lintExecutor = LintExecutor()
-    
+
     // Issue tracker service
     private val issueService = IssueService(workspace.rootPath ?: "")
 
@@ -109,7 +109,7 @@ open class CodeReviewViewModel(
                     AutoDevLogger.info("CodeReviewViewModel") {
                         "Cached remote URL: ${cachedRemoteUrl ?: "(not available)"}"
                     }
-                    
+
                     codeReviewAgent = initializeCodingAgent()
                     // Initialize issue service
                     issueService.initialize(if (gitOps.isSupported()) gitOps else null)
@@ -226,7 +226,7 @@ open class CodeReviewViewModel(
                     isLoadingMore = false
                 )
             }
-            
+
             // Load issue info for newly loaded commits asynchronously
             val startIndex = currentCount
             additionalCommits.forEachIndexed { offset, _ ->
@@ -728,9 +728,6 @@ open class CodeReviewViewModel(
     suspend fun generateFixes() {
         try {
             val fixOutputBuilder = StringBuilder()
-            fixOutputBuilder.appendLine("🔧 Generating actionable fixes...")
-            fixOutputBuilder.appendLine()
-
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(fixOutput = fixOutputBuilder.toString()))
             }
@@ -801,7 +798,7 @@ open class CodeReviewViewModel(
     fun proceedToGenerateFixes(feedback: String) {
         // Cancel any existing job if needed, though usually we are in WAITING state
         currentJob?.cancel()
-        
+
         updateState {
             it.copy(
                 aiProgress = it.aiProgress.copy(
@@ -814,13 +811,13 @@ open class CodeReviewViewModel(
         currentJob = CoroutineScope(Dispatchers.Default).launch {
             try {
                 generateFixes()
-                
+
                 updateState {
                     it.copy(
                         aiProgress = it.aiProgress.copy(stage = AnalysisStage.COMPLETED)
                     )
                 }
-                
+
                 saveCurrentAnalysisResults()
             } catch (e: Exception) {
                 updateState {
@@ -1029,61 +1026,61 @@ open class CodeReviewViewModel(
 
     /**
      * Load issue information for a specific commit asynchronously
-     * 
+     *
      * @param commitIndex Index of the commit in commitHistory
      */
     private fun loadIssueForCommit(commitIndex: Int) {
         val commit = currentState.commitHistory.getOrNull(commitIndex) ?: return
-        
+
         // Skip if already loaded or loading
         if (commit.issueInfo != null || commit.isLoadingIssue) {
             return
         }
-        
+
         // Mark as loading
         updateCommitAtIndex(commitIndex) { it.copy(isLoadingIssue = true, issueLoadError = null) }
-        
+
         // Load issue asynchronously
         scope.launch {
             try {
                 val issueDeferred = issueService.getIssueAsync(commit.hash, commit.message)
                 val result = issueDeferred.await()
-                
+
                 // Update commit with issue info or error
-                updateCommitAtIndex(commitIndex) { 
+                updateCommitAtIndex(commitIndex) {
                     it.copy(
-                        issueInfo = result.issueInfo, 
+                        issueInfo = result.issueInfo,
                         isLoadingIssue = false,
                         issueLoadError = result.error
-                    ) 
+                    )
                 }
             } catch (e: Exception) {
                 AutoDevLogger.error("CodeReviewViewModel") {
                     "Failed to load issue for commit ${commit.shortHash}: ${e.message}"
                 }
-                updateCommitAtIndex(commitIndex) { 
+                updateCommitAtIndex(commitIndex) {
                     it.copy(
                         isLoadingIssue = false,
                         issueLoadError = "Failed to load issue"
-                    ) 
+                    )
                 }
             }
         }
     }
-    
+
     /**
      * Update a commit at a specific index
      */
     private fun updateCommitAtIndex(index: Int, update: (CommitInfo) -> CommitInfo) {
         val commits = currentState.commitHistory
         if (index !in commits.indices) return
-        
+
         val updatedCommits = commits.toMutableList()
         updatedCommits[index] = update(updatedCommits[index])
-        
+
         updateState { it.copy(commitHistory = updatedCommits) }
     }
-    
+
     /**
      * Detect repository information from Git remote URL
      * @return Pair of (owner, repo) or null if not detected
@@ -1093,7 +1090,7 @@ open class CodeReviewViewModel(
             if (!gitOps.isSupported()) {
                 return null
             }
-            
+
             val remoteUrl = gitOps.getRemoteUrl("origin")
             if (remoteUrl != null) {
                 cc.unitmesh.agent.tracker.GitHubIssueTracker.parseRepoUrl(remoteUrl)
@@ -1107,7 +1104,7 @@ open class CodeReviewViewModel(
             null
         }
     }
-    
+
     /**
      * Reload issue service (called when configuration changes)
      */
@@ -1117,7 +1114,7 @@ open class CodeReviewViewModel(
                 "Reloading issue service..."
             }
             issueService.reload(if (gitOps.isSupported()) gitOps else null)
-            
+
             // Reload issues for all commits
             currentState.commitHistory.forEachIndexed { index, commit ->
                 // Reset issue info
@@ -1125,7 +1122,7 @@ open class CodeReviewViewModel(
                 // Reload
                 loadIssueForCommit(index)
             }
-            
+
             AutoDevLogger.info("CodeReviewViewModel") {
                 "Issue service reloaded successfully"
             }
@@ -1135,7 +1132,7 @@ open class CodeReviewViewModel(
             }
         }
     }
-    
+
     /**
      * Cleanup when ViewModel is disposed
      */

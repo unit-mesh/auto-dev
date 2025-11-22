@@ -37,7 +37,7 @@ class LintExecutor {
                 return emptyList()
             }
 
-            progressCallback?.invoke("🔍 Running linters: ${linters.joinToString(", ") { it.name }}\n")
+            progressCallback?.invoke("Running linters: ${linters.joinToString(", ") { it.name }}\n")
 
             if (modifiedCodeRanges.isNotEmpty()) {
                 val totalRanges = modifiedCodeRanges.values.sumOf { it.size }
@@ -47,10 +47,9 @@ class LintExecutor {
 
             // Run each linter
             for (linter in linters) {
-                // Check if linter is available
                 if (!linter.isAvailable()) {
-                    progressCallback?.invoke("⚠️  ${linter.name} is not installed\n")
-                    progressCallback?.invoke("   ${linter.getInstallationInstructions()}\n\n")
+                    progressCallback?.invoke("${linter.name} is not installed\n")
+                    progressCallback?.invoke("${linter.getInstallationInstructions()}\n\n")
                     continue
                 }
 
@@ -129,7 +128,7 @@ class LintExecutor {
                 }
             }
 
-            progressCallback?.invoke("✅ Linting complete\n")
+            progressCallback?.invoke("Linting complete\n")
 
         } catch (e: Exception) {
             AutoDevLogger.error("LintExecutor") { "Failed to run lint: ${e.message}" }

@@ -14,8 +14,7 @@ class DetektLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecuto
     override fun getLintCommand(filePath: String, projectPath: String) =
         "detekt --input \"$filePath\" --report txt:stdout"
 
-    override fun parseOutput(output: String, filePath: String): List<LintIssue> =
-        Companion.parseDetektOutput(output, filePath)
+    override fun parseOutput(output: String, filePath: String): List<LintIssue> = parseDetektOutput(output, filePath)
 
     companion object {
         /**
@@ -25,7 +24,6 @@ class DetektLinter(shellExecutor: ShellExecutor) : ShellBasedLinter(shellExecuto
         fun parseDetektOutput(output: String, filePath: String): List<LintIssue> {
             val issues = mutableListOf<LintIssue>()
 
-            // Detekt format: filepath:line:column: message [RuleName]
             val pattern = Regex("""^(.+?):(\d+):(\d+):\s*(.+?)\s*\[([^\]]+)\]\s*$""")
 
             for (line in output.lines()) {
