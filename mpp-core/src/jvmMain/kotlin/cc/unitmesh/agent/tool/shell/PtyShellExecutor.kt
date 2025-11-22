@@ -7,6 +7,7 @@ import com.pty4j.PtyProcessBuilder
 import kotlinx.coroutines.*
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
@@ -35,6 +36,27 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
         // Ensure TERM is set for proper terminal behavior
         if (!environment.containsKey("TERM")) {
             environment["TERM"] = "xterm-256color"
+        }
+
+        // Optionally enrich with login shell environment so user PATH/custom exports are available
+        if (config.inheritLoginEnv) {
+            val effectiveShell = config.shell ?: getDefaultShell()
+            if (effectiveShell != null) {
+                val loginEnv = loadLoginShellEnvironment(effectiveShell)
+                if (loginEnv.isNotEmpty()) {
+                    // Merge PATH specially (union, keep order: login first so user custom paths come before system)
+                    val mergedPath = mergePath(loginEnv["PATH"], environment["PATH"]) ?: environment["PATH"] ?: loginEnv["PATH"]
+                    loginEnv.forEach { (k, v) ->
+                        if (k != "PATH" && !environment.containsKey(k)) {
+                            environment[k] = v
+                        }
+                    }
+                    if (mergedPath != null) environment["PATH"] = ensureHomebrewPath(mergedPath)
+                } else {
+                    // Fallback: ensure Homebrew path if on macOS and missing
+                    environment["PATH"] = ensureHomebrewPath(environment["PATH"] ?: "")
+                }
+            }
         }
 
         val ptyProcessBuilder = PtyProcessBuilder()
@@ -239,6 +261,24 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
         if (!environment.containsKey("TERM")) {
             environment["TERM"] = "xterm-256color"
         }
+
+        if (config.inheritLoginEnv) {
+            val effectiveShell = config.shell ?: getDefaultShell()
+            if (effectiveShell != null) {
+                val loginEnv = loadLoginShellEnvironment(effectiveShell)
+                if (loginEnv.isNotEmpty()) {
+                    val mergedPath = mergePath(loginEnv["PATH"], environment["PATH"]) ?: environment["PATH"] ?: loginEnv["PATH"]
+                    loginEnv.forEach { (k, v) ->
+                        if (k != "PATH" && !environment.containsKey(k)) {
+                            environment[k] = v
+                        }
+                    }
+                    if (mergedPath != null) environment["PATH"] = ensureHomebrewPath(mergedPath)
+                } else {
+                    environment["PATH"] = ensureHomebrewPath(environment["PATH"] ?: "")
+                }
+            }
+        }
         
         val ptyProcessBuilder = PtyProcessBuilder()
             .setCommand(processCommand.toTypedArray())
@@ -312,5 +352,57 @@ class PtyShellExecutor : ShellExecutor, LiveShellExecutor {
             throw e
         }
     }
+}
+
+private val loginEnvCache = ConcurrentHashMap<String, Map<String, String>>()
+
+private fun loadLoginShellEnvironment(shell: String): Map<String, String> {
+    return loginEnvCache.getOrPut(shell) {
+        try {
+            // Use login + interactive where available to load user configs (.zprofile/.zshrc/.bash_profile)
+            val args = when {
+                shell.endsWith("zsh") -> listOf(shell, "-lic", "env") // login + interactive + run command
+                shell.endsWith("bash") -> listOf(shell, "-lc", "env")
+                shell.endsWith("fish") -> listOf(shell, "-lc", "env")
+                else -> listOf(shell, "-lc", "env")
+            }
+            val process = ProcessBuilder(args)
+                .redirectErrorStream(true)
+                .start()
+            // Wait up to 3s to avoid hanging
+            process.waitFor(3, TimeUnit.SECONDS)
+            val exit = runCatching { process.exitValue() }.getOrNull()
+            if (exit != null && exit != 0) return@getOrPut emptyMap()
+            process.inputStream.bufferedReader().useLines { lines ->
+                lines.mapNotNull { line ->
+                    val idx = line.indexOf('=')
+                    if (idx > 0) {
+                        val key = line.substring(0, idx)
+                        val value = line.substring(idx + 1)
+                        key to value
+                    } else null
+                }.toMap()
+            }
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+}
+
+private fun mergePath(login: String?, current: String?): String? {
+    if (login == null && current == null) return null
+    if (login == null) return current
+    if (current == null) return login
+    val loginParts = login.split(':').filter { it.isNotBlank() }
+    val currentParts = current.split(':').filter { it.isNotBlank() }
+    return (loginParts + currentParts).distinct().joinToString(":")
+}
+
+private fun ensureHomebrewPath(path: String): String {
+    // On Apple Silicon Homebrew default prefix
+    val brewBin = "/opt/homebrew/bin"
+    return if (!path.contains(brewBin) && File(brewBin).exists()) {
+        "$brewBin:$path".trim(':')
+    } else path
 }
 

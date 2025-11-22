@@ -41,7 +41,14 @@ data class ShellExecutionConfig(
     val environment: Map<String, String> = emptyMap(),
     val timeoutMs: Long = 30000L, // 30 seconds default
     val inheritIO: Boolean = false,
-    val shell: String? = null // e.g., "/bin/bash", "cmd.exe"
+    val shell: String? = null, // e.g., "/bin/bash", "cmd.exe"
+    /**
+     * When true (default on JVM), attempt to load the user's login + interactive shell environment
+     * (PATH and other exported variables) so commands like Homebrew-installed tools (e.g. detekt)
+     * resolve correctly when launched from GUI contexts where PATH is sanitized.
+     * Ignored on non-JVM targets.
+     */
+    val inheritLoginEnv: Boolean = true
 )
 
 /**
