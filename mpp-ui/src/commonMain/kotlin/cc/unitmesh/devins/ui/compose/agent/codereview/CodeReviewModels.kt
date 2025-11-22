@@ -14,7 +14,7 @@ data class CodeReviewState(
     val isLoadingDiff: Boolean = false, // Loading diff for a specific commit (not blocking UI)
     val error: String? = null,
     val commitHistory: List<CommitInfo> = emptyList(),
-    val selectedCommitIndex: Int = 0,
+    val selectedCommitIndices: Set<Int> = emptySet(),
     val diffFiles: List<DiffFileInfo> = emptyList(),
     val selectedFileIndex: Int = 0,
     val aiProgress: AIAnalysisProgress = AIAnalysisProgress(),

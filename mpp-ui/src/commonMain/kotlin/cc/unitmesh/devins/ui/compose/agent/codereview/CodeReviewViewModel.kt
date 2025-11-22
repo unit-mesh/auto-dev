@@ -169,7 +169,7 @@ open class CodeReviewViewModel(
                 it.copy(
                     isLoading = false,
                     commitHistory = commits,
-                    selectedCommitIndex = 0,
+                    selectedCommitIndices = if (commits.isNotEmpty()) setOf(0) else emptySet(),
                     hasMoreCommits = hasMore,
                     totalCommitCount = totalCount,
                     error = null
@@ -177,7 +177,7 @@ open class CodeReviewViewModel(
             }
 
             if (commits.isNotEmpty()) {
-                loadCommitDiffInternal(commits[0].hash)
+                loadCommitDiffInternal(setOf(0))
                 // Load issue info for first commit asynchronously
                 loadIssueForCommit(0)
             }
@@ -244,39 +244,59 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Load diff for a specific commit by hash
+     * Load diff for selected commits (supports range selection)
      */
-    private suspend fun loadCommitDiffInternal(commitHash: String) {
-        // Find the commit index by hash
-        val index = currentState.commitHistory.indexOfFirst { it.hash == commitHash }
-        if (index < 0) {
+    private suspend fun loadCommitDiffInternal(selectedIndices: Set<Int>) {
+        if (selectedIndices.isEmpty()) {
             updateState {
                 it.copy(
                     isLoadingDiff = false,
-                    error = "Commit not found: $commitHash"
+                    selectedCommitIndices = emptySet(),
+                    diffFiles = emptyList(),
+                    error = null
                 )
             }
             return
         }
 
-        val commit = currentState.commitHistory[index]
-
         updateState {
             it.copy(
                 isLoadingDiff = true,
-                selectedCommitIndex = index,
+                selectedCommitIndices = selectedIndices,
                 error = null
             )
         }
 
         try {
-            val gitDiff = gitOps.getCommitDiff(commit.hash)
+            // Determine range: oldest to newest
+            val sortedIndices = selectedIndices.sorted()
+            val newestIndex = sortedIndices.first() // 0 is newest
+            val oldestIndex = sortedIndices.last()
+
+            val newestCommit = currentState.commitHistory[newestIndex]
+            val oldestCommit = currentState.commitHistory[oldestIndex]
+
+            val gitDiff = if (newestIndex == oldestIndex) {
+                // Single commit
+                gitOps.getCommitDiff(newestCommit.hash)
+            } else {
+                // Range diff: oldest^..newest
+                // Check if oldest commit has a parent
+                val hasParent = gitOps.hasParent(oldestCommit.hash)
+                if (hasParent) {
+                    // Use parent notation for commits with parents
+                    gitOps.getDiff("${oldestCommit.hash}^", newestCommit.hash)
+                } else {
+                    // For root commit, get diff from empty tree
+                    gitOps.getDiff("4b825dc642cb6eb9a060e54bf8d69288fbee4904", newestCommit.hash)
+                }
+            }
 
             if (gitDiff == null) {
                 updateState {
                     it.copy(
                         isLoadingDiff = false,
-                        error = "No diff available for this commit"
+                        error = "No diff available for the selected range"
                     )
                 }
                 return
@@ -417,22 +437,34 @@ open class CodeReviewViewModel(
                 val agent = initializeCodingAgent()
                 
                 // Build additional context including issue information if available
+                // Build additional context including issue information if available
                 val additionalContext = buildString {
-                    val currentCommit = currentState.commitHistory.getOrNull(currentState.selectedCommitIndex)
-                    if (currentCommit?.issueInfo != null) {
-                        val issue = currentCommit.issueInfo
-                        appendLine("## Related Issue Information")
-                        appendLine()
-                        appendLine("**Issue #${issue.id}**: ${issue.title}")
-                        appendLine("**Status**: ${issue.status}")
-                        if (issue.description.isNotBlank()) {
-                            appendLine()
-                            appendLine("**Description**:")
-                            appendLine(issue.description)
+                    val selectedCommits = currentState.selectedCommitIndices.mapNotNull { currentState.commitHistory.getOrNull(it) }
+                    
+                    if (selectedCommits.isNotEmpty()) {
+                        appendLine("## Selected Commits")
+                        selectedCommits.forEach { commit -> 
+                            appendLine("- ${commit.shortHash}: ${commit.message.lines().firstOrNull()}")
                         }
-                        if (issue.labels.isNotEmpty()) {
+                        appendLine()
+                    }
+
+                    val issues = selectedCommits.mapNotNull { it.issueInfo }.distinctBy { it.id }
+                    if (issues.isNotEmpty()) {
+                        appendLine("## Related Issue Information")
+                        issues.forEach { issue ->
                             appendLine()
-                            appendLine("**Labels**: ${issue.labels.joinToString(", ")}")
+                            appendLine("**Issue #${issue.id}**: ${issue.title}")
+                            appendLine("**Status**: ${issue.status}")
+                            if (issue.description.isNotBlank()) {
+                                appendLine()
+                                appendLine("**Description**:")
+                                appendLine(issue.description)
+                            }
+                            if (issue.labels.isNotEmpty()) {
+                                appendLine()
+                                appendLine("**Labels**: ${issue.labels.joinToString(", ")}")
+                            }
                         }
                         appendLine()
                     }
@@ -519,10 +551,11 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Select a different commit to view by hash
-     * @param commitHash The git commit hash
+     * Select a commit or toggle selection
+     * @param index The index of the commit in the list
+     * @param toggle Whether to toggle selection (multi-select) or replace it
      */
-    open fun selectCommit(commitHash: String) {
+    open fun selectCommit(index: Int, toggle: Boolean = false) {
         currentJob?.cancel()
         saveCurrentAnalysisResults()
 
@@ -533,8 +566,28 @@ open class CodeReviewViewModel(
                 )
             }
 
-            loadCommitDiffInternal(commitHash)
-            restoreAnalysisResultsForCommit(commitHash)
+            val newSelection = if (toggle) {
+                if (currentState.selectedCommitIndices.contains(index)) {
+                    currentState.selectedCommitIndices - index
+                } else {
+                    currentState.selectedCommitIndices + index
+                }
+            } else {
+                setOf(index)
+            }
+
+            // Ensure at least one commit is selected if we're not in a "deselect all" mode (which shouldn't happen usually)
+            // But if user deselects the last one, maybe we should allow empty? For now let's allow empty.
+            
+            loadCommitDiffInternal(newSelection)
+            
+            // Restore analysis results only if single commit selected (complexity with multi-commit analysis storage)
+            if (newSelection.size == 1) {
+                val commit = currentState.commitHistory.getOrNull(newSelection.first())
+                if (commit != null) {
+                    restoreAnalysisResultsForCommit(commit.hash)
+                }
+            }
         }
     }
 
@@ -564,7 +617,11 @@ open class CodeReviewViewModel(
      * Save current analysis results to database
      */
     private fun saveCurrentAnalysisResults() {
-        val currentCommit = currentState.commitHistory.getOrNull(currentState.selectedCommitIndex)
+        // Only save for single commit selection to avoid complexity
+        if (currentState.selectedCommitIndices.size != 1) return
+        
+        val index = currentState.selectedCommitIndices.first()
+        val currentCommit = currentState.commitHistory.getOrNull(index)
         val projectPath = workspace.rootPath ?: return
 
         if (currentCommit != null && currentState.aiProgress.stage != AnalysisStage.IDLE) {

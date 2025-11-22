@@ -28,6 +28,8 @@ object AutoDevComposeIcons {
     val KeyboardArrowDown: ImageVector get() = Icons.Default.KeyboardArrowDown
     val AccountTree: ImageVector get() = Icons.Default.AccountTree
     val List: ImageVector get() = Icons.Default.List
+    val CheckBox: ImageVector get() = Icons.Default.CheckBox
+    val CheckBoxOutlineBlank: ImageVector get() = Icons.Default.CheckBoxOutlineBlank
 
     // Actions
     val Send: ImageVector get() = Icons.Default.Send

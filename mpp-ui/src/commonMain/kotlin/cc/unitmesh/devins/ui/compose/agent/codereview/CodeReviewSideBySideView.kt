@@ -122,13 +122,9 @@ private fun ThreeColumnLayout(
             // Left: Commit history list
             CommitListView(
                 commits = state.commitHistory,
-                selectedIndex = state.selectedCommitIndex,
-                onCommitSelected = { index ->
-                    // Get the commit hash from the index and use that
-                    val commitHash = state.commitHistory.getOrNull(index)?.hash
-                    if (commitHash != null) {
-                        viewModel.selectCommit(commitHash)
-                    }
+                selectedIndices = state.selectedCommitIndices,
+                onCommitSelected = { index, isToggle ->
+                    viewModel.selectCommit(index, toggle = isToggle)
                 },
                 hasMoreCommits = state.hasMoreCommits,
                 isLoadingMore = state.isLoadingMore,
@@ -154,7 +150,7 @@ private fun ThreeColumnLayout(
 
                     DiffCenterView(
                         diffFiles = state.diffFiles,
-                        selectedCommit = state.commitHistory.getOrNull(state.selectedCommitIndex),
+                        selectedCommits = state.selectedCommitIndices.mapNotNull { state.commitHistory.getOrNull(it) }.sortedBy { it.timestamp }.reversed(), // Sort by newest first for display consistency
                         onViewFile = { filePath ->
                             fileToView = filePath
                         },

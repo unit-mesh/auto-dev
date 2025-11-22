@@ -23,6 +23,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.formatDate
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 import kotlinx.datetime.Clock
 
@@ -40,8 +45,8 @@ import kotlinx.datetime.Clock
 @Composable
 fun CommitListView(
     commits: List<CommitInfo>,
-    selectedIndex: Int,
-    onCommitSelected: (Int) -> Unit,
+    selectedIndices: Set<Int>,
+    onCommitSelected: (Int, Boolean) -> Unit,
     modifier: Modifier = Modifier.Companion,
     hasMoreCommits: Boolean = false,
     isLoadingMore: Boolean = false,
@@ -50,30 +55,51 @@ fun CommitListView(
     showGraph: Boolean = true
 ) {
     // Build graph structure from commit messages
-    val graphStructure = if (showGraph && commits.isNotEmpty()) {
-        GitGraphBuilder.buildGraph(commits.map { it.message })
-    } else {
-        GitGraphStructure(emptyMap(), emptyList(), 0)
-    }
+//    val graphStructure = if (showGraph && commits.isNotEmpty()) {
+//        GitGraphBuilder.buildGraph(commits.map { it.message })
+//    } else {
+//        GitGraphStructure(emptyMap(), emptyList(), 0)
+//    }
+
+    var isMultiSelectMode by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
             .padding(6.dp)
     ) {
-        val displayText = when {
-            totalCommitCount != null -> "Commits (${commits.size}/$totalCommitCount)"
-            hasMoreCommits -> "Commits (${commits.size}+)"
-            else -> "Commits (${commits.size})"
-        }
+        Row(
+            modifier = Modifier.Companion.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Companion.CenterVertically
+        ) {
+            val displayText = when {
+                totalCommitCount != null -> "Commits (${commits.size}/$totalCommitCount)"
+                hasMoreCommits -> "Commits (${commits.size}+)"
+                else -> "Commits (${commits.size})"
+            }
 
-        Text(
-            text = displayText,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Companion.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.Companion.padding(horizontal = 6.dp, vertical = 8.dp)
-        )
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Companion.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            // Multi-select toggle
+            androidx.compose.material3.IconButton(
+                onClick = { isMultiSelectMode = !isMultiSelectMode },
+                modifier = Modifier.Companion.size(24.dp)
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector = if (isMultiSelectMode) AutoDevComposeIcons.CheckBox else AutoDevComposeIcons.CheckBoxOutlineBlank,
+                    contentDescription = "Toggle Multi-select",
+                    tint = if (isMultiSelectMode) AutoDevColors.Indigo.c600 else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.Companion.size(16.dp)
+                )
+            }
+        }
 
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outlineVariant
@@ -85,10 +111,11 @@ fun CommitListView(
             items(commits.size) { index ->
                 CommitListItem(
                     commit = commits[index],
-                    isSelected = index == selectedIndex,
-                    onClick = { onCommitSelected(index) },
-                    graphNode = if (showGraph) graphStructure.nodes[index] else null,
-                    graphStructure = graphStructure
+                    isSelected = index in selectedIndices,
+                    isMultiSelectMode = isMultiSelectMode,
+                    onClick = { isMultiSelect -> onCommitSelected(index, isMultiSelect) },
+//                    graphNode = if (showGraph) graphStructure.nodes[index] else null,
+//                    graphStructure = graphStructure
                 )
 
                 if (index == commits.size - 5 && hasMoreCommits && !isLoadingMore) {
@@ -121,14 +148,19 @@ fun CommitListView(
 fun CommitListItem(
     commit: CommitInfo,
     isSelected: Boolean,
-    onClick: () -> Unit,
-    graphNode: GitGraphNode? = null,
-    graphStructure: GitGraphStructure = GitGraphStructure(emptyMap(), emptyList(), 0)
+    isMultiSelectMode: Boolean,
+    onClick: (Boolean) -> Unit,
+//    graphNode: GitGraphNode? = null,
+//    graphStructure: GitGraphStructure = GitGraphStructure(emptyMap(), emptyList(), 0)
 ) {
     Card(
         modifier = Modifier.Companion
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable {
+                // If in multi-select mode, clicking the card toggles selection.
+                // Otherwise, it's a single select.
+                onClick(isMultiSelectMode)
+            },
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 AutoDevColors.Indigo.c600.copy(alpha = 0.1f)
@@ -142,13 +174,22 @@ fun CommitListItem(
             modifier = Modifier.Companion.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            if (graphNode != null && graphStructure.maxColumns > 0) {
-                GitGraphColumn(
-                    node = graphNode,
-                    graphStructure = graphStructure,
-                    rowHeight = 58.dp,
-                    columnWidth = 16.dp,
-                    modifier = Modifier.Companion.padding(start = 4.dp)
+//            if (graphNode != null && graphStructure.maxColumns > 0) {
+//                GitGraphColumn(
+//                    node = graphNode,
+//                    graphStructure = graphStructure,
+//                    rowHeight = 58.dp,
+//                    columnWidth = 16.dp,
+//                    modifier = Modifier.Companion.padding(start = 4.dp)
+//                )
+//            }
+
+            // Multi-select checkbox (only visible in multi-select mode)
+            if (isMultiSelectMode) {
+                androidx.compose.material3.Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onClick(true) }, // Toggle mode
+                    modifier = Modifier.Companion.padding(start = 4.dp, top = 12.dp).size(20.dp)
                 )
             }
 

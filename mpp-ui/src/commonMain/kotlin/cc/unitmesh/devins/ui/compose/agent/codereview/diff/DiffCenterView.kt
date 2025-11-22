@@ -54,7 +54,7 @@ import androidx.compose.foundation.lazy.items
 @Composable
 fun DiffCenterView(
     diffFiles: List<DiffFileInfo>,
-    selectedCommit: CommitInfo?,
+    selectedCommits: List<CommitInfo>,
     modifier: Modifier = Modifier,
     onViewFile: ((String) -> Unit)? = null,
     workspaceRoot: String? = null,
@@ -70,7 +70,7 @@ fun DiffCenterView(
             .padding(8.dp)
     ) {
         // Header with commit info and issue info
-        if (selectedCommit != null) {
+        if (selectedCommits.isNotEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -83,85 +83,117 @@ fun DiffCenterView(
                         .fillMaxWidth()
                         .padding(12.dp)
                 ) {
-                    // Commit message with inline issue info
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Companion.Top
-                    ) {
-                        Text(
-                            text = selectedCommit.message.lines().firstOrNull() ?: selectedCommit.message,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Companion.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
+                    if (selectedCommits.size == 1) {
+                        val selectedCommit = selectedCommits.first()
+                        // Single commit view (existing logic)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Companion.Top
+                        ) {
+                            Text(
+                                text = selectedCommit.message.lines().firstOrNull() ?: selectedCommit.message,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Companion.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                        // Inline issue indicator
-                        when {
-                            selectedCommit.isLoadingIssue -> {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp,
-                                    color = AutoDevColors.Indigo.c600
-                                )
-                            }
-                            selectedCommit.issueInfo != null -> {
-                                InlineIssueChip(issueInfo = selectedCommit.issueInfo)
-                            }
-                            selectedCommit.issueLoadError != null -> {
-                                Button(
-                                    onClick = onConfigureToken,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                    ),
-                                    modifier = Modifier.height(32.dp),
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                            // Inline issue indicator
+                            when {
+                                selectedCommit.isLoadingIssue -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                        color = AutoDevColors.Indigo.c600
+                                    )
+                                }
+                                selectedCommit.issueInfo != null -> {
+                                    InlineIssueChip(issueInfo = selectedCommit.issueInfo)
+                                }
+                                selectedCommit.issueLoadError != null -> {
+                                    Button(
+                                        onClick = onConfigureToken,
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                        ),
+                                        modifier = Modifier.height(32.dp),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = AutoDevComposeIcons.Settings,
-                                            contentDescription = "Configure",
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Text(
-                                            text = "Configure Token",
-                                            style = MaterialTheme.typography.labelSmall
-                                        )
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = AutoDevComposeIcons.Settings,
+                                                contentDescription = "Configure",
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Text(
+                                                text = "Configure Token",
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = selectedCommit.author,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = selectedCommit.shortHash,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = FontFamily.Companion.Monospace,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
+
+                        // Expanded issue information (if available)
+                        if (selectedCommit.issueInfo != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            IssueInfoCard(issueInfo = selectedCommit.issueInfo)
+                        }
+                    } else {
+                        // Multiple commits view
+                        val newest = selectedCommits.first() // Assuming sorted by date desc
+                        val oldest = selectedCommits.last()
+
                         Text(
-                            text = selectedCommit.author,
+                            text = "${selectedCommits.size} commits selected",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Companion.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Range: ${oldest.shortHash}..${newest.shortHash}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Companion.Monospace,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        val authors = selectedCommits.map { it.author }.distinct()
+                        Text(
+                            text = "Authors: ${authors.joinToString(", ")}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
-                            text = selectedCommit.shortHash,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontFamily = FontFamily.Companion.Monospace,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    }
-
-                    // Expanded issue information (if available)
-                    if (selectedCommit.issueInfo != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        IssueInfoCard(issueInfo = selectedCommit.issueInfo)
                     }
                 }
             }
