@@ -1,11 +1,23 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
@@ -15,17 +27,16 @@ import com.mikepenz.markdown.compose.elements.MarkdownCodeFence
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCode
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
 import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import cc.unitmesh.viewer.web.MermaidRenderer
-import cc.unitmesh.viewer.web.PlantUmlRenderer
-import com.mikepenz.markdown.model.DefaultMarkdownTypography
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import net.sourceforge.plantuml.FileFormat
+import net.sourceforge.plantuml.FileFormatOption
+import net.sourceforge.plantuml.SourceStringReader
+import java.io.ByteArrayOutputStream
 
 
 /**
@@ -106,19 +117,12 @@ actual object MarkdownSketchRenderer {
                         )
 
                         val language = language?.lowercase()
-                        if (language == "mermaid" && isComplete) {
-                            cc.unitmesh.viewer.web.MermaidRenderer(
-                                mermaidCode = code,
-                                isDarkTheme = isDarkTheme,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-
                         if ((language == "plantuml" || language == "puml") && isComplete) {
-                            cc.unitmesh.viewer.web.PlantUmlRenderer(
+                            PlantUmlRenderer(
                                 code = code,
                                 isDarkTheme = isDarkTheme,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
+                                null
                             )
                         }
                     }
@@ -148,6 +152,64 @@ fun MarkdownSuccess(
     Column(modifier) {
         state.node.children.forEach { node ->
             MarkdownElement(node, components, state.content)
+        }
+    }
+}
+
+
+@Composable
+fun PlantUmlRenderer(
+    code: String,
+    isDarkTheme: Boolean,
+    modifier: Modifier,
+    onRenderComplete: ((success: Boolean, message: String) -> Unit)?
+) {
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(code, isDarkTheme) {
+        isLoading = true
+        error = null
+        try {
+            val pngBytes = withContext(Dispatchers.IO) {
+                val reader = SourceStringReader(code)
+                val os = ByteArrayOutputStream()
+                // Use PNG format for better font rendering
+                reader.generateImage(os, FileFormatOption(FileFormat.PNG))
+                os.toByteArray()
+            }
+
+            if (pngBytes.isEmpty()) {
+                error = "No image generated"
+                onRenderComplete?.invoke(false, "No image generated")
+            } else {
+                // Convert PNG bytes to ImageBitmap
+                val skiaImage = org.jetbrains.skia.Image.makeFromEncoded(pngBytes)
+                imageBitmap = skiaImage.toComposeImageBitmap()
+                onRenderComplete?.invoke(true, "Success")
+            }
+        } catch (e: Exception) {
+            error = e.message ?: "Unknown error"
+            onRenderComplete?.invoke(false, error ?: "Unknown error")
+        } finally {
+            isLoading = false
+        }
+    }
+
+    Box(modifier = modifier) {
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (error != null) {
+            Text(text = "Error: $error", color = Color.Red, modifier = Modifier.align(Alignment.Center))
+        } else {
+            imageBitmap?.let {
+                Image(
+                    bitmap = it,
+                    contentDescription = "PlantUML Diagram",
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }

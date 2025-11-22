@@ -195,6 +195,9 @@ kotlin {
                 implementation("com.mikepenz:multiplatform-markdown-renderer-jvm:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.38.1")
 
+                // plantuml
+                implementation("net.sourceforge.plantuml:plantuml-epl:1.2025.10")
+
                 // Logback for JVM logging backend with file storage
                 implementation("ch.qos.logback:logback-classic:1.5.19") {
                     exclude(group = "javax.naming", module = "javax.naming-api")
