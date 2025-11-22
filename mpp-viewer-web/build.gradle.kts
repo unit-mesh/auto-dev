@@ -65,6 +65,7 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation("net.sourceforge.plantuml:plantuml-epl:1.2025.10")
             }
         }
 
