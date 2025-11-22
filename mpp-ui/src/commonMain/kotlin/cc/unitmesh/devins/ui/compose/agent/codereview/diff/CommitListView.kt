@@ -146,9 +146,8 @@ fun CommitListItem(
     ) {
         Row(
             modifier = Modifier.Companion.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            // Git Graph Column
             if (graphNode != null && graphStructure.maxColumns > 0) {
                 GitGraphColumn(
                     node = graphNode,
@@ -158,8 +157,7 @@ fun CommitListItem(
                     modifier = Modifier.Companion.padding(start = 4.dp)
                 )
             }
-            
-            // Commit info
+
             Column(
                 modifier = Modifier.Companion
                     .weight(1f)
