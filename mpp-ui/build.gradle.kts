@@ -171,6 +171,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
+                implementation(project(":mpp-viewer"))
                 implementation(project(":mpp-viewer-web"))
                 implementation(compose.desktop.currentOs)
 

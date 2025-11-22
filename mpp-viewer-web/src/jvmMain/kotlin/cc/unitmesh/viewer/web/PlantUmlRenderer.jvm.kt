@@ -9,15 +9,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.loadSvgPainter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.sourceforge.plantuml.FileFormat
 import net.sourceforge.plantuml.FileFormatOption
 import net.sourceforge.plantuml.SourceStringReader
-import java.io.ByteArrayInputStream
+import org.jetbrains.skia.Image as SkiaImage
 import java.io.ByteArrayOutputStream
 
 @Composable
@@ -27,31 +26,29 @@ actual fun PlantUmlRenderer(
     modifier: Modifier,
     onRenderComplete: ((success: Boolean, message: String) -> Unit)?
 ) {
-    var painter by remember { mutableStateOf<Painter?>(null) }
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    val density = LocalDensity.current
 
     LaunchedEffect(code, isDarkTheme) {
         isLoading = true
         error = null
         try {
-            val svgBytes = withContext(Dispatchers.IO) {
+            val pngBytes = withContext(Dispatchers.IO) {
                 val reader = SourceStringReader(code)
                 val os = ByteArrayOutputStream()
-                // 0 is the index of the image (usually 0)
-                reader.generateImage(os, FileFormatOption(FileFormat.SVG))
+                // Use PNG format for better font rendering
+                reader.generateImage(os, FileFormatOption(FileFormat.PNG))
                 os.toByteArray()
             }
 
-            if (svgBytes.isEmpty()) {
+            if (pngBytes.isEmpty()) {
                 error = "No image generated"
                 onRenderComplete?.invoke(false, "No image generated")
             } else {
-                val inputStream = ByteArrayInputStream(svgBytes)
-                // loadSvgPainter requires an InputStream
-                val p = loadSvgPainter(inputStream, density)
-                painter = p
+                // Convert PNG bytes to ImageBitmap
+                val skiaImage = SkiaImage.makeFromEncoded(pngBytes)
+                imageBitmap = skiaImage.toComposeImageBitmap()
                 onRenderComplete?.invoke(true, "Success")
             }
         } catch (e: Exception) {
@@ -68,9 +65,9 @@ actual fun PlantUmlRenderer(
         } else if (error != null) {
             Text(text = "Error: $error", color = Color.Red, modifier = Modifier.align(Alignment.Center))
         } else {
-            painter?.let {
+            imageBitmap?.let {
                 Image(
-                    painter = it,
+                    bitmap = it,
                     contentDescription = "PlantUML Diagram",
                     modifier = Modifier.fillMaxSize()
                 )

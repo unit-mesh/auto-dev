@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontStyle
 import cc.unitmesh.viewer.web.MermaidRenderer
 import cc.unitmesh.viewer.web.PlantUmlRenderer
 import com.mikepenz.markdown.model.DefaultMarkdownTypography
-import com.mikepenz.markdown.model.MarkdownTypography
+
 
 /**
  * JVM 平台的 Markdown Sketch 渲染器实现
@@ -107,7 +107,7 @@ actual object MarkdownSketchRenderer {
 
                         val language = language?.lowercase()
                         if (language == "mermaid" && isComplete) {
-                            MermaidRenderer(
+                            cc.unitmesh.viewer.web.MermaidRenderer(
                                 mermaidCode = code,
                                 isDarkTheme = isDarkTheme,
                                 modifier = Modifier.fillMaxSize()
@@ -115,7 +115,7 @@ actual object MarkdownSketchRenderer {
                         }
 
                         if ((language == "plantuml" || language == "puml") && isComplete) {
-                            PlantUmlRenderer(
+                            cc.unitmesh.viewer.web.PlantUmlRenderer(
                                 code = code,
                                 isDarkTheme = isDarkTheme,
                                 modifier = Modifier.fillMaxSize()
