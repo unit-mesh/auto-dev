@@ -210,7 +210,7 @@ class JvmCodeParser : CodeParser {
     private fun extractName(node: TSNode, sourceCode: String): String {
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
-            if (child.type == "identifier" || child.type == "type_identifier") {
+            if (child.type == "identifier" || child.type == "type_identifier" || child.type == "simple_identifier") {
                 return extractNodeText(child, sourceCode)
             }
         }

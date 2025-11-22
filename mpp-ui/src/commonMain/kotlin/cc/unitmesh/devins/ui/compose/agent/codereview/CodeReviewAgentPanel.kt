@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -237,7 +239,8 @@ fun CodeReviewAgentPanel(
                                 lintResults = state.aiProgress.lintResults,
                                 lintOutput = state.aiProgress.lintOutput,
                                 isActive = state.aiProgress.stage == AnalysisStage.RUNNING_LINT,
-                                diffFiles = state.diffFiles
+                                diffFiles = state.diffFiles,
+                                modifiedCodeRanges = state.aiProgress.modifiedCodeRanges
                             )
                         }
                     }
@@ -294,6 +297,7 @@ fun CollapsibleLintAnalysisCard(
     lintOutput: String,
     isActive: Boolean,
     diffFiles: List<DiffFileInfo> = emptyList(),
+    modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(true) }
@@ -442,7 +446,17 @@ fun CollapsibleLintAnalysisCard(
                     // Show lint results per file
                     if (lintResults.isNotEmpty()) {
                         lintResults.forEach { fileResult ->
-                            FileLintResultCard(fileResult = fileResult)
+                            // Try to find matching modified ranges
+                            // fileResult.filePath might be absolute or relative, modifiedCodeRanges keys are usually relative
+                            // We'll try exact match and suffix match
+                            val modifiedRanges = modifiedCodeRanges[fileResult.filePath]
+                                ?: modifiedCodeRanges.entries.find { fileResult.filePath.endsWith(it.key) }?.value
+                                ?: emptyList()
+
+                            FileLintResultCard(
+                                fileResult = fileResult,
+                                modifiedRanges = modifiedRanges
+                            )
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     } else {
@@ -467,6 +481,7 @@ fun CollapsibleLintAnalysisCard(
 @Composable
 fun FileLintResultCard(
     fileResult: LintFileResult,
+    modifiedRanges: List<ModifiedCodeRange> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -547,6 +562,51 @@ fun FileLintResultCard(
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 0.dp)
                 ) {
+                    // Display modified ranges if available
+                    val namedRanges = modifiedRanges.filter { it.elementName != "unknown" }
+                    if (namedRanges.isNotEmpty()) {
+                        // Use a horizontal scroll row for tags to ensure compatibility
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .padding(bottom = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            namedRanges.forEach { range ->
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = RoundedCornerShape(4.dp),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        // Optional: Icon based on elementType
+                                        Text(
+                                            text = range.elementName,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        androidx.compose.material3.HorizontalDivider(
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                    }
+
                     fileResult.issues.forEach { issue ->
                         LintIssueRow(issue = issue)
                     }
