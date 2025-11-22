@@ -81,10 +81,7 @@ fun CommitListView(
 
         Spacer(modifier = Modifier.Companion.height(4.dp))
 
-        LazyColumn(
-            modifier = Modifier.Companion.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+        LazyColumn(modifier = Modifier.Companion.fillMaxSize(),) {
             items(commits.size) { index ->
                 CommitListItem(
                     commit = commits[index],
@@ -140,9 +137,6 @@ fun CommitListItem(
             }
         ),
         shape = RoundedCornerShape(6.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 2.dp else 0.dp
-        )
     ) {
         Row(
             modifier = Modifier.Companion.fillMaxWidth(),

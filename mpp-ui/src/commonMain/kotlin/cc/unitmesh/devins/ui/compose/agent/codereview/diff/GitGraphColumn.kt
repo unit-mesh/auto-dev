@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 /**
  * Git Graph Column component
  * Renders a visual representation of git commit history similar to SourceTree
- * 
+ *
  * @param node The graph node for this commit (null for empty graph)
  * @param graphStructure Complete graph structure
  * @param rowHeight Height of each commit row
@@ -35,7 +35,7 @@ fun GitGraphColumn(
     modifier: Modifier = Modifier
 ) {
     val totalWidth = (graphStructure.maxColumns * columnWidth.value).dp
-    
+
     Box(modifier = modifier.width(totalWidth)) {
         Canvas(
             modifier = Modifier
@@ -43,17 +43,17 @@ fun GitGraphColumn(
                 .fillMaxHeight()
         ) {
             if (node == null) return@Canvas
-            
+
             val rowHeightPx = rowHeight.toPx()
             val columnWidthPx = columnWidth.toPx()
             val nodeRadius = 4.dp.toPx()
             val lineStrokeWidth = 2.dp.toPx()
-            
+
             // Draw lines that pass through or end at this row
             graphStructure.lines
-                .filter { line -> 
+                .filter { line ->
                     line.fromRow == node.row || line.toRow == node.row ||
-                    (line.fromRow < node.row && line.toRow > node.row)
+                        (line.fromRow < node.row && line.toRow > node.row)
                 }
                 .forEach { line ->
                     drawGraphLine(
@@ -64,11 +64,11 @@ fun GitGraphColumn(
                         strokeWidth = lineStrokeWidth
                     )
                 }
-            
+
             // Draw the commit node on top of lines
             val nodeX = node.column * columnWidthPx + columnWidthPx / 2
             val nodeY = rowHeightPx / 2
-            
+
             drawCommitNode(
                 center = Offset(nodeX, nodeY),
                 radius = nodeRadius,
@@ -92,30 +92,30 @@ private fun DrawScope.drawGraphLine(
 ) {
     val startX = line.fromColumn * columnWidthPx + columnWidthPx / 2
     val endX = line.toColumn * columnWidthPx + columnWidthPx / 2
-    
+
     // Calculate Y positions based on the current row
     val startY = when {
         line.fromRow == currentRow -> rowHeightPx / 2
         line.fromRow < currentRow -> 0f
         else -> rowHeightPx
     }
-    
+
     val endY = when {
         line.toRow == currentRow -> rowHeightPx / 2
         line.toRow > currentRow -> rowHeightPx
         else -> 0f
     }
-    
+
     // Only draw if this line segment is visible in the current row
     if (line.fromRow > currentRow || line.toRow < currentRow) {
         return
     }
-    
+
     if (line.isMerge && line.fromColumn != line.toColumn) {
         // Draw curved merge line
         val path = Path().apply {
             moveTo(startX, startY)
-            
+
             // Create smooth curve for merge
             val controlPointY = (startY + endY) / 2
             cubicTo(
@@ -124,7 +124,7 @@ private fun DrawScope.drawGraphLine(
                 endX, endY
             )
         }
-        
+
         drawPath(
             path = path,
             color = line.color,
@@ -137,14 +137,14 @@ private fun DrawScope.drawGraphLine(
         // Draw angled branch line
         val path = Path().apply {
             moveTo(startX, startY)
-            
+
             // Create angled line for branching
             val midY = (startY + endY) / 2
             lineTo(startX, midY)
             lineTo(endX, midY)
             lineTo(endX, endY)
         }
-        
+
         drawPath(
             path = path,
             color = line.color,
@@ -192,7 +192,7 @@ private fun DrawScope.drawCommitNode(
                 style = Stroke(width = 1.dp.toPx())
             )
         }
-        
+
         GitGraphNodeType.MERGE -> {
             // Merge commit: double circle
             drawCircle(
@@ -207,7 +207,7 @@ private fun DrawScope.drawCommitNode(
                 center = center
             )
         }
-        
+
         GitGraphNodeType.BRANCH_START -> {
             // Branch start: filled circle with outline
             drawCircle(
@@ -221,7 +221,7 @@ private fun DrawScope.drawCommitNode(
                 center = center
             )
         }
-        
+
         GitGraphNodeType.BRANCH_END -> {
             // Branch end: square
             val size = radius * 1.6f
@@ -233,43 +233,3 @@ private fun DrawScope.drawCommitNode(
         }
     }
 }
-
-/**
- * Simple graph column for preview/testing
- * Shows a basic linear history
- */
-@Composable
-fun SimpleGitGraphColumn(
-    color: Color = Color(0xFF5C6BC0),
-    rowHeight: Dp = 60.dp,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier.width(16.dp)) {
-        Canvas(
-            modifier = Modifier
-                .width(16.dp)
-                .fillMaxHeight()
-        ) {
-            val centerX = size.width / 2
-            val rowHeightPx = rowHeight.toPx()
-            val nodeRadius = 4.dp.toPx()
-            
-            // Draw vertical line
-            drawLine(
-                color = color,
-                start = Offset(centerX, 0f),
-                end = Offset(centerX, rowHeightPx),
-                strokeWidth = 2.dp.toPx(),
-                cap = StrokeCap.Round
-            )
-            
-            // Draw commit node
-            drawCircle(
-                color = color,
-                radius = nodeRadius,
-                center = Offset(centerX, rowHeightPx / 2)
-            )
-        }
-    }
-}
-
