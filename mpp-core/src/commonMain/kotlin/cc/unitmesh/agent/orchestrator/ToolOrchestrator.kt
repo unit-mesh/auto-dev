@@ -256,12 +256,14 @@ class ToolOrchestrator(
                 ToolType.AskAgent -> executeAskAgentTool(tool, params, basicContext)
                 else -> {
                     // Handle special tools that need parameter conversion
-                    if (toolName == "task-boundary") {
-                        executeTaskBoundaryTool(tool, params, basicContext)
-                    } else {
-                        // For truly generic tools, use generic execution
-                        logger.debug { "Executing tool generically: $toolName" }
-                        executeGenericTool(tool, params, basicContext)
+                    when (toolName) {
+                        "task-boundary" -> executeTaskBoundaryTool(tool, params, basicContext)
+                        "docql" -> executeDocQLTool(tool, params, basicContext)
+                        else -> {
+                            // For truly generic tools, use generic execution
+                            logger.debug { "Executing tool generically: $toolName" }
+                            executeGenericTool(tool, params, basicContext)
+                        }
                     }
                 }
             }
@@ -561,6 +563,26 @@ class ToolOrchestrator(
         )
         
         val invocation = taskBoundaryTool.createInvocation(taskBoundaryParams)
+        return invocation.execute(context)
+    }
+
+    private suspend fun executeDocQLTool(
+        tool: Tool,
+        params: Map<String, Any>,
+        context: cc.unitmesh.agent.tool.ToolExecutionContext
+    ): ToolResult {
+        val docqlTool = tool as cc.unitmesh.agent.tool.impl.DocQLTool
+        
+        val query = params["query"] as? String
+            ?: return ToolResult.Error("query parameter is required")
+        val documentPath = params["documentPath"] as? String // Optional
+        
+        val docqlParams = cc.unitmesh.agent.tool.impl.DocQLParams(
+            query = query,
+            documentPath = documentPath
+        )
+        
+        val invocation = docqlTool.createInvocation(docqlParams)
         return invocation.execute(context)
     }
 

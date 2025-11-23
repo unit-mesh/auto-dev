@@ -800,6 +800,33 @@ private fun cc.unitmesh.agent.tool.ToolResult.toJsToolResult(): JsToolResult {
     }
 }
 
+/**
+ * JavaScript-friendly Document Parser Factory
+ */
+@JsExport
+object JsDocumentParserFactory {
+    @JsName("createParserForFile")
+    fun createParserForFile(filePath: String): cc.unitmesh.devins.document.DocumentParserService? {
+        return cc.unitmesh.devins.document.DocumentParserFactory.createParserForFile(filePath)
+    }
+}
+
+/**
+ * JavaScript-friendly Document Registry
+ */
+@JsExport
+object JsDocumentRegistry {
+    @JsName("initializePlatformParsers")
+    fun initializePlatformParsers() {
+        cc.unitmesh.devins.document.DocumentRegistry.initializePlatformParsers()
+    }
+    
+    @JsName("getParserForFile")
+    fun getParserForFile(filePath: String): cc.unitmesh.devins.document.DocumentParserService? {
+        return cc.unitmesh.devins.document.DocumentRegistry.getParserForFile(filePath)
+    }
+}
+
 // ============================================================================
 // 压缩功能相关的 JS 导出
 // ============================================================================

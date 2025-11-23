@@ -22,11 +22,18 @@ class DocumentReaderViewModel(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // Services
+    // Services
     private val parserService: DocumentParserService = MarkdownDocumentParser()
     private val llmService = KoogLLMService(ModelConfig.default())
     val renderer = ComposeRenderer()
+    private val mcpToolConfigService = cc.unitmesh.agent.config.McpToolConfigService(cc.unitmesh.agent.config.ToolConfigFile.default())
 
-    private val documentAgent = DocumentAgent(llmService, parserService, renderer)
+//    private val documentAgent = DocumentAgent(
+//        llmService = llmService,
+//        parserService = parserService,
+//        renderer = renderer,
+//        mcpToolConfigService = mcpToolConfigService
+//    )
 
     // State
     var selectedDocument by mutableStateOf<DocumentFile?>(null)
@@ -206,9 +213,9 @@ class DocumentReaderViewModel(
                     documentPath = selectedDocument?.path
                 )
 
-                documentAgent.execute(task) { progress ->
-                    // Progress callback (optional)
-                }
+//                documentAgent.execute(task) { progress ->
+//                    // Progress callback (optional)
+//                }
             } catch (e: Exception) {
                 renderer.renderError("Error: ${e.message}")
                 e.printStackTrace()

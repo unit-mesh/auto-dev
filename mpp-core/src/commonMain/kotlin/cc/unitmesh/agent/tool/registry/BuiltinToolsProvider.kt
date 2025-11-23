@@ -2,6 +2,7 @@ package cc.unitmesh.agent.tool.registry
 
 import cc.unitmesh.agent.tool.ExecutableTool
 import cc.unitmesh.agent.tool.impl.AskAgentTool
+import cc.unitmesh.agent.tool.impl.DocQLTool
 import cc.unitmesh.agent.tool.impl.EditFileTool
 import cc.unitmesh.agent.tool.impl.GlobTool
 import cc.unitmesh.agent.tool.impl.GrepTool
@@ -53,6 +54,7 @@ class BuiltinToolsProvider : ToolProvider {
         
         // Task management tool
         tools.add(TaskBoundaryTool())
+        tools.add(DocQLTool())
 
         return tools
     }

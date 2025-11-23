@@ -256,8 +256,8 @@ async function runServerAgent(
 
     // Smart detection: if projectId looks like a URL, use it as gitUrl
     const isGitUrl = projectId.startsWith('http://') ||
-                     projectId.startsWith('https://') ||
-                     projectId.startsWith('git@');
+      projectId.startsWith('https://') ||
+      projectId.startsWith('git@');
 
     const requestParams = isGitUrl ? {
       projectId: projectId.split('/').pop() || 'temp-project', // Use repo name as project ID
@@ -432,6 +432,50 @@ async function main() {
     .action(async (options) => {
       const projectPath = options.path === '.' ? process.cwd() : options.path;
       await runCodeReview(projectPath, options);
+    });
+
+  // Document query mode
+  program
+    .command('document')
+    .description('Query documents using AI and DocQL')
+    .requiredOption('-p, --path <path>', 'Project path (e.g., /path/to/project or . for current directory)')
+    .requiredOption('-q, --query <query>', 'Question or query about the document')
+    .option('-d, --doc <docPath>', 'Specific document path to query (otherwise scans all docs in project)')
+    .action(async (options) => {
+      const { runDocument } = await import('./modes/DocumentMode.js');
+      const projectPath = options.path === '.' ? process.cwd() : options.path;
+
+      // Initialize LLM service (similar to other modes)
+      const config = await ConfigManager.load();
+      const activeConfig = config.getActiveConfig();
+
+      if (!activeConfig) {
+        console.error('❌ No active LLM configuration found.');
+        process.exit(1);
+      }
+
+      const llmService = KotlinCC.unitmesh.llm.JsKoogLLMService.Companion.create(
+        new KotlinCC.unitmesh.llm.JsModelConfig(
+          activeConfig.provider,
+          activeConfig.model,
+          activeConfig.apiKey || '',
+          activeConfig.temperature || 0.7,
+          activeConfig.maxTokens || 8192,
+          activeConfig.baseUrl || ''
+        )
+      );
+
+      const renderer = new CliRenderer();
+
+      await runDocument(
+        {
+          projectPath,
+          query: options.query,
+          documentPath: options.doc
+        },
+        llmService,
+        renderer
+      );
     });
 
   // Parse arguments
