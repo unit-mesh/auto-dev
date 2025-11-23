@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 open class CodeReviewViewModel(
@@ -35,7 +34,6 @@ open class CodeReviewViewModel(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    // 在 WebAssembly 平台使用共享的 GitOperations 实例
     private val gitOps = if (Platform.name == "WebAssembly") {
         WasmGitManager.getInstance()
     } else {
@@ -398,7 +396,7 @@ open class CodeReviewViewModel(
                     originDiff = gitDiff.originDiff
                 )
             }
-            
+
             // Find related tests
             findRelatedTests()
         } catch (e: Exception) {
@@ -441,15 +439,16 @@ open class CodeReviewViewModel(
                 }
 
                 val agent = initializeCodingAgent()
-                
+
                 // Build additional context including issue information if available
                 // Build additional context including issue information if available
                 val additionalContext = buildString {
-                    val selectedCommits = currentState.selectedCommitIndices.mapNotNull { currentState.commitHistory.getOrNull(it) }
-                    
+                    val selectedCommits =
+                        currentState.selectedCommitIndices.mapNotNull { currentState.commitHistory.getOrNull(it) }
+
                     if (selectedCommits.isNotEmpty()) {
                         appendLine("## Selected Commits")
-                        selectedCommits.forEach { commit -> 
+                        selectedCommits.forEach { commit ->
                             appendLine("- ${commit.shortHash}: ${commit.message.lines().firstOrNull()}")
                         }
                         appendLine()
@@ -475,7 +474,7 @@ open class CodeReviewViewModel(
                         appendLine()
                     }
                 }
-                
+
                 val reviewTask = cc.unitmesh.agent.ReviewTask(
                     filePaths = filePaths,
                     reviewType = cc.unitmesh.agent.ReviewType.COMPREHENSIVE,
@@ -584,9 +583,9 @@ open class CodeReviewViewModel(
 
             // Ensure at least one commit is selected if we're not in a "deselect all" mode (which shouldn't happen usually)
             // But if user deselects the last one, maybe we should allow empty? For now let's allow empty.
-            
+
             loadCommitDiffInternal(newSelection)
-            
+
             // Restore analysis results only if single commit selected (complexity with multi-commit analysis storage)
             if (newSelection.size == 1) {
                 val commit = currentState.commitHistory.getOrNull(newSelection.first())
@@ -625,7 +624,7 @@ open class CodeReviewViewModel(
     private fun saveCurrentAnalysisResults() {
         // Only save for single commit selection to avoid complexity
         if (currentState.selectedCommitIndices.size != 1) return
-        
+
         val index = currentState.selectedCommitIndices.first()
         val currentCommit = currentState.commitHistory.getOrNull(index)
         val projectPath = workspace.rootPath ?: return
@@ -754,91 +753,55 @@ open class CodeReviewViewModel(
         }
     }
 
-
-
-    /**
-     * Collect code content for all changed files with caching
-     * Cache is valid for 30 seconds to avoid re-reading during analysis stages
-     */
-    suspend fun collectCodeContent(): Map<String, String> {
-        // Check if cache is still valid
-        val currentTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-        if (codeContentCache != null && (currentTime - cacheTimestamp) < CACHE_VALIDITY_MS) {
-            AutoDevLogger.info("CodeReviewViewModel") {
-                "Using cached code content (${codeContentCache!!.size} files)"
-            }
-            return codeContentCache!!
-        }
-
-        val startTime = currentTime
-        val codeContent = mutableMapOf<String, String>()
-
-        for (diffFile in currentState.diffFiles) {
-            if (diffFile.changeType == ChangeType.DELETE) continue
-
-            try {
-                val content = workspace.fileSystem.readFile(diffFile.path)
-                if (content != null) {
-                    codeContent[diffFile.path] = content
-                }
-            } catch (e: Exception) {
-                AutoDevLogger.warn("CodeReviewViewModel") {
-                    "Failed to read ${diffFile.path}: ${e.message}"
-                }
-            }
-        }
-
-        // Update cache
-        codeContentCache = codeContent
-        cacheTimestamp = currentTime
-
-        val duration = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - startTime
-        AutoDevLogger.info("CodeReviewViewModel") {
-            "Collected ${codeContent.size} files in ${duration}ms"
-        }
-
-        return codeContent
-    }
-
     /**
      * Find related test files for all changed files
      */
     suspend fun findRelatedTests() {
-        if (currentState.diffFiles.isEmpty()) return
-        
+        if (currentState.diffFiles.isEmpty()) {
+            AutoDevLogger.info("CodeReviewViewModel") {
+                "findRelatedTests: No diff files to process"
+            }
+            return
+        }
+
+        AutoDevLogger.info("CodeReviewViewModel") {
+            "findRelatedTests: Starting test discovery for ${currentState.diffFiles.size} files"
+        }
+
         updateState { it.copy(isLoadingTests = true) }
-        
+
         try {
             val testMap = mutableMapOf<String, List<TestFileInfo>>()
-            
+
             for (diffFile in currentState.diffFiles) {
                 if (diffFile.changeType == ChangeType.DELETE) continue
-                
+
                 val testFiles = TestFinderFactory.findTests(
                     sourceFile = diffFile.path,
                     language = diffFile.language,
                     workspace = workspace
                 )
-                
+
                 if (testFiles.isNotEmpty()) {
                     testMap[diffFile.path] = testFiles
                 }
             }
-            
-            updateState { 
+
+            updateState {
                 it.copy(
                     relatedTests = testMap,
                     isLoadingTests = false
                 )
             }
-            
+
             AutoDevLogger.info("CodeReviewViewModel") {
-                "Found ${testMap.values.sumOf { it.size }} test files for ${testMap.size} changed files"
+                "findRelatedTests: Completed! Found ${testMap.values.sumOf { it.size }} test files for ${testMap.size} changed files"
             }
         } catch (e: Exception) {
             AutoDevLogger.error("CodeReviewViewModel") {
                 "Failed to find related tests: ${e.message}"
             }
+            e.printStackTrace()
             updateState { it.copy(isLoadingTests = false) }
         }
     }
@@ -922,7 +885,6 @@ open class CodeReviewViewModel(
             }
         }
     }
-
 
 
     fun proceedToGenerateFixes(feedback: String) {
@@ -1098,6 +1060,7 @@ open class CodeReviewViewModel(
                                 oldLineNum++
                             }
                         }
+
                         DiffLineType.DELETED -> {
                             // Delete line
                             if (currentLineIndex < currentLines.size) {
@@ -1107,6 +1070,7 @@ open class CodeReviewViewModel(
                                 // Don't increment currentLineIndex - the next line is now at this index
                             }
                         }
+
                         DiffLineType.ADDED -> {
                             // Add line
                             if (currentLineIndex <= currentLines.size) {
@@ -1116,6 +1080,7 @@ open class CodeReviewViewModel(
                                 // Don't increment oldLineNum - added lines aren't in the old file
                             }
                         }
+
                         DiffLineType.HEADER -> {
                             // Skip header lines
                         }

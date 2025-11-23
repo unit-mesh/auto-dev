@@ -291,10 +291,14 @@ fun DiffCenterView(
                 )
             }
         } else {
+            // Collect all related tests (used in both views)
+            val allTests = relatedTests.values.flatten()
+
             when (viewMode) {
                 FileViewMode.LIST -> {
                     CompactFileListView(
                         files = diffFiles,
+                        relatedTests = allTests,
                         onViewFile = onViewFile,
                         workspaceRoot = workspaceRoot
                     )
@@ -307,20 +311,6 @@ fun DiffCenterView(
                     )
                 }
             }
-            
-            // Quality Review Panel - Show test coverage
-            if (!isLoadingDiff && diffFiles.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                // Collect all related tests for the selected file
-                val currentFile = diffFiles.getOrNull(0) // Can be improved to use selectedFileIndex
-                val allTests = relatedTests.values.flatten()
-                
-                QualityReviewPanel(
-                    testFiles = allTests,
-                    onTestFileClick = onViewFile
-                )
-            }
         }
     }
 }
@@ -331,6 +321,7 @@ fun DiffCenterView(
 @Composable
 fun CompactFileListView(
     files: List<DiffFileInfo>,
+    relatedTests: List<TestFileInfo> = emptyList(),
     onViewFile: ((String) -> Unit)?,
     workspaceRoot: String?
 ) {
@@ -348,6 +339,21 @@ fun CompactFileListView(
                     }
                 } else null
             )
+        }
+
+        if (relatedTests.isNotEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 4.dp)
+                ) {
+                    QualityReviewPanel(
+                        testFiles = relatedTests,
+                        onTestFileClick = onViewFile
+                    )
+                }
+            }
         }
     }
 }

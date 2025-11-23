@@ -26,7 +26,7 @@ fun QualityReviewPanel(
     onTestFileClick: ((String) -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(true) }
-    
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -57,7 +57,7 @@ fun QualityReviewPanel(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        text = "Quality Review - Test Coverage",
+                        text = "Quality Review",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -70,7 +70,7 @@ fun QualityReviewPanel(
                         )
                     }
                 }
-                
+
                 Icon(
                     imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
                     contentDescription = if (expanded) "Collapse" else "Expand",
@@ -78,14 +78,14 @@ fun QualityReviewPanel(
                     modifier = Modifier.size(20.dp)
                 )
             }
-            
+
             // Content
             if (expanded) {
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                     thickness = 1.dp
                 )
-                
+
                 if (testFiles.isEmpty()) {
                     // No tests found
                     Box(
@@ -130,7 +130,7 @@ fun QualityReviewPanel(
                                 onFileClick = onTestFileClick
                             )
                         }
-                        
+
                         // Run tests button (placeholder)
                         Button(
                             onClick = { /* TODO: Implement run tests */ },
@@ -165,7 +165,7 @@ fun TestFileCard(
     onFileClick: ((String) -> Unit)?
 ) {
     var expanded by remember { mutableStateOf(false) }
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -196,7 +196,7 @@ fun TestFileCard(
                         tint = if (testFile.exists) AutoDevColors.Green.c600 else AutoDevColors.Red.c600,
                         modifier = Modifier.size(16.dp)
                     )
-                    
+
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = testFile.filePath.substringAfterLast("/"),
@@ -212,7 +212,7 @@ fun TestFileCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
-                    
+
                     if (testFile.testCases.isNotEmpty()) {
                         Text(
                             text = "${testFile.testCases.sumOf { it.children.size + if (it.type == TestNodeType.METHOD) 1 else 0 }} tests",
@@ -222,7 +222,7 @@ fun TestFileCard(
                         )
                     }
                 }
-                
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -241,7 +241,7 @@ fun TestFileCard(
                             )
                         }
                     }
-                    
+
                     Icon(
                         imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
                         contentDescription = if (expanded) "Collapse" else "Expand",
@@ -250,7 +250,7 @@ fun TestFileCard(
                     )
                 }
             }
-            
+
             // Test tree
             if (expanded) {
                 if (testFile.parseError != null) {
@@ -277,7 +277,7 @@ fun TestFileCard(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                         thickness = 1.dp
                     )
-                    
+
                     TestTreeView(
                         testCases = testFile.testCases,
                         modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
@@ -319,7 +319,7 @@ fun TestNodeItem(
     indentLevel: Int
 ) {
     var expanded by remember { mutableStateOf(indentLevel == 0) } // Classes expanded by default
-    
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -327,8 +327,8 @@ fun TestNodeItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(enabled = node.children.isNotEmpty()) { 
-                    expanded = !expanded 
+                .clickable(enabled = node.children.isNotEmpty()) {
+                    expanded = !expanded
                 }
                 .padding(
                     start = (indentLevel * 16).dp,
@@ -349,11 +349,11 @@ fun TestNodeItem(
             } else {
                 Spacer(modifier = Modifier.width(14.dp))
             }
-            
+
             Icon(
-                imageVector = if (node.type == TestNodeType.CLASS) 
+                imageVector = if (node.type == TestNodeType.CLASS)
                     AutoDevComposeIcons.Folder  // Use Folder for class
-                else 
+                else
                     AutoDevComposeIcons.Code,  // Use Code for method
                 contentDescription = node.type.name,
                 tint = if (node.type == TestNodeType.CLASS)
@@ -362,7 +362,7 @@ fun TestNodeItem(
                     AutoDevColors.Indigo.c600,  // Use Indigo instead of Purple
                 modifier = Modifier.size(14.dp)
             )
-            
+
             Text(
                 text = node.name,
                 style = MaterialTheme.typography.bodySmall,
@@ -371,7 +371,7 @@ fun TestNodeItem(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = if (node.type == TestNodeType.CLASS) FontWeight.Medium else FontWeight.Normal
             )
-            
+
             if (node.startLine > 0) {
                 Text(
                     text = "L${node.startLine}",
@@ -381,7 +381,7 @@ fun TestNodeItem(
                 )
             }
         }
-        
+
         // Children
         if (expanded && node.children.isNotEmpty()) {
             TestTreeView(
