@@ -40,7 +40,8 @@ data class DocumentMetadata(
     val lastModified: Long,             // 最后修改时间戳
     val fileSize: Long,                 // 文件大小（字节）
     val language: String? = null,       // 文档语言（如 "markdown", "kotlin"）
-    val mimeType: String? = null        // MIME 类型
+    val mimeType: String? = null,       // MIME 类型
+    val formatType: DocumentFormatType = DocumentFormatType.PLAIN_TEXT  // 文档格式类型
 )
 
 /**

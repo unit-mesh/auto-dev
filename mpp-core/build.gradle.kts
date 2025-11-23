@@ -178,6 +178,10 @@ kotlin {
 
                 // JediTerm for terminal emulation (uses pty4j under the hood)
                 implementation("org.jetbrains.pty4j:pty4j:0.13.10")
+
+                // Apache Tika for document parsing (PDF, DOC, DOCX, PPT, etc.)
+                implementation("org.apache.tika:tika-core:3.2.3")
+                implementation("org.apache.tika:tika-parsers-standard-package:3.2.3")
             }
         }
 
