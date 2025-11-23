@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -74,7 +76,7 @@ fun QualityReviewPanel(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        text = "Quality Review - Test Coverage",
+                        text = "Quality Review",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -135,13 +137,14 @@ fun QualityReviewPanel(
                     }
                 } else {
                     // Show test files
-                    Column(
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .heightIn(max = 400.dp)
                             .padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        validTestFiles.forEach { testFile ->
+                        items(validTestFiles) { testFile ->
                             TestFileCard(
                                 testFile = testFile,
                                 onFileClick = onTestFileClick
@@ -278,7 +281,10 @@ fun TestFileCard(
 
                     TestTreeView(
                         testCases = testFile.testCases,
-                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                        modifier = Modifier
+                            .heightIn(max = 300.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
                     )
                 }
             }
