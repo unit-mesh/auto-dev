@@ -181,20 +181,6 @@ jobs:
       - name: Build Desktop package
         run: ./gradlew :mpp-ui:packageDistributionForCurrentOS
 
-      # Build JS bundle
-      - name: Build mpp-ui JS bundle
-        run: ./gradlew :mpp-ui:jsBrowserDistribution
-
-      # Upload build artifacts for debugging
-      - name: Upload mpp-ui build artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mpp-ui-build-logs
-          path: |
-            mpp-ui/build/reports/
-            mpp-ui/build/test-results/
-
       # Upload successful build outputs
       - name: Upload mpp-ui outputs
         if: success()
