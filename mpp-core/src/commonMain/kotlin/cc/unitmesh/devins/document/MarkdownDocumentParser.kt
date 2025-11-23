@@ -1,7 +1,6 @@
 package cc.unitmesh.devins.document
 
 import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
@@ -80,8 +79,7 @@ class MarkdownDocumentParser : DocumentParserService {
     }
 
     override suspend fun queryChapter(chapterId: String): DocumentChunk? {
-        // Support both numeric ID (e.g., "1.2.3") and anchor-based lookup
-        return chapterIdToChunk[chapterId] 
+        return chapterIdToChunk[chapterId]
             ?: currentChunks.find { it.anchor == chapterId || it.anchor == "#$chapterId" }
     }
 
