@@ -25,7 +25,9 @@ import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 fun QualityReviewPanel(
     testFiles: List<TestFileInfo>,
     modifier: Modifier = Modifier,
-    onTestFileClick: ((String) -> Unit)? = null
+    onTestFileClick: ((String) -> Unit)? = null,
+    onTestCaseClick: ((filePath: String, startLine: Int, endLine: Int) -> Unit)? = null,
+    workspaceRoot: String? = null
 ) {
     var expanded by remember { mutableStateOf(true) }
 
@@ -56,7 +58,6 @@ fun QualityReviewPanel(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -106,7 +107,6 @@ fun QualityReviewPanel(
                 )
 
                 if (validTestFiles.isEmpty()) {
-                    // No tests found
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -136,7 +136,6 @@ fun QualityReviewPanel(
                         }
                     }
                 } else {
-                    // Show test files
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -147,7 +146,9 @@ fun QualityReviewPanel(
                         items(validTestFiles) { testFile ->
                             TestFileCard(
                                 testFile = testFile,
-                                onFileClick = onTestFileClick
+                                onFileClick = onTestFileClick,
+                                onTestCaseClick = onTestCaseClick,
+                                workspaceRoot = workspaceRoot
                             )
                         }
                     }
@@ -163,7 +164,9 @@ fun QualityReviewPanel(
 @Composable
 fun TestFileCard(
     testFile: TestFileInfo,
-    onFileClick: ((String) -> Unit)?
+    onFileClick: ((String) -> Unit)?,
+    onTestCaseClick: ((filePath: String, startLine: Int, endLine: Int) -> Unit)? = null,
+    workspaceRoot: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -230,8 +233,9 @@ fun TestFileCard(
                 ) {
                     // View file button
                     if (testFile.exists && onFileClick != null) {
+                        val fullPath = if (testFile.filePath.startsWith("/")) testFile.filePath else "$workspaceRoot/${testFile.filePath}"
                         IconButton(
-                            onClick = { onFileClick(testFile.filePath) },
+                            onClick = { onFileClick(fullPath) },
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
@@ -281,6 +285,9 @@ fun TestFileCard(
 
                     TestTreeView(
                         testCases = testFile.testCases,
+                        testFilePath = testFile.filePath,
+                        onTestCaseClick = onTestCaseClick,
+                        workspaceRoot = workspaceRoot,
                         modifier = Modifier
                             .heightIn(max = 300.dp)
                             .verticalScroll(rememberScrollState())
@@ -298,6 +305,9 @@ fun TestFileCard(
 @Composable
 fun TestTreeView(
     testCases: List<TestCaseNode>,
+    testFilePath: String,
+    onTestCaseClick: ((filePath: String, startLine: Int, endLine: Int) -> Unit)?,
+    workspaceRoot: String?,
     modifier: Modifier = Modifier,
     indentLevel: Int = 0
 ) {
@@ -308,6 +318,9 @@ fun TestTreeView(
         testCases.forEach { node ->
             TestNodeItem(
                 node = node,
+                testFilePath = testFilePath,
+                onTestCaseClick = onTestCaseClick,
+                workspaceRoot = workspaceRoot,
                 indentLevel = indentLevel
             )
         }
@@ -320,6 +333,9 @@ fun TestTreeView(
 @Composable
 fun TestNodeItem(
     node: TestCaseNode,
+    testFilePath: String,
+    onTestCaseClick: ((filePath: String, startLine: Int, endLine: Int) -> Unit)?,
+    workspaceRoot: String?,
     indentLevel: Int
 ) {
     var expanded by remember { mutableStateOf(indentLevel == 0) } // Classes expanded by default
@@ -373,16 +389,44 @@ fun TestNodeItem(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = if (node.type == TestNodeType.CLASS) FontWeight.Medium else FontWeight.Normal
+                fontWeight = if (node.type == TestNodeType.CLASS) FontWeight.Medium else FontWeight.Normal,
+                modifier = Modifier.weight(1f)
             )
 
             if (node.startLine > 0) {
+                val lineText = if (node.endLine > node.startLine) {
+                    "L${node.startLine}-${node.endLine}"
+                } else {
+                    "L${node.startLine}"
+                }
                 Text(
-                    text = "L${node.startLine}",
+                    text = lineText,
                     style = MaterialTheme.typography.labelSmall,
                     fontSize = 9.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
+            }
+
+            // View button
+            if (node.startLine > 0 && onTestCaseClick != null && workspaceRoot != null) {
+                IconButton(
+                    onClick = {
+                        val fullPath = if (testFilePath.startsWith("/")) testFilePath else "$workspaceRoot/$testFilePath"
+                        onTestCaseClick(
+                            fullPath,
+                            node.startLine,
+                            node.endLine.takeIf { it > 0 } ?: node.startLine
+                        )
+                    },
+                    modifier = Modifier.size(20.dp)
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Visibility,
+                        contentDescription = "View test case",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
             }
         }
 
@@ -390,6 +434,9 @@ fun TestNodeItem(
         if (expanded && node.children.isNotEmpty()) {
             TestTreeView(
                 testCases = node.children,
+                testFilePath = testFilePath,
+                onTestCaseClick = onTestCaseClick,
+                workspaceRoot = workspaceRoot,
                 indentLevel = indentLevel + 1
             )
         }

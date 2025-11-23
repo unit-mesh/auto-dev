@@ -69,21 +69,21 @@ fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier 
             }
         }
     }
-    
+
     // Issue Tracker Configuration Dialog
     if (showConfigDialog) {
-        var currentConfig by remember { 
-            mutableStateOf(cc.unitmesh.devins.ui.config.IssueTrackerConfig()) 
+        var currentConfig by remember {
+            mutableStateOf(cc.unitmesh.devins.ui.config.IssueTrackerConfig())
         }
-        var autoDetectedRepo by remember { 
-            mutableStateOf<Pair<String, String>?>(null) 
+        var autoDetectedRepo by remember {
+            mutableStateOf<Pair<String, String>?>(null)
         }
-        
+
         LaunchedEffect(Unit) {
             currentConfig = cc.unitmesh.devins.ui.config.ConfigManager.getIssueTracker()
             autoDetectedRepo = viewModel.detectRepositoryFromGit()
         }
-        
+
         IssueTrackerConfigDialog(
             onDismiss = { showConfigDialog = false },
             onConfigured = {
@@ -147,7 +147,15 @@ private fun ThreeColumnLayout(
                 first = {
                     // Center: Diff viewer
                     var fileToView by remember { mutableStateOf<String?>(null) }
-                    val onViewFile: (String) -> Unit = { filePath -> fileToView = filePath }
+                    var lineRange by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+                    val onViewFile: (String) -> Unit = { filePath ->
+                        fileToView = filePath
+                        lineRange = null
+                    }
+                    val onViewFileWithLines: (String, Int, Int) -> Unit = { filePath, startLine, endLine ->
+                        fileToView = filePath
+                        lineRange = startLine to endLine
+                    }
                     val workspaceRoot = viewModel.workspace.rootPath
                     val onConfigureToken = onShowConfigDialog
 
@@ -155,6 +163,7 @@ private fun ThreeColumnLayout(
                         diffFiles = state.diffFiles,
                         selectedCommits = state.selectedCommitIndices.mapNotNull { state.commitHistory.getOrNull(it) },
                         onViewFile = onViewFile,
+                        onViewFileWithLines = onViewFileWithLines,
                         workspaceRoot = workspaceRoot,
                         isLoadingDiff = state.isLoadingDiff,
                         onConfigureToken = onConfigureToken,
@@ -166,7 +175,12 @@ private fun ThreeColumnLayout(
                     fileToView?.let { path ->
                         FileViewerDialog(
                             filePath = path,
-                            onClose = { fileToView = null }
+                            onClose = {
+                                fileToView = null
+                                lineRange = null
+                            },
+                            startLine = lineRange?.first,
+                            endLine = lineRange?.second
                         )
                     }
                 },

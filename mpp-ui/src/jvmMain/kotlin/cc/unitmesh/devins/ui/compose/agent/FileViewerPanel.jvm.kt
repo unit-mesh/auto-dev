@@ -18,7 +18,9 @@ import java.io.File
 fun FileViewerPanel(
     filePath: String,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    startLine: Int? = null,
+    endLine: Int? = null
 ) {
     var textArea by remember { mutableStateOf<RSyntaxTextArea?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -190,6 +192,32 @@ fun FileViewerPanel(
                                     val file = File(filePath)
                                     area.text = fileContent ?: ""
                                     area.syntaxEditingStyle = getSyntaxStyleForFile(file)
+                                }
+
+                                // Highlight and scroll to specific lines if provided
+                                if (startLine != null && startLine > 0) {
+                                    try {
+                                        val start = startLine - 1 // Convert to 0-based
+                                        val end = (endLine ?: startLine) - 1
+
+                                        if (start < area.lineCount) {
+                                            val startOffset = area.getLineStartOffset(start)
+                                            val endOffset = if (end < area.lineCount) {
+                                                area.getLineEndOffset(end)
+                                            } else {
+                                                area.getLineEndOffset(area.lineCount - 1)
+                                            }
+
+                                            // Select the lines
+                                            area.select(startOffset, endOffset)
+
+                                            // Scroll to make the selection visible
+                                            area.caretPosition = startOffset
+                                            area.requestFocusInWindow()
+                                        }
+                                    } catch (e: Exception) {
+                                        // Ignore errors in line highlighting
+                                    }
                                 }
                             }
                         }

@@ -16,7 +16,9 @@ import cc.unitmesh.devins.ui.compose.agent.FileViewerPanel
 @Composable
 actual fun FileViewerDialog(
     filePath: String,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    startLine: Int?,
+    endLine: Int?
 ) {
     Dialog(
         onDismissRequest = onClose,
@@ -36,7 +38,9 @@ actual fun FileViewerDialog(
         ) {
             FileViewerPanel(
                 filePath = filePath,
-                onClose = onClose
+                onClose = onClose,
+                startLine = startLine,
+                endLine = endLine
             )
         }
     }

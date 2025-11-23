@@ -60,6 +60,7 @@ fun DiffCenterView(
     selectedCommits: List<CommitInfo>,
     modifier: Modifier = Modifier,
     onViewFile: ((String) -> Unit)? = null,
+    onViewFileWithLines: ((String, Int, Int) -> Unit)? = null,
     workspaceRoot: String? = null,
     isLoadingDiff: Boolean = false,
     onConfigureToken: () -> Unit = {},
@@ -294,7 +295,7 @@ fun DiffCenterView(
         } else {
             // Collect all related tests (used in both views)
             val allTests = relatedTests.values.flatten()
-            
+
             // Show vertical split pane if we have tests, otherwise show normal view
             if (allTests.isNotEmpty()) {
                 VerticalResizableSplitPane(
@@ -334,7 +335,9 @@ fun DiffCenterView(
                         ) {
                             QualityReviewPanel(
                                 testFiles = allTests,
-                                onTestFileClick = onViewFile
+                                onTestFileClick = onViewFile,
+                                onTestCaseClick = onViewFileWithLines,
+                                workspaceRoot = workspaceRoot
                             )
                         }
                     }
@@ -347,6 +350,7 @@ fun DiffCenterView(
                             files = diffFiles,
                             relatedTests = emptyList(),
                             onViewFile = onViewFile,
+                            onViewFileWithLines = onViewFileWithLines,
                             workspaceRoot = workspaceRoot
                         )
                     }
@@ -371,6 +375,7 @@ fun CompactFileListView(
     files: List<DiffFileInfo>,
     relatedTests: List<TestFileInfo> = emptyList(),
     onViewFile: ((String) -> Unit)?,
+    onViewFileWithLines: ((String, Int, Int) -> Unit)? = null,
     workspaceRoot: String?
 ) {
     LazyColumn(
@@ -398,7 +403,9 @@ fun CompactFileListView(
                 ) {
                     QualityReviewPanel(
                         testFiles = relatedTests,
-                        onTestFileClick = onViewFile
+                        onTestFileClick = onViewFile,
+                        onTestCaseClick = onViewFileWithLines,
+                        workspaceRoot = workspaceRoot
                     )
                 }
             }

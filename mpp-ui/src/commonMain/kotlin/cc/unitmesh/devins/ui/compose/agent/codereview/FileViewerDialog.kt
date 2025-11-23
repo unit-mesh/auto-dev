@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 @Composable
 expect fun FileViewerDialog(
     filePath: String,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    startLine: Int? = null,
+    endLine: Int? = null
 )
 
