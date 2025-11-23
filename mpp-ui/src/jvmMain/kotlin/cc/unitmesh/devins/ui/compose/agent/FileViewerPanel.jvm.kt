@@ -2,16 +2,21 @@ package cc.unitmesh.devins.ui.compose.agent
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
+import org.fife.ui.rtextarea.SearchContext
+import org.fife.ui.rtextarea.SearchEngine
 import java.io.File
 
 @Composable
@@ -27,6 +32,9 @@ fun FileViewerPanel(
     var fileName by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var fileContent by remember { mutableStateOf<String?>(null) }
+    var showSearchBar by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    var searchMatchInfo by remember { mutableStateOf("") }
 
     // 异步加载文件内容
     LaunchedEffect(filePath) {
@@ -79,38 +87,179 @@ fun FileViewerPanel(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surface)
     ) {
-        // Header
+        // Header with search functionality
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.surfaceVariant,
             shadowElevation = 2.dp
         ) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = fileName,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = filePath,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
+            Column {
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = fileName,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = filePath,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // Search button
+                        IconButton(onClick = { showSearchBar = !showSearchBar }) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Search,
+                                contentDescription = "Search",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        IconButton(onClick = onClose) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Close,
+                                contentDescription = "Close",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
-                IconButton(onClick = onClose) {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
+                // Search bar
+                if (showSearchBar) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            BasicTextField(
+                                value = searchQuery,
+                                onValueChange = {
+                                    searchQuery = it
+                                    // Perform search
+                                    textArea?.let { area ->
+                                        if (it.isNotEmpty()) {
+                                            val context = SearchContext(it).apply {
+                                                matchCase = false
+                                                markAll = true
+                                            }
+                                            val found = SearchEngine.find(area, context)
+                                            if (!found.wasFound()) {
+                                                searchMatchInfo = "No matches"
+                                            } else {
+                                                searchMatchInfo = ""
+                                            }
+                                        } else {
+                                            searchMatchInfo = ""
+                                            area.clearMarkAllHighlights()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(32.dp),
+                                textStyle = TextStyle(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                                ),
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        if (searchQuery.isEmpty()) {
+                                            Text(
+                                                "Search in file...",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+
+                            if (searchMatchInfo.isNotEmpty()) {
+                                Text(
+                                    searchMatchInfo,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+                            }
+
+                            // Navigation buttons
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                IconButton(
+                                    onClick = {
+                                        textArea?.let { area ->
+                                            val context = SearchContext(searchQuery).apply {
+                                                matchCase = false
+                                                searchForward = false
+                                            }
+                                            SearchEngine.find(area, context)
+                                        }
+                                    },
+                                    enabled = searchQuery.isNotEmpty()
+                                ) {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.KeyboardArrowUp,
+                                        contentDescription = "Previous match",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = {
+                                        textArea?.let { area ->
+                                            val context = SearchContext(searchQuery).apply {
+                                                matchCase = false
+                                                searchForward = true
+                                            }
+                                            SearchEngine.find(area, context)
+                                        }
+                                    },
+                                    enabled = searchQuery.isNotEmpty()
+                                ) {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.KeyboardArrowDown,
+                                        contentDescription = "Next match",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+
+                            IconButton(onClick = {
+                                showSearchBar = false
+                                searchQuery = ""
+                                textArea?.clearMarkAllHighlights()
+                            }) {
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.Close,
+                                    contentDescription = "Close search",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

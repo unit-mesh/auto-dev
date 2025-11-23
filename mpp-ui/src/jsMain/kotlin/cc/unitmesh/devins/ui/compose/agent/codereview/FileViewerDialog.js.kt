@@ -12,11 +12,14 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 /**
  * JS implementation of file viewer dialog (not supported)
+ * Press Esc to close dialog
  */
 @Composable
 actual fun FileViewerDialog(
     filePath: String,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    startLine: Int?,
+    endLine: Int?
 ) {
     Dialog(onDismissRequest = onClose) {
         Surface(

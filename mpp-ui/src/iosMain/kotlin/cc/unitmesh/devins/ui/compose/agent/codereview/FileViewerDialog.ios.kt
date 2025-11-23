@@ -12,11 +12,14 @@ import cc.unitmesh.devins.ui.compose.agent.FileViewerPanelWrapper
 /**
  * iOS implementation of file viewer dialog
  * Uses Dialog with FileViewerPanelWrapper
+ * Note: Keyboard shortcuts may not work on iOS due to touch interface
  */
 @Composable
 actual fun FileViewerDialog(
     filePath: String,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    startLine: Int?,
+    endLine: Int?
 ) {
     Dialog(
         onDismissRequest = onClose,
