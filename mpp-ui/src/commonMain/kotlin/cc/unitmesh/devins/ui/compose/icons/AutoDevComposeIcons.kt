@@ -100,6 +100,14 @@ object AutoDevComposeIcons {
     val Warning: ImageVector get() = Icons.Default.Warning
     val DriveFileRenameOutline: ImageVector get() = Icons.Default.Edit // Using Edit as fallback for rename
 
+    // Document Reader Icons
+    val MenuBook: ImageVector get() = Icons.Default.MenuBook
+    val Label: ImageVector get() = Icons.Default.Label
+    val Api: ImageVector get() = Icons.Default.Api
+    val DataObject: ImageVector get() = Icons.Default.DataObject
+    val Functions: ImageVector get() = Icons.Default.Functions
+    val KeyboardArrowRight: ImageVector get() = Icons.Default.KeyboardArrowRight
+
     /**
      * Custom icons converted from SVG resources
      * These icons are converted from ai.svg and mcp.svg to Compose ImageVector format
