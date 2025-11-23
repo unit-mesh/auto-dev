@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.document.Entity
+import cc.unitmesh.devins.document.TOCItem
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 /**

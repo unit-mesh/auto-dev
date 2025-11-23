@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.document.DocumentFile
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer
 

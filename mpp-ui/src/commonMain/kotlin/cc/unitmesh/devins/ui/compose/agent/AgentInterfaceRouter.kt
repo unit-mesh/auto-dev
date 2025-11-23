@@ -58,7 +58,6 @@ fun AgentInterfaceRouter(
     when (selectedAgentType) {
         AgentType.DOCUMENT_READER -> {
             cc.unitmesh.devins.ui.compose.document.DocumentReaderPage(
-                llmService = llmService,
                 modifier = modifier,
                 onBack = {
                     onAgentTypeChange(AgentType.CODING)

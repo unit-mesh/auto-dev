@@ -1,4 +1,4 @@
-package cc.unitmesh.devins.ui.compose.document
+package cc.unitmesh.devins.document
 
 /**
  * 文档树节点（复用 FileTreeNode 架构）
@@ -14,7 +14,7 @@ data class DocumentFolder(
     override val name: String,
     override val path: String,
     val children: MutableList<DocumentTreeNode> = mutableListOf(),
-    val fileCount: Int = 0  // 递归统计的文件总数
+    var fileCount: Int = 0  // 递归统计的文件总数
 ) : DocumentTreeNode(name, path)
 
 /**

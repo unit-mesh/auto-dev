@@ -12,6 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.document.DocumentFile
+import cc.unitmesh.devins.document.DocumentFolder
+import cc.unitmesh.devins.document.DocumentTreeNode
+import cc.unitmesh.devins.document.ParseStatus
 
 /**
  * 文档导航面板 - 左侧文档树
@@ -329,72 +333,53 @@ private fun DocumentFileItem(
  * 类似 DiffFileTreeView 的 buildFileTreeStructure
  */
 fun buildDocumentTreeStructure(documents: List<DocumentFile>): List<DocumentTreeNode> {
-    val root = mutableMapOf<String, DocumentFolder>()
-
+    val rootNodes = mutableListOf<DocumentTreeNode>()
+    val folderMap = mutableMapOf<String, DocumentFolder>()
+    
     documents.forEach { doc ->
-        val segments = doc.path.split("/")
-        var currentMap = root
+        val parts = doc.path.split("/")
         var currentPath = ""
-
-        // 构建目录结构
-        for (i in 0 until segments.size - 1) {
-            val segment = segments[i]
-            currentPath = if (currentPath.isEmpty()) segment else "$currentPath/$segment"
-
-            if (!currentMap.containsKey(segment)) {
-                val folder = DocumentFolder(segment, currentPath)
-                currentMap[segment] = folder
+        var parentFolder: DocumentFolder? = null
+        
+        for (i in 0 until parts.size - 1) {
+            val part = parts[i]
+            currentPath = if (currentPath.isEmpty()) part else "$currentPath/$part"
+            
+            var folder = folderMap[currentPath]
+            if (folder == null) {
+                folder = DocumentFolder(part, currentPath)
+                folderMap[currentPath] = folder
+                
+                if (parentFolder != null) {
+                    parentFolder.children.add(folder)
+                } else {
+                    rootNodes.add(folder)
+                }
             }
-
-            val folder = currentMap[segment]!!
-            currentMap = folder.children
-                .filterIsInstance<DocumentFolder>()
-                .associateBy { it.name }
-                .toMutableMap()
+            parentFolder = folder
         }
-
-        // 添加文档文件
-        val parentPath = segments.dropLast(1).joinToString("/")
-        val parentFolder = findFolder(root.values.toList(), parentPath)
-
-        parentFolder?.children?.add(doc)
-        parentFolder?.let { updateFileCount(it) }
+        
+        if (parentFolder != null) {
+            parentFolder.children.add(doc)
+        } else {
+            rootNodes.add(doc)
+        }
     }
-
-    return root.values.toList()
+    
+    // Post-process counts
+    rootNodes.forEach { updateFileCount(it) }
+    
+    return rootNodes
 }
 
-/**
- * 查找文件夹
- */
-private fun findFolder(nodes: List<DocumentTreeNode>, path: String): DocumentFolder? {
-    if (path.isEmpty()) return null
-
-    nodes.forEach { node ->
-        if (node is DocumentFolder) {
-            if (node.path == path) return node
-            findFolder(node.children, path)?.let { return it }
+private fun updateFileCount(node: DocumentTreeNode): Int {
+    return when (node) {
+        is DocumentFile -> 1
+        is DocumentFolder -> {
+            var count = 0
+            node.children.forEach { count += updateFileCount(it) }
+            (node as DocumentFolder).fileCount = count
+            count
         }
-    }
-    return null
-}
-
-/**
- * 递归更新文件计数
- */
-private fun updateFileCount(folder: DocumentFolder) {
-    var count = 0
-    folder.children.forEach { child ->
-        when (child) {
-            is DocumentFile -> count++
-            is DocumentFolder -> {
-                updateFileCount(child)
-                count += child.fileCount
-            }
-        }
-    }
-    (folder as? DocumentFolder)?.let {
-        // Note: DocumentFolder is a data class, so this won't work directly
-        // We need to make fileCount mutable or rebuild the structure
     }
 }
