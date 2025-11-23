@@ -17,7 +17,7 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 /**
  * 结构化信息面板 - 中间下部
- * 包含 TOC (目录)、Graph (关系图)、Entities (实体列表) 和 DocQL 查询
+ * 包含 DocQL 查询栏（顶部）+ TOC (目录)、Graph (关系图)、Entities (实体列表)
  */
 @Composable
 fun StructuredInfoPane(
@@ -30,9 +30,24 @@ fun StructuredInfoPane(
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     var docqlResult by remember { mutableStateOf<cc.unitmesh.devins.document.docql.DocQLResult?>(null) }
-    val tabs = listOf("目录", "关系图", "实体", "DocQL")
+    var showDocQLResult by remember { mutableStateOf(false) }
+    val tabs = listOf("目录", "关系图", "实体")
 
     Column(modifier = modifier.fillMaxSize()) {
+        // DocQL 搜索栏（置顶）
+        DocQLSearchBar(
+            onQueryExecute = { query ->
+                val result = onDocQLQuery(query)
+                docqlResult = result
+                showDocQLResult = true
+                result
+            },
+            autoExecute = true,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)
+        )
+        
+        HorizontalDivider()
+        
         // Tab 栏
         TabRow(
             selectedTabIndex = selectedTabIndex,
@@ -43,7 +58,10 @@ fun StructuredInfoPane(
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
+                    onClick = { 
+                        selectedTabIndex = index
+                        showDocQLResult = false
+                    },
                     text = { Text(title) }
                 )
             }
@@ -51,20 +69,21 @@ fun StructuredInfoPane(
 
         // 内容区域
         Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
-            when (selectedTabIndex) {
-                0 -> TocView(toc, onTocSelected)
-                1 -> GraphView()
-                2 -> EntityListView(entities, onEntitySelected)
-                3 -> DocQLView(
-                    onQueryExecute = { query ->
-                        val result = onDocQLQuery(query)
-                        docqlResult = result
-                        result
-                    },
-                    result = docqlResult,
+            if (showDocQLResult && docqlResult != null) {
+                // 显示 DocQL 查询结果
+                DocQLResultView(
+                    result = docqlResult!!,
                     onTocSelected = onTocSelected,
-                    onEntitySelected = onEntitySelected
+                    onEntitySelected = onEntitySelected,
+                    onClose = { showDocQLResult = false }
                 )
+            } else {
+                // 显示正常 Tab 内容
+                when (selectedTabIndex) {
+                    0 -> TocView(toc, onTocSelected)
+                    1 -> GraphView()
+                    2 -> EntityListView(entities, onEntitySelected)
+                }
             }
         }
     }
@@ -214,25 +233,44 @@ private fun EntityItemRow(
     }
 }
 
+/**
+ * DocQL 查询结果视图
+ */
 @Composable
-private fun DocQLView(
-    onQueryExecute: suspend (String) -> cc.unitmesh.devins.document.docql.DocQLResult,
-    result: cc.unitmesh.devins.document.docql.DocQLResult?,
+private fun DocQLResultView(
+    result: cc.unitmesh.devins.document.docql.DocQLResult,
     onTocSelected: (TOCItem) -> Unit,
-    onEntitySelected: (Entity) -> Unit
+    onEntitySelected: (Entity) -> Unit,
+    onClose: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Search bar
-        DocQLSearchBar(
-            onQueryExecute = onQueryExecute,
-            modifier = Modifier.fillMaxWidth()
-        )
+        // 结果头部
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "查询结果",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            
+            IconButton(onClick = onClose) {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Close,
+                    contentDescription = "关闭结果"
+                )
+            }
+        }
         
-        // Results
-        if (result != null) {
+        HorizontalDivider()
+        
+        // 显示结果
+        Box(modifier = Modifier.fillMaxSize()) {
             when (result) {
                 is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
                     Text(
@@ -320,8 +358,6 @@ private fun DocQLView(
                     EmptyState("Table display not implemented yet")
                 }
             }
-        } else {
-            EmptyState("Enter a DocQL query to search the document")
         }
     }
 }

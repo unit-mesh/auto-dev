@@ -1,10 +1,13 @@
 package cc.unitmesh.devins.ui.compose.document
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.document.docql.DocQLResult
 import cc.unitmesh.devins.document.docql.parseDocQL
@@ -12,96 +15,185 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import kotlinx.coroutines.launch
 
 /**
- * DocQL search bar with syntax hints and query execution
+ * DocQL search bar with syntax hints, auto-complete and real-time query execution
  */
 @Composable
 fun DocQLSearchBar(
     onQueryExecute: suspend (String) -> DocQLResult,
+    autoExecute: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    var queryText by remember { mutableStateOf("") }
+    var queryTextValue by remember { mutableStateOf(TextFieldValue("")) }
     var isExpanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isExecuting by remember { mutableStateOf(false) }
+    var showSuggestions by remember { mutableStateOf(false) }
+    var suggestions by remember { mutableStateOf<List<DocQLSuggestion>>(emptyList()) }
     
     val scope = rememberCoroutineScope()
+    val autoCompleteProvider = remember { DocQLAutoCompleteProvider() }
     
     Column(modifier = modifier) {
         // Search input
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = queryText,
-                onValueChange = { 
-                    queryText = it
-                    errorMessage = null
-                    
-                    // Real-time syntax validation
-                    try {
-                        if (it.isNotEmpty()) {
-                            parseDocQL(it)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = queryTextValue,
+                    onValueChange = { newValue ->
+                        val oldText = queryTextValue.text
+                        val oldCursor = queryTextValue.selection.start
+                        queryTextValue = newValue
+                        errorMessage = null
+                        
+                        val text = newValue.text
+                        val cursor = newValue.selection.start
+                        
+                        // Real-time syntax validation
+                        try {
+                            if (text.isNotEmpty()) {
+                                parseDocQL(text)
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = e.message
                         }
-                    } catch (e: Exception) {
-                        errorMessage = e.message
+                        
+                        // Only trigger auto-complete on actual text input (not cursor movement)
+                        val textChanged = text != oldText
+                        if (textChanged) {
+                            if (cursor > 0 && text.length >= oldText.length) {
+                                // 文本增加（输入字符）
+                                val lastChar = text.getOrNull(cursor - 1)
+                                val beforeCursor = text.substring(0, cursor)
+                                
+                                // Trigger on: . [ $ @
+                                val shouldShowSuggestions = when (lastChar) {
+                                    '.' -> true
+                                    '[' -> true
+                                    '$' -> cursor == 1  // 只在开头输入 $ 时触发
+                                    '@' -> beforeCursor.contains("[?")  // 在 filter 中
+                                    else -> false
+                                }
+                                
+                                if (shouldShowSuggestions) {
+                                    suggestions = autoCompleteProvider.getSuggestions(text, cursor)
+                                    showSuggestions = suggestions.isNotEmpty()
+                                }
+                            } else if (text.length < oldText.length) {
+                                // 文本减少（删除字符）- 检查是否删除了触发字符
+                                val beforeCursor = text.substring(0, minOf(cursor, text.length))
+                                val hasTriggerChar = beforeCursor.endsWith(".") || 
+                                                   beforeCursor.endsWith("[") || 
+                                                   beforeCursor.endsWith("@")
+                                
+                                if (!hasTriggerChar) {
+                                    // 如果不再有触发字符，关闭补全
+                                    showSuggestions = false
+                                }
+                            }
+                        }
+                        
+                        // Auto-execute on valid query
+                        if (autoExecute && text.isNotEmpty() && errorMessage == null && !isExecuting) {
+                            scope.launch {
+                                isExecuting = true
+                                try {
+                                    onQueryExecute(text)
+                                } catch (e: Exception) {
+                                    errorMessage = e.message ?: "Execution error"
+                                } finally {
+                                    isExecuting = false
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("输入 DocQL 查询（输入 $ . [ @ 触发补全）") },
+                    singleLine = true,
+                    isError = errorMessage != null,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    trailingIcon = {
+                        Row {
+                            if (isExecuting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp).padding(end = 4.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                            if (queryTextValue.text.isNotEmpty()) {
+                                IconButton(onClick = { 
+                                    queryTextValue = TextFieldValue("")
+                                    showSuggestions = false  // 清除时关闭补全
+                                    errorMessage = null
+                                }) {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.Close,
+                                        contentDescription = "清除"
+                                    )
+                                }
+                            }
+                        }
                     }
-                },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Enter DocQL query (e.g., $.toc[*])") },
-                singleLine = true,
-                isError = errorMessage != null,
-                leadingIcon = {
-                    Icon(
-                        imageVector = AutoDevComposeIcons.Search,
-                        contentDescription = "Search"
-                    )
-                },
-                trailingIcon = {
-                    if (queryText.isNotEmpty()) {
-                        IconButton(onClick = { queryText = "" }) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.Close,
-                                contentDescription = "Clear"
-                            )
-                        }
+                )
+            
+                // Manual execute button (only shown when auto-execute is off)
+                if (!autoExecute) {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isExecuting = true
+                                try {
+                                    onQueryExecute(queryTextValue.text)
+                                    errorMessage = null
+                                } catch (e: Exception) {
+                                    errorMessage = e.message ?: "Execution error"
+                                } finally {
+                                    isExecuting = false
+                                }
+                            }
+                        },
+                        enabled = queryTextValue.text.isNotEmpty() && errorMessage == null && !isExecuting
+                    ) {
+                        Text("Run")
                     }
                 }
-            )
             
-            // Execute button
-            Button(
-                onClick = {
-                    scope.launch {
-                        isExecuting = true
-                        try {
-                            onQueryExecute(queryText)
-                            errorMessage = null
-                        } catch (e: Exception) {
-                            errorMessage = e.message ?: "Execution error"
-                        } finally {
-                            isExecuting = false
-                        }
-                    }
-                },
-                enabled = queryText.isNotEmpty() && errorMessage == null && !isExecuting
-            ) {
-                if (isExecuting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
+                // Syntax help toggle
+                IconButton(onClick = { isExpanded = !isExpanded }) {
+                    Icon(
+                        imageVector = if (isExpanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
+                        contentDescription = if (isExpanded) "Hide syntax" else "Show syntax"
                     )
-                } else {
-                    Text("Run")
                 }
             }
             
-            // Syntax help toggle
-            IconButton(onClick = { isExpanded = !isExpanded }) {
-                Icon(
-                    imageVector = if (isExpanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
-                    contentDescription = if (isExpanded) "Hide syntax" else "Show syntax"
+            // Auto-complete popup
+            if (showSuggestions) {
+                DocQLAutoCompletePopup(
+                    suggestions = suggestions,
+                    onSuggestionSelected = { suggestion ->
+                        val currentText = queryTextValue.text
+                        val cursor = queryTextValue.selection.start
+                        
+                        // Insert suggestion at cursor position
+                        val newText = currentText.substring(0, cursor) + suggestion.insertText
+                        val newCursor = cursor + suggestion.insertText.length
+                        
+                        queryTextValue = TextFieldValue(
+                            text = newText,
+                            selection = TextRange(newCursor)
+                        )
+                        showSuggestions = false  // 选择后自动关闭
+                    },
+                    onDismiss = { showSuggestions = false }  // 点击外部或按 ESC 关闭
                 )
             }
         }
@@ -119,7 +211,13 @@ fun DocQLSearchBar(
         // Syntax hints (expandable)
         if (isExpanded) {
             DocQLSyntaxHelp(
-                onQuerySelect = { queryText = it },
+                onQuerySelect = { 
+                    queryTextValue = TextFieldValue(
+                        text = it,
+                        selection = TextRange(it.length)
+                    )
+                    showSuggestions = false
+                },
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
