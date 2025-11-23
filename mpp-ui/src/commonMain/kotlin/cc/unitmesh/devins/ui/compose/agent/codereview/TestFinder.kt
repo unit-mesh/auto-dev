@@ -100,16 +100,27 @@ abstract class BaseTestFinder : TestFinder {
 
     /**
      * Build hierarchical test tree from flat list of code nodes
+     * Filters out invalid nodes with empty or "unknown" names
      */
     private fun buildTestTree(nodes: List<CodeNode>): List<TestCaseNode> {
-        // Find all test classes (top-level and nested)
-        val classNodes = nodes.filter {
-            it.type == CodeElementType.CLASS || it.type == CodeElementType.INTERFACE
+        // Helper function to check if a name is valid
+        fun isValidName(name: String): Boolean {
+            return name.isNotBlank() && 
+                   name.lowercase() != "unknown" && 
+                   !name.startsWith("<") && 
+                   !name.startsWith("$")
         }
 
-        // Find all test methods/functions
+        // Find all test classes (top-level and nested) - filter out invalid ones
+        val classNodes = nodes.filter {
+            (it.type == CodeElementType.CLASS || it.type == CodeElementType.INTERFACE) &&
+            isValidName(it.name)
+        }
+
+        // Find all test methods/functions - filter out invalid ones
         val methodNodes = nodes.filter {
-            it.type == CodeElementType.METHOD || it.type == CodeElementType.FUNCTION
+            (it.type == CodeElementType.METHOD || it.type == CodeElementType.FUNCTION) &&
+            isValidName(it.name)
         }
 
         // If no classes found, return methods as top-level nodes (for languages like Python)
@@ -125,7 +136,7 @@ abstract class BaseTestFinder : TestFinder {
         }
 
         // Build tree: classes with their methods as children
-        return classNodes.map { classNode ->
+        return classNodes.mapNotNull { classNode ->
             val classMethods = methodNodes.filter { method ->
                 // Check if method belongs to this class based on line ranges
                 method.startLine >= classNode.startLine && method.endLine <= classNode.endLine
@@ -140,14 +151,19 @@ abstract class BaseTestFinder : TestFinder {
                 )
             }
 
-            TestCaseNode(
-                name = classNode.name,
-                type = TestNodeType.CLASS,
-                children = childMethods,
-                startLine = classNode.startLine,
-                endLine = classNode.endLine,
-                qualifiedName = classNode.qualifiedName
-            )
+            // Only include class nodes that have valid children or are valid themselves
+            if (childMethods.isNotEmpty() || isValidName(classNode.name)) {
+                TestCaseNode(
+                    name = classNode.name,
+                    type = TestNodeType.CLASS,
+                    children = childMethods,
+                    startLine = classNode.startLine,
+                    endLine = classNode.endLine,
+                    qualifiedName = classNode.qualifiedName
+                )
+            } else {
+                null
+            }
         }
     }
 

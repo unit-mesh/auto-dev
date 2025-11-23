@@ -27,6 +27,23 @@ fun QualityReviewPanel(
 ) {
     var expanded by remember { mutableStateOf(true) }
 
+    // Filter out test files with parse errors and filter invalid test cases
+    val validTestFiles = remember(testFiles) {
+        testFiles
+            .filter { it.parseError == null } // Exclude files with parse errors
+            .map { testFile ->
+                // Filter out invalid test cases (empty names, "unknown", etc.)
+                val validTestCases = testFile.testCases.filter { testCase ->
+                    testCase.name.isNotBlank() &&
+                    testCase.name.lowercase() != "unknown" &&
+                    !testCase.name.startsWith("<") &&
+                    !testCase.name.startsWith("$")
+                }
+                testFile.copy(testCases = validTestCases)
+            }
+            .filter { it.testCases.isNotEmpty() } // Only keep files with valid test cases
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -57,14 +74,14 @@ fun QualityReviewPanel(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        text = "Quality Review",
+                        text = "Quality Review - Test Coverage",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    if (testFiles.isNotEmpty()) {
+                    if (validTestFiles.isNotEmpty()) {
                         Text(
-                            text = "(${testFiles.size} test ${if (testFiles.size == 1) "file" else "files"})",
+                            text = "(${validTestFiles.size} test ${if (validTestFiles.size == 1) "file" else "files"})",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -86,7 +103,7 @@ fun QualityReviewPanel(
                     thickness = 1.dp
                 )
 
-                if (testFiles.isEmpty()) {
+                if (validTestFiles.isEmpty()) {
                     // No tests found
                     Box(
                         modifier = Modifier
@@ -124,30 +141,11 @@ fun QualityReviewPanel(
                             .padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        testFiles.forEach { testFile ->
+                        validTestFiles.forEach { testFile ->
                             TestFileCard(
                                 testFile = testFile,
                                 onFileClick = onTestFileClick
                             )
-                        }
-
-                        // Run tests button (placeholder)
-                        Button(
-                            onClick = { /* TODO: Implement run tests */ },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = AutoDevColors.Indigo.c600,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            enabled = false // Disabled for now
-                        ) {
-                            Icon(
-                                imageVector = AutoDevComposeIcons.PlayArrow,
-                                contentDescription = "Run tests",
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Run Tests (Coming Soon)")
                         }
                     }
                 }

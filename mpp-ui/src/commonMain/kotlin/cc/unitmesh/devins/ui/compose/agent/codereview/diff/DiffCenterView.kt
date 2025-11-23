@@ -51,6 +51,7 @@ import cc.unitmesh.devins.ui.compose.agent.codereview.CommitInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.TestFileInfo
 import cc.unitmesh.devins.ui.compose.agent.codereview.QualityReviewPanel
+import cc.unitmesh.devins.ui.compose.agent.VerticalResizableSplitPane
 import androidx.compose.foundation.lazy.items
 
 @Composable
@@ -293,22 +294,69 @@ fun DiffCenterView(
         } else {
             // Collect all related tests (used in both views)
             val allTests = relatedTests.values.flatten()
-
-            when (viewMode) {
-                FileViewMode.LIST -> {
-                    CompactFileListView(
-                        files = diffFiles,
-                        relatedTests = allTests,
-                        onViewFile = onViewFile,
-                        workspaceRoot = workspaceRoot
-                    )
-                }
-                FileViewMode.TREE -> {
-                    FileTreeView(
-                        files = diffFiles,
-                        onViewFile = onViewFile,
-                        workspaceRoot = workspaceRoot
-                    )
+            
+            // Show vertical split pane if we have tests, otherwise show normal view
+            if (allTests.isNotEmpty()) {
+                VerticalResizableSplitPane(
+                    modifier = Modifier.fillMaxSize(),
+                    initialSplitRatio = 0.65f,
+                    minRatio = 0.3f,
+                    maxRatio = 0.85f,
+                    dividerHeight = 8,
+                    saveKey = "diff_quality_split",
+                    top = {
+                        // File list at top
+                        when (viewMode) {
+                            FileViewMode.LIST -> {
+                                CompactFileListView(
+                                    files = diffFiles,
+                                    relatedTests = emptyList(), // Don't show tests in list, they're in bottom pane
+                                    onViewFile = onViewFile,
+                                    workspaceRoot = workspaceRoot
+                                )
+                            }
+                            FileViewMode.TREE -> {
+                                FileTreeView(
+                                    files = diffFiles,
+                                    onViewFile = onViewFile,
+                                    workspaceRoot = workspaceRoot
+                                )
+                            }
+                        }
+                    },
+                    bottom = {
+                        // Quality review panel at bottom
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            QualityReviewPanel(
+                                testFiles = allTests,
+                                onTestFileClick = onViewFile
+                            )
+                        }
+                    }
+                )
+            } else {
+                // No tests available, show normal file list
+                when (viewMode) {
+                    FileViewMode.LIST -> {
+                        CompactFileListView(
+                            files = diffFiles,
+                            relatedTests = emptyList(),
+                            onViewFile = onViewFile,
+                            workspaceRoot = workspaceRoot
+                        )
+                    }
+                    FileViewMode.TREE -> {
+                        FileTreeView(
+                            files = diffFiles,
+                            onViewFile = onViewFile,
+                            workspaceRoot = workspaceRoot
+                        )
+                    }
                 }
             }
         }
