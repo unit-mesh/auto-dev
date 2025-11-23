@@ -7,6 +7,7 @@ import cc.unitmesh.devins.document.DocumentMetadata
 import cc.unitmesh.devins.document.ParseStatus
 import cc.unitmesh.devins.document.TOCItem
 import cc.unitmesh.devins.document.Entity
+import cc.unitmesh.devins.document.docql.executeDocQL
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -85,8 +86,13 @@ fun DocumentReaderPage(
                                         onTocSelected = { /* TODO: Jump to anchor */ },
                                         onEntitySelected = { /* TODO: Show entity details */ },
                                         onDocQLQuery = { query ->
-                                            // TODO: Implement DocQL query execution
-                                            cc.unitmesh.devins.document.docql.DocQLResult.Empty
+                                            // 执行 DocQL 查询
+                                            val document = viewModel.selectedDocument
+                                            if (document != null) {
+                                                executeDocQL(query, document, null)
+                                            } else {
+                                                cc.unitmesh.devins.document.docql.DocQLResult.Error("没有选中的文档")
+                                            }
                                         }
                                     )
                                 }

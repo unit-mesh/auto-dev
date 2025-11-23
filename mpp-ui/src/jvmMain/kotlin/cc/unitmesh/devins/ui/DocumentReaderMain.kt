@@ -11,6 +11,7 @@ import androidx.compose.ui.window.rememberWindowState
 import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.agent.VerticalResizableSplitPane
 import cc.unitmesh.devins.ui.compose.document.*
+import cc.unitmesh.devins.document.docql.executeDocQL
 import cc.unitmesh.devins.workspace.DefaultWorkspace
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -118,8 +119,13 @@ private fun DocumentReaderPageWithViewModel(
                                         onTocSelected = { /* TODO: Jump to anchor */ },
                                         onEntitySelected = { /* TODO: Show entity details */ },
                                         onDocQLQuery = { query ->
-                                            // TODO: Implement DocQL query execution
-                                            cc.unitmesh.devins.document.docql.DocQLResult.Empty
+                                            // 执行 DocQL 查询
+                                            val document = viewModel.selectedDocument
+                                            if (document != null) {
+                                                executeDocQL(query, document, null)
+                                            } else {
+                                                cc.unitmesh.devins.document.docql.DocQLResult.Error("没有选中的文档")
+                                            }
                                         }
                                     )
                                 }

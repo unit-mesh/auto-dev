@@ -270,13 +270,14 @@ private fun DocQLResultView(
         HorizontalDivider()
         
         // 显示结果
-        Box(modifier = Modifier.fillMaxSize()) {
-            when (result) {
-                is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
+        when (result) {
+            is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
+                Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "Found ${result.items.size} TOC items",
+                        text = "找到 ${result.items.size} 个目录项",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -287,12 +288,15 @@ private fun DocQLResultView(
                         }
                     }
                 }
-                
-                is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
+            }
+            
+            is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
+                Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "Found ${result.items.size} entities",
+                        text = "找到 ${result.items.size} 个实体",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -303,12 +307,15 @@ private fun DocQLResultView(
                         }
                     }
                 }
-                
-                is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
+            }
+            
+            is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
+                Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "Found ${result.items.size} chunks",
+                        text = "找到 ${result.items.size} 个内容块",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -319,43 +326,49 @@ private fun DocQLResultView(
                         }
                     }
                 }
-                
-                is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> {
-                    EmptyState("No results found")
-                }
-                
-                is cc.unitmesh.devins.document.docql.DocQLResult.Error -> {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Text(
-                            text = "Error: ${result.message}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                }
-                
-                is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
-                    Text(
-                        text = "Found ${result.items.size} code blocks",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            
+            is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> {
+                EmptyState("没有找到匹配的结果")
+            }
+            
+            is cc.unitmesh.devins.document.docql.DocQLResult.Error -> {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
                     )
-                    EmptyState("Code block display not implemented yet")
-                }
-                
-                is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
+                ) {
                     Text(
-                        text = "Found ${result.items.size} tables",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "错误: ${result.message}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp)
                     )
-                    EmptyState("Table display not implemented yet")
+                }
+            }
+            
+            is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "找到 ${result.items.size} 个代码块",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    EmptyState("代码块显示功能尚未实现")
+                }
+            }
+            
+            is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "找到 ${result.items.size} 个表格",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    EmptyState("表格显示功能尚未实现")
                 }
             }
         }
