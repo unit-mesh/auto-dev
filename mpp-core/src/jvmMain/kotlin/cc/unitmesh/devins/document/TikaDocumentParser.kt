@@ -216,16 +216,4 @@ class TikaDocumentParser : DocumentParserService {
     }
 }
 
-/**
- * Initialize Tika parser registration for JVM platform
- * This function is called automatically when the JVM platform is initialized
- */
-fun initializeTikaParser() {
-    // Register Tika parser for PDF, DOCX, and PLAIN_TEXT formats
-    DocumentParserFactory.registerParser(DocumentFormatType.PDF) { TikaDocumentParser() }
-    DocumentParserFactory.registerParser(DocumentFormatType.DOCX) { TikaDocumentParser() }
-    DocumentParserFactory.registerParser(DocumentFormatType.PLAIN_TEXT) { TikaDocumentParser() }
-    
-    logger.info { "Tika parser registered for formats: PDF, DOCX, PLAIN_TEXT" }
-}
 

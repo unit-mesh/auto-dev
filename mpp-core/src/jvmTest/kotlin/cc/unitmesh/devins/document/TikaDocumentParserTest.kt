@@ -22,8 +22,8 @@ class TikaDocumentParserTest {
     @Before
     fun setup() {
         parser = TikaDocumentParser()
-        // Initialize Tika parser registration
-        initializeTikaParser()
+        // Initialize platform parsers (auto-registers Tika on JVM)
+        DocumentRegistry.initializePlatformParsers()
     }
     
     @Test
