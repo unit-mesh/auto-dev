@@ -17,7 +17,7 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 /**
  * 结构化信息面板 - 中间下部
- * 包含 TOC (目录)、Graph (关系图)、Entities (实体列表)
+ * 包含 TOC (目录)、Graph (关系图)、Entities (实体列表) 和 DocQL 查询
  */
 @Composable
 fun StructuredInfoPane(
@@ -25,10 +25,12 @@ fun StructuredInfoPane(
     entities: List<Entity>,
     onTocSelected: (TOCItem) -> Unit,
     onEntitySelected: (Entity) -> Unit,
+    onDocQLQuery: suspend (String) -> cc.unitmesh.devins.document.docql.DocQLResult,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("目录", "关系图", "实体")
+    var docqlResult by remember { mutableStateOf<cc.unitmesh.devins.document.docql.DocQLResult?>(null) }
+    val tabs = listOf("目录", "关系图", "实体", "DocQL")
 
     Column(modifier = modifier.fillMaxSize()) {
         // Tab 栏
@@ -53,6 +55,16 @@ fun StructuredInfoPane(
                 0 -> TocView(toc, onTocSelected)
                 1 -> GraphView()
                 2 -> EntityListView(entities, onEntitySelected)
+                3 -> DocQLView(
+                    onQueryExecute = { query ->
+                        val result = onDocQLQuery(query)
+                        docqlResult = result
+                        result
+                    },
+                    result = docqlResult,
+                    onTocSelected = onTocSelected,
+                    onEntitySelected = onEntitySelected
+                )
             }
         }
     }
@@ -195,6 +207,169 @@ private fun EntityItemRow(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DocQLView(
+    onQueryExecute: suspend (String) -> cc.unitmesh.devins.document.docql.DocQLResult,
+    result: cc.unitmesh.devins.document.docql.DocQLResult?,
+    onTocSelected: (TOCItem) -> Unit,
+    onEntitySelected: (Entity) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Search bar
+        DocQLSearchBar(
+            onQueryExecute = onQueryExecute,
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        // Results
+        if (result != null) {
+            when (result) {
+                is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
+                    Text(
+                        text = "Found ${result.items.size} TOC items",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(result.items) { item ->
+                            TocItemRow(item, onTocSelected)
+                        }
+                    }
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
+                    Text(
+                        text = "Found ${result.items.size} entities",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(result.items) { entity ->
+                            EntityItemRow(entity, onEntitySelected)
+                        }
+                    }
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
+                    Text(
+                        text = "Found ${result.items.size} chunks",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(result.items) { chunk ->
+                            ChunkItemCard(chunk)
+                        }
+                    }
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> {
+                    EmptyState("No results found")
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Error -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = "Error: ${result.message}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
+                    Text(
+                        text = "Found ${result.items.size} code blocks",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    EmptyState("Code block display not implemented yet")
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
+                    Text(
+                        text = "Found ${result.items.size} tables",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    EmptyState("Table display not implemented yet")
+                }
+            }
+        } else {
+            EmptyState("Enter a DocQL query to search the document")
+        }
+    }
+}
+
+@Composable
+private fun ChunkItemCard(chunk: cc.unitmesh.devins.document.DocumentChunk) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                chunk.chapterTitle?.let { title ->
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            
+            Text(
+                text = chunk.content,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 5,
+                overflow = TextOverflow.Ellipsis
+            )
+            
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (chunk.page != null) {
+                    Text(
+                        text = "Page ${chunk.page}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                if (chunk.startLine != null) {
+                    Text(
+                        text = "Line ${chunk.startLine}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }

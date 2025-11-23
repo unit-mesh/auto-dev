@@ -1,0 +1,118 @@
+package cc.unitmesh.devins.document.docql
+
+/**
+ * DocQL - A JSONPath-like query language for documents
+ * 
+ * Syntax Examples:
+ * - $.toc[*]                     // All TOC items
+ * - $.toc[0]                     // First TOC item
+ * - $.toc[?(@.level==1)]         // TOC items with level 1
+ * - $.toc[?(@.title~="架构")]     // TOC items where title contains "架构"
+ * - $.entities[*]                // All entities
+ * - $.entities[?(@.type=="Term")] // Term entities
+ * - $.content.heading("架构")     // Content with heading matching "架构"
+ * - $.content.chapter("1.2")     // Chapter 1.2 content
+ * - $.content.h1("介绍")         // H1 heading matching "介绍"
+ * - $.content.h2("设计")         // H2 heading matching "设计"
+ * - $.content.code[*]            // All code blocks
+ * - $.content.table[*]           // All tables
+ * - $.content.grep("关键词")      // Grep search for "关键词"
+ */
+
+/**
+ * DocQL AST (Abstract Syntax Tree)
+ */
+sealed class DocQLNode {
+    /**
+     * Root node: $
+     */
+    object Root : DocQLNode()
+    
+    /**
+     * Property access: .property
+     */
+    data class Property(val name: String) : DocQLNode()
+    
+    /**
+     * Array access: [n] or [*]
+     */
+    sealed class ArrayAccess : DocQLNode() {
+        data class Index(val index: Int) : ArrayAccess()
+        object All : ArrayAccess()
+        data class Filter(val condition: FilterCondition) : ArrayAccess()
+    }
+    
+    /**
+     * Function call: .function("arg")
+     */
+    data class FunctionCall(val name: String, val argument: String) : DocQLNode()
+}
+
+/**
+ * Filter conditions for array filtering
+ */
+sealed class FilterCondition {
+    /**
+     * Equality: @.property == "value"
+     */
+    data class Equals(val property: String, val value: String) : FilterCondition()
+    
+    /**
+     * Contains: @.property ~= "value"
+     */
+    data class Contains(val property: String, val value: String) : FilterCondition()
+    
+    /**
+     * Greater than: @.property > value
+     */
+    data class GreaterThan(val property: String, val value: Int) : FilterCondition()
+    
+    /**
+     * Less than: @.property < value
+     */
+    data class LessThan(val property: String, val value: Int) : FilterCondition()
+}
+
+/**
+ * Parsed DocQL query
+ */
+data class DocQLQuery(
+    val nodes: List<DocQLNode>
+) {
+    override fun toString(): String {
+        return nodes.joinToString("") { node ->
+            when (node) {
+                is DocQLNode.Root -> "$"
+                is DocQLNode.Property -> ".${node.name}"
+                is DocQLNode.ArrayAccess.All -> "[*]"
+                is DocQLNode.ArrayAccess.Index -> "[${node.index}]"
+                is DocQLNode.ArrayAccess.Filter -> "[?(${node.condition})]"
+                is DocQLNode.FunctionCall -> ".${node.name}(\"${node.argument}\")"
+            }
+        }
+    }
+}
+
+/**
+ * Token types for lexical analysis
+ */
+sealed class DocQLToken {
+    object Root : DocQLToken()                              // $
+    object Dot : DocQLToken()                               // .
+    object LeftBracket : DocQLToken()                       // [
+    object RightBracket : DocQLToken()                      // ]
+    object LeftParen : DocQLToken()                         // (
+    object RightParen : DocQLToken()                        // )
+    object Star : DocQLToken()                              // *
+    object Question : DocQLToken()                          // ?
+    object At : DocQLToken()                                // @
+    object Equals : DocQLToken()                            // ==
+    object Contains : DocQLToken()                          // ~=
+    object GreaterThan : DocQLToken()                       // >
+    object LessThan : DocQLToken()                          // <
+    data class Identifier(val value: String) : DocQLToken() // property names, function names
+    data class StringLiteral(val value: String) : DocQLToken() // "string"
+    data class Number(val value: Int) : DocQLToken()        // 123
+    object EOF : DocQLToken()
+}
+

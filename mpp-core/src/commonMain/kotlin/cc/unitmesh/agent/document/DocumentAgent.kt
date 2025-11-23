@@ -154,17 +154,33 @@ class DocumentAgent(
 
     /**
      * Parse command from LLM response
+     * Supports both legacy commands (heading, chapter) and new DocQL syntax
      */
     private fun parseCommand(response: String): Command? {
-        val headingRegex = Regex("""heading\("([^"]+)"\)""")
-        val chapterRegex = Regex("""chapter\("([^"]+)"\)""")
+        // Try DocQL syntax first (e.g., $.content.heading("keyword"))
+        val docqlRegex = Regex("""\$\.content\.(heading|chapter|h[1-6]|grep)\("([^"]+)"\)""")
+        docqlRegex.find(response)?.let {
+            val function = it.groupValues[1]
+            val argument = it.groupValues[2]
+            return Command.DocQL("\$.content.$function(\"$argument\")")
+        }
 
+        // Legacy syntax: heading("keyword")
+        val headingRegex = Regex("""heading\("([^"]+)"\)""")
         headingRegex.find(response)?.let {
             return Command.Heading(it.groupValues[1])
         }
 
+        // Legacy syntax: chapter("id")
+        val chapterRegex = Regex("""chapter\("([^"]+)"\)""")
         chapterRegex.find(response)?.let {
             return Command.Chapter(it.groupValues[1])
+        }
+
+        // Full DocQL query (e.g., $.toc[?(@.level==1)])
+        val fullDocqlRegex = Regex("""\$\.[a-zA-Z]+(\[[^\]]*\]|\.[\w()"\[\]@=~<>?]+)*""")
+        fullDocqlRegex.find(response)?.let {
+            return Command.DocQL(it.value)
         }
 
         return null
@@ -197,6 +213,75 @@ class DocumentAgent(
                 renderer.renderToolResult("chapter", true, result, result)
                 result
             }
+            is Command.DocQL -> {
+                renderer.renderToolCall("docql", "query=\"${command.query}\"")
+                val docqlResult = executeDocQLQuery(command.query)
+                renderer.renderToolResult("docql", docqlResult.first, docqlResult.second, docqlResult.second)
+                docqlResult.second
+            }
+        }
+    }
+    
+    /**
+     * Execute DocQL query
+     */
+    private suspend fun executeDocQLQuery(query: String): Pair<Boolean, String> {
+        return try {
+            val result = cc.unitmesh.devins.document.docql.executeDocQL(
+                queryString = query,
+                documentFile = null, // Will be provided by parser service context
+                parserService = parserService
+            )
+            
+            when (result) {
+                is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
+                    val formatted = result.items.joinToString("\n") { toc ->
+                        "${"  ".repeat(toc.level - 1)}${toc.level}. ${toc.title}"
+                    }
+                    Pair(true, "Found ${result.items.size} TOC items:\n$formatted")
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
+                    val formatted = result.items.joinToString("\n") { entity ->
+                        when (entity) {
+                            is cc.unitmesh.devins.document.Entity.Term -> 
+                                "Term: ${entity.name} - ${entity.definition}"
+                            is cc.unitmesh.devins.document.Entity.API -> 
+                                "API: ${entity.name} - ${entity.signature}"
+                            is cc.unitmesh.devins.document.Entity.ClassEntity -> 
+                                "Class: ${entity.name} (${entity.packageName})"
+                            is cc.unitmesh.devins.document.Entity.FunctionEntity -> 
+                                "Function: ${entity.name} - ${entity.signature}"
+                        }
+                    }
+                    Pair(true, "Found ${result.items.size} entities:\n$formatted")
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
+                    val formatted = result.items.joinToString("\n---\n") { chunk ->
+                        "Chapter: ${chunk.chapterTitle}\nContent:\n${chunk.content}"
+                    }
+                    Pair(true, formatted)
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> {
+                    Pair(true, "No results found for query: $query")
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Error -> {
+                    Pair(false, "Error executing DocQL query: ${result.message}")
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
+                    Pair(true, "Found ${result.items.size} code blocks (not yet implemented)")
+                }
+                
+                is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
+                    Pair(true, "Found ${result.items.size} tables (not yet implemented)")
+                }
+            }
+        } catch (e: Exception) {
+            Pair(false, "Error executing DocQL query: ${e.message}")
         }
     }
 
@@ -206,6 +291,7 @@ class DocumentAgent(
     sealed class Command {
         data class Heading(val keyword: String) : Command()
         data class Chapter(val id: String) : Command()
+        data class DocQL(val query: String) : Command()
     }
 
     companion object {
@@ -214,26 +300,53 @@ class DocumentAgent(
          */
         private fun buildSystemPrompt(): String {
             return """
-                You are a helpful document assistant.
-                You can query the document using the following commands:
+                You are a helpful document assistant with advanced query capabilities.
+                You can query the document using DocQL (Document Query Language), a JSONPath-like syntax.
                 
-                HeadingQL:
-                heading("keyword")
-                -> Returns the most matching section title and its content.
+                DocQL Syntax Examples:
                 
-                ChapterQL:
-                chapter("chapter_id")
-                -> Returns the content of the chapter and its sub-chapters.
+                1. TOC (Table of Contents) Queries:
+                   $.toc[*]                      - All TOC items
+                   $.toc[0]                      - First TOC item
+                   $.toc[?(@.level==1)]          - Level 1 headings
+                   $.toc[?(@.title~="架构")]     - TOC items with "架构" in title
+                   $.toc[?(@.level>1)]           - TOC items with level > 1
+                
+                2. Entity Queries:
+                   $.entities[*]                 - All entities
+                   $.entities[?(@.type=="API")]  - API entities
+                   $.entities[?(@.name~="User")] - Entities with "User" in name
+                
+                3. Content Queries:
+                   $.content.heading("keyword")  - Sections with "keyword" in heading
+                   $.content.chapter("1.2")      - Chapter 1.2 content
+                   $.content.h1("Introduction")  - H1 with "Introduction"
+                   $.content.h2("Design")        - H2 with "Design"
+                   $.content.grep("keyword")     - Full-text search
+                
+                4. Operators:
+                   ==  (equals)
+                   ~=  (contains)
+                   >   (greater than)
+                   <   (less than)
+                
+                Legacy Commands (still supported):
+                - heading("keyword") - Search by heading
+                - chapter("chapter_id") - Get chapter content
                 
                 When a user asks a question:
                 1. Analyze the topic.
-                2. If you need information from the document, output the command on a separate line.
+                2. If you need information from the document, output the DocQL query on a separate line.
                 3. If you have enough information, answer the user directly.
                 
                 Example:
-                User: "What is the architecture?"
-                Assistant: I will search for architecture.
-                heading("architecture")
+                User: "What are the level 1 headings?"
+                Assistant: I will search for level 1 headings.
+                $.toc[?(@.level==1)]
+                
+                User: "Show me the system architecture section"
+                Assistant: I will search for the architecture section.
+                $.content.heading("architecture")
             """.trimIndent()
         }
     }
