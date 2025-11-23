@@ -110,9 +110,6 @@ class DocumentReaderViewModel(
      * Load a single document file from absolute path
      */
     fun loadDocumentFromPath(absolutePath: String) {
-        println("=== Loading Document from Path ===")
-        println("Path: $absolutePath")
-
         scope.launch {
             try {
                 isLoading = true
@@ -121,15 +118,12 @@ class DocumentReaderViewModel(
                 val fileSystem = workspace.fileSystem
                 val name = absolutePath.substringAfterLast('/')
 
-                // Read file content using fileSystem
                 val content = fileSystem.readFile(absolutePath)
                     ?: run {
                         error = "Failed to read file: $absolutePath"
                         println("ERROR: Failed to read file: $absolutePath")
                         return@launch
                     }
-
-                println("File read successfully, size: ${content.length} bytes")
 
                 val doc = DocumentFile(
                     name = name,
@@ -146,11 +140,8 @@ class DocumentReaderViewModel(
                 )
 
                 documents = listOf(doc)
-                println("Document added to list")
 
                 selectDocument(doc)
-                println("Document selected and parsing initiated")
-
             } catch (e: Exception) {
                 error = "Failed to load document: ${e.message}"
                 println("ERROR: Failed to load document: ${e.message}")
@@ -164,36 +155,43 @@ class DocumentReaderViewModel(
     fun selectDocument(doc: DocumentFile) {
         selectedDocument = doc
         scope.launch {
-            isLoading = true
-            error = null
+            try {
+                isLoading = true
+                error = null
 
-            // Read file content
-            val fileSystem = workspace.fileSystem
-            val content = fileSystem.readFile(doc.path)
-                ?: run {
-                    error = "Failed to read file content"
-                    return@launch
-                }
+                val fileSystem = workspace.fileSystem
+                val content = fileSystem.readFile(doc.path)
+                    ?: run {
+                        error = "Failed to read file content"
+                        documentContent = null // Clear stale content
+                        return@launch
+                    }
 
-            documentContent = content
+                documentContent = content
 
-            val parsedDoc = parserService.parse(doc, content)
-            if (parsedDoc is DocumentFile && parsedDoc.toc.isNotEmpty()) {
-                println("ViewModel: Received parsed TOC with ${parsedDoc.toc.size} items")
-                val updatedDoc = doc.copy(
-                    toc = parsedDoc.toc,
-                    metadata = doc.metadata.copy(
-                        chapterCount = parsedDoc.toc.size,
-                        parseStatus = ParseStatus.PARSED
+                val parsedDoc = parserService.parse(doc, content)
+                if (parsedDoc is DocumentFile && parsedDoc.toc.isNotEmpty()) {
+                    println("ViewModel: Received parsed TOC with ${parsedDoc.toc.size} items")
+                    val updatedDoc = doc.copy(
+                        toc = parsedDoc.toc,
+                        metadata = doc.metadata.copy(
+                            chapterCount = parsedDoc.toc.size,
+                            parseStatus = ParseStatus.PARSED
+                        )
                     )
-                )
-                selectedDocument = updatedDoc
+                    selectedDocument = updatedDoc
 
-                // Update in documents list
-                documents = documents.map { if (it.path == doc.path) updatedDoc else it }
+                    // Update in documents list
+                    documents = documents.map { if (it.path == doc.path) updatedDoc else it }
+                }
+            } catch (e: Exception) {
+                error = "Failed to process document: ${e.message}"
+                documentContent = null // Clear stale content
+                println("ERROR: Failed to process document: ${e.message}")
+                e.printStackTrace()
+            } finally {
+                isLoading = false
             }
-
-            isLoading = false
         }
     }
 
@@ -224,7 +222,7 @@ class DocumentReaderViewModel(
         renderer.forceStop()
         isGenerating = false
     }
-    
+
     /**
      * Get the parser service for DocQL queries
      */

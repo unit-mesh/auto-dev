@@ -33,21 +33,31 @@ fun StructuredInfoPane(
     var showDocQLResult by remember { mutableStateOf(false) }
     val tabs = listOf("目录", "关系图", "实体")
 
+    // Reset DocQL result when document changes (toc or entities change)
+    LaunchedEffect(toc, entities) {
+        docqlResult = null
+        showDocQLResult = false
+        selectedTabIndex = 0
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
         // DocQL 搜索栏（置顶）
-        DocQLSearchBar(
-            onQueryExecute = { query ->
-                val result = onDocQLQuery(query)
-                docqlResult = result
-                showDocQLResult = true
-                result
-            },
-            autoExecute = true,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)
-        )
-        
+        // Use key() to force recreation when document changes, clearing TextFieldValue state
+        key(toc, entities) {
+            DocQLSearchBar(
+                onQueryExecute = { query ->
+                    val result = onDocQLQuery(query)
+                    docqlResult = result
+                    showDocQLResult = true
+                    result
+                },
+                autoExecute = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)
+            )
+        }
+
         HorizontalDivider()
-        
+
         // Tab 栏
         TabRow(
             selectedTabIndex = selectedTabIndex,
@@ -58,7 +68,7 @@ fun StructuredInfoPane(
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTabIndex == index,
-                    onClick = { 
+                    onClick = {
                         selectedTabIndex = index
                         showDocQLResult = false
                     },
@@ -132,7 +142,7 @@ private fun TocItemRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            
+
             if (item.page != null) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -142,7 +152,7 @@ private fun TocItemRow(
                 )
             }
         }
-        
+
         // 递归显示子项
         item.children.forEach { child ->
             TocItemRow(child, onTocSelected)
@@ -204,21 +214,21 @@ private fun EntityItemRow(
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
-            
+
             Column {
                 Text(
                     text = entity.name,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium
                 )
-                
+
                 val desc = when (entity) {
                     is Entity.Term -> entity.definition
                     is Entity.API -> entity.signature
                     is Entity.ClassEntity -> "Class"
                     is Entity.FunctionEntity -> entity.signature
                 }
-                
+
                 if (!desc.isNullOrEmpty()) {
                     Text(
                         text = desc,
@@ -258,7 +268,7 @@ private fun DocQLResultView(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            
+
             IconButton(onClick = onClose) {
                 Icon(
                     imageVector = AutoDevComposeIcons.Close,
@@ -266,9 +276,9 @@ private fun DocQLResultView(
                 )
             }
         }
-        
+
         HorizontalDivider()
-        
+
         // 显示结果
         when (result) {
             is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
@@ -289,7 +299,7 @@ private fun DocQLResultView(
                     }
                 }
             }
-            
+
             is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
@@ -308,7 +318,7 @@ private fun DocQLResultView(
                     }
                 }
             }
-            
+
             is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
@@ -327,11 +337,11 @@ private fun DocQLResultView(
                     }
                 }
             }
-            
+
             is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> {
                 EmptyState("没有找到匹配的结果")
             }
-            
+
             is cc.unitmesh.devins.document.docql.DocQLResult.Error -> {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -347,7 +357,7 @@ private fun DocQLResultView(
                     )
                 }
             }
-            
+
             is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
@@ -359,7 +369,7 @@ private fun DocQLResultView(
                     EmptyState("代码块显示功能尚未实现")
                 }
             }
-            
+
             is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
@@ -394,7 +404,7 @@ private fun ChunkItemCard(chunk: cc.unitmesh.devins.document.DocumentChunk) {
                         fontWeight = FontWeight.Bold
                     )
                 }
-            
+
             Text(
                 text = chunk.content,
                 style = MaterialTheme.typography.bodySmall,
@@ -402,11 +412,11 @@ private fun ChunkItemCard(chunk: cc.unitmesh.devins.document.DocumentChunk) {
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis
             )
-            
+
             // Position metadata display
             chunk.position?.let { position ->
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                
+
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -418,15 +428,18 @@ private fun ChunkItemCard(chunk: cc.unitmesh.devins.document.DocumentChunk) {
                             modifier = Modifier.size(14.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
-                        
+
                         Text(
                             text = position.toLocationString(),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
                         )
                     }
-                    
+
                     // Format type badge
                     Surface(
                         shape = MaterialTheme.shapes.small,
@@ -452,7 +465,7 @@ private fun ChunkItemCard(chunk: cc.unitmesh.devins.document.DocumentChunk) {
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    
+
                     if (chunk.startLine != null) {
                         val lineText = if (chunk.endLine != null && chunk.endLine != chunk.startLine) {
                             "Lines ${chunk.startLine}-${chunk.endLine}"

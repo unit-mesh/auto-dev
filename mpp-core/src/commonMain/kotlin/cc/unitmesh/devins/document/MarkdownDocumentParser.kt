@@ -185,10 +185,12 @@ class MarkdownDocumentParser : DocumentParserService {
         val lines = content.lines()
         
         headings.forEachIndexed { index, heading ->
-            // Calculate line numbers
-            val startLine = content.substring(0, heading.endOffset).count { it == '\n' }
+            // Calculate line numbers with bounds checking
+            val safeEndOffset = minOf(heading.endOffset, content.length)
+            val startLine = content.substring(0, safeEndOffset).count { it == '\n' }
             val endLine = if (index < headings.size - 1) {
-                content.substring(0, headings[index + 1].startOffset).count { it == '\n' } - 1
+                val safeNextStartOffset = minOf(headings[index + 1].startOffset, content.length)
+                content.substring(0, safeNextStartOffset).count { it == '\n' } - 1
             } else {
                 lines.size - 1
             }
@@ -201,16 +203,16 @@ class MarkdownDocumentParser : DocumentParserService {
             
             val anchor = "#${heading.text.lowercase().replace(Regex("[^a-z0-9]+"), "-")}"
             
-            // Create position metadata
+            // Create position metadata with bounds checking
             val positionMetadata = PositionMetadata(
                 documentPath = documentPath,
                 formatType = DocumentFormatType.MARKDOWN,
                 position = DocumentPosition.LineRange(
                     startLine = startLine,
                     endLine = endLine,
-                    startOffset = heading.startOffset,
+                    startOffset = minOf(heading.startOffset, content.length),
                     endOffset = if (index < headings.size - 1) {
-                        headings[index + 1].startOffset - 1
+                        minOf(headings[index + 1].startOffset - 1, content.length)
                     } else {
                         content.length
                     }

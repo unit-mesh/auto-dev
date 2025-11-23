@@ -44,7 +44,7 @@ fun DocumentReaderTestApp() {
         // Create workspace with project root so fileSystem can read files
         DefaultWorkspace.create(
             name = "Test Workspace",
-            rootPath = "/Volumes/source/ai/autocrud"
+            rootPath = "/Volumes/source/ai/autocrud/docs"
         )
     }
 
@@ -54,7 +54,7 @@ fun DocumentReaderTestApp() {
 
     // Load test file when the composable is first created
     LaunchedEffect(Unit) {
-        viewModel.loadDocumentFromPath("/Volumes/source/ai/autocrud/README.md")
+        viewModel.loadDocumentFromPath("/Volumes/source/ai/autocrud/docs/README.md")
     }
 
     DocumentReaderPageWithViewModel(

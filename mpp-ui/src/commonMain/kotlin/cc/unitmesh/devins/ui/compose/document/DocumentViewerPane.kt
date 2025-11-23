@@ -5,13 +5,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.document.DocumentFile
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
-import cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer
 
 /**
  * 文档查看面板 - 中间上部
@@ -39,7 +39,7 @@ fun DocumentViewerPane(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             // 文档元数据栏
             Row(
                 modifier = Modifier
@@ -52,7 +52,7 @@ fun DocumentViewerPane(
                     icon = AutoDevComposeIcons.Schedule,
                     text = "Last modified: ${formatDate(document.metadata.lastModified)}"
                 )
-                
+
                 if (document.metadata.fileSize > 0) {
                     MetadataItem(
                         icon = AutoDevComposeIcons.Description,
@@ -60,9 +60,9 @@ fun DocumentViewerPane(
                     )
                 }
             }
-            
+
             HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
-            
+
             // 文档内容
             Box(modifier = Modifier.fillMaxSize()) {
                 if (isLoading) {
@@ -70,13 +70,18 @@ fun DocumentViewerPane(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else if (content != null) {
+                    val sanitizedContent = remember(content) {
+                        content.trim()
+                    }
+
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
-                        MarkdownSketchRenderer.RenderMarkdown(
-                            markdown = content,
+                        Text(
+                            text = sanitizedContent,
+                            style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -141,7 +146,7 @@ private fun MetadataItem(
 // 简单的日期格式化 (实际项目中应使用 DateTimeFormatter)
 private fun formatDate(timestamp: Long): String {
     // 这里只是一个简单的占位符，实际应该用 kotlinx-datetime
-    return "Recently" 
+    return "Recently"
 }
 
 // 文件大小格式化

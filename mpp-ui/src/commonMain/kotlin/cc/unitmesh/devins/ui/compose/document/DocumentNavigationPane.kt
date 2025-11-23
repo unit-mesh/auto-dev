@@ -258,7 +258,6 @@ private fun DocumentFileItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 文档类型图标
         Icon(
             imageVector = AutoDevComposeIcons.Article,
             contentDescription = null,
@@ -266,7 +265,6 @@ private fun DocumentFileItem(
             tint = MaterialTheme.colorScheme.secondary
         )
 
-        // 文档名称
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = file.name,
@@ -275,7 +273,6 @@ private fun DocumentFileItem(
                 overflow = TextOverflow.Ellipsis
             )
 
-            // 元数据信息
             if (file.metadata.chapterCount > 0 || file.metadata.totalPages != null) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -299,7 +296,6 @@ private fun DocumentFileItem(
             }
         }
 
-        // 解析状态指示器
         when (file.metadata.parseStatus) {
             ParseStatus.PARSED -> {
                 Icon(
@@ -335,21 +331,21 @@ private fun DocumentFileItem(
 fun buildDocumentTreeStructure(documents: List<DocumentFile>): List<DocumentTreeNode> {
     val rootNodes = mutableListOf<DocumentTreeNode>()
     val folderMap = mutableMapOf<String, DocumentFolder>()
-    
+
     documents.forEach { doc ->
         val parts = doc.path.split("/")
         var currentPath = ""
         var parentFolder: DocumentFolder? = null
-        
+
         for (i in 0 until parts.size - 1) {
             val part = parts[i]
             currentPath = if (currentPath.isEmpty()) part else "$currentPath/$part"
-            
+
             var folder = folderMap[currentPath]
             if (folder == null) {
                 folder = DocumentFolder(part, currentPath)
                 folderMap[currentPath] = folder
-                
+
                 if (parentFolder != null) {
                     parentFolder.children.add(folder)
                 } else {
@@ -358,17 +354,17 @@ fun buildDocumentTreeStructure(documents: List<DocumentFile>): List<DocumentTree
             }
             parentFolder = folder
         }
-        
+
         if (parentFolder != null) {
             parentFolder.children.add(doc)
         } else {
             rootNodes.add(doc)
         }
     }
-    
+
     // Post-process counts
     rootNodes.forEach { updateFileCount(it) }
-    
+
     return rootNodes
 }
 
