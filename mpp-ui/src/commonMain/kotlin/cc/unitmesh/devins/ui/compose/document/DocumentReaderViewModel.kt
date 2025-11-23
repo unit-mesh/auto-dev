@@ -224,4 +224,9 @@ class DocumentReaderViewModel(
         renderer.forceStop()
         isGenerating = false
     }
+    
+    /**
+     * Get the parser service for DocQL queries
+     */
+    fun getParserService(): DocumentParserService = parserService
 }

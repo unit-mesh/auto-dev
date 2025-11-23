@@ -132,7 +132,107 @@ data class ChapterReference(
 )
 
 /**
- * 文档分块（用于向量化和语义搜索）
+ * Document format types for position tracking
+ */
+enum class DocumentFormatType {
+    MARKDOWN,
+    PDF,
+    DOCX,
+    PLAIN_TEXT
+}
+
+/**
+ * Abstract position in a document
+ * Supports multiple document formats (Markdown, PDF, DOCX, etc.)
+ */
+sealed class DocumentPosition {
+    /**
+     * Line-based position for text documents (Markdown, code, plain text)
+     */
+    data class LineRange(
+        val startLine: Int,
+        val endLine: Int,
+        val startOffset: Int? = null,  // Character offset in document
+        val endOffset: Int? = null     // Character offset in document
+    ) : DocumentPosition() {
+        /**
+         * Check if this position contains a given line number
+         */
+        fun contains(lineNumber: Int): Boolean {
+            return lineNumber in startLine..endLine
+        }
+        
+        /**
+         * Check if this position overlaps with another LineRange
+         */
+        fun overlaps(other: LineRange): Boolean {
+            return startLine <= other.endLine && endLine >= other.startLine
+        }
+    }
+    
+    /**
+     * Page-based position for paginated documents (PDF)
+     */
+    data class PageRange(
+        val startPage: Int,
+        val endPage: Int
+    ) : DocumentPosition()
+    
+    /**
+     * Section-based position for structured documents (DOCX)
+     */
+    data class SectionRange(
+        val sectionId: String,
+        val paragraphIndex: Int? = null
+    ) : DocumentPosition()
+}
+
+/**
+ * Position metadata for document chunks
+ * Provides rich context for source attribution in Knowledge Base
+ */
+data class PositionMetadata(
+    val documentPath: String,
+    val formatType: DocumentFormatType,
+    val position: DocumentPosition
+) {
+    /**
+     * Format position as a human-readable location string
+     * Examples:
+     * - "/path/to/doc.md:10-15" for line range
+     * - "/path/to/doc.md:10" for single line
+     * - "/path/to/doc.pdf:page 5-7" for page range
+     */
+    fun toLocationString(): String {
+        return when (position) {
+            is DocumentPosition.LineRange -> {
+                if (position.startLine == position.endLine) {
+                    "$documentPath:${position.startLine}"
+                } else {
+                    "$documentPath:${position.startLine}-${position.endLine}"
+                }
+            }
+            is DocumentPosition.PageRange -> {
+                if (position.startPage == position.endPage) {
+                    "$documentPath:page ${position.startPage}"
+                } else {
+                    "$documentPath:page ${position.startPage}-${position.endPage}"
+                }
+            }
+            is DocumentPosition.SectionRange -> {
+                if (position.paragraphIndex != null) {
+                    "$documentPath:${position.sectionId}[${position.paragraphIndex}]"
+                } else {
+                    "$documentPath:${position.sectionId}"
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Document chunks (for vectorization and semantic search)
+ * Now includes position metadata for source attribution
  */
 data class DocumentChunk(
     val documentPath: String,
@@ -141,5 +241,7 @@ data class DocumentChunk(
     val anchor: String,
     val page: Int? = null,
     val startLine: Int? = null,
-    val endLine: Int? = null
+    val endLine: Int? = null,
+    val position: PositionMetadata? = null  // New: rich position metadata
+
 )

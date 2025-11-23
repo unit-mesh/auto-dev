@@ -122,7 +122,7 @@ private fun DocumentReaderPageWithViewModel(
                                             // 执行 DocQL 查询
                                             val document = viewModel.selectedDocument
                                             if (document != null) {
-                                                executeDocQL(query, document, null)
+                                                executeDocQL(query, document, viewModel.getParserService())
                                             } else {
                                                 cc.unitmesh.devins.document.docql.DocQLResult.Error("没有选中的文档")
                                             }

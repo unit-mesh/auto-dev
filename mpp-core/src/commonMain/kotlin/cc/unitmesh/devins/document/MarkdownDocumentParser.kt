@@ -172,6 +172,7 @@ class MarkdownDocumentParser : DocumentParserService {
 
     /**
      * Build document chunks with content between headings
+     * Includes position metadata for source attribution
      */
     private fun buildDocumentChunks(
         headings: List<HeadingInfo>, 
@@ -200,13 +201,30 @@ class MarkdownDocumentParser : DocumentParserService {
             
             val anchor = "#${heading.text.lowercase().replace(Regex("[^a-z0-9]+"), "-")}"
             
+            // Create position metadata
+            val positionMetadata = PositionMetadata(
+                documentPath = documentPath,
+                formatType = DocumentFormatType.MARKDOWN,
+                position = DocumentPosition.LineRange(
+                    startLine = startLine,
+                    endLine = endLine,
+                    startOffset = heading.startOffset,
+                    endOffset = if (index < headings.size - 1) {
+                        headings[index + 1].startOffset - 1
+                    } else {
+                        content.length
+                    }
+                )
+            )
+            
             chunks.add(DocumentChunk(
                 documentPath = documentPath,
                 chapterTitle = heading.text,
                 content = chunkContent,
                 anchor = anchor,
                 startLine = startLine,
-                endLine = endLine
+                endLine = endLine,
+                position = positionMetadata
             ))
         }
         

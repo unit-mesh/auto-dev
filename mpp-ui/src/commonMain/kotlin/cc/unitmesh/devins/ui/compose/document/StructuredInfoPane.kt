@@ -391,7 +391,7 @@ private fun ChunkItemCard(chunk: cc.unitmesh.devins.document.DocumentChunk) {
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Bold
                     )
                 }
             
@@ -403,23 +403,68 @@ private fun ChunkItemCard(chunk: cc.unitmesh.devins.document.DocumentChunk) {
                 overflow = TextOverflow.Ellipsis
             )
             
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (chunk.page != null) {
-                    Text(
-                        text = "Page ${chunk.page}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+            // Position metadata display
+            chunk.position?.let { position ->
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 
-                if (chunk.startLine != null) {
-                    Text(
-                        text = "Line ${chunk.startLine}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.FolderOpen,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        Text(
+                            text = position.toLocationString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    
+                    // Format type badge
+                    Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            text = position.formatType.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            } ?: run {
+                // Fallback to legacy fields if position metadata not available
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (chunk.page != null) {
+                        Text(
+                            text = "Page ${chunk.page}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    if (chunk.startLine != null) {
+                        val lineText = if (chunk.endLine != null && chunk.endLine != chunk.startLine) {
+                            "Lines ${chunk.startLine}-${chunk.endLine}"
+                        } else {
+                            "Line ${chunk.startLine}"
+                        }
+                        Text(
+                            text = lineText,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
