@@ -13,15 +13,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 class DocumentReaderViewModel(
-    private val workspace: Workspace
+    private val workspace: Workspace,
+    private val documentsPath: String? = null // Optional: specific documents directory
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     
     // Services
-    private val parserService: DocumentParserService = SimpleMarkdownParser()
-    // TODO: Load config properly
+    private val parserService: DocumentParserService = MarkdownDocumentParser()
     private val llmService = KoogLLMService(ModelConfig.default())
     val renderer = ComposeRenderer()
     
@@ -42,29 +43,155 @@ class DocumentReaderViewModel(
         
     var isGenerating by mutableStateOf(false)
         private set
+    
+    var error by mutableStateOf<String?>(null)
+        private set
 
     init {
         loadDocuments()
     }
     
+    /**
+     * Load documents from workspace or specified path
+     */
     private fun loadDocuments() {
-        // TODO: Load real documents from workspace
-        // For now, use dummy data
-        documents = createDummyDocuments()
+        scope.launch {
+            try {
+                isLoading = true
+                error = null
+                
+                val fileSystem = workspace.fileSystem
+                val rootPath = workspace.rootPath
+                
+                if (rootPath == null) {
+                    error = "No workspace root path configured"
+                    return@launch
+                }
+                
+                // Search for markdown files
+                val searchPath = documentsPath ?: rootPath
+                val markdownFiles = fileSystem.searchFiles("*.md", maxDepth = 5, maxResults = 100)
+                
+                documents = markdownFiles.mapNotNull { relativePath ->
+                    val fullPath = fileSystem.resolvePath(relativePath)
+                    val name = relativePath.substringAfterLast('/')
+                    
+                    try {
+                        // Get file metadata
+                        val content = fileSystem.readFile(relativePath)
+                        val fileSize = content?.length?.toLong() ?: 0L
+                        
+                        DocumentFile(
+                            name = name,
+                            path = relativePath,
+                            metadata = DocumentMetadata(
+                                totalPages = null,
+                                chapterCount = 0, // Will be updated after parsing
+                                parseStatus = ParseStatus.NOT_PARSED,
+                                lastModified = Clock.System.now().toEpochMilliseconds(),
+                                fileSize = fileSize,
+                                language = "markdown",
+                                mimeType = "text/markdown"
+                            )
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                
+            } catch (e: Exception) {
+                error = "Failed to load documents: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+    
+    /**
+     * Load a single document file from absolute path
+     */
+    fun loadDocumentFromPath(absolutePath: String) {
+        scope.launch {
+            try {
+                isLoading = true
+                error = null
+                
+                val fileSystem = workspace.fileSystem
+                val name = absolutePath.substringAfterLast('/')
+                
+                // Read file content using fileSystem
+                val content = fileSystem.readFile(absolutePath)
+                    ?: run {
+                    error = "Failed to read file: $absolutePath"
+                    return@launch
+                }
+                
+                val doc = DocumentFile(
+                    name = name,
+                    path = absolutePath,
+                    metadata = DocumentMetadata(
+                        totalPages = null,
+                        chapterCount = 0,
+                        parseStatus = ParseStatus.NOT_PARSED,
+                        lastModified = Clock.System.now().toEpochMilliseconds(),
+                        fileSize = content.length.toLong(),
+                        language = "markdown",
+                        mimeType = "text/markdown"
+                    )
+                )
+                
+                documents = listOf(doc)
+                selectDocument(doc)
+                
+            } catch (e: Exception) {
+                error = "Failed to load document: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
     }
     
     fun selectDocument(doc: DocumentFile) {
         selectedDocument = doc
         scope.launch {
-            isLoading = true
-            // TODO: Load real content
-            // For now, mock content
-            documentContent = "# ${doc.name}\n\nContent of ${doc.name}..."
-            
-            // Parse document to build index for agent
-            parserService.parse(doc, documentContent ?: "")
-            
-            isLoading = false
+            try {
+                isLoading = true
+                error = null
+                
+                // Read file content
+                val fileSystem = workspace.fileSystem
+                val content = fileSystem.readFile(doc.path)
+                    ?: run {
+                    error = "Failed to read file content"
+                    return@launch
+                }
+                
+                documentContent = content
+                
+                // Parse document to build index for agent
+                val parsedDoc = parserService.parse(doc, content)
+                
+                // Update document with parsed TOC if available
+                if (parsedDoc is DocumentFile && parsedDoc.toc.isNotEmpty()) {
+                    val updatedDoc = doc.copy(
+                        toc = parsedDoc.toc,
+                        metadata = doc.metadata.copy(
+                            chapterCount = parsedDoc.toc.size,
+                            parseStatus = ParseStatus.PARSED
+                        )
+                    )
+                    selectedDocument = updatedDoc
+                    
+                    // Update in documents list
+                    documents = documents.map { if (it.path == doc.path) updatedDoc else it }
+                }
+                
+            } catch (e: Exception) {
+                error = "Failed to parse document: ${e.message}"
+                e.printStackTrace()
+            } finally {
+                isLoading = false
+            }
         }
     }
     
@@ -84,6 +211,7 @@ class DocumentReaderViewModel(
                 }
             } catch (e: Exception) {
                 renderer.renderError("Error: ${e.message}")
+                e.printStackTrace()
             } finally {
                 isGenerating = false
             }
@@ -91,19 +219,7 @@ class DocumentReaderViewModel(
     }
     
     fun stopGeneration() {
-        // Implement stop logic
         renderer.forceStop()
         isGenerating = false
-    }
-
-    // --- Dummy Data Generators ---
-
-    private fun createDummyDocuments(): List<DocumentFile> {
-        val meta = DocumentMetadata(10, 5, ParseStatus.PARSED, 1678888888000L, 10240, "Markdown", "text/markdown")
-        return listOf(
-            DocumentFile("README.md", "README.md", meta),
-            DocumentFile("Architecture.md", "docs/Architecture.md", meta),
-            DocumentFile("API.md", "docs/API.md", meta)
-        )
     }
 }

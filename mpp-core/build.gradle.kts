@@ -125,6 +125,9 @@ kotlin {
                 // kotlinx-io for cross-platform file system operations
                 implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.8.0")
 
+                // JetBrains Markdown parser for document parsing
+                implementation("org.jetbrains:markdown:0.7.3")
+
                 // Ktor HTTP Client for web fetching (core only in common)
                 implementation("io.ktor:ktor-client-core:3.2.2")
 
