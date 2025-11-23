@@ -6,6 +6,9 @@ import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
 import org.intellij.markdown.parser.MarkdownParser
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Real Markdown parser using JetBrains Markdown library
@@ -20,6 +23,9 @@ class MarkdownDocumentParser : DocumentParserService {
     override fun getDocumentContent(): String? = currentContent
 
     override suspend fun parse(file: DocumentFile, content: String): DocumentTreeNode {
+        logger.info { "=== Starting Markdown Parse ===" }
+        logger.info { "File: ${file.path}, Size: ${content.length} bytes" }
+        
         currentContent = content
         
         // Parse Markdown using JetBrains Markdown library
@@ -28,17 +34,35 @@ class MarkdownDocumentParser : DocumentParserService {
         
         // Extract headings and build TOC
         val headings = extractHeadings(parsedTree, content)
+        logger.info { "Extracted ${headings.size} headings" }
+        headings.forEachIndexed { index, heading ->
+            logger.debug { "  [$index] Level ${heading.level}: ${heading.text}" }
+        }
         
         // Build hierarchical TOC
         currentToc = buildHierarchicalTOC(headings)
+        logger.info { "Built TOC with ${currentToc.size} root items" }
         
         // Build document chunks for each heading
         currentChunks = buildDocumentChunks(headings, content, file.path)
+        logger.info { "Created ${currentChunks.size} document chunks" }
         
         // Build chapter ID mapping for fast ChapterQL lookup
         chapterIdToChunk = buildChapterIdMapping(headings, currentChunks)
+        logger.info { "Mapped ${chapterIdToChunk.size} chapter IDs" }
+        chapterIdToChunk.forEach { (id, chunk) ->
+            logger.debug { "  Chapter $id -> ${chunk.chapterTitle}" }
+        }
         
-        return file
+        logger.info { "=== Parse Complete ===" }
+        
+        return file.copy(
+            toc = currentToc,
+            metadata = file.metadata.copy(
+                parseStatus = ParseStatus.PARSED,
+                chapterCount = currentToc.size
+            )
+        )
     }
 
     override suspend fun queryHeading(keyword: String): List<DocumentChunk> {
@@ -88,18 +112,19 @@ class MarkdownDocumentParser : DocumentParserService {
                     else -> 1
                 }
                 
-                // Extract heading text (skip the ATX markers)
-                val text = node.children
-                    .filter { it.type != MarkdownTokenTypes.ATX_HEADER && it.type != MarkdownTokenTypes.ATX_CONTENT }
-                    .joinToString("") { it.getTextInNode(content).toString() }
-                    .trim()
+                // Extract heading text - get the text content directly from the node
+                val fullText = node.getTextInNode(content).toString()
+                // Remove leading # characters and trim
+                val text = fullText.replace(Regex("^#+\\s*"), "").replace(Regex("\\s*#+$"), "").trim()
                 
-                headings.add(HeadingInfo(
-                    level = level,
-                    text = text,
-                    startOffset = node.startOffset,
-                    endOffset = node.endOffset
-                ))
+                if (text.isNotEmpty()) {
+                    headings.add(HeadingInfo(
+                        level = level,
+                        text = text,
+                        startOffset = node.startOffset,
+                        endOffset = node.endOffset
+                    ))
+                }
             }
             
             node.children.forEach { traverse(it) }
