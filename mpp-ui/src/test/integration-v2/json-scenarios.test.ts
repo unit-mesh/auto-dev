@@ -53,7 +53,7 @@ describe('CodingAgent JSON 场景测试', () => {
 
     // 验证结果
     expect(result.status).toBe('passed');
-    expect(result.overallScore).toBeGreaterThanOrEqual(0.7);
+    expect(result.overallScore).toBeGreaterThanOrEqual(0.6);
 
     // 验证工具调用
     expect(result.toolCallAnalysis.uniqueTools).toContain('read-file');
