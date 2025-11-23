@@ -283,6 +283,7 @@ private fun AgentTypeTab(
                 imageVector = when (type) {
                     AgentType.REMOTE -> AutoDevComposeIcons.Cloud
                     AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
+                    AgentType.DOCUMENT_READER -> AutoDevComposeIcons.Article
                     AgentType.CODING -> AutoDevComposeIcons.Code
                     AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
                 },

@@ -26,6 +26,11 @@ enum class AgentType {
     CODE_REVIEW,
 
     /**
+     * Document reader mode - AI-native document reading and analysis
+     */
+    DOCUMENT_READER,
+
+    /**
      * Remote agent mode - connects to remote mpp-server for distributed execution
      */
     REMOTE;
@@ -34,6 +39,7 @@ enum class AgentType {
         LOCAL_CHAT -> "Chat"
         CODING -> "Agentic"
         CODE_REVIEW -> "Review"
+        DOCUMENT_READER -> "Documents"
         REMOTE -> "Remote"
     }
 
@@ -54,6 +60,7 @@ enum class AgentType {
                 "local" -> LOCAL_CHAT
                 "coding" -> CODING
                 "codereview" -> CODE_REVIEW
+                "documentreader", "documents" -> DOCUMENT_READER
                 else -> LOCAL_CHAT
             }
         }

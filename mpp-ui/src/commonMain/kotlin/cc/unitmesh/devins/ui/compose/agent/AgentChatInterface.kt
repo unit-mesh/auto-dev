@@ -193,8 +193,10 @@ fun AgentChatInterface(
                                         .padding(horizontal = 12.dp, vertical = 8.dp)
                             )
                         }
-                        AgentType.CODE_REVIEW -> {
-
+                        AgentType.CODE_REVIEW,
+                        AgentType.DOCUMENT_READER -> {
+                            // CODE_REVIEW and DOCUMENT_READER have their own full-page interfaces
+                            // They should not reach here - handled by AgentInterfaceRouter
                         }
                         AgentType.REMOTE -> {
                             // REMOTE type should not reach here - it's handled by AgentInterfaceRouter
