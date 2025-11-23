@@ -47,6 +47,9 @@ data class CustomRequest(
                         when {
                             streamValue.booleanOrNull != null -> streamValue.boolean
                             streamValue.isString -> streamValue.content.toBoolean()
+                            // Handle numeric values: 0 = false, 1 (or any other number) = true
+                            streamValue.intOrNull != null -> streamValue.int != 0
+                            streamValue.longOrNull != null -> streamValue.long != 0L
                             else -> true
                         }
                     }
