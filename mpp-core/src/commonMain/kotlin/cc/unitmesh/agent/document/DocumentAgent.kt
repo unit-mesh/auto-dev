@@ -374,6 +374,17 @@ class DocumentAgent(
             User: “Show me everything.”  
             Action: Query all documents using `$.toc[*]`
 
+            ## fallback when search fails
+            
+            If direct search (filenames, TOC, headings, chunks) yields no clear match, switch to **(StepChain GraphRAG Strategy)**:
+
+            1. **Decompose** the query into small sub-questions (multi-hop).  
+            2. **Iteratively retrieve**: use each step’s result to form the next query (A → B → C).  
+            3. **Maintain a short reasoning chain**: record step → result → next-step query.  
+            4. Continue until a relevant document/answer emerges, then synthesize.
+
+            Use StepChain only when normal search is insufficient—never guess.
+
             ---
 
             ## Best Practices
