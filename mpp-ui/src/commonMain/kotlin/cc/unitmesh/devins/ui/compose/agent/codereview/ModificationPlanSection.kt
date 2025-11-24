@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,7 +59,14 @@ data class PlanItem(
     val title: String,
     val priority: String,
     val steps: List<PlanStep> = emptyList()
-)
+) {
+    /**
+     * Get all file paths from this plan item
+     */
+    fun getAllFilePaths(): List<String> {
+        return steps.flatMap { it.fileLinks.map { link -> link.filePath } }.distinct()
+    }
+}
 
 /**
  * Parses Plan format markdown into structured plan items
@@ -171,11 +179,21 @@ object PlanParser {
 
 /**
  * Displays AI-generated modification plan with modern Plan-like UI
+ * 
+ * @param planOutput The plan markdown output
+ * @param isActive Whether the plan is being generated
+ * @param selectedItems Set of selected plan item numbers (for multi-select)
+ * @param onItemSelectionChanged Callback when selection changes
+ * @param onFileLinkClick Callback when a file link is clicked
+ * @param modifier Modifier for the component
  */
 @Composable
 fun ModificationPlanSection(
     planOutput: String,
     isActive: Boolean,
+    selectedItems: Set<Int> = emptySet(),
+    onItemSelectionChanged: (Set<Int>) -> Unit = {},
+    onFileLinkClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(true) }
@@ -247,6 +265,20 @@ fun ModificationPlanSection(
                         }
                     }
 
+                    if (selectedItems.isNotEmpty()) {
+                        Surface(
+                            color = AutoDevColors.Blue.c600,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = "${selectedItems.size} 已选",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
                     if (isActive) {
                         Surface(
                             color = AutoDevColors.Indigo.c600,
@@ -287,7 +319,19 @@ fun ModificationPlanSection(
                     } else {
                         // Show structured plan items
                         planItems.forEach { item ->
-                            PlanItemCard(item = item)
+                            PlanItemCard(
+                                item = item,
+                                isSelected = selectedItems.contains(item.number),
+                                onSelectionChanged = { selected ->
+                                    val newSelection = if (selected) {
+                                        selectedItems + item.number
+                                    } else {
+                                        selectedItems - item.number
+                                    }
+                                    onItemSelectionChanged(newSelection)
+                                },
+                                onFileLinkClick = onFileLinkClick
+                            )
                         }
                     }
                 }
@@ -297,34 +341,76 @@ fun ModificationPlanSection(
 }
 
 @Composable
-private fun PlanItemCard(item: PlanItem) {
+private fun PlanItemCard(
+    item: PlanItem,
+    isSelected: Boolean,
+    onSelectionChanged: (Boolean) -> Unit,
+    onFileLinkClick: ((String) -> Unit)? = null
+) {
     var isExpanded by remember { mutableStateOf(true) }
     
+    // Determine priority color and adjust priority based on issue category
+    // Code style and formatting issues should always be MEDIUM priority
+    val isCodeStyleIssue = item.title.contains("代码风格") || item.title.contains("Code Style") ||
+                          item.title.contains("字符串格式化") || item.title.contains("String Formatting") ||
+                          item.title.contains("格式化") || item.title.contains("Formatting") ||
+                          item.title.contains("风格") || item.title.contains("Style")
+    
+    val adjustedPriority = if (isCodeStyleIssue && 
+                               (item.priority.contains("关键") || item.priority.contains("CRITICAL") ||
+                                item.priority.contains("高") || item.priority.contains("HIGH"))) {
+        "MEDIUM"
+    } else {
+        item.priority
+    }
+    
     val priorityColor = when {
-        item.priority.contains("关键") || item.priority.contains("CRITICAL") -> AutoDevColors.Red.c600
-        item.priority.contains("高") || item.priority.contains("HIGH") -> AutoDevColors.Amber.c600
-        item.priority.contains("中等") || item.priority.contains("MEDIUM") -> AutoDevColors.Blue.c600
+        adjustedPriority.contains("关键") || adjustedPriority.contains("CRITICAL") -> AutoDevColors.Red.c600
+        adjustedPriority.contains("高") || adjustedPriority.contains("HIGH") -> AutoDevColors.Amber.c600
+        adjustedPriority.contains("中等") || adjustedPriority.contains("MEDIUM") -> AutoDevColors.Blue.c600
+        adjustedPriority.contains("低") || adjustedPriority.contains("LOW") -> MaterialTheme.colorScheme.onSurfaceVariant
         else -> MaterialTheme.colorScheme.primary
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (isSelected) {
+                    Modifier.border(
+                        width = 2.dp,
+                        color = AutoDevColors.Blue.c600,
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                } else {
+                    Modifier
+                }
+            ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = when {
+                isSelected -> AutoDevColors.Blue.c600.copy(alpha = 0.05f)
+                else -> priorityColor.copy(alpha = 0.03f) // Subtle background tint based on priority
+            }
         ),
         shape = RoundedCornerShape(6.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            if (isSelected) {
+                AutoDevColors.Blue.c600.copy(alpha = 0.3f)
+            } else {
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            }
         )
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Item header
+            // Item header with checkbox
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded }
+                    .clickable { 
+                        onSelectionChanged(!isSelected)
+                    }
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -334,11 +420,27 @@ private fun PlanItemCard(item: PlanItem) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {
+                    // Checkbox for selection
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = { 
+                            onSelectionChanged(it)
+                        },
+                        modifier = Modifier.size(20.dp)
+                    )
+                    
+                    // Expand/collapse icon
                     Icon(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable(
+                                onClick = { isExpanded = !isExpanded },
+                                indication = null,
+                                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                            )
                     )
                     
                     Text(
@@ -354,7 +456,7 @@ private fun PlanItemCard(item: PlanItem) {
                     shape = RoundedCornerShape(4.dp)
                 ) {
                     Text(
-                        text = item.priority,
+                        text = adjustedPriority,
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
                         color = priorityColor,
@@ -377,7 +479,10 @@ private fun PlanItemCard(item: PlanItem) {
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     item.steps.forEach { step ->
-                        PlanStepItem(step = step)
+                        PlanStepItem(
+                            step = step,
+                            onFileLinkClick = onFileLinkClick
+                        )
                     }
                 }
             }
@@ -386,7 +491,10 @@ private fun PlanItemCard(item: PlanItem) {
 }
 
 @Composable
-private fun PlanStepItem(step: PlanStep) {
+private fun PlanStepItem(
+    step: PlanStep,
+    onFileLinkClick: ((String) -> Unit)? = null
+) {
     val statusIcon = when (step.status) {
         StepStatus.COMPLETED -> AutoDevComposeIcons.CheckCircle
         StepStatus.FAILED -> AutoDevComposeIcons.Error
@@ -419,7 +527,7 @@ private fun PlanStepItem(step: PlanStep) {
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // Step text with file links
+            // Step text with clickable file links
             val annotatedText = buildAnnotatedString {
                 if (step.fileLinks.isEmpty()) {
                     // No file links, just append the text
@@ -439,16 +547,28 @@ private fun PlanStepItem(step: PlanStep) {
                                 append(remainingText.substring(lastIndex, linkIndex))
                             }
                             
-                            // Add link with style
-                            withStyle(
+                            // Add link with style and clickable annotation
+                            val start = length
+                            append(link.displayText)
+                            val end = length
+                            
+                            // Add string annotation for file link
+                            addStringAnnotation(
+                                tag = "FILE_LINK",
+                                annotation = link.filePath,
+                                start = start,
+                                end = end
+                            )
+                            
+                            addStyle(
                                 style = SpanStyle(
                                     color = MaterialTheme.colorScheme.primary,
                                     textDecoration = TextDecoration.Underline,
                                     fontWeight = FontWeight.Medium
-                                )
-                            ) {
-                                append(link.displayText)
-                            }
+                                ),
+                                start = start,
+                                end = end
+                            )
                             
                             lastIndex = linkIndex + linkPattern.length
                         }
@@ -461,11 +581,22 @@ private fun PlanStepItem(step: PlanStep) {
                 }
             }
             
-            Text(
+            // Use ClickableText for file link support (deprecated but still works)
+            androidx.compose.foundation.text.ClickableText(
                 text = annotatedText,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.2
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.2
+                ),
+                onClick = { offset ->
+                    annotatedText.getStringAnnotations(
+                        tag = "FILE_LINK",
+                        start = offset,
+                        end = offset
+                    ).firstOrNull()?.let { annotation ->
+                        onFileLinkClick?.invoke(annotation.item)
+                    }
+                }
             )
         }
     }

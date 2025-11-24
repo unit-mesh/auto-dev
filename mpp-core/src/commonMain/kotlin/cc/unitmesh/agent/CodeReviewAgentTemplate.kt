@@ -698,6 +698,8 @@ Generate a **specific** modification plan with **maximum 5 items**, using the Pl
 
 Your output MUST be inside a code block with language `plan`:
 
+**CRITICAL: Each item MUST be on a separate line. Do NOT put multiple items on the same line.**
+
 ```plan
 1. {Issue Category} - {Priority}
     - [ ] Fix [FileName](filepath) line {X}: {Specific issue}
@@ -714,7 +716,10 @@ Your output MUST be inside a code block with language `plan`:
 
 1. **Maximum 5 items** - Focus on most critical errors (prioritize ERROR > WARNING)
 2. **Must be specific** - Each item must mention specific file names using [FileName](filepath) format
-3. **Priority**: CRITICAL (ERROR) | HIGH (WARNING) | MEDIUM (Code quality)
+3. **Priority**: 
+   - CRITICAL: Compilation errors, runtime crashes, security vulnerabilities
+   - HIGH: Warnings that may cause issues, performance problems
+   - MEDIUM: Code style, formatting, minor code quality issues (code style and formatting should ALWAYS be MEDIUM, never CRITICAL or HIGH)
 4. **Actionable** - "How" should provide concrete methods, not vague statements
 5. **Based on Lint** - Must reference actual errors from Lint results above
 6. **Use Plan format** - Ordered list for main items, unordered list for details
@@ -753,11 +758,13 @@ Your output MUST be inside a code block with language `plan`:
 **STRICT RULES**:
 - ✅ Maximum 5 items (no more)
 - ✅ Use `plan` code block format
+- ✅ **ONE item per line** - Each numbered item (1., 2., 3., etc.) MUST be on its own line
 - ✅ Each item must include [FileName](filepath) with actual file path
 - ✅ Must reference actual errors from Lint results
 - ✅ Priority based on ERROR/WARNING severity
 - ✅ Merge multiple similar errors in same file into one item
 - ✅ Use nested structure: ordered list for items, unordered list for details
+- ❌ DO NOT put multiple items on the same line
 - ❌ DO NOT use vague descriptions (like "optimize code")
 - ❌ DO NOT provide code examples in the plan
 - ❌ DO NOT use tools
@@ -785,6 +792,8 @@ ${'$'}{lintResults}
 
 你的输出必须在 `plan` 代码块中：
 
+**重要：每个项目必须在单独的行。不要在同一行放置多个项目。**
+
 ```plan
 1. {问题类别} - {优先级}
     - [ ] 修复 [文件名](文件路径) 第 {X} 行: {具体问题}
@@ -801,7 +810,10 @@ ${'$'}{lintResults}
 
 1. **最多 5 项** - 聚焦最关键的错误（优先 ERROR > WARNING）
 2. **必须具体** - 每项必须使用 [文件名](文件路径) 格式提到具体文件
-3. **优先级**: 关键（ERROR）| 高（WARNING）| 中等（代码质量）
+3. **优先级**: 
+   - 关键：编译错误、运行时崩溃、安全漏洞
+   - 高：可能导致问题的警告、性能问题
+   - 中等：代码风格、格式化、轻微代码质量问题（代码风格和格式化应该始终是中等，永远不要是关键或高）
 4. **可执行** - "如何修复"要提供具体方法，不要泛泛而谈
 5. **基于 Lint** - 必须引用上面 Lint 结果中的实际错误
 6. **使用 Plan 格式** - 有序列表用于主要项，无序列表用于详情
@@ -840,11 +852,13 @@ ${'$'}{lintResults}
 **严格规则**:
 - ✅ 最多 5 项（不能更多）
 - ✅ 使用 `plan` 代码块格式
+- ✅ **每项单独一行** - 每个编号项（1.、2.、3. 等）必须在自己的行上
 - ✅ 每项必须包含 [文件名](文件路径) 和实际文件路径
 - ✅ 必须引用 Lint 结果中的实际错误
 - ✅ 优先级根据 ERROR/WARNING 严重性确定
 - ✅ 合并同一文件的多个相似错误到一项
 - ✅ 使用嵌套结构：有序列表用于项，无序列表用于详情
+- ❌ 不要在同一行放置多个项目
 - ❌ 不要使用泛泛的描述（如"优化代码"）
 - ❌ 不要在计划中提供代码示例
 - ❌ 不要使用工具

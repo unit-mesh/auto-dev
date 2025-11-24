@@ -1186,6 +1186,46 @@ open class CodeReviewViewModel(
     }
 
     /**
+     * Store selected plan items for use in fix generation
+     */
+    private var selectedPlanItems: Set<Int> = emptySet()
+
+    fun setSelectedPlanItems(items: Set<Int>) {
+        selectedPlanItems = items
+        AutoDevLogger.debug("CodeReviewViewModel") {
+            "Selected plan items: ${items.joinToString()}"
+        }
+    }
+
+    /**
+     * Get selected plan items
+     */
+    fun getSelectedPlanItems(): Set<Int> = selectedPlanItems
+
+    /**
+     * Open file in editor/viewer
+     * Similar to MarkdownTableRenderer.kt implementation
+     */
+    fun openFile(filePath: String) {
+        // Get workspace root path and construct absolute path
+        val root = workspace.rootPath
+        val absolutePath = if (root != null && !filePath.startsWith("/")) {
+            "$root/$filePath"
+        } else {
+            filePath
+        }
+        
+        AutoDevLogger.info("CodeReviewViewModel") {
+            "Opening file: $absolutePath (original: $filePath, root: $root)"
+        }
+        
+        // Emit notification event to open file
+        scope.launch {
+            _notificationEvent.emit("open_file" to absolutePath)
+        }
+    }
+
+    /**
      * Load issue information for a specific commit asynchronously
      *
      * @param commitIndex Index of the commit in commitHistory

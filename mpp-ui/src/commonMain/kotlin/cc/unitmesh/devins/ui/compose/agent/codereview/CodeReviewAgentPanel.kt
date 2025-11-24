@@ -258,9 +258,21 @@ fun CodeReviewAgentPanel(
 
                     if (state.aiProgress.planOutput.isNotEmpty()) {
                         item {
+                            var selectedPlanItems by remember { mutableStateOf<Set<Int>>(emptySet()) }
+                            
                             ModificationPlanSection(
                                 planOutput = state.aiProgress.planOutput,
-                                isActive = state.aiProgress.stage == AnalysisStage.GENERATING_PLAN
+                                isActive = state.aiProgress.stage == AnalysisStage.GENERATING_PLAN,
+                                selectedItems = selectedPlanItems,
+                                onItemSelectionChanged = { newSelection ->
+                                    selectedPlanItems = newSelection
+                                    // Store selected items in viewModel for later use in fix generation
+                                    viewModel.setSelectedPlanItems(newSelection)
+                                },
+                                onFileLinkClick = { filePath ->
+                                    // Open file in editor/viewer
+                                    viewModel.openFile(filePath)
+                                }
                             )
                         }
                     }
