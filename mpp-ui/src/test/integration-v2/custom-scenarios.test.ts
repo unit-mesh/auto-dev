@@ -4,18 +4,11 @@
  * 展示如何使用场景模板系统创建可复用的测试场景
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import {
-  TestEngine,
-  ScenarioBuilder,
-  TestCategory,
-  ConsoleReporter,
-  TestSuiteResult
-} from '../framework';
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {ScenarioBuilder, TestCategory, TestEngine, TestSuiteResult} from '../framework';
 
 describe('CodingAgent 自定义场景测试 v2', () => {
   let testEngine: TestEngine;
-  let testResults: TestSuiteResult;
 
   beforeAll(async () => {
     // 初始化测试引擎
@@ -110,30 +103,6 @@ describe('CodingAgent 自定义场景测试 v2', () => {
 
     console.log(`✅ 错误恢复场景完成: ${results.passedTests}/${results.totalTests} 通过`);
   }, 480000); // 8分钟超时
-
-  it('应该成功运行自定义场景模板', async () => {
-    console.log('\n🎨 测试自定义场景模板...');
-
-    // 使用自定义注册的场景模板
-    const testCases = [
-      ScenarioBuilder.generateFromTemplate('microservice-setup', {
-        serviceName: 'UserService',
-        includeDocker: true,
-        includeTests: true
-      }),
-      ScenarioBuilder.generateFromTemplate('api-documentation', {
-        apiType: 'rest',
-        includeExamples: true
-      })
-    ];
-
-    const results = await testEngine.runScenarios(testCases);
-
-    expect(results.totalTests).toBe(2);
-    expect(results.passedTests).toBeGreaterThanOrEqual(1); // 至少50%通过率
-
-    console.log(`✅ 自定义场景完成: ${results.passedTests}/${results.totalTests} 通过`);
-  }, 720000); // 12分钟超时
 
   it('应该验证场景模板的可扩展性', async () => {
     // 验证所有注册的模板

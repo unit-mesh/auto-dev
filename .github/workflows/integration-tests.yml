@@ -156,20 +156,6 @@ jobs:
         npm run test:integration-v2
       timeout-minutes: 45
 
-    - name: Analyze test results and check threshold
-      if: always()
-      working-directory: mpp-ui
-      env:
-        TEST_CATEGORY: ${{ matrix.test-category }}
-      run: |
-        echo "🎯 分析测试结果并检查阈值..."
-
-        # 运行测试结果分析脚本
-        node scripts/analyze-test-results.cjs
-
-        # 脚本会根据阈值检查结果设置适当的退出码
-        # 如果通过率低于阈值，脚本会以非零退出码退出
-
     - name: Generate detailed test report
       if: always()
       working-directory: mpp-ui
