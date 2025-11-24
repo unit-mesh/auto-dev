@@ -290,18 +290,14 @@ fun CodeReviewAgentPanel(
                         }
                     }
 
-                    if (state.aiProgress.fixOutput.isNotEmpty()) {
+                    if (state.aiProgress.fixRenderer != null || state.aiProgress.stage == AnalysisStage.GENERATING_FIX) {
                         item {
-                            SuggestedFixesSection(
-                                fixOutput = state.aiProgress.fixOutput,
-                                isActive = state.aiProgress.stage == AnalysisStage.GENERATING_FIX,
-                                onApplyFix = { diffPatch ->
-                                    viewModel.applyDiffPatch(diffPatch)
-                                },
-                                onRejectFix = { diffPatch ->
-                                    viewModel.rejectDiffPatch(diffPatch)
-                                },
-                                workspace = viewModel.workspace
+                            SuggestedFixesAgentView(
+                                fixRenderer = state.aiProgress.fixRenderer,
+                                isGenerating = state.aiProgress.stage == AnalysisStage.GENERATING_FIX,
+                                onOpenFileViewer = { filePath ->
+                                    viewModel.openFile(filePath)
+                                }
                             )
                         }
                     }

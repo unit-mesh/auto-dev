@@ -60,7 +60,9 @@ data class AIAnalysisProgress(
     val reviewFindings: List<cc.unitmesh.agent.ReviewFinding> = emptyList(),
     val planOutput: String = "",
     val fixOutput: String = "",
-    val userFeedback: String = ""
+    val userFeedback: String = "",
+    // ComposeRenderer for streaming fix generation (null if not started)
+    val fixRenderer: cc.unitmesh.devins.ui.compose.agent.ComposeRenderer? = null
 )
 
 /**
