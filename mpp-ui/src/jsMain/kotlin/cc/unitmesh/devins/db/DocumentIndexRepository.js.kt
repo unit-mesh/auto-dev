@@ -56,8 +56,8 @@ actual class DocumentIndexDatabaseRepository(private val database: DevInsDatabas
         actual fun getInstance(): DocumentIndexRepository {
             if (instance != null) return instance!!
             
-            val driverFactory = DatabaseDriverFactory()
-            val database = createDatabase(driverFactory)
+                    val driverFactory = DatabaseDriverFactory()
+                    val database = createDatabase(driverFactory)
             instance = DocumentIndexDatabaseRepository(database)
             return instance!!
         }

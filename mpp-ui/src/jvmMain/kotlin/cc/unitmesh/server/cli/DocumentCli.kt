@@ -5,6 +5,9 @@ import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.document.DocumentAgent
 import cc.unitmesh.agent.document.DocumentTask
 import cc.unitmesh.agent.render.CodingAgentRenderer
+import cc.unitmesh.devins.db.DocumentIndexDatabaseRepository
+import cc.unitmesh.devins.db.DocumentIndexRecord
+import cc.unitmesh.devins.db.DocumentIndexRepository
 import cc.unitmesh.devins.document.*
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.LLMProviderType
@@ -14,6 +17,7 @@ import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import java.io.File
+import java.security.MessageDigest
 
 /**
  * JVM CLI for testing DocumentAgent with PPTX, DOCX, PDF files
@@ -84,32 +88,52 @@ object DocumentCli {
                     return@runBlocking
                 }
                 
-                // Register documents
+                // Initialize DocumentIndexRepository
+                val indexRepository = DocumentIndexDatabaseRepository.getInstance()
+                println("📚 Using document index: ~/.autodev/autodev.db")
+                println()
+                
+                // Register documents with caching
                 println("📝 Registering documents...")
                 var registeredCount = 0
+                var cachedCount = 0
                 val registerStartTime = System.currentTimeMillis()
                 
                 for (doc in documents) {
                     val relativePath = doc.relativeTo(projectDir).path
                     val formatType = DocumentParserFactory.detectFormat(doc.name)
                     
-                    if (registerDocument(doc, relativePath)) {
-                        val typeSymbol = when (formatType) {
-                            DocumentFormatType.MARKDOWN -> "📝"
-                            DocumentFormatType.PDF -> "📕"
-                            DocumentFormatType.DOCX -> "📘"
-                            DocumentFormatType.PLAIN_TEXT -> "📄"
-                            else -> "📄"
+                    val result = registerDocumentWithCache(doc, relativePath, indexRepository)
+                    
+                    val typeSymbol = when (formatType) {
+                        DocumentFormatType.MARKDOWN -> "📝"
+                        DocumentFormatType.PDF -> "📕"
+                        DocumentFormatType.DOCX -> "📘"
+                        DocumentFormatType.PLAIN_TEXT -> "📄"
+                        else -> "📄"
+                    }
+                    
+                    when (result) {
+                        is RegisterResult.Success -> {
+                            println("  $typeSymbol $relativePath")
+                            registeredCount++
                         }
-                        println("  $typeSymbol $relativePath")
-                        registeredCount++
-                    } else {
-                        println("  ✗ $relativePath (no parser)")
+                        is RegisterResult.FromCache -> {
+                            println("  $typeSymbol $relativePath (cached)")
+                            registeredCount++
+                            cachedCount++
+                        }
+                        is RegisterResult.Failed -> {
+                            println("  ✗ $relativePath (${result.reason})")
+                        }
                     }
                 }
                 
                 val registerTime = System.currentTimeMillis() - registerStartTime
                 println("✅ Registered $registeredCount/${documents.size} documents (${registerTime}ms)")
+                if (cachedCount > 0) {
+                    println("   📦 $cachedCount from cache, ${registeredCount - cachedCount} newly parsed")
+                }
                 println()
                 
                 // Show registered documents summary
@@ -269,14 +293,63 @@ object DocumentCli {
     }
     
     /**
-     * Register a document with the DocumentRegistry
+     * Register result types
      */
-    private suspend fun registerDocument(file: File, relativePath: String): Boolean {
+    private sealed class RegisterResult {
+        data class Success(val fromCache: Boolean = false) : RegisterResult()
+        data class FromCache(val record: DocumentIndexRecord) : RegisterResult()
+        data class Failed(val reason: String) : RegisterResult()
+    }
+    
+    /**
+     * Register a document with caching support
+     */
+    private suspend fun registerDocumentWithCache(
+        file: File, 
+        relativePath: String,
+        indexRepository: DocumentIndexRepository
+    ): RegisterResult {
         return try {
             // Get parser for this file type
-            val parser = DocumentParserFactory.createParserForFile(file.name) ?: return false
+            val parser = DocumentParserFactory.createParserForFile(file.name) 
+                ?: return RegisterResult.Failed("no parser")
             
-            // Detect format
+            // Calculate file hash
+            val fileHash = calculateFileHash(file)
+            val lastModified = file.lastModified()
+            
+            // Check cache - if hash matches and content exists, use cached content
+            val cachedRecord = indexRepository.get(relativePath)
+            if (cachedRecord != null && 
+                cachedRecord.hash == fileHash && 
+                cachedRecord.status == "success" &&
+                cachedRecord.content != null) {
+                
+                // File unchanged - restore from cached extracted content
+                // This avoids re-parsing large binary files (PPTX, PDF)
+                val formatType = DocumentParserFactory.detectFormat(file.name) ?: DocumentFormatType.PLAIN_TEXT
+                
+                val metadata = DocumentMetadata(
+                    lastModified = lastModified,
+                    fileSize = file.length(),
+                    formatType = formatType
+                )
+                
+                val documentFile = DocumentFile(
+                    name = file.name,
+                    path = relativePath,
+                    metadata = metadata
+                )
+                
+                // Parse from cached extracted content (not original binary!)
+                val parsedDoc = parser.parse(documentFile, cachedRecord.content)
+                DocumentRegistry.registerDocument(relativePath, parsedDoc, parser)
+                
+                // Return FromCache - file unchanged, restored from DB
+                return RegisterResult.FromCache(cachedRecord)
+            }
+            
+            // Not in cache or outdated, parse fresh
             val formatType = DocumentParserFactory.detectFormat(file.name) ?: DocumentFormatType.PLAIN_TEXT
             
             // Read file content
@@ -286,7 +359,6 @@ object DocumentCli {
                 }
                 else -> {
                     // For binary formats (PDF, DOCX, PPTX), read as bytes and convert to ISO-8859-1
-                    // This is how Tika expects binary data
                     val bytes = file.readBytes()
                     String(bytes, Charsets.ISO_8859_1)
                 }
@@ -294,7 +366,7 @@ object DocumentCli {
             
             // Create DocumentFile
             val metadata = DocumentMetadata(
-                lastModified = file.lastModified(),
+                lastModified = lastModified,
                 fileSize = file.length(),
                 formatType = formatType
             )
@@ -311,11 +383,53 @@ object DocumentCli {
             // Register in registry
             DocumentRegistry.registerDocument(relativePath, parsedDoc, parser)
             
-            true
+            // Save to cache: store extracted text (not original binary)
+            // For PDF/PPTX: Tika extracts ~50KB text from 10MB binary
+            // For Markdown: store original text
+            val extractedContent = parser.getDocumentContent() ?: content
+            
+            val indexRecord = DocumentIndexRecord(
+                path = relativePath,
+                hash = fileHash,
+                lastModified = lastModified,
+                status = "success",
+                content = extractedContent,  // Store extracted text (not binary!)
+                error = null,
+                indexedAt = System.currentTimeMillis()
+            )
+            indexRepository.save(indexRecord)
+            
+            RegisterResult.Success(fromCache = false)
         } catch (e: Exception) {
-            System.err.println("   Failed to register $relativePath: ${e.message}")
-            false
+            // Save error to cache (to avoid re-parsing failed files)
+            try {
+                val fileHash = calculateFileHash(file)
+                val indexRecord = DocumentIndexRecord(
+                    path = relativePath,
+                    hash = fileHash,
+                    lastModified = file.lastModified(),
+                    status = "failed",
+                    content = null,  // No content on failure
+                    error = e.message,
+                    indexedAt = System.currentTimeMillis()
+                )
+                indexRepository.save(indexRecord)
+            } catch (cacheError: Exception) {
+                // Ignore cache errors
+            }
+            
+            RegisterResult.Failed(e.message ?: "unknown error")
         }
+    }
+    
+    /**
+     * Calculate SHA-256 hash of file
+     */
+    private fun calculateFileHash(file: File): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val bytes = file.readBytes()
+        val hashBytes = digest.digest(bytes)
+        return hashBytes.joinToString("") { "%02x".format(it) }
     }
 }
 
@@ -353,6 +467,7 @@ class ConsoleRenderer : CodingAgentRenderer {
     
     override fun renderLLMResponseChunk(chunk: String) {
         print(chunk)
+        System.out.flush()
     }
     
     override fun renderLLMResponseEnd() {

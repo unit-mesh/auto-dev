@@ -63,7 +63,7 @@ class DocumentIndexService(
             return
         }
 
-        try {
+            try {
             val parser = DocumentParserFactory.createParser(format)
             if (parser != null) {
                 val docFile = DocumentFile(
@@ -77,9 +77,11 @@ class DocumentIndexService(
                 )
                 
                 // Parse the document
-                parser.parse(docFile, content)
+                val parsedDoc = parser.parse(docFile, content)
                 
-                // Get the content to store (might be extracted text or original content)
+                // Store extracted text content (not original binary)
+                // For Tika: extracted text from PDF/PPTX
+                // For Markdown: original markdown text
                 val extractedContent = parser.getDocumentContent() ?: content
                 
                 repository.save(DocumentIndexRecord(
@@ -87,7 +89,7 @@ class DocumentIndexService(
                     hash = hash,
                     lastModified = 0,
                     status = "INDEXED",
-                    content = extractedContent,
+                    content = extractedContent,  // Store extracted text (not binary)
                     error = null,
                     indexedAt = Platform.getCurrentTimestamp()
                 ))
