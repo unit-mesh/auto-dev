@@ -3,9 +3,13 @@ package cc.unitmesh.devins.ui.compose.document
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import cc.unitmesh.agent.config.McpToolConfigService
+import cc.unitmesh.agent.document.DocumentAgent
 import cc.unitmesh.devins.document.*
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
+import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.Workspace
+import cc.unitmesh.llm.KoogLLMService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,6 +21,10 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
     private val parserService: DocumentParserService = MarkdownDocumentParser()
     val renderer = ComposeRenderer()
+
+    // LLM and Agent
+    private var llmService: KoogLLMService? = null
+    private var documentAgent: DocumentAgent? = null
 
     // State
     var selectedDocument by mutableStateOf<DocumentFile?>(null)
@@ -39,6 +47,92 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
     init {
         loadDocuments()
+        initializeLLMService()
+    }
+
+    /**
+     * Initialize LLM service and DocumentAgent
+     */
+    private fun initializeLLMService() {
+        scope.launch {
+            try {
+                val configWrapper = ConfigManager.load()
+                val activeConfig = configWrapper.getActiveModelConfig()
+                if (activeConfig != null && activeConfig.isValid()) {
+                    llmService = KoogLLMService.create(activeConfig)
+
+                    // Create DocumentAgent
+                    val toolConfigFile = cc.unitmesh.agent.config.ToolConfigFile.default()
+                    val mcpConfigService = McpToolConfigService(toolConfigFile)
+                    
+                    // Wrap ProjectFileSystem in ToolFileSystem adapter
+                    val toolFileSystem = object : cc.unitmesh.agent.tool.filesystem.ToolFileSystem {
+                        override fun getProjectPath(): String? = workspace.rootPath
+                        
+                        override suspend fun readFile(path: String): String? = workspace.fileSystem.readFile(path)
+                        
+                        override suspend fun writeFile(path: String, content: String, createDirectories: Boolean) {
+                            workspace.fileSystem.writeFile(path, content)
+                        }
+                        
+                        override fun exists(path: String): Boolean {
+                            return runCatching {
+                                kotlinx.coroutines.runBlocking {
+                                    workspace.fileSystem.readFile(path) != null
+                                }
+                            }.getOrDefault(false)
+                        }
+                        
+                        override fun listFiles(path: String, pattern: String?): List<String> {
+                            return runCatching {
+                                kotlinx.coroutines.runBlocking {
+                                    workspace.fileSystem.listFiles(path)
+                                }
+                            }.getOrDefault(emptyList())
+                        }
+                        
+                        override fun resolvePath(relativePath: String): String {
+                            return workspace.rootPath?.let { "$it/$relativePath" } ?: relativePath
+                        }
+                        
+                        override fun getFileInfo(path: String): cc.unitmesh.agent.tool.filesystem.FileInfo? = null
+                        
+                        override fun createDirectory(path: String, createParents: Boolean) {
+                            runCatching<Unit> {
+                                kotlinx.coroutines.runBlocking<Unit> {
+                                    workspace.fileSystem.createDirectory(path)
+                                }
+                            }
+                        }
+                        
+                        override fun delete(path: String, recursive: Boolean) {
+                            runCatching<Unit> {
+                                kotlinx.coroutines.runBlocking<Unit> {
+                                    // ProjectFileSystem doesn't have deleteFile, so we'll skip this
+                                    // workspace.fileSystem.deleteFile(path)
+                                }
+                            }
+                        }
+                    }
+                    
+                    documentAgent = DocumentAgent(
+                        llmService = llmService!!,
+                        parserService = parserService,
+                        renderer = renderer,
+                        fileSystem = toolFileSystem,
+                        shellExecutor = null,
+                        mcpToolConfigService = mcpConfigService,
+                        enableLLMStreaming = true
+                    )
+                    println("DocumentAgent initialized successfully")
+                } else {
+                    println("No valid LLM configuration found")
+                }
+            } catch (e: Exception) {
+                println("Failed to initialize LLM service: ${e.message}")
+                e.printStackTrace()
+            }
+        }
     }
 
     /**
@@ -159,6 +253,16 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                 documentContent = content
 
+                // Register document with DocumentRegistry for DocQL queries
+                try {
+                    val parsedDoc = parserService.parse(doc, content)
+                    DocumentRegistry.registerDocument(doc.path, parsedDoc, parserService)
+                    println("Document registered with DocumentRegistry: ${doc.path}")
+                } catch (e: Exception) {
+                    println("Failed to register document: ${e.message}")
+                    // Continue even if registration fails
+                }
+
                 val parsedDoc = parserService.parse(doc, content)
                 if (parsedDoc is DocumentFile && parsedDoc.toc.isNotEmpty()) {
                     println("ViewModel: Received parsed TOC with ${parsedDoc.toc.size} items")
@@ -189,16 +293,27 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         scope.launch {
             isGenerating = true
             renderer.addUserMessage(text)
+            
             try {
+                val agent = documentAgent
+                if (agent == null) {
+                    renderer.renderError("LLM service not initialized. Please configure your model settings in the Config tab.")
+                    isGenerating = false
+                    return@launch
+                }
+
                 // Create DocumentTask and execute via agent
                 val task = cc.unitmesh.agent.document.DocumentTask(
                     query = text,
                     documentPath = selectedDocument?.path
                 )
 
-//                documentAgent.execute(task) { progress ->
-//                    // Progress callback (optional)
-//                }
+                println("Executing DocumentAgent with query: $text")
+                agent.execute(task) { progress ->
+                    // Progress updates are handled by renderer
+                    println("Agent progress: $progress")
+                }
+                println("DocumentAgent execution completed")
             } catch (e: Exception) {
                 renderer.renderError("Error: ${e.message}")
                 e.printStackTrace()
