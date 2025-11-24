@@ -151,12 +151,29 @@ class DocumentAgent(
     }
 
     private fun buildSystemPrompt(context: DocumentContext): String {
+        // Get list of registered documents
+        val registeredDocs = cc.unitmesh.devins.document.DocumentRegistry.getRegisteredPaths()
+        val docsInfo = if (registeredDocs.isNotEmpty()) {
+            """
+            ## Available Documents
+            
+            The following documents are registered and ready to query:
+            ${registeredDocs.joinToString("\n") { "- $it" }}
+            
+            **Total: ${registeredDocs.size} document(s)**
+            """.trimIndent()
+        } else {
+            "## Available Documents\n\nNo documents currently registered."
+        }
+        
         return """
             You are a helpful document assistant with advanced query capabilities.
             You can query the document using DocQL (Document Query Language) via the `docql` tool.
             
             User Query: ${context.query}
             Document Path: ${context.documentPath ?: "Not specified"}
+            
+            $docsInfo
             
             Available Tools:
             ${AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toList())}
@@ -265,16 +282,111 @@ class DocumentAgent(
             
             **Remember:** Documents are already registered and parsed. The content IS there.
             You just need to find the right query. Be persistent with DocQL!
-            
+            ## Keyword Expansion for Better Search
+
+            **Before querying, always expand keywords to improve matching accuracy.**
+
+            ### 1. Morphological Variations
+            Generate different word forms:
+            - encode → encoding, encoded, encoder, encoders  
+            - design → designing, designed, designer  
+            - color → colors, colour, colours  
+
+            ### 2. Synonyms & Related Terms
+            Consider conceptually related words:
+            - color → colour, hue, palette, theme  
+            - document → doc, documentation, file  
+            - architecture → arch, structure, design  
+
+            ### 3. Multi-Language Expansion (Chinese ↔ English)
+            Translate and expand cross-language keywords:
+            - 颜色 → color, colour  
+            - 设计 → design  
+            - 导航 → navigation, nav  
+            - 架构 → architecture, arch  
+            - 文档 → document, doc  
+
+            ### 4. Abbreviations & Compounds
+            Include naming variations:
+            - base64 → base 64, base-64  
+            - API → api, interface  
+            - SVG → svg, vector  
+
+            ---
+
+            ## Examples
+
+            ### Example 1 — English
+            Query: “Where’s the code for base64 encoding?”  
+            Expanded keywords: base64, base 64, encoding, encode, encoder, code  
+            Match: any filename containing **base64** or **encode**
+
+            ### Example 2 — Chinese
+            Query: “设计系统的颜色在哪里？”  
+            Expanded keywords: 设计系统, design system, design-system, 颜色, color, colour  
+            Match: **design-system-color.md**
+
+            ### Example 3 — Mixed
+            Query: “navigation 架构文档”  
+            Expanded keywords: navigation, nav, 导航, 架构, architecture, 文档, document, doc  
+            Match: **navigation-architecture.md**
+
+            ---
+
+            ## Smart Document Selection
+
+            **Use document filenames to guide precise querying.**
+
+            ### Strategy
+            1. **Review available documents**
+            2. **Expand user keywords**
+            3. **Match expanded keywords to filenames**
+            4. **Use `documentPath` to target relevant documents**
+
+            ### When to Use `documentPath`
+            Use it when:
+            - The filename clearly matches keywords  
+            - The topic is specific  
+            - Irrelevant documents should be avoided  
+
+            Query all documents when:
+            - No filename clearly matches  
+            - There are only a few documents  
+            - The user query is broad or exploratory  
+
+            ---
+
+            ## Examples
+
+            ### Example 1 — Clear Match
+            User: “What are the color principles?”  
+            Docs: design-system-color.md, navigation.md, icons.md  
+            Match: **design-system-color.md**  
+            Action: `documentPath="design-system-color.md"`
+
+            ### Example 2 — Multiple Matches
+            User: “How do I use custom icons?”  
+            Docs: custom-icons-usage.md, SVG-to-ImageVector-conversion.md  
+            Matches: both  
+            Action: Query both → synthesize
+
+            ### Example 3 — No Clear Match
+            User: “Show me everything.”  
+            Action: Query all documents using `$.toc[*]`
+
+            ---
+
             ## Best Practices
-            
-            1. **Start with TOC** - `$.toc[*]` to understand document structure
-            2. **Use heading() for sections** - `$.content.heading("keyword")` supports partial match
-            3. **Try variations** - If "color psychology" fails, try just "color" or "psychology"
-            4. **Use chunks() when stuck** - `$.content.chunks()` gets all content
-            5. **Document paths** - Already registered, just use relative path if needed
-            6. **Never guess** - Always use tools to retrieve information
-            
+
+            1. **Check filenames first**  
+            2. **Use `documentPath` whenever possible**  
+            3. **Expand keywords (variations, synonyms, translations)**  
+            4. **Start with the TOC** using `$.toc[*]`  
+            5. **Use `heading()` for targeted sections**  
+            6. **Try alternative keywords if matching fails**  
+            7. **Use `chunks()` as a fallback**  
+            8. **Never guess — always retrieve via tools**
+
             Always use the `docql` tool to retrieve information. Do not guess.
         """.trimIndent()
     }
