@@ -58,7 +58,7 @@ object DocumentParserFactory {
         return when (extension) {
             "md", "markdown" -> DocumentFormatType.MARKDOWN
             "pdf" -> DocumentFormatType.PDF
-            "doc", "docx" -> DocumentFormatType.DOCX
+            "doc", "docx", "ppt", "pptx" -> DocumentFormatType.DOCX  // Tika handles all Office formats
             "txt" -> DocumentFormatType.PLAIN_TEXT
             else -> null
         }
