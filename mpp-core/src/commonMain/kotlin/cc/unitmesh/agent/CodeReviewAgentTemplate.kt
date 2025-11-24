@@ -537,6 +537,11 @@ Fix order:
 4. file_with_warnings_only.kt (⚠️ Lower priority)
 5. another_warnings_file.kt (⚠️ Lower priority)
 ```
+
+## User Feedback
+
+${'$'}{userFeedback}
+
 """.trimIndent()
 
     val ZH = """
@@ -669,6 +674,12 @@ index abc1234..def5678 100644
 4. file_with_warnings_only.kt (⚠️ 较低优先级)
 5. another_warnings_file.kt (⚠️ 较低优先级)
 ```
+
+## 用户的反馈/指令
+
+${'$'}{userFeedback}
+
+
 """.trimIndent()
 }
 

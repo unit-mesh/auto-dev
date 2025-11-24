@@ -270,7 +270,7 @@ fun CodeReviewAgentPanel(
                                     viewModel.setSelectedPlanItems(newSelection)
                                 },
                                 onFileLinkClick = { filePath ->
-                                    // Open file in editor/viewer
+                                    // Open file in viewer dialog (same API as CodeReviewSideBySideView)
                                     viewModel.openFile(filePath)
                                 }
                             )
@@ -307,6 +307,16 @@ fun CodeReviewAgentPanel(
                     }
                 }
             }
+        }
+        
+        // File viewer dialog (same API as CodeReviewSideBySideView)
+        state.fileViewerPath?.let { filePath ->
+            FileViewerDialog(
+                filePath = filePath,
+                onClose = { viewModel.closeFileViewer() },
+                startLine = state.fileViewerStartLine,
+                endLine = state.fileViewerEndLine
+            )
         }
     }
 }

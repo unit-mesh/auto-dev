@@ -26,7 +26,11 @@ data class CodeReviewState(
     val originDiff: String? = null,
     // Test coverage
     val relatedTests: Map<String, List<TestFileInfo>> = emptyMap(),
-    val isLoadingTests: Boolean = false
+    val isLoadingTests: Boolean = false,
+    // File viewer
+    val fileViewerPath: String? = null,
+    val fileViewerStartLine: Int? = null,
+    val fileViewerEndLine: Int? = null
 )
 
 /**

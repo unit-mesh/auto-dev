@@ -915,12 +915,39 @@ open class CodeReviewViewModel(
             // Initialize agent if needed
             val agent = initializeCodingAgent()
 
+            // Build user feedback from selected plan items
+            val selectedItemsFeedback = if (selectedPlanItems.isNotEmpty() && currentState.aiProgress.planOutput.isNotBlank()) {
+                formatSelectedPlanItemsAsFeedback(
+                    planOutput = currentState.aiProgress.planOutput,
+                    selectedIndices = selectedPlanItems
+                )
+            } else {
+                ""
+            }
+
+            // Combine user feedback with selected plan items feedback
+            val combinedUserFeedback = buildString {
+                if (currentState.aiProgress.userFeedback.isNotBlank()) {
+                    appendLine(currentState.aiProgress.userFeedback)
+                    if (selectedItemsFeedback.isNotBlank()) {
+                        appendLine()
+                    }
+                }
+                if (selectedItemsFeedback.isNotBlank()) {
+                    append(selectedItemsFeedback)
+                }
+            }.trim()
+
+            AutoDevLogger.info("CodeReviewViewModel") {
+                "Generating fixes with ${selectedPlanItems.size} selected plan items"
+            }
+
             // Delegate to CodeReviewAgent with patch instead of full code content
             val result = agent.generateFixes(
                 patch = patch,
                 lintResults = currentState.aiProgress.lintResults,
                 analysisOutput = currentState.aiProgress.analysisOutput,
-                userFeedback = currentState.aiProgress.userFeedback,
+                userFeedback = combinedUserFeedback,
                 language = "ZH",
                 onProgress = { chunk ->
                     fixOutputBuilder.append(chunk)
@@ -1203,25 +1230,104 @@ open class CodeReviewViewModel(
     fun getSelectedPlanItems(): Set<Int> = selectedPlanItems
 
     /**
-     * Open file in editor/viewer
-     * Similar to MarkdownTableRenderer.kt implementation
+     * Format selected plan items as user feedback for fix generation
+     * This converts the selected plan items into a structured text that guides
+     * the AI to focus on specific issues from the modification plan
      */
-    fun openFile(filePath: String) {
+    private fun formatSelectedPlanItemsAsFeedback(planOutput: String, selectedIndices: Set<Int>): String {
+        if (selectedIndices.isEmpty()) {
+            return ""
+        }
+
+        // Parse plan items from the plan output
+        val planItems = PlanParser.parse(planOutput)
+        val selectedItems = planItems.filter { it.number in selectedIndices }
+
+        if (selectedItems.isEmpty()) {
+            AutoDevLogger.warn("CodeReviewViewModel") {
+                "No plan items found for selected indices: ${selectedIndices.joinToString()}"
+            }
+            return ""
+        }
+
+        return buildString {
+            appendLine("## 用户选择的修复项 (User Selected Items)")
+            appendLine()
+            appendLine("请优先修复以下选中的问题项：")
+            appendLine()
+            
+            selectedItems.forEach { item ->
+                appendLine("### ${item.number}. ${item.title} - ${item.priority}")
+                
+                // Include file paths from steps
+                val filePaths = item.getAllFilePaths()
+                if (filePaths.isNotEmpty()) {
+                    appendLine("**相关文件**:")
+                    filePaths.forEach { path ->
+                        appendLine("- $path")
+                    }
+                    appendLine()
+                }
+                
+                // Include step details
+                if (item.steps.isNotEmpty()) {
+                    appendLine("**修复步骤**:")
+                    item.steps.forEachIndexed { index, step ->
+                        val statusIcon = when (step.status) {
+                            StepStatus.COMPLETED -> "✓"
+                            StepStatus.FAILED -> "!"
+                            StepStatus.IN_PROGRESS -> "*"
+                            StepStatus.TODO -> "-"
+                        }
+                        appendLine("$statusIcon ${step.text}")
+                    }
+                    appendLine()
+                }
+            }
+            
+            appendLine("---")
+            appendLine()
+            appendLine("**注意**: 请只修复上述选中的问题项，其他未选中的项可以忽略。")
+        }
+    }
+
+    /**
+     * Open file in viewer dialog
+     * Uses the same API as CodeReviewSideBySideView - updates state to show FileViewerDialog
+     */
+    fun openFile(filePath: String, startLine: Int? = null, endLine: Int? = null) {
         // Get workspace root path and construct absolute path
         val root = workspace.rootPath
-        val absolutePath = if (root != null && !filePath.startsWith("/")) {
+        val absolutePath = if (root != null && !filePath.startsWith("/") && !filePath.startsWith(root)) {
             "$root/$filePath"
         } else {
             filePath
         }
         
         AutoDevLogger.info("CodeReviewViewModel") {
-            "Opening file: $absolutePath (original: $filePath, root: $root)"
+            "Opening file: $absolutePath (original: $filePath, root: $root, lines: ${startLine?.let { "$it-$endLine" } ?: "all"})"
         }
         
-        // Emit notification event to open file
-        scope.launch {
-            _notificationEvent.emit("open_file" to absolutePath)
+        // Update state to show file viewer dialog
+        updateState {
+            it.copy(
+                fileViewerPath = absolutePath,
+                fileViewerStartLine = startLine,
+                fileViewerEndLine = endLine
+            )
+        }
+    }
+
+    /**
+     * Close file viewer dialog
+     */
+    fun closeFileViewer() {
+        updateState {
+            it.copy(
+                fileViewerPath = null,
+                fileViewerStartLine = null,
+                fileViewerEndLine = null
+            )
         }
     }
 
