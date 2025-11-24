@@ -560,21 +560,16 @@ open class CodeReviewViewModel(
 
             val planOutputBuilder = StringBuilder()
             updateState {
-                it.copy(aiProgress = it.aiProgress.copy(planOutput = "💡 Generating modification suggestions...\n"))
+                it.copy(aiProgress = it.aiProgress.copy(planOutput = "💡 生成修改建议...\n"))
             }
             
-            // Build prompt for plan generation based on analysis results
-            val planPrompt = buildString {
-                appendLine("Based on the code analysis above, please provide a detailed modification plan.")
-                appendLine()
-                appendLine("For each issue found, suggest:")
-                appendLine("1. **What needs to be changed** - Specific code elements or patterns")
-                appendLine("2. **Why it should be changed** - The reason and benefit")
-                appendLine("3. **Recommended approach** - How to implement the fix")
-                appendLine()
-                appendLine("Format the plan in a clear, structured way using markdown.")
-                appendLine("Group related changes together and prioritize by severity.")
-            }
+            // Use CodeReviewAgentPromptRenderer to generate structured prompt
+            val promptRenderer = cc.unitmesh.agent.CodeReviewAgentPromptRenderer()
+            val planPrompt = promptRenderer.renderModificationPlanPrompt(
+                lintResults = currentState.aiProgress.lintResults,
+                analysisOutput = currentState.aiProgress.analysisOutput,
+                language = "ZH"  // Use Chinese for better user experience
+            )
 
             try {
                 // Create a temporary LLM service for plan generation

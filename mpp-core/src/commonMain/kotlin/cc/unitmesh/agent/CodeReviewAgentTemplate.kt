@@ -671,3 +671,157 @@ index abc1234..def5678 100644
 ```
 """.trimIndent()
 }
+
+/**
+ * Template for modification plan generation
+ * Generates concise, structured modification suggestions
+ */
+object ModificationPlanTemplate {
+    val EN = """
+# Modification Plan Generation
+
+Based on the code analysis, provide a **concise, structured modification plan**.
+
+## Analysis Context
+
+${'$'}{analysisOutput}
+
+## Lint Issues Summary
+
+${'$'}{lintResults}
+
+## Your Task
+
+Generate a concise modification plan with **3-5 key points maximum**.
+
+### Required Format:
+
+```markdown
+## Modification Plan
+
+### 1. {Issue Category} - {Priority Level}
+**What**: {Brief description of what needs to change}
+**Why**: {One sentence explaining the reason}
+**How**: {One sentence suggesting the approach}
+
+### 2. {Issue Category} - {Priority Level}
+**What**: {Brief description}
+**Why**: {Reason}
+**How**: {Approach}
+
+... (maximum 5 items)
+```
+
+### Guidelines:
+
+1. **Maximum 5 items** - Focus on the most critical issues
+2. **Priority levels**: 🔴 CRITICAL | ⚠️ HIGH | 📝 MEDIUM
+3. **Concise** - Each section should be 1-2 sentences max
+4. **Actionable** - Focus on what can be done, not just what's wrong
+5. **Group related issues** - Combine similar problems into one item
+
+### Example:
+
+```markdown
+## Modification Plan
+
+### 1. Null Safety Issues - 🔴 CRITICAL
+**What**: Add null checks for user parameters in 3 methods
+**Why**: Prevents NullPointerException at runtime
+**How**: Add `requireNotNull()` or safe call operators before usage
+
+### 2. Resource Management - ⚠️ HIGH  
+**What**: Close database connections and file streams
+**Why**: Prevents memory leaks and resource exhaustion
+**How**: Use `use {}` blocks or add explicit `close()` calls in finally blocks
+
+### 3. Code Style Consistency - 📝 MEDIUM
+**What**: Fix naming conventions for 5 variables
+**Why**: Improves code readability and follows Kotlin conventions
+**How**: Rename variables to camelCase format
+```
+
+**CRITICAL RULES**:
+- ✅ Maximum 5 items
+- ✅ Each item has What/Why/How structure
+- ✅ Use priority emojis (🔴/⚠️/📝)
+- ✅ Keep each section to 1-2 sentences
+- ❌ DO NOT list every single issue
+- ❌ DO NOT provide code examples
+- ❌ DO NOT use any tools
+""".trimIndent()
+
+    val ZH = """
+# 修改计划生成
+
+基于代码分析，提供**简洁、结构化的修改计划**。
+
+## 分析上下文
+
+${'$'}{analysisOutput}
+
+## Lint 问题摘要
+
+${'$'}{lintResults}
+
+## 你的任务
+
+生成简洁的修改计划，**最多 3-5 个要点**。
+
+### 必需格式：
+
+```markdown
+## 修改计划
+
+### 1. {问题类别} - {优先级}
+**需要改什么**: {简要描述需要改变的内容}
+**为什么改**: {一句话解释原因}
+**怎么改**: {一句话建议方法}
+
+### 2. {问题类别} - {优先级}
+**需要改什么**: {简要描述}
+**为什么改**: {原因}
+**怎么改**: {方法}
+
+... (最多 5 项)
+```
+
+### 指南：
+
+1. **最多 5 项** - 聚焦最关键的问题
+2. **优先级**: 🔴 关键 | ⚠️ 高 | 📝 中等
+3. **简洁** - 每部分最多 1-2 句话
+4. **可执行** - 关注可以做什么，而不仅仅是什么错了
+5. **分组相关问题** - 将类似问题合并为一项
+
+### 示例：
+
+```markdown
+## 修改计划
+
+### 1. 空安全问题 - 🔴 关键
+**需要改什么**: 为 3 个方法的用户参数添加空检查
+**为什么改**: 防止运行时 NullPointerException
+**怎么改**: 在使用前添加 `requireNotNull()` 或安全调用操作符
+
+### 2. 资源管理 - ⚠️ 高
+**需要改什么**: 关闭数据库连接和文件流
+**为什么改**: 防止内存泄漏和资源耗尽
+**怎么改**: 使用 `use {}` 块或在 finally 块中添加显式 `close()` 调用
+
+### 3. 代码风格一致性 - 📝 中等
+**需要改什么**: 修复 5 个变量的命名约定
+**为什么改**: 提高代码可读性并遵循 Kotlin 约定
+**怎么改**: 将变量重命名为驼峰格式
+```
+
+**关键规则**:
+- ✅ 最多 5 项
+- ✅ 每项都有"需要改什么/为什么改/怎么改"结构
+- ✅ 使用优先级表情符号 (🔴/⚠️/📝)
+- ✅ 每部分保持在 1-2 句话
+- ❌ 不要列出每个单独的问题
+- ❌ 不要提供代码示例
+- ❌ 不要使用任何工具
+""".trimIndent()
+}

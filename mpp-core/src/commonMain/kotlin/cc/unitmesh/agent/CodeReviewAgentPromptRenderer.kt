@@ -241,6 +241,53 @@ $result
         return prompt
     }
 
+    /**
+     * Renders modification plan prompt for generating concise, structured suggestions
+     * This is called after analysis and before fix generation
+     */
+    fun renderModificationPlanPrompt(
+        lintResults: List<LintFileResult>,
+        analysisOutput: String,
+        language: String = "EN"
+    ): String {
+        val template = when (language.uppercase()) {
+            "ZH", "CN" -> ModificationPlanTemplate.ZH
+            else -> ModificationPlanTemplate.EN
+        }
+
+        // Format lint results summary (concise version)
+        val lintSummary = if (lintResults.isNotEmpty()) {
+            buildString {
+                val totalErrors = lintResults.sumOf { it.errorCount }
+                val totalWarnings = lintResults.sumOf { it.warningCount }
+                
+                appendLine("**Summary**: $totalErrors error(s), $totalWarnings warning(s) across ${lintResults.size} file(s)")
+                appendLine()
+                
+                // Only show files with errors
+                val filesWithErrors = lintResults.filter { it.errorCount > 0 }
+                if (filesWithErrors.isNotEmpty()) {
+                    appendLine("**Files with errors**:")
+                    filesWithErrors.forEach { file ->
+                        appendLine("- ${file.filePath}: ${file.errorCount} error(s)")
+                    }
+                }
+            }
+        } else {
+            "No lint issues found."
+        }
+
+        val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
+        variableTable.addVariable("lintResults", VariableType.STRING, lintSummary)
+        variableTable.addVariable("analysisOutput", VariableType.STRING, analysisOutput)
+
+        val compiler = TemplateCompiler(variableTable)
+        val prompt = compiler.compile(template)
+
+        logger.debug { "Generated modification plan prompt (${prompt.length} chars)" }
+        return prompt
+    }
+
 }
 
 

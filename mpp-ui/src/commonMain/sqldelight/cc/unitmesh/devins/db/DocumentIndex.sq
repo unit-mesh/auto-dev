@@ -1,4 +1,4 @@
-CREATE TABLE DocumentIndex (
+CREATE TABLE IF NOT EXISTS DocumentIndex (
     path TEXT NOT NULL PRIMARY KEY,
     hash TEXT NOT NULL,
     lastModified INTEGER NOT NULL,

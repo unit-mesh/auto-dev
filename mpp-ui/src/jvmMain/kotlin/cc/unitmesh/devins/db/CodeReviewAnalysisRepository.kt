@@ -32,6 +32,7 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
                 lintResults = json.encodeToString(progress.lintResults),
                 modifiedCodeRanges = json.encodeToString(progress.modifiedCodeRanges),
                 analysisOutput = progress.analysisOutput,
+                planOutput = progress.planOutput,
                 fixOutput = progress.fixOutput,
                 updatedAt = now,
                 id = existing.id
@@ -48,6 +49,7 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
                 lintResults = json.encodeToString(progress.lintResults),
                 modifiedCodeRanges = json.encodeToString(progress.modifiedCodeRanges),
                 analysisOutput = progress.analysisOutput,
+                planOutput = progress.planOutput,
                 fixOutput = progress.fixOutput,
                 createdAt = now,
                 updatedAt = now
@@ -78,6 +80,7 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
                 emptyMap()
             },
             analysisOutput = record.analysisOutput,
+            planOutput = record.planOutput,
             fixOutput = record.fixOutput
         )
     }
@@ -106,6 +109,7 @@ actual class CodeReviewAnalysisRepository(private val database: DevInsDatabase) 
                         emptyMap()
                     },
                     analysisOutput = record.analysisOutput,
+                    planOutput = record.planOutput,
                     fixOutput = record.fixOutput
                 )
                 record.commitHash to progress

@@ -1,8 +1,0 @@
--- Migration 1: Add remoteUrl column to CodeReviewAnalysisDb
--- This migration adds the remoteUrl column for repositories cloned in different locations
-
-ALTER TABLE CodeReviewAnalysisDb ADD COLUMN remoteUrl TEXT NOT NULL DEFAULT '';
-
--- Create indices for the new column
-CREATE INDEX IF NOT EXISTS idx_analysis_remote ON CodeReviewAnalysisDb(remoteUrl);
-CREATE INDEX IF NOT EXISTS idx_analysis_remote_commit ON CodeReviewAnalysisDb(remoteUrl, commitHash);

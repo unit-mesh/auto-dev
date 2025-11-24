@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS CodeReviewAnalysisDb (
     lintResults TEXT NOT NULL DEFAULT '',
     modifiedCodeRanges TEXT NOT NULL DEFAULT '',
     analysisOutput TEXT NOT NULL DEFAULT '',
+    planOutput TEXT NOT NULL DEFAULT '',
     fixOutput TEXT NOT NULL DEFAULT '',
     createdAt INTEGER NOT NULL,
     updatedAt INTEGER NOT NULL
@@ -47,8 +48,8 @@ SELECT * FROM CodeReviewAnalysisDb WHERE id = ?;
 
 -- 插入分析结果
 insert:
-INSERT INTO CodeReviewAnalysisDb(id, remoteUrl, projectPath, commitHash, stage, lintOutput, lintResults, modifiedCodeRanges, analysisOutput, fixOutput, createdAt, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO CodeReviewAnalysisDb(id, remoteUrl, projectPath, commitHash, stage, lintOutput, lintResults, modifiedCodeRanges, analysisOutput, planOutput, fixOutput, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- 更新分析结果
 update:
@@ -58,6 +59,7 @@ SET stage = ?,
     lintResults = ?,
     modifiedCodeRanges = ?,
     analysisOutput = ?,
+    planOutput = ?,
     fixOutput = ?,
     updatedAt = ?
 WHERE id = ?;
