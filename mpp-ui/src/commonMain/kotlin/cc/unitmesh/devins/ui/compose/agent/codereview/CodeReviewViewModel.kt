@@ -15,6 +15,7 @@ import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.CodeAnalyzer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
 import cc.unitmesh.agent.diff.DiffParser
+import cc.unitmesh.agent.util.WalkthroughExtractor
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.wasm.WasmGitManager
 import cc.unitmesh.devins.workspace.Workspace
@@ -561,9 +562,23 @@ open class CodeReviewViewModel(
 
             // Use CodeReviewAgentPromptRenderer to generate structured prompt
             val promptRenderer = cc.unitmesh.agent.CodeReviewAgentPromptRenderer()
+            
+            // Convert ModifiedCodeRange to CodeContext
+            val codeRanges = currentState.aiProgress.modifiedCodeRanges.mapValues { (_, ranges) ->
+                ranges.map { range ->
+                    cc.unitmesh.agent.CodeReviewAgentPromptRenderer.CodeContext(
+                        elementName = range.elementName,
+                        elementType = range.elementType,
+                        startLine = range.startLine,
+                        endLine = range.endLine
+                    )
+                }
+            }
+            
             val planPrompt = promptRenderer.renderModificationPlanPrompt(
                 lintResults = currentState.aiProgress.lintResults,
-                analysisOutput = currentState.aiProgress.analysisOutput,
+                analysisOutput = WalkthroughExtractor.extract(currentState.aiProgress.analysisOutput),
+                modifiedCodeRanges = codeRanges,
                 language = "ZH"  // Use Chinese for better user experience
             )
 
@@ -943,7 +958,7 @@ open class CodeReviewViewModel(
                 lintResults = currentState.aiProgress.lintResults,
                 analysisOutput = currentState.aiProgress.analysisOutput,
                 userFeedback = combinedUserFeedback,
-                language = "ZH", // Default to Chinese as per original ViewModel logic (implied by context) or make it configurable
+                language = "ZH",
                 renderer = fixRenderer
             ) { progress ->
                 // Progress callback

@@ -202,7 +202,6 @@ fun CodeReviewAgentPanel(
             )
         }
 
-        // Main content area
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -259,18 +258,16 @@ fun CodeReviewAgentPanel(
                     if (state.aiProgress.planOutput.isNotEmpty()) {
                         item {
                             var selectedPlanItems by remember { mutableStateOf<Set<Int>>(emptySet()) }
-                            
+
                             ModificationPlanSection(
                                 planOutput = state.aiProgress.planOutput,
                                 isActive = state.aiProgress.stage == AnalysisStage.GENERATING_PLAN,
                                 selectedItems = selectedPlanItems,
                                 onItemSelectionChanged = { newSelection ->
                                     selectedPlanItems = newSelection
-                                    // Store selected items in viewModel for later use in fix generation
                                     viewModel.setSelectedPlanItems(newSelection)
                                 },
                                 onFileLinkClick = { filePath ->
-                                    // Open file in viewer dialog (same API as CodeReviewSideBySideView)
                                     viewModel.openFile(filePath)
                                 }
                             )
@@ -304,7 +301,7 @@ fun CodeReviewAgentPanel(
                 }
             }
         }
-        
+
         // File viewer dialog (same API as CodeReviewSideBySideView)
         state.fileViewerPath?.let { filePath ->
             FileViewerDialog(
