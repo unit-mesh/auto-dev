@@ -1,18 +1,13 @@
 package cc.unitmesh.devins.ui.compose.document
 
-import cc.unitmesh.devins.document.DocumentFile
-import cc.unitmesh.devins.document.DocumentFolder
-import cc.unitmesh.devins.document.DocumentTreeNode
-import cc.unitmesh.devins.document.DocumentMetadata
-import cc.unitmesh.devins.document.ParseStatus
-import cc.unitmesh.devins.document.TOCItem
-import cc.unitmesh.devins.document.Entity
-import cc.unitmesh.devins.document.docql.executeDocQL
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import cc.unitmesh.devins.document.docql.executeDocQL
 import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.agent.VerticalResizableSplitPane
 import cc.unitmesh.devins.workspace.WorkspaceManager

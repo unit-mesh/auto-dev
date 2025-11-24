@@ -3,37 +3,20 @@ package cc.unitmesh.devins.ui.compose.document
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import cc.unitmesh.agent.document.DocumentAgent
 import cc.unitmesh.devins.document.*
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.workspace.Workspace
-import cc.unitmesh.llm.KoogLLMService
-import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
-class DocumentReaderViewModel(
-    private val workspace: Workspace,
-    private val documentsPath: String? = null // Optional: specific documents directory
-) {
+class DocumentReaderViewModel(private val workspace: Workspace) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    // Services
-    // Services
     private val parserService: DocumentParserService = MarkdownDocumentParser()
-    private val llmService = KoogLLMService(ModelConfig.default())
     val renderer = ComposeRenderer()
-    private val mcpToolConfigService = cc.unitmesh.agent.config.McpToolConfigService(cc.unitmesh.agent.config.ToolConfigFile.default())
-
-//    private val documentAgent = DocumentAgent(
-//        llmService = llmService,
-//        parserService = parserService,
-//        renderer = renderer,
-//        mcpToolConfigService = mcpToolConfigService
-//    )
 
     // State
     var selectedDocument by mutableStateOf<DocumentFile?>(null)

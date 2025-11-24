@@ -175,6 +175,20 @@ class DocumentAgent(
             - ✅ Correct: One <devin> block with one tool call per response
             - ❌ Wrong: Multiple <devin> blocks or multiple tools in one response
             
+            ## Tool Selection Priority
+            
+            **CRITICAL: Always prioritize DocQL for registered documents**
+            
+            1. **FIRST CHOICE - DocQL Tool** (`docql`):
+               - Use for ALL queries about registered document content
+               - Documents are already parsed and indexed
+               - Fast and accurate for structured queries
+            
+            2. **LAST RESORT - File System Tools** (`grep`, `glob`, `read-file`):
+               - ONLY use if DocQL returns "No documents registered"
+               - ONLY use for files NOT in the document registry
+               - Never use these for registered documents
+            
             ## Response Format
             
             When you need to query the document:
@@ -183,6 +197,47 @@ class DocumentAgent(
             3. Wait for the tool result
             
             After gathering the information, provide your final answer WITHOUT any tool calls.
+            
+            ## DocQL Retry Strategy
+            
+            **When a DocQL query returns empty results, try progressively broader queries:**
+            
+            ### Progressive Query Approach:
+            
+            1. **Start Specific** - Try targeted queries first:
+               ```
+               $.content.heading("exact keyword")
+               $.content.h1("specific title")
+               ```
+            
+            2. **If Empty → Go Broader** - Try partial matches or related terms:
+               ```
+               $.content.heading("partial")  // partial match on any heading
+               $.toc[*]  // see all available sections
+               ```
+            
+            3. **If Still Empty → Get All Content**:
+               ```
+               $.content.chunks()  // retrieve all document content
+               ```
+            
+            4. **Only After All DocQL Attempts** - If truly no documents registered:
+               - Then and ONLY then consider grep/glob for non-registered files
+            
+            ### Example Retry Flow:
+            
+            **User asks: "What are the color principles?"**
+            
+            ✅ **Correct Approach:**
+            - Try 1: `$.content.heading("color principle")` → Empty
+            - Try 2: `$.content.heading("color")` → Empty  
+            - Try 3: `$.toc[*]` → See available sections
+            - Try 4: `$.content.heading("design")` → Found content!
+            - OR Try 4: `$.content.chunks()` → Get all content and search manually
+            
+            ❌ **Wrong Approach:**
+            - Try 1: `$.content.heading("color principle")` → Empty
+            - Try 2: Use `grep` to search files ← WRONG! Try more DocQL queries first!
             
             ## DocQL Syntax Examples
             
@@ -198,12 +253,27 @@ class DocumentAgent(
             **Entities:**
             - `$.entities[?(@.type=="API")]` - Get all API entities
             
-            **Best Practices:**
-            1. Start with `$.toc[*]` to understand document structure
-            2. Use `$.content.heading("keyword")` for specific sections (supports partial match)
-            3. Use `$.content.chunks()` if you need all content or if heading queries return empty
-            4. Document paths in docql tool are already registered - just use the relative path shown
-            5. For read-file tool, use full path from project root (e.g., "docs/design-system/design-system-color.md")
+            ## Handling Empty Results
+            
+            When DocQL returns "No results found" or empty content:
+            
+            1. **Don't give up immediately** - This is normal for specific queries
+            2. **Try a broader query** - Use the progressive approach above
+            3. **Check TOC first** - `$.toc[*]` shows what's actually available
+            4. **Use chunks() as fallback** - `$.content.chunks()` gets everything
+            5. **Explain your strategy** - Tell the user what you're trying
+            
+            **Remember:** Documents are already registered and parsed. The content IS there.
+            You just need to find the right query. Be persistent with DocQL!
+            
+            ## Best Practices
+            
+            1. **Start with TOC** - `$.toc[*]` to understand document structure
+            2. **Use heading() for sections** - `$.content.heading("keyword")` supports partial match
+            3. **Try variations** - If "color psychology" fails, try just "color" or "psychology"
+            4. **Use chunks() when stuck** - `$.content.chunks()` gets all content
+            5. **Document paths** - Already registered, just use relative path if needed
+            6. **Never guess** - Always use tools to retrieve information
             
             Always use the `docql` tool to retrieve information. Do not guess.
         """.trimIndent()
