@@ -65,7 +65,8 @@ fun DocumentReaderPage(
                                     DocumentViewerPane(
                                         document = viewModel.selectedDocument,
                                         content = viewModel.documentContent,
-                                        isLoading = viewModel.isLoading
+                                        isLoading = viewModel.isLoading,
+                                        indexStatus = viewModel.selectedDocumentIndexStatus
                                     )
                                 },
                                 bottom = {

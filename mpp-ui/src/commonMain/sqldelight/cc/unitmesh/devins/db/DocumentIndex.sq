@@ -1,0 +1,25 @@
+CREATE TABLE DocumentIndex (
+    path TEXT NOT NULL PRIMARY KEY,
+    hash TEXT NOT NULL,
+    lastModified INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    content TEXT,
+    error TEXT,
+    indexedAt INTEGER NOT NULL
+);
+
+selectByPath:
+SELECT * FROM DocumentIndex WHERE path = ?;
+
+selectAll:
+SELECT * FROM DocumentIndex;
+
+insertOrReplace:
+INSERT OR REPLACE INTO DocumentIndex(path, hash, lastModified, status, content, error, indexedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteByPath:
+DELETE FROM DocumentIndex WHERE path = ?;
+
+deleteAll:
+DELETE FROM DocumentIndex;

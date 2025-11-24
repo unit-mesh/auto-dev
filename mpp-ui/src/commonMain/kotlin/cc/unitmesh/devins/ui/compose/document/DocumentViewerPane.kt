@@ -22,6 +22,7 @@ fun DocumentViewerPane(
     document: DocumentFile?,
     content: String?,
     isLoading: Boolean,
+    indexStatus: cc.unitmesh.devins.db.DocumentIndexRecord? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -58,6 +59,54 @@ fun DocumentViewerPane(
                         icon = AutoDevComposeIcons.Description,
                         text = formatFileSize(document.metadata.fileSize)
                     )
+                }
+                
+                // Indexing Status
+                if (indexStatus != null) {
+                    val statusColor = if (indexStatus.status == "INDEXED") 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.error
+                        
+                    val statusText = if (indexStatus.status == "INDEXED") "Indexed" else "Index Failed"
+                    val statusIcon = if (indexStatus.status == "INDEXED") 
+                        AutoDevComposeIcons.CheckCircle 
+                    else 
+                        AutoDevComposeIcons.Error
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = statusIcon,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = statusColor
+                        )
+                        Text(
+                            text = statusText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = statusColor
+                        )
+                    }
+                } else {
+                     Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Sync,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Not Indexed",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
             }
 

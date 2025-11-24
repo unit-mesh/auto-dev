@@ -33,6 +33,9 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     var documentContent by mutableStateOf<String?>(null)
         private set
 
+    var selectedDocumentIndexStatus by mutableStateOf<cc.unitmesh.devins.db.DocumentIndexRecord?>(null)
+        private set
+
     var documents by mutableStateOf<List<DocumentFile>>(emptyList())
         private set
 
@@ -45,9 +48,15 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     var error by mutableStateOf<String?>(null)
         private set
 
+    // Indexing Service
+    private val indexRepository = cc.unitmesh.devins.db.DocumentIndexRepository.getInstance()
+    private val indexService = cc.unitmesh.devins.service.DocumentIndexService(workspace.fileSystem, indexRepository, scope)
+    val indexingStatus = indexService.indexingStatus
+
     init {
         loadDocuments()
         initializeLLMService()
+        indexService.indexWorkspace()
     }
 
     /**
@@ -238,6 +247,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
     fun selectDocument(doc: DocumentFile) {
         selectedDocument = doc
+        selectedDocumentIndexStatus = getDocumentIndexStatus(doc.path)
         scope.launch {
             try {
                 isLoading = true
@@ -332,4 +342,8 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
      * Get the parser service for DocQL queries
      */
     fun getParserService(): DocumentParserService = parserService
+
+    fun getDocumentIndexStatus(path: String): cc.unitmesh.devins.db.DocumentIndexRecord? {
+        return indexService.getIndexStatus(path)
+    }
 }
