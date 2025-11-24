@@ -97,6 +97,7 @@ fun CodeReviewAgentPanel(
                     }
                     AnalysisStage.RUNNING_LINT,
                     AnalysisStage.ANALYZING_LINT,
+                    AnalysisStage.GENERATING_PLAN,
                     AnalysisStage.WAITING_FOR_USER_INPUT,
                     AnalysisStage.GENERATING_FIX -> {
                         FilledTonalButton(
@@ -191,6 +192,7 @@ fun CodeReviewAgentPanel(
         if (state.aiProgress.stage in listOf(
                 AnalysisStage.RUNNING_LINT,
                 AnalysisStage.ANALYZING_LINT,
+                AnalysisStage.GENERATING_PLAN,
                 AnalysisStage.GENERATING_FIX
             )
         ) {
@@ -250,6 +252,15 @@ fun CodeReviewAgentPanel(
                             AIAnalysisSection(
                                 analysisOutput = state.aiProgress.analysisOutput,
                                 isActive = state.aiProgress.stage == AnalysisStage.ANALYZING_LINT
+                            )
+                        }
+                    }
+
+                    if (state.aiProgress.planOutput.isNotEmpty()) {
+                        item {
+                            ModificationPlanSection(
+                                planOutput = state.aiProgress.planOutput,
+                                isActive = state.aiProgress.stage == AnalysisStage.GENERATING_PLAN
                             )
                         }
                     }

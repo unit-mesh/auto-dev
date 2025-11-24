@@ -513,18 +513,10 @@ open class CodeReviewViewModel(
                     }
                 }
 
-                updateState {
-                    it.copy(
-                        aiProgress = it.aiProgress.copy(stage = AnalysisStage.WAITING_FOR_USER_INPUT)
-                    )
-                }
+                // Generate modification plan after analysis
+                generateModificationPlan()
 
-                _notificationEvent.emit("Analysis Complete" to "Code analysis finished. Please review and provide instructions.")
-
-                // Wait for user input, do not generate fixes automatically
-                // generateFixes()
-
-                saveCurrentAnalysisResults()
+                _notificationEvent.emit("Analysis Complete" to "Code analysis finished. Please review the modification plan.")
 
                 saveCurrentAnalysisResults()
 
@@ -552,6 +544,85 @@ open class CodeReviewViewModel(
             it.copy(
                 aiProgress = AIAnalysisProgress(stage = AnalysisStage.IDLE)
             )
+        }
+    }
+
+    /**
+     * Generate modification plan based on analysis results
+     */
+    suspend fun generateModificationPlan() {
+        try {
+            updateState {
+                it.copy(
+                    aiProgress = it.aiProgress.copy(stage = AnalysisStage.GENERATING_PLAN)
+                )
+            }
+
+            val planOutputBuilder = StringBuilder()
+            updateState {
+                it.copy(aiProgress = it.aiProgress.copy(planOutput = "💡 Generating modification suggestions...\n"))
+            }
+            
+            // Build prompt for plan generation based on analysis results
+            val planPrompt = buildString {
+                appendLine("Based on the code analysis above, please provide a detailed modification plan.")
+                appendLine()
+                appendLine("For each issue found, suggest:")
+                appendLine("1. **What needs to be changed** - Specific code elements or patterns")
+                appendLine("2. **Why it should be changed** - The reason and benefit")
+                appendLine("3. **Recommended approach** - How to implement the fix")
+                appendLine()
+                appendLine("Format the plan in a clear, structured way using markdown.")
+                appendLine("Group related changes together and prioritize by severity.")
+            }
+
+            try {
+                // Create a temporary LLM service for plan generation
+                val configWrapper = ConfigManager.load()
+                val modelConfig = configWrapper.getActiveModelConfig()
+                    ?: throw IllegalStateException("No active model configuration found")
+                
+                val llmService = KoogLLMService.create(modelConfig)
+                
+                // Use LLM service to generate plan with streaming
+                llmService.streamPrompt(planPrompt, compileDevIns = false).collect { chunk ->
+                    planOutputBuilder.append(chunk)
+                    updateState {
+                        it.copy(
+                            aiProgress = it.aiProgress.copy(
+                                planOutput = planOutputBuilder.toString()
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                AutoDevLogger.error("CodeReviewViewModel") { "LLM call failed during plan generation: ${e.message}" }
+                planOutputBuilder.append("\n❌ Error: ${e.message}")
+                updateState {
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(
+                            planOutput = planOutputBuilder.toString()
+                        )
+                    )
+                }
+            }
+
+            updateState {
+                it.copy(
+                    aiProgress = it.aiProgress.copy(stage = AnalysisStage.WAITING_FOR_USER_INPUT)
+                )
+            }
+
+        } catch (e: Exception) {
+            AutoDevLogger.error("CodeReviewViewModel") { "Failed to generate modification plan: ${e.message}" }
+            updateState {
+                it.copy(
+                    aiProgress = it.aiProgress.copy(
+                        planOutput = "\n❌ Error generating plan: ${e.message}",
+                        stage = AnalysisStage.WAITING_FOR_USER_INPUT
+                    )
+                )
+            }
         }
     }
 
