@@ -74,55 +74,9 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     val toolConfigFile = cc.unitmesh.agent.config.ToolConfigFile.default()
                     val mcpConfigService = McpToolConfigService(toolConfigFile)
                     
-                    // Wrap ProjectFileSystem in ToolFileSystem adapter
-                    val toolFileSystem = object : cc.unitmesh.agent.tool.filesystem.ToolFileSystem {
-                        override fun getProjectPath(): String? = workspace.rootPath
-                        
-                        override suspend fun readFile(path: String): String? = workspace.fileSystem.readFile(path)
-                        
-                        override suspend fun writeFile(path: String, content: String, createDirectories: Boolean) {
-                            workspace.fileSystem.writeFile(path, content)
-                        }
-                        
-                        override fun exists(path: String): Boolean {
-                            return runCatching {
-                                kotlinx.coroutines.runBlocking {
-                                    workspace.fileSystem.readFile(path) != null
-                                }
-                            }.getOrDefault(false)
-                        }
-                        
-                        override fun listFiles(path: String, pattern: String?): List<String> {
-                            return runCatching {
-                                kotlinx.coroutines.runBlocking {
-                                    workspace.fileSystem.listFiles(path)
-                                }
-                            }.getOrDefault(emptyList())
-                        }
-                        
-                        override fun resolvePath(relativePath: String): String {
-                            return workspace.rootPath?.let { "$it/$relativePath" } ?: relativePath
-                        }
-                        
-                        override fun getFileInfo(path: String): cc.unitmesh.agent.tool.filesystem.FileInfo? = null
-                        
-                        override fun createDirectory(path: String, createParents: Boolean) {
-                            runCatching<Unit> {
-                                kotlinx.coroutines.runBlocking<Unit> {
-                                    workspace.fileSystem.createDirectory(path)
-                                }
-                            }
-                        }
-                        
-                        override fun delete(path: String, recursive: Boolean) {
-                            runCatching<Unit> {
-                                kotlinx.coroutines.runBlocking<Unit> {
-                                    // ProjectFileSystem doesn't have deleteFile, so we'll skip this
-                                    // workspace.fileSystem.deleteFile(path)
-                                }
-                            }
-                        }
-                    }
+                    // Use null for fileSystem - DocumentAgent doesn't require filesystem operations
+                    // Document queries work via the registry and parser, not filesystem tools
+                    val toolFileSystem: cc.unitmesh.agent.tool.filesystem.ToolFileSystem? = null
                     
                     documentAgent = DocumentAgent(
                         llmService = llmService!!,

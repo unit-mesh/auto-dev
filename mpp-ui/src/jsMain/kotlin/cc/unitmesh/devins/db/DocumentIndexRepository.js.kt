@@ -54,13 +54,12 @@ actual class DocumentIndexDatabaseRepository(private val database: DevInsDatabas
         private var instance: DocumentIndexRepository? = null
 
         actual fun getInstance(): DocumentIndexRepository {
-            return instance ?: synchronized(this) {
-                instance ?: run {
-                    val driverFactory = DatabaseDriverFactory()
-                    val database = createDatabase(driverFactory)
-                    DocumentIndexDatabaseRepository(database).also { instance = it }
-                }
-            }
+            if (instance != null) return instance!!
+            
+            val driverFactory = DatabaseDriverFactory()
+            val database = createDatabase(driverFactory)
+            instance = DocumentIndexDatabaseRepository(database)
+            return instance!!
         }
     }
 }
