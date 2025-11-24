@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.agent.Platform
+import cc.unitmesh.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.agent.config.McpToolConfigService
 import cc.unitmesh.agent.config.ToolConfigFile
 import cc.unitmesh.agent.language.LanguageDetector
@@ -562,23 +563,11 @@ open class CodeReviewViewModel(
 
             // Use CodeReviewAgentPromptRenderer to generate structured prompt
             val promptRenderer = cc.unitmesh.agent.CodeReviewAgentPromptRenderer()
-            
-            // Convert ModifiedCodeRange to CodeContext
-            val codeRanges = currentState.aiProgress.modifiedCodeRanges.mapValues { (_, ranges) ->
-                ranges.map { range ->
-                    cc.unitmesh.agent.CodeReviewAgentPromptRenderer.CodeContext(
-                        elementName = range.elementName,
-                        elementType = range.elementType,
-                        startLine = range.startLine,
-                        endLine = range.endLine
-                    )
-                }
-            }
-            
+
             val planPrompt = promptRenderer.renderModificationPlanPrompt(
                 lintResults = currentState.aiProgress.lintResults,
                 analysisOutput = WalkthroughExtractor.extract(currentState.aiProgress.analysisOutput),
-                modifiedCodeRanges = codeRanges,
+                modifiedCodeRanges = currentState.aiProgress.modifiedCodeRanges,
                 language = "ZH"  // Use Chinese for better user experience
             )
 

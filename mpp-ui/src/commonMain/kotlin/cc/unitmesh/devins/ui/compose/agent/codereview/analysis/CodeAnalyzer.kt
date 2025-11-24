@@ -7,7 +7,7 @@ import cc.unitmesh.codegraph.CodeGraphFactory
 import cc.unitmesh.codegraph.model.CodeElementType
 import cc.unitmesh.codegraph.parser.Language
 import cc.unitmesh.devins.ui.compose.agent.codereview.DiffFileInfo
-import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
+import cc.unitmesh.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.devins.workspace.Workspace
 
 /**

@@ -6,7 +6,7 @@ import cc.unitmesh.agent.linter.LintResult
 import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.linter.Linter
 import cc.unitmesh.agent.linter.LinterRegistry
-import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
+import cc.unitmesh.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.agent.diff.DiffHunk
 import cc.unitmesh.agent.diff.DiffLine
 import cc.unitmesh.agent.diff.DiffLineType

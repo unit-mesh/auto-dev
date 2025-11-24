@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.linter.LintIssue
 import cc.unitmesh.agent.linter.LintSeverity
@@ -16,16 +17,6 @@ import cc.unitmesh.devins.compiler.variable.VariableType
  */
 class CodeReviewAgentPromptRenderer {
     val logger = getLogger("CodeReviewAgentPromptRenderer")
-
-    /**
-     * Simple data class for code context (function/class information)
-     */
-    data class CodeContext(
-        val elementName: String,
-        val elementType: String,
-        val startLine: Int,
-        val endLine: Int
-    )
 
     fun renderAnalysisPrompt(
         reviewType: String,
@@ -82,7 +73,7 @@ $result
     /**
      * Renders fix generation prompt for creating actionable fixes
      * This is the second step in the code review process
-     * 
+     *
      * @param changedHunks Map of file paths to changed code hunks (extracted from diff)
      * @param lintResults Lint results for the changed files
      * @param analysisOutput The analysis output from Phase 1
@@ -106,7 +97,7 @@ $result
                 buildString {
                     appendLine("### File: $filePath")
                     appendLine()
-                    
+
                     hunks.forEachIndexed { index, hunk ->
                         appendLine("#### Changed Block #${index + 1}")
                         appendLine("**Location**: Lines ${hunk.newStartLine}-${hunk.newStartLine + hunk.newLineCount - 1}")
@@ -114,27 +105,27 @@ $result
                         appendLine()
                         appendLine("```diff")
                         appendLine(hunk.header)
-                        
+
                         // Show context before
                         hunk.contextBefore.forEach { line ->
                             appendLine(" $line")
                         }
-                        
+
                         // Show deleted lines
                         hunk.deletedLines.forEach { line ->
                             appendLine("-$line")
                         }
-                        
+
                         // Show added lines
                         hunk.addedLines.forEach { line ->
                             appendLine("+$line")
                         }
-                        
+
                         // Show context after
                         hunk.contextAfter.forEach { line ->
                             appendLine(" $line")
                         }
-                        
+
                         appendLine("```")
                         appendLine()
                     }
@@ -147,11 +138,11 @@ $result
         // Format lint results - only for files in changedHunks, with priority separation
         val relevantFiles = changedHunks.keys
         val relevantLintResults = lintResults.filter { it.filePath in relevantFiles }
-        
+
         // Separate files by priority: Error files vs Warning-only files
         val filesWithErrors = relevantLintResults.filter { it.errorCount > 0 }.sortedByDescending { it.errorCount }
         val filesWithWarningsOnly = relevantLintResults.filter { it.errorCount == 0 && it.warningCount > 0 }
-        
+
         val formattedLintResults = if (relevantLintResults.isNotEmpty()) {
             buildString {
                 // Section 1: Files with ERRORS (🚨 CRITICAL PRIORITY)
@@ -160,7 +151,7 @@ $result
                     appendLine()
                     appendLine("**${filesWithErrors.size} file(s) with compilation/lint errors:**")
                     appendLine()
-                    
+
                     filesWithErrors.forEach { fileResult ->
                         val totalCount = fileResult.errorCount + fileResult.warningCount + fileResult.infoCount
                         appendLine("### ❌ ${fileResult.filePath}")
@@ -195,19 +186,19 @@ $result
                     appendLine("---")
                     appendLine()
                 }
-                
+
                 // Section 2: Files with WARNINGS only (Lower priority)
                 if (filesWithWarningsOnly.isNotEmpty()) {
                     appendLine("## ⚠️ LOWER PRIORITY - Files with Warnings Only")
                     appendLine()
                     appendLine("**${filesWithWarningsOnly.size} file(s) with warnings (optional fixes):**")
                     appendLine()
-                    
+
                     filesWithWarningsOnly.forEach { fileResult ->
                         appendLine("### ${fileResult.filePath}")
                         appendLine("${fileResult.warningCount} warning(s) - Fix these only after addressing all errors")
                         appendLine()
-                        
+
                         val warnings = fileResult.issues.filter { it.severity == LintSeverity.WARNING }
                         warnings.take(3).forEach { issue ->
                             appendLine("- Line ${issue.line}: ${issue.message}")
@@ -255,7 +246,7 @@ $result
     /**
      * Renders modification plan prompt for generating concise, structured suggestions
      * This is called after analysis and before fix generation
-     * 
+     *
      * @param lintResults Lint results for files
      * @param analysisOutput Analysis output from walkthrough
      * @param modifiedCodeRanges Map of file path to list of modified code ranges (functions, classes)
@@ -264,7 +255,7 @@ $result
     fun renderModificationPlanPrompt(
         lintResults: List<LintFileResult>,
         analysisOutput: String,
-        modifiedCodeRanges: Map<String, List<CodeContext>> = emptyMap(),
+        modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap(),
         language: String = "EN"
     ): String {
         val template = when (language.uppercase()) {
@@ -274,135 +265,7 @@ $result
 
         // Format lint results summary with specific errors for modification plan
         // Group issues by function/class context for cleaner display
-        val lintSummary = if (lintResults.isNotEmpty()) {
-            buildString {
-                val totalErrors = lintResults.sumOf { it.errorCount }
-                val totalWarnings = lintResults.sumOf { it.warningCount }
-                
-                appendLine("**Summary**: $totalErrors error(s), $totalWarnings warning(s) across ${lintResults.size} file(s)")
-                appendLine()
-                
-                // Show files with errors, grouped by function context
-                val filesWithErrors = lintResults.filter { it.errorCount > 0 }.sortedByDescending { it.errorCount }
-                if (filesWithErrors.isNotEmpty()) {
-                    appendLine("## 🔴 CRITICAL - Files with Errors (MUST FIX)")
-                    appendLine()
-                    
-                    filesWithErrors.forEach { file ->
-                        appendLine("### File: ${file.filePath}")
-                        appendLine("**Total**: ${file.errorCount} error(s), ${file.warningCount} warning(s)")
-                        appendLine()
-                        
-                        // Group errors by function context
-                        val errors = file.issues.filter { it.severity == LintSeverity.ERROR }
-                        if (errors.isNotEmpty()) {
-                            val errorsByContext = groupIssuesByContext(file.filePath, errors, modifiedCodeRanges)
-                            
-                            appendLine("**Errors (grouped by function/class):**")
-                            errorsByContext.forEach { (contextKey, issues) ->
-                                val context = contextKey.context
-                                val header = if (context != null) {
-                                    "**In `${context.elementName}` (${context.elementType.lowercase()}, lines ${context.startLine}-${context.endLine})**:"
-                                } else {
-                                    "**No specific function context**:"
-                                }
-                                appendLine("- $header")
-                                
-                                issues.forEach { issue ->
-                                    appendLine("  - Line ${issue.line}: ${issue.message}")
-                                    if (issue.rule != null && issue.rule!!.isNotBlank()) {
-                                        appendLine("    - Rule: `${issue.rule}`")
-                                    }
-                                    if (issue.suggestion != null && issue.suggestion!!.isNotBlank()) {
-                                        appendLine("    - Suggestion: ${issue.suggestion}")
-                                    }
-                                }
-                                appendLine()
-                            }
-                        }
-                        
-                        // Show warnings for the same file (if any), also grouped
-                        val warnings = file.issues.filter { issue -> issue.severity == LintSeverity.WARNING }
-                        if (warnings.isNotEmpty()) {
-                            val warningsByContext = groupIssuesByContext(file.filePath, warnings, modifiedCodeRanges)
-                            
-                            appendLine("**Warnings** (${warnings.size} total, grouped by function/class):")
-                            warningsByContext.entries.take(3).forEach { entry ->
-                                val context = entry.key.context
-                                val issues = entry.value
-                                val header = if (context != null) {
-                                    "In `${context.elementName}` (${context.elementType.lowercase()})"
-                                } else {
-                                    "No specific function context"
-                                }
-                                val lines = issues.map { issue -> issue.line }.sorted().joinToString(", ")
-                                appendLine("- $header - ${issues.size} warning(s) at lines: $lines")
-                            }
-                            if (warningsByContext.size > 3) {
-                                appendLine("... and ${warningsByContext.size - 3} more contexts with warnings")
-                            }
-                            appendLine()
-                        }
-                    }
-                    appendLine("---")
-                    appendLine()
-                }
-                
-                // Show warning-only files (grouped by function context)
-                val filesWithWarningsOnly = lintResults.filter { it.errorCount == 0 && it.warningCount > 0 }
-                if (filesWithWarningsOnly.isNotEmpty()) {
-                    appendLine("## ⚠️ WARNINGS ONLY - Lower Priority")
-                    appendLine()
-                    appendLine("**${filesWithWarningsOnly.size} file(s) with warnings only:**")
-                    appendLine()
-                    
-                    val totalWarningsCount = filesWithWarningsOnly.sumOf { it.warningCount }
-                    appendLine("Total warnings: $totalWarningsCount across ${filesWithWarningsOnly.size} file(s)")
-                    appendLine()
-                    
-                    // Show all files with warnings grouped by function context
-                    filesWithWarningsOnly.forEach { file ->
-                        appendLine("### File: ${file.filePath}")
-                        appendLine("**Total**: ${file.warningCount} warning(s)")
-                        appendLine()
-                        
-                        // Group warnings by context (function/class)
-                        val warnings = file.issues.filter { issue -> issue.severity == LintSeverity.WARNING }
-                        val warningsByContext = groupIssuesByContext(file.filePath, warnings, modifiedCodeRanges)
-                        
-                        warningsByContext.entries.take(5).forEach { entry ->
-                            val context = entry.key.context
-                            val issues = entry.value
-                            if (context != null) {
-                                val lines = issues.map { issue -> issue.line }.sorted().joinToString(", ")
-                                appendLine("- **In `${context.elementName}` (${context.elementType.lowercase()})**: ${issues.size} warning(s) at lines $lines")
-                                // Show first warning message as example
-                                val firstIssue = issues.first()
-                                appendLine("  - Example: ${firstIssue.message}")
-                                if (firstIssue.rule != null && firstIssue.rule!!.isNotBlank()) {
-                                    appendLine("  - Rule: `${firstIssue.rule}`")
-                                }
-                            } else {
-                                // No context - group by rule instead
-                                val byRule = issues.groupBy { issue -> issue.rule ?: "no-rule" }
-                                byRule.forEach { (rule, ruleIssues) ->
-                                    val lines = ruleIssues.map { issue -> issue.line }.sorted().joinToString(", ")
-                                    appendLine("- **Rule `$rule`**: ${ruleIssues.size} warning(s) at lines $lines")
-                                    appendLine("  - ${ruleIssues.first().message}")
-                                }
-                            }
-                        }
-                        
-                        if (warningsByContext.size > 5) {
-                            appendLine("... and ${warningsByContext.size - 5} more function/class contexts with warnings")
-                        }
-                        appendLine()
-                    }
-                }
-            }
-        } else {
-            "No lint issues found."
-        }
+        val lintSummary = formatSummary(lintResults, modifiedCodeRanges)
 
         val variableTable = cc.unitmesh.devins.compiler.variable.VariableTable()
         variableTable.addVariable("lintResults", VariableType.STRING, lintSummary)
@@ -414,17 +277,146 @@ $result
         logger.debug { "Generated modification plan prompt (${prompt.length} chars)" }
         return prompt
     }
-    
-    /**
-     * Data class to use as key for grouping issues by context
-     * Uses nullable context to handle issues without function context
-     */
-    private data class ContextKey(val context: CodeContext?)
-    
+
+    fun formatSummary(
+        lintResults: List<LintFileResult>,
+        modifiedCodeRanges: Map<String, List<ModifiedCodeRange>>
+    ): String = if (lintResults.isNotEmpty()) {
+        buildString {
+            val totalErrors = lintResults.sumOf { it.errorCount }
+            val totalWarnings = lintResults.sumOf { it.warningCount }
+
+            appendLine("**Summary**: $totalErrors error(s), $totalWarnings warning(s) across ${lintResults.size} file(s)")
+            appendLine()
+
+            // Show files with errors, grouped by function context
+            val filesWithErrors = lintResults.filter { it.errorCount > 0 }.sortedByDescending { it.errorCount }
+            if (filesWithErrors.isNotEmpty()) {
+                appendLine("## 🔴 CRITICAL - Files with Errors (MUST FIX)")
+                appendLine()
+
+                filesWithErrors.forEach { file ->
+                    appendLine("### File: ${file.filePath}")
+                    appendLine("**Total**: ${file.errorCount} error(s), ${file.warningCount} warning(s)")
+                    appendLine()
+
+                    // Group errors by function context
+                    val errors = file.issues.filter { it.severity == LintSeverity.ERROR }
+                    if (errors.isNotEmpty()) {
+                        val errorsByContext = groupIssuesByContext(file.filePath, errors, modifiedCodeRanges)
+
+                        appendLine("**Errors (grouped by function/class):**")
+                        errorsByContext.forEach { (contextKey, issues) ->
+                            val context = contextKey.context
+                            val header = if (context != null) {
+                                "**In `${context.elementName}` (${context.elementType.lowercase()}, lines ${context.startLine}-${context.endLine})**:"
+                            } else {
+                                "**No specific function context**:"
+                            }
+                            appendLine("- $header")
+
+                            issues.forEach { issue ->
+                                appendLine("  - Line ${issue.line}: ${issue.message}")
+                                if (issue.rule != null && issue.rule.isNotBlank()) {
+                                    appendLine("    - Rule: `${issue.rule}`")
+                                }
+                                if (issue.suggestion != null && issue.suggestion.isNotBlank()) {
+                                    appendLine("    - Suggestion: ${issue.suggestion}")
+                                }
+                            }
+                            appendLine()
+                        }
+                    }
+
+                    // Show warnings for the same file (if any), also grouped
+                    val warnings = file.issues.filter { issue -> issue.severity == LintSeverity.WARNING }
+                    if (warnings.isNotEmpty()) {
+                        val warningsByContext = groupIssuesByContext(file.filePath, warnings, modifiedCodeRanges)
+
+                        appendLine("**Warnings** (${warnings.size} total, grouped by function/class):")
+                        warningsByContext.entries.take(3).forEach { entry ->
+                            val context = entry.key.context
+                            val issues = entry.value
+                            val header = if (context != null) {
+                                "In `${context.elementName}` (${context.elementType.lowercase()})"
+                            } else {
+                                "No specific function context"
+                            }
+                            val lines = issues.map { issue -> issue.line }.sorted().joinToString(", ")
+                            appendLine("- $header - ${issues.size} warning(s) at lines: $lines")
+                        }
+                        if (warningsByContext.size > 3) {
+                            appendLine("... and ${warningsByContext.size - 3} more contexts with warnings")
+                        }
+                        appendLine()
+                    }
+                }
+                appendLine("---")
+                appendLine()
+            }
+
+            // Show warning-only files (grouped by function context)
+            val filesWithWarningsOnly = lintResults.filter { it.errorCount == 0 && it.warningCount > 0 }
+            if (filesWithWarningsOnly.isNotEmpty()) {
+                appendLine("## ⚠️ WARNINGS ONLY - Lower Priority")
+                appendLine()
+                appendLine("**${filesWithWarningsOnly.size} file(s) with warnings only:**")
+                appendLine()
+
+                val totalWarningsCount = filesWithWarningsOnly.sumOf { it.warningCount }
+                appendLine("Total warnings: $totalWarningsCount across ${filesWithWarningsOnly.size} file(s)")
+                appendLine()
+
+                // Show all files with warnings grouped by function context
+                filesWithWarningsOnly.forEach { file ->
+                    appendLine("### File: ${file.filePath}")
+                    appendLine("**Total**: ${file.warningCount} warning(s)")
+                    appendLine()
+
+                    // Group warnings by context (function/class)
+                    val warnings = file.issues.filter { issue -> issue.severity == LintSeverity.WARNING }
+                    val warningsByContext = groupIssuesByContext(file.filePath, warnings, modifiedCodeRanges)
+
+                    warningsByContext.entries.take(5).forEach { entry ->
+                        val context = entry.key.context
+                        val issues = entry.value
+                        if (context != null) {
+                            val lines = issues.map { issue -> issue.line }.sorted().joinToString(", ")
+                            appendLine("- **In `${context.elementName}` (${context.elementType.lowercase()})**: ${issues.size} warning(s) at lines $lines")
+                            // Show first warning message as example
+                            val firstIssue = issues.first()
+                            appendLine("  - Example: ${firstIssue.message}")
+                            if (firstIssue.rule != null && firstIssue.rule!!.isNotBlank()) {
+                                appendLine("  - Rule: `${firstIssue.rule}`")
+                            }
+                        } else {
+                            // No context - group by rule instead
+                            val byRule = issues.groupBy { issue -> issue.rule ?: "no-rule" }
+                            byRule.forEach { (rule, ruleIssues) ->
+                                val lines = ruleIssues.map { issue -> issue.line }.sorted().joinToString(", ")
+                                appendLine("- **Rule `$rule`**: ${ruleIssues.size} warning(s) at lines $lines")
+                                appendLine("  - ${ruleIssues.first().message}")
+                            }
+                        }
+                    }
+
+                    if (warningsByContext.size > 5) {
+                        appendLine("... and ${warningsByContext.size - 5} more function/class contexts with warnings")
+                    }
+                    appendLine()
+                }
+            }
+        }
+    } else {
+        "No lint issues found."
+    }
+
+    private data class ContextKey(val context: ModifiedCodeRange?)
+
     /**
      * Group lint issues by their function/class context
      * Issues in the same function will be grouped together
-     * 
+     *
      * @param filePath The file path
      * @param issues List of lint issues to group
      * @param modifiedCodeRanges Map of file path to modified code ranges
@@ -433,18 +425,18 @@ $result
     private fun groupIssuesByContext(
         filePath: String,
         issues: List<LintIssue>,
-        modifiedCodeRanges: Map<String, List<CodeContext>>
+        modifiedCodeRanges: Map<String, List<ModifiedCodeRange>>
     ): Map<ContextKey, List<LintIssue>> {
         return issues.groupBy { issue ->
             val context = findFunctionContext(filePath, issue.line, modifiedCodeRanges)
             ContextKey(context)
         }
     }
-    
+
     /**
      * Find the function/class context for a given line number
      * Returns the most specific (smallest) context that contains the line
-     * 
+     *
      * @param filePath The file path
      * @param lineNumber The line number to find context for
      * @param modifiedCodeRanges Map of file path to modified code ranges
@@ -453,16 +445,15 @@ $result
     private fun findFunctionContext(
         filePath: String,
         lineNumber: Int,
-        modifiedCodeRanges: Map<String, List<CodeContext>>
-    ): CodeContext? {
+        modifiedCodeRanges: Map<String, List<ModifiedCodeRange>>
+    ): ModifiedCodeRange? {
         val ranges = modifiedCodeRanges[filePath] ?: return null
         val matchingContexts = ranges.filter { range ->
             lineNumber in range.startLine..range.endLine
         }
-        
+
         return matchingContexts.minByOrNull { it.endLine - it.startLine }
     }
-
 }
 
 

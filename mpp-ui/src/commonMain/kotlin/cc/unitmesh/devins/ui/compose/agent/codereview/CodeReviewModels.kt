@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.agent.codereview
 
+import cc.unitmesh.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.diff.ChangeType
 import cc.unitmesh.agent.diff.DiffHunk
@@ -42,8 +43,7 @@ data class DiffFileInfo(
     val oldPath: String? = null, // For renamed files
     val changeType: ChangeType = ChangeType.EDIT,
     val hunks: List<DiffHunk> = emptyList(),
-    val language: String? = null,
-    val Ω: String? = null
+    val language: String? = null
 )
 
 /**
@@ -63,19 +63,6 @@ data class AIAnalysisProgress(
     val userFeedback: String = "",
     // ComposeRenderer for streaming fix generation (null if not started)
     val fixRenderer: cc.unitmesh.devins.ui.compose.agent.ComposeRenderer? = null
-)
-
-/**
- * Represents a modified code range (function, class, etc.) in a file
- */
-@Serializable
-data class ModifiedCodeRange(
-    val filePath: String,
-    val elementName: String,
-    val elementType: String, // "CLASS", "METHOD", "FUNCTION", etc.
-    val startLine: Int,
-    val endLine: Int,
-    val modifiedLines: List<Int> // Lines that were actually modified within this range
 )
 
 /**

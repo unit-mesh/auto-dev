@@ -4,7 +4,7 @@ import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.linter.LintIssue
 import cc.unitmesh.agent.linter.LintSeverity
 import cc.unitmesh.agent.logging.AutoDevLogger
-import cc.unitmesh.devins.ui.compose.agent.codereview.ModifiedCodeRange
+import cc.unitmesh.agent.codereview.ModifiedCodeRange
 
 /**
  * Executes linters and processes lint results.
@@ -61,7 +61,7 @@ class LintExecutor {
                 // Convert to UI model and aggregate
                 for (result in results) {
                     if (result.hasIssues) {
-                        val filteredIssues = filterIssuesByModifiedRanges(
+                        val filteredIssues = ModifiedCodeRange.filterIssuesByModifiedRanges(
                             result.issues,
                             result.filePath,
                             modifiedCodeRanges
@@ -136,34 +136,5 @@ class LintExecutor {
         }
 
         return allFileLintResults
-    }
-
-    /**
-     * Filter lint issues to only those in modified code ranges.
-     *
-     * @param issues All lint issues for a file
-     * @param filePath The file path
-     * @param modifiedCodeRanges Map of file paths to modified code ranges
-     * @return Filtered list of issues
-     */
-    fun filterIssuesByModifiedRanges(
-        issues: List<LintIssue>,
-        filePath: String,
-        modifiedCodeRanges: Map<String, List<ModifiedCodeRange>>
-    ): List<LintIssue> {
-        if (modifiedCodeRanges.isEmpty()) {
-            return issues
-        }
-
-        val ranges = modifiedCodeRanges[filePath] ?: emptyList()
-        if (ranges.isEmpty()) {
-            return emptyList()
-        }
-
-        return issues.filter { issue ->
-            ranges.any { range ->
-                issue.line >= range.startLine && issue.line <= range.endLine
-            }
-        }
     }
 }
