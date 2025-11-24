@@ -134,7 +134,7 @@ open class CodeReviewViewModel(
 
         val projectPath = workspace.rootPath
         if (projectPath.isNullOrEmpty()) {
-            throw IllegalStateException("Cannot initialize coding agent: workspace root path is null or empty")
+            error("Cannot initialize coding agent: workspace root path is null or empty")
         }
 
         return createCodeReviewAgent(projectPath)
@@ -575,7 +575,7 @@ open class CodeReviewViewModel(
                 // Create a temporary LLM service for plan generation
                 val configWrapper = ConfigManager.load()
                 val modelConfig = configWrapper.getActiveModelConfig()
-                    ?: throw IllegalStateException("No active model configuration found")
+                    ?: error("No active model configuration found")
                 
                 val llmService = KoogLLMService.create(modelConfig)
                 
@@ -1460,7 +1460,7 @@ open class CodeReviewViewModel(
 
                 val configWrapper = ConfigManager.load()
                 val modelConfig = configWrapper.getActiveModelConfig()
-                    ?: throw IllegalStateException("No active model configuration found. Please configure a model in settings.")
+                    ?: error("No active model configuration found. Please configure a model in settings.")
 
                 val llmService = KoogLLMService.create(modelConfig)
 

@@ -468,7 +468,7 @@ private fun PlanStepItem(
             androidx.compose.foundation.text.ClickableText(
                 text = annotatedText,
                 style = MaterialTheme.typography.bodySmall.copy(
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.2
                 ),
                 onClick = { offset ->

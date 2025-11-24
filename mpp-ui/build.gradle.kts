@@ -490,6 +490,38 @@ tasks.register<JavaExec>("runDocumentCli") {
     standardInput = System.`in`
 }
 
+// Task to run Review CLI
+tasks.register<JavaExec>("runReviewCli") {
+    group = "application"
+    description = "Run Code Review CLI (Fix Generation with CodingAgent)"
+
+    val jvmCompilation = kotlin.jvm().compilations.getByName("main")
+    classpath(jvmCompilation.output, configurations["jvmRuntimeClasspath"])
+    mainClass.set("cc.unitmesh.server.cli.ReviewCli")
+
+    // Pass properties
+    if (project.hasProperty("reviewProjectPath")) {
+        systemProperty("reviewProjectPath", project.property("reviewProjectPath") as String)
+    }
+    if (project.hasProperty("reviewAnalysis")) {
+        systemProperty("reviewAnalysis", project.property("reviewAnalysis") as String)
+    }
+    if (project.hasProperty("reviewPatch")) {
+        systemProperty("reviewPatch", project.property("reviewPatch") as String)
+    }
+    if (project.hasProperty("reviewCommitHash")) {
+        systemProperty("reviewCommitHash", project.property("reviewCommitHash") as String)
+    }
+    if (project.hasProperty("reviewUserFeedback")) {
+        systemProperty("reviewUserFeedback", project.property("reviewUserFeedback") as String)
+    }
+    if (project.hasProperty("reviewLanguage")) {
+        systemProperty("reviewLanguage", project.property("reviewLanguage") as String)
+    }
+    
+    standardInput = System.`in`
+}
+
 // Ktlint configuration
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     version.set("1.0.1")
