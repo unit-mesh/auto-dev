@@ -146,23 +146,20 @@ class LintExecutor {
      * @param modifiedCodeRanges Map of file paths to modified code ranges
      * @return Filtered list of issues
      */
-    private fun filterIssuesByModifiedRanges(
-        issues: List<cc.unitmesh.agent.linter.LintIssue>,
+    fun filterIssuesByModifiedRanges(
+        issues: List<LintIssue>,
         filePath: String,
         modifiedCodeRanges: Map<String, List<ModifiedCodeRange>>
-    ): List<cc.unitmesh.agent.linter.LintIssue> {
+    ): List<LintIssue> {
         if (modifiedCodeRanges.isEmpty()) {
-            // No filtering, include all issues
             return issues
         }
 
         val ranges = modifiedCodeRanges[filePath] ?: emptyList()
         if (ranges.isEmpty()) {
-            // No modified ranges for this file, skip all issues
             return emptyList()
         }
 
-        // Filter issues to only those within modified code ranges
         return issues.filter { issue ->
             ranges.any { range ->
                 issue.line >= range.startLine && issue.line <= range.endLine
