@@ -38,8 +38,8 @@ fun DocumentReaderPage(
             // 3-Pane Layout
             ResizableSplitPane(
                 modifier = Modifier.fillMaxSize(),
-                initialSplitRatio = 0.2f,
-                minRatio = 0.15f,
+                initialSplitRatio = 0.18f,
+                minRatio = 0.12f,
                 maxRatio = 0.3f,
                 first = {
                     DocumentNavigationPane(
@@ -50,16 +50,16 @@ fun DocumentReaderPage(
                 second = {
                     ResizableSplitPane(
                         modifier = Modifier.fillMaxSize(),
-                        initialSplitRatio = 0.7f,
-                        minRatio = 0.5f,
-                        maxRatio = 0.85f,
+                        initialSplitRatio = 0.65f,
+                        minRatio = 0.45f,
+                        maxRatio = 0.8f,
                         first = {
                             // 中间：文档查看 + 结构化信息
                             VerticalResizableSplitPane(
                                 modifier = Modifier.fillMaxSize(),
-                                initialSplitRatio = 0.6f,
-                                minRatio = 0.3f,
-                                maxRatio = 0.8f,
+                                initialSplitRatio = 0.7f,
+                                minRatio = 0.4f,
+                                maxRatio = 0.85f,
                                 top = {
                                     // 中间上：文档查看器
                                     DocumentViewerPane(

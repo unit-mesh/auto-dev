@@ -17,7 +17,7 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 /**
  * 结构化信息面板 - 中间下部
- * 包含 DocQL 查询栏（顶部）+ TOC (目录)、Graph (关系图)、Entities (实体列表)
+ * 包含 DocQL 查询栏（顶部）+ 可折叠的 TOC (目录) 和 Entities (实体列表)
  */
 @Composable
 fun StructuredInfoPane(
@@ -28,16 +28,17 @@ fun StructuredInfoPane(
     onDocQLQuery: suspend (String) -> cc.unitmesh.devins.document.docql.DocQLResult,
     modifier: Modifier = Modifier
 ) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
     var docqlResult by remember { mutableStateOf<cc.unitmesh.devins.document.docql.DocQLResult?>(null) }
     var showDocQLResult by remember { mutableStateOf(false) }
-    val tabs = listOf("目录", "关系图", "实体")
+    var tocExpanded by remember { mutableStateOf(true) }
+    var entitiesExpanded by remember { mutableStateOf(false) }
 
     // Reset DocQL result when document changes (toc or entities change)
     LaunchedEffect(toc, entities) {
         docqlResult = null
         showDocQLResult = false
-        selectedTabIndex = 0
+        tocExpanded = true
+        entitiesExpanded = false
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -58,61 +59,154 @@ fun StructuredInfoPane(
 
         HorizontalDivider()
 
-        // Tab 栏
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.primary,
-            divider = { HorizontalDivider() }
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = {
-                        selectedTabIndex = index
-                        showDocQLResult = false
-                    },
-                    text = { Text(title) }
-                )
-            }
-        }
-
         // 内容区域
-        Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
-            if (showDocQLResult && docqlResult != null) {
-                // 显示 DocQL 查询结果
-                DocQLResultView(
-                    result = docqlResult!!,
-                    onTocSelected = onTocSelected,
-                    onEntitySelected = onEntitySelected,
-                    onClose = { showDocQLResult = false }
-                )
-            } else {
-                // 显示正常 Tab 内容
-                when (selectedTabIndex) {
-                    0 -> TocView(toc, onTocSelected)
-                    1 -> GraphView()
-                    2 -> EntityListView(entities, onEntitySelected)
+        if (showDocQLResult && docqlResult != null) {
+            // 显示 DocQL 查询结果
+            DocQLResultView(
+                result = docqlResult!!,
+                onTocSelected = onTocSelected,
+                onEntitySelected = onEntitySelected,
+                onClose = { showDocQLResult = false }
+            )
+        } else {
+            // 显示可折叠的内容区域
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // TOC Section
+                item {
+                    CollapsibleSection(
+                        title = "目录",
+                        count = toc.size,
+                        expanded = tocExpanded,
+                        onToggle = { tocExpanded = !tocExpanded },
+                        icon = AutoDevComposeIcons.List
+                    ) {
+                        if (toc.isEmpty()) {
+                            Text(
+                                text = "暂无目录信息",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        } else {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                toc.forEach { item ->
+                                    TocItemRow(item, onTocSelected)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Entities Section
+                item {
+                    CollapsibleSection(
+                        title = "实体",
+                        count = entities.size,
+                        expanded = entitiesExpanded,
+                        onToggle = { entitiesExpanded = !entitiesExpanded },
+                        icon = AutoDevComposeIcons.DataObject
+                    ) {
+                        if (entities.isEmpty()) {
+                            Text(
+                                text = "未提取到关键实体",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        } else {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                entities.forEach { entity ->
+                                    EntityItemRow(entity, onEntitySelected)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+/**
+ * Collapsible section component
+ */
 @Composable
-private fun TocView(
-    toc: List<TOCItem>,
-    onTocSelected: (TOCItem) -> Unit
+private fun CollapsibleSection(
+    title: String,
+    count: Int,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    content: @Composable () -> Unit
 ) {
-    if (toc.isEmpty()) {
-        EmptyState("暂无目录信息")
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(toc) { item ->
-                TocItemRow(item, onTocSelected)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Column {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onToggle)
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (count > 0) {
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Text(
+                                text = count.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+
+                Icon(
+                    imageVector = if (expanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Content
+            if (expanded) {
+                HorizontalDivider()
+                Box(modifier = Modifier.padding(8.dp)) {
+                    content()
+                }
             }
         }
     }
@@ -156,30 +250,6 @@ private fun TocItemRow(
         // 递归显示子项
         item.children.forEach { child ->
             TocItemRow(child, onTocSelected)
-        }
-    }
-}
-
-@Composable
-private fun GraphView() {
-    EmptyState("文档关系图生成中...")
-}
-
-@Composable
-private fun EntityListView(
-    entities: List<Entity>,
-    onEntitySelected: (Entity) -> Unit
-) {
-    if (entities.isEmpty()) {
-        EmptyState("未提取到关键实体")
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(entities) { entity ->
-                EntityItemRow(entity, onEntitySelected)
-            }
         }
     }
 }
