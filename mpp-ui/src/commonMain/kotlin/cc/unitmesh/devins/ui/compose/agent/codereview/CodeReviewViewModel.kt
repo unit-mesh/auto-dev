@@ -3,7 +3,6 @@ package cc.unitmesh.devins.ui.compose.agent.codereview
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import cc.unitmesh.agent.diff.DiffLineType
 import cc.unitmesh.agent.CodeReviewAgent
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.agent.config.McpToolConfigService
@@ -16,7 +15,6 @@ import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.CodeAnalyzer
 import cc.unitmesh.devins.ui.compose.agent.codereview.analysis.LintExecutor
 import cc.unitmesh.agent.diff.DiffParser
-import cc.unitmesh.agent.diff.FileDiff
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.ui.wasm.WasmGitManager
 import cc.unitmesh.devins.workspace.Workspace
@@ -781,12 +779,6 @@ open class CodeReviewViewModel(
         return modifiedRanges
     }
 
-    /**
-     * Detect programming language from file path.
-     * Delegates to CodeAnalyzer.
-     */
-    fun detectLanguageFromPath(filePath: String) = codeAnalyzer.detectLanguageFromPath(filePath)
-
     suspend fun runLint(
         filePaths: List<String>,
         modifiedCodeRanges: Map<String, List<ModifiedCodeRange>> = emptyMap()
@@ -1134,107 +1126,6 @@ open class CodeReviewViewModel(
     }
 
     /**
-     * Apply a single file diff patch to the workspace
-     */
-    private suspend fun applyDiffPatchToFile(
-        filePath: String,
-        fileDiff: FileDiff
-    ): Boolean {
-        try {
-            // Read the current file content
-            val currentContent = workspace.fileSystem.readFile(filePath) ?: ""
-            // Handle empty content properly - String.lines() returns [""] for empty string
-            val currentLines = if (currentContent.isEmpty()) {
-                mutableListOf()
-            } else {
-                currentContent.lines().toMutableList()
-            }
-
-            // Track the offset between original line numbers and current line numbers
-            // This is needed because insertions/deletions shift subsequent line numbers
-            var lineOffset = 0
-
-            // Apply each hunk
-            fileDiff.hunks.forEach { hunk ->
-                // Convert hunk's old line numbers to current line numbers using offset
-                // For new files, oldStartLine is 0, so we start at index 0
-                var currentLineIndex = maxOf(0, hunk.oldStartLine - 1) + lineOffset
-                var oldLineNum = maxOf(1, hunk.oldStartLine)
-
-                hunk.lines.forEach { diffLine ->
-                    when (diffLine.type) {
-                        DiffLineType.CONTEXT -> {
-                            // Context line - verify it matches
-                            if (currentLineIndex < currentLines.size) {
-                                if (currentLines[currentLineIndex].trim() != diffLine.content.trim()) {
-                                    AutoDevLogger.warn("CodeReviewViewModel") {
-                                        "Context mismatch at line ${oldLineNum}: expected '${diffLine.content}', got '${currentLines[currentLineIndex]}'"
-                                    }
-                                }
-                                currentLineIndex++
-                                oldLineNum++
-                            }
-                        }
-
-                        DiffLineType.DELETED -> {
-                            // Delete line
-                            if (currentLineIndex < currentLines.size) {
-                                currentLines.removeAt(currentLineIndex)
-                                lineOffset-- // Deletion shifts subsequent lines up
-                                oldLineNum++
-                                // Don't increment currentLineIndex - the next line is now at this index
-                            }
-                        }
-
-                        DiffLineType.ADDED -> {
-                            // Add line
-                            if (currentLineIndex <= currentLines.size) {
-                                currentLines.add(currentLineIndex, diffLine.content)
-                                lineOffset++ // Insertion shifts subsequent lines down
-                                currentLineIndex++
-                                // Don't increment oldLineNum - added lines aren't in the old file
-                            }
-                        }
-
-                        DiffLineType.HEADER -> {
-                            // Skip header lines
-                        }
-                    }
-                }
-            }
-
-            // Write the modified content back to the file
-            val newContent = currentLines.joinToString("\n")
-            workspace.fileSystem.writeFile(filePath, newContent)
-
-            return true
-        } catch (e: Exception) {
-            AutoDevLogger.error("CodeReviewViewModel") {
-                "Error applying patch to $filePath: ${e.message}"
-            }
-            return false
-        }
-    }
-
-    /**
-     * Reject a diff patch (user decided not to apply it)
-     */
-    open fun rejectDiffPatch(diffPatch: String) {
-        AutoDevLogger.info("CodeReviewViewModel") {
-            "User rejected diff patch"
-        }
-
-        // Parse the diff to log which files were rejected
-        val fileDiffs = DiffParser.parse(diffPatch)
-        fileDiffs.forEach { fileDiff ->
-            val targetPath = fileDiff.newPath ?: fileDiff.oldPath
-            AutoDevLogger.info("CodeReviewViewModel") {
-                "Rejected patch for: $targetPath"
-            }
-        }
-    }
-
-    /**
      * Store selected plan items for use in fix generation
      */
     private var selectedPlanItems: Set<Int> = emptySet()
@@ -1245,11 +1136,6 @@ open class CodeReviewViewModel(
             "Selected plan items: ${items.joinToString()}"
         }
     }
-
-    /**
-     * Get selected plan items
-     */
-    fun getSelectedPlanItems(): Set<Int> = selectedPlanItems
 
     /**
      * Format selected plan items as user feedback for fix generation
