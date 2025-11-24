@@ -21,7 +21,7 @@ class DocQLIntegrationTest {
             name = "README.md",
             path = "/project/README.md",
             metadata = DocumentMetadata(
-                lastModified = System.currentTimeMillis(),
+                lastModified = 1700000000000L,
                 fileSize = 5000,
                 language = "markdown",
                 mimeType = "text/markdown",

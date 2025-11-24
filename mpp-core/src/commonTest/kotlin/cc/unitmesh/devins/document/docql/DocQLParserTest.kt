@@ -157,8 +157,8 @@ class DocQLParserTest {
         val str = query.toString()
         
         // Check it contains key parts (exact format may vary)
-        assert(str.contains("$"))
-        assert(str.contains("toc"))
+        kotlin.test.assertTrue(str.contains("$"))
+        kotlin.test.assertTrue(str.contains("toc"))
     }
     
     @Test
@@ -177,9 +177,11 @@ class DocQLParserTest {
     
     @Test
     fun `test parse error - missing function argument`() {
-        assertFailsWith<DocQLException> {
-            parseDocQL("$.content.heading()")
-        }
+        // Empty function calls are now allowed (e.g., heading(), chunks())
+        val query = parseDocQL("$.content.heading()")
+        kotlin.test.assertTrue(query.nodes.any { it is DocQLNode.FunctionCall })
+        val funcNode = query.nodes.first { it is DocQLNode.FunctionCall } as DocQLNode.FunctionCall
+        kotlin.test.assertEquals("", funcNode.argument)
     }
     
     @Test

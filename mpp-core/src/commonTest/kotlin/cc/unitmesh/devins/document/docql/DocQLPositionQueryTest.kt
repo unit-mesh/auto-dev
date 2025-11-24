@@ -220,9 +220,7 @@ class DocQLPositionQueryTest {
         val result = executor.execute(parseDocQL("$.content.heading(\"NonExistent\")"))
         
         // Then
-        assertTrue(result is DocQLResult.Chunks)
-        val chunks = (result as DocQLResult.Chunks).items
-        assertTrue(chunks.isEmpty())
+        assertTrue(result is DocQLResult.Empty)
     }
     
     @Test

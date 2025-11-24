@@ -225,7 +225,7 @@ class DocQLExecutorTest {
         val result = executor.execute(query)
         
         assertIs<DocQLResult.Error>(result)
-        assert(result.message.contains("No document"))
+        kotlin.test.assertTrue(result.message.contains("No document"))
     }
     
     @Test
@@ -248,7 +248,7 @@ class DocQLExecutorTest {
         val result = executor.execute(query)
         
         assertIs<DocQLResult.Error>(result)
-        assert(result.message.contains("Unknown context"))
+        kotlin.test.assertTrue(result.message.contains("Unknown context"))
     }
     
     @Test
@@ -281,7 +281,7 @@ class DocQLExecutorTest {
         assertIs<DocQLResult.TocItems>(result)
         // Should return level 2 items only
         assertEquals(3, result.items.size)
-        assert(result.items.all { it.level == 2 })
+        kotlin.test.assertTrue(result.items.all { it.level == 2 })
     }
     
     @Test
@@ -295,7 +295,7 @@ class DocQLExecutorTest {
         assertIs<DocQLResult.TocItems>(result)
         // Should return level 1 items only
         assertEquals(2, result.items.size)
-        assert(result.items.all { it.level == 1 })
+        kotlin.test.assertTrue(result.items.all { it.level == 1 })
     }
     
     @Test
