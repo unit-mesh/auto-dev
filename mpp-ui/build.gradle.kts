@@ -467,6 +467,29 @@ tasks.register<JavaExec>("runCodeReviewDemo") {
     standardInput = System.`in`
 }
 
+// Task to run Document CLI
+tasks.register<JavaExec>("runDocumentCli") {
+    group = "application"
+    description = "Run Document CLI"
+
+    val jvmCompilation = kotlin.jvm().compilations.getByName("main")
+    classpath(jvmCompilation.output, configurations["jvmRuntimeClasspath"])
+    mainClass.set("cc.unitmesh.server.cli.DocumentCli")
+
+    // Pass properties
+    if (project.hasProperty("docProjectPath")) {
+        systemProperty("projectPath", project.property("docProjectPath") as String)
+    }
+    if (project.hasProperty("docQuery")) {
+        systemProperty("query", project.property("docQuery") as String)
+    }
+    if (project.hasProperty("docPath")) {
+        systemProperty("documentPath", project.property("docPath") as String)
+    }
+    
+    standardInput = System.`in`
+}
+
 // Ktlint configuration
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     version.set("1.0.1")
