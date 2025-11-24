@@ -139,6 +139,7 @@ enum class DocumentFormatType {
     MARKDOWN,
     PDF,
     DOCX,
+    HTML,
     PLAIN_TEXT
 }
 

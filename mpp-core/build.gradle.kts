@@ -182,6 +182,9 @@ kotlin {
                 // Apache Tika for document parsing (PDF, DOC, DOCX, PPT, etc.)
                 implementation("org.apache.tika:tika-core:3.2.3")
                 implementation("org.apache.tika:tika-parsers-standard-package:3.2.3")
+                
+                // Jsoup for HTML document parsing
+                implementation("org.jsoup:jsoup:1.21.2")
             }
         }
 
