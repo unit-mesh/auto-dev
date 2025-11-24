@@ -11,6 +11,7 @@ import cc.unitmesh.agent.tool.impl.ShellTool
 import cc.unitmesh.agent.tool.impl.TaskBoundaryTool
 import cc.unitmesh.agent.tool.impl.WebFetchTool
 import cc.unitmesh.agent.tool.impl.WriteFileTool
+import cc.unitmesh.agent.tool.impl.SmartEditTool
 
 /**
  * Provider for built-in tools.
@@ -30,6 +31,7 @@ class BuiltinToolsProvider : ToolProvider {
         tools.add(ReadFileTool(dependencies.fileSystem))
         tools.add(WriteFileTool(dependencies.fileSystem))
         tools.add(EditFileTool(dependencies.fileSystem))
+        tools.add(SmartEditTool(dependencies.fileSystem, dependencies.llmService))
 
         // Search tools
         tools.add(GrepTool(dependencies.fileSystem))
