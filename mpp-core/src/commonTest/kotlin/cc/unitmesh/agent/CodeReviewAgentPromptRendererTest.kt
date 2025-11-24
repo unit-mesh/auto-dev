@@ -1,5 +1,6 @@
 package cc.unitmesh.agent
 
+import cc.unitmesh.agent.codereview.ModifiedCodeRange
 import cc.unitmesh.agent.linter.LintFileResult
 import cc.unitmesh.agent.linter.LintIssue
 import cc.unitmesh.agent.linter.LintSeverity
@@ -103,17 +104,21 @@ class CodeReviewAgentPromptRendererTest {
 
         val modifiedCodeRanges = mapOf(
             "mpp-core/src/commonMain/kotlin/cc/unitmesh/agent/CodeReviewAgent.kt" to listOf(
-                CodeReviewAgentPromptRenderer.CodeContext(
+                ModifiedCodeRange(
+                    filePath = "mpp-core/src/commonMain/kotlin/cc/unitmesh/agent/CodeReviewAgent.kt",
                     elementName = "CodeReviewAgent",
                     elementType = "CLASS",
                     startLine = 79,
-                    endLine = 444
+                    endLine = 444,
+                    modifiedLines = emptyList()
                 ),
-                CodeReviewAgentPromptRenderer.CodeContext(
+                ModifiedCodeRange(
+                    filePath = "mpp-core/src/commonMain/kotlin/cc/unitmesh/agent/CodeReviewAgent.kt",
                     elementName = "generateFixes",
                     elementType = "FUNCTION",
                     startLine = 197,
-                    endLine = 317
+                    endLine = 317,
+                    modifiedLines = emptyList()
                 )
             )
         )
@@ -183,11 +188,13 @@ class CodeReviewAgentPromptRendererTest {
 
         val modifiedCodeRanges = mapOf(
             "src/main/kotlin/Example.kt" to listOf(
-                CodeReviewAgentPromptRenderer.CodeContext(
+                ModifiedCodeRange(
+                    filePath = "src/main/kotlin/Example.kt",
                     elementName = "processData",
                     elementType = "METHOD",
                     startLine = 10,
-                    endLine = 50
+                    endLine = 50,
+                    modifiedLines = emptyList()
                 )
             )
         )
@@ -265,11 +272,13 @@ class CodeReviewAgentPromptRendererTest {
 
         val modifiedCodeRanges = mapOf(
             "src/main/kotlin/Example.kt" to listOf(
-                CodeReviewAgentPromptRenderer.CodeContext(
+                ModifiedCodeRange(
+                    filePath = "src/main/kotlin/Example.kt",
                     elementName = "calculate",
                     elementType = "FUNCTION",
                     startLine = 10,
-                    endLine = 30
+                    endLine = 30,
+                    modifiedLines = emptyList()
                 )
             )
         )
@@ -335,11 +344,13 @@ class CodeReviewAgentPromptRendererTest {
 
         val modifiedCodeRanges = mapOf(
             "src/main/kotlin/Example.kt" to listOf(
-                CodeReviewAgentPromptRenderer.CodeContext(
+                ModifiedCodeRange(
+                    filePath = "src/main/kotlin/Example.kt",
                     elementName = "MyClass",
                     elementType = "CLASS",
                     startLine = 20,
-                    endLine = 50
+                    endLine = 50,
+                    modifiedLines = emptyList()
                 )
             )
         )
@@ -397,11 +408,13 @@ class CodeReviewAgentPromptRendererTest {
 
         val modifiedCodeRanges = mapOf(
             "mpp-core/src/commonMain/kotlin/cc/unitmesh/agent/CodeReviewAgent.kt" to listOf(
-                CodeReviewAgentPromptRenderer.CodeContext(
+                ModifiedCodeRange(
+                    filePath = "mpp-core/src/commonMain/kotlin/cc/unitmesh/agent/CodeReviewAgent.kt",
                     elementName = "CodeReviewAgent",
                     elementType = "CLASS",
                     startLine = 79,
-                    endLine = 444
+                    endLine = 444,
+                    modifiedLines = emptyList()
                 )
             )
         )
