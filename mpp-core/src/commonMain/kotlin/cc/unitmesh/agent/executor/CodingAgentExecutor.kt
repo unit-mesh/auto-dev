@@ -315,8 +315,6 @@ class CodingAgentExecutor(
             "Task incomplete after $currentIteration iterations"
         }
 
-//        renderer.renderFinalResult(success, message, currentIteration)
-
         return AgentResult(
             success = success,
             message = message,
@@ -365,41 +363,6 @@ class CodingAgentExecutor(
             source = toolName,
             metadata = metadata
         )
-    }
-
-    /**
-     * 向 SubAgent 提问
-     */
-    suspend fun askSubAgent(
-        subAgentName: String,
-        question: String,
-        context: Map<String, Any> = emptyMap()
-    ): ToolResult.AgentResult {
-        return subAgentManager?.askSubAgent(subAgentName, question, context)
-            ?: ToolResult.AgentResult(
-                success = false,
-                content = "SubAgentManager not available",
-                metadata = emptyMap()
-            )
-    }
-
-    /**
-     * 获取系统状态
-     */
-    fun getSystemStatus(): Map<String, Any> {
-        val baseStatus = mapOf(
-            "currentIteration" to currentIteration,
-            "maxIterations" to maxIterations,
-            "stepsCount" to steps.size,
-            "editsCount" to edits.size,
-            "recentToolCallsCount" to recentToolCalls.size
-        )
-
-        return if (subAgentManager != null) {
-            baseStatus + ("subAgentSystem" to subAgentManager.getSystemStatus())
-        } else {
-            baseStatus
-        }
     }
 
     /**

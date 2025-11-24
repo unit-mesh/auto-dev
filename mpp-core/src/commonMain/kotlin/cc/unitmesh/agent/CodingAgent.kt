@@ -218,11 +218,9 @@ class CodingAgent(
     }
 
     private suspend fun buildContext(task: AgentTask): CodingAgentContext {
-        // 尝试使用预加载的 MCP 工具，如果没有则初始化
         if (!mcpToolsInitialized) {
             logger.debug { "Checking for preloaded MCP tools..." }
 
-            // 首先尝试从预加载缓存中获取 MCP 工具
             val mcpServersToUse = configService.getEnabledMcpServers().takeIf { it.isNotEmpty() }
                 ?: mcpServers
 
@@ -278,12 +276,8 @@ class CodingAgent(
      */
     private fun getAllAvailableTools(): List<ExecutableTool<*, *>> {
         val allTools = mutableListOf<ExecutableTool<*, *>>()
-
-        // 1. 添加 ToolRegistry 中的内置工具（已经根据配置过滤）
         allTools.addAll(toolRegistry.getAllTools().values)
 
-        // 2. 添加 MainAgent 中注册的工具（SubAgent 和 MCP 工具）
-        // 注意：避免重复添加已经在 ToolRegistry 中的 SubAgent
         val registryToolNames = toolRegistry.getAllTools().keys
         val mainAgentTools = getAllTools().filter { it.name !in registryToolNames }
         allTools.addAll(mainAgentTools)
@@ -296,11 +290,7 @@ class CodingAgent(
         return allTools
     }
 
-    /**
-     * 从 ToolItem 创建 MCP 工具适配器
-     */
     private fun createMcpToolFromItem(toolItem: ToolItem): ExecutableTool<*, *> {
-        // 创建一个简单的 MCP 工具适配器
         return object : BaseExecutableTool<Map<String, Any>, ToolResult.Success>() {
             override val name: String = toolItem.name
             override val description: String = toolItem.description
@@ -352,37 +342,6 @@ class CodingAgent(
     override fun formatOutput(output: ToolResult.AgentResult): String {
         return output.content
     }
-
-    /**
-     * 向指定的 SubAgent 提问
-     * 这是新的多Agent体系的核心功能
-     */
-    suspend fun askSubAgent(
-        subAgentName: String,
-        question: String,
-        context: Map<String, Any> = emptyMap()
-    ): ToolResult.AgentResult {
-        return executor.askSubAgent(subAgentName, question, context)
-    }
-
-    /**
-     * 获取系统状态，包括所有 SubAgent 的状态
-     */
-    fun getSystemStatus(): Map<String, Any> {
-        return executor.getSystemStatus()
-    }
-
-    /**
-     * 清理 SubAgent 历史数据
-     */
-    fun cleanupSubAgents() {
-        subAgentManager.cleanup()
-    }
-
-    /**
-     * 获取 SubAgent 管理器（用于高级操作）
-     */
-    fun getSubAgentManager(): SubAgentManager = subAgentManager
 
     /**
      * 获取对话历史

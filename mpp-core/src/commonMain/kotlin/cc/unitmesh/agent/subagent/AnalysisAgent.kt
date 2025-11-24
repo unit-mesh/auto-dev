@@ -53,9 +53,6 @@ data class ContentHandlerContext(
     override fun toString(): String = "AnalysisContext(contentType=$contentType, source=$source, length=${content.length})"
 }
 
-/**
- * 内容分析结果
- */
 @Serializable
 data class ContentHandlerResult(
     val summary: String,
@@ -66,37 +63,12 @@ data class ContentHandlerResult(
     val processedAt: Long = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
 )
 
-/**
- * AnalysisAgent - 智能内容分析 Agent
- *
- * 这个 Agent 专门进行各种内容的智能分析，包括：
- * - 长内容摘要（文件列表、日志输出等）
- * - 错误信息分析（替代LogSummaryAgent的功能）
- * - 代码内容分析
- * - 结构化数据分析
- *
- * 主要功能：
- * 1. 自动检测需要分析的内容（超过阈值或特定类型）
- * 2. 智能分析和摘要任何类型的内容
- * 3. 持有内容分析的历史状态
- * 4. 支持其他 Agent 对历史分析的问答
- * 5. 提供内容结构化分析和洞察
- *
- * 使用场景：
- * - 处理 glob 工具返回的大量文件列表
- * - 分析长日志输出和错误信息
- * - 处理大型代码文件内容
- * - 分析复杂的工具执行结果
- * - 替代原有的LogSummaryAgent功能
- */
 class AnalysisAgent(
     private val llmService: KoogLLMService,
-    private val contentThreshold: Int = 5000 // 内容长度阈值
+    private val contentThreshold: Int = 128000
 ) : SubAgent<ContentHandlerContext, ToolResult.AgentResult>(
     definition = createDefinition()
 ) {
-    
-    // 持有的内容处理历史
     private val contentHistory = mutableListOf<Pair<ContentHandlerContext, ContentHandlerResult>>()
     private val conversationContext = mutableMapOf<String, Any>()
     
