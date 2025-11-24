@@ -90,8 +90,39 @@ class DocQLInvocation(
         return if (results.isNotEmpty()) {
             ToolResult.Success(results.joinToString("\n\n"))
         } else {
-            ToolResult.Success("No results found in any registered documents.")
+            // Provide helpful suggestions when no results found
+            val suggestion = buildQuerySuggestion(query, registeredPaths)
+            ToolResult.Success("No results found for query: $query\n\n$suggestion")
         }
+    }
+
+    private fun buildQuerySuggestion(query: String, registeredPaths: List<String>): String {
+        val suggestions = mutableListOf<String>()
+        
+        suggestions.add("💡 **Suggestions to find the information:**")
+        
+        // Suggest checking TOC if not already a TOC query
+        if (!query.contains("toc")) {
+            suggestions.add("1. Try `$.toc[*]` to see all available sections in the documents")
+        }
+        
+        // Suggest broader search if query looks specific
+        if (query.contains("heading") || query.contains("h1") || query.contains("h2")) {
+            suggestions.add("2. Try a broader heading search with fewer keywords")
+            suggestions.add("3. Try `$.content.chunks()` to get all content and search manually")
+        } else if (!query.contains("chunks")) {
+            suggestions.add("2. Try `$.content.chunks()` to retrieve all document content")
+        }
+        
+        // List available documents
+        if (registeredPaths.isNotEmpty()) {
+            suggestions.add("\n📚 **Available documents:**")
+            registeredPaths.forEach { path ->
+                suggestions.add("   - $path")
+            }
+        }
+        
+        return suggestions.joinToString("\n")
     }
 
     private fun formatDocQLResult(result: cc.unitmesh.devins.document.docql.DocQLResult, documentPath: String): String {

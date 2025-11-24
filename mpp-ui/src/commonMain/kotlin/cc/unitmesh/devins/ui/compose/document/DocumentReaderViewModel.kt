@@ -58,7 +58,9 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     return@launch
                 }
 
-                val markdownFiles = fileSystem.searchFiles("*.md", maxDepth = 5, maxResults = 100)
+                val markdownFiles = fileSystem
+                    .searchFiles("*.md", maxDepth = 10, maxResults = 100).toMutableList()
+                markdownFiles += fileSystem.searchFiles("*.pdf", maxDepth = 10, maxResults = 100)
 
                 documents = markdownFiles.mapNotNull { relativePath ->
                     val name = relativePath.substringAfterLast('/')

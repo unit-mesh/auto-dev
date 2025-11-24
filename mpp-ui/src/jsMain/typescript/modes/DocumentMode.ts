@@ -34,14 +34,14 @@ export interface DocumentResult {
  */
 function scanDocuments(dirPath: string, extensions: string[] = ['.md', '.pdf', '.docx', '.txt']): string[] {
     const documents: string[] = [];
-    
+
     function scanDir(currentPath: string) {
         try {
             const entries = fs.readdirSync(currentPath, { withFileTypes: true });
-            
+
             for (const entry of entries) {
                 const fullPath = path.join(currentPath, entry.name);
-                
+
                 // Skip common non-document directories
                 if (entry.isDirectory()) {
                     const skipDirs = ['node_modules', '.git', 'build', 'dist', 'target', '.gradle', 'bin'];
@@ -60,7 +60,7 @@ function scanDocuments(dirPath: string, extensions: string[] = ['.md', '.pdf', '
             console.log(semanticChalk.muted(`⚠️  Skipping ${currentPath}: ${error.message}`));
         }
     }
-    
+
     scanDir(dirPath);
     return documents;
 }
@@ -76,7 +76,7 @@ async function registerDocument(
     try {
         const relativePath = path.relative(projectPath, filePath);
         const content = fs.readFileSync(filePath, 'utf-8');
-        
+
         const registered = await agent.registerDocument(relativePath, content);
         return registered;
     } catch (error: any) {
@@ -95,6 +95,25 @@ export async function runDocument(
 ): Promise<DocumentResult> {
     const { projectPath, query, documentPath } = options;
     const startTime = Date.now();
+
+    // ===== INPUT VALIDATION =====
+    // Validate query parameter
+    if (!query || query.trim().length === 0) {
+        console.error(semanticChalk.error('❌ Error: Query parameter is required and cannot be empty'));
+        return {
+            success: false,
+            message: 'Error: Query parameter is required and cannot be empty.\n\nUsage: document -p <path> -q "<your question>"'
+        };
+    }
+
+    // Validate project path exists
+    if (!fs.existsSync(projectPath)) {
+        console.error(semanticChalk.error(`❌ Error: Project path does not exist: ${projectPath}`));
+        return {
+            success: false,
+            message: `Error: Project path does not exist: ${projectPath}\n\nPlease provide a valid directory path.`
+        };
+    }
 
     console.log(semanticChalk.info(`\n📄 AutoDev Document Query`));
     console.log(semanticChalk.muted(`Project: ${projectPath}`));
@@ -124,12 +143,17 @@ export async function runDocument(
         let documentsScanned = 0;
         let documentsRegistered = 0;
 
+
         if (documentPath) {
             // Register specific document
             const fullPath = path.resolve(projectPath, documentPath);
             if (fs.existsSync(fullPath)) {
                 console.log(semanticChalk.info(`📖 Reading document: ${documentPath}...`));
-                
+
+                // Calculate relative path for registration
+                const relativePath = path.relative(projectPath, fullPath);
+                console.log(semanticChalk.muted(`   Registering as: ${relativePath}`));
+
                 const registered = await registerDocument(fullPath, projectPath, agent);
                 if (registered) {
                     console.log(semanticChalk.success(`✅ Document registered successfully`));
@@ -156,7 +180,7 @@ export async function runDocument(
                 for (const docPath of foundDocs) {
                     const relativePath = path.relative(projectPath, docPath);
                     console.log(semanticChalk.muted(`  • ${relativePath}`));
-                    
+
                     const registered = await registerDocument(docPath, projectPath, agent);
                     if (registered) {
                         documentsRegistered++;
