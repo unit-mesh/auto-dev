@@ -254,12 +254,7 @@ class CodeReviewAgent(
 
                 // Add analysis output
                 if (analysisOutput.isNotBlank()) {
-                    if (isZh) {
-                        appendLine("## 代码审查分析结果")
-                    } else {
-                        appendLine("## Code Review Analysis")
-                    }
-                    appendLine()
+                    /// catch walkout only
                     appendLine(analysisOutput)
                     appendLine()
                 }
@@ -302,12 +297,6 @@ class CodeReviewAgent(
 
                 // Add user feedback
                 if (userFeedback.isNotBlank()) {
-                    if (isZh) {
-                        appendLine("## 用户反馈/指令")
-                    } else {
-                        appendLine("## User Feedback/Instructions")
-                    }
-                    appendLine()
                     appendLine(userFeedback)
                     appendLine()
                 }
