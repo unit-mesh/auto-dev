@@ -438,8 +438,6 @@ open class CodeReviewViewModel(
 
                 val agent = initializeCodingAgent()
 
-                // Build additional context including issue information if available
-                // Build additional context including issue information if available
                 val additionalContext = buildString {
                     val selectedCommits =
                         currentState.selectedCommitIndices.mapNotNull { currentState.commitHistory.getOrNull(it) }
@@ -878,7 +876,6 @@ open class CodeReviewViewModel(
      */
     suspend fun generateFixes() {
         try {
-            // Create a dedicated ComposeRenderer for fix generation
             val fixRenderer = ComposeRenderer()
 
             // Initialize the renderer in state
@@ -949,7 +946,6 @@ open class CodeReviewViewModel(
                 return
             }
 
-            // Filter lint results to only include files that were actually changed
             val relevantFiles = changedHunks.keys
             val filteredLintResults = currentState.aiProgress.lintResults.filter { it.filePath in relevantFiles }
 
@@ -957,7 +953,6 @@ open class CodeReviewViewModel(
                 "Extracted changes from ${changedHunks.size} files, ${changedHunks.values.sumOf { it.size }} total hunks"
             }
 
-            // Build requirement string for CodingAgent (similar to CodeReviewAgent.buildFixRequirement)
             val requirement = buildString {
                 appendLine("# 代码修复任务")
                 appendLine()
@@ -1020,11 +1015,9 @@ open class CodeReviewViewModel(
                 ?: error("No active model configuration found")
             val llmService = cc.unitmesh.llm.KoogLLMService.create(modelConfig)
 
-            // Create MCP tool config service
             val toolConfig = ToolConfigFile.default()
             val mcpToolConfigService = McpToolConfigService(toolConfig)
 
-            // Create file system for CodingAgent
             val toolFileSystem = cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem(
                 projectPath = workspace.rootPath ?: ""
             )
@@ -1137,72 +1130,6 @@ open class CodeReviewViewModel(
         }
     }
 
-    /**
-     * Format selected plan items as user feedback for fix generation
-     * This converts the selected plan items into a structured text that guides
-     * the AI to focus on specific issues from the modification plan
-     */
-    private fun formatSelectedPlanItemsAsFeedback(planOutput: String, selectedIndices: Set<Int>): String {
-        if (selectedIndices.isEmpty()) {
-            return ""
-        }
-
-        // Parse plan items from the plan output
-        val planItems = PlanParser.parse(planOutput)
-        val selectedItems = planItems.filter { it.number in selectedIndices }
-
-        if (selectedItems.isEmpty()) {
-            AutoDevLogger.warn("CodeReviewViewModel") {
-                "No plan items found for selected indices: ${selectedIndices.joinToString()}"
-            }
-            return ""
-        }
-
-        return buildString {
-            appendLine("## 用户选择的修复项 (User Selected Items)")
-            appendLine()
-            appendLine("请优先修复以下选中的问题项：")
-            appendLine()
-
-            selectedItems.forEach { item ->
-                appendLine("### ${item.number}. ${item.title} - ${item.priority}")
-
-                // Include file paths from steps
-                val filePaths = item.getAllFilePaths()
-                if (filePaths.isNotEmpty()) {
-                    appendLine("**相关文件**:")
-                    filePaths.forEach { path ->
-                        appendLine("- $path")
-                    }
-                    appendLine()
-                }
-
-                // Include step details
-                if (item.steps.isNotEmpty()) {
-                    appendLine("**修复步骤**:")
-                    item.steps.forEachIndexed { index, step ->
-                        val statusIcon = when (step.status) {
-                            StepStatus.COMPLETED -> "✓"
-                            StepStatus.FAILED -> "!"
-                            StepStatus.IN_PROGRESS -> "*"
-                            StepStatus.TODO -> "-"
-                        }
-                        appendLine("$statusIcon ${step.text}")
-                    }
-                    appendLine()
-                }
-            }
-
-            appendLine("---")
-            appendLine()
-            appendLine("**注意**: 请只修复上述选中的问题项，其他未选中的项可以忽略。")
-        }
-    }
-
-    /**
-     * Open file in viewer dialog
-     * Uses the same API as CodeReviewSideBySideView - updates state to show FileViewerDialog
-     */
     fun openFile(filePath: String, startLine: Int? = null, endLine: Int? = null) {
         // Get workspace root path and construct absolute path
         val root = workspace.rootPath
@@ -1390,6 +1317,68 @@ open class CodeReviewViewModel(
                     "Failed to create CodeReviewAgent: ${e.message}"
                 }
                 throw IllegalStateException("Failed to create CodeReviewAgent: ${e.message}", e)
+            }
+        }
+
+        /**
+         * Format selected plan items as user feedback for fix generation
+         * This converts the selected plan items into a structured text that guides
+         * the AI to focus on specific issues from the modification plan
+         */
+        fun formatSelectedPlanItemsAsFeedback(planOutput: String, selectedIndices: Set<Int>): String {
+            if (selectedIndices.isEmpty()) {
+                return ""
+            }
+
+            // Parse plan items from the plan output
+            val planItems = PlanParser.parse(planOutput)
+            val selectedItems = planItems.filter { it.number in selectedIndices }
+
+            if (selectedItems.isEmpty()) {
+                AutoDevLogger.warn("CodeReviewViewModel") {
+                    "No plan items found for selected indices: ${selectedIndices.joinToString()}"
+                }
+                return ""
+            }
+
+            return buildString {
+                appendLine("## 用户选择的修复项 (User Selected Items)")
+                appendLine()
+                appendLine("请优先修复以下选中的问题项：")
+                appendLine()
+
+                selectedItems.forEach { item ->
+                    appendLine("### ${item.number}. ${item.title} - ${item.priority}")
+
+                    // Include file paths from steps
+                    val filePaths = item.getAllFilePaths()
+                    if (filePaths.isNotEmpty()) {
+                        appendLine("**相关文件**:")
+                        filePaths.forEach { path ->
+                            appendLine("- $path")
+                        }
+                        appendLine()
+                    }
+
+                    // Include step details
+                    if (item.steps.isNotEmpty()) {
+                        appendLine("**修复步骤**:")
+                        item.steps.forEachIndexed { index, step ->
+                            val statusIcon = when (step.status) {
+                                StepStatus.COMPLETED -> "✓"
+                                StepStatus.FAILED -> "!"
+                                StepStatus.IN_PROGRESS -> "*"
+                                StepStatus.TODO -> "-"
+                            }
+                            appendLine("$statusIcon ${step.text}")
+                        }
+                        appendLine()
+                    }
+                }
+
+                appendLine("---")
+                appendLine()
+                appendLine("**注意**: 请只修复上述选中的问题项，其他未选中的项可以忽略。")
             }
         }
     }
