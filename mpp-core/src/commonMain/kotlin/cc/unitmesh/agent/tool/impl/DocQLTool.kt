@@ -14,14 +14,28 @@ data class DocQLParams(
 )
 
 object DocQLSchema : DeclarativeToolSchema(
-    description = "Executes a DocQL query against a registered document. If documentPath is not provided, searches all registered documents.",
+    description = """
+        Executes a DocQL query against registered documents.
+        
+        IMPORTANT: Use 'documentPath' parameter to target specific documents when:
+        - Document name matches your query keywords (check available documents list)
+        - You want to avoid querying irrelevant documents
+        - You have identified relevant documents through keyword matching
+        
+        If documentPath is not provided, searches all registered documents.
+    """.trimIndent(),
     properties = mapOf(
         "query" to string(
             description = "The DocQL query to execute (e.g., '$.content.heading(\"Introduction\")').",
             required = true
         ),
         "documentPath" to string(
-            description = "The path of the document to query. If omitted, searches all registered documents.",
+            description = """
+                The path of the document to query (e.g., 'design-system-color.md').
+                Use this to target specific documents when their names match your keywords.
+                Check the available documents list and match keywords before querying.
+                If omitted, searches all registered documents.
+            """.trimIndent(),
             required = false
         )
     )
