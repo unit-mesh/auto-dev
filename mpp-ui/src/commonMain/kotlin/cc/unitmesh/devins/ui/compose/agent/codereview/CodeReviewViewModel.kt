@@ -929,123 +929,20 @@ open class CodeReviewViewModel(
                 "Generating fixes with ${selectedPlanItems.size} selected plan items"
             }
 
-            // Extract changed code hunks from the patch
-            val extractor = cc.unitmesh.agent.vcs.context.ChangedCodeExtractor()
-            val changedHunks = extractor.extractChangedHunks(patch, contextLines = 3)
+            val agent = initializeCodingAgent()
 
-            if (changedHunks.isEmpty()) {
-                AutoDevLogger.warn("CodeReviewViewModel") { "No changed code hunks extracted from patch" }
-                fixRenderer.renderError("No code changes found in patch")
-                updateState {
-                    it.copy(
-                        aiProgress = it.aiProgress.copy(
-                            fixOutput = "❌ No code changes found in patch"
-                        )
-                    )
-                }
-                return
-            }
+            // Execute fix generation using the agent
+            fixRenderer.addUserMessage("Generating fixes...")
 
-            val relevantFiles = changedHunks.keys
-            val filteredLintResults = currentState.aiProgress.lintResults.filter { it.filePath in relevantFiles }
-
-            AutoDevLogger.info("CodeReviewViewModel") {
-                "Extracted changes from ${changedHunks.size} files, ${changedHunks.values.sumOf { it.size }} total hunks"
-            }
-
-            val requirement = buildString {
-                appendLine("# 代码修复任务")
-                appendLine()
-                appendLine("基于代码审查分析结果，修复以下代码问题。")
-                appendLine()
-
-                // Add analysis output
-                if (currentState.aiProgress.analysisOutput.isNotBlank()) {
-                    appendLine("## 代码审查分析结果")
-                    appendLine()
-                    appendLine(currentState.aiProgress.analysisOutput)
-                    appendLine()
-                }
-
-                // Add lint results summary
-                if (filteredLintResults.isNotEmpty()) {
-                    val filesWithErrors = filteredLintResults.filter { it.errorCount > 0 }
-                    if (filesWithErrors.isNotEmpty()) {
-                        appendLine("## 🚨 关键优先级 - 有错误的文件（必须优先修复）")
-                        appendLine()
-
-                        filesWithErrors.forEach { fileResult ->
-                            appendLine("### ❌ ${fileResult.filePath}")
-                            appendLine("**优先级: 关键** - ${fileResult.errorCount} 个错误, ${fileResult.warningCount} 个警告")
-                            appendLine()
-
-                            val errors = fileResult.issues.filter { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
-                            if (errors.isNotEmpty()) {
-                                appendLine("**🔴 错误（必须修复）:**")
-                                errors.take(5).forEach { issue ->
-                                    appendLine("- Line ${issue.line}: ${issue.message}")
-                                }
-                                appendLine()
-                            }
-                        }
-                    }
-                }
-
-                // Add user feedback
-                if (combinedUserFeedback.isNotBlank()) {
-                    appendLine("## 用户反馈/指令")
-                    appendLine()
-                    appendLine(combinedUserFeedback)
-                    appendLine()
-                }
-
-                // Add instructions
-                appendLine("## 修复要求")
-                appendLine()
-                appendLine("1. **优先修复错误** - 先修复所有标记为 🔴 的错误")
-                appendLine("2. **使用工具修改代码** - 使用 `/write` 或 `/edit` 工具直接修改文件")
-                appendLine("3. **保持代码风格一致** - 遵循项目现有的代码风格")
-                appendLine("4. **验证修复** - 确保修复后的代码可以正常编译和运行")
-                appendLine("5. **不要生成 patch** - 直接使用工具修改代码文件")
-            }
-
-            // Create LLM service
-            val configWrapper = ConfigManager.load()
-            val modelConfig = configWrapper.getActiveModelConfig()
-                ?: error("No active model configuration found")
-            val llmService = cc.unitmesh.llm.KoogLLMService.create(modelConfig)
-
-            val toolConfig = ToolConfigFile.default()
-            val mcpToolConfigService = McpToolConfigService(toolConfig)
-
-            val toolFileSystem = cc.unitmesh.agent.tool.filesystem.DefaultToolFileSystem(
-                projectPath = workspace.rootPath ?: ""
-            )
-
-            // Create CodingAgent with the fix renderer
-            val codingAgent = cc.unitmesh.agent.CodingAgent(
-                projectPath = workspace.rootPath ?: "",
-                llmService = llmService,
-                maxIterations = 50,
-                renderer = fixRenderer, // Use our dedicated renderer
-                fileSystem = toolFileSystem,
-                shellExecutor = null,
-                mcpServers = null,
-                mcpToolConfigService = mcpToolConfigService,
-                enableLLMStreaming = true
-            )
-
-            // Execute fix task using CodingAgent
-            fixRenderer.addUserMessage("Generating fixes for ${changedHunks.size} modified files...")
-
-            val agentTask = cc.unitmesh.agent.AgentTask(
-                requirement = requirement,
-                projectPath = workspace.rootPath ?: ""
-            )
-
-            val agentResult = codingAgent.execute(agentTask) { progress ->
-                // Progress callback - the renderer already handles this
-                // We just need to keep fixOutput updated for backward compatibility
+            val result = agent.generateFixes(
+                patch = patch,
+                lintResults = currentState.aiProgress.lintResults,
+                analysisOutput = currentState.aiProgress.analysisOutput,
+                userFeedback = combinedUserFeedback,
+                language = "ZH", // Default to Chinese as per original ViewModel logic (implied by context) or make it configurable
+                renderer = fixRenderer
+            ) { progress ->
+                // Progress callback
                 val currentOutput = currentState.aiProgress.fixOutput
                 updateState {
                     it.copy(
@@ -1057,11 +954,18 @@ open class CodeReviewViewModel(
             }
 
             AutoDevLogger.info("CodeReviewViewModel") {
-                "Fix generation completed - success: ${agentResult.success}"
+                "Fix generation completed - success: ${result.success}"
             }
 
-            if (!agentResult.success) {
-                fixRenderer.renderError(agentResult.content)
+            if (!result.success) {
+                fixRenderer.renderError(result.content)
+                updateState {
+                    it.copy(
+                        aiProgress = it.aiProgress.copy(
+                            fixOutput = currentState.aiProgress.fixOutput + "\n❌ Error: ${result.content}"
+                        )
+                    )
+                }
             }
 
         } catch (e: Exception) {

@@ -199,12 +199,25 @@ class CodeReviewAgent(
         analysisOutput: String,
         userFeedback: String = "",
         language: String = "EN",
+        renderer: CodingAgentRenderer? = null,
         onProgress: (String) -> Unit = {}
     ): AnalysisResult {
         logger.info { "Starting fix generation using CodingAgent" }
+        
+        val actualRenderer = renderer ?: this.renderer
 
         try {
-            // 1. Extract changed code hunks from the patch
+            if (patch.isBlank()) {
+                logger.warn { "Empty patch provided for fix generation" }
+                actualRenderer.renderError("No git diff available for fix generation")
+                return AnalysisResult(
+                    success = false,
+                    content = "No git diff available for fix generation",
+                    usedTools = false
+                )
+            }
+
+            // 2. Extract changed code hunks from the patch
             val extractor = cc.unitmesh.agent.vcs.context.ChangedCodeExtractor()
             val changedHunks = extractor.extractChangedHunks(patch, contextLines = 3)
             
@@ -219,29 +232,114 @@ class CodeReviewAgent(
             
             logger.info { "Extracted changes from ${changedHunks.size} files, ${changedHunks.values.sumOf { it.size }} total hunks" }
             
-            // 2. Filter lint results to only include files that were actually changed
+            // 3. Filter lint results to only include files that were actually changed
             val relevantFiles = changedHunks.keys
             val filteredLintResults = lintResults.filter { it.filePath in relevantFiles }
             
             logger.info { "Filtered lint results: ${lintResults.size} -> ${filteredLintResults.size} (only changed files)" }
             
-            // 3. Build requirement string for CodingAgent
-            val requirement = buildFixRequirement(
-                changedHunks = changedHunks,
-                lintResults = filteredLintResults,
-                analysisOutput = analysisOutput,
-                userFeedback = userFeedback,
-                language = language
-            )
+            // 4. Build requirement string for CodingAgent (inline to simplify)
+            val isZh = language.uppercase() in listOf("ZH", "CN")
+            val requirement = buildString {
+                if (isZh) {
+                    appendLine("# 代码修复任务")
+                    appendLine()
+                    appendLine("基于代码审查分析结果，修复以下代码问题。")
+                } else {
+                    appendLine("# Code Fix Task")
+                    appendLine()
+                    appendLine("Based on the code review analysis, fix the following code issues.")
+                }
+                appendLine()
+
+                // Add analysis output
+                if (analysisOutput.isNotBlank()) {
+                    if (isZh) {
+                        appendLine("## 代码审查分析结果")
+                    } else {
+                        appendLine("## Code Review Analysis")
+                    }
+                    appendLine()
+                    appendLine(analysisOutput)
+                    appendLine()
+                }
+
+                // Add lint results with priority
+                if (filteredLintResults.isNotEmpty()) {
+                    val filesWithErrors = filteredLintResults.filter { it.errorCount > 0 }
+                    if (filesWithErrors.isNotEmpty()) {
+                        if (isZh) {
+                            appendLine("## 🚨 关键优先级 - 有错误的文件（必须优先修复）")
+                        } else {
+                            appendLine("## 🚨 CRITICAL PRIORITY - Files with Errors (MUST FIX FIRST)")
+                        }
+                        appendLine()
+
+                        filesWithErrors.forEach { fileResult ->
+                            appendLine("### ❌ ${fileResult.filePath}")
+                            if (isZh) {
+                                appendLine("**优先级: 关键** - ${fileResult.errorCount} 个错误, ${fileResult.warningCount} 个警告")
+                            } else {
+                                appendLine("**Priority: CRITICAL** - ${fileResult.errorCount} error(s), ${fileResult.warningCount} warning(s)")
+                            }
+                            appendLine()
+
+                            val errors = fileResult.issues.filter { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
+                            if (errors.isNotEmpty()) {
+                                if (isZh) {
+                                    appendLine("**🔴 错误（必须修复）:**")
+                                } else {
+                                    appendLine("**🔴 ERRORS (Fix Required):**")
+                                }
+                                errors.take(5).forEach { issue ->
+                                    appendLine("- Line ${issue.line}: ${issue.message}")
+                                }
+                                appendLine()
+                            }
+                        }
+                    }
+                }
+
+                // Add user feedback
+                if (userFeedback.isNotBlank()) {
+                    if (isZh) {
+                        appendLine("## 用户反馈/指令")
+                    } else {
+                        appendLine("## User Feedback/Instructions")
+                    }
+                    appendLine()
+                    appendLine(userFeedback)
+                    appendLine()
+                }
+
+                // Add instructions
+                if (isZh) {
+                    appendLine("## 修复要求")
+                    appendLine()
+                    appendLine("1. **优先修复错误** - 先修复所有标记为 🔴 的错误")
+                    appendLine("2. **使用工具修改代码** - 使用 `/write` 或 `/edit` 工具直接修改文件")
+                    appendLine("3. **保持代码风格一致** - 遵循项目现有的代码风格")
+                    appendLine("4. **验证修复** - 确保修复后的代码可以正常编译和运行")
+                    appendLine("5. **不要生成 patch** - 直接使用工具修改代码文件")
+                } else {
+                    appendLine("## Fix Requirements")
+                    appendLine()
+                    appendLine("1. **Fix errors first** - Address all 🔴 errors before warnings")
+                    appendLine("2. **Use tools to modify code** - Use `/write` or `/edit` tools to directly modify files")
+                    appendLine("3. **Maintain code style** - Follow the project's existing code style")
+                    appendLine("4. **Verify fixes** - Ensure fixed code compiles and runs correctly")
+                    appendLine("5. **Do NOT generate patches** - Use tools to directly modify code files")
+                }
+            }
 
             logger.debug { "Fix requirement size: ${requirement.length} chars" }
 
-            // 4. Create CodingAgent instance
+            // 5. Create CodingAgent instance
             val codingAgent = CodingAgent(
                 projectPath = projectPath,
                 llmService = llmService,
-                maxIterations = 50, // Limit iterations for fix generation
-                renderer = renderer,
+                maxIterations = 50,
+                renderer = actualRenderer,
                 fileSystem = actualFileSystem,
                 shellExecutor = shellExecutor ?: DefaultShellExecutor(),
                 mcpServers = null,
@@ -249,7 +347,7 @@ class CodeReviewAgent(
                 enableLLMStreaming = enableLLMStreaming
             )
 
-            // 5. Execute fix task using CodingAgent
+            // 6. Execute fix task using CodingAgent
             onProgress("🚀 Starting code fix generation using CodingAgent...\n")
             
             val agentTask = AgentTask(
@@ -261,7 +359,7 @@ class CodeReviewAgent(
                 onProgress(progress)
             }
 
-            logger.info { "Fix generation completed - success: ${agentResult.success}, edits: ${agentResult.metadata["edits"]}" }
+            logger.info { "Fix generation completed - success: ${agentResult.success}" }
 
             return AnalysisResult(
                 success = agentResult.success,
@@ -271,189 +369,12 @@ class CodeReviewAgent(
             )
         } catch (e: Exception) {
             logger.error(e) { "Failed to generate fixes: ${e.message}" }
-            renderer.renderError("Error generating fixes: ${e.message}")
+            actualRenderer.renderError("Error generating fixes: ${e.message}")
             return AnalysisResult(
                 success = false,
                 content = "Error generating fixes: ${e.message}",
                 usedTools = false
             )
-        }
-    }
-
-    /**
-     * Build a requirement string for CodingAgent from code review context
-     */
-    private fun buildFixRequirement(
-        changedHunks: Map<String, List<cc.unitmesh.agent.vcs.context.CodeHunk>>,
-        lintResults: List<cc.unitmesh.agent.linter.LintFileResult>,
-        analysisOutput: String,
-        userFeedback: String,
-        language: String
-    ): String {
-        val isZh = language.uppercase() in listOf("ZH", "CN")
-        
-        return buildString {
-            if (isZh) {
-                appendLine("# 代码修复任务")
-                appendLine()
-                appendLine("基于代码审查分析结果，修复以下代码问题。")
-            } else {
-                appendLine("# Code Fix Task")
-                appendLine()
-                appendLine("Based on the code review analysis, fix the following code issues.")
-            }
-            appendLine()
-
-            // Add analysis output
-            if (analysisOutput.isNotBlank()) {
-                if (isZh) {
-                    appendLine("## 代码审查分析结果")
-                } else {
-                    appendLine("## Code Review Analysis")
-                }
-                appendLine()
-                appendLine(analysisOutput)
-                appendLine()
-            }
-
-            // Add changed code blocks
-            if (changedHunks.isNotEmpty()) {
-                if (isZh) {
-                    appendLine("## 需要修复的代码变更")
-                } else {
-                    appendLine("## Code Changes to Fix")
-                }
-                appendLine()
-                
-                changedHunks.entries.forEach { (filePath, hunks) ->
-                    appendLine("### $filePath")
-                    appendLine()
-                    
-                    hunks.forEachIndexed { index, hunk ->
-                        appendLine("#### ${if (isZh) "代码块" else "Code Block"} #${index + 1}")
-                        if (isZh) {
-                            appendLine("**位置**: 第 ${hunk.newStartLine}-${hunk.newStartLine + hunk.newLineCount - 1} 行")
-                            appendLine("**变更**: +${hunk.addedLines.size} 行, -${hunk.deletedLines.size} 行")
-                        } else {
-                            appendLine("**Location**: Lines ${hunk.newStartLine}-${hunk.newStartLine + hunk.newLineCount - 1}")
-                            appendLine("**Changes**: +${hunk.addedLines.size} lines, -${hunk.deletedLines.size} lines")
-                        }
-                        appendLine()
-                        appendLine("```diff")
-                        appendLine(hunk.header)
-                        
-                        hunk.contextBefore.forEach { line ->
-                            appendLine(" $line")
-                        }
-                        
-                        hunk.deletedLines.forEach { line ->
-                            appendLine("-$line")
-                        }
-                        
-                        hunk.addedLines.forEach { line ->
-                            appendLine("+$line")
-                        }
-                        
-                        hunk.contextAfter.forEach { line ->
-                            appendLine(" $line")
-                        }
-                        
-                        appendLine("```")
-                        appendLine()
-                    }
-                }
-            }
-
-            // Add lint results with priority
-            if (lintResults.isNotEmpty()) {
-                val filesWithErrors = lintResults.filter { it.errorCount > 0 }.sortedByDescending { it.errorCount }
-                val filesWithWarningsOnly = lintResults.filter { it.errorCount == 0 && it.warningCount > 0 }
-                
-                if (filesWithErrors.isNotEmpty()) {
-                    if (isZh) {
-                        appendLine("## 🚨 关键优先级 - 有错误的文件（必须优先修复）")
-                    } else {
-                        appendLine("## 🚨 CRITICAL PRIORITY - Files with Errors (MUST FIX FIRST)")
-                    }
-                    appendLine()
-                    
-                    filesWithErrors.forEach { fileResult ->
-                        appendLine("### ❌ ${fileResult.filePath}")
-                        if (isZh) {
-                            appendLine("**优先级: 关键** - ${fileResult.errorCount} 个错误, ${fileResult.warningCount} 个警告")
-                        } else {
-                            appendLine("**Priority: CRITICAL** - ${fileResult.errorCount} error(s), ${fileResult.warningCount} warning(s)")
-                        }
-                        appendLine()
-                        
-                        val errors = fileResult.issues.filter { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
-                        if (errors.isNotEmpty()) {
-                            if (isZh) {
-                                appendLine("**🔴 错误（必须修复）:**")
-                            } else {
-                                appendLine("**🔴 ERRORS (Fix Required):**")
-                            }
-                            errors.forEach { issue ->
-                                appendLine("- Line ${issue.line}: ${issue.message}")
-                                issue.rule?.takeIf { it.isNotBlank() }?.let {
-                                    appendLine("  Rule: `$it`")
-                                }
-                            }
-                            appendLine()
-                        }
-                    }
-                }
-                
-                if (filesWithWarningsOnly.isNotEmpty()) {
-                    if (isZh) {
-                        appendLine("## ⚠️ 较低优先级 - 仅警告的文件")
-                    } else {
-                        appendLine("## ⚠️ LOWER PRIORITY - Files with Warnings Only")
-                    }
-                    appendLine()
-                    
-                    filesWithWarningsOnly.take(5).forEach { fileResult ->
-                        appendLine("### ${fileResult.filePath}")
-                        if (isZh) {
-                            appendLine("${fileResult.warningCount} 个警告 - 在修复所有错误后处理")
-                        } else {
-                            appendLine("${fileResult.warningCount} warning(s) - Fix after addressing all errors")
-                        }
-                        appendLine()
-                    }
-                }
-            }
-
-            // Add user feedback
-            if (userFeedback.isNotBlank()) {
-                if (isZh) {
-                    appendLine("## 用户反馈/指令")
-                } else {
-                    appendLine("## User Feedback/Instructions")
-                }
-                appendLine()
-                appendLine(userFeedback)
-                appendLine()
-            }
-
-            // Add instructions
-            if (isZh) {
-                appendLine("## 修复要求")
-                appendLine()
-                appendLine("1. **优先修复错误** - 先修复所有标记为 🔴 的错误")
-                appendLine("2. **使用工具修改代码** - 使用 `/write` 或 `/edit` 工具直接修改文件")
-                appendLine("3. **保持代码风格一致** - 遵循项目现有的代码风格")
-                appendLine("4. **验证修复** - 确保修复后的代码可以正常编译和运行")
-                appendLine("5. **不要生成 patch** - 直接使用工具修改代码文件")
-            } else {
-                appendLine("## Fix Requirements")
-                appendLine()
-                appendLine("1. **Fix errors first** - Address all 🔴 errors before warnings")
-                appendLine("2. **Use tools to modify code** - Use `/write` or `/edit` tools to directly modify files")
-                appendLine("3. **Maintain code style** - Follow the project's existing code style")
-                appendLine("4. **Verify fixes** - Ensure fixed code compiles and runs correctly")
-                appendLine("5. **Do NOT generate patches** - Use tools to directly modify code files")
-            }
         }
     }
 
