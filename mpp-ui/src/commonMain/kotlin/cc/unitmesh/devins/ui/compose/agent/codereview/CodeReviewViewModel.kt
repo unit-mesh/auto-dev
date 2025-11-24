@@ -562,7 +562,7 @@ open class CodeReviewViewModel(
             updateState {
                 it.copy(aiProgress = it.aiProgress.copy(planOutput = "💡 生成修改建议...\n"))
             }
-            
+
             // Use CodeReviewAgentPromptRenderer to generate structured prompt
             val promptRenderer = cc.unitmesh.agent.CodeReviewAgentPromptRenderer()
             val planPrompt = promptRenderer.renderModificationPlanPrompt(
@@ -576,9 +576,9 @@ open class CodeReviewViewModel(
                 val configWrapper = ConfigManager.load()
                 val modelConfig = configWrapper.getActiveModelConfig()
                     ?: error("No active model configuration found")
-                
+
                 val llmService = KoogLLMService.create(modelConfig)
-                
+
                 // Use LLM service to generate plan with streaming
                 llmService.streamPrompt(planPrompt, compileDevIns = false).collect { chunk ->
                     planOutputBuilder.append(chunk)
@@ -888,7 +888,7 @@ open class CodeReviewViewModel(
         try {
             // Create a dedicated ComposeRenderer for fix generation
             val fixRenderer = ComposeRenderer()
-            
+
             // Initialize the renderer in state
             updateState {
                 it.copy(
@@ -943,7 +943,7 @@ open class CodeReviewViewModel(
             // Extract changed code hunks from the patch
             val extractor = cc.unitmesh.agent.vcs.context.ChangedCodeExtractor()
             val changedHunks = extractor.extractChangedHunks(patch, contextLines = 3)
-            
+
             if (changedHunks.isEmpty()) {
                 AutoDevLogger.warn("CodeReviewViewModel") { "No changed code hunks extracted from patch" }
                 fixRenderer.renderError("No code changes found in patch")
@@ -956,15 +956,15 @@ open class CodeReviewViewModel(
                 }
                 return
             }
-            
+
             // Filter lint results to only include files that were actually changed
             val relevantFiles = changedHunks.keys
             val filteredLintResults = currentState.aiProgress.lintResults.filter { it.filePath in relevantFiles }
-            
+
             AutoDevLogger.info("CodeReviewViewModel") {
                 "Extracted changes from ${changedHunks.size} files, ${changedHunks.values.sumOf { it.size }} total hunks"
             }
-            
+
             // Build requirement string for CodingAgent (similar to CodeReviewAgent.buildFixRequirement)
             val requirement = buildString {
                 appendLine("# 代码修复任务")
@@ -986,12 +986,12 @@ open class CodeReviewViewModel(
                     if (filesWithErrors.isNotEmpty()) {
                         appendLine("## 🚨 关键优先级 - 有错误的文件（必须优先修复）")
                         appendLine()
-                        
+
                         filesWithErrors.forEach { fileResult ->
                             appendLine("### ❌ ${fileResult.filePath}")
                             appendLine("**优先级: 关键** - ${fileResult.errorCount} 个错误, ${fileResult.warningCount} 个警告")
                             appendLine()
-                            
+
                             val errors = fileResult.issues.filter { it.severity == cc.unitmesh.agent.linter.LintSeverity.ERROR }
                             if (errors.isNotEmpty()) {
                                 appendLine("**🔴 错误（必须修复）:**")
@@ -1052,7 +1052,7 @@ open class CodeReviewViewModel(
 
             // Execute fix task using CodingAgent
             fixRenderer.addUserMessage("Generating fixes for ${changedHunks.size} modified files...")
-            
+
             val agentTask = cc.unitmesh.agent.AgentTask(
                 requirement = requirement,
                 projectPath = workspace.rootPath ?: ""
@@ -1131,97 +1131,6 @@ open class CodeReviewViewModel(
     private fun updateState(update: (CodeReviewState) -> CodeReviewState) {
         currentState = update(currentState)
         _state.value = currentState
-    }
-
-    /**
-     * Protected method for subclasses to update parent state
-     */
-    protected fun updateParentState(update: (CodeReviewState) -> CodeReviewState) {
-        updateState(update)
-    }
-
-    /**
-     * Apply a diff patch to the workspace
-     */
-    open fun applyDiffPatch(diffPatch: String) {
-        scope.launch {
-            try {
-                AutoDevLogger.info("CodeReviewViewModel") {
-                    "Applying diff patch..."
-                }
-
-                // Parse the diff patch to extract file path and changes
-                val fileDiffs = DiffParser.parse(diffPatch)
-
-                if (fileDiffs.isEmpty()) {
-                    AutoDevLogger.warn("CodeReviewViewModel") {
-                        "Failed to parse diff patch"
-                    }
-                    updateState {
-                        it.copy(error = "Failed to parse diff patch")
-                    }
-                    return@launch
-                }
-
-                var appliedCount = 0
-                var failedCount = 0
-
-                fileDiffs.forEach { fileDiff ->
-                    val targetPath = fileDiff.newPath ?: fileDiff.oldPath
-                    if (targetPath == null || targetPath == "/dev/null") {
-                        AutoDevLogger.warn("CodeReviewViewModel") {
-                            "Skipping invalid file path"
-                        }
-                        failedCount++
-                        return@forEach
-                    }
-
-                    try {
-                        // Apply the diff patch using the applyDiffPatchToFile helper
-                        val success = applyDiffPatchToFile(targetPath, fileDiff)
-                        if (success) {
-                            appliedCount++
-                            AutoDevLogger.info("CodeReviewViewModel") {
-                                "Successfully applied patch to $targetPath"
-                            }
-                        } else {
-                            failedCount++
-                            AutoDevLogger.warn("CodeReviewViewModel") {
-                                "Failed to apply patch to $targetPath"
-                            }
-                        }
-                    } catch (e: Exception) {
-                        failedCount++
-                        AutoDevLogger.error("CodeReviewViewModel") {
-                            "Error applying patch to $targetPath: ${e.message}"
-                        }
-                    }
-                }
-
-                // Show result message
-                val message = buildString {
-                    if (appliedCount > 0) {
-                        append("✅ Applied $appliedCount patch${if (appliedCount > 1) "es" else ""}")
-                    }
-                    if (failedCount > 0) {
-                        if (appliedCount > 0) append(", ")
-                        append("❌ $failedCount failed")
-                    }
-                }
-
-                AutoDevLogger.info("CodeReviewViewModel") {
-                    message
-                }
-
-            } catch (e: Exception) {
-                AutoDevLogger.error("CodeReviewViewModel") {
-                    "Failed to apply diff patch: ${e.message}"
-                }
-                updateState {
-                    it.copy(error = "Failed to apply diff patch: ${e.message}")
-                }
-            }
-        }
     }
 
     /**
@@ -1368,10 +1277,10 @@ open class CodeReviewViewModel(
             appendLine()
             appendLine("请优先修复以下选中的问题项：")
             appendLine()
-            
+
             selectedItems.forEach { item ->
                 appendLine("### ${item.number}. ${item.title} - ${item.priority}")
-                
+
                 // Include file paths from steps
                 val filePaths = item.getAllFilePaths()
                 if (filePaths.isNotEmpty()) {
@@ -1381,7 +1290,7 @@ open class CodeReviewViewModel(
                     }
                     appendLine()
                 }
-                
+
                 // Include step details
                 if (item.steps.isNotEmpty()) {
                     appendLine("**修复步骤**:")
@@ -1397,7 +1306,7 @@ open class CodeReviewViewModel(
                     appendLine()
                 }
             }
-            
+
             appendLine("---")
             appendLine()
             appendLine("**注意**: 请只修复上述选中的问题项，其他未选中的项可以忽略。")
@@ -1416,11 +1325,11 @@ open class CodeReviewViewModel(
         } else {
             filePath
         }
-        
+
         AutoDevLogger.info("CodeReviewViewModel") {
             "Opening file: $absolutePath (original: $filePath, root: $root, lines: ${startLine?.let { "$it-$endLine" } ?: "all"})"
         }
-        
+
         // Update state to show file viewer dialog
         updateState {
             it.copy(
