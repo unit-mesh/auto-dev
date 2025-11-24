@@ -94,7 +94,7 @@ fun DocumentReaderPage(
                         },
                         second = {
                             // 右侧：AI 聊天
-                            AIChatPane(
+                            DocumentChatPane(
                                 viewModel = viewModel
                             )
                         }

@@ -14,7 +14,7 @@ import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
  * 专用于文档问答，集成 AgentMessageList
  */
 @Composable
-fun AIChatPane(
+fun DocumentChatPane(
     viewModel: DocumentReaderViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -30,17 +30,17 @@ fun AIChatPane(
             Spacer(modifier = Modifier.width(8.dp))
             Text("AI 助手", style = MaterialTheme.typography.titleMedium)
         }
-        
+
         HorizontalDivider()
-        
+
         // 消息列表 (使用 AgentMessageList)
         AgentMessageList(
             renderer = viewModel.renderer,
             modifier = Modifier.weight(1f)
         )
-        
+
         HorizontalDivider()
-        
+
         // 输入区域
         ChatInputArea(
             isGenerating = viewModel.isGenerating,
@@ -57,7 +57,7 @@ private fun ChatInputArea(
     onStopGeneration: () -> Unit
 ) {
     var text by remember { mutableStateOf("") }
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,9 +72,9 @@ private fun ChatInputArea(
             maxLines = 4,
             enabled = !isGenerating
         )
-        
+
         Spacer(modifier = Modifier.width(8.dp))
-        
+
         if (isGenerating) {
             IconButton(onClick = onStopGeneration) {
                 Icon(AutoDevComposeIcons.Stop, contentDescription = "Stop")

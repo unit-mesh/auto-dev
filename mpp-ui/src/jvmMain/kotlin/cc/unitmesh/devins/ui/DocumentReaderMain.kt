@@ -13,9 +13,6 @@ import cc.unitmesh.devins.ui.compose.agent.VerticalResizableSplitPane
 import cc.unitmesh.devins.ui.compose.document.*
 import cc.unitmesh.devins.document.docql.executeDocQL
 import cc.unitmesh.devins.workspace.DefaultWorkspace
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * Standalone JVM main for testing Document Reader
@@ -133,7 +130,7 @@ private fun DocumentReaderPageWithViewModel(
                         },
                         second = {
                             // Right: AI Chat
-                            AIChatPane(
+                            DocumentChatPane(
                                 viewModel = viewModel
                             )
                         }
