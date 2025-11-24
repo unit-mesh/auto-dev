@@ -185,6 +185,11 @@ kotlin {
                 
                 // Jsoup for HTML document parsing
                 implementation("org.jsoup:jsoup:1.21.2")
+
+                // PDFBox for PDF document parsing
+                implementation("org.apache.pdfbox:pdfbox:3.0.3") {
+                    exclude(group = "commons-logging", module = "commons-logging")
+                }
             }
         }
 

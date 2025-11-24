@@ -13,7 +13,6 @@ actual fun platformInitialize() {
     
     // Register Tika parser for multiple formats
     val tikaFormats = listOf(
-        DocumentFormatType.PDF,
         DocumentFormatType.DOCX,
         DocumentFormatType.PLAIN_TEXT
     )
@@ -22,6 +21,10 @@ actual fun platformInitialize() {
         DocumentParserFactory.registerParser(format) { TikaDocumentParser() }
         logger.debug { "Registered TikaDocumentParser for $format" }
     }
+
+    // Register PDFBox parser for PDF
+    DocumentParserFactory.registerParser(DocumentFormatType.PDF) { PdfDocumentParser() }
+    logger.debug { "Registered PdfDocumentParser for PDF" }
     
     // Register Jsoup parser for HTML
     DocumentParserFactory.registerParser(DocumentFormatType.HTML) { JsoupDocumentParser() }
