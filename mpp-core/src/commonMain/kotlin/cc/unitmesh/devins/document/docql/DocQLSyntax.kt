@@ -45,7 +45,10 @@ sealed class DocQLNode {
     /**
      * Function call: .function("arg")
      */
-    data class FunctionCall(val name: String, val argument: String) : DocQLNode()
+    /**
+     * Function call node (e.g., .heading("Introduction") or .chunks())
+     */
+    data class FunctionCall(val name: String, val argument: String = "") : DocQLNode()
 }
 
 /**

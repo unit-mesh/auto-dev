@@ -186,9 +186,24 @@ class DocumentAgent(
             
             ## DocQL Syntax Examples
             
-            - `$.content.heading("Introduction")` - Get content of "Introduction" section
-            - `$.toc[*]` - Get all Table of Contents items
+            **Table of Contents:**
+            - `$.toc[*]` - Get all Table of Contents items (recommended as first step)
+            
+            **Content Queries:**
+            - `$.content.chunks()` - Get all document content (use when you need full context)
+            - `$.content.heading("Design")` - Get sections with "Design" in title (partial match)
+            - `$.content.h1("Overview")` - Get level 1 headings matching "Overview"
+            - `$.content.chapter("chapter-id")` - Get specific chapter by ID
+            
+            **Entities:**
             - `$.entities[?(@.type=="API")]` - Get all API entities
+            
+            **Best Practices:**
+            1. Start with `$.toc[*]` to understand document structure
+            2. Use `$.content.heading("keyword")` for specific sections (supports partial match)
+            3. Use `$.content.chunks()` if you need all content or if heading queries return empty
+            4. Document paths in docql tool are already registered - just use the relative path shown
+            5. For read-file tool, use full path from project root (e.g., "docs/design-system/design-system-color.md")
             
             Always use the `docql` tool to retrieve information. Do not guess.
         """.trimIndent()

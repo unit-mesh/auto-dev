@@ -187,11 +187,11 @@ class DocQLExecutor(
      */
     private suspend fun executeContentQuery(nodes: List<DocQLNode>): DocQLResult {
         if (nodes.isEmpty()) {
-            return DocQLResult.Error("Content query requires function call")
+            return DocQLResult.Error("Content query requires function call (e.g., $.content.chunks() or $.content.heading(\"keyword\"))")
         }
         
         val functionNode = nodes.firstOrNull { it is DocQLNode.FunctionCall } as? DocQLNode.FunctionCall
-            ?: return DocQLResult.Error("Content query requires function call")
+            ?: return DocQLResult.Error("Content query requires function call (e.g., $.content.chunks() or $.content.heading(\"keyword\"))")
         
         return when (functionNode.name) {
             "heading" -> executeHeadingQuery(functionNode.argument)
@@ -200,7 +200,41 @@ class DocQLExecutor(
             "grep" -> executeGrepQuery(functionNode.argument)
             "code" -> executeCodeQuery(nodes)
             "table" -> executeTableQuery(nodes)
+            "chunks" -> executeAllChunksQuery()
+            "all" -> executeAllChunksQuery()
             else -> DocQLResult.Error("Unknown content function '${functionNode.name}'")
+        }
+    }
+    
+    /**
+     * Execute all chunks query: $.content.chunks() or $.content.all()
+     */
+    private suspend fun executeAllChunksQuery(): DocQLResult {
+        if (parserService == null) {
+            return DocQLResult.Error("No parser service available")
+        }
+        
+        // Query all headings with empty keyword to get all content chunks
+        // This is a workaround since there's no direct "get all chunks" method
+        val allHeadings = documentFile?.toc?.let { flattenToc(it) } ?: emptyList()
+        
+        if (allHeadings.isEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        // Query each heading to get its content
+        val chunks = mutableListOf<DocumentChunk>()
+        for (heading in allHeadings) {
+            val chunkContent = parserService.queryChapter(heading.anchor.removePrefix("#"))
+            if (chunkContent != null) {
+                chunks.add(chunkContent)
+            }
+        }
+        
+        return if (chunks.isEmpty()) {
+            DocQLResult.Empty
+        } else {
+            DocQLResult.Chunks(chunks)
         }
     }
     
@@ -213,7 +247,28 @@ class DocQLExecutor(
         }
         
         val chunks = parserService.queryHeading(keyword)
-        return DocQLResult.Chunks(chunks)
+        return if (chunks.isEmpty()) {
+            // Try partial matching with more flexible search by querying TOC
+            val allHeadings = documentFile?.toc?.let { flattenToc(it) } ?: emptyList()
+            val partialMatches = mutableListOf<DocumentChunk>()
+            
+            for (heading in allHeadings) {
+                if (heading.title.contains(keyword, ignoreCase = true)) {
+                    val chunk = parserService.queryChapter(heading.anchor.removePrefix("#"))
+                    if (chunk != null) {
+                        partialMatches.add(chunk)
+                    }
+                }
+            }
+            
+            if (partialMatches.isNotEmpty()) {
+                DocQLResult.Chunks(partialMatches)
+            } else {
+                DocQLResult.Empty
+            }
+        } else {
+            DocQLResult.Chunks(chunks)
+        }
     }
     
     /**

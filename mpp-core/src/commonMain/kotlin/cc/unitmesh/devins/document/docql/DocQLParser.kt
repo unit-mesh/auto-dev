@@ -176,12 +176,16 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
     private fun parseFunctionCall(name: String): DocQLNode.FunctionCall {
         expect(DocQLToken.LeftParen::class, "Expected '(' for function call")
         
+        // Check if there's an argument or if it's an empty call like chunks()
         val argument = if (check(DocQLToken.StringLiteral::class)) {
             val str = current() as DocQLToken.StringLiteral
             advance()
             str.value
+        } else if (check(DocQLToken.RightParen::class)) {
+            // Empty argument - allowed for functions like chunks(), all()
+            ""
         } else {
-            throw DocQLException("Expected string argument for function call at position $position")
+            throw DocQLException("Expected string argument or ')' for function call at position $position")
         }
         
         expect(DocQLToken.RightParen::class, "Expected ')' to close function call")
