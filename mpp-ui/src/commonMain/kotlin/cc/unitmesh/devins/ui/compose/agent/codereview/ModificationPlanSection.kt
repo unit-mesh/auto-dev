@@ -68,114 +68,6 @@ data class PlanItem(
     }
 }
 
-/**
- * Parses Plan format markdown into structured plan items
- * Supports nested structure: ordered list for items, unordered list for steps
- */
-object PlanParser {
-    private val CODE_BLOCK_PATTERN = Regex("```plan\\s*\\n([\\s\\S]*?)\\n```", RegexOption.IGNORE_CASE)
-    private val ORDERED_ITEM_PATTERN = Regex("^(\\d+)\\.\\s*(.+?)(?:\\s*-\\s*(.+))?$")
-    private val UNORDERED_ITEM_PATTERN = Regex("^\\s*-\\s*\\[([\\s✓!*]?)\\]\\s*(.+)$")
-    private val FILE_LINK_PATTERN = Regex("\\[([^\\]]+)\\]\\(([^)]+)\\)")
-
-    fun parse(planOutput: String): List<PlanItem> {
-        val items = mutableListOf<PlanItem>()
-        
-        // Extract plan code block if present
-        val planContent = CODE_BLOCK_PATTERN.find(planOutput)?.groupValues?.get(1) 
-            ?: planOutput
-        
-        val lines = planContent.lines()
-        var currentItem: PlanItem? = null
-        var currentSteps = mutableListOf<PlanStep>()
-        var currentNumber = 0
-        
-        for (line in lines) {
-            val trimmed = line.trim()
-            if (trimmed.isEmpty()) continue
-            
-            // Check for ordered list item (main plan item)
-            val orderedMatch = ORDERED_ITEM_PATTERN.find(trimmed)
-            if (orderedMatch != null) {
-                // Save previous item
-                currentItem?.let {
-                    items.add(it.copy(steps = currentSteps.toList()))
-                }
-                
-                // Start new item
-                currentNumber = orderedMatch.groupValues[1].toIntOrNull() ?: 0
-                val titleWithPriority = orderedMatch.groupValues[2].trim()
-                
-                // Extract priority from title (format: "Title - PRIORITY")
-                val titleParts = titleWithPriority.split(" - ", limit = 2)
-                val title = titleParts[0].trim()
-                val priority = titleParts.getOrNull(1)?.trim() ?: "MEDIUM"
-                
-                currentItem = PlanItem(
-                    number = currentNumber,
-                    title = title,
-                    priority = priority
-                )
-                currentSteps = mutableListOf()
-                continue
-            }
-            
-            // Check for unordered list item (plan step)
-            val unorderedMatch = UNORDERED_ITEM_PATTERN.find(trimmed)
-            if (unorderedMatch != null) {
-                val statusMarker = unorderedMatch.groupValues[1].trim()
-                val stepText = unorderedMatch.groupValues[2].trim()
-                
-                val status = when (statusMarker) {
-                    "✓", "x", "X" -> StepStatus.COMPLETED
-                    "!" -> StepStatus.FAILED
-                    "*" -> StepStatus.IN_PROGRESS
-                    else -> StepStatus.TODO
-                }
-                
-                // Extract file links from step text
-                val fileLinks = extractFileLinks(stepText)
-                
-                currentSteps.add(
-                    PlanStep(
-                        text = stepText,
-                        status = status,
-                        fileLinks = fileLinks
-                    )
-                )
-                continue
-            }
-            
-            // If we're inside an item but not a step, append to last step
-            if (currentItem != null && currentSteps.isNotEmpty() && trimmed.startsWith("-")) {
-                val lastStep = currentSteps.last()
-                currentSteps[currentSteps.size - 1] = lastStep.copy(
-                    text = "${lastStep.text} ${trimmed.removePrefix("-").trim()}"
-                )
-            }
-        }
-        
-        // Save last item
-        currentItem?.let {
-            items.add(it.copy(steps = currentSteps.toList()))
-        }
-        
-        return items
-    }
-    
-    private fun extractFileLinks(text: String): List<FileLink> {
-        val links = mutableListOf<FileLink>()
-        val matches = FILE_LINK_PATTERN.findAll(text)
-        
-        matches.forEach { match ->
-            val displayText = match.groupValues[1]
-            val filePath = match.groupValues[2]
-            links.add(FileLink(displayText, filePath))
-        }
-        
-        return links
-    }
-}
 
 /**
  * Displays AI-generated modification plan with modern Plan-like UI
@@ -349,21 +241,12 @@ private fun PlanItemCard(
 ) {
     var isExpanded by remember { mutableStateOf(true) }
     
-    // Determine priority color and adjust priority based on issue category
-    // Code style and formatting issues should always be MEDIUM priority
-    val isCodeStyleIssue = item.title.contains("代码风格") || item.title.contains("Code Style") ||
-                          item.title.contains("字符串格式化") || item.title.contains("String Formatting") ||
-                          item.title.contains("格式化") || item.title.contains("Formatting") ||
-                          item.title.contains("风格") || item.title.contains("Style")
-    
-    val adjustedPriority = if (isCodeStyleIssue && 
-                               (item.priority.contains("关键") || item.priority.contains("CRITICAL") ||
-                                item.priority.contains("高") || item.priority.contains("HIGH"))) {
-        "MEDIUM"
-    } else {
-        item.priority
+    // Get adjusted priority using utility function
+    val adjustedPriority = remember(item) {
+        PlanPriority.getAdjustedPriority(item)
     }
     
+    // Get priority color based on adjusted priority
     val priorityColor = when {
         adjustedPriority.contains("关键") || adjustedPriority.contains("CRITICAL") -> AutoDevColors.Red.c600
         adjustedPriority.contains("高") || adjustedPriority.contains("HIGH") -> AutoDevColors.Amber.c600
@@ -585,7 +468,7 @@ private fun PlanStepItem(
             androidx.compose.foundation.text.ClickableText(
                 text = annotatedText,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.2
                 ),
                 onClick = { offset ->
