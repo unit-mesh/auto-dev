@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -152,36 +153,36 @@ fun ModificationPlanSection(
         shape = RoundedCornerShape(6.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Header
+            // Header - more compact
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { isExpanded = !isExpanded }
-                    .padding(12.dp),
+                    .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(16.dp)
                     )
 
                     Icon(
                         imageVector = AutoDevComposeIcons.Article,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
 
                     Text(
                         text = "修改计划 (AI)",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -189,13 +190,13 @@ fun ModificationPlanSection(
                     if (planItems.isNotEmpty()) {
                         Surface(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(4.dp)
+                            shape = RoundedCornerShape(3.dp)
                         ) {
                             Text(
                                 text = "${planItems.size} 项",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
                             )
                         }
                     }
@@ -203,13 +204,13 @@ fun ModificationPlanSection(
                     if (isActive) {
                         Surface(
                             color = AutoDevColors.Indigo.c600,
-                            shape = RoundedCornerShape(4.dp)
+                            shape = RoundedCornerShape(3.dp)
                         ) {
                             Text(
                                 text = "生成中",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.White,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
                             )
                         }
                     }
@@ -224,9 +225,9 @@ fun ModificationPlanSection(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 0.dp)
-                        .padding(bottom = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(horizontal = 10.dp, vertical = 0.dp)
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     if (isActive || planItems.isEmpty()) {
                         // Show raw markdown during generation or if parsing failed
@@ -251,7 +252,7 @@ fun ModificationPlanSection(
 
 @Composable
 private fun PlanItemCard(item: PlanItem) {
-    var isExpanded by remember { mutableStateOf(true) }
+    var isExpanded by remember { mutableStateOf(false) }
     
     val priorityColor = when {
         item.priority.contains("关键") || item.priority.contains("CRITICAL") -> AutoDevColors.Red.c600
@@ -268,49 +269,49 @@ private fun PlanItemCard(item: PlanItem) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Item header
+            // Item header - more compact
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { isExpanded = !isExpanded }
-                    .padding(12.dp),
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(14.dp)
                     )
                     
                     Text(
                         text = "${item.number}. ${item.title}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
                 Surface(
                     color = priorityColor.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(4.dp)
+                    shape = RoundedCornerShape(3.dp)
                 ) {
                     Text(
                         text = item.priority,
                         style = MaterialTheme.typography.labelSmall,
                         color = priorityColor,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
                     )
                 }
             }
 
-            // Item details
+            // Item details - more compact
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
@@ -319,9 +320,9 @@ private fun PlanItemCard(item: PlanItem) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                        .padding(bottom = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(horizontal = 10.dp)
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     if (item.what.isNotEmpty()) {
                         PlanField(label = "需要改什么", content = item.what)
@@ -340,17 +341,22 @@ private fun PlanItemCard(item: PlanItem) {
 
 @Composable
 private fun PlanField(label: String, content: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
+            text = "$label:",
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.width(72.dp)
         )
         Text(
             text = content,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
         )
     }
 }
