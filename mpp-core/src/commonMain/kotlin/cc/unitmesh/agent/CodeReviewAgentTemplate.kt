@@ -674,13 +674,13 @@ index abc1234..def5678 100644
 
 /**
  * Template for modification plan generation
- * Generates concise, structured modification suggestions
+ * Generates concise, structured modification suggestions using Plan-like format
  */
 object ModificationPlanTemplate {
     val EN = """
 # Modification Plan Generation
 
-Based on the code analysis, provide a **concise, structured modification plan**.
+Based on the code analysis and lint results, provide a **specific, actionable modification plan** using the Plan format.
 
 ## Analysis Context
 
@@ -692,69 +692,82 @@ ${'$'}{lintResults}
 
 ## Your Task
 
-Generate a concise modification plan with **3-5 key points maximum**.
+Generate a **specific** modification plan with **maximum 5 items**, using the Plan markdown format with nested structure.
 
 ### Required Format:
 
-```markdown
-## Modification Plan
+Your output MUST be inside a code block with language `plan`:
 
-### 1. {Issue Category} - {Priority Level}
-**What**: {Brief description of what needs to change}
-**Why**: {One sentence explaining the reason}
-**How**: {One sentence suggesting the approach}
+```plan
+1. {Issue Category} - {Priority}
+    - [ ] Fix [FileName](filepath) line {X}: {Specific issue}
+    - [ ] {Why this fix is needed}
+    - [ ] {How to fix: concrete action}
 
-### 2. {Issue Category} - {Priority Level}
-**What**: {Brief description}
-**Why**: {Reason}
-**How**: {Approach}
-
-... (maximum 5 items)
+2. {Issue Category} - {Priority}
+    - [ ] Fix [FileName](filepath) line {Y}: {Specific issue}
+    - [ ] {Why}
+    - [ ] {How}
 ```
 
-### Guidelines:
+### Key Requirements:
 
-1. **Maximum 5 items** - Focus on the most critical issues
-2. **Priority levels**: 🔴 CRITICAL | ⚠️ HIGH | 📝 MEDIUM
-3. **Concise** - Each section should be 1-2 sentences max
-4. **Actionable** - Focus on what can be done, not just what's wrong
-5. **Group related issues** - Combine similar problems into one item
+1. **Maximum 5 items** - Focus on most critical errors (prioritize ERROR > WARNING)
+2. **Must be specific** - Each item must mention specific file names using [FileName](filepath) format
+3. **Priority**: CRITICAL (ERROR) | HIGH (WARNING) | MEDIUM (Code quality)
+4. **Actionable** - "How" should provide concrete methods, not vague statements
+5. **Based on Lint** - Must reference actual errors from Lint results above
+6. **Use Plan format** - Ordered list for main items, unordered list for details
+7. **File links** - Use [FileName](filepath) format for file references
 
-### Example:
+### Good Examples:
 
-```markdown
-## Modification Plan
+```plan
+1. Null Safety Issues - CRITICAL
+    - [ ] Fix [UserService.kt](src/main/kotlin/UserService.kt) line 45: user parameter not null-checked
+    - [ ] Prevents NullPointerException (detekt UseCheckOrError rule)
+    - [ ] Add requireNotNull(user) at line 45 or use safe call operator ?.
 
-### 1. Null Safety Issues - 🔴 CRITICAL
-**What**: Add null checks for user parameters in 3 methods
-**Why**: Prevents NullPointerException at runtime
-**How**: Add `requireNotNull()` or safe call operators before usage
+2. Exception Handling - CRITICAL
+    - [ ] Fix [DatabaseHelper.kt](src/main/kotlin/DatabaseHelper.kt) line 62: catching overly generic Exception
+    - [ ] May hide specific errors (detekt TooGenericExceptionCaught)
+    - [ ] Catch specific exceptions like SQLException or IOException instead
 
-### 2. Resource Management - ⚠️ HIGH  
-**What**: Close database connections and file streams
-**Why**: Prevents memory leaks and resource exhaustion
-**How**: Use `use {}` blocks or add explicit `close()` calls in finally blocks
-
-### 3. Code Style Consistency - 📝 MEDIUM
-**What**: Fix naming conventions for 5 variables
-**Why**: Improves code readability and follows Kotlin conventions
-**How**: Rename variables to camelCase format
+3. Resource Management - HIGH
+    - [ ] Fix [FileProcessor.kt](src/main/kotlin/FileProcessor.kt) line 78: stream not closed
+    - [ ] Potential memory leak (detekt UnclosedResource)
+    - [ ] Use use() block or try-with-resources pattern
 ```
 
-**CRITICAL RULES**:
-- ✅ Maximum 5 items
-- ✅ Each item has What/Why/How structure
-- ✅ Use priority emojis (🔴/⚠️/📝)
-- ✅ Keep each section to 1-2 sentences
-- ❌ DO NOT list every single issue
-- ❌ DO NOT provide code examples
-- ❌ DO NOT use any tools
+### Bad Examples (DO NOT do this):
+
+```plan
+❌ 1. Code Quality Improvement - HIGH
+❌     - [ ] Optimize code structure
+❌     - [ ] Improve maintainability
+❌     - [ ] Refactor code
+
+(Problems: No file name, no specific error, not actionable, no file links)
+```
+
+**STRICT RULES**:
+- ✅ Maximum 5 items (no more)
+- ✅ Use `plan` code block format
+- ✅ Each item must include [FileName](filepath) with actual file path
+- ✅ Must reference actual errors from Lint results
+- ✅ Priority based on ERROR/WARNING severity
+- ✅ Merge multiple similar errors in same file into one item
+- ✅ Use nested structure: ordered list for items, unordered list for details
+- ❌ DO NOT use vague descriptions (like "optimize code")
+- ❌ DO NOT provide code examples in the plan
+- ❌ DO NOT use tools
+- ❌ DO NOT use emojis in the plan content
 """.trimIndent()
 
     val ZH = """
 # 修改计划生成
 
-基于代码分析，提供**极简、结构化的修改计划**。
+基于代码分析和 Lint 结果，提供**具体、可执行的修改计划**，使用 Plan 格式。
 
 ## 分析上下文
 
@@ -766,47 +779,75 @@ ${'$'}{lintResults}
 
 ## 你的任务
 
-生成**极简**修改计划，**最多 3 项**，每项一句话。
+生成**具体**修改计划，**最多 5 项**，使用 Plan markdown 格式和嵌套结构。
 
 ### 必需格式：
 
-```markdown
-### 1. {问题类别} - {优先级}
-**需要改什么**: {10字以内描述}
-**为什么改**: {10-15字原因}
-**怎么改**: {10-15字方法}
+你的输出必须在 `plan` 代码块中：
 
-### 2. {问题类别} - {优先级}
-**需要改什么**: {简短描述}
-**为什么改**: {简短原因}
-**怎么改**: {简短方法}
+```plan
+1. {问题类别} - {优先级}
+    - [ ] 修复 [文件名](文件路径) 第 {X} 行: {具体问题}
+    - [ ] {为什么需要修复}
+    - [ ] {如何修复: 具体操作}
+
+2. {问题类别} - {优先级}
+    - [ ] 修复 [文件名](文件路径) 第 {Y} 行: {具体问题}
+    - [ ] {原因}
+    - [ ] {方法}
 ```
 
 ### 关键要求：
 
-1. **最多 3 项** - 只聚焦最关键的问题
-2. **优先级**: 高 | 中等
-3. **极简** - 每个字段控制在 10-15 字以内
-4. **合并问题** - 将同类问题合并为一项
-5. **优先级排序** - 按"高→中等"排序
+1. **最多 5 项** - 聚焦最关键的错误（优先 ERROR > WARNING）
+2. **必须具体** - 每项必须使用 [文件名](文件路径) 格式提到具体文件
+3. **优先级**: 关键（ERROR）| 高（WARNING）| 中等（代码质量）
+4. **可执行** - "如何修复"要提供具体方法，不要泛泛而谈
+5. **基于 Lint** - 必须引用上面 Lint 结果中的实际错误
+6. **使用 Plan 格式** - 有序列表用于主要项，无序列表用于详情
+7. **文件链接** - 使用 [文件名](文件路径) 格式引用文件
 
-### 示例：
+### 好的示例：
 
-```markdown
-### 1. 测试覆盖完善 - 高
-**需要改什么**: 为 JsoupDocumentParser 添加更多边界测试
-**为什么改**: 确保 HTML 解析器各种异常输入的稳定性
-**怎么改**: 添加空内容、无效 HTML 和特殊字符的测试用例
+```plan
+1. 空安全问题 - 关键
+    - [ ] 修复 [UserService.kt](src/main/kotlin/UserService.kt) 第 45 行: user 参数未做空检查
+    - [ ] 防止 NullPointerException (detekt UseCheckOrError 规则)
+    - [ ] 在第 45 行添加 requireNotNull(user) 或使用安全调用操作符 ?.
+
+2. 异常处理 - 关键
+    - [ ] 修复 [DatabaseHelper.kt](src/main/kotlin/DatabaseHelper.kt) 第 62 行: 捕获了过于泛化的 Exception
+    - [ ] 可能掩盖具体错误 (detekt TooGenericExceptionCaught)
+    - [ ] 改为捕获具体异常类型如 SQLException 或 IOException
+
+3. 资源管理 - 高
+    - [ ] 修复 [FileProcessor.kt](src/main/kotlin/FileProcessor.kt) 第 78 行: 流未关闭
+    - [ ] 潜在内存泄漏 (detekt UnclosedResource)
+    - [ ] 使用 use() 块或 try-with-resources 模式
+```
+
+### 坏的示例（不要这样）：
+
+```plan
+❌ 1. 代码质量提升 - 高
+❌     - [ ] 优化代码结构
+❌     - [ ] 提高可维护性
+❌     - [ ] 重构代码
+
+（问题：没有文件名、没有具体错误、无法执行、没有文件链接）
 ```
 
 **严格规则**:
-- ✅ 最多 3 项（不能更多）
-- ✅ 每个字段 10-15 字以内
-- ✅ 使用优先级文字（高/中等）
-- ✅ 合并同类问题
-- ❌ 不要列举所有问题
-- ❌ 不要使用代码示例
+- ✅ 最多 5 项（不能更多）
+- ✅ 使用 `plan` 代码块格式
+- ✅ 每项必须包含 [文件名](文件路径) 和实际文件路径
+- ✅ 必须引用 Lint 结果中的实际错误
+- ✅ 优先级根据 ERROR/WARNING 严重性确定
+- ✅ 合并同一文件的多个相似错误到一项
+- ✅ 使用嵌套结构：有序列表用于项，无序列表用于详情
+- ❌ 不要使用泛泛的描述（如"优化代码"）
+- ❌ 不要在计划中提供代码示例
 - ❌ 不要使用工具
-- ❌ 不要使用 emoji
+- ❌ 不要在计划内容中使用 emoji
 """.trimIndent()
 }

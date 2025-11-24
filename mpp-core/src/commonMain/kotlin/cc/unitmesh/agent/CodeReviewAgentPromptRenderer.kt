@@ -255,7 +255,7 @@ $result
             else -> ModificationPlanTemplate.EN
         }
 
-        // Format lint results summary (concise version)
+        // Format lint results summary with specific errors for modification plan
         val lintSummary = if (lintResults.isNotEmpty()) {
             buildString {
                 val totalErrors = lintResults.sumOf { it.errorCount }
@@ -264,12 +264,42 @@ $result
                 appendLine("**Summary**: $totalErrors error(s), $totalWarnings warning(s) across ${lintResults.size} file(s)")
                 appendLine()
                 
-                // Only show files with errors
-                val filesWithErrors = lintResults.filter { it.errorCount > 0 }
+                // Show files with errors with top 3 issues
+                val filesWithErrors = lintResults.filter { it.errorCount > 0 }.sortedByDescending { it.errorCount }
                 if (filesWithErrors.isNotEmpty()) {
-                    appendLine("**Files with errors**:")
+                    appendLine("**Files with errors** (top issues shown):")
+                    appendLine()
                     filesWithErrors.forEach { file ->
-                        appendLine("- ${file.filePath}: ${file.errorCount} error(s)")
+                        appendLine("### ${file.filePath}")
+                        appendLine("- **Total**: ${file.errorCount} error(s), ${file.warningCount} warning(s)")
+                        
+                        // Show top 3 errors
+                        val errors = file.issues.filter { it.severity == LintSeverity.ERROR }
+                        if (errors.isNotEmpty()) {
+                            appendLine("- **Top errors**:")
+                            errors.take(3).forEach { issue ->
+                                appendLine("  - Line ${issue.line}: ${issue.message}")
+                                if (issue.rule != null && issue.rule!!.isNotBlank()) {
+                                    appendLine("    Rule: `${issue.rule}`")
+                                }
+                            }
+                            if (errors.size > 3) {
+                                appendLine("  ... and ${errors.size - 3} more errors")
+                            }
+                        }
+                        appendLine()
+                    }
+                }
+                
+                // Show warning-only files (simplified)
+                val filesWithWarningsOnly = lintResults.filter { it.errorCount == 0 && it.warningCount > 0 }
+                if (filesWithWarningsOnly.isNotEmpty()) {
+                    appendLine("**Files with warnings only**: ${filesWithWarningsOnly.size} file(s)")
+                    filesWithWarningsOnly.take(3).forEach { file ->
+                        appendLine("- ${file.filePath}: ${file.warningCount} warning(s)")
+                    }
+                    if (filesWithWarningsOnly.size > 3) {
+                        appendLine("... and ${filesWithWarningsOnly.size - 3} more files")
                     }
                 }
             }
