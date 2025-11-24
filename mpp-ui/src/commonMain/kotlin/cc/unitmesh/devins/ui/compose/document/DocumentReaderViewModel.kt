@@ -49,7 +49,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         private set
 
     // Indexing Service
-    private val indexRepository = cc.unitmesh.devins.db.DocumentIndexRepository.getInstance()
+    private val indexRepository = cc.unitmesh.devins.db.DocumentIndexDatabaseRepository.getInstance()
     private val indexService = cc.unitmesh.devins.service.DocumentIndexService(workspace.fileSystem, indexRepository, scope)
     val indexingStatus = indexService.indexingStatus
 

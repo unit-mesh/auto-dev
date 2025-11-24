@@ -1,9 +1,9 @@
 package cc.unitmesh.devins.db
 
-actual class DocumentIndexRepository(private val database: DevInsDatabase) {
+actual class DocumentIndexDatabaseRepository(private val database: DevInsDatabase) : DocumentIndexRepository {
     private val queries = database.documentIndexQueries
 
-    actual fun save(record: DocumentIndexRecord) {
+    actual override fun save(record: DocumentIndexRecord) {
         queries.insertOrReplace(
             path = record.path,
             hash = record.hash,
@@ -15,7 +15,7 @@ actual class DocumentIndexRepository(private val database: DevInsDatabase) {
         )
     }
 
-    actual fun get(path: String): DocumentIndexRecord? {
+    actual override fun get(path: String): DocumentIndexRecord? {
         val result = queries.selectByPath(path).executeAsOneOrNull() ?: return null
         return DocumentIndexRecord(
             path = result.path,
@@ -28,7 +28,7 @@ actual class DocumentIndexRepository(private val database: DevInsDatabase) {
         )
     }
 
-    actual fun getAll(): List<DocumentIndexRecord> {
+    actual override fun getAll(): List<DocumentIndexRecord> {
         return queries.selectAll().executeAsList().map { result ->
             DocumentIndexRecord(
                 path = result.path,
@@ -42,11 +42,11 @@ actual class DocumentIndexRepository(private val database: DevInsDatabase) {
         }
     }
 
-    actual fun delete(path: String) {
+    actual override fun delete(path: String) {
         queries.deleteByPath(path)
     }
 
-    actual fun deleteAll() {
+    actual override fun deleteAll() {
         queries.deleteAll()
     }
 
@@ -58,7 +58,7 @@ actual class DocumentIndexRepository(private val database: DevInsDatabase) {
                 instance ?: run {
                     val driverFactory = DatabaseDriverFactory()
                     val database = createDatabase(driverFactory)
-                    DocumentIndexRepository(database).also { instance = it }
+                    DocumentIndexDatabaseRepository(database).also { instance = it }
                 }
             }
         }

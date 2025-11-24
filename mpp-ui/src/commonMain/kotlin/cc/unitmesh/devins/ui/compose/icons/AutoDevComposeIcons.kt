@@ -41,6 +41,7 @@ object AutoDevComposeIcons {
     val ContentCopy: ImageVector get() = Icons.Default.ContentCopy
     val ContentPaste: ImageVector get() = Icons.Default.ContentPaste
     val Refresh: ImageVector get() = Icons.Default.Refresh
+    val Sync: ImageVector get() = Icons.Default.Refresh // Use Refresh as Sync or import Sync if available
     val Stop: ImageVector get() = Icons.Default.Stop
     val PlayArrow: ImageVector get() = Icons.Default.PlayArrow
     val Clear: ImageVector get() = Icons.Default.Clear
