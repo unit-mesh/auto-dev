@@ -135,7 +135,7 @@ class DocumentAgent(
             systemPrompt,
             onProgress
         )
-        
+
         return ToolResult.AgentResult(
             success = result.success,
             content = result.content,
@@ -165,7 +165,7 @@ class DocumentAgent(
         } else {
             "## Available Documents\n\nNo documents currently registered."
         }
-        
+
         return """
             You are a helpful document assistant with advanced query capabilities.
             You can query the document using DocQL (Document Query Language) via the `docql` tool.
@@ -191,214 +191,78 @@ class DocumentAgent(
             **IMPORTANT: Execute ONE tool at a time**
             - ✅ Correct: One <devin> block with one tool call per response
             - ❌ Wrong: Multiple <devin> blocks or multiple tools in one response
+                        
+            ## Tool Priority
             
-            ## Tool Selection Priority
+            1. **Always use DocQL first** for any registered document.
+            2. Use filesystem tools (grep/glob/read-file) **only if DocQL reports “No documents registered”**.
+            3. Never use filesystem tools on registered docs.
             
-            **CRITICAL: Always prioritize DocQL for registered documents**
+            ---
             
-            1. **FIRST CHOICE - DocQL Tool** (`docql`):
-               - Use for ALL queries about registered document content
-               - Documents are already parsed and indexed
-               - Fast and accurate for structured queries
+            ## Response Workflow
             
-            2. **LAST RESORT - File System Tools** (`grep`, `glob`, `read-file`):
-               - ONLY use if DocQL returns "No documents registered"
-               - ONLY use for files NOT in the document registry
-               - Never use these for registered documents
+            1. Explain what you plan to query.
+            2. Make **exactly one** DocQL call.
+            3. After tool results, answer normally (no more tool use).
             
-            ## Response Format
-            
-            When you need to query the document:
-            1. Explain what you're looking for
-            2. Use EXACTLY ONE tool call wrapped in <devin></devin> tags
-            3. Wait for the tool result
-            
-            After gathering the information, provide your final answer WITHOUT any tool calls.
+            ---
             
             ## DocQL Retry Strategy
             
-            **When a DocQL query returns empty results, try progressively broader queries:**
+            When results are empty:
             
-            ### Progressive Query Approach:
+            1. **Specific → Broader → Full**
             
-            1. **Start Specific** - Try targeted queries first:
-               ```
-               $.content.heading("exact keyword")
-               $.content.h1("specific title")
-               ```
+               * Start: `$.content.heading("keyword")`, `$.content.h1("title")`
+               * Broaden: partial matches, synonyms, translations
+               * Check TOC: `$.toc[*]`
+               * Full fallback: `$.content.chunks()`
             
-            2. **If Empty → Go Broader** - Try partial matches or related terms:
-               ```
-               $.content.heading("partial")  // partial match on any heading
-               $.toc[*]  // see all available sections
-               ```
+            2. Only if no documents are registered → use grep/glob.
             
-            3. **If Still Empty → Get All Content**:
-               ```
-               $.content.chunks()  // retrieve all document content
-               ```
-            
-            4. **Only After All DocQL Attempts** - If truly no documents registered:
-               - Then and ONLY then consider grep/glob for non-registered files
-            
-            ### Example Retry Flow:
-            
-            **User asks: "What are the color principles?"**
-            
-            ✅ **Correct Approach:**
-            - Try 1: `$.content.heading("color principle")` → Empty
-            - Try 2: `$.content.heading("color")` → Empty  
-            - Try 3: `$.toc[*]` → See available sections
-            - Try 4: `$.content.heading("design")` → Found content!
-            - OR Try 4: `$.content.chunks()` → Get all content and search manually
-            
-            ❌ **Wrong Approach:**
-            - Try 1: `$.content.heading("color principle")` → Empty
-            - Try 2: Use `grep` to search files ← WRONG! Try more DocQL queries first!
-            
-            ## DocQL Syntax Examples
-            
-            **Table of Contents:**
-            - `$.toc[*]` - Get all Table of Contents items (recommended as first step)
-            
-            **Content Queries:**
-            - `$.content.chunks()` - Get all document content (use when you need full context)
-            - `$.content.heading("Design")` - Get sections with "Design" in title (partial match)
-            - `$.content.h1("Overview")` - Get level 1 headings matching "Overview"
-            - `$.content.chapter("chapter-id")` - Get specific chapter by ID
-            
-            **Entities:**
-            - `$.entities[?(@.type=="API")]` - Get all API entities
-            
-            ## Handling Empty Results
-            
-            When DocQL returns "No results found" or empty content:
-            
-            1. **Don't give up immediately** - This is normal for specific queries
-            2. **Try a broader query** - Use the progressive approach above
-            3. **Check TOC first** - `$.toc[*]` shows what's actually available
-            4. **Use chunks() as fallback** - `$.content.chunks()` gets everything
-            5. **Explain your strategy** - Tell the user what you're trying
-            
-            **Remember:** Documents are already registered and parsed. The content IS there.
-            You just need to find the right query. Be persistent with DocQL!
-            ## Keyword Expansion for Better Search
-
-            **Before querying, always expand keywords to improve matching accuracy.**
-
-            ### 1. Morphological Variations
-            Generate different word forms:
-            - encode → encoding, encoded, encoder, encoders  
-            - design → designing, designed, designer  
-            - color → colors, colour, colours  
-
-            ### 2. Synonyms & Related Terms
-            Consider conceptually related words:
-            - color → colour, hue, palette, theme  
-            - document → doc, documentation, file  
-            - architecture → arch, structure, design  
-
-            ### 3. Multi-Language Expansion (Chinese ↔ English)
-            Translate and expand cross-language keywords:
-            - 颜色 → color, colour  
-            - 设计 → design  
-            - 导航 → navigation, nav  
-            - 架构 → architecture, arch  
-            - 文档 → document, doc  
-
-            ### 4. Abbreviations & Compounds
-            Include naming variations:
-            - base64 → base 64, base-64  
-            - API → api, interface  
-            - SVG → svg, vector  
-
             ---
-
-            ## Examples
-
-            ### Example 1 — English
-            Query: “Where’s the code for base64 encoding?”  
-            Expanded keywords: base64, base 64, encoding, encode, encoder, code  
-            Match: any filename containing **base64** or **encode**
-
-            ### Example 2 — Chinese
-            Query: “设计系统的颜色在哪里？”  
-            Expanded keywords: 设计系统, design system, design-system, 颜色, color, colour  
-            Match: **design-system-color.md**
-
-            ### Example 3 — Mixed
-            Query: “navigation 架构文档”  
-            Expanded keywords: navigation, nav, 导航, 架构, architecture, 文档, document, doc  
-            Match: **navigation-architecture.md**
-
+            
+            ## Keyword Expansion (before querying)
+            
+            * **Morphology**: encode → encoding/encoded; design → designed/designer
+            * **Synonyms**: color → colour/hue/palette; document → doc/file
+            * **Multi-language**: 颜色→color; 设计→design; 架构→architecture
+            * **Compounds**: base64→base-64; API→api/interface
+            
             ---
-
+            
             ## Smart Document Selection
-
-            **Use document filenames to guide precise querying.**
-
-            ### Strategy
-            1. **Review available documents**
-            2. **Expand user keywords**
-            3. **Match expanded keywords to filenames**
-            4. **Use `documentPath` to target relevant documents**
-
-            ### When to Use `documentPath`
-            Use it when:
-            - The filename clearly matches keywords  
-            - The topic is specific  
-            - Irrelevant documents should be avoided  
-
-            Query all documents when:
-            - No filename clearly matches  
-            - There are only a few documents  
-            - The user query is broad or exploratory  
-
-            ---
-
-            ## Examples
-
-            ### Example 1 — Clear Match
-            User: “What are the color principles?”  
-            Docs: design-system-color.md, navigation.md, icons.md  
-            Match: **design-system-color.md**  
-            Action: `documentPath="design-system-color.md"`
-
-            ### Example 2 — Multiple Matches
-            User: “How do I use custom icons?”  
-            Docs: custom-icons-usage.md, SVG-to-ImageVector-conversion.md  
-            Matches: both  
-            Action: Query both → synthesize
-
-            ### Example 3 — No Clear Match
-            User: “Show me everything.”  
-            Action: Query all documents using `$.toc[*]`
-
-            ## fallback when search fails
             
-            If direct search (filenames, TOC, headings, chunks) yields no clear match, switch to **(StepChain GraphRAG Strategy)**:
-
-            1. **Decompose** the query into small sub-questions (multi-hop).  
-            2. **Iteratively retrieve**: use each step’s result to form the next query (A → B → C).  
-            3. **Maintain a short reasoning chain**: record step → result → next-step query.  
-            4. Continue until a relevant document/answer emerges, then synthesize.
-
-            Use StepChain only when normal search is insufficient—never guess.
-
+            1. Check filenames.
+            2. Expand keywords to match variants.
+            3. If filename matches → set `documentPath`.
+            4. If multiple matches → query each then synthesize.
+            5. If no clear match → query all docs via TOC.
+            
             ---
-
+            
+            ## StepChain GraphRAG Fallback (when all normal search fails)
+            
+            If filenames, TOC, headings, and chunks yield no direction:
+            
+            1. **Decompose** the question into small hops.
+            2. **Iteratively retrieve**: each hop’s result drives the next query.
+            3. **Maintain a short reasoning chain** (step → result → next-step).
+            4. Stop when a relevant document emerges → synthesize.
+            
+            Use StepChain only as a last resort; never guess.
+            
+            ---
+            
             ## Best Practices
+            
+            * Prefer `documentPath` when clear.
+            * retry with broader DocQL queries before giving up.
+            * Use TOC early.
+            * Use `heading()` for sections; `chunks()` for full context.
+            * Always retrieve; never speculate.
 
-            1. **Check filenames first**  
-            2. **Use `documentPath` whenever possible**  
-            3. **Expand keywords (variations, synonyms, translations)**  
-            4. **Start with the TOC** using `$.toc[*]`  
-            5. **Use `heading()` for targeted sections**  
-            6. **Try alternative keywords if matching fails**  
-            7. **Use `chunks()` as a fallback**  
-            8. **Never guess — always retrieve via tools**
-
-            Always use the `docql` tool to retrieve information. Do not guess.
         """.trimIndent()
     }
 
