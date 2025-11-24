@@ -913,7 +913,7 @@ open class CodeReviewViewModel(
             }
 
             // Combine user feedback with selected plan items feedback
-            val combinedUserFeedback = buildString {
+            var combinedUserFeedback = buildString {
                 if (currentState.aiProgress.userFeedback.isNotBlank()) {
                     appendLine(currentState.aiProgress.userFeedback)
                     if (selectedItemsFeedback.isNotBlank()) {
@@ -924,6 +924,10 @@ open class CodeReviewViewModel(
                     append(selectedItemsFeedback)
                 }
             }.trim()
+
+            if (combinedUserFeedback.isEmpty() && currentState.aiProgress.planOutput.isNotEmpty()) {
+                combinedUserFeedback = currentState.aiProgress.planOutput
+            }
 
             AutoDevLogger.info("CodeReviewViewModel") {
                 "Generating fixes with ${selectedPlanItems.size} selected plan items"

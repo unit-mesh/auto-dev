@@ -21,6 +21,7 @@ import cc.unitmesh.agent.tool.registry.ToolRegistry
 import cc.unitmesh.agent.tool.shell.DefaultShellExecutor
 import cc.unitmesh.agent.tool.shell.ShellExecutor
 import cc.unitmesh.agent.tracker.IssueTracker
+import cc.unitmesh.agent.util.WalkthroughExtractor
 import cc.unitmesh.llm.KoogLLMService
 import cc.unitmesh.llm.ModelConfig
 import kotlinx.coroutines.CoroutineScope
@@ -252,14 +253,15 @@ class CodeReviewAgent(
                 }
                 appendLine()
 
-                // Add analysis output
+                // Extract walkthrough content from analysis output
                 if (analysisOutput.isNotBlank()) {
-                    /// catch walkout only
-                    appendLine(analysisOutput)
-                    appendLine()
+                    val walkthroughContent = WalkthroughExtractor.extract(analysisOutput)
+                    if (walkthroughContent.isNotBlank()) {
+                        appendLine(walkthroughContent)
+                        appendLine()
+                    }
                 }
 
-                // Add lint results with priority
                 if (filteredLintResults.isNotEmpty()) {
                     val filesWithErrors = filteredLintResults.filter { it.errorCount > 0 }
                     if (filesWithErrors.isNotEmpty()) {
@@ -295,29 +297,9 @@ class CodeReviewAgent(
                     }
                 }
 
-                // Add user feedback
                 if (userFeedback.isNotBlank()) {
                     appendLine(userFeedback)
                     appendLine()
-                }
-
-                // Add instructions
-                if (isZh) {
-                    appendLine("## 修复要求")
-                    appendLine()
-                    appendLine("1. **优先修复错误** - 先修复所有标记为 🔴 的错误")
-                    appendLine("2. **使用工具修改代码** - 使用 `/write` 或 `/edit` 工具直接修改文件")
-                    appendLine("3. **保持代码风格一致** - 遵循项目现有的代码风格")
-                    appendLine("4. **验证修复** - 确保修复后的代码可以正常编译和运行")
-                    appendLine("5. **不要生成 patch** - 直接使用工具修改代码文件")
-                } else {
-                    appendLine("## Fix Requirements")
-                    appendLine()
-                    appendLine("1. **Fix errors first** - Address all 🔴 errors before warnings")
-                    appendLine("2. **Use tools to modify code** - Use `/write` or `/edit` tools to directly modify files")
-                    appendLine("3. **Maintain code style** - Follow the project's existing code style")
-                    appendLine("4. **Verify fixes** - Ensure fixed code compiles and runs correctly")
-                    appendLine("5. **Do NOT generate patches** - Use tools to directly modify code files")
                 }
             }
 
