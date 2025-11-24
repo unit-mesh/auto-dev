@@ -55,7 +55,6 @@ object DocumentRegistry {
         if (!initialized) {
             initialized = true
             logger.info { "Initializing platform-specific document parsers" }
-            // Platform-specific initialization happens via expect/actual
             platformInitialize()
         }
     }

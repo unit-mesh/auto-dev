@@ -32,30 +32,23 @@ fun DocumentNavigationPane(
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        // 顶部标题和搜索栏
-        Text(
-            text = "文档导航",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        // 搜索框
-        OutlinedTextField(
-            value = "",
-            onValueChange = { /* TODO: 实现搜索 */ },
-            placeholder = { Text("搜索文档...") },
-            leadingIcon = {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Search,
-                    contentDescription = "Search"
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            singleLine = true
-        )
+//        OutlinedTextField(
+//            value = "",
+//            onValueChange = {
+//                //
+//            },
+//            placeholder = { Text("搜索文档...") },
+//            leadingIcon = {
+//                Icon(
+//                    imageVector = AutoDevComposeIcons.Search,
+//                    contentDescription = "Search"
+//                )
+//            },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(bottom = 8.dp),
+//            singleLine = true
+//        )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 

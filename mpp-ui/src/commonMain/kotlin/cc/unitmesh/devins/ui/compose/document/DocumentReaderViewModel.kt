@@ -75,8 +75,6 @@ class DocumentReaderViewModel(
                     return@launch
                 }
 
-                // Search for markdown files
-                val searchPath = documentsPath ?: rootPath
                 val markdownFiles = fileSystem.searchFiles("*.md", maxDepth = 5, maxResults = 100)
 
                 documents = markdownFiles.mapNotNull { relativePath ->

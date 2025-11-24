@@ -47,7 +47,6 @@ fun DocumentReaderPage(
                 minRatio = 0.15f,
                 maxRatio = 0.3f,
                 first = {
-                    // 左侧：文档导航
                     DocumentNavigationPane(
                         documents = viewModel.documents,
                         onDocumentSelected = { viewModel.selectDocument(it) }
@@ -79,7 +78,7 @@ fun DocumentReaderPage(
                                     // TODO: Get TOC and Entities from ViewModel/Document
                                     val toc = viewModel.selectedDocument?.toc ?: emptyList()
                                     val entities = viewModel.selectedDocument?.entities ?: emptyList()
-                                    
+
                                     StructuredInfoPane(
                                         toc = toc,
                                         entities = entities,
