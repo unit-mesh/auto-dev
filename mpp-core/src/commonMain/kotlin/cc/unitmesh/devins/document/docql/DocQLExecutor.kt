@@ -12,6 +12,9 @@ sealed class DocQLResult {
      */
     data class TocItems(val itemsByFile: Map<String, List<TOCItem>>) : DocQLResult() {
         val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+        
+        /** Flattened list of all items (for convenience in single-file tests) */
+        val items: List<TOCItem> get() = itemsByFile.values.flatten()
     }
     
     /**
@@ -20,6 +23,9 @@ sealed class DocQLResult {
      */
     data class Entities(val itemsByFile: Map<String, List<Entity>>) : DocQLResult() {
         val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+        
+        /** Flattened list of all items (for convenience in single-file tests) */
+        val items: List<Entity> get() = itemsByFile.values.flatten()
     }
     
     /**
@@ -28,6 +34,9 @@ sealed class DocQLResult {
      */
     data class Chunks(val itemsByFile: Map<String, List<DocumentChunk>>) : DocQLResult() {
         val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+        
+        /** Flattened list of all items (for convenience in single-file tests) */
+        val items: List<DocumentChunk> get() = itemsByFile.values.flatten()
     }
     
     /**
@@ -36,6 +45,9 @@ sealed class DocQLResult {
      */
     data class CodeBlocks(val itemsByFile: Map<String, List<CodeBlock>>) : DocQLResult() {
         val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+        
+        /** Flattened list of all items (for convenience in single-file tests) */
+        val items: List<CodeBlock> get() = itemsByFile.values.flatten()
     }
     
     /**
@@ -44,6 +56,9 @@ sealed class DocQLResult {
      */
     data class Tables(val itemsByFile: Map<String, List<TableBlock>>) : DocQLResult() {
         val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+        
+        /** Flattened list of all items (for convenience in single-file tests) */
+        val items: List<TableBlock> get() = itemsByFile.values.flatten()
     }
     
     /**
