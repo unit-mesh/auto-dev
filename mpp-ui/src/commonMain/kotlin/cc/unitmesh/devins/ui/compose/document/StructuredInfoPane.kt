@@ -48,15 +48,13 @@ fun StructuredInfoPane(
                     result
                 },
                 autoExecute = true,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp)
             )
         }
 
         HorizontalDivider()
 
-        // 内容区域
         if (showDocQLResult && docqlResult != null) {
-            // 显示 DocQL 查询结果
             DocQLResultView(
                 result = docqlResult!!,
                 onTocSelected = onTocSelected,
@@ -64,7 +62,6 @@ fun StructuredInfoPane(
                 onClose = { showDocQLResult = false }
             )
         } else {
-            // 显示可折叠的内容区域
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)

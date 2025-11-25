@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 /**
  * DocQL search bar with syntax hints, auto-complete and real-time query execution
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocQLSearchBar(
     onQueryExecute: suspend (String) -> DocQLResult,
@@ -37,7 +38,7 @@ fun DocQLSearchBar(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 OutlinedTextField(
                     value = queryTextValue,
@@ -49,7 +50,6 @@ fun DocQLSearchBar(
                         val text = newValue.text
                         val cursor = newValue.selection.start
 
-                        // Real-time syntax validation
                         try {
                             if (text.isNotEmpty()) {
                                 parseDocQL(text)
@@ -82,8 +82,8 @@ fun DocQLSearchBar(
                             } else if (text.length < oldText.length) {
                                 val beforeCursor = text.substring(0, minOf(cursor, text.length))
                                 val hasTriggerChar = beforeCursor.endsWith(".") ||
-                                                   beforeCursor.endsWith("[") ||
-                                                   beforeCursor.endsWith("@")
+                                    beforeCursor.endsWith("[") ||
+                                    beforeCursor.endsWith("@")
 
                                 if (!hasTriggerChar) {
                                     showSuggestions = false
@@ -105,37 +105,52 @@ fun DocQLSearchBar(
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("输入 DocQL 查询（输入 $ . [ @ 触发补全）") },
+                    placeholder = {
+                        Text(
+                            "输入 DocQL 查询",
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    },
                     singleLine = true,
                     isError = errorMessage != null,
                     leadingIcon = {
                         Icon(
                             imageVector = AutoDevComposeIcons.Search,
-                            contentDescription = "Search"
+                            contentDescription = "Search",
+                            modifier = Modifier.size(16.dp)
                         )
                     },
                     trailingIcon = {
                         Row {
                             if (isExecuting) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp).padding(end = 4.dp),
+                                    modifier = Modifier.size(12.dp).padding(end = 4.dp),
                                     strokeWidth = 2.dp
                                 )
                             }
                             if (queryTextValue.text.isNotEmpty()) {
-                                IconButton(onClick = {
-                                    queryTextValue = TextFieldValue("")
-                                    showSuggestions = false  // 清除时关闭补全
-                                    errorMessage = null
-                                }) {
+                                IconButton(
+                                    onClick = {
+                                        queryTextValue = TextFieldValue("")
+                                        showSuggestions = false
+                                        errorMessage = null
+                                    },
+                                ) {
                                     Icon(
                                         imageVector = AutoDevComposeIcons.Close,
-                                        contentDescription = "清除"
+                                        contentDescription = "清除",
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }
                         }
-                    }
+                    },
+                    textStyle = MaterialTheme.typography.bodySmall,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
 
                 if (!autoExecute) {
@@ -159,7 +174,6 @@ fun DocQLSearchBar(
                     }
                 }
 
-                // Syntax help toggle
                 IconButton(onClick = { isExpanded = !isExpanded }) {
                     Icon(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandLess else AutoDevComposeIcons.ExpandMore,
@@ -168,7 +182,6 @@ fun DocQLSearchBar(
                 }
             }
 
-            // Auto-complete popup
             if (showSuggestions) {
                 DocQLAutoCompletePopup(
                     suggestions = suggestions,
@@ -191,7 +204,6 @@ fun DocQLSearchBar(
             }
         }
 
-        // Error message
         if (errorMessage != null) {
             Text(
                 text = errorMessage!!,
@@ -232,63 +244,82 @@ private fun DocQLSyntaxHelp(
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = "DocQL Syntax",
                 style = MaterialTheme.typography.titleSmall
             )
 
-            // TOC queries
-            SyntaxSection(
-                title = "Table of Contents (TOC)",
-                examples = listOf(
-                    "$.toc[*]" to "All TOC items",
-                    "$.toc[0]" to "First TOC item",
-                    "$.toc[?(@.level==1)]" to "Level 1 headings",
-                    """$.toc[?(@.title~="架构")]""" to "TOC items with '架构' in title"
-                ),
-                onQuerySelect = onQuerySelect
-            )
+            androidx.compose.foundation.lazy.LazyColumn(
+                modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // TOC queries
+                item {
+                    SyntaxSection(
+                        title = "Table of Contents (TOC)",
+                        examples = listOf(
+                            "$.toc[*]" to "All TOC items",
+                            "$.toc[0]" to "First TOC item",
+                            "$.toc[?(@.level==1)]" to "Level 1 headings",
+                            """$.toc[?(@.title~="架构")]""" to "TOC items with '架构' in title"
+                        ),
+                        onQuerySelect = onQuerySelect
+                    )
+                }
 
-            HorizontalDivider()
+                item {
+                    HorizontalDivider()
+                }
 
-            // Entity queries
-            SyntaxSection(
-                title = "Entities",
-                examples = listOf(
-                    "$.entities[*]" to "All entities",
-                    """$.entities[?(@.type=="Term")]""" to "Term entities",
-                    """$.entities[?(@.type=="API")]""" to "API entities",
-                    """$.entities[?(@.name~="User")]""" to "Entities with 'User' in name"
-                ),
-                onQuerySelect = onQuerySelect
-            )
+                // Entity queries
+                item {
+                    SyntaxSection(
+                        title = "Entities",
+                        examples = listOf(
+                            "$.entities[*]" to "All entities",
+                            """$.entities[?(@.type=="Term")]""" to "Term entities",
+                            """$.entities[?(@.type=="API")]""" to "API entities",
+                            """$.entities[?(@.name~="User")]""" to "Entities with 'User' in name"
+                        ),
+                        onQuerySelect = onQuerySelect
+                    )
+                }
 
-            HorizontalDivider()
+                item {
+                    HorizontalDivider()
+                }
 
-            // Content queries
-            SyntaxSection(
-                title = "Content",
-                examples = listOf(
-                    """$.content.heading("架构")""" to "Sections with '架构' in heading",
-                    """$.content.chapter("1.2")""" to "Chapter 1.2 content",
-                    """$.content.h1("Introduction")""" to "H1 with 'Introduction'",
-                    """$.content.h2("Design")""" to "H2 with 'Design'",
-                    """$.content.grep("keyword")""" to "Full-text search for 'keyword'"
-                ),
-                onQuerySelect = onQuerySelect
-            )
+                // Content queries
+                item {
+                    SyntaxSection(
+                        title = "Content",
+                        examples = listOf(
+                            """$.content.heading("架构")""" to "Sections with '架构' in heading",
+                            """$.content.chapter("1.2")""" to "Chapter 1.2 content",
+                            """$.content.h1("Introduction")""" to "H1 with 'Introduction'",
+                            """$.content.h2("Design")""" to "H2 with 'Design'",
+                            """$.content.grep("keyword")""" to "Full-text search for 'keyword'"
+                        ),
+                        onQuerySelect = onQuerySelect
+                    )
+                }
 
-            HorizontalDivider()
+                item {
+                    HorizontalDivider()
+                }
 
-            // Operators
-            Text(
-                text = "Operators: == (equals), ~= (contains), > (greater than), < (less than)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                // Operators
+                item {
+                    Text(
+                        text = "Operators: == (equals), ~= (contains), > (greater than), < (less than)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }

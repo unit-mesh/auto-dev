@@ -33,9 +33,8 @@ fun DesktopTitleBarTabs(
     onDoubleClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    // 当切换到 Code Review 时自动隐藏 SessionSidebar
     LaunchedEffect(currentAgentType) {
-        if (currentAgentType == AgentType.CODE_REVIEW) {
+        if (currentAgentType == AgentType.CODE_REVIEW || currentAgentType == AgentType.DOCUMENT_READER) {
             UIStateManager.setSessionSidebarVisible(false)
         } else {
             UIStateManager.setSessionSidebarVisible(true)
@@ -57,7 +56,7 @@ fun DesktopTitleBarTabs(
                     while (true) {
                         val event = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Main)
                         val change = event.changes.firstOrNull() ?: continue
-                        
+
                         if (change.changedToUp()) {
                             val currentTime = event.changes.first().uptimeMillis
                             if (currentTime - lastClickTime < 500) {

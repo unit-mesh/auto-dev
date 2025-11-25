@@ -33,15 +33,13 @@ fun DocumentViewerPane(
         if (document == null) {
             EmptyViewerState()
         } else {
-            // 文档标题
             Text(
                 text = document.name,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // 文档元数据栏
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -60,20 +58,19 @@ fun DocumentViewerPane(
                         text = formatFileSize(document.metadata.fileSize)
                     )
                 }
-                
-                // Indexing Status
+
                 if (indexStatus != null) {
-                    val statusColor = if (indexStatus.status == "INDEXED") 
-                        MaterialTheme.colorScheme.primary 
-                    else 
+                    val statusColor = if (indexStatus.status == "INDEXED")
+                        MaterialTheme.colorScheme.primary
+                    else
                         MaterialTheme.colorScheme.error
-                        
+
                     val statusText = if (indexStatus.status == "INDEXED") "Indexed" else "Index Failed"
-                    val statusIcon = if (indexStatus.status == "INDEXED") 
-                        AutoDevComposeIcons.CheckCircle 
-                    else 
+                    val statusIcon = if (indexStatus.status == "INDEXED")
+                        AutoDevComposeIcons.CheckCircle
+                    else
                         AutoDevComposeIcons.Error
-                    
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -91,7 +88,7 @@ fun DocumentViewerPane(
                         )
                     }
                 } else {
-                     Row(
+                    Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -112,7 +109,6 @@ fun DocumentViewerPane(
 
             HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
 
-            // 文档内容
             Box(modifier = Modifier.fillMaxSize()) {
                 if (isLoading) {
                     CircularProgressIndicator(

@@ -16,6 +16,7 @@ import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.app.UnifiedAppContent
 import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
 import cc.unitmesh.agent.AgentType
+import cc.unitmesh.agent.logging.logger
 import cc.unitmesh.devins.ui.compose.chat.MessageList
 import cc.unitmesh.devins.ui.compose.chat.SessionSidebar
 import cc.unitmesh.devins.ui.compose.chat.TopBarMenu
@@ -147,7 +148,6 @@ private fun AutoDevContent(
     val workspaceState by WorkspaceManager.workspaceFlow.collectAsState()
 
     fun handleAgentTypeChange(type: AgentType) {
-        // Check remote configuration if switching to remote mode
         if (type == AgentType.REMOTE) {
             val hasValidServerConfig = serverUrl.isNotBlank() && serverUrl != "http://localhost:8080"
             if (!hasValidServerConfig) {
@@ -164,7 +164,7 @@ private fun AutoDevContent(
                 val typeString = when (type) {
                     AgentType.REMOTE -> "Remote"
                     AgentType.LOCAL_CHAT -> "Local"
-                    else -> "Local" // CODING and CODE_REVIEW are local modes
+                    else -> "Local"
                 }
                 cc.unitmesh.devins.ui.config.saveAgentTypePreference(typeString)
             } catch (e: Exception) {
@@ -184,8 +184,6 @@ private fun AutoDevContent(
     }
 
     // 同步全局状态到回调（供 Desktop 窗口使用）
-
-    // 同步全局状态到回调（供 Desktop 窗口使用）
     LaunchedEffect(showSessionSidebar) {
         onSidebarVisibilityChanged(showSessionSidebar)
     }
@@ -201,12 +199,10 @@ private fun AutoDevContent(
     }
 
     LaunchedEffect(Unit) {
-        // 初始化全局 UI 状态
         UIStateManager.setTreeViewVisible(initialTreeViewVisible)
         UIStateManager.setSessionSidebarVisible(true)
 
         if (!WorkspaceManager.hasActiveWorkspace()) {
-            // Try to load last workspace first
             val lastWorkspace = try {
                 ConfigManager.getLastWorkspace()
             } catch (e: Exception) {
@@ -386,7 +382,6 @@ private fun AutoDevContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Always show sidebar, but control its expanded state
             SessionSidebar(
                 chatHistoryManager = chatHistoryManager,
                 currentSessionId = chatHistoryManager.getCurrentSession().id,

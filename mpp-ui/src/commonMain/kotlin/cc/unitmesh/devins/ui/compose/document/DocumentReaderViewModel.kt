@@ -50,7 +50,8 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
     // Indexing Service
     private val indexRepository = cc.unitmesh.devins.db.DocumentIndexDatabaseRepository.getInstance()
-    private val indexService = cc.unitmesh.devins.service.DocumentIndexService(workspace.fileSystem, indexRepository, scope)
+    private val indexService =
+        cc.unitmesh.devins.service.DocumentIndexService(workspace.fileSystem, indexRepository, scope)
     val indexingStatus = indexService.indexingStatus
 
     init {
@@ -73,11 +74,11 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     // Create DocumentAgent
                     val toolConfigFile = cc.unitmesh.agent.config.ToolConfigFile.default()
                     val mcpConfigService = McpToolConfigService(toolConfigFile)
-                    
+
                     // Use null for fileSystem - DocumentAgent doesn't require filesystem operations
                     // Document queries work via the registry and parser, not filesystem tools
                     val toolFileSystem: cc.unitmesh.agent.tool.filesystem.ToolFileSystem? = null
-                    
+
                     documentAgent = DocumentAgent(
                         llmService = llmService!!,
                         parserService = parserService,
@@ -257,7 +258,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         scope.launch {
             isGenerating = true
             renderer.addUserMessage(text)
-            
+
             try {
                 val agent = documentAgent
                 if (agent == null) {
@@ -266,18 +267,13 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     return@launch
                 }
 
-                // Create DocumentTask and execute via agent
                 val task = cc.unitmesh.agent.document.DocumentTask(
                     query = text,
                     documentPath = selectedDocument?.path
                 )
 
-                println("Executing DocumentAgent with query: $text")
-                agent.execute(task) { progress ->
-                    // Progress updates are handled by renderer
-                    println("Agent progress: $progress")
+                agent.execute(task) { _ ->
                 }
-                println("DocumentAgent execution completed")
             } catch (e: Exception) {
                 renderer.renderError("Error: ${e.message}")
                 e.printStackTrace()
