@@ -82,7 +82,6 @@ fun DocumentReaderPage(
                                             viewModel.navigateToEntity(entity)
                                         },
                                         onDocQLQuery = { query ->
-                                            // 执行 DocQL 查询
                                             val document = viewModel.selectedDocument
                                             if (document != null) {
                                                 executeDocQL(query, document, null)

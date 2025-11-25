@@ -148,26 +148,29 @@ private fun DocumentContentView(
     modifier: Modifier = Modifier
 ) {
     val lines = remember(content) { content.lines() }
-    val scrollState = rememberScrollState()
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     
     // Scroll to target line when it changes
     androidx.compose.runtime.LaunchedEffect(targetLineNumber) {
         if (targetLineNumber != null && targetLineNumber > 0 && targetLineNumber <= lines.size) {
-            // Approximate scroll position (each line ~20dp)
-            val approximatePosition = (targetLineNumber - 1) * 20
-            scrollState.animateScrollTo(approximatePosition)
+            // Scroll to the target line (0-indexed)
+            listState.animateScrollToItem(
+                index = (targetLineNumber - 1).coerceAtLeast(0),
+                scrollOffset = 0
+            )
         }
     }
     
-    Column(
-        modifier = modifier.verticalScroll(scrollState)
+    androidx.compose.foundation.lazy.LazyColumn(
+        state = listState,
+        modifier = modifier
     ) {
-        lines.forEachIndexed { index, line ->
-            val lineNumber = index + 1
+        items(lines.size) { index ->
+            val line = lines[index]
             val shouldHighlight = highlightedText != null && line.contains(highlightedText, ignoreCase = true)
             
             Text(
-                text = line,
+                text = line.ifEmpty { " " }, // Empty lines need a space to render
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .fillMaxWidth()

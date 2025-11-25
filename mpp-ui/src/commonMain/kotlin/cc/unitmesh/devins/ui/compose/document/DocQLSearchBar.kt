@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.document.docql.DocQLResult
 import cc.unitmesh.devins.document.docql.parseDocQL
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
@@ -109,6 +110,7 @@ fun DocQLSearchBar(
                         Text(
                             "输入 DocQL 查询",
                             maxLines = 1,
+                            fontSize = 12.sp,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     },

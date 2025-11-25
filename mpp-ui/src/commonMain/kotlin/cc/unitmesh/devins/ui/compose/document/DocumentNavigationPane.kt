@@ -17,10 +17,6 @@ import cc.unitmesh.devins.document.DocumentFolder
 import cc.unitmesh.devins.document.DocumentTreeNode
 import cc.unitmesh.devins.document.ParseStatus
 
-/**
- * 文档导航面板 - 左侧文档树
- * 基于 DiffFileTreeView 架构重构
- */
 @Composable
 fun DocumentNavigationPane(
     documents: List<DocumentFile> = emptyList(),
@@ -32,27 +28,7 @@ fun DocumentNavigationPane(
             .fillMaxSize()
             .padding(8.dp)
     ) {
-//        OutlinedTextField(
-//            value = "",
-//            onValueChange = {
-//                //
-//            },
-//            placeholder = { Text("搜索文档...") },
-//            leadingIcon = {
-//                Icon(
-//                    imageVector = AutoDevComposeIcons.Search,
-//                    contentDescription = "Search"
-//                )
-//            },
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(bottom = 8.dp),
-//            singleLine = true
-//        )
-
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-        // 文档树
         if (documents.isEmpty()) {
             EmptyDocumentState()
         } else {
@@ -64,9 +40,6 @@ fun DocumentNavigationPane(
     }
 }
 
-/**
- * 空状态显示
- */
 @Composable
 private fun EmptyDocumentState() {
     Column(
