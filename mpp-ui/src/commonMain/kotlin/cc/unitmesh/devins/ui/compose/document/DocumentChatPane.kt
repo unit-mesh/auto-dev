@@ -31,6 +31,18 @@ fun DocumentChatPane(
             Icon(AutoDevComposeIcons.SmartToy, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
             Text("AI 助手", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(
+                onClick = { viewModel.clearChatHistory() },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    AutoDevComposeIcons.Delete,
+                    contentDescription = "Clear History",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
 
         HorizontalDivider()

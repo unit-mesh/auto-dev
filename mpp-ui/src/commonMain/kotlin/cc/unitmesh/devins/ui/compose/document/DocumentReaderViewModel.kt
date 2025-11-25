@@ -10,10 +10,7 @@ import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.config.ConfigManager
 import cc.unitmesh.devins.workspace.Workspace
 import cc.unitmesh.llm.KoogLLMService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 
 /**
@@ -35,6 +32,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     // LLM and Agent
     private var llmService: KoogLLMService? = null
     private var documentAgent: DocumentAgent? = null
+    private var currentExecutionJob: Job? = null
 
     // State
     var selectedDocument by mutableStateOf<DocumentFile?>(null)
@@ -377,7 +375,11 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     }
 
     fun sendMessage(text: String) {
-        scope.launch {
+        if (isGenerating) {
+            return
+        }
+
+        currentExecutionJob = scope.launch {
             isGenerating = true
             renderer.addUserMessage(text)
 
@@ -396,17 +398,30 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                 agent.execute(task) { _ ->
                 }
+            } catch (e: CancellationException) {
+                renderer.forceStop()
+                renderer.renderError("Generation cancelled by user")
             } catch (e: Exception) {
                 renderer.renderError("Error: ${e.message}")
                 e.printStackTrace()
             } finally {
                 isGenerating = false
+                currentExecutionJob = null
             }
         }
     }
 
     fun stopGeneration() {
+        currentExecutionJob?.cancel()
+        currentExecutionJob = null
         renderer.forceStop()
+        isGenerating = false
+    }
+
+    fun clearChatHistory() {
+        renderer.clearMessages()
+        currentExecutionJob?.cancel()
+        currentExecutionJob = null
         isGenerating = false
     }
 
