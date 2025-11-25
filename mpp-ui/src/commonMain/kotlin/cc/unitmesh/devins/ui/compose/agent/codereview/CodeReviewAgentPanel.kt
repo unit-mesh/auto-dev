@@ -27,7 +27,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -66,7 +65,6 @@ fun CodeReviewAgentPanel(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        // Header with Start/Stop button
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -188,19 +186,6 @@ fun CodeReviewAgentPanel(
                     }
                 }
             }
-        }
-
-        if (state.aiProgress.stage in listOf(
-                AnalysisStage.RUNNING_LINT,
-                AnalysisStage.ANALYZING_LINT,
-                AnalysisStage.GENERATING_PLAN,
-                AnalysisStage.GENERATING_FIX
-            )
-        ) {
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                color = AutoDevColors.Indigo.c600
-            )
         }
 
         Box(
@@ -703,105 +688,6 @@ fun LintIssueRow(issue: LintIssue, modifier: Modifier = Modifier) {
     }
 }
 
-/**
- * Generic collapsible analysis card (for AI Analysis and Fixes)
- */
-@Composable
-fun CollapsibleAnalysisCard(
-    title: String,
-    content: String,
-    isActive: Boolean,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = AutoDevComposeIcons.Article,
-    modifier: Modifier = Modifier
-) {
-    var isExpanded by remember { mutableStateOf(true) }
-
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isActive) {
-                AutoDevColors.Indigo.c600.copy(alpha = 0.1f)
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        ),
-        shape = RoundedCornerShape(6.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded }
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Companion.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.Companion.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
-                        contentDescription = if (isExpanded) "Collapse" else "Expand",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Companion.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    if (isActive) {
-                        Surface(
-                            color = AutoDevColors.Indigo.c600,
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                text = "RUNNING",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.Companion.White,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Content
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Text(
-                    text = content,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontFamily = FontFamily.Companion.Monospace,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 0.dp)
-                        .padding(bottom = 12.dp)
-                )
-            }
-        }
-    }
-}
-
-/**
- * Issue count badge
- */
 @Composable
 fun IssueBadge(
     count: Int,
