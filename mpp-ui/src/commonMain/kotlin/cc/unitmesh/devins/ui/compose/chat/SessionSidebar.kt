@@ -28,7 +28,7 @@ import kotlinx.datetime.toLocalDateTime
  * Session 侧边栏组件
  *
  * 功能：
- * - 显示所有历史会话（本地 + 远程）
+ * - 显示所有历史会话（本地 + 云端）
  * - 支持折叠/展开
  * - 支持切换、删除会话
  * - 显示会话的第一条消息作为标题
@@ -57,18 +57,18 @@ fun SessionSidebar(
         chatHistoryManager.getAllSessions()
     }
 
-    // 获取远程会话
+    // 获取云端会话
     var remoteSessions by remember { mutableStateOf<List<Session>>(emptyList()) }
     var isLoadingRemote by remember { mutableStateOf(false) }
 
-    // 加载远程会话
+    // 加载云端会话
     LaunchedEffect(sessionClient, updateTrigger) {
         if (sessionClient != null && sessionClient.authToken != null) {
             isLoadingRemote = true
             try {
                 remoteSessions = sessionClient.getSessions()
             } catch (e: Exception) {
-                println("⚠️ 加载远程会话失败: ${e.message}")
+                println("⚠️ 加载云端会话失败: ${e.message}")
             } finally {
                 isLoadingRemote = false
             }
@@ -273,7 +273,7 @@ private fun ExpandedSessionSidebarContent(
                     }
                 }
 
-                // 远程会话
+                // 云端会话
                 if (remoteSessions.isNotEmpty()) {
                     item {
                         Text(
@@ -296,7 +296,7 @@ private fun ExpandedSessionSidebarContent(
                                         sessionClient?.deleteSession(session.id)
                                         // Note: This local update might be overwritten by the next fetch
                                     } catch (e: Exception) {
-                                        println("⚠️ 删除远程会话失败: ${e.message}")
+                                        println("⚠️ 删除云端会话失败: ${e.message}")
                                     }
                                 }
                             }

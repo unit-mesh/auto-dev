@@ -39,7 +39,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 /**
  * WASM 平台的 Markdown Sketch 渲染器实现
  * 使用 Compose + multiplatform-markdown-renderer
- * Mermaid 图表使用 Kroki 远程渲染
+ * Mermaid 图表使用 Kroki 云端渲染
  */
 actual object MarkdownSketchRenderer {
     @Composable

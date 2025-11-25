@@ -651,7 +651,7 @@ private fun AutoDevContent(
                         println("📦 Remote Git URL set from dialog: ${newConfig.defaultGitUrl}")
                     }
 
-                    // 保存远程服务器配置到文件
+                    // 保存云端服务器配置到文件
                     scope.launch {
                         try {
                             ConfigManager.saveRemoteServer(
@@ -666,8 +666,8 @@ private fun AutoDevContent(
                             cc.unitmesh.devins.ui.config.saveAgentTypePreference("Remote")
                             selectedAgentType = AgentType.REMOTE
                         } catch (e: Exception) {
-                            println("⚠️ 保存远程配置失败: ${e.message}")
-                            errorMessage = "保存远程配置失败: ${e.message}"
+                            println("⚠️ 保存云端配置失败: ${e.message}")
+                            errorMessage = "保存云端配置失败: ${e.message}"
                             showErrorDialog = true
                         }
                     }

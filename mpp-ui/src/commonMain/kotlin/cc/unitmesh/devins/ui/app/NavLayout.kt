@@ -42,7 +42,7 @@ enum class AppScreen {
     CHAT,           // 本地对话（Local Chat）
     CODING,         // 编码 Agent
     CODE_REVIEW,    // 代码审查
-    REMOTE,         // 远程服务器
+    REMOTE,         // 云端服务器
     PROJECTS,       // 项目管理
     TASKS,          // 任务管理
     SESSIONS,       // 会话历史
@@ -71,7 +71,7 @@ data class NavItem(
  * - Chat: 本地 AI 对话
  * - Coding: 编码 Agent
  * - Review: 代码审查
- * - Remote: 远程服务器
+ * - Remote: 云端服务器
  * - Profile: 个人中心
  *
  * 次要功能（Drawer only）：
@@ -80,20 +80,11 @@ data class NavItem(
  * - Sessions: 会话历史
  */
 val defaultNavItems = listOf(
-    // 主要功能 - 显示在底部导航
     NavItem(
         screen = AppScreen.CHAT,
         icon = Icons.AutoMirrored.Filled.Chat,
         label = "对话",
         description = "本地 AI 对话",
-        showInBottomNav = true,
-        showInTabBar = true
-    ),
-    NavItem(
-        screen = AppScreen.CODING,
-        icon = Icons.Default.Code,
-        label = "编码",
-        description = "Coding Agent",
         showInBottomNav = true,
         showInTabBar = true
     ),
@@ -108,8 +99,8 @@ val defaultNavItems = listOf(
     NavItem(
         screen = AppScreen.REMOTE,
         icon = Icons.Default.Cloud,
-        label = "远程",
-        description = "远程服务器",
+        label = "云端",
+        description = "云端智能体",
         showInBottomNav = true,
         showInTabBar = true
     ),
@@ -611,7 +602,7 @@ fun getScreenTitle(screen: AppScreen): String {
         AppScreen.CHAT -> "AI 对话"
         AppScreen.CODING -> "编码 Agent"
         AppScreen.CODE_REVIEW -> "代码审查"
-        AppScreen.REMOTE -> "远程服务器"
+        AppScreen.REMOTE -> "云端智能体"
         AppScreen.PROJECTS -> "项目管理"
         AppScreen.TASKS -> "任务管理"
         AppScreen.SESSIONS -> "会话历史"

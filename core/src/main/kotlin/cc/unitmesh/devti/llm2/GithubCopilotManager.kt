@@ -106,7 +106,7 @@ class GithubCopilotManager() : Disposable {
 
     /**
      * 获取支持的模型列表
-     * 如果尚未初始化或强制刷新，则会进行远程请求
+     * 如果尚未初始化或强制刷新，则会进行云端请求
      * 否则返回缓存的结果
      *
      * @param forceRefresh 是否强制刷新，默认为false
