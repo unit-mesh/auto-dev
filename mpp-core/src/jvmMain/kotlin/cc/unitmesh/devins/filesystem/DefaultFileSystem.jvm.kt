@@ -119,21 +119,24 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             gitIgnoreParser?.reload()
             
             Files.walk(projectRoot, maxDepth).use { stream ->
-                stream.filter { path ->
-                    // 只保留普通文件
-                    if (!path.isRegularFile()) return@filter false
-                    
-                    // 排除在排除目录中的文件
-                    if (path.any { it.fileName.toString() in excludeDirs }) return@filter false
-                    
-                    // Check gitignore
-                    val relativePath = projectRoot.relativize(path).toString()
-                    if (gitIgnoreParser?.isIgnored(relativePath) == true) return@filter false
-                    
-                    true
-                }
-                .limit(maxResults.toLong())
-                .forEach { path ->
+                val iterator = stream
+                    .filter { path ->
+                        // 只保留普通文件
+                        if (!path.isRegularFile()) return@filter false
+                        
+                        // 排除在排除目录中的文件
+                        if (path.any { it.fileName.toString() in excludeDirs }) return@filter false
+                        
+                        // Check gitignore
+                        val relativePath = projectRoot.relativize(path).toString()
+                        if (gitIgnoreParser?.isIgnored(relativePath) == true) return@filter false
+                        
+                        true
+                    }
+                    .iterator()
+                
+                while (iterator.hasNext() && results.size < maxResults) {
+                    val path = iterator.next()
                     val relativePath = projectRoot.relativize(path).toString()
                     val fileName = path.fileName.toString()
                     

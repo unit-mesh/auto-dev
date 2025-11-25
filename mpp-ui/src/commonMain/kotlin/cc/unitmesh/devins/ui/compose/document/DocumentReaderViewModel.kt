@@ -136,9 +136,8 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                         val formatType = DocumentParserFactory.detectFormat(relativePath)
                             ?: DocumentFormatType.PLAIN_TEXT
 
-                        // Get file metadata
-                        val content = fileSystem.readFile(relativePath)
-                        val fileSize = content?.length?.toLong() ?: 0L
+                        // Skip reading file size for now - load lazily when needed
+                        val fileSize = 0L
 
                         // Determine MIME type based on format
                         val mimeType = when (formatType) {
@@ -160,7 +159,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                             path = relativePath,
                             metadata = DocumentMetadata(
                                 totalPages = null,
-                                chapterCount = 0, // Will be updated after parsing
+                                chapterCount = 0, // Will be updated when document is opened
                                 parseStatus = ParseStatus.NOT_PARSED,
                                 lastModified = Clock.System.now().toEpochMilliseconds(),
                                 fileSize = fileSize,
