@@ -19,7 +19,6 @@ import kotlinx.datetime.Clock
 class DocumentReaderViewModel(private val workspace: Workspace) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val parserService: DocumentParserService = MarkdownDocumentParser()
     val renderer = ComposeRenderer()
 
     // LLM and Agent
@@ -51,7 +50,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     // Navigation state
     var targetLineNumber by mutableStateOf<Int?>(null)
         private set
-    
+
     var highlightedText by mutableStateOf<String?>(null)
         private set
 
@@ -88,7 +87,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                     documentAgent = DocumentAgent(
                         llmService = llmService!!,
-                        parserService = parserService,
+                        parserService = MarkdownDocumentParser(), // Default parser, actual parsing uses DocumentRegistry
                         renderer = renderer,
                         fileSystem = toolFileSystem,
                         shellExecutor = null,
@@ -123,17 +122,48 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     return@launch
                 }
 
-                val markdownFiles = fileSystem
-                    .searchFiles("*.md", maxDepth = 10, maxResults = 100).toMutableList()
-                markdownFiles += fileSystem.searchFiles("*.pdf", maxDepth = 10, maxResults = 100)
+                // Search for all supported document formats
+                val supportedExtensions = listOf(
+                    "*.md", "*.markdown",  // Markdown
+                    "*.pdf",               // PDF
+                    "*.doc", "*.docx",     // Word documents
+                    "*.ppt", "*.pptx",     // PowerPoint
+                    "*.txt",               // Plain text
+                    "*.html", "*.htm"      // HTML
+                )
 
-                documents = markdownFiles.mapNotNull { relativePath ->
+                val allDocuments = mutableListOf<String>()
+                supportedExtensions.forEach { pattern ->
+                    allDocuments += fileSystem.searchFiles(pattern, maxDepth = 10, maxResults = 100)
+                }
+
+                documents = allDocuments.mapNotNull { relativePath ->
                     val name = relativePath.substringAfterLast('/')
+                    val extension = relativePath.substringAfterLast('.', "").lowercase()
 
                     try {
+                        // Detect format type from file extension
+                        val formatType = DocumentParserFactory.detectFormat(relativePath)
+                            ?: DocumentFormatType.PLAIN_TEXT
+
                         // Get file metadata
                         val content = fileSystem.readFile(relativePath)
                         val fileSize = content?.length?.toLong() ?: 0L
+
+                        // Determine MIME type based on format
+                        val mimeType = when (formatType) {
+                            DocumentFormatType.MARKDOWN -> "text/markdown"
+                            DocumentFormatType.PDF -> "application/pdf"
+                            DocumentFormatType.DOCX -> when (extension) {
+                                "doc" -> "application/msword"
+                                "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                "ppt" -> "application/vnd.ms-powerpoint"
+                                "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                                else -> "application/octet-stream"
+                            }
+                            DocumentFormatType.HTML -> "text/html"
+                            DocumentFormatType.PLAIN_TEXT -> "text/plain"
+                        }
 
                         DocumentFile(
                             name = name,
@@ -144,8 +174,9 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                                 parseStatus = ParseStatus.NOT_PARSED,
                                 lastModified = Clock.System.now().toEpochMilliseconds(),
                                 fileSize = fileSize,
-                                language = "markdown",
-                                mimeType = "text/markdown"
+                                language = extension,
+                                mimeType = mimeType,
+                                formatType = formatType
                             )
                         )
                     } catch (e: Exception) {
@@ -155,52 +186,6 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
             } catch (e: Exception) {
                 error = "Failed to load documents: ${e.message}"
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
-    /**
-     * Load a single document file from absolute path
-     */
-    fun loadDocumentFromPath(absolutePath: String) {
-        scope.launch {
-            try {
-                isLoading = true
-                error = null
-
-                val fileSystem = workspace.fileSystem
-                val name = absolutePath.substringAfterLast('/')
-
-                val content = fileSystem.readFile(absolutePath)
-                    ?: run {
-                        error = "Failed to read file: $absolutePath"
-                        println("ERROR: Failed to read file: $absolutePath")
-                        return@launch
-                    }
-
-                val doc = DocumentFile(
-                    name = name,
-                    path = absolutePath,
-                    metadata = DocumentMetadata(
-                        totalPages = null,
-                        chapterCount = 0,
-                        parseStatus = ParseStatus.NOT_PARSED,
-                        lastModified = Clock.System.now().toEpochMilliseconds(),
-                        fileSize = content.length.toLong(),
-                        language = "markdown",
-                        mimeType = "text/markdown"
-                    )
-                )
-
-                documents = listOf(doc)
-
-                selectDocument(doc)
-            } catch (e: Exception) {
-                error = "Failed to load document: ${e.message}"
-                println("ERROR: Failed to load document: ${e.message}")
-                e.printStackTrace()
             } finally {
                 isLoading = false
             }
@@ -225,17 +210,26 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                 documentContent = content
 
+                // Get the appropriate parser for this document format
+                val parser = DocumentParserFactory.createParserForFile(doc.path)
+                    ?: run {
+                        error = "No parser available for file format: ${doc.path}"
+                        println("ERROR: No parser available for: ${doc.path}")
+                        return@launch
+                    }
+
                 // Register document with DocumentRegistry for DocQL queries
                 try {
-                    val parsedDoc = parserService.parse(doc, content)
-                    DocumentRegistry.registerDocument(doc.path, parsedDoc, parserService)
+                    val parsedDoc = parser.parse(doc, content)
+                    DocumentRegistry.registerDocument(doc.path, parsedDoc, parser)
                     println("Document registered with DocumentRegistry: ${doc.path}")
                 } catch (e: Exception) {
                     println("Failed to register document: ${e.message}")
+                    e.printStackTrace()
                     // Continue even if registration fails
                 }
 
-                val parsedDoc = parserService.parse(doc, content)
+                val parsedDoc = parser.parse(doc, content)
                 if (parsedDoc is DocumentFile && parsedDoc.toc.isNotEmpty()) {
                     println("ViewModel: Received parsed TOC with ${parsedDoc.toc.size} items")
                     val updatedDoc = doc.copy(
@@ -295,10 +289,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         isGenerating = false
     }
 
-    /**
-     * Get the parser service for DocQL queries
-     */
-    fun getParserService(): DocumentParserService = parserService
+
 
     /**
      * Navigate to a specific line number in the document
@@ -333,7 +324,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
      */
     fun navigateToEntity(entity: Entity) {
         val location = entity.location
-        
+
         // Use line number if available
         val lineNum = location.line
         if (lineNum != null) {
