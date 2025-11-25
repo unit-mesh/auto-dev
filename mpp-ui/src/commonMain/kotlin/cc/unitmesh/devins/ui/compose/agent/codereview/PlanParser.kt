@@ -39,12 +39,10 @@ object PlanParser {
                 
                 // Start new item
                 currentNumber = orderedMatch.groupValues[1].toIntOrNull() ?: 0
-                val titleWithPriority = orderedMatch.groupValues[2].trim()
+                val title = orderedMatch.groupValues[2].trim()
                 
-                // Extract priority from title (format: "Title - PRIORITY")
-                val titleParts = titleWithPriority.split(" - ", limit = 2)
-                val title = titleParts[0].trim()
-                val priority = titleParts.getOrNull(1)?.trim() ?: "MEDIUM"
+                // Extract priority from regex group 3 (format: "Title - PRIORITY")
+                val priority = orderedMatch.groupValues.getOrNull(3)?.trim()?.takeIf { it.isNotEmpty() } ?: "MEDIUM"
                 
                 currentItem = PlanItem(
                     number = currentNumber,
