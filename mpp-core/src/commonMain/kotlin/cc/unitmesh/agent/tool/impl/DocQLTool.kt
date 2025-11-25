@@ -22,16 +22,41 @@ object DocQLSchema : DeclarativeToolSchema(
     description = """
         Executes a DocQL query against available documents (both in-memory and indexed).
         
-        Supports TWO query types:
-        1. Document queries ($.content.*, $.toc[*]): For markdown/text documents
-        2. Code queries ($.code.*): For source code files parsed with TreeSitter
+        ## TWO QUERY SYSTEMS
         
-        IMPORTANT: Use 'documentPath' parameter to target specific documents when:
-        - Document name matches your query keywords (check available documents list)
-        - You want to avoid querying irrelevant documents
-        - You have identified relevant documents through keyword matching
+        ### 1. Document Queries ($.content.*, $.toc[*])
+        **For:** Markdown, text files, documentation (.md, .txt, README)
+        **Examples:**
+        - $.content.heading("keyword") - Find sections by heading
+        - $.content.chunks() - Get all content chunks
+        - $.toc[*] - Get table of contents
         
-        If documentPath is not provided, searches all available documents (memory + indexed).
+        ### 2. Code Queries ($.code.*)
+        **For:** Source code files (.kt, .java, .py, .js, .ts, .go, .rs, .cs)
+        **Parser:** TreeSitter-based with full code structure
+        **Examples:**
+        - $.code.class("ClassName") - Find class with full source code
+        - $.code.function("functionName") - Find function/method with implementation
+        - $.code.classes[*] - List all classes
+        - $.code.functions[*] - List all functions/methods
+        - $.code.classes[?(@.name contains "Parser")] - Filter by name pattern
+        
+        ## CRITICAL: For Code Questions
+        **ALWAYS use BOTH query systems and compare results:**
+        1. Try $.code.class("X") or $.code.function("X") (TreeSitter-optimized)
+        2. Also try $.content.heading("X") (fallback)
+        3. Use the result with better content
+        
+        ## Parameters
+        - **query** (required): The DocQL query string
+        - **documentPath** (optional): Target specific document by path
+        - **maxResults** (optional): Limit results (default: 20)
+        
+        ## Usage Tips
+        - For "How does X work?": Try $.code.class("X") + $.content.heading("X")
+        - For "Find all Y methods": Try $.code.functions[?(@.name contains "Y")]
+        - For documentation: Use $.content.heading() or $.content.chunks()
+        - Always query both systems for code to get best results
     """.trimIndent(),
     properties = mapOf(
         "query" to string(

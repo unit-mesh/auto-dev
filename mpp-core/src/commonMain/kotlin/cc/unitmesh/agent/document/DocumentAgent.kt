@@ -189,105 +189,22 @@ class DocumentAgent(
             
             ---
             
-            ## ⚠️ CRITICAL: Two Different Query Systems
+            ## Query Strategy
             
-            DocQL supports **TWO DISTINCT** query systems for different file types:
+            **The DocQL tool has detailed usage examples. Key strategies:**
             
-            ### 1️⃣ Document Queries ($.content.*, $.toc[*])
-            **For**: Markdown, text files, documentation
-            **Parser**: Markdown parser
-            **Use cases**: Find sections, headings, documentation content
+            1. **For Code Questions** (classes, methods, implementations):
+               - Use BOTH `$.code.*` and `$.content.*` queries
+               - Compare results and use the better one
+               - Example: Try both `$.code.class("X")` and `$.content.heading("X")`
             
-            ### 2️⃣ Code Queries ($.code.*)
-            **For**: Source code files (.kt, .java, .py, .js, .ts, .go, .rs, .cs)
-            **Parser**: TreeSitter-based CodeDocumentParser
-            **Use cases**: Find classes, methods, functions, implementations
+            2. **For Documentation Questions**:
+               - Use `$.content.heading()` for targeted searches
+               - Fall back to `$.content.chunks()` if no results
             
-            **⚠️ IMPORTANT**: When querying source code files, you MUST use **BOTH** query systems:
-            1. First try `$.code.*` queries (optimized for code structure)
-            2. Also try `$.content.*` queries (may work as fallback)
-            3. Compare results and use the most relevant one
-            
-            ---
-            
-            ## Querying Source Code Files ($.code.*)
-            
-            **Source code files are parsed using TreeSitter and indexed with hierarchical structure:**
-            
-            ### Code Structure (TreeSitter)
-            - 📦 **Packages/Modules** → 📘 **Classes/Interfaces** → ⚡ **Methods/Functions** → 📌 **Fields/Properties**
-            - Each code element has complete source code preserved (method-level)
-            - Supports: Java, Kotlin, Python, JavaScript, TypeScript, Go, Rust, C#
-            
-            ### Code Query Syntax
-            
-            #### List All Code Elements
-            - `$.code.classes[*]` - All classes/interfaces/enums
-            - `$.code.functions[*]` - All functions/methods
-            - `$.code.methods[*]` - Alias for functions (same result)
-            
-            #### Find Specific Elements (Returns full source code)
-            - `$.code.class("ClassName")` - Find class by name with full code
-            - `$.code.function("functionName")` - Find function/method by name with full code
-            - `$.code.method("methodName")` - Alias for function query
-            - `$.code.query("keyword")` - Custom query for any code element
-            
-            #### Filter Code Elements
-            - `$.code.classes[?(@.name contains "Parser")]` - Classes with "Parser" in name
-            - `$.code.classes[?(@.package contains "document")]` - Classes in packages containing "document"
-            - `$.code.functions[?(@.name contains "execute")]` - Functions with "execute" in name
-            
-            ### Examples for Code Queries
-            
-            **Q: "What is DocQLExecutor and how does it work?"**
-            
-            Try BOTH queries:
-            ```json
-            {"query": "$.code.class(\"DocQLExecutor\")", "documentPath": null}
-            ```
-            ```json
-            {"query": "$.content.heading(\"DocQLExecutor\")", "documentPath": null}
-            ```
-            ✅ First query uses TreeSitter (optimized), second is fallback
-            
-            **Q: "How does the execute method work?"**
-            
-            Try BOTH queries:
-            ```json
-            {"query": "$.code.function(\"execute\")", "documentPath": null}
-            ```
-            ```json
-            {"query": "$.content.heading(\"execute\")", "documentPath": null}
-            ```
-            ✅ Will find execute methods with full implementation
-            
-            **Q: "Find all Parser classes"**
-            
-            ```json
-            {"query": "$.code.classes[?(@.name contains \"Parser\")]", "documentPath": null}
-            ```
-            ✅ TreeSitter-based filtering
-            
-            **Q: "List all functions in a file"**
-            
-            ```json
-            {"query": "$.code.functions[*]", "documentPath": "path/to/file.kt"}
-            ```
-            ✅ Get structured list of all functions
-            
-            ---
-            
-            ## Querying Documentation Files ($.content.*)
-            
-            **For markdown, text, and documentation files:**
-            
-            ### Document Query Syntax
-            
-            - `$.content.heading("keyword")` - Find sections by heading
-            - `$.content.h1("title")` - Find H1 headings
-            - `$.content.chunks()` - Get all content chunks
-            - `$.content.grep("pattern")` - Full-text search
-            - `$.toc[*]` - Get table of contents
+            3. **Query Multiple Times**:
+               - Try 2-3 variations before concluding "not found"
+               - Expand keywords: Parser → DocumentParser, CodeParser, etc.
             
             ---
             
@@ -348,259 +265,39 @@ class DocumentAgent(
             
             ## Response Workflow
             
-            ### For Source Code Questions:
-            1. **Detect**: Identify if question is about code (class/method/implementation/"how it works")
-            2. **Query (Both)**:
-               - First: Use `$.code.*` query (TreeSitter-optimized)
-               - Second: Use `$.content.*` query (fallback)
-               - Make TWO separate tool calls if needed
-            3. **Compare**: Evaluate which result is more useful
-            4. **Respond**: Synthesize answer from best result
-            5. **Cite**: Include Markdown links to source files
+            1. **Detect Question Type**:
+               - Code question? → Use both `$.code.*` and `$.content.*` queries
+               - Documentation question? → Use `$.content.*` queries
             
-            ### For Documentation Questions:
-            1. **Plan**: Analyze the query and identify target documents from filename patterns
-            2. **Query**: Make **exactly one** DocQL call with `$.content.*` query
-            3. **Respond**: After tool results, synthesize answer naturally (no more tool use)
-            4. **Cite**: Include Markdown links to source files in your answer using the format above
+            2. **Execute Queries**: Make 1-2 DocQL tool calls (check tool description for syntax)
+            
+            3. **Synthesize & Cite**: Answer with Markdown links to source files
             
             ---
             
-            ## Querying Available Documents
+            ## Retry Strategy
             
-            When document list shows compressed directory structure:
-            
-            1. **List all files**: Use `\$.files[*]` to see complete file list
-            2. **Filter by directory**: Use `\$.files[?(@.path contains "docs")]`
-            3. **Filter by extension**: Use `\$.files[?(@.path contains ".md")]`
-            4. **Combine filters**: Use `\$.files[?(@.path contains "design")]`
-            
-            ---
-            
-            ## DocQL Retry Strategy
-            
-            When results are empty:
-            
-            1. **Specific → Broader → Full**
-            
-               * Start: `$.content.heading("keyword")`, `$.content.h1("title")`
-               * Broaden: partial matches, synonyms, translations
-               * Check TOC: `$.toc[*]`
-               * Full fallback: `$.content.chunks()`
-            
-            2. Only if no documents are registered → use grep/glob.
-            
-            ---
-            
-            ## Keyword Expansion (before querying)
-            
-            * **Morphology**: encode → encoding/encoded; design → designed/designer
-            * **Synonyms**: color → colour/hue/palette; document → doc/file
-            * **Multi-language**: 颜色→color; 设计→design; 架构→architecture
-            * **Compounds**: base64→base-64; API→api/interface
-            
-            ### Code-Specific Expansions
-            * **Naming Patterns**: Parser → DocumentParser/CodeParser/JsonParser
-            * **Method Patterns**: get/set/is/has, create/build/make, parse/read/load
-            * **Class Types**: Service/Manager/Handler/Controller/Repository/Factory
-            * **Interfaces**: Interface/Impl/Abstract patterns
-            
-            ---
-            
-            ## Smart Document Selection
-            
-            1. Check filenames.
-            2. Expand keywords to match variants.
-            3. If filename matches → set `documentPath`.
-            4. If multiple matches → query each then synthesize.
-            5. If no clear match → query all docs via TOC.
-            
-            ---
-            
-            ## StepChain GraphRAG Fallback (when all normal search fails)
-            
-            If filenames, TOC, headings, and chunks yield no direction:
-            
-            1. **Decompose** the question into small hops.
-            2. **Iteratively retrieve**: each hop’s result drives the next query.
-            3. **Maintain a short reasoning chain** (step → result → next-step).
-            4. Stop when a relevant document emerges → synthesize.
-            
-            Use StepChain only as a last resort; never guess.
+            When no results found:
+            1. Expand keywords (Parser → DocumentParser, CodeParser, JsonParser)
+            2. Try broader queries ($.content.chunks() instead of $.content.heading())
+            3. Check TOC first: $.toc[*]
+            4. Only use grep/glob if DocQL reports "No documents available"
             
             ---
             
             ## Best Practices
             
-            ✅ **DO (General):**
-            - Every document maybe big, Never directly view file
-            - Expand keywords BEFORE first query: synonyms, morphology, translations
-            - Try 2-3 different queries before concluding "no information found"
-            - Query multiple related documents for cross-cutting topics
-            
-            ✅ **DO (For Documentation Queries):**
-            - Use `$.content.heading()` for targeted searches
-            - Fall back to `$.content.chunks()` if heading search is empty
-            - Use `$.toc[*]` to understand document structure first
-            
-            ✅ **DO (For Code Queries - CRITICAL):**
-            - **ALWAYS query BOTH systems**: `$.code.*` AND `$.content.*`
-            - Start with `$.code.class("Name")` or `$.code.function("name")` for specific elements
-            - Use `$.code.classes[*]` to list all classes in a file
-            - Use `$.code.functions[*]` to list all functions/methods
-            - Use filters: `$.code.classes[?(@.name contains "Parser")]`
-            - Compare results from both query systems and use the best one
-            - TreeSitter queries (`$.code.*`) are optimized for code structure
-            - Content queries (`$.content.*`) work as fallback
-            
-            ✅ **DO (Query Strategy for "How does X work?" questions):**
-            1. Try `$.code.class("X")` to get the class with full code
-            2. Try `$.code.function("X")` if it's a method/function
-            3. Try `$.code.query("X")` for flexible search
-            4. Also try `$.content.heading("X")` as fallback
-            5. Use `$.code.classes[*]` to see what's available first
+            ✅ **DO:**
+            - Never directly read source files - they are indexed
+            - Expand keywords before querying (Parser → DocumentParser, CodeParser)
+            - Try 2-3 query variations before concluding "not found"
+            - For code: ALWAYS use both `$.code.*` and `$.content.*` queries
             
             ❌ **DON'T:**
-            - Don't use filesystem tools on registered documents
-            - Don't give up after one failed query - retry with broader terms
-            - Don't use only ONE query system for code - try BOTH `$.code.*` and `$.content.*`
-            - Don't use `chunks()` as your first choice unless query is very broad
-            - Don't read source files directly - they are already indexed with structure
-            - Don't assume `$.content.*` works well for code - prefer `$.code.*`
+            - Don't use filesystem tools (grep/read-file) on registered documents
+            - Don't give up after one query - retry with broader/different terms
+            - Don't use only one query system for code questions
             
-            ---
-            
-            ## Query Type Detection
-            
-            **Documentation Queries** (use $.content.* queries):
-            - "What is X?" → Concepts, definitions from docs
-            - "How to use X?" → Usage guides, tutorials
-            - "Design of X" → Architecture documentation
-            - File patterns: *.md, *.txt, *.doc, README
-            
-            **Code Queries** (use $.code.* queries + $.content.* fallback):
-            - "How does X work?" → Try `$.code.class("X")` + `$.content.heading("X")`
-            - "Implementation of Y" → Try `$.code.function("Y")` + `$.content.heading("Y")`
-            - "Where is Z defined?" → Try `$.code.query("Z")`
-            - "What does method M do?" → Try `$.code.method("M")` with full source
-            - "Show me the Parser class" → Try `$.code.class("Parser")`
-            - "List all execute methods" → Try `$.code.functions[?(@.name contains "execute")]`
-            - File patterns: *.kt, *.java, *.py, *.js, *.ts, *.go, *.rs, *.cs
-            
-            **⚠️ For code questions, ALWAYS use BOTH query systems and compare results!**
-            
-            ---
-            
-            ## Successful Query Examples
-            
-            ### Documentation Query Examples
-            
-            **Query: "What colors are used in the design system?"**
-            ```json
-            {
-              "query": "$.content.heading(\"color\")",
-              "documentPath": "design-system-color.md"
-            }
-            ```
-            ✅ Direct filename match + targeted heading search
-            
-            **Query: "How do I use custom icons?"**
-            First attempt:
-            ```json
-            {
-              "query": "$.content.heading(\"custom icons\")",
-              "documentPath": "custom-icons-usage.md"
-            }
-            ```
-            If empty, retry with:
-            ```json
-            {
-              "query": "$.content.chunks()",
-              "documentPath": "custom-icons-usage.md"
-            }
-            ```
-            ✅ Good retry strategy: specific → broader
-            
-            **Query: "Tell me about architecture" (ambiguous)**
-            ```json
-            {
-              "query": "$.toc[*]"
-            }
-            ```
-            Then identify relevant doc(s) from TOC and query specifically
-            ✅ Use TOC when multiple architecture-related files exist
-            
-            ---
-            
-            ### Code Query Examples (⚠️ MUST use BOTH query systems)
-            
-            **Query: "What is CodeDocumentParser and how does it work?"**
-            
-            First query (TreeSitter-optimized):
-            ```json
-            {
-              "query": "$.code.class(\"CodeDocumentParser\")",
-              "documentPath": null
-            }
-            ```
-            
-            Second query (fallback):
-            ```json
-            {
-              "query": "$.content.heading(\"CodeDocumentParser\")",
-              "documentPath": null
-            }
-            ```
-            ✅ Try BOTH systems, use the one with better results
-            
-            **Query: "How does the parse method work?"**
-            
-            First query:
-            ```json
-            {
-              "query": "$.code.function(\"parse\")",
-              "documentPath": null
-            }
-            ```
-            
-            Second query:
-            ```json
-            {
-              "query": "$.content.heading(\"parse\")",
-              "documentPath": null
-            }
-            ```
-            ✅ Will find parse methods with full implementation code
-            
-            **Query: "Show me all Parser classes"**
-            ```json
-            {
-              "query": "$.code.classes[?(@.name contains \"Parser\")]",
-              "documentPath": null
-            }
-            ```
-            ✅ TreeSitter-based filtering for classes
-            
-            **Query: "List all functions in DocQLExecutor"**
-            
-            First get the class:
-            ```json
-            {
-              "query": "$.code.class(\"DocQLExecutor\")",
-              "documentPath": null
-            }
-            ```
-            Then see its structure from the result
-            ✅ Class query shows all methods with their code
-            
-            **Query: "Find all execute methods across the codebase"**
-            ```json
-            {
-              "query": "$.code.functions[?(@.name contains \"execute\")]",
-              "documentPath": null
-            }
-            ```
-            ✅ Filter functions by name pattern
 
         """.trimIndent()
     }
