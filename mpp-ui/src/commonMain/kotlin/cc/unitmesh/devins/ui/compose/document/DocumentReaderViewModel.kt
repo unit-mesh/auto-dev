@@ -90,7 +90,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     init {
         // Initialize platform-specific parsers (Tika on JVM, etc.)
         DocumentRegistry.initializePlatformParsers()
-        
+
         loadDocuments()
         initializeLLMService()
         // 不自动索引，等待用户手动触发
@@ -155,7 +155,6 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                         mcpToolConfigService = mcpConfigService,
                         enableLLMStreaming = true
                     )
-                    println("DocumentAgent initialized successfully")
                 } else {
                     println("No valid LLM configuration found")
                 }
@@ -287,10 +286,10 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                 val fileSystem = workspace.fileSystem
                 val formatType = DocumentParserFactory.detectFormat(doc.path)
-                
+
                 // Determine if we need to read as binary
                 val isBinary = formatType?.let { DocumentParserFactory.isBinaryFormat(it) } ?: false
-                
+
                 // Get the appropriate parser for this document format
                 val parser = DocumentParserFactory.createParserForFile(doc.path)
                     ?: run {
@@ -310,9 +309,9 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                             parsedContent = null
                             return@launch
                         }
-                    
+
                     documentContent = null // Binary files don't have text content to display
-                    
+
                     // Use TikaDocumentParser's parseBytes method for binary files
                     if (parser is cc.unitmesh.devins.document.TikaDocumentParser) {
                         parser.parseBytes(doc, bytes)
@@ -330,7 +329,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                             parsedContent = null
                             return@launch
                         }
-                    
+
                     // Store original content (for Markdown/Text)
                     documentContent = content
                     parser.parse(doc, content)

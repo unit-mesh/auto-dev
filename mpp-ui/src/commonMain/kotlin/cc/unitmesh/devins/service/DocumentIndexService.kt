@@ -32,9 +32,9 @@ class DocumentIndexService(
                 var indexedCount = 0
                 var succeededCount = 0
                 var failedCount = 0
-                
+
                 _indexingStatus.value = IndexingStatus.Indexing(0, totalFiles, 0, 0)
-                
+
                 documents.forEach { doc ->
                     val success = indexFile(doc.path)
                     indexedCount++
@@ -44,13 +44,13 @@ class DocumentIndexService(
                         failedCount++
                     }
                     _indexingStatus.value = IndexingStatus.Indexing(
-                        indexedCount, 
-                        totalFiles, 
-                        succeededCount, 
+                        indexedCount,
+                        totalFiles,
+                        succeededCount,
                         failedCount
                     )
                 }
-                
+
                 _indexingStatus.value = IndexingStatus.Completed(
                     totalFiles,
                     succeededCount,
@@ -62,14 +62,14 @@ class DocumentIndexService(
             }
         }
     }
-    
+
     /**
      * Reset indexing status to Idle
      */
     fun resetStatus() {
         _indexingStatus.value = IndexingStatus.Idle
     }
-    
+
     /**
      * Legacy method - index all files in workspace
      * Deprecated: Use indexDocuments(documents) instead
@@ -86,7 +86,7 @@ class DocumentIndexService(
                 var succeededCount = 0
                 var failedCount = 0
                 val totalFiles = files.size
-                
+
                 files.forEach { path ->
                     val success = indexFile(path)
                     indexedCount++
@@ -102,7 +102,7 @@ class DocumentIndexService(
                         failedCount
                     )
                 }
-                
+
                 _indexingStatus.value = IndexingStatus.Completed(
                     totalFiles,
                     succeededCount,
@@ -126,13 +126,13 @@ class DocumentIndexService(
 
         // Determine if we need to read as binary
         val isBinary = DocumentParserFactory.isBinaryFormat(format)
-        
+
         // Read file content based on format type
         val content: String?
         val bytes: ByteArray?
         val size: Long
         val hash: String
-        
+
         if (isBinary) {
             // Binary formats - read as bytes
             bytes = fileSystem.readFileAsBytes(path) ?: return false
@@ -146,7 +146,7 @@ class DocumentIndexService(
             size = content.length.toLong()
             hash = "${content.hashCode()}_$size"
         }
-        
+
         val existing = repository.get(path)
         if (existing != null && existing.hash == hash && existing.status == "INDEXED") {
             return true // Already indexed
@@ -164,7 +164,7 @@ class DocumentIndexService(
                         formatType = format
                     )
                 )
-                
+
                 // Parse the document based on format type
                 val parsedDoc = if (isBinary && bytes != null) {
                     // Use TikaDocumentParser's parseBytes for binary files
@@ -181,12 +181,12 @@ class DocumentIndexService(
                 } else {
                     return false // Invalid state
                 }
-                
+
                 // Store extracted text content (not original binary)
                 // For Tika: extracted text from PDF/PPTX
                 // For Markdown: original markdown text
                 val extractedContent = parser.getDocumentContent() ?: content
-                
+
                 repository.save(DocumentIndexRecord(
                     path = path,
                     hash = hash,
@@ -196,7 +196,7 @@ class DocumentIndexService(
                     error = null,
                     indexedAt = Platform.getCurrentTimestamp()
                 ))
-                
+
                 println("✓ Indexed: $path")
                 true
             } else {
@@ -216,7 +216,7 @@ class DocumentIndexService(
             false
         }
     }
-    
+
     fun getIndexStatus(path: String): DocumentIndexRecord? {
         return repository.get(path)
     }

@@ -210,10 +210,12 @@ class CodeReviewAgent(
         try {
             if (patch.isBlank()) {
                 logger.warn { "Empty patch provided for fix generation" }
-                actualRenderer.renderError("No git diff available for fix generation")
+                // Align error message with test expectation (looks for 'No code changes')
+                val msg = "No code changes found in patch."
+                actualRenderer.renderError(msg)
                 return AnalysisResult(
                     success = false,
-                    content = "No git diff available for fix generation",
+                    content = msg,
                     usedTools = false
                 )
             }

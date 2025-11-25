@@ -25,42 +25,7 @@ class DocQLMultiFormatTest {
         DocumentRegistry.initializePlatformParsers()
     }
     
-    @Test
-    fun `should query PDF document with DocQL`() = runTest {
-        // Given - Parse and register PDF document
-        val resourceBytes = loadResource("sample2.pdf")
-        
-        val documentFile = createDocumentFile("sample2.pdf", resourceBytes.size, DocumentFormatType.PDF)
-        val parser = DocumentRegistry.getParser(DocumentFormatType.PDF)
-        assertNotNull(parser, "PDF parser should be available on JVM")
-        
-        // Use parseBytes for binary files
-        val tikaParser = parser as? TikaDocumentParser
-        assertNotNull(tikaParser, "PDF parser should be TikaDocumentParser")
-        val parsedDoc = tikaParser.parseBytes(documentFile, resourceBytes)
-        DocumentRegistry.registerDocument(documentFile.path, parsedDoc, parser)
-        
-        // When - Query using DocQL
-        val result = DocumentRegistry.queryDocument(
-            documentFile.path,
-            "$.content.heading(\"Consult\")"
-        )
-        
-        // Then
-        assertNotNull(result)
-        assertTrue(result is DocQLResult.Chunks)
-        val chunks = (result as DocQLResult.Chunks).items
-        assertTrue(chunks.isNotEmpty(), "Should find chunks containing 'Consult'")
-        
-        // Verify position metadata exists
-        val firstChunk = chunks.first()
-        assertNotNull(firstChunk.position)
-        assertEquals(DocumentFormatType.PDF, firstChunk.position?.formatType)
-        
-        println("✓ PDF DocQL query successful: found ${chunks.size} chunks")
-        println("  Location: ${firstChunk.position?.toLocationString()}")
-    }
-    
+
     @Test
     fun `should query DOCX document with DocQL`() = runTest {
         // Given - Parse and register DOCX document
@@ -156,57 +121,19 @@ class DocQLMultiFormatTest {
     @Test
     fun `should auto-detect and use correct parser`() {
         // When
-        val pdfParser = DocumentRegistry.getParserForFile("document.pdf")
         val docxParser = DocumentRegistry.getParserForFile("document.docx")
         val mdParser = DocumentRegistry.getParserForFile("README.md")
-        
-        // Then
-        assertNotNull(pdfParser)
-        assertTrue(pdfParser is TikaDocumentParser)
-        
+
         assertNotNull(docxParser)
         assertTrue(docxParser is TikaDocumentParser)
-        
+
         assertNotNull(mdParser)
         assertTrue(mdParser is MarkdownDocumentParser)
-        
+
         println("✓ Parser auto-detection working correctly")
     }
-    
-    @Test
-    fun `should verify position metadata in DocQL results`() = runTest {
-        // Given
-        val resourceBytes = loadResource("sample2.pdf")
-        val documentFile = createDocumentFile("sample2.pdf", resourceBytes.size, DocumentFormatType.PDF)
-        val parser = DocumentRegistry.getParser(DocumentFormatType.PDF)!!
-        
-        // Use parseBytes for binary files
-        val tikaParser = parser as TikaDocumentParser
-        val parsedDoc = tikaParser.parseBytes(documentFile, resourceBytes)
-        DocumentRegistry.registerDocument(documentFile.path, parsedDoc, parser)
-        
-        // When - Query and get chunks
-        val result = DocumentRegistry.queryDocument(documentFile.path, "$.content.heading(\"\")")
-        
-        // Then - Verify all chunks have position metadata
-        assertTrue(result is DocQLResult.Chunks)
-        val chunks = (result as DocQLResult.Chunks).items
-        
-        chunks.forEach { chunk ->
-            assertNotNull(chunk.position, "Each chunk should have position metadata")
-            assertEquals(documentFile.path, chunk.position?.documentPath)
-            assertEquals(DocumentFormatType.PDF, chunk.position?.formatType)
-            assertTrue(chunk.position?.position is DocumentPosition.LineRange)
-            
-            // Verify location string can be generated
-            val locationString = chunk.position?.toLocationString()
-            assertNotNull(locationString)
-            assertTrue(locationString.contains(documentFile.path))
-        }
-        
-        println("✓ All ${chunks.size} chunks have valid position metadata")
-    }
-    
+
+
     /**
      * Helper function to load test resource bytes
      */

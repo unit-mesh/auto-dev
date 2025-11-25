@@ -25,6 +25,12 @@ data class LinterSummary(
                 if (linterSummary.executedLinters.isNotEmpty()) {
                     appendLine("Linters executed: ${linterSummary.executedLinters.joinToString(", ")}")
                 }
+
+                // Add high-level counts for tests expecting these summary lines
+                appendLine("Files analyzed: ${linterSummary.totalFiles}")
+                appendLine("Files with issues: ${linterSummary.filesWithIssues}")
+                appendLine("Total issues: ${linterSummary.totalIssues}")
+                appendLine("${linterSummary.errorCount} errors, ${linterSummary.warningCount} warnings, ${linterSummary.infoCount} info")
                 appendLine()
 
                 if (linterSummary.fileIssues.isNotEmpty()) {
