@@ -89,8 +89,8 @@ private fun AndroidAutoDevContent(
     var currentScreen by remember { mutableStateOf(AppScreen.CHAT) }
 
     // Session 管理（用于 Drawer 和登录）
-    val sessionClient = remember { SessionClient("http://localhost:8080") }
-    val sessionViewModel = remember { SessionViewModel(sessionClient) }
+    val sessionClient = remember { SessionClient("http://localhost:8080") as SessionClient }
+    val sessionViewModel = remember(sessionClient) { SessionViewModel(sessionClient) as SessionViewModel }
 
     // Agent 模式状态
     var selectedAgentType by remember { mutableStateOf(AgentType.LOCAL_CHAT) }
