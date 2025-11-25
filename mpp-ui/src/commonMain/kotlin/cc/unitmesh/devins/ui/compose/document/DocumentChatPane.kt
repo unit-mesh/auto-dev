@@ -1,8 +1,6 @@
 package cc.unitmesh.devins.ui.compose.document
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,17 +16,12 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
-/**
- * AI 聊天面板 - 右侧
- * 专用于文档问答，集成 AgentMessageList
- */
 @Composable
 fun DocumentChatPane(
     viewModel: DocumentReaderViewModel,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        // 标题栏
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -42,7 +35,6 @@ fun DocumentChatPane(
 
         HorizontalDivider()
 
-        // 消息列表 (使用 AgentMessageList)
         AgentMessageList(
             renderer = viewModel.renderer,
             modifier = Modifier.weight(1f)
@@ -50,7 +42,6 @@ fun DocumentChatPane(
 
         HorizontalDivider()
 
-        // 输入区域
         ChatInputArea(
             isGenerating = viewModel.isGenerating,
             onSendMessage = { viewModel.sendMessage(it) },
@@ -92,8 +83,8 @@ private fun ChatInputArea(
                         if (event.type == KeyEventType.KeyDown) {
                             when {
                                 // Enter to send (without Shift)
-                                event.key == Key.Enter && 
-                                !event.isShiftPressed && 
+                                event.key == Key.Enter &&
+                                !event.isShiftPressed &&
                                 textFieldValue.text.isNotBlank() -> {
                                     onSendMessage(textFieldValue.text)
                                     textFieldValue = TextFieldValue("")
@@ -140,7 +131,7 @@ private fun ChatInputArea(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        AutoDevComposeIcons.Stop, 
+                        AutoDevComposeIcons.Stop,
                         contentDescription = "Stop",
                         tint = MaterialTheme.colorScheme.error
                     )
@@ -157,7 +148,7 @@ private fun ChatInputArea(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        AutoDevComposeIcons.Send, 
+                        AutoDevComposeIcons.Send,
                         contentDescription = "Send",
                         tint = if (textFieldValue.text.isNotBlank()) {
                             MaterialTheme.colorScheme.primary

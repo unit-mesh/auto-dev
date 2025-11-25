@@ -15,10 +15,7 @@ import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.TOCItem
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
-/**
- * 结构化信息面板 - 中间下部
- * 包含 DocQL 查询栏（顶部）+ 可折叠的 TOC (目录) 和 Entities (实体列表)
- */
+
 @Composable
 fun StructuredInfoPane(
     toc: List<TOCItem>,
@@ -42,8 +39,6 @@ fun StructuredInfoPane(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        // DocQL 搜索栏（置顶）
-        // Use key() to force recreation when document changes, clearing TextFieldValue state
         key(toc, entities) {
             DocQLSearchBar(
                 onQueryExecute = { query ->

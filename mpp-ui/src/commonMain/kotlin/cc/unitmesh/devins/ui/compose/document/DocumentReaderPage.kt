@@ -35,12 +35,11 @@ fun DocumentReaderPage(
         }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            // 3-Pane Layout
             ResizableSplitPane(
                 modifier = Modifier.fillMaxSize(),
                 initialSplitRatio = 0.18f,
                 minRatio = 0.12f,
-                maxRatio = 0.3f,
+                maxRatio = 0.2f,
                 first = {
                     DocumentNavigationPane(
                         documents = viewModel.documents,
@@ -50,18 +49,16 @@ fun DocumentReaderPage(
                 second = {
                     ResizableSplitPane(
                         modifier = Modifier.fillMaxSize(),
-                        initialSplitRatio = 0.65f,
-                        minRatio = 0.45f,
-                        maxRatio = 0.8f,
+                        initialSplitRatio = 0.45f,
+                        minRatio = 0.35f,
+                        maxRatio = 0.5f,
                         first = {
-                            // 中间：文档查看 + 结构化信息
                             VerticalResizableSplitPane(
                                 modifier = Modifier.fillMaxSize(),
                                 initialSplitRatio = 0.7f,
                                 minRatio = 0.4f,
                                 maxRatio = 0.85f,
                                 top = {
-                                    // 中间上：文档查看器
                                     DocumentViewerPane(
                                         document = viewModel.selectedDocument,
                                         content = viewModel.documentContent,
@@ -70,8 +67,6 @@ fun DocumentReaderPage(
                                     )
                                 },
                                 bottom = {
-                                    // 中间下：结构化信息
-                                    // TODO: Get TOC and Entities from ViewModel/Document
                                     val toc = viewModel.selectedDocument?.toc ?: emptyList()
                                     val entities = viewModel.selectedDocument?.entities ?: emptyList()
 
@@ -94,7 +89,6 @@ fun DocumentReaderPage(
                             )
                         },
                         second = {
-                            // 右侧：AI 聊天
                             DocumentChatPane(
                                 viewModel = viewModel
                             )

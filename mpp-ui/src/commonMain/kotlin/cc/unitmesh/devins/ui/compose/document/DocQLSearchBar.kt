@@ -1,7 +1,6 @@
 package cc.unitmesh.devins.ui.compose.document
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,12 +28,11 @@ fun DocQLSearchBar(
     var isExecuting by remember { mutableStateOf(false) }
     var showSuggestions by remember { mutableStateOf(false) }
     var suggestions by remember { mutableStateOf<List<DocQLSuggestion>>(emptyList()) }
-    
+
     val scope = rememberCoroutineScope()
     val autoCompleteProvider = remember { DocQLAutoCompleteProvider() }
-    
+
     Column(modifier = modifier) {
-        // Search input
         Box(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -45,13 +43,12 @@ fun DocQLSearchBar(
                     value = queryTextValue,
                     onValueChange = { newValue ->
                         val oldText = queryTextValue.text
-                        val oldCursor = queryTextValue.selection.start
                         queryTextValue = newValue
                         errorMessage = null
-                        
+
                         val text = newValue.text
                         val cursor = newValue.selection.start
-                        
+
                         // Real-time syntax validation
                         try {
                             if (text.isNotEmpty()) {
@@ -60,7 +57,7 @@ fun DocQLSearchBar(
                         } catch (e: Exception) {
                             errorMessage = e.message
                         }
-                        
+
                         // Only trigger auto-complete on actual text input (not cursor movement)
                         val textChanged = text != oldText
                         if (textChanged) {
@@ -68,7 +65,7 @@ fun DocQLSearchBar(
                                 // 文本增加（输入字符）
                                 val lastChar = text.getOrNull(cursor - 1)
                                 val beforeCursor = text.substring(0, cursor)
-                                
+
                                 // Trigger on: . [ $ @
                                 val shouldShowSuggestions = when (lastChar) {
                                     '.' -> true
@@ -77,26 +74,23 @@ fun DocQLSearchBar(
                                     '@' -> beforeCursor.contains("[?")  // 在 filter 中
                                     else -> false
                                 }
-                                
+
                                 if (shouldShowSuggestions) {
                                     suggestions = autoCompleteProvider.getSuggestions(text, cursor)
                                     showSuggestions = suggestions.isNotEmpty()
                                 }
                             } else if (text.length < oldText.length) {
-                                // 文本减少（删除字符）- 检查是否删除了触发字符
                                 val beforeCursor = text.substring(0, minOf(cursor, text.length))
-                                val hasTriggerChar = beforeCursor.endsWith(".") || 
-                                                   beforeCursor.endsWith("[") || 
+                                val hasTriggerChar = beforeCursor.endsWith(".") ||
+                                                   beforeCursor.endsWith("[") ||
                                                    beforeCursor.endsWith("@")
-                                
+
                                 if (!hasTriggerChar) {
-                                    // 如果不再有触发字符，关闭补全
                                     showSuggestions = false
                                 }
                             }
                         }
-                        
-                        // Auto-execute on valid query
+
                         if (autoExecute && text.isNotEmpty() && errorMessage == null && !isExecuting) {
                             scope.launch {
                                 isExecuting = true
@@ -129,7 +123,7 @@ fun DocQLSearchBar(
                                 )
                             }
                             if (queryTextValue.text.isNotEmpty()) {
-                                IconButton(onClick = { 
+                                IconButton(onClick = {
                                     queryTextValue = TextFieldValue("")
                                     showSuggestions = false  // 清除时关闭补全
                                     errorMessage = null
@@ -143,8 +137,7 @@ fun DocQLSearchBar(
                         }
                     }
                 )
-            
-                // Manual execute button (only shown when auto-execute is off)
+
                 if (!autoExecute) {
                     Button(
                         onClick = {
@@ -165,7 +158,7 @@ fun DocQLSearchBar(
                         Text("Run")
                     }
                 }
-            
+
                 // Syntax help toggle
                 IconButton(onClick = { isExpanded = !isExpanded }) {
                     Icon(
@@ -174,7 +167,7 @@ fun DocQLSearchBar(
                     )
                 }
             }
-            
+
             // Auto-complete popup
             if (showSuggestions) {
                 DocQLAutoCompletePopup(
@@ -182,11 +175,11 @@ fun DocQLSearchBar(
                     onSuggestionSelected = { suggestion ->
                         val currentText = queryTextValue.text
                         val cursor = queryTextValue.selection.start
-                        
+
                         // Insert suggestion at cursor position
                         val newText = currentText.substring(0, cursor) + suggestion.insertText
                         val newCursor = cursor + suggestion.insertText.length
-                        
+
                         queryTextValue = TextFieldValue(
                             text = newText,
                             selection = TextRange(newCursor)
@@ -197,7 +190,7 @@ fun DocQLSearchBar(
                 )
             }
         }
-        
+
         // Error message
         if (errorMessage != null) {
             Text(
@@ -207,11 +200,11 @@ fun DocQLSearchBar(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
-        
+
         // Syntax hints (expandable)
         if (isExpanded) {
             DocQLSyntaxHelp(
-                onQuerySelect = { 
+                onQuerySelect = {
                     queryTextValue = TextFieldValue(
                         text = it,
                         selection = TextRange(it.length)
@@ -246,7 +239,7 @@ private fun DocQLSyntaxHelp(
                 text = "DocQL Syntax",
                 style = MaterialTheme.typography.titleSmall
             )
-            
+
             // TOC queries
             SyntaxSection(
                 title = "Table of Contents (TOC)",
@@ -258,9 +251,9 @@ private fun DocQLSyntaxHelp(
                 ),
                 onQuerySelect = onQuerySelect
             )
-            
+
             HorizontalDivider()
-            
+
             // Entity queries
             SyntaxSection(
                 title = "Entities",
@@ -272,9 +265,9 @@ private fun DocQLSyntaxHelp(
                 ),
                 onQuerySelect = onQuerySelect
             )
-            
+
             HorizontalDivider()
-            
+
             // Content queries
             SyntaxSection(
                 title = "Content",
@@ -287,9 +280,9 @@ private fun DocQLSyntaxHelp(
                 ),
                 onQuerySelect = onQuerySelect
             )
-            
+
             HorizontalDivider()
-            
+
             // Operators
             Text(
                 text = "Operators: == (equals), ~= (contains), > (greater than), < (less than)",
@@ -315,7 +308,7 @@ private fun SyntaxSection(
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary
         )
-        
+
         examples.forEach { (query, description) ->
             SyntaxExample(
                 query = query,
@@ -349,7 +342,7 @@ private fun SyntaxExample(
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.primary
             )
-            
+
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
