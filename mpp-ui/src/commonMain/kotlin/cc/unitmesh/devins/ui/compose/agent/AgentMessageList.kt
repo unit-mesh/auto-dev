@@ -23,6 +23,7 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
+import cc.unitmesh.devins.ui.compose.sketch.SketchRenderer
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 
@@ -176,11 +177,21 @@ fun MessageItem(
         ) {
             PlatformMessageTextContainer(text = message.content) {
                 Column(modifier = Modifier.padding(8.dp)) {
-                    Text(
-                        text = message.content,
-                        fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    // Use SketchRenderer for assistant messages to support thinking blocks
+                    if (!isUser) {
+                        SketchRenderer.RenderResponse(
+                            content = message.content,
+                            isComplete = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        // For user messages, use simple text
+                        Text(
+                            text = message.content,
+                            fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
 
                     // Display token info if available (only for assistant messages)
                     if (!isUser && tokenInfo != null && tokenInfo.totalTokens > 0) {
@@ -214,10 +225,11 @@ fun StreamingMessageItem(content: String) {
         Column(modifier = Modifier.padding(12.dp)) {
             if (content.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = content,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
+                // Use SketchRenderer to support thinking blocks in streaming content
+                SketchRenderer.RenderResponse(
+                    content = content,
+                    isComplete = false,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

@@ -258,14 +258,13 @@ class DocumentAgent(
             ## Best Practices
             
             ✅ **DO:**
-            - Always specify `documentPath` when filename clearly matches query keywords
             - Start with `heading()` for targeted searches, fall back to `chunks()` if empty
+            - Every document maybe big, Never directly view file. 
             - Expand keywords BEFORE first query: synonyms, morphology, translations
             - Try 2-3 different queries before concluding "no information found"
             - Query multiple related documents for cross-cutting topics
             
             ❌ **DON'T:**
-            - Never guess or speculate without actually querying first
             - Don't use filesystem tools on registered documents
             - Don't give up after one failed query - retry with broader terms
             - Don't use `chunks()` as your first choice unless query is very broad
