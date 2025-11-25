@@ -3,6 +3,7 @@ package cc.unitmesh.agent.tool.impl
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
+import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.devins.document.DocumentRegistry
 import kotlinx.serialization.Serializable
@@ -10,7 +11,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DocQLParams(
     val query: String,
-    val documentPath: String? = null
+    val documentPath: String? = null,
+    val maxResults: Int? = 20
 )
 
 object DocQLSchema : DeclarativeToolSchema(
@@ -35,6 +37,14 @@ object DocQLSchema : DeclarativeToolSchema(
                 Use this to target specific documents when their names match your keywords.
                 Check the available documents list and match keywords before querying.
                 If omitted, searches all registered documents.
+            """.trimIndent(),
+            required = false
+        ),
+        "maxResults" to integer(
+            description = """
+                Maximum number of results to return. Default is 20.
+                Use lower values for quick overview, higher values for comprehensive search.
+                Note: Very high values may exceed context limits for large result sets.
             """.trimIndent(),
             required = false
         )
@@ -81,7 +91,7 @@ class DocQLInvocation(
     private suspend fun querySingleDocument(documentPath: String, query: String): ToolResult {
         val result = DocumentRegistry.queryDocument(documentPath, query)
         if (result != null) {
-            return ToolResult.Success(formatDocQLResult(result, documentPath))
+            return ToolResult.Success(formatDocQLResult(result, documentPath, params.maxResults ?: 20))
         } else {
             return ToolResult.Error("Document not found: $documentPath", ToolErrorType.FILE_NOT_FOUND.code)
         }
@@ -92,7 +102,7 @@ class DocQLInvocation(
         val result = DocumentRegistry.queryDocuments(query)
         
         return if (!isEmptyResult(result)) {
-            ToolResult.Success(formatDocQLResult(result, null))
+            ToolResult.Success(formatDocQLResult(result, null, params.maxResults ?: 20))
         } else {
             // Provide helpful suggestions when no results found
             val availablePaths = DocumentRegistry.getAllAvailablePaths()
@@ -136,46 +146,111 @@ class DocQLInvocation(
         return suggestions.joinToString("\n")
     }
 
-    private fun formatDocQLResult(result: cc.unitmesh.devins.document.docql.DocQLResult, documentPath: String?): String {
+    private fun formatDocQLResult(
+        result: cc.unitmesh.devins.document.docql.DocQLResult, 
+        documentPath: String?,
+        maxResults: Int = 20
+    ): String {
         return when (result) {
             is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
                 buildString {
-                    appendLine("Found ${result.totalCount} TOC items across ${result.itemsByFile.size} file(s):")
+                    val totalItems = result.totalCount
+                    val truncated = totalItems > maxResults
+                    
+                    appendLine("Found $totalItems TOC items across ${result.itemsByFile.size} file(s):")
+                    if (truncated) {
+                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
+                    }
                     appendLine()
+                    
+                    var count = 0
                     for ((filePath, items) in result.itemsByFile) {
+                        if (count >= maxResults) break
+                        
                         appendLine("## 📄 $filePath")
-                        items.forEach { item ->
+                        for (item in items) {
+                            if (count >= maxResults) break
                             appendLine("  ${"  ".repeat(item.level - 1)}${item.level}. ${item.title}")
+                            count++
                         }
                         appendLine()
+                    }
+                    
+                    if (truncated) {
+                        appendLine("💡 Tip: Query specific directories to get more focused results:")
+                        appendLine("   \$.toc[?(@.title contains \"keyword\")]")
                     }
                 }
             }
             is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
                 buildString {
-                    appendLine("Found ${result.totalCount} entities across ${result.itemsByFile.size} file(s):")
+                    val totalItems = result.totalCount
+                    val truncated = totalItems > maxResults
+                    
+                    appendLine("Found $totalItems entities across ${result.itemsByFile.size} file(s):")
+                    if (truncated) {
+                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
+                    }
                     appendLine()
+                    
+                    var count = 0
                     for ((filePath, items) in result.itemsByFile) {
+                        if (count >= maxResults) break
+                        
                         appendLine("## 📄 $filePath")
-                        items.forEach { entity ->
+                        for (entity in items) {
+                            if (count >= maxResults) break
                             appendLine("  - ${entity.name}")
+                            count++
                         }
                         appendLine()
+                    }
+                    
+                    if (truncated) {
+                        appendLine("💡 Tip: Filter by specific files or entity types")
                     }
                 }
             }
             is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
                 buildString {
-                    appendLine("Found ${result.totalCount} content chunks across ${result.itemsByFile.size} file(s):")
+                    val totalItems = result.totalCount
+                    val truncated = totalItems > maxResults
+                    
+                    appendLine("Found $totalItems content chunks across ${result.itemsByFile.size} file(s):")
+                    if (truncated) {
+                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
+                        appendLine("💡 Tip: Narrow down your search to specific files or directories")
+                        appendLine("   Example: Query documents in a specific directory only")
+                    }
                     appendLine()
+                    
+                    var count = 0
                     for ((filePath, items) in result.itemsByFile) {
+                        if (count >= maxResults) break
+                        
+                        // Filter out empty or whitespace-only chunks
+                        val nonEmptyItems = items.filter { it.content.trim().isNotEmpty() }
+                        if (nonEmptyItems.isEmpty()) continue
+                        
                         appendLine("## 📄 $filePath")
                         appendLine()
-                        items.forEach { chunk ->
-                            appendLine(chunk.content)
-                            appendLine("---")
+                        
+                        for (chunk in nonEmptyItems) {
+                            if (count >= maxResults) break
+                            
+                            val content = chunk.content.trim()
+                            if (content.isNotEmpty()) {
+                                appendLine(content)
+                                appendLine()
+                                appendLine("---")
+                                appendLine()
+                                count++
+                            }
                         }
-                        appendLine()
+                    }
+                    
+                    if (count == 0) {
+                        appendLine("No non-empty chunks found.")
                     }
                 }
             }

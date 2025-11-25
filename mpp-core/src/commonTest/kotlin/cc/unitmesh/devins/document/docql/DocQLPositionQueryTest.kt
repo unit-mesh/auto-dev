@@ -192,7 +192,7 @@ class DocQLPositionQueryTest {
         
         // Then
         assertTrue(result is DocQLResult.Chunks)
-        val chunk = (result as DocQLResult.Chunks).items.first()
+        val chunk = (result as DocQLResult.Chunks).itemsByFile.values.first().first()
         
         assertNotNull(chunk.position)
         val locationString = chunk.position?.toLocationString()
@@ -247,7 +247,7 @@ class DocQLPositionQueryTest {
         
         // Then
         assertTrue(result is DocQLResult.Chunks)
-        val chunk = (result as DocQLResult.Chunks).items.first()
+        val chunk = (result as DocQLResult.Chunks).itemsByFile.values.first().first()
         
         // Position should be preserved
         assertNotNull(chunk.position)

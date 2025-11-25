@@ -48,7 +48,7 @@ class DocQLMultiFormatTest {
         // Then
         assertNotNull(result)
         assertTrue(result is DocQLResult.Chunks)
-        val chunks = (result as DocQLResult.Chunks).items
+        val chunks = (result as DocQLResult.Chunks).itemsByFile.values.flatten()
         assertTrue(chunks.isNotEmpty(), "Should find chunks containing 'links'")
         
         // Verify position metadata exists
@@ -82,7 +82,7 @@ class DocQLMultiFormatTest {
         // Then
         assertNotNull(result)
         assertTrue(result is DocQLResult.Chunks)
-        val chunks = (result as DocQLResult.Chunks).items
+        val chunks = (result as DocQLResult.Chunks).itemsByFile.values.flatten()
         assertTrue(chunks.isNotEmpty(), "Should find chunks containing 'permissions'")
         
         println("✓ DOC DocQL query successful: found ${chunks.size} chunks")
