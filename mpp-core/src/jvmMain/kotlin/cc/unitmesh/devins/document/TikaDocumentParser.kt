@@ -45,7 +45,7 @@ class TikaDocumentParser : DocumentParserService {
             metadata.set("resourceName", file.name)
             
             // Parse document - convert String back to bytes using ISO_8859_1 to preserve binary data
-            val inputStream = ByteArrayInputStream(content.toByteArray(Charsets.ISO_8859_1))
+            val inputStream = ByteArrayInputStream(content.toByteArray())
             parser.parse(inputStream, handler, metadata, context)
             
             // Extract parsed content

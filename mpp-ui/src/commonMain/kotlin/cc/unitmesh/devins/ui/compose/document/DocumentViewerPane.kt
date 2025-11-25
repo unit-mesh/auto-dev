@@ -12,22 +12,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.devins.document.DocumentFile
+import cc.unitmesh.devins.document.DocumentFormatType
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
 /**
  * 文档查看面板 - 中间上部
- * 用于显示文档内容（Markdown渲染）
+ * 用于显示文档内容
+ * 
+ * @param rawContent 原始文件内容（用于 Markdown 等文本格式）
+ * @param parsedContent 解析后的内容（用于 PDF/Word/Excel 等，由 Tika 提取）
  */
 @Composable
 fun DocumentViewerPane(
     document: DocumentFile?,
-    content: String?,
+    rawContent: String?,
+    parsedContent: String?,
     isLoading: Boolean,
     indexStatus: cc.unitmesh.devins.db.DocumentIndexRecord? = null,
     targetLineNumber: Int? = null,
     highlightedText: String? = null,
     modifier: Modifier = Modifier
 ) {
+    // Determine which content to display based on document type
+    val displayContent = when {
+        parsedContent != null -> parsedContent  // Use parsed content for PDF/Word/etc.
+        rawContent != null -> rawContent        // Use raw content for Markdown/Text
+        else -> null
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -117,13 +128,23 @@ fun DocumentViewerPane(
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
-                } else if (content != null) {
-                    DocumentContentView(
-                        content = content,
-                        targetLineNumber = targetLineNumber,
-                        highlightedText = highlightedText,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                } else if (displayContent != null) {
+                    // Show format indicator for parsed content
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (parsedContent != null && document != null) {
+                            DocumentFormatIndicator(
+                                formatType = document.metadata.formatType,
+                                isParsed = true
+                            )
+                        }
+                        
+                        DocumentContentView(
+                            content = displayContent,
+                            targetLineNumber = targetLineNumber,
+                            highlightedText = highlightedText,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 } else {
                     Text(
                         text = "无法加载文档内容",
@@ -231,6 +252,58 @@ private fun MetadataItem(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+/**
+ * Document format indicator to show that content is parsed/extracted
+ */
+@Composable
+private fun DocumentFormatIndicator(
+    formatType: DocumentFormatType,
+    isParsed: Boolean
+) {
+    if (!isParsed) return
+    
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = AutoDevComposeIcons.Info,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Column {
+                Text(
+                    text = "已解析的文本内容",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Text(
+                    text = when (formatType) {
+                        DocumentFormatType.PDF -> "从 PDF 文件提取的纯文本"
+                        DocumentFormatType.DOCX -> "从 Word 文档提取的纯文本"
+                        DocumentFormatType.PLAIN_TEXT -> "纯文本文件"
+                        DocumentFormatType.MARKDOWN -> "Markdown 文档"
+                        else -> "从 ${formatType.name} 提取的纯文本"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                )
+            }
+        }
     }
 }
 

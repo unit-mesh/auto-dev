@@ -69,7 +69,8 @@ fun DocumentReaderPage(
                                 top = {
                                     DocumentViewerPane(
                                         document = viewModel.selectedDocument,
-                                        content = viewModel.documentContent,
+                                        rawContent = viewModel.documentContent,
+                                        parsedContent = viewModel.parsedContent,
                                         isLoading = viewModel.isLoading,
                                         indexStatus = viewModel.selectedDocumentIndexStatus,
                                         targetLineNumber = viewModel.targetLineNumber,

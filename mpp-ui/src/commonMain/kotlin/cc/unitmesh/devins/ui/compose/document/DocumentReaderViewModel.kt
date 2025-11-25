@@ -43,6 +43,10 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     var documentContent by mutableStateOf<String?>(null)
         private set
 
+    // Parsed content (for PDF, Word, etc.) - extracted text from Tika
+    var parsedContent by mutableStateOf<String?>(null)
+        private set
+
     var selectedDocumentIndexStatus by mutableStateOf<cc.unitmesh.devins.db.DocumentIndexRecord?>(null)
         private set
 
@@ -84,6 +88,9 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     val indexingStatus = indexService.indexingStatus
 
     init {
+        // Initialize platform-specific parsers (Tika on JVM, etc.)
+        DocumentRegistry.initializePlatformParsers()
+        
         loadDocuments()
         initializeLLMService()
         // 不自动索引，等待用户手动触发
@@ -236,7 +243,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                 // Search by indexed content
                 val contentMatch = indexService.getIndexStatus(doc.path)?.let { record ->
-                    record.status == "INDEXED" && 
+                    record.status == "INDEXED" &&
                     record.content?.lowercase()?.contains(query) == true
                 } ?: false
 
@@ -255,14 +262,14 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         }
         indexService.indexDocuments(documents)
     }
-    
+
     /**
      * Refresh documents list (without re-indexing)
      */
     fun refreshDocuments() {
         loadDocuments()
     }
-    
+
     /**
      * Reset indexing status to Idle
      */
@@ -282,10 +289,12 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                 val content = fileSystem.readFile(doc.path)
                     ?: run {
                         error = "Failed to read file content"
-                        documentContent = null // Clear stale content
+                        documentContent = null
+                        parsedContent = null
                         return@launch
                     }
 
+                // Store original content (for Markdown/Text)
                 documentContent = content
 
                 // Get the appropriate parser for this document format
@@ -293,12 +302,19 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     ?: run {
                         error = "No parser available for file format: ${doc.path}"
                         println("ERROR: No parser available for: ${doc.path}")
+                        parsedContent = null
                         return@launch
                     }
 
+                // Parse the document
+                val parsedDoc = parser.parse(doc, content)
+
+                // Get parsed content (for PDF, Word, etc. - Tika extracts text)
+                // For Markdown, this will be null (we use original content)
+                parsedContent = parser.getDocumentContent()
+
                 // Register document with DocumentRegistry for DocQL queries
                 try {
-                    val parsedDoc = parser.parse(doc, content)
                     DocumentRegistry.registerDocument(doc.path, parsedDoc, parser)
                     println("Document registered with DocumentRegistry: ${doc.path}")
                 } catch (e: Exception) {
@@ -307,7 +323,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     // Continue even if registration fails
                 }
 
-                val parsedDoc = parser.parse(doc, content)
+                // Update document with TOC and metadata
                 if (parsedDoc is DocumentFile && parsedDoc.toc.isNotEmpty()) {
                     println("ViewModel: Received parsed TOC with ${parsedDoc.toc.size} items")
                     val updatedDoc = doc.copy(
@@ -324,7 +340,8 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                 }
             } catch (e: Exception) {
                 error = "Failed to process document: ${e.message}"
-                documentContent = null // Clear stale content
+                documentContent = null
+                parsedContent = null
                 println("ERROR: Failed to process document: ${e.message}")
                 e.printStackTrace()
             } finally {
