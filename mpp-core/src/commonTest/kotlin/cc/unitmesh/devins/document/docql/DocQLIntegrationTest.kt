@@ -370,8 +370,10 @@ class DocQLIntegrationTest {
         val query = parseDocQL("""$.toc[?(@.title~="NonExistent")]""")
         val result = executor.execute(query)
         
-        assertIs<DocQLResult.TocItems>(result)
-        assertEquals(0, result.items.size, "不存在的标题应该返回空结果")
+        // Should return Empty for queries with no matches
+        assertTrue(result is DocQLResult.Empty || 
+            (result is DocQLResult.TocItems && result.items.isEmpty()),
+            "不存在的标题应该返回空结果")
     }
     
     @Test

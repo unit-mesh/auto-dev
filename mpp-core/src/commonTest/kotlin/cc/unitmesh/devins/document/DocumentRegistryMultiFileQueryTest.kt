@@ -159,8 +159,8 @@ class DocumentRegistryMultiFileQueryTest {
             DocumentRegistry.registerDocument(path, doc, MarkdownDocumentParser())
         }
         
-        // Test: Filter by directory
-        val result = DocumentRegistry.queryDocuments("$.files[?(@.path contains \"api\")]")
+        // Test: Filter by directory (use ~= for contains)
+        val result = DocumentRegistry.queryDocuments("$.files[?(@.path ~= \"api\")]")
         
         println("Filtered files result: $result")
         
@@ -192,8 +192,8 @@ class DocumentRegistryMultiFileQueryTest {
             DocumentRegistry.registerDocument(path, doc, MarkdownDocumentParser())
         }
         
-        // Test: Filter by extension (using path contains since extension filter is path-based)
-        val result = DocumentRegistry.queryDocuments("$.files[?(@.path contains \".kt\")]")
+        // Test: Filter by extension (using path ~= for contains)
+        val result = DocumentRegistry.queryDocuments("$.files[?(@.path ~= \".kt\")]")
         
         assertIs<DocQLResult.Files>(result)
         assertEquals(2, result.items.size, "Should find only .kt files")
