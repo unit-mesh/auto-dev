@@ -1,8 +1,6 @@
 package cc.unitmesh.devins.document
 
-import cc.unitmesh.devins.document.docql.DocQLExecutor
-import cc.unitmesh.devins.document.docql.DocQLResult
-import cc.unitmesh.devins.document.docql.parseDocQL
+import cc.unitmesh.devins.document.docql.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -148,6 +146,168 @@ object DocumentRegistry {
         } catch (e: Exception) {
             logger.error(e) { "Failed to execute DocQL query: $docqlQuery" }
             DocQLResult.Error(e.message ?: "Query execution failed")
+        }
+    }
+    
+    /**
+     * Query multiple documents using DocQL and merge results with source file information
+     * This is the recommended method for querying across all documents
+     * 
+     * @param docqlQuery DocQL query string (e.g., "$.content.heading('title')")
+     * @param documentPaths Optional list of specific documents to query (queries all if null)
+     * @return Merged query result with source file information for each item
+     */
+    suspend fun queryDocuments(docqlQuery: String, documentPaths: List<String>? = null): DocQLResult {
+        val pathsToQuery = documentPaths ?: getAllAvailablePaths()
+        
+        if (pathsToQuery.isEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        // Special handling for $.files queries - these work across all files
+        if (docqlQuery.trim().startsWith("\$.files")) {
+            return try {
+                val query = parseDocQL(docqlQuery)
+                executeFilesQuery(query, pathsToQuery)
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to execute files query: $docqlQuery" }
+                DocQLResult.Error(e.message ?: "Files query execution failed")
+            }
+        }
+        
+        // Query each document and merge results
+        val resultsByFile = mutableMapOf<String, DocQLResult>()
+        
+        for (path in pathsToQuery) {
+            val result = queryDocument(path, docqlQuery)
+            if (result != null && result !is DocQLResult.Empty && result !is DocQLResult.Error) {
+                resultsByFile[path] = result
+            }
+        }
+        
+        // Merge results by type
+        return mergeQueryResults(resultsByFile)
+    }
+    
+    /**
+     * Execute $.files query across multiple documents
+     */
+    private suspend fun executeFilesQuery(query: DocQLQuery, paths: List<String>): DocQLResult {
+        val files = paths.map { path ->
+            FileInfo(
+                path = path,
+                name = path.substringAfterLast('/'),
+                directory = if (path.contains('/')) path.substringBeforeLast('/') else "",
+                extension = if (path.contains('.')) path.substringAfterLast('.') else "",
+                content = null, // Content not loaded by default for performance
+                size = 0
+            )
+        }
+        
+        // Apply filters from query
+        var filteredFiles = files
+        for (node in query.nodes.drop(2)) { // Skip $ and .files
+            when (node) {
+                is DocQLNode.ArrayAccess.Filter -> {
+                    filteredFiles = filterFiles(filteredFiles, node.condition)
+                }
+                is DocQLNode.ArrayAccess.Index -> {
+                    filteredFiles = if (node.index < filteredFiles.size) {
+                        listOf(filteredFiles[node.index])
+                    } else {
+                        emptyList()
+                    }
+                }
+                is DocQLNode.ArrayAccess.All -> {
+                    // No filtering needed - return all files
+                }
+                else -> {
+                    // Ignore other node types for files query
+                }
+            }
+        }
+        
+        return if (filteredFiles.isNotEmpty()) {
+            DocQLResult.Files(filteredFiles)
+        } else {
+            DocQLResult.Empty
+        }
+    }
+    
+    /**
+     * Filter files by condition
+     */
+    private fun filterFiles(items: List<FileInfo>, condition: FilterCondition): List<FileInfo> {
+        return items.filter { file ->
+            when (condition) {
+                is FilterCondition.Equals -> {
+                    when (condition.property) {
+                        "path" -> file.path == condition.value
+                        "name" -> file.name == condition.value
+                        "directory" -> file.directory == condition.value
+                        "extension" -> file.extension == condition.value
+                        else -> false
+                    }
+                }
+                is FilterCondition.Contains -> {
+                    when (condition.property) {
+                        "path" -> file.path.contains(condition.value, ignoreCase = true)
+                        "name" -> file.name.contains(condition.value, ignoreCase = true)
+                        "directory" -> file.directory.contains(condition.value, ignoreCase = true)
+                        "extension" -> file.extension.contains(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                else -> false
+            }
+        }
+    }
+    
+    /**
+     * Merge query results from multiple files into a single result with source information
+     */
+    private fun mergeQueryResults(resultsByFile: Map<String, DocQLResult>): DocQLResult {
+        if (resultsByFile.isEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        // Group results by type
+        val tocItemsByFile = mutableMapOf<String, List<TOCItem>>()
+        val entitiesByFile = mutableMapOf<String, List<Entity>>()
+        val chunksByFile = mutableMapOf<String, List<DocumentChunk>>()
+        val codeBlocksByFile = mutableMapOf<String, List<CodeBlock>>()
+        val tablesByFile = mutableMapOf<String, List<TableBlock>>()
+        
+        for ((path, result) in resultsByFile) {
+            when (result) {
+                is DocQLResult.TocItems -> {
+                    // Old format: single file result
+                    tocItemsByFile[path] = result.itemsByFile.values.flatten()
+                }
+                is DocQLResult.Entities -> {
+                    entitiesByFile[path] = result.itemsByFile.values.flatten()
+                }
+                is DocQLResult.Chunks -> {
+                    chunksByFile[path] = result.itemsByFile.values.flatten()
+                }
+                is DocQLResult.CodeBlocks -> {
+                    codeBlocksByFile[path] = result.itemsByFile.values.flatten()
+                }
+                is DocQLResult.Tables -> {
+                    tablesByFile[path] = result.itemsByFile.values.flatten()
+                }
+                else -> {} // Skip Empty, Error, Files
+            }
+        }
+        
+        // Return the first non-empty result type
+        return when {
+            tocItemsByFile.isNotEmpty() -> DocQLResult.TocItems(tocItemsByFile)
+            entitiesByFile.isNotEmpty() -> DocQLResult.Entities(entitiesByFile)
+            chunksByFile.isNotEmpty() -> DocQLResult.Chunks(chunksByFile)
+            codeBlocksByFile.isNotEmpty() -> DocQLResult.CodeBlocks(codeBlocksByFile)
+            tablesByFile.isNotEmpty() -> DocQLResult.Tables(tablesByFile)
+            else -> DocQLResult.Empty
         }
     }
     

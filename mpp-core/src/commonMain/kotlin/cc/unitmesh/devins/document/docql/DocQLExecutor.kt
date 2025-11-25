@@ -3,36 +3,52 @@ package cc.unitmesh.devins.document.docql
 import cc.unitmesh.devins.document.*
 
 /**
- * DocQL query execution result
+ * DocQL query execution result - all results include source file information
  */
 sealed class DocQLResult {
     /**
-     * TOC items result
+     * TOC items result - grouped by source file
+     * Map key: file path, value: list of TOC items from that file
      */
-    data class TocItems(val items: List<TOCItem>) : DocQLResult()
+    data class TocItems(val itemsByFile: Map<String, List<TOCItem>>) : DocQLResult() {
+        val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+    }
     
     /**
-     * Entity items result
+     * Entity items result - grouped by source file
+     * Map key: file path, value: list of entities from that file
      */
-    data class Entities(val items: List<Entity>) : DocQLResult()
+    data class Entities(val itemsByFile: Map<String, List<Entity>>) : DocQLResult() {
+        val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+    }
     
     /**
-     * Document chunks result
+     * Document chunks result - grouped by source file
+     * Map key: file path, value: list of chunks from that file
      */
-    data class Chunks(val items: List<DocumentChunk>) : DocQLResult()
+    data class Chunks(val itemsByFile: Map<String, List<DocumentChunk>>) : DocQLResult() {
+        val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+    }
     
     /**
-     * Code blocks result
+     * Code blocks result - grouped by source file
+     * Map key: file path, value: list of code blocks from that file
      */
-    data class CodeBlocks(val items: List<CodeBlock>) : DocQLResult()
+    data class CodeBlocks(val itemsByFile: Map<String, List<CodeBlock>>) : DocQLResult() {
+        val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+    }
     
     /**
-     * Tables result
+     * Tables result - grouped by source file
+     * Map key: file path, value: list of tables from that file
      */
-    data class Tables(val items: List<TableBlock>) : DocQLResult()
+    data class Tables(val itemsByFile: Map<String, List<TableBlock>>) : DocQLResult() {
+        val totalCount: Int get() = itemsByFile.values.sumOf { it.size }
+    }
     
     /**
      * File list result (for $.files queries)
+     * Includes file metadata and optionally content
      */
     data class Files(val items: List<FileInfo>) : DocQLResult()
     
@@ -49,12 +65,21 @@ sealed class DocQLResult {
 
 /**
  * File information for $.files queries
+ * 
+ * @property path Full path of the file
+ * @property name File name only
+ * @property directory Directory path
+ * @property extension File extension
+ * @property content File content (loaded from DocumentRegistry/IndexProvider)
+ * @property size Content size in characters
  */
 data class FileInfo(
     val path: String,
     val name: String = path.substringAfterLast('/'),
     val directory: String = if (path.contains('/')) path.substringBeforeLast('/') else "",
-    val extension: String = if (path.contains('.')) path.substringAfterLast('.') else ""
+    val extension: String = if (path.contains('.')) path.substringAfterLast('.') else "",
+    val content: String? = null,
+    val size: Int = content?.length ?: 0
 )
 
 /**
@@ -108,7 +133,7 @@ class DocQLExecutor(
                         "toc" -> executeTocQuery(query.nodes.drop(2))
                         "entities" -> executeEntitiesQuery(query.nodes.drop(2))
                         "content" -> executeContentQuery(query.nodes.drop(2))
-                        "files" -> executeFilesQuery(query.nodes.drop(2))
+                        "files" -> DocQLResult.Error("$.files queries must be executed via DocumentRegistry.queryDocuments()")
                         else -> DocQLResult.Error("Unknown context '${contextNode.name}'")
                     }
                 }
@@ -156,7 +181,12 @@ class DocQLExecutor(
             }
         }
         
-        return DocQLResult.TocItems(items)
+        // Return result with source file information
+        return if (items.isNotEmpty()) {
+            DocQLResult.TocItems(mapOf(documentFile.path to items))
+        } else {
+            DocQLResult.Empty
+        }
     }
     
     /**
@@ -195,7 +225,12 @@ class DocQLExecutor(
             }
         }
         
-        return DocQLResult.Entities(items)
+        // Return result with source file information
+        return if (items.isNotEmpty()) {
+            DocQLResult.Entities(mapOf(documentFile.path to items))
+        } else {
+            DocQLResult.Empty
+        }
     }
     
     /**
@@ -226,13 +261,13 @@ class DocQLExecutor(
      * Execute all chunks query: $.content.chunks() or $.content.all()
      */
     private suspend fun executeAllChunksQuery(): DocQLResult {
-        if (parserService == null) {
+        if (parserService == null || documentFile == null) {
             return DocQLResult.Error("No parser service available")
         }
         
         // Query all headings with empty keyword to get all content chunks
         // This is a workaround since there's no direct "get all chunks" method
-        val allHeadings = documentFile?.toc?.let { flattenToc(it) } ?: emptyList()
+        val allHeadings = documentFile.toc?.let { flattenToc(it) } ?: emptyList()
         
         if (allHeadings.isEmpty()) {
             return DocQLResult.Empty
@@ -250,7 +285,7 @@ class DocQLExecutor(
         return if (chunks.isEmpty()) {
             DocQLResult.Empty
         } else {
-            DocQLResult.Chunks(chunks)
+            DocQLResult.Chunks(mapOf(documentFile.path to chunks))
         }
     }
     
@@ -258,14 +293,14 @@ class DocQLExecutor(
      * Execute heading query: $.content.heading("keyword")
      */
     private suspend fun executeHeadingQuery(keyword: String): DocQLResult {
-        if (parserService == null) {
+        if (parserService == null || documentFile == null) {
             return DocQLResult.Error("No parser service available")
         }
         
         val chunks = parserService.queryHeading(keyword)
         return if (chunks.isEmpty()) {
             // Try partial matching with more flexible search by querying TOC
-            val allHeadings = documentFile?.toc?.let { flattenToc(it) } ?: emptyList()
+            val allHeadings = documentFile.toc?.let { flattenToc(it) } ?: emptyList()
             val partialMatches = mutableListOf<DocumentChunk>()
             
             for (heading in allHeadings) {
@@ -278,12 +313,12 @@ class DocQLExecutor(
             }
             
             if (partialMatches.isNotEmpty()) {
-                DocQLResult.Chunks(partialMatches)
+                DocQLResult.Chunks(mapOf(documentFile.path to partialMatches))
             } else {
                 DocQLResult.Empty
             }
         } else {
-            DocQLResult.Chunks(chunks)
+            DocQLResult.Chunks(mapOf(documentFile.path to chunks))
         }
     }
     
@@ -291,13 +326,13 @@ class DocQLExecutor(
      * Execute chapter query: $.content.chapter("id")
      */
     private suspend fun executeChapterQuery(id: String): DocQLResult {
-        if (parserService == null) {
+        if (parserService == null || documentFile == null) {
             return DocQLResult.Error("No parser service available")
         }
         
         val chunk = parserService.queryChapter(id)
         return if (chunk != null) {
-            DocQLResult.Chunks(listOf(chunk))
+            DocQLResult.Chunks(mapOf(documentFile.path to listOf(chunk)))
         } else {
             DocQLResult.Empty
         }
@@ -317,21 +352,29 @@ class DocQLExecutor(
             it.level == levelNum && it.title.contains(keyword, ignoreCase = true)
         }
         
-        return DocQLResult.TocItems(matchingTocs)
+        return if (matchingTocs.isNotEmpty()) {
+            DocQLResult.TocItems(mapOf(documentFile.path to matchingTocs))
+        } else {
+            DocQLResult.Empty
+        }
     }
     
     /**
      * Execute grep query: $.content.grep("pattern")
      */
     private suspend fun executeGrepQuery(pattern: String): DocQLResult {
-        if (parserService == null) {
+        if (parserService == null || documentFile == null) {
             return DocQLResult.Error("No parser service available")
         }
         
         // Use heading query with pattern as a simple implementation
         // In a real implementation, this would do full-text search
         val chunks = parserService.queryHeading(pattern)
-        return DocQLResult.Chunks(chunks)
+        return if (chunks.isNotEmpty()) {
+            DocQLResult.Chunks(mapOf(documentFile.path to chunks))
+        } else {
+            DocQLResult.Empty
+        }
     }
     
     /**
@@ -339,7 +382,7 @@ class DocQLExecutor(
      */
     private fun executeCodeQuery(nodes: List<DocQLNode>): DocQLResult {
         // TODO: Implement code block extraction
-        return DocQLResult.CodeBlocks(emptyList())
+        return DocQLResult.CodeBlocks(emptyMap())
     }
     
     /**
@@ -347,88 +390,7 @@ class DocQLExecutor(
      */
     private fun executeTableQuery(nodes: List<DocQLNode>): DocQLResult {
         // TODO: Implement table extraction
-        return DocQLResult.Tables(emptyList())
-    }
-    
-    /**
-     * Execute files query: $.files[*] or $.files[?(@.path contains "pattern")]
-     * This queries all available documents from DocumentRegistry
-     */
-    private suspend fun executeFilesQuery(nodes: List<DocQLNode>): DocQLResult {
-        // Get all available paths from DocumentRegistry
-        val allPaths = DocumentRegistry.getAllAvailablePaths()
-        
-        if (allPaths.isEmpty()) {
-            return DocQLResult.Empty
-        }
-        
-        // Convert to FileInfo objects
-        var files = allPaths.map { path ->
-            FileInfo(
-                path = path,
-                name = path.substringAfterLast('/'),
-                directory = if (path.contains('/')) path.substringBeforeLast('/') else "",
-                extension = if (path.contains('.')) path.substringAfterLast('.') else ""
-            )
-        }
-        
-        // Process filters/array access
-        for (node in nodes) {
-            when (node) {
-                is DocQLNode.ArrayAccess.All -> {
-                    // Return all files
-                }
-                
-                is DocQLNode.ArrayAccess.Index -> {
-                    // Return specific index
-                    files = if (node.index < files.size) {
-                        listOf(files[node.index])
-                    } else {
-                        emptyList()
-                    }
-                }
-                
-                is DocQLNode.ArrayAccess.Filter -> {
-                    // Filter files
-                    files = filterFiles(files, node.condition)
-                }
-                
-                else -> {
-                    return DocQLResult.Error("Invalid operation for files query")
-                }
-            }
-        }
-        
-        return DocQLResult.Files(files)
-    }
-    
-    /**
-     * Filter files by condition
-     */
-    private fun filterFiles(items: List<FileInfo>, condition: FilterCondition): List<FileInfo> {
-        return items.filter { file ->
-            when (condition) {
-                is FilterCondition.Equals -> {
-                    when (condition.property) {
-                        "path" -> file.path == condition.value
-                        "name" -> file.name == condition.value
-                        "directory" -> file.directory == condition.value
-                        "extension" -> file.extension == condition.value
-                        else -> false
-                    }
-                }
-                is FilterCondition.Contains -> {
-                    when (condition.property) {
-                        "path" -> file.path.contains(condition.value, ignoreCase = true)
-                        "name" -> file.name.contains(condition.value, ignoreCase = true)
-                        "directory" -> file.directory.contains(condition.value, ignoreCase = true)
-                        "extension" -> file.extension.contains(condition.value, ignoreCase = true)
-                        else -> false
-                    }
-                }
-                else -> false
-            }
-        }
+        return DocQLResult.Tables(emptyMap())
     }
     
     /**

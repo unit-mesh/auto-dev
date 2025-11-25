@@ -88,28 +88,20 @@ class DocQLInvocation(
     }
 
     private suspend fun queryAllDocuments(query: String): ToolResult {
-        // Get all available document paths (both in-memory and indexed)
-        val availablePaths = DocumentRegistry.getAllAvailablePaths()
-        if (availablePaths.isEmpty()) {
-            return ToolResult.Error(
-                "No documents available. Please register or index documents first.", 
-                ToolErrorType.FILE_NOT_FOUND.code
-            )
-        }
-
-        val results = mutableListOf<String>()
-        for (path in availablePaths) {
-            // queryDocument will automatically load from index if not in memory
-            val result = DocumentRegistry.queryDocument(path, query)
-            if (result != null && !isEmptyResult(result)) {
-                results.add("## Document: $path\n${formatDocQLResult(result, path)}")
-            }
-        }
-
-        return if (results.isNotEmpty()) {
-            ToolResult.Success(results.joinToString("\n\n"))
+        // Use the new multi-file query API
+        val result = DocumentRegistry.queryDocuments(query)
+        
+        return if (!isEmptyResult(result)) {
+            ToolResult.Success(formatDocQLResult(result, null))
         } else {
             // Provide helpful suggestions when no results found
+            val availablePaths = DocumentRegistry.getAllAvailablePaths()
+            if (availablePaths.isEmpty()) {
+                return ToolResult.Error(
+                    "No documents available. Please register or index documents first.", 
+                    ToolErrorType.FILE_NOT_FOUND.code
+                )
+            }
             val suggestion = buildQuerySuggestion(query, availablePaths)
             ToolResult.Success("No results found for query: $query\n\n$suggestion")
         }
@@ -144,31 +136,92 @@ class DocQLInvocation(
         return suggestions.joinToString("\n")
     }
 
-    private fun formatDocQLResult(result: cc.unitmesh.devins.document.docql.DocQLResult, documentPath: String): String {
+    private fun formatDocQLResult(result: cc.unitmesh.devins.document.docql.DocQLResult, documentPath: String?): String {
         return when (result) {
             is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
-                result.items.joinToString("\n") { "${it.level}. ${it.title}" }
+                buildString {
+                    appendLine("Found ${result.totalCount} TOC items across ${result.itemsByFile.size} file(s):")
+                    appendLine()
+                    for ((filePath, items) in result.itemsByFile) {
+                        appendLine("## 📄 $filePath")
+                        items.forEach { item ->
+                            appendLine("  ${"  ".repeat(item.level - 1)}${item.level}. ${item.title}")
+                        }
+                        appendLine()
+                    }
+                }
             }
             is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
-                result.items.joinToString("\n") { it.name }
+                buildString {
+                    appendLine("Found ${result.totalCount} entities across ${result.itemsByFile.size} file(s):")
+                    appendLine()
+                    for ((filePath, items) in result.itemsByFile) {
+                        appendLine("## 📄 $filePath")
+                        items.forEach { entity ->
+                            appendLine("  - ${entity.name}")
+                        }
+                        appendLine()
+                    }
+                }
             }
             is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
-                result.items.joinToString("\n---\n") { it.content }
+                buildString {
+                    appendLine("Found ${result.totalCount} content chunks across ${result.itemsByFile.size} file(s):")
+                    appendLine()
+                    for ((filePath, items) in result.itemsByFile) {
+                        appendLine("## 📄 $filePath")
+                        appendLine()
+                        items.forEach { chunk ->
+                            appendLine(chunk.content)
+                            appendLine("---")
+                        }
+                        appendLine()
+                    }
+                }
             }
             is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
-                result.items.joinToString("\n") { it.code }
+                buildString {
+                    appendLine("Found ${result.totalCount} code blocks across ${result.itemsByFile.size} file(s):")
+                    appendLine()
+                    for ((filePath, items) in result.itemsByFile) {
+                        appendLine("## 📄 $filePath")
+                        items.forEach { block ->
+                            appendLine("```${block.language ?: ""}")
+                            appendLine(block.code)
+                            appendLine("```")
+                            appendLine()
+                        }
+                    }
+                }
             }
             is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
-                "Tables found: ${result.items.size}"
+                buildString {
+                    appendLine("Found ${result.totalCount} tables across ${result.itemsByFile.size} file(s):")
+                    for ((filePath, items) in result.itemsByFile) {
+                        appendLine("## 📄 $filePath")
+                        appendLine("  ${items.size} table(s)")
+                    }
+                }
             }
             is cc.unitmesh.devins.document.docql.DocQLResult.Files -> {
                 buildString {
                     appendLine("Found ${result.items.size} files:")
+                    appendLine()
                     result.items.forEach { file ->
-                        appendLine("  - ${file.path}")
+                        appendLine("📄 ${file.path}")
+                        if (file.directory.isNotEmpty()) {
+                            appendLine("   Directory: ${file.directory}")
+                        }
+                        if (file.extension.isNotEmpty()) {
+                            appendLine("   Type: ${file.extension}")
+                        }
+                        if (file.size > 0) {
+                            appendLine("   Size: ${file.size} characters")
+                        }
+                        appendLine()
                     }
                     if (result.items.size > 50) {
-                        appendLine("\n💡 Too many results! Consider filtering by directory:")
+                        appendLine("💡 Too many results! Consider filtering by directory:")
                         appendLine("   \$.files[?(@.path contains \"your-directory\")]")
                     }
                 }
@@ -185,11 +238,11 @@ class DocQLInvocation(
     private fun isEmptyResult(result: cc.unitmesh.devins.document.docql.DocQLResult): Boolean {
         return when (result) {
             is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> true
-            is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> result.items.isEmpty()
-            is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> result.items.isEmpty()
-            is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> result.items.isEmpty()
-            is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> result.items.isEmpty()
-            is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> result.items.isEmpty()
+            is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> result.totalCount == 0
+            is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> result.totalCount == 0
+            is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> result.totalCount == 0
+            is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> result.totalCount == 0
+            is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> result.totalCount == 0
             is cc.unitmesh.devins.document.docql.DocQLResult.Files -> result.items.isEmpty()
             is cc.unitmesh.devins.document.docql.DocQLResult.Error -> true
         }

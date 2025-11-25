@@ -208,6 +208,31 @@ class DocumentAgent(
             
             ---
             
+            ## Multi-File Query Results
+            
+            **All DocQL queries now search across ALL available documents automatically!**
+            
+            Results are grouped by source file for clarity:
+            ```
+            Found 15 chunks across 3 files:
+            
+            ## 📄 docs/architecture.md
+            (chunk content...)
+            
+            ## 📄 docs/design.md  
+            (chunk content...)
+            
+            ## 📄 README.md
+            (chunk content...)
+            ```
+            
+            This means:
+            - ✅ One query searches all docs - no need to loop through files
+            - ✅ Each result shows which file it came from
+            - ✅ Easy to see if information is scattered or centralized
+            
+            ---
+            
             ## DocQL Retry Strategy
             
             When results are empty:

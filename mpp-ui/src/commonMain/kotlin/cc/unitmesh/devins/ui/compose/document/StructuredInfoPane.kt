@@ -346,17 +346,27 @@ private fun DocQLResultView(
             is cc.unitmesh.devins.document.docql.DocQLResult.TocItems -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "找到 ${result.items.size} 个目录项",
+                        text = "找到 ${result.totalCount} 个目录项来自 ${result.itemsByFile.size} 个文件",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(result.items) { item ->
-                            TocItemRow(item, onTocSelected)
+                        result.itemsByFile.forEach { (filePath, items) ->
+                            item {
+                                Text(
+                                    text = "📄 $filePath",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                            items(items) { item ->
+                                TocItemRow(item, onTocSelected)
+                            }
                         }
                     }
                 }
@@ -365,7 +375,7 @@ private fun DocQLResultView(
             is cc.unitmesh.devins.document.docql.DocQLResult.Entities -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "找到 ${result.items.size} 个实体",
+                        text = "找到 ${result.totalCount} 个实体来自 ${result.itemsByFile.size} 个文件",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -374,8 +384,18 @@ private fun DocQLResultView(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(result.items) { entity ->
-                            EntityItemRow(entity, onEntitySelected)
+                        result.itemsByFile.forEach { (filePath, items) ->
+                            item {
+                                Text(
+                                    text = "📄 $filePath",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                            items(items) { entity ->
+                                EntityItemRow(entity, onEntitySelected)
+                            }
                         }
                     }
                 }
@@ -384,7 +404,7 @@ private fun DocQLResultView(
             is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "找到 ${result.items.size} 个内容块",
+                        text = "找到 ${result.totalCount} 个内容块来自 ${result.itemsByFile.size} 个文件",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -393,8 +413,18 @@ private fun DocQLResultView(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(result.items) { chunk ->
-                            ChunkItemCard(chunk)
+                        result.itemsByFile.forEach { (filePath, items) ->
+                            item {
+                                Text(
+                                    text = "📄 $filePath",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                            items(items) { chunk ->
+                                ChunkItemCard(chunk)
+                            }
                         }
                     }
                 }
@@ -423,24 +453,52 @@ private fun DocQLResultView(
             is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "找到 ${result.items.size} 个代码块",
+                        text = "找到 ${result.totalCount} 个代码块来自 ${result.itemsByFile.size} 个文件",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    EmptyState("代码块显示功能尚未实现")
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        result.itemsByFile.forEach { (filePath, items) ->
+                            item {
+                                Text(
+                                    text = "📄 $filePath (${items.size} 个代码块)",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
             is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "找到 ${result.items.size} 个表格",
+                        text = "找到 ${result.totalCount} 个表格来自 ${result.itemsByFile.size} 个文件",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    EmptyState("表格显示功能尚未实现")
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        result.itemsByFile.forEach { (filePath, items) ->
+                            item {
+                                Text(
+                                    text = "📄 $filePath (${items.size} 个表格)",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
             
