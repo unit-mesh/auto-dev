@@ -25,8 +25,9 @@ class DocumentIndexService(
         scope.launch {
             try {
                 _indexingStatus.value = IndexingStatus.Indexing(0, 0)
-                // Search for all files, we will filter by supported types later
-                val files = fileSystem.searchFiles("**/*")
+                // Search for all supported document formats
+                val pattern = "**/*.{md,markdown,pdf,doc,docx,ppt,pptx,txt,html,htm}"
+                val files = fileSystem.searchFiles(pattern)
                 var indexedCount = 0
                 val totalFiles = files.size
                 

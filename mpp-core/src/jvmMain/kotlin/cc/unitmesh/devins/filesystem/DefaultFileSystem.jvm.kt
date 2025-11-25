@@ -97,7 +97,16 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                 return emptyList()
             }
             
-            val regex = pattern.replace("*", ".*").replace("?", ".").toRegex(RegexOption.IGNORE_CASE)
+            val regexPattern = pattern
+                .replace(".", "\\.")
+                .replace("**", ".*")
+                .replace("*", "[^/]*") // Single * should not match path separators
+                .replace("?", ".")
+                .replace("{", "(")
+                .replace("}", ")")
+                .replace(",", "|")
+            
+            val regex = regexPattern.toRegex(RegexOption.IGNORE_CASE)
             val results = mutableListOf<String>()
             
             // 常见的排除目录

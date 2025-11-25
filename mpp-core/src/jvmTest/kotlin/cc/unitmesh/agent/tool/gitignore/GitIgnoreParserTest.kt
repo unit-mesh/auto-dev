@@ -1,0 +1,283 @@
+package cc.unitmesh.agent.tool.gitignore
+
+import org.junit.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class GitIgnoreParserTest {
+    
+    @Test
+    fun testRealGitIgnore() {
+        val gitignoreContent = """
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Node.js / NPM
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.npm
+.yarn
+
+# AutoDev CLI test files
+mpp-ui/test-deepseek.js
+mpp-ui/*.test.js
+
+# User configuration (contains API keys)
+.autodev/
+~/.autodev/
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+.idea
+_exec
+*.zip
+*.jsonl
+userstory_detail
+repositories.json
+.gradle
+.gradle
+.idea
+.qodana
+build
+src/main/gen
+!.idea/runConfigurations
+!.idea/.name
+!.idea/icon.svg
+.DS_Store
+**/.DS_Store
+.intellijPlatform
+**/bin/**
+.kotlin
+.specify
+.vscode
+.github/prompts
+kotlin-js-store/*
+.playwright-mcp
+node_modules
+package-lock.json
+local.properties
+docs
+#Samples
+
+# iOS / Xcode
+## Build generated
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+
+## Obj-C/Swift specific
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## CocoaPods
+Pods/
+*.xcworkspace
+!default.xcworkspace
+Podfile.lock
+
+## Carthage
+Carthage/Build/
+Carthage/Checkouts/
+
+## Swift Package Manager
+.swiftpm/
+.build/
+Package.resolved
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+## Swift Package Manager
+# Packages/
+# Package.pins
+# Package.resolved
+# .swiftpm/
+
+## Xcode Patch
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+## Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+## App Signing
+*.mobileprovision
+*.cer
+*.p12
+*.provisionprofile
+Samples
+
+# Downloaded fonts (auto-downloaded by Gradle, don't commit)
+**/composeResources/font/*.ttf
+**/composeResources/font/*.otf
+NotoColorEmoji.ttf
+NotoSans*.ttf
+NotoSans*.otf
+stdout
+mpp-viewer-web/src/commonMain/resources/mermaid/mermaid.min.js
+/mpp-ui/jcef-bundle/*
+"""
+        
+        val loader = object : GitIgnoreLoader {
+            override fun loadGitIgnoreFile(dirPath: String): String? = if (dirPath == ".") gitignoreContent else null
+            override fun isDirectory(path: String): Boolean = false
+            override fun listDirectories(path: String): List<String> = emptyList()
+            override fun joinPath(vararg components: String): String = components.joinToString("/")
+            override fun getRelativePath(base: String, target: String): String = target
+        }
+        
+        val parser = BaseGitIgnoreParser(".", loader)
+        
+        assertFalse(parser.isIgnored("README.md"), "README.md should not be ignored")
+        assertTrue(parser.isIgnored("node_modules/foo.js"), "node_modules should be ignored")
+        assertTrue(parser.isIgnored("build/output.jar"), "build should be ignored")
+        assertTrue(parser.isIgnored(".DS_Store"), ".DS_Store should be ignored")
+    }
+}

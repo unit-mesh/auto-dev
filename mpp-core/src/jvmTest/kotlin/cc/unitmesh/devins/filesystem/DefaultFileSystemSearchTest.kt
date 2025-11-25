@@ -100,4 +100,58 @@ class DefaultFileSystemSearchTest {
             assertFalse(results.any { it.endsWith("ignored.md") }, "Should NOT find ignored.md")
         }
     }
+    
+    @Test
+    fun shouldSupportMultiExtensionGlob() {
+        withTempDir { tempDir ->
+            // Setup
+            val mdFile = tempDir.resolve("doc.md")
+            val pdfFile = tempDir.resolve("doc.pdf")
+            val txtFile = tempDir.resolve("doc.txt")
+            val otherFile = tempDir.resolve("doc.other")
+            
+            mdFile.writeText("# MD")
+            pdfFile.writeText("PDF")
+            txtFile.writeText("TXT")
+            otherFile.writeText("OTHER")
+            
+            // Test
+            val fileSystem = DefaultFileSystem(tempDir.toString())
+            // Search for md and pdf, but not txt or other
+            val results = fileSystem.searchFiles("*.{md,pdf}", maxDepth = 10, maxResults = 100)
+            
+            println("Found files (glob): $results")
+            
+            // Verify
+            assertTrue(results.any { it.endsWith("doc.md") }, "Should find doc.md")
+            assertTrue(results.any { it.endsWith("doc.pdf") }, "Should find doc.pdf")
+            assertFalse(results.any { it.endsWith("doc.txt") }, "Should NOT find doc.txt")
+            assertFalse(results.any { it.endsWith("doc.other") }, "Should NOT find doc.other")
+        }
+    }
+
+    @Test
+    fun testRealProjectSearch() {
+        val projectRoot = "/Volumes/source/ai/autocrud"
+        val fileSystem = DefaultFileSystem(projectRoot)
+        
+        println("Searching in real project: $projectRoot")
+        val startTime = System.currentTimeMillis()
+        
+        // Pattern used in DocumentIndexService
+        val pattern = "**/*.{md,markdown,pdf,doc,docx,ppt,pptx,txt,html,htm}"
+        val results = fileSystem.searchFiles(pattern, maxDepth = 20, maxResults = 2000)
+        
+        val endTime = System.currentTimeMillis()
+        
+        println("Search completed in ${endTime - startTime}ms")
+        println("Found ${results.size} files:")
+        results.take(20).forEach { println("- $it") }
+        if (results.size > 20) println("... and ${results.size - 20} more")
+        
+        // Verify we found some expected files
+        assertTrue(results.any { it.endsWith("README.md") }, "Should find README.md")
+        // Verify we didn't find ignored files (if any known ones exist, e.g. in build/)
+        assertFalse(results.any { it.contains("/build/") }, "Should not find files in build/")
+    }
 }

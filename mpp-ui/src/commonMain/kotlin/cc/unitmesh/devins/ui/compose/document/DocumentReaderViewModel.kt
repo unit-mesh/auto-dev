@@ -58,6 +58,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     private val indexRepository = cc.unitmesh.devins.db.DocumentIndexDatabaseRepository.getInstance()
     private val indexService =
         cc.unitmesh.devins.service.DocumentIndexService(workspace.fileSystem, indexRepository, scope)
+
     val indexingStatus = indexService.indexingStatus
 
     init {
@@ -122,20 +123,9 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     return@launch
                 }
 
-                // Search for all supported document formats
-                val supportedExtensions = listOf(
-                    "*.md", "*.markdown",  // Markdown
-                    "*.pdf",               // PDF
-                    "*.doc", "*.docx",     // Word documents
-                    "*.ppt", "*.pptx",     // PowerPoint
-                    "*.txt",               // Plain text
-                    "*.html", "*.htm"      // HTML
-                )
-
-                val allDocuments = mutableListOf<String>()
-                supportedExtensions.forEach { pattern ->
-                    allDocuments += fileSystem.searchFiles(pattern, maxDepth = 10, maxResults = 1000)
-                }
+                // Search for all supported document formats in one go
+                val pattern = "*.{md,markdown,pdf,doc,docx,ppt,pptx,txt,html,htm}"
+                val allDocuments = fileSystem.searchFiles(pattern, maxDepth = 10, maxResults = 1000)
 
                 documents = allDocuments.mapNotNull { relativePath ->
                     val name = relativePath.substringAfterLast('/')
