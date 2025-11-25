@@ -139,10 +139,10 @@ object DocumentRegistry {
             }
         }
         
-        // If still not found, fall back to global search
+        // If still not found, return null (don't fall back to avoid infinite loop)
         if (docPair == null) {
-            logger.warn { "Document not found in index: $documentPath, falling back to global search" }
-            return queryDocuments(docqlQuery)
+            logger.warn { "Document not found in index: $documentPath" }
+            return null
         }
         
         val (document, parser) = docPair

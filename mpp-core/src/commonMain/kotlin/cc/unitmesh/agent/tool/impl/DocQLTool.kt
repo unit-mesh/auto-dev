@@ -6,7 +6,10 @@ import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.devins.document.DocumentRegistry
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
+
+private val logger = KotlinLogging.logger {}
 
 @Serializable
 data class DocQLParams(
@@ -95,11 +98,14 @@ class DocQLInvocation(
         }
         
         val result = DocumentRegistry.queryDocument(documentPath, query)
-        if (result != null) {
-            return ToolResult.Success(formatDocQLResult(result, documentPath, params.maxResults ?: 20))
-        } else {
-            return ToolResult.Error("Document not found: $documentPath", ToolErrorType.FILE_NOT_FOUND.code)
+        
+        // If document not found, fall back to global search
+        if (result == null) {
+            logger.info { "Document '$documentPath' not found, falling back to global search" }
+            return queryAllDocuments(query)
         }
+        
+        return ToolResult.Success(formatDocQLResult(result, documentPath, params.maxResults ?: 20))
     }
 
     private suspend fun queryAllDocuments(query: String): ToolResult {
