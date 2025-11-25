@@ -16,6 +16,17 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
+/**
+ * Document load state machine
+ */
+sealed class DocumentLoadState {
+    object Initial : DocumentLoadState()
+    object Loading : DocumentLoadState()
+    data class Success(val documents: List<DocumentFile>) : DocumentLoadState()
+    object Empty : DocumentLoadState()
+    data class Error(val message: String) : DocumentLoadState()
+}
+
 class DocumentReaderViewModel(private val workspace: Workspace) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -35,7 +46,18 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     var selectedDocumentIndexStatus by mutableStateOf<cc.unitmesh.devins.db.DocumentIndexRecord?>(null)
         private set
 
+    // Document load state
+    var documentLoadState by mutableStateOf<DocumentLoadState>(DocumentLoadState.Initial)
+        private set
+
     var documents by mutableStateOf<List<DocumentFile>>(emptyList())
+        private set
+
+    // Search state
+    var searchQuery by mutableStateOf("")
+        private set
+
+    var filteredDocuments by mutableStateOf<List<DocumentFile>>(emptyList())
         private set
 
     var isLoading by mutableStateOf(false)
@@ -66,7 +88,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         initializeLLMService()
         indexService.indexWorkspace()
     }
-    
+
     /**
      * Create a DocumentFile from a relative path
      * Centralizes the logic for DocumentFile creation
@@ -74,14 +96,14 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     private fun createDocumentFile(relativePath: String): DocumentFile {
         val name = relativePath.substringAfterLast('/')
         val extension = relativePath.substringAfterLast('.', "").lowercase()
-        
+
         // Detect format type from file extension
         val formatType = DocumentParserFactory.detectFormat(relativePath)
             ?: DocumentFormatType.PLAIN_TEXT
-        
+
         // Get MIME type from factory
         val mimeType = DocumentParserFactory.getMimeType(relativePath)
-        
+
         return DocumentFile(
             name = name,
             path = relativePath,
@@ -143,6 +165,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     private fun loadDocuments() {
         scope.launch {
             try {
+                documentLoadState = DocumentLoadState.Loading
                 isLoading = true
                 error = null
 
@@ -150,15 +173,17 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                 val rootPath = workspace.rootPath
 
                 if (rootPath == null) {
-                    error = "No workspace root path configured"
+                    val errorMsg = "No workspace root path configured"
+                    error = errorMsg
+                    documentLoadState = DocumentLoadState.Error(errorMsg)
                     return@launch
                 }
 
                 // Search for all supported document formats
                 val pattern = DocumentParserFactory.getSearchPattern()
-                val allDocuments = fileSystem.searchFiles(pattern, maxDepth = 10, maxResults = 1000)
+                val allDocuments = fileSystem.searchFiles(pattern, maxDepth = 20, maxResults = 1000)
 
-                documents = allDocuments.mapNotNull { relativePath ->
+                val loadedDocuments = allDocuments.mapNotNull { relativePath ->
                     try {
                         createDocumentFile(relativePath)
                     } catch (e: Exception) {
@@ -167,12 +192,65 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     }
                 }
 
+                documents = loadedDocuments
+                filteredDocuments = loadedDocuments
+
+                // Update state based on results
+                documentLoadState = if (loadedDocuments.isEmpty()) {
+                    DocumentLoadState.Empty
+                } else {
+                    DocumentLoadState.Success(loadedDocuments)
+                }
+
             } catch (e: Exception) {
-                error = "Failed to load documents: ${e.message}"
+                val errorMsg = "Failed to load documents: ${e.message}"
+                error = errorMsg
+                documentLoadState = DocumentLoadState.Error(errorMsg)
             } finally {
                 isLoading = false
             }
         }
+    }
+
+    /**
+     * Update search query and filter documents
+     */
+    fun updateSearchQuery(query: String) {
+        searchQuery = query
+        filterDocuments()
+    }
+
+    /**
+     * Filter documents based on search query
+     * Supports searching by file name and indexed content
+     */
+    private fun filterDocuments() {
+        filteredDocuments = if (searchQuery.isBlank()) {
+            documents
+        } else {
+            val query = searchQuery.lowercase()
+            documents.filter { doc ->
+                // Search by file name
+                val nameMatch = doc.name.lowercase().contains(query) ||
+                        doc.path.lowercase().contains(query)
+
+                // Search by indexed content
+                val contentMatch = indexService.getIndexStatus(doc.path)?.let { record ->
+                    record.status == "INDEXED" && 
+                    record.content?.lowercase()?.contains(query) == true
+                } ?: false
+
+                nameMatch || contentMatch
+            }
+        }
+    }
+
+    /**
+     * Refresh documents list and re-index
+     */
+    fun refreshDocuments() {
+        loadDocuments()
+        indexService.indexWorkspace()
     }
 
     fun selectDocument(doc: DocumentFile) {

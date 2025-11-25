@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import cc.unitmesh.devins.document.docql.executeDocQL
@@ -42,8 +43,13 @@ fun DocumentReaderPage(
                 maxRatio = 0.2f,
                 first = {
                     DocumentNavigationPane(
-                        documents = viewModel.documents,
-                        onDocumentSelected = { viewModel.selectDocument(it) }
+                        documentLoadState = viewModel.documentLoadState,
+                        documents = viewModel.filteredDocuments,
+                        indexingStatus = viewModel.indexingStatus.collectAsState().value,
+                        searchQuery = viewModel.searchQuery,
+                        onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+                        onDocumentSelected = { viewModel.selectDocument(it) },
+                        onRefresh = { viewModel.refreshDocuments() }
                     )
                 },
                 second = {

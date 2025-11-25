@@ -16,11 +16,17 @@ import cc.unitmesh.devins.document.DocumentFile
 import cc.unitmesh.devins.document.DocumentFolder
 import cc.unitmesh.devins.document.DocumentTreeNode
 import cc.unitmesh.devins.document.ParseStatus
+import cc.unitmesh.devins.service.IndexingStatus
 
 @Composable
 fun DocumentNavigationPane(
+    documentLoadState: DocumentLoadState = DocumentLoadState.Initial,
     documents: List<DocumentFile> = emptyList(),
+    indexingStatus: IndexingStatus = IndexingStatus.Idle,
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
     onDocumentSelected: (DocumentFile) -> Unit = {},
+    onRefresh: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -28,15 +34,147 @@ fun DocumentNavigationPane(
             .fillMaxSize()
             .padding(8.dp)
     ) {
+        // Top toolbar with indexing status and search
+        DocumentNavigationToolbar(
+            indexingStatus = indexingStatus,
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange,
+            onRefresh = onRefresh,
+            searchEnabled = indexingStatus is IndexingStatus.Idle
+        )
+
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        if (documents.isEmpty()) {
-            EmptyDocumentState()
-        } else {
-            DocumentTree(
-                documents = documents,
-                onDocumentSelected = onDocumentSelected
-            )
+
+        // Content based on load state
+        when (documentLoadState) {
+            is DocumentLoadState.Initial -> {
+                // Nothing to show yet
+            }
+            is DocumentLoadState.Loading -> {
+                LoadingDocumentsState()
+            }
+            is DocumentLoadState.Empty -> {
+                EmptyDocumentState()
+            }
+            is DocumentLoadState.Error -> {
+                ErrorDocumentState(documentLoadState.message)
+            }
+            is DocumentLoadState.Success -> {
+                if (documents.isEmpty()) {
+                    // Filtered results are empty
+                    NoSearchResultsState()
+                } else {
+                    DocumentTree(
+                        documents = documents,
+                        onDocumentSelected = onDocumentSelected
+                    )
+                }
+            }
         }
+    }
+}
+
+/**
+ * Document navigation toolbar with indexing status and search
+ */
+@Composable
+private fun DocumentNavigationToolbar(
+    indexingStatus: IndexingStatus,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onRefresh: () -> Unit,
+    searchEnabled: Boolean
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Indexing status indicator
+        when (indexingStatus) {
+            is IndexingStatus.Idle -> {
+                // Show nothing when idle
+            }
+            is IndexingStatus.Indexing -> {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Text(
+                        text = "索引中: ${indexingStatus.current}/${indexingStatus.total}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
+        // Search field
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text(
+                    text = if (searchEnabled) "搜索文档..." else "索引完成后可搜索...",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = AutoDevComposeIcons.Search,
+                    contentDescription = "Search"
+                )
+            },
+            trailingIcon = {
+                Row {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onSearchQueryChange("") }) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Close,
+                                contentDescription = "Clear search",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                    IconButton(onClick = onRefresh) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Refresh,
+                            contentDescription = "Refresh",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            },
+            enabled = searchEnabled,
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun LoadingDocumentsState() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(modifier = Modifier.size(48.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "加载文档中...",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -63,6 +201,64 @@ private fun EmptyDocumentState() {
         )
         Text(
             text = "从项目中添加文档开始使用",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
+    }
+}
+
+@Composable
+private fun ErrorDocumentState(message: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = AutoDevComposeIcons.Error,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "加载失败",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
+    }
+}
+
+@Composable
+private fun NoSearchResultsState() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = AutoDevComposeIcons.Search,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "未找到匹配的文档",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "尝试使用其他关键词",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
