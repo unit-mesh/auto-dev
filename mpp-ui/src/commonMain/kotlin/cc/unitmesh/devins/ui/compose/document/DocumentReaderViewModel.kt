@@ -96,7 +96,15 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
         loadDocuments()
         initializeLLMService()
-        // 不自动索引，等待用户手动触发
+        
+        // 自动开始索引文档（延迟一点以确保文档加载完成）
+        scope.launch {
+            kotlinx.coroutines.delay(500) // 等待 UI 初始化
+            if (documents.isNotEmpty()) {
+                println("🚀 Auto-indexing ${documents.size} documents...")
+                startIndexing()
+            }
+        }
     }
 
     /**

@@ -312,6 +312,25 @@ private fun DocQLSyntaxHelp(
                 item {
                     HorizontalDivider()
                 }
+                
+                // Code queries
+                item {
+                    SyntaxSection(
+                        title = "Source Code (🆕 全局搜索)",
+                        examples = listOf(
+                            """$.content.heading("DocQLExecutor")""" to "Find class/method by name",
+                            """$.entities[?(@.type=="ClassEntity")]""" to "All classes",
+                            """$.entities[?(@.type=="FunctionEntity")]""" to "All methods/functions",
+                            """$.entities[?(@.name~="parse")]""" to "Functions with 'parse' in name",
+                            """$.toc[*]""" to "Code structure (package -> class -> method)"
+                        ),
+                        onQuerySelect = onQuerySelect
+                    )
+                }
+
+                item {
+                    HorizontalDivider()
+                }
 
                 // Operators
                 item {
@@ -320,6 +339,34 @@ private fun DocQLSyntaxHelp(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                
+                // Global search hint
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "💡 未选中文档时，查询将在所有已索引的文档中搜索（包括源代码）",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
                 }
             }
         }

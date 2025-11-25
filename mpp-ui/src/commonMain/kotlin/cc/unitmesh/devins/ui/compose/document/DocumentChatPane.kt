@@ -21,6 +21,8 @@ fun DocumentChatPane(
     viewModel: DocumentReaderViewModel,
     modifier: Modifier = Modifier
 ) {
+    val indexingStatus by viewModel.indexingStatus.collectAsState()
+    
     Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -32,6 +34,39 @@ fun DocumentChatPane(
             Spacer(modifier = Modifier.width(8.dp))
             Text("AI 助手", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.weight(1f))
+            
+            // 索引状态指示器
+            when (indexingStatus) {
+                is cc.unitmesh.devins.service.IndexingStatus.Indexing -> {
+                    val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Indexing
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Text(
+                            text = "${status.current}/${status.total}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                is cc.unitmesh.devins.service.IndexingStatus.Completed -> {
+                    Icon(
+                        AutoDevComposeIcons.CheckCircle,
+                        contentDescription = "索引完成",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                else -> {}
+            }
+            
             IconButton(
                 onClick = { viewModel.clearChatHistory() },
                 modifier = Modifier.size(32.dp)

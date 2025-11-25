@@ -93,9 +93,15 @@ fun DocumentReaderPage(
                                         onDocQLQuery = { query ->
                                             val document = viewModel.selectedDocument
                                             if (document != null) {
+                                                // 查询当前选中的文档
                                                 executeDocQL(query, document, null)
                                             } else {
-                                                cc.unitmesh.devins.document.docql.DocQLResult.Error("没有选中的文档")
+                                                // 全局查询所有已索引的文档
+                                                try {
+                                                    cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
+                                                } catch (e: Exception) {
+                                                    cc.unitmesh.devins.document.docql.DocQLResult.Error("全局查询失败: ${e.message}")
+                                                }
                                             }
                                         }
                                     )
