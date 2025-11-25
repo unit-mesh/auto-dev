@@ -362,7 +362,7 @@ fun CollapsibleLintAnalysisCard(
                     )
 
                     Text(
-                        text = "Code Analysis",
+                        text = "Code Audit",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Companion.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -444,7 +444,6 @@ fun CollapsibleLintAnalysisCard(
                 }
             }
 
-            // Content
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
