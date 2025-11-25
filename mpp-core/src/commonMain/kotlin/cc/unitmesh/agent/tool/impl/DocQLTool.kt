@@ -336,7 +336,7 @@ class DocQLInvocation(
 }
 
 class DocQLTool : BaseExecutableTool<DocQLParams, ToolResult>() {
-    override val name: String = "docql"
+    override val name: String = "DocQL"
     override val description: String = "Executes a DocQL query against available documents (both in-memory and indexed)."
     override val metadata: ToolMetadata = ToolMetadata(
         displayName = "DocQL Query",
