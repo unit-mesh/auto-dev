@@ -208,29 +208,6 @@ class ToolOrchestrator(
     private fun getShellExecutor(tool: cc.unitmesh.agent.tool.impl.ShellTool): ShellExecutor {
         return tool.getExecutor()
     }
-    
-    /**
-     * Execute a chain of tool calls
-     */
-    suspend fun executeToolChain(
-        calls: List<ToolCall>,
-        context: ToolExecutionContext
-    ): List<ToolExecutionResult> {
-        val results = mutableListOf<ToolExecutionResult>()
-        
-        for (call in calls) {
-            val childContext = context.createChildContext()
-            val result = executeToolCall(call.toolName, call.params.mapValues { it.value as Any }, childContext)
-            results.add(result)
-            
-            // Stop execution if a tool fails and no retry is available
-            if (!result.isSuccess && !context.canRetry()) {
-                break
-            }
-        }
-        
-        return results
-    }
 
     private suspend fun executeToolInternal(
         toolName: String,
@@ -256,7 +233,7 @@ class ToolOrchestrator(
                 ToolType.AskAgent -> executeAskAgentTool(tool, params, basicContext)
                 else -> {
                     // Handle special tools that need parameter conversion
-                    when (toolName) {
+                    when (toolName.lowercase()) {
                         "task-boundary" -> executeTaskBoundaryTool(tool, params, basicContext)
                         "docql" -> executeDocQLTool(tool, params, basicContext)
                         else -> {
@@ -615,12 +592,8 @@ class ToolOrchestrator(
             // Cast to ExecutableTool (all new tools should implement this)
             @Suppress("UNCHECKED_CAST")
             val executableTool = tool as? ExecutableTool<Any, ToolResult>
-            
-            if (executableTool == null) {
-                return ToolResult.Error("Tool ${tool.name} does not implement ExecutableTool interface")
-            }
-            
-            // Create invocation with params
+                ?: return ToolResult.Error("Tool ${tool.name} does not implement ExecutableTool interface")
+
             val invocation = executableTool.createInvocation(params)
             
             // Execute the tool
