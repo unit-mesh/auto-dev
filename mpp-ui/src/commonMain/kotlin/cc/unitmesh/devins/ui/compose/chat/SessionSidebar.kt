@@ -45,7 +45,6 @@ fun SessionSidebar(
     modifier: Modifier = Modifier,
     onRenameSession: ((String, String) -> Unit)? = null,
     isExpanded: Boolean = true,
-    onNavigateToDocuments: (() -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
 
@@ -96,8 +95,7 @@ fun SessionSidebar(
                 onRenameSession = onRenameSession,
                 chatHistoryManager = chatHistoryManager,
                 sessionClient = sessionClient,
-                scope = scope,
-                onNavigateToDocuments = onNavigateToDocuments
+                scope = scope
             )
         } else {
             CollapsedSessionSidebarContent(onNewChat = onNewChat)
@@ -140,8 +138,7 @@ private fun ExpandedSessionSidebarContent(
     onRenameSession: ((String, String) -> Unit)?,
     chatHistoryManager: ChatHistoryManager,
     sessionClient: SessionClient?,
-    scope: kotlinx.coroutines.CoroutineScope,
-    onNavigateToDocuments: (() -> Unit)? = null
+    scope: kotlinx.coroutines.CoroutineScope
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -321,32 +318,6 @@ private fun ExpandedSessionSidebarContent(
         }
 
         HorizontalDivider()
-
-        // 智能文档入口按钮
-        if (onNavigateToDocuments != null) {
-            Button(
-                onClick = onNavigateToDocuments,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            ) {
-                Icon(
-                    imageVector = AutoDevComposeIcons.Article,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "知识管理",
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-        }
-
     }
 }
 

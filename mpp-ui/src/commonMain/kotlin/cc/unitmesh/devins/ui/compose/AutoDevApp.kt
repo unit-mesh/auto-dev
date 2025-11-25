@@ -404,9 +404,6 @@ private fun AutoDevContent(
                 },
                 onRenameSession = { sessionId, newTitle ->
                     chatHistoryManager.renameSession(sessionId, newTitle)
-                },
-                onNavigateToDocuments = {
-                    handleAgentTypeChange(AgentType.KNOWLEDGE)
                 }
             )
 
