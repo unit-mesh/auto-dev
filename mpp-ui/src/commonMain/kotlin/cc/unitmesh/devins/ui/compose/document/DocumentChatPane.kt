@@ -22,7 +22,7 @@ fun DocumentChatPane(
     modifier: Modifier = Modifier
 ) {
     val indexingStatus by viewModel.indexingStatus.collectAsState()
-    
+
     Column(modifier = modifier.fillMaxSize()) {
         // 标题栏 - 更突出的索引状态
         Surface(
@@ -45,12 +45,12 @@ fun DocumentChatPane(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        "AI 代码助手",
+                        "Knowledge Agent",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    
+
                     IconButton(
                         onClick = { viewModel.clearChatHistory() },
                         modifier = Modifier.size(32.dp)
@@ -63,7 +63,7 @@ fun DocumentChatPane(
                         )
                     }
                 }
-                
+
                 // 索引状态卡片 - 更显眼
                 when (indexingStatus) {
                     is cc.unitmesh.devins.service.IndexingStatus.Indexing -> {
@@ -98,6 +98,7 @@ fun DocumentChatPane(
                             }
                         }
                     }
+
                     is cc.unitmesh.devins.service.IndexingStatus.Completed -> {
                         val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Completed
                         Card(
@@ -133,6 +134,7 @@ fun DocumentChatPane(
                             }
                         }
                     }
+
                     is cc.unitmesh.devins.service.IndexingStatus.Idle -> {
                         // 空闲状态不显示卡片
                     }
@@ -148,7 +150,7 @@ fun DocumentChatPane(
                 renderer = viewModel.renderer,
                 modifier = Modifier.fillMaxSize()
             )
-            
+
             // 当没有消息且索引完成时显示欢迎提示
             if (indexingStatus is cc.unitmesh.devins.service.IndexingStatus.Completed) {
                 // 欢迎提示会在 AgentMessageList 为空时自动显示（通过 renderer 的逻辑）
@@ -187,34 +189,34 @@ private fun WelcomeMessage(
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = "欢迎使用 AI 代码助手",
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.primary
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = "我可以帮你理解项目代码、查找类和方法、解释代码逻辑",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         Text(
             text = "💡 试试这些查询：",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // 快速查询建议
         val quickQueries = listOf(
             "What is DocQLExecutor?" to "了解 DocQL 执行器",
@@ -222,7 +224,7 @@ private fun WelcomeMessage(
             "List all classes in document package" to "查看文档包的所有类",
             "Find all parse methods" to "查找所有解析方法"
         )
-        
+
         quickQueries.forEach { (query, description) ->
             OutlinedCard(
                 onClick = { onQuickQuery(query) },
@@ -300,12 +302,13 @@ private fun ChatInputArea(
                             when {
                                 // Enter to send (without Shift)
                                 event.key == Key.Enter &&
-                                !event.isShiftPressed &&
-                                textFieldValue.text.isNotBlank() -> {
+                                    !event.isShiftPressed &&
+                                    textFieldValue.text.isNotBlank() -> {
                                     onSendMessage(textFieldValue.text)
                                     textFieldValue = TextFieldValue("")
                                     true
                                 }
+
                                 else -> false
                             }
                         } else {
