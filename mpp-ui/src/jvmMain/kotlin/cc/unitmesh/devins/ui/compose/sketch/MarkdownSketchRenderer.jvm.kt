@@ -1,16 +1,18 @@
 package cc.unitmesh.devins.ui.compose.sketch
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.MarkdownElement
 import com.mikepenz.markdown.compose.components.CurrentComponentsBridge
@@ -24,6 +26,7 @@ import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
+import org.intellij.markdown.ast.ASTNode
 
 
 /**
@@ -134,11 +137,98 @@ fun MarkdownSuccess(
     components: MarkdownComponents,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier) {
-        state.node.children.forEach { node ->
-            MarkdownElement(node, components, state.content)
+    var showFileViewerDialog by remember { mutableStateOf(false) }
+    var selectedFilePath by remember { mutableStateOf<String?>(null) }
+
+    CompositionLocalProvider(
+        LocalOnOpenFile provides { filePath ->
+            selectedFilePath = filePath
+            showFileViewerDialog = true
         }
+    ) {
+        Column(modifier) {
+            state.node.children.forEach { node ->
+                MarkdownElementWithFileLinks(
+                    node = node,
+                    components = components,
+                    content = state.content
+                )
+            }
+        }
+    }
+
+    // Show file viewer dialog
+    if (showFileViewerDialog && selectedFilePath != null) {
+        cc.unitmesh.devins.ui.compose.agent.codereview.FileViewerDialog(
+            filePath = selectedFilePath!!,
+            onClose = { showFileViewerDialog = false }
+        )
     }
 }
 
+/**
+ * Custom MarkdownElement that handles file:// links with icons
+ */
+@Composable
+fun MarkdownElementWithFileLinks(
+    node: ASTNode,
+    components: MarkdownComponents,
+    content: String
+) {
+    val onOpenFile = LocalOnOpenFile.current
+
+    if (node.type == org.intellij.markdown.MarkdownElementTypes.INLINE_LINK) {
+        val linkDestination = node.children.firstOrNull {
+            it.type == org.intellij.markdown.MarkdownElementTypes.LINK_DESTINATION
+        }
+        val linkText = node.children.firstOrNull {
+            it.type == org.intellij.markdown.MarkdownElementTypes.LINK_TEXT
+        }
+
+        val url = linkDestination?.let { content.substring(it.startOffset, it.endOffset) } ?: ""
+        val text = linkText?.let {
+            content.substring(it.startOffset, it.endOffset).removeSurrounding("[", "]")
+        } ?: url
+
+        // Check if this is a file:// link
+        if (url.startsWith("file://")) {
+            val filePath = url.removePrefix("file://")
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+                        val root = cc.unitmesh.devins.workspace.WorkspaceManager.getCurrentOrEmpty().rootPath
+                        val absolutePath = if (filePath.startsWith("/")) {
+                            filePath
+                        } else if (root != null) {
+                            "$root/$filePath"
+                        } else {
+                            filePath
+                        }
+                        onOpenFile(absolutePath)
+                    }
+                    .padding(horizontal = 2.dp, vertical = 1.dp)
+            ) {
+                Icon(
+                    imageVector = cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons.Visibility,
+                    contentDescription = "View File",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                androidx.compose.material3.Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                    )
+                )
+            }
+            return
+        }
+    }
+
+    MarkdownElement(node, components, content)
+}
 
