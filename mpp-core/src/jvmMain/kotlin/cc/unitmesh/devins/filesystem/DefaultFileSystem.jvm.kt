@@ -10,6 +10,14 @@ import kotlin.streams.toList
  */
 actual class DefaultFileSystem actual constructor(private val projectPath: String) : ProjectFileSystem {
     
+    private val gitIgnoreParser: cc.unitmesh.agent.tool.gitignore.GitIgnoreParser? by lazy {
+        try {
+            cc.unitmesh.agent.tool.gitignore.GitIgnoreParser(projectPath)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     actual override fun getProjectPath(): String? = projectPath
     
     actual override fun readFile(path: String): String? {
@@ -98,12 +106,22 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                 "dist", ".gradle", "venv", "__pycache__", "bin"
             )
             
+            // Reload gitignore patterns before search
+            gitIgnoreParser?.reload()
+            
             Files.walk(projectRoot, maxDepth).use { stream ->
                 stream.filter { path ->
                     // 只保留普通文件
-                    path.isRegularFile() &&
+                    if (!path.isRegularFile()) return@filter false
+                    
                     // 排除在排除目录中的文件
-                    !path.any { it.fileName.toString() in excludeDirs }
+                    if (path.any { it.fileName.toString() in excludeDirs }) return@filter false
+                    
+                    // Check gitignore
+                    val relativePath = projectRoot.relativize(path).toString()
+                    if (gitIgnoreParser?.isIgnored(relativePath) == true) return@filter false
+                    
+                    true
                 }
                 .limit(maxResults.toLong())
                 .forEach { path ->

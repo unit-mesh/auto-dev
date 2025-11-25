@@ -74,9 +74,30 @@ class DefaultFileSystemSearchTest {
             } else {
                 println("HYPOTHESIS REJECTED: README found or limit not reached as expected")
             }
+        }
+    }
+    
+    @Test
+    fun shouldRespectGitIgnore() {
+        withTempDir { tempDir ->
+            // Setup
+            val gitIgnore = tempDir.resolve(".gitignore")
+            val ignoredFile = tempDir.resolve("ignored.md")
+            val includedFile = tempDir.resolve("included.md")
             
-            // We actually want to fix this, so eventually this test should FAIL if we assert foundReadme
-            // But for now, let's just see the behavior
+            gitIgnore.writeText("ignored.md")
+            ignoredFile.writeText("# Ignored")
+            includedFile.writeText("# Included")
+            
+            // Test
+            val fileSystem = DefaultFileSystem(tempDir.toString())
+            val results = fileSystem.searchFiles("*.md", maxDepth = 10, maxResults = 100)
+            
+            println("Found files (gitignore): $results")
+            
+            // Verify
+            assertTrue(results.any { it.endsWith("included.md") }, "Should find included.md")
+            assertFalse(results.any { it.endsWith("ignored.md") }, "Should NOT find ignored.md")
         }
     }
 }
