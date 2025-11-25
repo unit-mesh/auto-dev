@@ -77,7 +77,7 @@ object McpToolConfigManager {
      */
     fun init(toolConfig: ToolConfigFile) {
         if (toolConfig.mcpServers.isNullOrEmpty()) {
-            logger.info { "No MCP servers configured, skipping initialization" }
+            logger.debug { "No MCP servers configured, skipping initialization" }
             return
         }
 

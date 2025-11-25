@@ -125,10 +125,11 @@ class JsDocumentAgent(
                     cc.unitmesh.devins.document.DocumentRegistry.registerDocument(path, parsedDoc, parser)
                     true
                 } else {
-                    console.error("No parser found for file: $path")
+                    // Silently skip files without parsers - this is expected for unknown file types
                     false
                 }
             } catch (e: Exception) {
+                // Only log actual errors, not expected skips
                 console.error("Failed to register document: ${e.message}")
                 false
             }

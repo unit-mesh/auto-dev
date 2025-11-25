@@ -68,21 +68,21 @@ class ToolOrchestrator(
             val isShellTool = toolType == ToolType.Shell
             var liveSession: LiveShellSession? = null
             
-            logger.info { "🔍 Checking tool: $toolName, isShellTool: $isShellTool" }
+            logger.debug { "Checking tool: $toolName, isShellTool: $isShellTool" }
             
             if (isShellTool) {
                 // 尝试使用 PTY 执行
                 val tool = registry.getTool(toolName)
-                logger.info { "🔧 Got tool: ${tool?.let { it::class.simpleName }}" }
+                logger.debug { "Got tool: ${tool?.let { it::class.simpleName }}" }
                 
                 if (tool is cc.unitmesh.agent.tool.impl.ShellTool) {
                     val shellExecutor = getShellExecutor(tool)
-                    logger.info { "🎯 Shell executor: ${shellExecutor::class.simpleName}" }
-                    logger.info { "✅ Is LiveShellExecutor: ${shellExecutor is LiveShellExecutor}" }
+                    logger.debug { "Shell executor: ${shellExecutor::class.simpleName}" }
+                    logger.debug { "Is LiveShellExecutor: ${shellExecutor is LiveShellExecutor}" }
                     
                     if (shellExecutor is LiveShellExecutor) {
                         val supportsLive = shellExecutor.supportsLiveExecution()
-                        logger.info { "🚀 Supports live execution: $supportsLive" }
+                        logger.debug { "Supports live execution: $supportsLive" }
                         
                         if (supportsLive) {
                             // 准备 shell 执行配置
@@ -93,7 +93,7 @@ class ToolOrchestrator(
                                     startTime, Clock.System.now().toEpochMilliseconds()
                                 )
                             
-                            logger.info { "📝 Starting live execution for command: $command" }
+                            logger.debug { "Starting live execution for command: $command" }
                             
                             val shellConfig = ShellExecutionConfig(
                                 workingDirectory = params["workingDirectory"] as? String ?: context.workingDirectory,
@@ -104,17 +104,17 @@ class ToolOrchestrator(
                             
                             // 启动 PTY 会话
                             liveSession = shellExecutor.startLiveExecution(command, shellConfig)
-                            logger.info { "🎬 Live session started: ${liveSession.sessionId}" }
+                            logger.debug { "Live session started: ${liveSession.sessionId}" }
                             
                             // 立即通知 renderer 添加 LiveTerminal（在执行之前！）
-                            logger.info { "🖥️ Adding LiveTerminal to renderer" }
+                            logger.debug { "Adding LiveTerminal to renderer" }
                             renderer.addLiveTerminal(
                                 sessionId = liveSession.sessionId,
                                 command = liveSession.command,
                                 workingDirectory = liveSession.workingDirectory,
                                 ptyHandle = liveSession.ptyHandle
                             )
-                            logger.info { "✨ LiveTerminal added successfully!" }
+                            logger.debug { "LiveTerminal added successfully!" }
                         }
                     }
                 }

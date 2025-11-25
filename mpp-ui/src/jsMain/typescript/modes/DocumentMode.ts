@@ -1,6 +1,6 @@
 /**
  * Document Mode - Automated document query with DocQL
- * 
+ *
  * Similar to ReviewMode, this mode:
  * 1. Scans for documents in the project
  * 2. Registers documents with the DocumentRegistry
@@ -172,19 +172,32 @@ export async function runDocument(
             console.log(semanticChalk.info('📖 Scanning project for documents...'));
             const foundDocs = scanDocuments(projectPath);
             documentsScanned = foundDocs.length;
-            console.log(semanticChalk.info(`Found ${foundDocs.length} documents`));
-            console.log();
+            console.log(semanticChalk.muted(`   Found ${foundDocs.length} documents`));
 
             if (foundDocs.length > 0) {
-                console.log(semanticChalk.info('📝 Registering documents...'));
-                for (const docPath of foundDocs) {
-                    const relativePath = path.relative(projectPath, docPath);
-                    console.log(semanticChalk.muted(`  • ${relativePath}`));
+                // Register documents silently - only show progress for large sets
+                const showProgress = foundDocs.length > 100;
+                let lastProgress = 0;
 
+                for (let i = 0; i < foundDocs.length; i++) {
+                    const docPath = foundDocs[i];
                     const registered = await registerDocument(docPath, projectPath, agent);
                     if (registered) {
                         documentsRegistered++;
                     }
+
+                    // Show progress every 25% for large document sets
+                    if (showProgress) {
+                        const progress = Math.floor((i + 1) / foundDocs.length * 100);
+                        if (progress >= lastProgress + 25) {
+                            process.stdout.write(`\r   Registering... ${progress}%`);
+                            lastProgress = progress;
+                        }
+                    }
+                }
+
+                if (showProgress) {
+                    process.stdout.write('\r');  // Clear progress line
                 }
                 console.log(semanticChalk.success(`✅ Registered ${documentsRegistered}/${documentsScanned} documents`));
                 console.log();

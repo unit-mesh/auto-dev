@@ -29,9 +29,9 @@ object LoggingInitializer {
             
             isInitialized = true
             
-            logger.info { "Logging initialized for platform: ${Platform.name}" }
-            logger.info { "Log level: ${config.logLevel}" }
-            logger.info { "Log directory: ${config.baseLogDir}" }
+            logger.debug { "Logging initialized for platform: ${Platform.name}" }
+            logger.debug { "Log level: ${config.logLevel}" }
+            logger.debug { "Log directory: ${config.baseLogDir}" }
             logger.debug { "File logging enabled: ${config.enableFileLogging}" }
             logger.debug { "Console logging enabled: ${config.enableConsoleLogging}" }
 

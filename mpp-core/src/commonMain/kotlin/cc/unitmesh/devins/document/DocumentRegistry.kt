@@ -58,7 +58,7 @@ object DocumentRegistry {
     fun initializePlatformParsers() {
         if (!initialized) {
             initialized = true
-            logger.info { "Initializing platform-specific document parsers" }
+            logger.debug { "Initializing platform-specific document parsers" }
             platformInitialize()
         }
     }
@@ -157,7 +157,8 @@ object DocumentRegistry {
             val executor = DocQLExecutor(document, parser)
             executor.execute(query)
         } catch (e: Exception) {
-            logger.error(e) { "Failed to execute DocQL query: $docqlQuery" }
+            // Only log once per unique query error to avoid spam
+            logger.debug { "Failed to execute DocQL query: $docqlQuery, Caused by: '${e.message}'" }
             DocQLResult.Error(e.message ?: "Query execution failed")
         }
     }
@@ -183,7 +184,7 @@ object DocumentRegistry {
                 val query = parseDocQL(docqlQuery)
                 executeFilesQuery(query, pathsToQuery)
             } catch (e: Exception) {
-                logger.error(e) { "Failed to execute files query: $docqlQuery" }
+                logger.debug { "Failed to execute files query: $docqlQuery, Caused by: '${e.message}'" }
                 DocQLResult.Error(e.message ?: "Files query execution failed")
             }
         }

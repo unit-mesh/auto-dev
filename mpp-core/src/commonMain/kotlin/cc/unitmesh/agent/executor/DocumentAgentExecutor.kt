@@ -62,7 +62,7 @@ class DocumentAgentExecutor(
         conversationManager = ConversationManager(llmService, systemPrompt)
 
         val docPath = task.documentPath ?: "unspecified document"
-        logger.info { "Starting document query: '${task.query}' for $docPath" }
+        logger.debug { "Starting document query: '${task.query}' for $docPath" }
 
         val initialUserMessage = buildInitialUserMessage(task)
         val finalResponse = StringBuilder()
@@ -94,7 +94,7 @@ class DocumentAgentExecutor(
             val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
             if (toolCalls.isEmpty()) {
                 // No tool calls, query is complete
-                logger.info { "No tool calls found, query complete" }
+                logger.debug { "No tool calls found, query complete" }
                 renderer.renderTaskComplete()
                 finalResponse.append(llmResponse.toString())
                 break
@@ -107,7 +107,7 @@ class DocumentAgentExecutor(
 
             // Check if query is complete
             if (isQueryComplete(llmResponse.toString())) {
-                logger.info { "Query complete indicator found" }
+                logger.debug { "Query complete indicator found" }
                 renderer.renderTaskComplete()
                 finalResponse.append(llmResponse.toString())
                 break
@@ -183,7 +183,7 @@ class DocumentAgentExecutor(
      * Execute tool calls sequentially
      */
     private suspend fun executeToolCalls(toolCalls: List<ToolCall>): List<Triple<String, Map<String, Any>, ToolExecutionResult>> {
-        logger.info { "Executing ${toolCalls.size} tool calls" }
+        logger.debug { "Executing ${toolCalls.size} tool calls" }
         val results = mutableListOf<Triple<String, Map<String, Any>, ToolExecutionResult>>()
 
         for (toolCall in toolCalls) {
@@ -194,7 +194,7 @@ class DocumentAgentExecutor(
             }
 
             try {
-                logger.info { "Executing tool: $toolName with params: $paramsStr" }
+                logger.debug { "Executing tool: $toolName with params: $paramsStr" }
                 renderer.renderToolCall(toolName, paramsStr)
 
                 val context = OrchestratorContext(

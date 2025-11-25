@@ -157,7 +157,7 @@ class ToolRegistry(
             ToolProviderRegistry.register(BuiltinToolsProvider())
         }
 
-        logger.info { "🔧 Registering built-in tools...: llmService: $llmService, subAgentManager: $subAgentManager" }
+        logger.debug { "Registering built-in tools..." }
         val dependencies = ToolDependencies(
             fileSystem = fileSystem,
             shellExecutor = shellExecutor,
@@ -179,7 +179,7 @@ class ToolRegistry(
             }
         }
 
-        logger.info { "🔧 Registered ${allBuiltinTools.size} built-in tools (always enabled)" }
+        logger.debug { "Registered ${allBuiltinTools.size} built-in tools" }
     }
 }
 

@@ -146,6 +146,14 @@ export class CliRenderer extends BaseRenderer {
           description: 'content finder',
           details: `Searching for pattern: ${params.pattern || 'unknown'}${params.path ? ` in ${params.path}` : ''}`
         };
+      case 'DocQL':
+        const query = params.query || 'query';
+        const maxResults = params.maxResults ? ` (max: ${params.maxResults})` : '';
+        return {
+          name: 'DocQL',
+          description: 'tool',
+          details: `${query}${maxResults}`
+        };
       default:
         return {
           name: toolName,
@@ -265,6 +273,10 @@ export class CliRenderer extends BaseRenderer {
       case 'grep':
         const matches = output.split('\n').filter(line => line.trim()).length;
         return `Found ${matches} matches`;
+
+      case 'DocQL':
+        // Simplify DocQL output - just show success
+        return 'Query executed';
 
       default:
         return 'Operation completed';
