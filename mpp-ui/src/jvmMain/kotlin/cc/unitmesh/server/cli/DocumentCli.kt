@@ -157,6 +157,13 @@ object DocumentCli {
                 }
                 println()
                 
+                // Register index provider to bridge DocumentRegistry with DocumentIndexService
+                println("🔗 Registering document index provider...")
+                val provider = cc.unitmesh.devins.service.DocumentIndexServiceProvider(indexRepository)
+                DocumentRegistry.setIndexProvider(provider)
+                println("✅ Index provider registered")
+                println()
+                
                 // Create DocumentAgent
                 println("🧠 Creating DocumentAgent...")
                 

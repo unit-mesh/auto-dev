@@ -88,6 +88,11 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     init {
         // Initialize platform-specific parsers (Tika on JVM, etc.)
         DocumentRegistry.initializePlatformParsers()
+        
+        // Register index provider to bridge DocumentRegistry with DocumentIndexService
+        val provider = cc.unitmesh.devins.service.DocumentIndexServiceProvider(indexRepository)
+        DocumentRegistry.setIndexProvider(provider)
+        println("DocumentIndexProvider registered with DocumentRegistry")
 
         loadDocuments()
         initializeLLMService()

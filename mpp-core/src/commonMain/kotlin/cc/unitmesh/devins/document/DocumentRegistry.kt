@@ -42,6 +42,12 @@ object DocumentRegistry {
      */
     private var initialized = false
     
+    /**
+     * Optional provider for accessing indexed documents from persistent storage
+     * This allows querying documents that were indexed but not in memory cache
+     */
+    private var indexProvider: DocumentIndexProvider? = null
+    
     init {
         // Register Markdown parser (available on all platforms)
         DocumentParserFactory.registerParser(DocumentFormatType.MARKDOWN) { MarkdownDocumentParser() }
@@ -110,13 +116,25 @@ object DocumentRegistry {
     
     /**
      * Query a registered document using DocQL
+     * If document is not in memory but available in index, it will be loaded first
      * 
      * @param documentPath Document path
      * @param docqlQuery DocQL query string (e.g., "$.content.heading('title')")
      * @return Query result or null if document not found
      */
     suspend fun queryDocument(documentPath: String, docqlQuery: String): DocQLResult? {
-        val (document, parser) = getDocument(documentPath) ?: return null
+        // Try to get from memory first
+        var docPair = getDocument(documentPath)
+        
+        // If not in memory, try loading from index
+        if (docPair == null && indexProvider != null) {
+            val loaded = loadFromIndex(documentPath)
+            if (loaded) {
+                docPair = getDocument(documentPath)
+            }
+        }
+        
+        val (document, parser) = docPair ?: return null
         
         if (document !is DocumentFile) {
             logger.warn { "Document at $documentPath is not a file" }
@@ -142,17 +160,107 @@ object DocumentRegistry {
     }
     
     /**
-     * Get all registered document paths
+     * Set the document index provider
+     * This allows access to documents stored in persistent storage
+     * 
+     * @param provider Document index provider or null to clear
+     */
+    fun setIndexProvider(provider: DocumentIndexProvider?) {
+        indexProvider = provider
+        logger.info { "Document index provider ${if (provider != null) "set" else "cleared"}" }
+    }
+    
+    /**
+     * Get the current document index provider
+     */
+    fun getIndexProvider(): DocumentIndexProvider? {
+        return indexProvider
+    }
+    
+    /**
+     * Get all registered document paths (in-memory only)
+     * For all available paths including indexed documents, use getAllAvailablePaths()
      */
     fun getRegisteredPaths(): List<String> {
         return documentCache.keys.toList()
     }
     
     /**
-     * Check if a document is registered
+     * Get all available document paths (both in-memory and indexed)
+     * 
+     * @return Combined list of paths from memory cache and index provider
+     */
+    suspend fun getAllAvailablePaths(): List<String> {
+        val memoryPaths = documentCache.keys.toSet()
+        val indexedPaths = indexProvider?.getIndexedPaths()?.toSet() ?: emptySet()
+        return (memoryPaths + indexedPaths).sorted()
+    }
+    
+    /**
+     * Check if a document is registered in memory
      */
     fun isDocumentRegistered(path: String): Boolean {
         return documentCache.containsKey(path)
+    }
+    
+    /**
+     * Check if a document is available (either in memory or indexed)
+     * 
+     * @param path Document path
+     * @return true if document is in memory or indexed
+     */
+    suspend fun isDocumentAvailable(path: String): Boolean {
+        if (documentCache.containsKey(path)) {
+            return true
+        }
+        return indexProvider?.isIndexed(path) ?: false
+    }
+    
+    /**
+     * Load a document from index provider and register it in memory
+     * This is automatically called by queryDocument when needed
+     * 
+     * @param path Document path
+     * @return true if successfully loaded and registered
+     */
+    suspend fun loadFromIndex(path: String): Boolean {
+        if (documentCache.containsKey(path)) {
+            return true // Already in memory
+        }
+        
+        val provider = indexProvider ?: return false
+        val (content, formatType) = provider.loadIndexedDocument(path)
+        
+        if (content == null || formatType == null) {
+            logger.warn { "Document not found in index: $path" }
+            return false
+        }
+        
+        return try {
+            val parser = DocumentParserFactory.createParser(formatType)
+            if (parser == null) {
+                logger.warn { "No parser available for format: $formatType" }
+                return false
+            }
+            
+            val docFile = DocumentFile(
+                name = path.substringAfterLast('/'),
+                path = path,
+                metadata = DocumentMetadata(
+                    lastModified = 0,
+                    fileSize = content.length.toLong(),
+                    formatType = formatType
+                )
+            )
+            
+            val parsedDoc = parser.parse(docFile, content)
+            registerDocument(path, parsedDoc, parser)
+            logger.info { "Loaded document from index: $path" }
+            true
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to load document from index: $path" }
+            false
+        }
     }
 }
 

@@ -15,14 +15,14 @@ data class DocQLParams(
 
 object DocQLSchema : DeclarativeToolSchema(
     description = """
-        Executes a DocQL query against registered documents.
+        Executes a DocQL query against available documents (both in-memory and indexed).
         
         IMPORTANT: Use 'documentPath' parameter to target specific documents when:
         - Document name matches your query keywords (check available documents list)
         - You want to avoid querying irrelevant documents
         - You have identified relevant documents through keyword matching
         
-        If documentPath is not provided, searches all registered documents.
+        If documentPath is not provided, searches all available documents (memory + indexed).
     """.trimIndent(),
     properties = mapOf(
         "query" to string(
@@ -63,7 +63,7 @@ class DocQLInvocation(
     override fun getDescription(): String = if (params.documentPath != null) {
         "Executing DocQL query: ${params.query} on ${params.documentPath}"
     } else {
-        "Executing DocQL query: ${params.query} on all registered documents"
+        "Executing DocQL query: ${params.query} on all available documents"
     }
 
     override suspend fun execute(context: ToolExecutionContext): ToolResult {
@@ -88,13 +88,18 @@ class DocQLInvocation(
     }
 
     private suspend fun queryAllDocuments(query: String): ToolResult {
-        val registeredPaths = DocumentRegistry.getRegisteredPaths()
-        if (registeredPaths.isEmpty()) {
-            return ToolResult.Error("No documents registered. Please register documents first.", ToolErrorType.FILE_NOT_FOUND.code)
+        // Get all available document paths (both in-memory and indexed)
+        val availablePaths = DocumentRegistry.getAllAvailablePaths()
+        if (availablePaths.isEmpty()) {
+            return ToolResult.Error(
+                "No documents available. Please register or index documents first.", 
+                ToolErrorType.FILE_NOT_FOUND.code
+            )
         }
 
         val results = mutableListOf<String>()
-        for (path in registeredPaths) {
+        for (path in availablePaths) {
+            // queryDocument will automatically load from index if not in memory
             val result = DocumentRegistry.queryDocument(path, query)
             if (result != null && !isEmptyResult(result)) {
                 results.add("## Document: $path\n${formatDocQLResult(result, path)}")
@@ -105,7 +110,7 @@ class DocQLInvocation(
             ToolResult.Success(results.joinToString("\n\n"))
         } else {
             // Provide helpful suggestions when no results found
-            val suggestion = buildQuerySuggestion(query, registeredPaths)
+            val suggestion = buildQuerySuggestion(query, availablePaths)
             ToolResult.Success("No results found for query: $query\n\n$suggestion")
         }
     }
@@ -180,7 +185,7 @@ class DocQLInvocation(
 
 class DocQLTool : BaseExecutableTool<DocQLParams, ToolResult>() {
     override val name: String = "docql"
-    override val description: String = "Executes a DocQL query against a registered document."
+    override val description: String = "Executes a DocQL query against available documents (both in-memory and indexed)."
     override val metadata: ToolMetadata = ToolMetadata(
         displayName = "DocQL Query",
         tuiEmoji = "📄",

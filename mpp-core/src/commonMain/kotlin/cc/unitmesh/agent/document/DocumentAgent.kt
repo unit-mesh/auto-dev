@@ -150,20 +150,20 @@ class DocumentAgent(
         )
     }
 
-    private fun buildSystemPrompt(context: DocumentContext): String {
-        // Get list of registered documents
-        val registeredDocs = cc.unitmesh.devins.document.DocumentRegistry.getRegisteredPaths()
-        val docsInfo = if (registeredDocs.isNotEmpty()) {
+    private suspend fun buildSystemPrompt(context: DocumentContext): String {
+        // Get list of available documents (both in-memory and indexed)
+        val availableDocs = cc.unitmesh.devins.document.DocumentRegistry.getAllAvailablePaths()
+        val docsInfo = if (availableDocs.isNotEmpty()) {
             """
             ## Available Documents
             
-            The following documents are registered and ready to query:
-            ${registeredDocs.joinToString("\n") { "- $it" }}
+            The following documents are available to query:
+            ${availableDocs.joinToString("\n") { "- $it" }}
             
-            **Total: ${registeredDocs.size} document(s)**
+            **Total: ${availableDocs.size} document(s)**
             """.trimIndent()
         } else {
-            "## Available Documents\n\nNo documents currently registered."
+            "## Available Documents\n\nNo documents currently available."
         }
 
         return """
@@ -194,9 +194,9 @@ class DocumentAgent(
                         
             ## Tool Priority
             
-            1. **Always use DocQL first** for any registered document.
-            2. Use filesystem tools (grep/glob/read-file) **only if DocQL reports “No documents registered”**.
-            3. Never use filesystem tools on registered docs.
+            1. **Always use DocQL first** for any available document (both in-memory and indexed).
+            2. Use filesystem tools (grep/glob/read-file) **only if DocQL reports "No documents available"**.
+            3. Never use filesystem tools on available docs.
             
             ---
             
