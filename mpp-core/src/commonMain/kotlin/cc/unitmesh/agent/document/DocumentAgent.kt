@@ -151,20 +151,8 @@ class DocumentAgent(
     }
 
     private suspend fun buildSystemPrompt(context: DocumentContext): String {
-        // Get list of available documents (both in-memory and indexed)
-        val availableDocs = cc.unitmesh.devins.document.DocumentRegistry.getAllAvailablePaths()
-        val docsInfo = if (availableDocs.isNotEmpty()) {
-            """
-            ## Available Documents
-            
-            The following documents are available to query:
-            ${availableDocs.joinToString("\n") { "- $it" }}
-            
-            **Total: ${availableDocs.size} document(s)**
-            """.trimIndent()
-        } else {
-            "## Available Documents\n\nNo documents currently available."
-        }
+        // Get compressed summary of available documents
+        val docsInfo = cc.unitmesh.devins.document.DocumentRegistry.getCompressedPathsSummary(threshold = 20)
 
         return """
             You are a helpful document assistant with advanced query capabilities.
@@ -195,8 +183,9 @@ class DocumentAgent(
             ## Tool Priority
             
             1. **Always use DocQL first** for any available document (both in-memory and indexed).
-            2. Use filesystem tools (grep/glob/read-file) **only if DocQL reports "No documents available"**.
-            3. Never use filesystem tools on available docs.
+            2. Use `\$.files[*]` to list all files if directory structure doesn't show details.
+            3. Use filesystem tools (grep/glob/read-file) **only if DocQL reports "No documents available"**.
+            4. Never use filesystem tools on available docs.
             
             ---
             
@@ -205,6 +194,17 @@ class DocumentAgent(
             1. **Plan**: Analyze the query and identify target documents from filename patterns
             2. **Query**: Make **exactly one** DocQL call with appropriate query and documentPath
             3. **Respond**: After tool results, synthesize answer naturally (no more tool use)
+            
+            ---
+            
+            ## Querying Available Documents
+            
+            When document list shows compressed directory structure:
+            
+            1. **List all files**: Use `\$.files[*]` to see complete file list
+            2. **Filter by directory**: Use `\$.files[?(@.path contains "docs")]`
+            3. **Filter by extension**: Use `\$.files[?(@.path contains ".md")]`
+            4. **Combine filters**: Use `\$.files[?(@.path contains "design")]`
             
             ---
             

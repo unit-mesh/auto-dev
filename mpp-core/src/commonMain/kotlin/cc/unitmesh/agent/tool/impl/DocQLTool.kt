@@ -161,6 +161,18 @@ class DocQLInvocation(
             is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> {
                 "Tables found: ${result.items.size}"
             }
+            is cc.unitmesh.devins.document.docql.DocQLResult.Files -> {
+                buildString {
+                    appendLine("Found ${result.items.size} files:")
+                    result.items.forEach { file ->
+                        appendLine("  - ${file.path}")
+                    }
+                    if (result.items.size > 50) {
+                        appendLine("\n💡 Too many results! Consider filtering by directory:")
+                        appendLine("   \$.files[?(@.path contains \"your-directory\")]")
+                    }
+                }
+            }
             is cc.unitmesh.devins.document.docql.DocQLResult.Empty -> {
                 "No results found."
             }
@@ -178,6 +190,7 @@ class DocQLInvocation(
             is cc.unitmesh.devins.document.docql.DocQLResult.Chunks -> result.items.isEmpty()
             is cc.unitmesh.devins.document.docql.DocQLResult.CodeBlocks -> result.items.isEmpty()
             is cc.unitmesh.devins.document.docql.DocQLResult.Tables -> result.items.isEmpty()
+            is cc.unitmesh.devins.document.docql.DocQLResult.Files -> result.items.isEmpty()
             is cc.unitmesh.devins.document.docql.DocQLResult.Error -> true
         }
     }

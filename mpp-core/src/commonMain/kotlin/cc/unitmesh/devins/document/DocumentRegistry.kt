@@ -197,6 +197,133 @@ object DocumentRegistry {
     }
     
     /**
+     * Get a compressed summary of available document paths
+     * When there are many documents (>20), this returns a tree-like structure
+     * to save prompt space.
+     * 
+     * @param threshold Maximum number of files before compression kicks in (default: 20)
+     * @return Formatted string summary of documents
+     */
+    suspend fun getCompressedPathsSummary(threshold: Int = 20): String {
+        val allPaths = getAllAvailablePaths()
+        
+        if (allPaths.isEmpty()) {
+            return "No documents available."
+        }
+        
+        if (allPaths.size <= threshold) {
+            // Show all paths directly
+            return buildString {
+                appendLine("Available documents (${allPaths.size}):")
+                allPaths.forEach { path ->
+                    appendLine("  - $path")
+                }
+            }.trimEnd()
+        }
+        
+        // Compress paths into directory structure
+        val pathTree = buildPathTree(allPaths)
+        
+        return buildString {
+            appendLine("Available documents (${allPaths.size} total - showing directory structure):")
+            appendLine()
+            appendLine("Use DocQL `\$.files[*]` to list all files, or `\$.files[?(@.path contains \"pattern\")]` to filter.")
+            appendLine()
+            renderPathTree(this, pathTree, "", true)
+            appendLine()
+            appendLine("💡 Tip: Query specific directories to reduce context size, e.g.:")
+            appendLine("   \$.files[?(@.path contains \"docs\")]")
+        }.trimEnd()
+    }
+    
+    /**
+     * Build a tree structure from flat paths
+     */
+    private fun buildPathTree(paths: List<String>): PathNode {
+        val root = PathNode("/", mutableListOf(), 0)
+        
+        for (path in paths) {
+            val parts = path.split('/')
+            var current = root
+            
+            for ((index, part) in parts.withIndex()) {
+                if (part.isEmpty()) continue
+                
+                val isFile = index == parts.size - 1
+                var child = current.children.find { it.name == part }
+                
+                if (child == null) {
+                    child = PathNode(part, mutableListOf(), if (isFile) 1 else 0)
+                    current.children.add(child)
+                } else if (isFile) {
+                    child.fileCount++
+                }
+                
+                current = child
+            }
+        }
+        
+        // Propagate file counts up the tree
+        fun propagateCount(node: PathNode): Int {
+            var total = node.fileCount
+            for (child in node.children) {
+                total += propagateCount(child)
+            }
+            node.totalCount = total
+            return total
+        }
+        propagateCount(root)
+        
+        return root
+    }
+    
+    /**
+     * Render path tree in a compact format
+     */
+    private fun renderPathTree(sb: StringBuilder, node: PathNode, prefix: String, isRoot: Boolean) {
+        if (isRoot) {
+            // Render root children directly
+            for ((index, child) in node.children.withIndex()) {
+                val isLast = index == node.children.size - 1
+                renderPathTreeNode(sb, child, "", isLast)
+            }
+        } else {
+            renderPathTreeNode(sb, node, prefix, true)
+        }
+    }
+    
+    private fun renderPathTreeNode(sb: StringBuilder, node: PathNode, prefix: String, isLast: Boolean) {
+        val connector = if (isLast) "└── " else "├── "
+        val extension = if (isLast) "    " else "│   "
+        
+        // Show directory with file count or individual file
+        if (node.children.isEmpty()) {
+            // It's a file
+            sb.appendLine("$prefix$connector${node.name}")
+        } else {
+            // It's a directory
+            val countInfo = if (node.totalCount > 0) " (${node.totalCount} files)" else ""
+            sb.appendLine("$prefix$connector${node.name}/$countInfo")
+            
+            // Render children
+            for ((index, child) in node.children.withIndex()) {
+                val childIsLast = index == node.children.size - 1
+                renderPathTreeNode(sb, child, prefix + extension, childIsLast)
+            }
+        }
+    }
+    
+    /**
+     * Data class for path tree nodes
+     */
+    private data class PathNode(
+        val name: String,
+        val children: MutableList<PathNode>,
+        var fileCount: Int,
+        var totalCount: Int = 0
+    )
+    
+    /**
      * Check if a document is registered in memory
      */
     fun isDocumentRegistered(path: String): Boolean {

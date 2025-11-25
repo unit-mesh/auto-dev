@@ -32,6 +32,11 @@ sealed class DocQLResult {
     data class Tables(val items: List<TableBlock>) : DocQLResult()
     
     /**
+     * File list result (for $.files queries)
+     */
+    data class Files(val items: List<FileInfo>) : DocQLResult()
+    
+    /**
      * Empty result
      */
     object Empty : DocQLResult()
@@ -41,6 +46,16 @@ sealed class DocQLResult {
      */
     data class Error(val message: String) : DocQLResult()
 }
+
+/**
+ * File information for $.files queries
+ */
+data class FileInfo(
+    val path: String,
+    val name: String = path.substringAfterLast('/'),
+    val directory: String = if (path.contains('/')) path.substringBeforeLast('/') else "",
+    val extension: String = if (path.contains('.')) path.substringAfterLast('.') else ""
+)
 
 /**
  * Code block extracted from document
@@ -93,6 +108,7 @@ class DocQLExecutor(
                         "toc" -> executeTocQuery(query.nodes.drop(2))
                         "entities" -> executeEntitiesQuery(query.nodes.drop(2))
                         "content" -> executeContentQuery(query.nodes.drop(2))
+                        "files" -> executeFilesQuery(query.nodes.drop(2))
                         else -> DocQLResult.Error("Unknown context '${contextNode.name}'")
                     }
                 }
@@ -332,6 +348,87 @@ class DocQLExecutor(
     private fun executeTableQuery(nodes: List<DocQLNode>): DocQLResult {
         // TODO: Implement table extraction
         return DocQLResult.Tables(emptyList())
+    }
+    
+    /**
+     * Execute files query: $.files[*] or $.files[?(@.path contains "pattern")]
+     * This queries all available documents from DocumentRegistry
+     */
+    private suspend fun executeFilesQuery(nodes: List<DocQLNode>): DocQLResult {
+        // Get all available paths from DocumentRegistry
+        val allPaths = DocumentRegistry.getAllAvailablePaths()
+        
+        if (allPaths.isEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        // Convert to FileInfo objects
+        var files = allPaths.map { path ->
+            FileInfo(
+                path = path,
+                name = path.substringAfterLast('/'),
+                directory = if (path.contains('/')) path.substringBeforeLast('/') else "",
+                extension = if (path.contains('.')) path.substringAfterLast('.') else ""
+            )
+        }
+        
+        // Process filters/array access
+        for (node in nodes) {
+            when (node) {
+                is DocQLNode.ArrayAccess.All -> {
+                    // Return all files
+                }
+                
+                is DocQLNode.ArrayAccess.Index -> {
+                    // Return specific index
+                    files = if (node.index < files.size) {
+                        listOf(files[node.index])
+                    } else {
+                        emptyList()
+                    }
+                }
+                
+                is DocQLNode.ArrayAccess.Filter -> {
+                    // Filter files
+                    files = filterFiles(files, node.condition)
+                }
+                
+                else -> {
+                    return DocQLResult.Error("Invalid operation for files query")
+                }
+            }
+        }
+        
+        return DocQLResult.Files(files)
+    }
+    
+    /**
+     * Filter files by condition
+     */
+    private fun filterFiles(items: List<FileInfo>, condition: FilterCondition): List<FileInfo> {
+        return items.filter { file ->
+            when (condition) {
+                is FilterCondition.Equals -> {
+                    when (condition.property) {
+                        "path" -> file.path == condition.value
+                        "name" -> file.name == condition.value
+                        "directory" -> file.directory == condition.value
+                        "extension" -> file.extension == condition.value
+                        else -> false
+                    }
+                }
+                is FilterCondition.Contains -> {
+                    when (condition.property) {
+                        "path" -> file.path.contains(condition.value, ignoreCase = true)
+                        "name" -> file.name.contains(condition.value, ignoreCase = true)
+                        "directory" -> file.directory.contains(condition.value, ignoreCase = true)
+                        "extension" -> file.extension.contains(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                else -> false
+            }
+        }
     }
     
     /**
