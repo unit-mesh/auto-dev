@@ -15,10 +15,12 @@ import cc.unitmesh.devins.workspace.WorkspaceManager
 
 /**
  * 文档阅读器主页面
- * 采用 3 栏布局：
- * 1. 左侧：文档导航 (DocumentNavigationPane)
- * 2. 中间：文档查看 (DocumentViewerPane) + 结构化信息 (StructuredInfoPane)
- * 3. 右侧：AI 聊天 (AIChatPane)
+ * 采用查询优先的 3 栏布局：
+ * 1. 左侧 (35%)：AI 聊天 (DocumentChatPane) - 主要交互区域，显示索引状态
+ * 2. 中间 (20%)：文档导航 (DocumentNavigationPane) - 文件列表
+ * 3. 右侧 (45%)：文档查看 (DocumentViewerPane) + 结构化信息 (StructuredInfoPane) - 垂直分割
+ * 
+ * 工作流：用户在左侧查询 → 中间看到文件列表 → 右侧查看详细内容和结构
  */
 @Composable
 fun DocumentReaderPage(
@@ -36,37 +38,48 @@ fun DocumentReaderPage(
         }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            // 第一层分割: 左侧 Chat (35%) | 右侧其他 (65%)
             ResizableSplitPane(
                 modifier = Modifier.fillMaxSize(),
-                initialSplitRatio = 0.18f,
-                minRatio = 0.12f,
-                maxRatio = 0.2f,
+                initialSplitRatio = 0.35f,
+                minRatio = 0.25f,
+                maxRatio = 0.45f,
                 first = {
-                    DocumentNavigationPane(
-                        documentLoadState = viewModel.documentLoadState,
-                        documents = viewModel.filteredDocuments,
-                        indexingStatus = viewModel.indexingStatus.collectAsState().value,
-                        searchQuery = viewModel.searchQuery,
-                        onSearchQueryChange = { viewModel.updateSearchQuery(it) },
-                        onDocumentSelected = { viewModel.selectDocument(it) },
-                        onRefresh = { viewModel.refreshDocuments() },
-                        onStartIndexing = { viewModel.startIndexing() },
-                        onResetIndexing = { viewModel.resetIndexingStatus() }
+                    // 左侧: AI Chat - 主要交互区域
+                    DocumentChatPane(
+                        viewModel = viewModel
                     )
                 },
                 second = {
+                    // 第二层分割: 中间 Navigation (30% of remaining) | 右侧 Viewer+Structure (70% of remaining)
                     ResizableSplitPane(
                         modifier = Modifier.fillMaxSize(),
-                        initialSplitRatio = 0.45f,
-                        minRatio = 0.35f,
-                        maxRatio = 0.5f,
+                        initialSplitRatio = 0.3f,
+                        minRatio = 0.2f,
+                        maxRatio = 0.4f,
                         first = {
+                            // 中间: Document Navigation - 文件列表
+                            DocumentNavigationPane(
+                                documentLoadState = viewModel.documentLoadState,
+                                documents = viewModel.filteredDocuments,
+                                indexingStatus = viewModel.indexingStatus.collectAsState().value,
+                                searchQuery = viewModel.searchQuery,
+                                onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+                                onDocumentSelected = { viewModel.selectDocument(it) },
+                                onRefresh = { viewModel.refreshDocuments() },
+                                onStartIndexing = { viewModel.startIndexing() },
+                                onResetIndexing = { viewModel.resetIndexingStatus() }
+                            )
+                        },
+                        second = {
+                            // 第三层分割: 上部 Viewer | 下部 Structure (垂直分割)
                             VerticalResizableSplitPane(
                                 modifier = Modifier.fillMaxSize(),
-                                initialSplitRatio = 0.5f,
-                                minRatio = 0.4f,
-                                maxRatio = 0.85f,
+                                initialSplitRatio = 0.55f,
+                                minRatio = 0.3f,
+                                maxRatio = 0.7f,
                                 top = {
+                                    // 右上: Document Viewer
                                     DocumentViewerPane(
                                         document = viewModel.selectedDocument,
                                         rawContent = viewModel.documentContent,
@@ -78,6 +91,7 @@ fun DocumentReaderPage(
                                     )
                                 },
                                 bottom = {
+                                    // 右下: Structured Info (TOC + Entities + DocQL)
                                     val toc = viewModel.selectedDocument?.toc ?: emptyList()
                                     val entities = viewModel.selectedDocument?.entities ?: emptyList()
 
@@ -106,11 +120,6 @@ fun DocumentReaderPage(
                                         }
                                     )
                                 }
-                            )
-                        },
-                        second = {
-                            DocumentChatPane(
-                                viewModel = viewModel
                             )
                         }
                     )

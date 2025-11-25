@@ -24,68 +24,137 @@ fun DocumentChatPane(
     val indexingStatus by viewModel.indexingStatus.collectAsState()
     
     Column(modifier = modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        // 标题栏 - 更突出的索引状态
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ) {
-            Icon(AutoDevComposeIcons.SmartToy, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("AI 助手", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // 索引状态指示器
-            when (indexingStatus) {
-                is cc.unitmesh.devins.service.IndexingStatus.Indexing -> {
-                    val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Indexing
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp
-                        )
-                        Text(
-                            text = "${status.current}/${status.total}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-                is cc.unitmesh.devins.service.IndexingStatus.Completed -> {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Icon(
-                        AutoDevComposeIcons.CheckCircle,
-                        contentDescription = "索引完成",
-                        modifier = Modifier.size(16.dp),
+                        AutoDevComposeIcons.SmartToy,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "AI 代码助手",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    IconButton(
+                        onClick = { viewModel.clearChatHistory() },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            AutoDevComposeIcons.Delete,
+                            contentDescription = "清空对话",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
-                else -> {}
-            }
-            
-            IconButton(
-                onClick = { viewModel.clearChatHistory() },
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    AutoDevComposeIcons.Delete,
-                    contentDescription = "Clear History",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
+                
+                // 索引状态卡片 - 更显眼
+                when (indexingStatus) {
+                    is cc.unitmesh.devins.service.IndexingStatus.Indexing -> {
+                        val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Indexing
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "正在索引项目代码...",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                    )
+                                    Text(
+                                        text = "已完成 ${status.current}/${status.total} 个文档",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    is cc.unitmesh.devins.service.IndexingStatus.Completed -> {
+                        val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Completed
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    AutoDevComposeIcons.CheckCircle,
+                                    contentDescription = "索引完成",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "✓ 索引完成",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "已索引 ${status.total} 个文档 (成功 ${status.succeeded}, 失败 ${status.failed})，可以开始查询了",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    is cc.unitmesh.devins.service.IndexingStatus.Idle -> {
+                        // 空闲状态不显示卡片
+                    }
+                }
             }
         }
 
         HorizontalDivider()
 
-        AgentMessageList(
-            renderer = viewModel.renderer,
-            modifier = Modifier.weight(1f)
-        )
+        // 消息列表
+        Box(modifier = Modifier.weight(1f)) {
+            AgentMessageList(
+                renderer = viewModel.renderer,
+                modifier = Modifier.fillMaxSize()
+            )
+            
+            // 当没有消息且索引完成时显示欢迎提示
+            if (indexingStatus is cc.unitmesh.devins.service.IndexingStatus.Completed) {
+                // 欢迎提示会在 AgentMessageList 为空时自动显示（通过 renderer 的逻辑）
+                // 或者我们可以在这里叠加一个欢迎卡片
+            }
+        }
 
         HorizontalDivider()
 
@@ -94,6 +163,106 @@ fun DocumentChatPane(
             onSendMessage = { viewModel.sendMessage(it) },
             onStopGeneration = { viewModel.stopGeneration() }
         )
+    }
+}
+
+/**
+ * 欢迎消息和快速查询建议
+ */
+@Composable
+private fun WelcomeMessage(
+    onQuickQuery: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = AutoDevComposeIcons.SmartToy,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "欢迎使用 AI 代码助手",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = "我可以帮你理解项目代码、查找类和方法、解释代码逻辑",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Text(
+            text = "💡 试试这些查询：",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 快速查询建议
+        val quickQueries = listOf(
+            "What is DocQLExecutor?" to "了解 DocQL 执行器",
+            "How does CodingAgent work?" to "了解代码生成 Agent",
+            "List all classes in document package" to "查看文档包的所有类",
+            "Find all parse methods" to "查找所有解析方法"
+        )
+        
+        quickQueries.forEach { (query, description) ->
+            OutlinedCard(
+                onClick = { onQuickQuery(query) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Search,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = query,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        imageVector = AutoDevComposeIcons.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
 }
 
