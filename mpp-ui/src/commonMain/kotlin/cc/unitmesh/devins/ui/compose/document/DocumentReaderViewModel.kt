@@ -66,6 +66,37 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         initializeLLMService()
         indexService.indexWorkspace()
     }
+    
+    /**
+     * Create a DocumentFile from a relative path
+     * Centralizes the logic for DocumentFile creation
+     */
+    private fun createDocumentFile(relativePath: String): DocumentFile {
+        val name = relativePath.substringAfterLast('/')
+        val extension = relativePath.substringAfterLast('.', "").lowercase()
+        
+        // Detect format type from file extension
+        val formatType = DocumentParserFactory.detectFormat(relativePath)
+            ?: DocumentFormatType.PLAIN_TEXT
+        
+        // Get MIME type from factory
+        val mimeType = DocumentParserFactory.getMimeType(relativePath)
+        
+        return DocumentFile(
+            name = name,
+            path = relativePath,
+            metadata = DocumentMetadata(
+                totalPages = null,
+                chapterCount = 0, // Will be updated when document is opened
+                parseStatus = ParseStatus.NOT_PARSED,
+                lastModified = Clock.System.now().toEpochMilliseconds(),
+                fileSize = 0L, // Load lazily when needed
+                language = extension,
+                mimeType = mimeType,
+                formatType = formatType
+            )
+        )
+    }
 
     /**
      * Initialize LLM service and DocumentAgent
@@ -123,52 +154,15 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                     return@launch
                 }
 
-                // Search for all supported document formats in one go
-                val pattern = "*.{md,markdown,pdf,doc,docx,ppt,pptx,txt,html,htm}"
+                // Search for all supported document formats
+                val pattern = DocumentParserFactory.getSearchPattern()
                 val allDocuments = fileSystem.searchFiles(pattern, maxDepth = 10, maxResults = 1000)
 
                 documents = allDocuments.mapNotNull { relativePath ->
-                    val name = relativePath.substringAfterLast('/')
-                    val extension = relativePath.substringAfterLast('.', "").lowercase()
-
                     try {
-                        // Detect format type from file extension
-                        val formatType = DocumentParserFactory.detectFormat(relativePath)
-                            ?: DocumentFormatType.PLAIN_TEXT
-
-                        // Skip reading file size for now - load lazily when needed
-                        val fileSize = 0L
-
-                        // Determine MIME type based on format
-                        val mimeType = when (formatType) {
-                            DocumentFormatType.MARKDOWN -> "text/markdown"
-                            DocumentFormatType.PDF -> "application/pdf"
-                            DocumentFormatType.DOCX -> when (extension) {
-                                "doc" -> "application/msword"
-                                "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                "ppt" -> "application/vnd.ms-powerpoint"
-                                "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-                                else -> "application/octet-stream"
-                            }
-                            DocumentFormatType.HTML -> "text/html"
-                            DocumentFormatType.PLAIN_TEXT -> "text/plain"
-                        }
-
-                        DocumentFile(
-                            name = name,
-                            path = relativePath,
-                            metadata = DocumentMetadata(
-                                totalPages = null,
-                                chapterCount = 0, // Will be updated when document is opened
-                                parseStatus = ParseStatus.NOT_PARSED,
-                                lastModified = Clock.System.now().toEpochMilliseconds(),
-                                fileSize = fileSize,
-                                language = extension,
-                                mimeType = mimeType,
-                                formatType = formatType
-                            )
-                        )
+                        createDocumentFile(relativePath)
                     } catch (e: Exception) {
+                        println("Failed to create DocumentFile for $relativePath: ${e.message}")
                         null
                     }
                 }

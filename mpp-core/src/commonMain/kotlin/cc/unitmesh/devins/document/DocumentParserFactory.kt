@@ -93,5 +93,62 @@ object DocumentParserFactory {
     fun getSupportedFormats(): List<DocumentFormatType> {
         return parserProviders.keys.toList()
     }
+    
+    /**
+     * Get all supported file extensions
+     * 
+     * @return List of supported file extensions (without dot)
+     */
+    fun getSupportedExtensions(): List<String> {
+        return listOf(
+            "md", "markdown",           // Markdown
+            "pdf",                      // PDF
+            "doc", "docx",              // Word
+            "ppt", "pptx",              // PowerPoint
+            "txt",                      // Plain text
+            "html", "htm"               // HTML
+        )
+    }
+    
+    /**
+     * Get file search pattern for all supported document formats
+     * 
+     * @return Glob pattern like "*.{md,pdf,txt,...}"
+     */
+    fun getSearchPattern(): String {
+        val extensions = getSupportedExtensions().joinToString(",")
+        return "*.{$extensions}"
+    }
+    
+    /**
+     * Get MIME type for a file based on its extension
+     * 
+     * @param filePath The file path or name
+     * @return MIME type string, or "application/octet-stream" if unknown
+     */
+    fun getMimeType(filePath: String): String {
+        val extension = filePath.substringAfterLast('.', "").lowercase()
+        return when (extension) {
+            "md", "markdown" -> "text/markdown"
+            "pdf" -> "application/pdf"
+            "doc" -> "application/msword"
+            "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            "ppt" -> "application/vnd.ms-powerpoint"
+            "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            "txt" -> "text/plain"
+            "html", "htm" -> "text/html"
+            else -> "application/octet-stream"
+        }
+    }
+    
+    /**
+     * Check if a file extension is supported
+     * 
+     * @param extension File extension (without dot)
+     * @return true if the extension is supported
+     */
+    fun isSupportedExtension(extension: String): Boolean {
+        return getSupportedExtensions().contains(extension.lowercase())
+    }
 }
 
