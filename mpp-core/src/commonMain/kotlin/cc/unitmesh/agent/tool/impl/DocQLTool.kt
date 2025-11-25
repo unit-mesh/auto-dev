@@ -88,7 +88,12 @@ class DocQLInvocation(
         }
     }
 
-    private suspend fun querySingleDocument(documentPath: String, query: String): ToolResult {
+    private suspend fun querySingleDocument(documentPath: String?, query: String): ToolResult {
+        // If documentPath is null or "null", delegate to global search
+        if (documentPath == null || documentPath == "null") {
+            return queryAllDocuments(query)
+        }
+        
         val result = DocumentRegistry.queryDocument(documentPath, query)
         if (result != null) {
             return ToolResult.Success(formatDocQLResult(result, documentPath, params.maxResults ?: 20))

@@ -19,7 +19,7 @@ import cc.unitmesh.devins.workspace.WorkspaceManager
  * 1. 左侧 (35%)：AI 聊天 (DocumentChatPane) - 主要交互区域，显示索引状态
  * 2. 中间 (20%)：文档导航 (DocumentNavigationPane) - 文件列表
  * 3. 右侧 (45%)：文档查看 (DocumentViewerPane) + 结构化信息 (StructuredInfoPane) - 垂直分割
- * 
+ *
  * 工作流：用户在左侧查询 → 中间看到文件列表 → 右侧查看详细内容和结构
  */
 @Composable
@@ -38,12 +38,11 @@ fun DocumentReaderPage(
         }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            // 第一层分割: 左侧 Chat (35%) | 右侧其他 (65%)
             ResizableSplitPane(
                 modifier = Modifier.fillMaxSize(),
-                initialSplitRatio = 0.35f,
-                minRatio = 0.25f,
-                maxRatio = 0.45f,
+                initialSplitRatio = 0.55f,
+                minRatio = 0.45f,
+                maxRatio = 0.85f,
                 first = {
                     // 左侧: AI Chat - 主要交互区域
                     DocumentChatPane(
@@ -51,12 +50,11 @@ fun DocumentReaderPage(
                     )
                 },
                 second = {
-                    // 第二层分割: 中间 Navigation (30% of remaining) | 右侧 Viewer+Structure (70% of remaining)
                     ResizableSplitPane(
                         modifier = Modifier.fillMaxSize(),
                         initialSplitRatio = 0.3f,
                         minRatio = 0.2f,
-                        maxRatio = 0.4f,
+                        maxRatio = 0.3f,
                         first = {
                             // 中间: Document Navigation - 文件列表
                             DocumentNavigationPane(
@@ -75,11 +73,10 @@ fun DocumentReaderPage(
                             // 第三层分割: 上部 Viewer | 下部 Structure (垂直分割)
                             VerticalResizableSplitPane(
                                 modifier = Modifier.fillMaxSize(),
-                                initialSplitRatio = 0.55f,
+                                initialSplitRatio = 0.25f,
                                 minRatio = 0.3f,
-                                maxRatio = 0.7f,
+                                maxRatio = 0.4f,
                                 top = {
-                                    // 右上: Document Viewer
                                     DocumentViewerPane(
                                         document = viewModel.selectedDocument,
                                         rawContent = viewModel.documentContent,
@@ -91,7 +88,6 @@ fun DocumentReaderPage(
                                     )
                                 },
                                 bottom = {
-                                    // 右下: Structured Info (TOC + Entities + DocQL)
                                     val toc = viewModel.selectedDocument?.toc ?: emptyList()
                                     val entities = viewModel.selectedDocument?.entities ?: emptyList()
 

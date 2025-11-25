@@ -115,12 +115,19 @@ object DocumentRegistry {
     /**
      * Query a registered document using DocQL
      * If document is not in memory but available in index, it will be loaded first
+     * If documentPath is null or "null", falls back to querying all documents
      * 
-     * @param documentPath Document path
+     * @param documentPath Document path (null or "null" for global search)
      * @param docqlQuery DocQL query string (e.g., "$.content.heading('title')")
-     * @return Query result or null if document not found
+     * @return Query result or null if document not found (for single document queries)
      */
-    suspend fun queryDocument(documentPath: String, docqlQuery: String): DocQLResult? {
+    suspend fun queryDocument(documentPath: String?, docqlQuery: String): DocQLResult? {
+        // Handle null or "null" string as global search request
+        if (documentPath == null || documentPath == "null") {
+            logger.info { "Document path is null, falling back to global search across all documents" }
+            return queryDocuments(docqlQuery)
+        }
+        
         // Try to get from memory first
         var docPair = getDocument(documentPath)
         
@@ -132,7 +139,13 @@ object DocumentRegistry {
             }
         }
         
-        val (document, parser) = docPair ?: return null
+        // If still not found, fall back to global search
+        if (docPair == null) {
+            logger.warn { "Document not found in index: $documentPath, falling back to global search" }
+            return queryDocuments(docqlQuery)
+        }
+        
+        val (document, parser) = docPair
         
         if (document !is DocumentFile) {
             logger.warn { "Document at $documentPath is not a file" }

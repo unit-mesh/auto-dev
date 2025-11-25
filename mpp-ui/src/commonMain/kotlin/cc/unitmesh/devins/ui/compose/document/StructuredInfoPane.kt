@@ -95,7 +95,6 @@ fun StructuredInfoPane(
                     }
                 }
 
-                // Entities Section
                 item {
                     CollapsibleSection(
                         title = "实体",
@@ -128,9 +127,6 @@ fun StructuredInfoPane(
     }
 }
 
-/**
- * Collapsible section component
- */
 @Composable
 private fun CollapsibleSection(
     title: String,
@@ -501,7 +497,7 @@ private fun DocQLResultView(
                     }
                 }
             }
-            
+
             is cc.unitmesh.devins.document.docql.DocQLResult.Files -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Text(
