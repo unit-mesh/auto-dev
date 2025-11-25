@@ -152,7 +152,7 @@ class DocumentAgent(
 
     private suspend fun buildSystemPrompt(context: DocumentContext): String {
         // Get compressed summary of available documents
-        val docsInfo = cc.unitmesh.devins.document.DocumentRegistry.getCompressedPathsSummary(threshold = 20)
+        val docsInfo = cc.unitmesh.devins.document.DocumentRegistry.getCompressedPathsSummary(threshold = 100)
 
         return """
             You are a helpful document assistant with advanced query capabilities.

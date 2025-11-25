@@ -208,7 +208,7 @@ private fun TocItemRow(
     Column {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+//                .fillMaxWidth()
                 .clickable { onTocSelected(item) }
                 .padding(
                     start = ((item.level - 1) * 16).dp,

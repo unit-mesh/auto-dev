@@ -384,7 +384,7 @@ object DocumentRegistry {
             return "No documents available."
         }
         
-        if (allPaths.size <= threshold) {
+        if (allPaths.size >= threshold) {
             // Show all paths directly
             return buildString {
                 appendLine("Available documents (${allPaths.size}):")

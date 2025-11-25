@@ -281,18 +281,12 @@ fun CombinedToolItem(
                             shape = RoundedCornerShape(4.dp),
                             modifier = Modifier.Companion.fillMaxWidth()
                         ) {
-                            Column(
-                                modifier = Modifier.Companion
-                                    .padding(8.dp)
-                                    .verticalScroll(rememberScrollState())
-                            ) {
-                                cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer.RenderMarkdown(
-                                    markdown = displayOutput,
-                                    isComplete = true,
-                                    isDarkTheme = false, // Will be determined by system theme
-                                    modifier = Modifier.Companion.fillMaxWidth()
-                                )
-                            }
+                            cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer.RenderMarkdown(
+                                markdown = displayOutput,
+                                isComplete = true,
+                                isDarkTheme = false, // Will be determined by system theme
+                                modifier = Modifier.Companion.padding(8.dp)
+                            )
                         }
                     } else {
                         Surface(

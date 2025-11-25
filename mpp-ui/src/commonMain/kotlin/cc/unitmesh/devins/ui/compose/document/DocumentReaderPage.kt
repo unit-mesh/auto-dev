@@ -74,7 +74,7 @@ fun DocumentReaderPage(
                             VerticalResizableSplitPane(
                                 modifier = Modifier.fillMaxSize(),
                                 initialSplitRatio = 0.25f,
-                                minRatio = 0.3f,
+                                minRatio = 0.1f,
                                 maxRatio = 0.4f,
                                 top = {
                                     DocumentViewerPane(
