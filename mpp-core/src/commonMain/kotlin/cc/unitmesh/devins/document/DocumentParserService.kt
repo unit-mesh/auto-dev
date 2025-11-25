@@ -11,6 +11,16 @@ interface DocumentParserService {
     suspend fun parse(file: DocumentFile, content: String): DocumentTreeNode
 
     /**
+     * 解析二进制文档文件（用于 PDF, DOCX 等格式）
+     * 默认实现：将字节转换为字符串后调用 parse
+     */
+    suspend fun parseBytes(file: DocumentFile, bytes: ByteArray): DocumentTreeNode {
+        // Default: decode as UTF-8 and call parse
+        val content = bytes.decodeToString()
+        return parse(file, content)
+    }
+
+    /**
      * HeadingQL: 根据关键字或标题文本查找最匹配的标题节点及其内容
      */
     suspend fun queryHeading(keyword: String): List<DocumentChunk>

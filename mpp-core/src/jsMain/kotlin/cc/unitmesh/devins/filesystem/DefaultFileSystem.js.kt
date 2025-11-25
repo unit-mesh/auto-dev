@@ -1,5 +1,8 @@
 package cc.unitmesh.devins.filesystem
 
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Uint8Array
+
 /**
  * JavaScript 平台的文件系统实现
  * 基于 Node.js fs 模块的高性能实现
@@ -55,8 +58,12 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             if (exists(resolvedPath) && !isDirectory(resolvedPath)) {
                 val buffer = fs.readFileSync(resolvedPath)
                 // Convert Node.js Buffer to ByteArray
-                val array = Uint8Array(buffer.buffer as ArrayBuffer, buffer.byteOffset as Int, buffer.length as Int)
-                ByteArray(array.length) { array[it] }
+                // Node.js Buffer is already array-like, access elements directly
+                val length = buffer.length.unsafeCast<Int>()
+                ByteArray(length) { i -> 
+                    val value: dynamic = buffer[i]
+                    value.unsafeCast<Byte>()
+                }
             } else {
                 null
             }

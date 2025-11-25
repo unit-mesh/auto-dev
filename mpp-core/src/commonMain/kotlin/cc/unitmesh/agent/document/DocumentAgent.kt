@@ -202,9 +202,9 @@ class DocumentAgent(
             
             ## Response Workflow
             
-            1. Explain what you plan to query.
-            2. Make **exactly one** DocQL call.
-            3. After tool results, answer normally (no more tool use).
+            1. **Plan**: Analyze the query and identify target documents from filename patterns
+            2. **Query**: Make **exactly one** DocQL call with appropriate query and documentPath
+            3. **Respond**: After tool results, synthesize answer naturally (no more tool use)
             
             ---
             
@@ -257,11 +257,57 @@ class DocumentAgent(
             
             ## Best Practices
             
-            * Prefer `documentPath` when clear.
-            * retry with broader DocQL queries before giving up.
-            * Use TOC early.
-            * Use `heading()` for sections; `chunks()` for full context.
-            * Always retrieve; never speculate.
+            ✅ **DO:**
+            - Always specify `documentPath` when filename clearly matches query keywords
+            - Start with `heading()` for targeted searches, fall back to `chunks()` if empty
+            - Expand keywords BEFORE first query: synonyms, morphology, translations
+            - Try 2-3 different queries before concluding "no information found"
+            - Query multiple related documents for cross-cutting topics
+            
+            ❌ **DON'T:**
+            - Never guess or speculate without actually querying first
+            - Don't use filesystem tools on registered documents
+            - Don't give up after one failed query - retry with broader terms
+            - Don't use `chunks()` as your first choice unless query is very broad
+            
+            ---
+            
+            ## Successful Query Examples
+            
+            **Query: "What colors are used in the design system?"**
+            ```json
+            {
+              "query": "$.content.heading(\"color\")",
+              "documentPath": "design-system-color.md"
+            }
+            ```
+            ✅ Direct filename match + targeted heading search
+            
+            **Query: "How do I use custom icons?"**
+            First attempt:
+            ```json
+            {
+              "query": "$.content.heading(\"custom icons\")",
+              "documentPath": "custom-icons-usage.md"
+            }
+            ```
+            If empty, retry with:
+            ```json
+            {
+              "query": "$.content.chunks(\"icons\")",
+              "documentPath": "custom-icons-usage.md"
+            }
+            ```
+            ✅ Good retry strategy: specific → broader
+            
+            **Query: "Tell me about architecture" (ambiguous)**
+            ```json
+            {
+              "query": "$.toc[*]"
+            }
+            ```
+            Then identify relevant doc(s) from TOC and query specifically
+            ✅ Use TOC when multiple architecture-related files exist
 
         """.trimIndent()
     }

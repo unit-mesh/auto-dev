@@ -310,14 +310,8 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                     documentContent = null // Binary files don't have text content to display
 
-                    // Use TikaDocumentParser's parseBytes method for binary files
-                    if (parser is cc.unitmesh.devins.document.TikaDocumentParser) {
-                        parser.parseBytes(doc, bytes)
-                    } else {
-                        // Fallback: convert bytes to ISO_8859_1 string (legacy behavior)
-                        val content = bytes.toString(Charsets.ISO_8859_1)
-                        parser.parse(doc, content)
-                    }
+                    // Use parseBytes method for binary files
+                    parser.parseBytes(doc, bytes)
                 } else {
                     // Text formats (Markdown, TXT) - read as string
                     val content = fileSystem.readFile(doc.path)

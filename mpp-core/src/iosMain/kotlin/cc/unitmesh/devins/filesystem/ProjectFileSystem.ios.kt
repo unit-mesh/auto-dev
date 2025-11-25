@@ -1,6 +1,8 @@
 package cc.unitmesh.devins.filesystem
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.get
+import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toKString
 import platform.Foundation.*
 import platform.posix.getcwd
@@ -24,6 +26,20 @@ actual class DefaultFileSystem actual constructor(
                 encoding = NSUTF8StringEncoding,
                 error = null
             ) as? String
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    actual override fun readFileAsBytes(path: String): ByteArray? {
+        val fullPath = resolvePath(path)
+        return try {
+            val data = NSData.dataWithContentsOfFile(fullPath) ?: return null
+            val length = data.length.toInt()
+            val bytes = data.bytes?.reinterpret<kotlinx.cinterop.ByteVar>() ?: return null
+            ByteArray(length) { i ->
+                bytes[i]
+            }
         } catch (e: Exception) {
             null
         }

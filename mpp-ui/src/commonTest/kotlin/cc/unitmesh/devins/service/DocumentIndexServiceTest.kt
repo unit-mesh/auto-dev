@@ -21,6 +21,10 @@ class DocumentIndexServiceTest {
         
         override fun readFile(path: String): String? = files[path]
         
+        override fun readFileAsBytes(path: String): ByteArray? {
+            return files[path]?.encodeToByteArray()
+        }
+        
         override fun writeFile(path: String, content: String): Boolean {
             files[path] = content
             return true

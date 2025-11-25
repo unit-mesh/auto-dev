@@ -167,14 +167,8 @@ class DocumentIndexService(
 
                 // Parse the document based on format type
                 val parsedDoc = if (isBinary && bytes != null) {
-                    // Use TikaDocumentParser's parseBytes for binary files
-                    if (parser is cc.unitmesh.devins.document.TikaDocumentParser) {
-                        parser.parseBytes(docFile, bytes)
-                    } else {
-                        // Fallback: convert bytes to ISO_8859_1 string
-                        val fallbackContent = bytes.toString(Charsets.ISO_8859_1)
-                        parser.parse(docFile, fallbackContent)
-                    }
+                    // Use parseBytes for binary files
+                    parser.parseBytes(docFile, bytes)
                 } else if (content != null) {
                     // Text format
                     parser.parse(docFile, content)

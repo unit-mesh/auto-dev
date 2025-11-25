@@ -48,7 +48,7 @@ class TikaDocumentParser : DocumentParserService {
      * Parse document from ByteArray (preferred for binary files)
      * This method properly handles binary data without corruption
      */
-    suspend fun parseBytes(file: DocumentFile, bytes: ByteArray): DocumentTreeNode {
+    override suspend fun parseBytes(file: DocumentFile, bytes: ByteArray): DocumentTreeNode {
         logger.info { "=== Starting Tika Parse (from Bytes) ===" }
         logger.info { "File: ${file.path}, Size: ${bytes.size} bytes" }
         
