@@ -668,6 +668,12 @@ class DocQLExecutor(
                         else -> false
                     }
                 }
+                is FilterCondition.RegexMatch -> {
+                    when (condition.property) {
+                        "title" -> matchesRegex(item.title, condition.pattern, condition.flags)
+                        else -> false
+                    }
+                }
                 is FilterCondition.GreaterThan -> {
                     when (condition.property) {
                         "level" -> item.level > condition.value
@@ -713,8 +719,32 @@ class DocQLExecutor(
                         else -> false
                     }
                 }
-                else -> false
+                is FilterCondition.RegexMatch -> {
+                    when (condition.property) {
+                        "name" -> matchesRegex(entity.name, condition.pattern, condition.flags)
+                        else -> false
+                    }
+                }
+                is FilterCondition.GreaterThan, is FilterCondition.LessThan -> false
             }
+        }
+    }
+    
+    /**
+     * Check if text matches regex pattern with flags
+     */
+    private fun matchesRegex(text: String, pattern: String, flags: String): Boolean {
+        return try {
+            val options = mutableSetOf<RegexOption>()
+            if (flags.contains('i')) options.add(RegexOption.IGNORE_CASE)
+            if (flags.contains('m')) options.add(RegexOption.MULTILINE)
+            if (flags.contains('s')) options.add(RegexOption.DOT_MATCHES_ALL)
+            
+            val regex = Regex(pattern, options)
+            regex.containsMatchIn(text)
+        } catch (e: Exception) {
+            // Invalid regex pattern
+            false
         }
     }
 }

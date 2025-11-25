@@ -125,6 +125,10 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
                 advance()
                 "contains"
             }
+            check(DocQLToken.RegexMatch::class) -> {
+                advance()
+                "regex"
+            }
             check(DocQLToken.GreaterThan::class) -> {
                 advance()
                 "greater"
@@ -134,7 +138,7 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
                 "less"
             }
             else -> {
-                throw DocQLException("Expected operator (==, ~=, >, <) at position $position")
+                throw DocQLException("Expected operator (==, ~=, =~, >, <) at position $position")
             }
         }
         
@@ -145,7 +149,17 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
                 when (operator) {
                     "equals" -> FilterCondition.Equals(property, str.value)
                     "contains" -> FilterCondition.Contains(property, str.value)
+                    "regex" -> FilterCondition.RegexMatch(property, str.value, "")
                     else -> throw DocQLException("String value not valid for operator '$operator'")
+                }
+            }
+            
+            check(DocQLToken.RegexLiteral::class) -> {
+                val regex = current() as DocQLToken.RegexLiteral
+                advance()
+                when (operator) {
+                    "regex" -> FilterCondition.RegexMatch(property, regex.pattern, regex.flags)
+                    else -> throw DocQLException("Regex literal not valid for operator '$operator', use '=~' operator")
                 }
             }
             
@@ -161,7 +175,7 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
             }
             
             else -> {
-                throw DocQLException("Expected value (string or number) at position $position")
+                throw DocQLException("Expected value (string, regex, or number) at position $position")
             }
         }
         

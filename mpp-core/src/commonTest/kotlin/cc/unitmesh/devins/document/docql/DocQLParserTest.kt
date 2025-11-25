@@ -227,5 +227,74 @@ class DocQLParserTest {
         assertEquals("document", (query.nodes[1] as DocQLNode.Property).name)
         assertEquals("metadata", (query.nodes[2] as DocQLNode.Property).name)
     }
+    
+    // ============ Regex Match Tests (JSONPath-style =~ /pattern/flags) ============
+    
+    @Test
+    fun `test parse filter with regex match simple`() {
+        val query = parseDocQL("$.toc[?(@.title =~ /MCP/)]")
+        
+        assertEquals(3, query.nodes.size)
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.RegexMatch
+        assertEquals("title", condition.property)
+        assertEquals("MCP", condition.pattern)
+        assertEquals("", condition.flags)
+    }
+    
+    @Test
+    fun `test parse filter with regex match case insensitive`() {
+        val query = parseDocQL("$.toc[?(@.title =~ /MCP/i)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.RegexMatch
+        assertEquals("title", condition.property)
+        assertEquals("MCP", condition.pattern)
+        assertEquals("i", condition.flags)
+    }
+    
+    @Test
+    fun `test parse filter with regex match multiple flags`() {
+        val query = parseDocQL("$.toc[?(@.content =~ /pattern/img)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.RegexMatch
+        assertEquals("content", condition.property)
+        assertEquals("pattern", condition.pattern)
+        assertEquals("img", condition.flags)
+    }
+    
+    @Test
+    fun `test parse filter with regex match complex pattern`() {
+        val query = parseDocQL("""$.toc[?(@.title =~ /^Chapter\s+\d+/i)]""")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.RegexMatch
+        assertEquals("title", condition.property)
+        assertEquals("""^Chapter\s+\d+""", condition.pattern)
+        assertEquals("i", condition.flags)
+    }
+    
+    @Test
+    fun `test parse filter with regex match chinese characters`() {
+        val query = parseDocQL("$.entities[?(@.name =~ /.*架构.*/)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.RegexMatch
+        assertEquals("name", condition.property)
+        assertEquals(".*架构.*", condition.pattern)
+        assertEquals("", condition.flags)
+    }
+    
+    @Test
+    fun `test parse filter with regex match without parentheses`() {
+        val query = parseDocQL("$.toc[?@.title =~ /API/i]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.RegexMatch
+        assertEquals("title", condition.property)
+        assertEquals("API", condition.pattern)
+        assertEquals("i", condition.flags)
+    }
 }
 

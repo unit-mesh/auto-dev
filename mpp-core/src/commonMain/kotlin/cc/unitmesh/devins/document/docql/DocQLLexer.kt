@@ -57,8 +57,11 @@ class DocQLLexer(private val input: String) {
                     if (peek() == '=') {
                         advance()
                         DocQLToken.Equals
+                    } else if (peek() == '~') {
+                        advance()
+                        DocQLToken.RegexMatch
                     } else {
-                        throw DocQLException("Unexpected character '=' at position $position")
+                        throw DocQLException("Unexpected character '=' at position $position, expected '==' or '=~'")
                     }
                 }
                 '~' -> {
@@ -69,6 +72,9 @@ class DocQLLexer(private val input: String) {
                     } else {
                         throw DocQLException("Unexpected character '~' at position $position")
                     }
+                }
+                '/' -> {
+                    parseRegexLiteral()
                 }
                 '>' -> {
                     advance()
@@ -157,6 +163,40 @@ class DocQLLexer(private val input: String) {
         
         val value = input.substring(start, position)
         return DocQLToken.Identifier(value)
+    }
+    
+    /**
+     * Parse regex literal: /pattern/flags
+     * Supports flags: i (case-insensitive), m (multiline), s (dotall), g (global)
+     */
+    private fun parseRegexLiteral(): DocQLToken.RegexLiteral {
+        advance() // skip opening /
+        val patternStart = position
+        
+        // Parse the pattern (everything until unescaped /)
+        while (position < length && input[position] != '/') {
+            if (input[position] == '\\' && position + 1 < length) {
+                position += 2 // skip both escape char and the escaped char
+            } else {
+                position++
+            }
+        }
+        
+        if (position >= length) {
+            throw DocQLException("Unterminated regex literal starting at position ${patternStart - 1}")
+        }
+        
+        val pattern = input.substring(patternStart, position)
+        advance() // skip closing /
+        
+        // Parse optional flags (i, m, s, g, etc.)
+        val flagsStart = position
+        while (position < length && input[position] in "imsgu") {
+            position++
+        }
+        val flags = input.substring(flagsStart, position)
+        
+        return DocQLToken.RegexLiteral(pattern, flags)
     }
 }
 

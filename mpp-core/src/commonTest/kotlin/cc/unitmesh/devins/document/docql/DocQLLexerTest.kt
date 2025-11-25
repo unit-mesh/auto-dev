@@ -185,5 +185,77 @@ class DocQLLexerTest {
         assertEquals("grep", (tokens[4] as DocQLToken.Identifier).value)
         assertEquals("keyword", (tokens[6] as DocQLToken.StringLiteral).value)
     }
+    
+    // ============ Regex Match Lexer Tests ============
+    
+    @Test
+    fun `test regex match operator`() {
+        val lexer = DocQLLexer("$.toc[?(@.title =~ /MCP/)]")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.RegexMatch>(tokens[9])
+        val regexToken = tokens[10] as DocQLToken.RegexLiteral
+        assertEquals("MCP", regexToken.pattern)
+        assertEquals("", regexToken.flags)
+    }
+    
+    @Test
+    fun `test regex literal with flags`() {
+        val lexer = DocQLLexer("$.toc[?(@.title =~ /pattern/i)]")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.RegexMatch>(tokens[9])
+        val regexToken = tokens[10] as DocQLToken.RegexLiteral
+        assertEquals("pattern", regexToken.pattern)
+        assertEquals("i", regexToken.flags)
+    }
+    
+    @Test
+    fun `test regex literal with multiple flags`() {
+        val lexer = DocQLLexer("$.toc[?(@.title =~ /test/img)]")
+        val tokens = lexer.tokenize()
+        
+        val regexToken = tokens[10] as DocQLToken.RegexLiteral
+        assertEquals("test", regexToken.pattern)
+        assertEquals("img", regexToken.flags)
+    }
+    
+    @Test
+    fun `test regex literal with escaped slash`() {
+        val lexer = DocQLLexer("""$.toc[?(@.path =~ /\/api\/v1/)]""")
+        val tokens = lexer.tokenize()
+        
+        val regexToken = tokens[10] as DocQLToken.RegexLiteral
+        // In raw string """\/""" is backslash + slash, so the pattern is: \/api\/v1
+        assertEquals("\\/api\\/v1", regexToken.pattern)
+        assertEquals("", regexToken.flags)
+    }
+    
+    @Test
+    fun `test regex literal with complex pattern`() {
+        val lexer = DocQLLexer("""$.toc[?(@.title =~ /^Chapter\s+\d+/i)]""")
+        val tokens = lexer.tokenize()
+        
+        val regexToken = tokens[10] as DocQLToken.RegexLiteral
+        assertEquals("""^Chapter\s+\d+""", regexToken.pattern)
+        assertEquals("i", regexToken.flags)
+    }
+    
+    @Test
+    fun `test regex literal with chinese characters`() {
+        val lexer = DocQLLexer("$.toc[?(@.title =~ /.*架构.*/)]")
+        val tokens = lexer.tokenize()
+        
+        val regexToken = tokens[10] as DocQLToken.RegexLiteral
+        assertEquals(".*架构.*", regexToken.pattern)
+    }
+    
+    @Test
+    fun `test unterminated regex error`() {
+        val lexer = DocQLLexer("$.toc[?(@.title =~ /unterminated")
+        
+        assertFailsWith<DocQLException> {
+            lexer.tokenize()
+        }
+    }
 }
-

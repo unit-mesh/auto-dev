@@ -4,19 +4,34 @@ package cc.unitmesh.devins.document.docql
  * DocQL - A JSONPath-like query language for documents
  * 
  * Syntax Examples:
- * - $.toc[*]                     // All TOC items
- * - $.toc[0]                     // First TOC item
- * - $.toc[?(@.level==1)]         // TOC items with level 1
- * - $.toc[?(@.title~="架构")]     // TOC items where title contains "架构"
- * - $.entities[*]                // All entities
- * - $.entities[?(@.type=="Term")] // Term entities
- * - $.content.heading("架构")     // Content with heading matching "架构"
- * - $.content.chapter("1.2")     // Chapter 1.2 content
- * - $.content.h1("介绍")         // H1 heading matching "介绍"
- * - $.content.h2("设计")         // H2 heading matching "设计"
- * - $.content.code[*]            // All code blocks
- * - $.content.table[*]           // All tables
- * - $.content.grep("关键词")      // Grep search for "关键词"
+ * - `$.toc[*]`                     - All TOC items
+ * - `$.toc[0]`                     - First TOC item
+ * - `$.toc[?(@.level==1)]`         - TOC items with level 1
+ * - `$.toc[?(@.title~="架构")]`     - TOC items where title contains "架构"
+ * - `$.toc[?(@.title =~ /MCP/i)]`  - TOC items where title matches regex "MCP" (case-insensitive)
+ * - `$.toc[?(@.title =~ /^Chapter\d+/)]` - Regex with pattern anchors
+ * - `$.entities[*]`                - All entities
+ * - `$.entities[?(@.type=="Term")]` - Term entities
+ * - `$.entities[?(@.name =~ /API/)]` - Entities where name matches regex
+ * - `$.content.heading("架构")`     - Content with heading matching "架构"
+ * - `$.content.chapter("1.2")`     - Chapter 1.2 content
+ * - `$.content.h1("介绍")`         - H1 heading matching "介绍"
+ * - `$.content.h2("设计")`         - H2 heading matching "设计"
+ * - `$.content.code[*]`            - All code blocks
+ * - `$.content.table[*]`           - All tables
+ * - `$.content.grep("关键词")`      - Grep search for "关键词"
+ * 
+ * Filter Operators:
+ * - `==`  Equality: `@.property == "value"`
+ * - `~=`  Contains: `@.property ~= "value"`
+ * - `=~`  Regex match (JSONPath style): `@.property =~ /pattern/flags`
+ * - `>`   Greater than: `@.property > number`
+ * - `<`   Less than: `@.property < number`
+ * 
+ * Regex Flags (for =~ operator):
+ * - `i`  Case-insensitive matching
+ * - `m`  Multiline mode
+ * - `s`  Dotall mode (. matches newlines)
  */
 
 /**
@@ -60,17 +75,21 @@ sealed class FilterCondition {
      */
     data class Equals(val property: String, val value: String) : FilterCondition()
     
-    /**
-     * Contains: @.property ~= "value"
-     */
-    data class Contains(val property: String, val value: String) : FilterCondition()
-    
-    /**
-     * Greater than: @.property > value
-     */
-    data class GreaterThan(val property: String, val value: Int) : FilterCondition()
-    
-    /**
+/**
+ * Contains: @.property ~= "value"
+ */
+data class Contains(val property: String, val value: String) : FilterCondition()
+
+/**
+ * Regex match: @.property =~ /pattern/flags (JSONPath-style)
+ * Flags can include: i (case-insensitive), m (multiline), s (dotall)
+ */
+data class RegexMatch(val property: String, val pattern: String, val flags: String = "") : FilterCondition()
+
+/**
+ * Greater than: @.property > value
+ */
+data class GreaterThan(val property: String, val value: Int) : FilterCondition()    /**
      * Less than: @.property < value
      */
     data class LessThan(val property: String, val value: Int) : FilterCondition()
@@ -111,10 +130,12 @@ sealed class DocQLToken {
     object At : DocQLToken()                                // @
     object Equals : DocQLToken()                            // ==
     object Contains : DocQLToken()                          // ~=
+    object RegexMatch : DocQLToken()                        // =~
     object GreaterThan : DocQLToken()                       // >
     object LessThan : DocQLToken()                          // <
     data class Identifier(val value: String) : DocQLToken() // property names, function names
     data class StringLiteral(val value: String) : DocQLToken() // "string"
+    data class RegexLiteral(val pattern: String, val flags: String) : DocQLToken() // /pattern/flags
     data class Number(val value: Int) : DocQLToken()        // 123
     object EOF : DocQLToken()
 }
