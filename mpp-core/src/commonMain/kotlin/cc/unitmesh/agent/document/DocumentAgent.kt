@@ -189,6 +189,57 @@ class DocumentAgent(
             
             ---
             
+            ## Querying Source Code Files
+            
+            **Source code files (.kt, .java, .py, .js, .ts, etc.) are indexed with hierarchical structure:**
+            
+            ### Code Structure
+            - 📦 **Packages/Modules** → 📘 **Classes/Interfaces** → ⚡ **Methods/Functions** → 📌 **Fields/Properties**
+            - Each code element has complete source code preserved (method-level)
+            - TOC reflects the nested structure of code
+            
+            ### Querying Code
+            
+            1. **Find Classes**:
+               - `$.content.heading("ClassName")` - Find classes by name
+               - `$.entities[?(@.type == "ClassEntity")]` - All classes
+               
+            2. **Find Methods/Functions**:
+               - `$.content.heading("methodName")` - Find by method name
+               - `$.entities[?(@.type == "FunctionEntity")]` - All functions
+               
+            3. **Find Implementation**:
+               - Query by class name first to get context
+               - Then query by method name to see implementation
+               - Method bodies are preserved with full code
+            
+            4. **Understand Code Flow**:
+               - Start with class structure: `$.toc[*]` shows hierarchy
+               - Then query specific methods for details
+               - Use package names to narrow down scope
+            
+            ### Examples for Code Queries
+            
+            **Q: "What is DocQLExecutor and how does it work?"**
+            ```json
+            {"query": "$.content.heading(\"DocQLExecutor\")", "documentPath": null}
+            ```
+            ✅ Will find the class and show its methods with implementations
+            
+            **Q: "How does the execute method work in DocQLExecutor?"**
+            ```json
+            {"query": "$.content.heading(\"execute\")", "documentPath": null}
+            ```
+            ✅ Will find all execute methods and show their code
+            
+            **Q: "Find all parse methods"**
+            ```json
+            {"query": "$.content.heading(\"parse\")", "documentPath": null}
+            ```
+            ✅ Will find parseDocument, parseMarkdown, etc. with implementations
+            
+            ---
+            
             ## Response Workflow
             
             1. **Plan**: Analyze the query and identify target documents from filename patterns
@@ -255,6 +306,12 @@ class DocumentAgent(
             * **Multi-language**: 颜色→color; 设计→design; 架构→architecture
             * **Compounds**: base64→base-64; API→api/interface
             
+            ### Code-Specific Expansions
+            * **Naming Patterns**: Parser → DocumentParser/CodeParser/JsonParser
+            * **Method Patterns**: get/set/is/has, create/build/make, parse/read/load
+            * **Class Types**: Service/Manager/Handler/Controller/Repository/Factory
+            * **Interfaces**: Interface/Impl/Abstract patterns
+            
             ---
             
             ## Smart Document Selection
@@ -289,10 +346,34 @@ class DocumentAgent(
             - Try 2-3 different queries before concluding "no information found"
             - Query multiple related documents for cross-cutting topics
             
+            ✅ **FOR CODE QUERIES:**
+            - Identify if query is about code (class, method, implementation, "how it works")
+            - Look for source file extensions (.kt, .java, .py, .js, .ts, .go, .rs, .cs)
+            - Start with class/interface name to understand structure
+            - Then query specific methods for implementation details
+            - Method bodies contain full code with comments
+            - Use package structure to narrow search scope
+            
             ❌ **DON'T:**
             - Don't use filesystem tools on registered documents
             - Don't give up after one failed query - retry with broader terms
             - Don't use `chunks()` as your first choice unless query is very broad
+            - Don't read source files directly - they are already indexed with structure
+            
+            ---
+            
+            ## Query Type Detection
+            
+            **Documentation Queries** (use $.content.heading or $.content.chunks):
+            - "What is X?" → Concepts, definitions
+            - "How to use X?" → Usage guides, tutorials
+            - "Design of X" → Architecture docs
+            
+            **Code Queries** (use $.content.heading focusing on code files):
+            - "How does X work?" → Find class X and its methods
+            - "Implementation of Y" → Find method Y with code
+            - "Where is Z defined?" → Find class/method Z
+            - "What does method M do?" → Find method M implementation
             
             ---
             

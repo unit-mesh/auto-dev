@@ -116,5 +116,172 @@ class CodeDocumentParserTest {
             assertEquals(DocumentFormatType.SOURCE_CODE, formatType)
         }
     }
+    
+    @Test
+    fun `should find classes by package structure`() = runBlocking {
+        val sourceCode = """
+            package cc.unitmesh.devins.document.docql
+            
+            sealed class DocQLResult {
+                data class TocItems(val items: List<String>) : DocQLResult()
+                data class Empty(val message: String) : DocQLResult()
+            }
+            
+            class DocQLExecutor {
+                fun execute() {}
+            }
+        """.trimIndent()
+        
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "TestFile.kt",
+            path = "test/TestFile.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sourceCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val result = parser.parse(file, sourceCode) as DocumentFile
+        
+        // Should group classes by package
+        assertTrue(result.toc.isNotEmpty())
+        println("\n📦 Package Structure:")
+        result.toc.forEach { toc ->
+            println("  ${toc.title}")
+            toc.children.forEach { child ->
+                println("    - ${child.title}")
+            }
+        }
+        
+        // Should find all classes
+        val classes = result.entities.filterIsInstance<Entity.ClassEntity>()
+        assertTrue(classes.size >= 3, "Should find at least DocQLResult, TocItems, Empty, DocQLExecutor")
+        println("\n📘 Found ${classes.size} classes")
+    }
+    
+    @Test
+    fun `should query methods by name pattern`() = runBlocking {
+        val sourceCode = """
+            class DocumentParser {
+                fun parseDocument(content: String) {}
+                fun parseMarkdown(content: String) {}
+                fun parseCode(content: String) {}
+                fun validateDocument() {}
+                fun getContent() {}
+            }
+        """.trimIndent()
+        
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "Parser.kt",
+            path = "test/Parser.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sourceCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val result = parser.parse(file, sourceCode)
+        
+        // Query for "parse" methods
+        val parseChunks = parser.queryHeading("parse")
+        println("\n🔍 Query 'parse' found ${parseChunks.size} results:")
+        parseChunks.forEach { chunk ->
+            println("  - ${chunk.chapterTitle}")
+        }
+        assertTrue(parseChunks.size >= 3, "Should find parseDocument, parseMarkdown, parseCode")
+        
+        // Query for "get" methods
+        val getChunks = parser.queryHeading("get")
+        println("\n🔍 Query 'get' found ${getChunks.size} results:")
+        getChunks.forEach { chunk ->
+            println("  - ${chunk.chapterTitle}")
+        }
+        assertTrue(getChunks.isNotEmpty(), "Should find getContent")
+    }
+    
+    @Test
+    fun `should preserve method bodies for context`() = runBlocking {
+        val sourceCode = """
+            class Calculator {
+                fun add(a: Int, b: Int): Int {
+                    // Add two numbers
+                    return a + b
+                }
+                
+                fun subtract(a: Int, b: Int): Int {
+                    // Subtract two numbers
+                    return a - b
+                }
+            }
+        """.trimIndent()
+        
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "Calculator.kt",
+            path = "test/Calculator.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sourceCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val result = parser.parse(file, sourceCode)
+        
+        // Query for add method
+        val chunks = parser.queryHeading("add")
+        assertTrue(chunks.isNotEmpty())
+        
+        val addChunk = chunks.first()
+        println("\n📝 Method body content:")
+        println(addChunk.content)
+        
+        // Should contain the method implementation
+        assertTrue(addChunk.content.contains("return a + b"), "Should preserve method body")
+        assertTrue(addChunk.content.contains("// Add two numbers"), "Should preserve comments")
+    }
+    
+    @Test
+    fun `should handle nested classes correctly`() = runBlocking {
+        val sourceCode = """
+            class OuterClass {
+                class InnerClass {
+                    fun innerMethod() {}
+                }
+                
+                fun outerMethod() {}
+            }
+        """.trimIndent()
+        
+        val parser = CodeDocumentParser()
+        val file = DocumentFile(
+            name = "Nested.kt",
+            path = "test/Nested.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sourceCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val result = parser.parse(file, sourceCode) as DocumentFile
+        
+        println("\n🗂️  Nested class structure:")
+        result.toc.forEach { toc ->
+            println("${toc.title} (${toc.children.size} children)")
+            toc.children.forEach { child ->
+                println("  - ${child.title}")
+            }
+        }
+        
+        // Should find both outer and inner classes
+        val classes = result.entities.filterIsInstance<Entity.ClassEntity>()
+        assertTrue(classes.isNotEmpty())
+        println("Found ${classes.size} classes: ${classes.map { it.name }}")
+    }
 }
 
