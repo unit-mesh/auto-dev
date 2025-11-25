@@ -71,7 +71,7 @@ data class PlanItem(
 
 /**
  * Displays AI-generated modification plan with modern Plan-like UI
- * 
+ *
  * @param planOutput The plan markdown output
  * @param isActive Whether the plan is being generated
  * @param selectedItems Set of selected plan item numbers (for multi-select)
@@ -137,12 +137,12 @@ fun ModificationPlanSection(
                     )
 
                     Text(
-                        text = "修改计划",
+                        text = "Modification Plan",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    
+
                     if (planItems.isNotEmpty()) {
                         Surface(
                             color = MaterialTheme.colorScheme.primaryContainer,
@@ -163,7 +163,7 @@ fun ModificationPlanSection(
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
-                                text = "${selectedItems.size} 已选",
+                                text = "${selectedItems.size} items",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.White,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -177,7 +177,7 @@ fun ModificationPlanSection(
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
-                                text = "生成中",
+                                text = "Generating...",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.White,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -240,12 +240,12 @@ private fun PlanItemCard(
     onFileLinkClick: ((String) -> Unit)? = null
 ) {
     var isExpanded by remember { mutableStateOf(true) }
-    
+
     // Get adjusted priority using utility function
     val adjustedPriority = remember(item) {
         PlanPriority.getAdjustedPriority(item)
     }
-    
+
     // Get priority color based on adjusted priority
     val priorityColor = when {
         adjustedPriority.contains("关键") || adjustedPriority.contains("CRITICAL") -> AutoDevColors.Red.c600
@@ -291,7 +291,7 @@ private fun PlanItemCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { 
+                    .clickable {
                         onSelectionChanged(!isSelected)
                     }
                     .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -306,12 +306,12 @@ private fun PlanItemCard(
                     // Checkbox for selection
                     Checkbox(
                         checked = isSelected,
-                        onCheckedChange = { 
+                        onCheckedChange = {
                             onSelectionChanged(it)
                         },
                         modifier = Modifier.size(20.dp)
                     )
-                    
+
                     // Expand/collapse icon
                     Icon(
                         imageVector = if (isExpanded) AutoDevComposeIcons.ExpandMore else AutoDevComposeIcons.ChevronRight,
@@ -325,7 +325,7 @@ private fun PlanItemCard(
                                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                             )
                     )
-                    
+
                     Text(
                         text = "${item.number}. ${item.title}",
                         style = MaterialTheme.typography.bodyMedium,
@@ -333,7 +333,7 @@ private fun PlanItemCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                
+
                 Surface(
                     color = priorityColor.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(4.dp)
@@ -384,7 +384,7 @@ private fun PlanStepItem(
         StepStatus.IN_PROGRESS -> AutoDevComposeIcons.Refresh
         StepStatus.TODO -> AutoDevComposeIcons.CheckBoxOutlineBlank
     }
-    
+
     val statusColor = when (step.status) {
         StepStatus.COMPLETED -> AutoDevColors.Green.c600
         StepStatus.FAILED -> AutoDevColors.Red.c600
@@ -405,7 +405,7 @@ private fun PlanStepItem(
                 .size(16.dp)
                 .padding(top = 2.dp)
         )
-        
+
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -418,23 +418,23 @@ private fun PlanStepItem(
                 } else {
                     var remainingText = step.text
                     var lastIndex = 0
-                    
+
                     // Replace file links with annotated spans
                     step.fileLinks.forEach { link ->
                         val linkPattern = "[${link.displayText}](${link.filePath})"
                         val linkIndex = remainingText.indexOf(linkPattern, lastIndex)
-                        
+
                         if (linkIndex >= 0) {
                             // Add text before link
                             if (linkIndex > lastIndex) {
                                 append(remainingText.substring(lastIndex, linkIndex))
                             }
-                            
+
                             // Add link with style and clickable annotation
                             val start = length
                             append(link.displayText)
                             val end = length
-                            
+
                             // Add string annotation for file link
                             addStringAnnotation(
                                 tag = "FILE_LINK",
@@ -442,7 +442,7 @@ private fun PlanStepItem(
                                 start = start,
                                 end = end
                             )
-                            
+
                             addStyle(
                                 style = SpanStyle(
                                     color = MaterialTheme.colorScheme.primary,
@@ -452,18 +452,18 @@ private fun PlanStepItem(
                                 start = start,
                                 end = end
                             )
-                            
+
                             lastIndex = linkIndex + linkPattern.length
                         }
                     }
-                    
+
                     // Add remaining text
                     if (lastIndex < remainingText.length) {
                         append(remainingText.substring(lastIndex))
                     }
                 }
             }
-            
+
             // Use ClickableText for file link support (deprecated but still works)
             androidx.compose.foundation.text.ClickableText(
                 text = annotatedText,
