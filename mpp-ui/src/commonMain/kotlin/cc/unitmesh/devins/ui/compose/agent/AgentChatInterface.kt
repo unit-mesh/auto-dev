@@ -121,11 +121,11 @@ fun AgentChatInterface(
 
                     // Chat 消息列表 和 Task Panel
                     val activeTasks = remember(viewModel.renderer.tasks) {
-                        viewModel.renderer.tasks.filter { 
-                            it.status != TaskStatus.COMPLETED && it.status != TaskStatus.CANCELLED 
+                        viewModel.renderer.tasks.filter {
+                            it.status != TaskStatus.COMPLETED && it.status != TaskStatus.CANCELLED
                         }
                     }
-                    
+
                     if (activeTasks.isNotEmpty()) {
                         Row(
                             modifier = Modifier
@@ -142,7 +142,7 @@ fun AgentChatInterface(
                                     viewModel.renderer.openFileViewer(filePath)
                                 }
                             )
-                            
+
                             TaskPanel(
                                 tasks = activeTasks,
                                 modifier = Modifier
@@ -194,7 +194,7 @@ fun AgentChatInterface(
                             )
                         }
                         AgentType.CODE_REVIEW,
-                        AgentType.DOCUMENT_READER -> {
+                        AgentType.KNOWLEDGE -> {
                             // CODE_REVIEW and DOCUMENT_READER have their own full-page interfaces
                             // They should not reach here - handled by AgentInterfaceRouter
                         }
@@ -280,11 +280,11 @@ fun AgentChatInterface(
 
             // Chat 消息列表 和 Task Panel
             val activeTasks = remember(viewModel.renderer.tasks) {
-                viewModel.renderer.tasks.filter { 
-                    it.status != TaskStatus.COMPLETED && it.status != TaskStatus.CANCELLED 
+                viewModel.renderer.tasks.filter {
+                    it.status != TaskStatus.COMPLETED && it.status != TaskStatus.CANCELLED
                 }
             }
-            
+
             if (activeTasks.isNotEmpty()) {
                 Row(
                     modifier = Modifier
@@ -301,7 +301,7 @@ fun AgentChatInterface(
                             viewModel.renderer.openFileViewer(filePath)
                         }
                     )
-                    
+
                     TaskPanel(
                         tasks = activeTasks,
                         modifier = Modifier

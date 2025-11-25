@@ -56,7 +56,7 @@ fun AgentInterfaceRouter(
     modifier: Modifier = Modifier
 ) {
     when (selectedAgentType) {
-        AgentType.DOCUMENT_READER -> {
+        AgentType.KNOWLEDGE -> {
             cc.unitmesh.devins.ui.compose.document.DocumentReaderPage(
                 modifier = modifier,
                 onBack = {

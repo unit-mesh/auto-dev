@@ -341,7 +341,7 @@ private fun ExpandedSessionSidebarContent(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "智能文档",
+                    text = "知识管理",
                     style = MaterialTheme.typography.labelLarge
                 )
             }

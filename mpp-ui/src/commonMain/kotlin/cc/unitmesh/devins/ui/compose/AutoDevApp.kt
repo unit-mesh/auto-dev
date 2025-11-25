@@ -16,8 +16,6 @@ import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.ui.app.UnifiedAppContent
 import cc.unitmesh.devins.ui.compose.agent.AgentInterfaceRouter
 import cc.unitmesh.agent.AgentType
-import cc.unitmesh.agent.logging.logger
-import cc.unitmesh.devins.ui.compose.chat.MessageList
 import cc.unitmesh.devins.ui.compose.chat.SessionSidebar
 import cc.unitmesh.devins.ui.compose.chat.TopBarMenu
 import cc.unitmesh.devins.ui.compose.chat.createChatCallbacks
@@ -408,7 +406,7 @@ private fun AutoDevContent(
                     chatHistoryManager.renameSession(sessionId, newTitle)
                 },
                 onNavigateToDocuments = {
-                    handleAgentTypeChange(AgentType.DOCUMENT_READER)
+                    handleAgentTypeChange(AgentType.KNOWLEDGE)
                 }
             )
 

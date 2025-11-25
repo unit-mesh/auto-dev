@@ -221,7 +221,7 @@ fun TopBarMenuMobile(
                                         imageVector = when (currentAgentType) {
                                             AgentType.REMOTE -> AutoDevComposeIcons.Cloud
                                             AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
-                                            AgentType.DOCUMENT_READER -> AutoDevComposeIcons.Article
+                                            AgentType.KNOWLEDGE -> AutoDevComposeIcons.Article
                                             AgentType.CODING -> AutoDevComposeIcons.Code
                                             AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
                                         },
@@ -255,7 +255,7 @@ fun TopBarMenuMobile(
                                                 imageVector = when (type) {
                                                     AgentType.REMOTE -> AutoDevComposeIcons.Cloud
                                                     AgentType.CODE_REVIEW -> AutoDevComposeIcons.RateReview
-                                                    AgentType.DOCUMENT_READER -> AutoDevComposeIcons.Article
+                                                    AgentType.KNOWLEDGE -> AutoDevComposeIcons.Article
                                                     AgentType.CODING -> AutoDevComposeIcons.Code
                                                     AgentType.LOCAL_CHAT -> AutoDevComposeIcons.Chat
                                                 },

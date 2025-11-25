@@ -1,6 +1,5 @@
 package cc.unitmesh.devins.ui.compose.chat
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -8,7 +7,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,7 +32,7 @@ fun DesktopTitleBarTabs(
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(currentAgentType) {
-        if (currentAgentType == AgentType.CODE_REVIEW || currentAgentType == AgentType.DOCUMENT_READER) {
+        if (currentAgentType == AgentType.CODE_REVIEW || currentAgentType == AgentType.KNOWLEDGE) {
             UIStateManager.setSessionSidebarVisible(false)
         } else {
             UIStateManager.setSessionSidebarVisible(true)
