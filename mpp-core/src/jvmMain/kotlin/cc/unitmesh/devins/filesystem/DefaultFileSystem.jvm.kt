@@ -12,13 +12,8 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     
     private val gitIgnoreParser: cc.unitmesh.agent.tool.gitignore.GitIgnoreParser? by lazy {
         try {
-            val parser = cc.unitmesh.agent.tool.gitignore.GitIgnoreParser(projectPath)
-            println("DefaultFileSystem: GitIgnoreParser 已初始化，项目路径: $projectPath")
-            println("DefaultFileSystem: 加载的 gitignore 规则数: ${parser.getPatterns().size}")
-            parser
+            cc.unitmesh.agent.tool.gitignore.GitIgnoreParser(projectPath)
         } catch (e: Exception) {
-            println("DefaultFileSystem: GitIgnoreParser 初始化失败: ${e.message}")
-            e.printStackTrace()
             null
         }
     }
@@ -122,24 +117,16 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                 .replace("**/", "___RECURSIVE___")  // Protect **/ first  
                 .replace("**", "___GLOBSTAR___")  // Then protect **
                 .replace(".", "\\.")  // Escape dots
+                .replace("?", "___QUESTION___")  // Protect ? before converting braces
                 .replace("*", "[^/]*")  // Single * matches anything except path separator
-                .replace("___RECURSIVE___", "(?:(?:.*/)|(?:))")  // **/ matches zero or more directories
-                .replace("___GLOBSTAR___", ".*")  // ** without / matches anything
-                .replace("?", ".")
                 .replace("{", "(")
                 .replace("}", ")")
                 .replace(",", "|")
+                .replace("___RECURSIVE___", "(?:(?:.*/)|(?:))")  // **/ matches zero or more directories
+                .replace("___GLOBSTAR___", ".*")  // ** without / matches anything
+                .replace("___QUESTION___", ".")  // Now replace ? with .
             
             val regex = regexPattern.toRegex(RegexOption.IGNORE_CASE)
-            
-            // DEBUG: Print regex pattern once
-            if (projectPath.contains("autocrud")) {
-                println("REGEX_CHECK input_pattern: $pattern")
-                println("REGEX_CHECK output_regex_length: ${regexPattern.length}")
-                println("REGEX_CHECK output_regex_first20: ${regexPattern.take(20)}")
-                println("REGEX_CHECK output_regex_full: |$regexPattern|")
-                println("REGEX_CHECK matches_README: ${regex.matches("README.md")}")
-            }
             
             val results = mutableListOf<String>()
             
@@ -149,9 +136,6 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
             
             // Reload gitignore patterns before search
             gitIgnoreParser?.reload()
-            
-            var skippedByGitignore = 0
-            var skippedByExclude = 0
             
             Files.walk(projectRoot, maxDepth).use { stream ->
                 val iterator = stream
@@ -163,13 +147,11 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                         
                         // 1. 排除关键目录（.git 必须排除）
                         if (path.any { it.fileName.toString() in criticalExcludeDirs }) {
-                            skippedByExclude++
                             return@filter false
                         }
                         
                         // 2. 使用 GitIgnoreParser 检查（这应该处理 .gitignore 中的所有规则）
                         if (gitIgnoreParser?.isIgnored(relativePath) == true) {
-                            skippedByGitignore++
                             return@filter false
                         }
                         
@@ -192,24 +174,12 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                     
                     if (regex.matches(matchTarget)) {
                         results.add(relativePath)
-                        if (results.size <= 5 || relativePath.contains("README")) {
-                            println("DEBUG matched: $relativePath (matched against: $matchTarget)")
-                        }
-                    } else if (relativePath.endsWith("README.md") || relativePath == "README.md") {
-                        println("DEBUG README.md NOT matched: relativePath='$relativePath', fileName='$fileName', matchTarget='$matchTarget', regex='$regexPattern'")
                     }
                 }
             }
             
-            // 输出调试信息
-            if (skippedByGitignore > 0 || skippedByExclude > 0) {
-                println("searchFiles: 排除 $skippedByExclude 个关键目录文件, $skippedByGitignore 个 gitignore 匹配文件")
-            }
-            
             results
         } catch (e: Exception) {
-            println("searchFiles error: ${e.message}")
-            e.printStackTrace()
             emptyList()
         }
     }
