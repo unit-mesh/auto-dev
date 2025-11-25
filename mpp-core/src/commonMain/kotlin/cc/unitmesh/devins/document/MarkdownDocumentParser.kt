@@ -22,39 +22,19 @@ class MarkdownDocumentParser : DocumentParserService {
     override fun getDocumentContent(): String? = currentContent
 
     override suspend fun parse(file: DocumentFile, content: String): DocumentTreeNode {
-        logger.info { "=== Starting Markdown Parse ===" }
-        logger.info { "File: ${file.path}, Size: ${content.length} bytes" }
-        
         currentContent = content
         
         // Parse Markdown using JetBrains Markdown library
         val flavour = CommonMarkFlavourDescriptor()
         val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(content)
         
-        // Extract headings and build TOC
         val headings = extractHeadings(parsedTree, content)
-        logger.info { "Extracted ${headings.size} headings" }
-        headings.forEachIndexed { index, heading ->
-            logger.debug { "  [$index] Level ${heading.level}: ${heading.text}" }
-        }
-        
-        // Build hierarchical TOC
+
         currentToc = buildHierarchicalTOC(headings, content)
-        logger.info { "Built TOC with ${currentToc.size} root items" }
-        
-        // Build document chunks for each heading
         currentChunks = buildDocumentChunks(headings, content, file.path)
-        logger.info { "Created ${currentChunks.size} document chunks" }
-        
-        // Build chapter ID mapping for fast ChapterQL lookup
+
         chapterIdToChunk = buildChapterIdMapping(headings, currentChunks)
-        logger.info { "Mapped ${chapterIdToChunk.size} chapter IDs" }
-        chapterIdToChunk.forEach { (id, chunk) ->
-            logger.debug { "  Chapter $id -> ${chunk.chapterTitle}" }
-        }
-        
-        logger.info { "=== Parse Complete ===" }
-        
+
         return file.copy(
             toc = currentToc,
             metadata = file.metadata.copy(
