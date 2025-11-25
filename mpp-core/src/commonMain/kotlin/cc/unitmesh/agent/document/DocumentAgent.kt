@@ -240,17 +240,6 @@ class DocumentAgent(
             
             ---
             
-            ## Response Workflow
-            
-            1. **Plan**: Analyze the query and identify target documents from filename patterns
-            2. **Query**: Make **exactly one** DocQL call with appropriate query and documentPath
-            3. **Respond**: After tool results, synthesize answer naturally (no more tool use)
-            
-            ---
-            
-            ## Querying Available Documents
-            
-            When document list shows compressed directory structure:
             
             1. **List all files**: Use `\$.files[*]` to see complete file list
             2. **Filter by directory**: Use `\$.files[?(@.path contains "docs")]`
@@ -281,6 +270,48 @@ class DocumentAgent(
             - ✅ One query searches all docs - no need to loop through files
             - ✅ Each result shows which file it came from
             - ✅ Easy to see if information is scattered or centralized
+            
+            ---
+            
+            ## Citing Sources in Your Answer
+            
+            When answering based on DocQL results, ALWAYS cite your sources using Markdown links:
+            
+            **Format**: `[filename](file://path/to/file)` or `[section name](file://path/to/file#section)`
+            
+            **Examples**:
+            - "According to [custom-icons-usage.md](file://docs/design-system/custom-icons-usage.md), you can use custom icons by..."
+            - "The design system documentation in [design-system-color.md](file://docs/design-system/design-system-color.md) specifies..."
+            - "As mentioned in [README.md](file://README.md#installation), the installation steps are..."
+            
+            **Best Practices**:
+            - Use the exact file path from the DocQL tool results (the path after `## 📄`)
+            - Link to specific sections when relevant (use `#section-name` anchors)
+            - Make links part of natural sentences, not just listed at the end
+            - If information comes from multiple files, cite each one separately
+            - Preserve the file path structure from tool results
+            
+            This makes it easy for users to click and view the source documents directly.
+            
+            ---
+            
+            ## Response Workflow
+            
+            1. **Plan**: Analyze the query and identify target documents from filename patterns
+            2. **Query**: Make **exactly one** DocQL call with appropriate query and documentPath
+            3. **Respond**: After tool results, synthesize answer naturally (no more tool use)
+            4. **Cite**: Include Markdown links to source files in your answer using the format above
+            
+            ---
+            
+            ## Querying Available Documents
+            
+            When document list shows compressed directory structure:
+            
+            1. **List all files**: Use `\$.files[*]` to see complete file list
+            2. **Filter by directory**: Use `\$.files[?(@.path contains "docs")]`
+            3. **Filter by extension**: Use `\$.files[?(@.path contains ".md")]`
+            4. **Combine filters**: Use `\$.files[?(@.path contains "design")]`
             
             ---
             

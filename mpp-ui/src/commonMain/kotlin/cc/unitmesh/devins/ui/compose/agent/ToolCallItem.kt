@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -272,18 +274,40 @@ fun CombinedToolItem(
                         }
                     }
 
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(4.dp),
-                        modifier = Modifier.Companion.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = formatOutput(displayOutput),
-                            modifier = Modifier.Companion.padding(8.dp),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontFamily = FontFamily.Companion.Monospace
-                        )
+                    // Render DocQL output as Markdown, other tools as plain text
+                    if (toolName.lowercase().contains("docql")) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.Companion.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.Companion
+                                    .padding(8.dp)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                cc.unitmesh.devins.ui.compose.sketch.MarkdownSketchRenderer.RenderMarkdown(
+                                    markdown = displayOutput,
+                                    isComplete = true,
+                                    isDarkTheme = false, // Will be determined by system theme
+                                    modifier = Modifier.Companion.fillMaxWidth()
+                                )
+                            }
+                        }
+                    } else {
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.Companion.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = formatOutput(displayOutput),
+                                modifier = Modifier.Companion.padding(8.dp),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = FontFamily.Companion.Monospace
+                            )
+                        }
                     }
                 }
             }
