@@ -1,16 +1,18 @@
 package cc.unitmesh.devins.document
 
+import cc.unitmesh.devins.document.pdf.PagePdfDocumentReader
+import cc.unitmesh.devins.document.pdf.config.PdfDocumentReaderConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
-import org.apache.pdfbox.text.PDFTextStripper
 import java.io.File
 
 private val logger = KotlinLogging.logger {}
 
 /**
- * Apache PDFBox-based document parser for JVM platform
+ * Apache PDFBox-based document parser for JVM platform.
+ * This class now uses Spring AI's PagePdfDocumentReader internally for better text extraction.
  */
 class PdfDocumentParser : DocumentParserService {
     private var currentContent: String? = null
@@ -28,19 +30,41 @@ class PdfDocumentParser : DocumentParserService {
                 throw IllegalArgumentException("File not found: ${file.path}")
             }
 
+            // Use PagePdfDocumentReader for better text extraction
+            val config = PdfDocumentReaderConfig.defaultConfig()
+            val reader = PagePdfDocumentReader(file.path, config)
+            val pdfDocuments = reader.get()
+
+            // Build full text from all documents
+            currentContent = pdfDocuments.joinToString("\n") { it.text }
+            logger.info { "Extracted ${currentContent?.length ?: 0} characters" }
+
+            // Build chunks from PDF documents
+            currentChunks = pdfDocuments.mapIndexed { index, pdfDoc ->
+                val pageNumber = (pdfDoc.metadata[PagePdfDocumentReader.METADATA_START_PAGE_NUMBER] as? Int) ?: (index + 1)
+                val endPageNumber = (pdfDoc.metadata[PagePdfDocumentReader.METADATA_END_PAGE_NUMBER] as? Int) ?: pageNumber
+                
+                DocumentChunk(
+                    documentPath = file.path,
+                    chapterTitle = if (pageNumber == endPageNumber) {
+                        "Page $pageNumber"
+                    } else {
+                        "Pages $pageNumber-$endPageNumber"
+                    },
+                    content = pdfDoc.text,
+                    anchor = "#page-$pageNumber",
+                    page = pageNumber,
+                    position = PositionMetadata(
+                        documentPath = file.path,
+                        formatType = DocumentFormatType.PDF,
+                        position = DocumentPosition.PageRange(pageNumber, endPageNumber)
+                    )
+                )
+            }
+            logger.info { "Created ${currentChunks.size} document chunks" }
+
+            // Extract TOC
             Loader.loadPDF(pdfFile).use { document ->
-                // Extract full text
-                val stripper = PDFTextStripper()
-                val fullText = stripper.getText(document)
-                currentContent = fullText.trim()
-
-                logger.info { "Extracted ${fullText.length} characters" }
-
-                // Build chunks by page
-                currentChunks = buildPageChunks(document, file.path)
-                logger.info { "Created ${currentChunks.size} document chunks" }
-
-                // Extract TOC
                 val toc = extractTOC(document)
                 logger.info { "Extracted ${toc.size} TOC items" }
 
@@ -87,39 +111,6 @@ class PdfDocumentParser : DocumentParserService {
         return currentChunks.find {
             it.anchor == chapterId || it.anchor == "#$chapterId"
         }
-    }
-
-    private fun buildPageChunks(document: PDDocument, documentPath: String): List<DocumentChunk> {
-        val chunks = mutableListOf<DocumentChunk>()
-        val stripper = PDFTextStripper()
-
-        for (pageIndex in 0 until document.numberOfPages) {
-            stripper.startPage = pageIndex + 1
-            stripper.endPage = pageIndex + 1
-            
-            try {
-                val pageText = stripper.getText(document).trim()
-                if (pageText.isNotEmpty()) {
-                    chunks.add(
-                        DocumentChunk(
-                            documentPath = documentPath,
-                            chapterTitle = "Page ${pageIndex + 1}",
-                            content = pageText,
-                            anchor = "#page-${pageIndex + 1}",
-                            page = pageIndex + 1,
-                            position = PositionMetadata(
-                                documentPath = documentPath,
-                                formatType = DocumentFormatType.PDF,
-                                position = DocumentPosition.PageRange(pageIndex + 1, pageIndex + 1)
-                            )
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                logger.warn { "Failed to extract text from page ${pageIndex + 1}: ${e.message}" }
-            }
-        }
-        return chunks
     }
 
     private fun extractTOC(document: PDDocument): List<TOCItem> {
