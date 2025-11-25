@@ -22,6 +22,10 @@ object DocQLSchema : DeclarativeToolSchema(
     description = """
         Executes a DocQL query against available documents (both in-memory and indexed).
         
+        Supports TWO query types:
+        1. Document queries ($.content.*, $.toc[*]): For markdown/text documents
+        2. Code queries ($.code.*): For source code files parsed with TreeSitter
+        
         IMPORTANT: Use 'documentPath' parameter to target specific documents when:
         - Document name matches your query keywords (check available documents list)
         - You want to avoid querying irrelevant documents
@@ -211,14 +215,35 @@ class DocQLInvocation(
                         appendLine("## 📄 $filePath")
                         for (entity in items) {
                             if (count >= maxResults) break
-                            appendLine("  - ${entity.name}")
+                            when (entity) {
+                                is cc.unitmesh.devins.document.Entity.ClassEntity -> {
+                                    val pkg = if (!entity.packageName.isNullOrEmpty()) " (${entity.packageName})" else ""
+                                    appendLine("  📘 class ${entity.name}$pkg")
+                                    if (entity.location.line != null) {
+                                        appendLine("     └─ Line ${entity.location.line}")
+                                    }
+                                }
+                                is cc.unitmesh.devins.document.Entity.FunctionEntity -> {
+                                    val sig = entity.signature ?: entity.name
+                                    appendLine("  ⚡ $sig")
+                                    if (entity.location.line != null) {
+                                        appendLine("     └─ Line ${entity.location.line}")
+                                    }
+                                }
+                                is cc.unitmesh.devins.document.Entity.Term -> {
+                                    appendLine("  📝 ${entity.name}: ${entity.definition ?: ""}")
+                                }
+                                is cc.unitmesh.devins.document.Entity.API -> {
+                                    appendLine("  🔌 ${entity.name}: ${entity.signature ?: ""}")
+                                }
+                            }
                             count++
                         }
                         appendLine()
                     }
                     
                     if (truncated) {
-                        appendLine("💡 Tip: Filter by specific files or entity types")
+                        appendLine("💡 Tip: Use $.code.class(\"ClassName\") or $.code.function(\"functionName\") to get full source code")
                     }
                 }
             }
@@ -348,7 +373,48 @@ class DocQLTool : BaseExecutableTool<DocQLParams, ToolResult>() {
 
     override fun getParameterClass(): String = DocQLParams::class.simpleName ?: "DocQLParams"
 
+    /**
+     * Override createInvocation to handle Map<String, Any> parameters from ToolOrchestrator
+     */
+    override fun createInvocation(params: DocQLParams): ToolInvocation<DocQLParams, ToolResult> {
+        // Handle both direct DocQLParams and Map<String, Any> from ToolOrchestrator
+        val actualParams = when (params) {
+            is DocQLParams -> params
+            else -> {
+                // If params is actually a Map (cast from Any), convert it to DocQLParams
+                @Suppress("UNCHECKED_CAST")
+                val paramsMap = params as? Map<String, Any> ?: throw ToolException(
+                    "Invalid parameters type: expected DocQLParams or Map<String, Any>, got ${params::class.simpleName}",
+                    ToolErrorType.INVALID_PARAMETERS
+                )
+                convertMapToDocQLParams(paramsMap)
+            }
+        }
+        return createToolInvocation(actualParams)
+    }
+
     override fun createToolInvocation(params: DocQLParams): ToolInvocation<DocQLParams, ToolResult> {
         return DocQLInvocation(params, this)
+    }
+    
+    private fun convertMapToDocQLParams(map: Map<String, Any>): DocQLParams {
+        val query = map["query"] as? String
+            ?: throw ToolException("Missing required parameter 'query'", ToolErrorType.MISSING_REQUIRED_PARAMETER)
+        
+        val documentPath = map["documentPath"] as? String
+        val maxResults = when (val maxRes = map["maxResults"]) {
+            is Int -> maxRes
+            is Long -> maxRes.toInt()
+            is Double -> maxRes.toInt()
+            is String -> maxRes.toIntOrNull()
+            null -> null
+            else -> null
+        }
+        
+        return DocQLParams(
+            query = query,
+            documentPath = documentPath,
+            maxResults = maxResults ?: 20
+        )
     }
 }
