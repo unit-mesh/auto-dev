@@ -48,6 +48,13 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     var error by mutableStateOf<String?>(null)
         private set
 
+    // Navigation state
+    var targetLineNumber by mutableStateOf<Int?>(null)
+        private set
+    
+    var highlightedText by mutableStateOf<String?>(null)
+        private set
+
     // Indexing Service
     private val indexRepository = cc.unitmesh.devins.db.DocumentIndexDatabaseRepository.getInstance()
     private val indexService =
@@ -292,6 +299,63 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
      * Get the parser service for DocQL queries
      */
     fun getParserService(): DocumentParserService = parserService
+
+    /**
+     * Navigate to a specific line number in the document
+     */
+    fun navigateToLine(lineNumber: Int, highlightText: String? = null) {
+        targetLineNumber = lineNumber
+        highlightedText = highlightText
+    }
+
+    /**
+     * Navigate to a TOC item
+     */
+    fun navigateToTocItem(tocItem: TOCItem) {
+        // Use line number if available
+        val lineNum = tocItem.lineNumber
+        if (lineNum != null) {
+            navigateToLine(lineNum, tocItem.title)
+        } else {
+            // Fallback: search for the heading text in content
+            val content = documentContent ?: return
+            val headingPattern = Regex("^#{1,6}\\s+${Regex.escape(tocItem.title)}\\s*$", RegexOption.MULTILINE)
+            val match = headingPattern.find(content)
+            if (match != null) {
+                val lineNumber = content.substring(0, match.range.first).count { it == '\n' } + 1
+                navigateToLine(lineNumber, tocItem.title)
+            }
+        }
+    }
+
+    /**
+     * Navigate to an entity location
+     */
+    fun navigateToEntity(entity: Entity) {
+        val location = entity.location
+        
+        // Use line number if available
+        val lineNum = location.line
+        if (lineNum != null) {
+            navigateToLine(lineNum, entity.name)
+        } else {
+            // Fallback: search for entity name in content
+            val content = documentContent ?: return
+            val lines = content.lines()
+            val lineIndex = lines.indexOfFirst { it.contains(entity.name) }
+            if (lineIndex >= 0) {
+                navigateToLine(lineIndex + 1, entity.name)
+            }
+        }
+    }
+
+    /**
+     * Clear navigation state
+     */
+    fun clearNavigation() {
+        targetLineNumber = null
+        highlightedText = null
+    }
 
     fun getDocumentIndexStatus(path: String): cc.unitmesh.devins.db.DocumentIndexRecord? {
         return indexService.getIndexStatus(path)

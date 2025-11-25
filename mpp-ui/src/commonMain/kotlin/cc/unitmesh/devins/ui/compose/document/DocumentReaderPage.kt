@@ -63,7 +63,9 @@ fun DocumentReaderPage(
                                         document = viewModel.selectedDocument,
                                         content = viewModel.documentContent,
                                         isLoading = viewModel.isLoading,
-                                        indexStatus = viewModel.selectedDocumentIndexStatus
+                                        indexStatus = viewModel.selectedDocumentIndexStatus,
+                                        targetLineNumber = viewModel.targetLineNumber,
+                                        highlightedText = viewModel.highlightedText
                                     )
                                 },
                                 bottom = {
@@ -73,8 +75,12 @@ fun DocumentReaderPage(
                                     StructuredInfoPane(
                                         toc = toc,
                                         entities = entities,
-                                        onTocSelected = { /* TODO: Jump to anchor */ },
-                                        onEntitySelected = { /* TODO: Show entity details */ },
+                                        onTocSelected = { tocItem ->
+                                            viewModel.navigateToTocItem(tocItem)
+                                        },
+                                        onEntitySelected = { entity ->
+                                            viewModel.navigateToEntity(entity)
+                                        },
                                         onDocQLQuery = { query ->
                                             // 执行 DocQL 查询
                                             val document = viewModel.selectedDocument

@@ -39,7 +39,7 @@ class MarkdownDocumentParser : DocumentParserService {
         }
         
         // Build hierarchical TOC
-        currentToc = buildHierarchicalTOC(headings)
+        currentToc = buildHierarchicalTOC(headings, content)
         logger.info { "Built TOC with ${currentToc.size} root items" }
         
         // Build document chunks for each heading
@@ -134,8 +134,9 @@ class MarkdownDocumentParser : DocumentParserService {
 
     /**
      * Build hierarchical TOC from flat heading list
+     * Now includes line numbers calculated from heading offsets
      */
-    private fun buildHierarchicalTOC(headings: List<HeadingInfo>): List<TOCItem> {
+    private fun buildHierarchicalTOC(headings: List<HeadingInfo>, content: String): List<TOCItem> {
         if (headings.isEmpty()) return emptyList()
         
         val root = mutableListOf<TOCItem>()
@@ -144,10 +145,14 @@ class MarkdownDocumentParser : DocumentParserService {
         headings.forEachIndexed { index, heading ->
             val anchor = "#${heading.text.lowercase().replace(Regex("[^a-z0-9]+"), "-")}"
             
+            // Calculate line number from offset (1-indexed)
+            val lineNumber = content.substring(0, minOf(heading.startOffset, content.length)).count { it == '\n' } + 1
+            
             val tocItem = TOCItem(
                 level = heading.level,
                 title = heading.text,
                 anchor = anchor,
+                lineNumber = lineNumber,
                 children = mutableListOf()
             )
             

@@ -1,5 +1,6 @@
 package cc.unitmesh.devins.ui.compose.document
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +24,8 @@ fun DocumentViewerPane(
     content: String?,
     isLoading: Boolean,
     indexStatus: cc.unitmesh.devins.db.DocumentIndexRecord? = null,
+    targetLineNumber: Int? = null,
+    highlightedText: String? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -115,21 +118,12 @@ fun DocumentViewerPane(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else if (content != null) {
-                    val sanitizedContent = remember(content) {
-                        content.trim()
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        Text(
-                            text = sanitizedContent,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+                    DocumentContentView(
+                        content = content,
+                        targetLineNumber = targetLineNumber,
+                        highlightedText = highlightedText,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 } else {
                     Text(
                         text = "无法加载文档内容",
@@ -139,6 +133,55 @@ fun DocumentViewerPane(
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Document content view with support for scrolling to specific lines and highlighting
+ */
+@Composable
+private fun DocumentContentView(
+    content: String,
+    targetLineNumber: Int?,
+    highlightedText: String?,
+    modifier: Modifier = Modifier
+) {
+    val lines = remember(content) { content.lines() }
+    val scrollState = rememberScrollState()
+    
+    // Scroll to target line when it changes
+    androidx.compose.runtime.LaunchedEffect(targetLineNumber) {
+        if (targetLineNumber != null && targetLineNumber > 0 && targetLineNumber <= lines.size) {
+            // Approximate scroll position (each line ~20dp)
+            val approximatePosition = (targetLineNumber - 1) * 20
+            scrollState.animateScrollTo(approximatePosition)
+        }
+    }
+    
+    Column(
+        modifier = modifier.verticalScroll(scrollState)
+    ) {
+        lines.forEachIndexed { index, line ->
+            val lineNumber = index + 1
+            val shouldHighlight = highlightedText != null && line.contains(highlightedText, ignoreCase = true)
+            
+            Text(
+                text = line,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (shouldHighlight) {
+                            Modifier.background(
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            )
         }
     }
 }
