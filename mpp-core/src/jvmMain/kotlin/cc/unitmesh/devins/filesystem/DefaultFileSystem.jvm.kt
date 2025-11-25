@@ -12,8 +12,13 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
     
     private val gitIgnoreParser: cc.unitmesh.agent.tool.gitignore.GitIgnoreParser? by lazy {
         try {
-            cc.unitmesh.agent.tool.gitignore.GitIgnoreParser(projectPath)
+            val parser = cc.unitmesh.agent.tool.gitignore.GitIgnoreParser(projectPath)
+            println("DefaultFileSystem: GitIgnoreParser 已初始化，项目路径: $projectPath")
+            println("DefaultFileSystem: 加载的 gitignore 规则数: ${parser.getPatterns().size}")
+            parser
         } catch (e: Exception) {
+            println("DefaultFileSystem: GitIgnoreParser 初始化失败: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
@@ -97,26 +102,26 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                 return emptyList()
             }
             
-            val regexPattern = pattern
+            val regexPattern = (pattern
                 .replace(".", "\\.")
                 .replace("**", ".*")
                 .replace("*", "[^/]*") // Single * should not match path separators
                 .replace("?", ".")
                 .replace("{", "(")
                 .replace("}", ")")
-                .replace(",", "|")
+                .replace(",", "|")) + "$"  // ✓ 确保匹配到文件末尾（扩展名）
             
             val regex = regexPattern.toRegex(RegexOption.IGNORE_CASE)
             val results = mutableListOf<String>()
             
-            // 常见的排除目录
-            val excludeDirs = setOf(
-                "node_modules", ".git", ".idea", "build", "out", "target", 
-                "dist", ".gradle", "venv", "__pycache__", "bin"
-            )
+            // 只保留最基本的排除目录（.git 必须排除，其他依赖 gitignore）
+            val criticalExcludeDirs = setOf(".git")
             
             // Reload gitignore patterns before search
             gitIgnoreParser?.reload()
+            
+            var skippedByGitignore = 0
+            var skippedByExclude = 0
             
             Files.walk(projectRoot, maxDepth).use { stream ->
                 val iterator = stream
@@ -124,12 +129,19 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                         // 只保留普通文件
                         if (!path.isRegularFile()) return@filter false
                         
-                        // 排除在排除目录中的文件
-                        if (path.any { it.fileName.toString() in excludeDirs }) return@filter false
+                        val relativePath = projectRoot.relativize(path).toString().replace("\\", "/")
                         
-                        // Check gitignore
-                        val relativePath = projectRoot.relativize(path).toString()
-                        if (gitIgnoreParser?.isIgnored(relativePath) == true) return@filter false
+                        // 1. 排除关键目录（.git 必须排除）
+                        if (path.any { it.fileName.toString() in criticalExcludeDirs }) {
+                            skippedByExclude++
+                            return@filter false
+                        }
+                        
+                        // 2. 使用 GitIgnoreParser 检查（这应该处理 .gitignore 中的所有规则）
+                        if (gitIgnoreParser?.isIgnored(relativePath) == true) {
+                            skippedByGitignore++
+                            return@filter false
+                        }
                         
                         true
                     }
@@ -137,18 +149,25 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
                 
                 while (iterator.hasNext() && results.size < maxResults) {
                     val path = iterator.next()
-                    val relativePath = projectRoot.relativize(path).toString()
+                    val relativePath = projectRoot.relativize(path).toString().replace("\\", "/")
                     val fileName = path.fileName.toString()
                     
-                    // 匹配文件名或完整路径
-                    if (regex.matches(fileName) || regex.containsMatchIn(relativePath)) {
+                    // 只匹配文件名（确保匹配的是扩展名）
+                    if (regex.matches(fileName)) {
                         results.add(relativePath)
                     }
                 }
             }
             
+            // 输出调试信息
+            if (skippedByGitignore > 0 || skippedByExclude > 0) {
+                println("searchFiles: 排除 $skippedByExclude 个关键目录文件, $skippedByGitignore 个 gitignore 匹配文件")
+            }
+            
             results
         } catch (e: Exception) {
+            println("searchFiles error: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
     }

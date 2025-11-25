@@ -21,6 +21,60 @@ class DocumentIndexService(
     private val _indexingStatus = MutableStateFlow<IndexingStatus>(IndexingStatus.Idle)
     val indexingStatus: StateFlow<IndexingStatus> = _indexingStatus
 
+    /**
+     * Index documents from a provided list
+     * @param documents List of DocumentFile to index
+     */
+    fun indexDocuments(documents: List<DocumentFile>) {
+        scope.launch {
+            try {
+                val totalFiles = documents.size
+                var indexedCount = 0
+                var succeededCount = 0
+                var failedCount = 0
+                
+                _indexingStatus.value = IndexingStatus.Indexing(0, totalFiles, 0, 0)
+                
+                documents.forEach { doc ->
+                    val success = indexFile(doc.path)
+                    indexedCount++
+                    if (success) {
+                        succeededCount++
+                    } else {
+                        failedCount++
+                    }
+                    _indexingStatus.value = IndexingStatus.Indexing(
+                        indexedCount, 
+                        totalFiles, 
+                        succeededCount, 
+                        failedCount
+                    )
+                }
+                
+                _indexingStatus.value = IndexingStatus.Completed(
+                    totalFiles,
+                    succeededCount,
+                    failedCount
+                )
+            } catch (e: Exception) {
+                println("Error during indexing: ${e.message}")
+                _indexingStatus.value = IndexingStatus.Idle
+            }
+        }
+    }
+    
+    /**
+     * Reset indexing status to Idle
+     */
+    fun resetStatus() {
+        _indexingStatus.value = IndexingStatus.Idle
+    }
+    
+    /**
+     * Legacy method - index all files in workspace
+     * Deprecated: Use indexDocuments(documents) instead
+     */
+    @Deprecated("Use indexDocuments(documents) instead", ReplaceWith("indexDocuments(documents)"))
     fun indexWorkspace() {
         scope.launch {
             try {
@@ -29,22 +83,46 @@ class DocumentIndexService(
                 val pattern = "**/*.{md,markdown,pdf,doc,docx,ppt,pptx,txt,html,htm}"
                 val files = fileSystem.searchFiles(pattern)
                 var indexedCount = 0
+                var succeededCount = 0
+                var failedCount = 0
                 val totalFiles = files.size
                 
                 files.forEach { path ->
-                    indexFile(path)
+                    val success = indexFile(path)
                     indexedCount++
-                    _indexingStatus.value = IndexingStatus.Indexing(indexedCount, totalFiles)
+                    if (success) {
+                        succeededCount++
+                    } else {
+                        failedCount++
+                    }
+                    _indexingStatus.value = IndexingStatus.Indexing(
+                        indexedCount,
+                        totalFiles,
+                        succeededCount,
+                        failedCount
+                    )
                 }
-            } finally {
+                
+                _indexingStatus.value = IndexingStatus.Completed(
+                    totalFiles,
+                    succeededCount,
+                    failedCount
+                )
+            } catch (e: Exception) {
+                println("Error during indexing: ${e.message}")
                 _indexingStatus.value = IndexingStatus.Idle
             }
         }
     }
 
-    suspend fun indexFile(path: String) {
-        val format = DocumentParserFactory.detectFormat(path) ?: return
-        if (!DocumentParserFactory.isSupported(format)) return
+    /**
+     * Index a single file
+     * @param path File path to index
+     * @return true if indexing succeeded, false otherwise
+     */
+    suspend fun indexFile(path: String): Boolean {
+        val format = DocumentParserFactory.detectFormat(path) ?: return false
+        if (!DocumentParserFactory.isSupported(format)) return false
 
         // Read file content
         // Note: ProjectFileSystem.readFile currently returns String.
@@ -52,7 +130,7 @@ class DocumentIndexService(
         // However, TikaDocumentParser on JVM expects "raw bytes as string" (ISO-8859-1),
         // so if FS reads as UTF-8, it might corrupt binary data.
         // For now, we proceed with readFile.
-        val content = fileSystem.readFile(path) ?: return
+        val content = fileSystem.readFile(path) ?: return false
         
         // Calculate hash
         // Using content hash + size as a simple check
@@ -61,10 +139,10 @@ class DocumentIndexService(
         
         val existing = repository.get(path)
         if (existing != null && existing.hash == hash && existing.status == "INDEXED") {
-            return
+            return true // Already indexed
         }
 
-            try {
+        return try {
             val parser = DocumentParserFactory.createParser(format)
             if (parser != null) {
                 val docFile = DocumentFile(
@@ -94,6 +172,11 @@ class DocumentIndexService(
                     error = null,
                     indexedAt = Platform.getCurrentTimestamp()
                 ))
+                
+                println("✓ Indexed: $path")
+                true
+            } else {
+                false
             }
         } catch (e: Exception) {
             repository.save(DocumentIndexRecord(
@@ -105,6 +188,8 @@ class DocumentIndexService(
                 error = e.message ?: "Unknown error",
                 indexedAt = Platform.getCurrentTimestamp()
             ))
+            println("✗ Failed to index: $path - ${e.message}")
+            false
         }
     }
     
@@ -115,5 +200,15 @@ class DocumentIndexService(
 
 sealed class IndexingStatus {
     object Idle : IndexingStatus()
-    data class Indexing(val current: Int, val total: Int) : IndexingStatus()
+    data class Indexing(
+        val current: Int,
+        val total: Int,
+        val succeeded: Int = 0,
+        val failed: Int = 0
+    ) : IndexingStatus()
+    data class Completed(
+        val total: Int,
+        val succeeded: Int,
+        val failed: Int
+    ) : IndexingStatus()
 }

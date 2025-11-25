@@ -137,7 +137,11 @@ class GitIgnorePatternMatcher {
                 // For directory-only patterns, require trailing slash or subdirectory
                 regexBuilder.append("(/|/.*)$")
             } else {
-                regexBuilder.append("$")
+                // Match the pattern itself OR anything inside it (for directories)
+                // This ensures ".intellijPlatform" matches both:
+                // - ".intellijPlatform" (the directory itself)
+                // - ".intellijPlatform/file.xml" (files inside the directory)
+                regexBuilder.append("(/.*)?$")
             }
             
             return Regex(regexBuilder.toString()) to isNegated

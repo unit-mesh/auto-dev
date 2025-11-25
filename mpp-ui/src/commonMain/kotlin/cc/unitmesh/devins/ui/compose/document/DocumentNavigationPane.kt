@@ -27,6 +27,8 @@ fun DocumentNavigationPane(
     onSearchQueryChange: (String) -> Unit = {},
     onDocumentSelected: (DocumentFile) -> Unit = {},
     onRefresh: () -> Unit = {},
+    onStartIndexing: () -> Unit = {},
+    onResetIndexing: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -40,7 +42,9 @@ fun DocumentNavigationPane(
             searchQuery = searchQuery,
             onSearchQueryChange = onSearchQueryChange,
             onRefresh = onRefresh,
-            searchEnabled = indexingStatus is IndexingStatus.Idle
+            onStartIndexing = onStartIndexing,
+            onResetIndexing = onResetIndexing,
+            documentsLoaded = documentLoadState is DocumentLoadState.Success
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -75,7 +79,7 @@ fun DocumentNavigationPane(
 }
 
 /**
- * Document navigation toolbar with indexing status and search
+ * Document navigation toolbar with indexing button and search
  */
 @Composable
 private fun DocumentNavigationToolbar(
@@ -83,46 +87,195 @@ private fun DocumentNavigationToolbar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onRefresh: () -> Unit,
-    searchEnabled: Boolean
+    onStartIndexing: () -> Unit,
+    onResetIndexing: () -> Unit,
+    documentsLoaded: Boolean
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Indexing status indicator
+        // Indexing status/button
         when (indexingStatus) {
             is IndexingStatus.Idle -> {
-                // Show nothing when idle
+                // Show "Index Documents" button
+                Button(
+                    onClick = onStartIndexing,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = documentsLoaded
+                ) {
+                    Icon(
+                        imageVector = AutoDevComposeIcons.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("索引文档")
+                }
             }
             is IndexingStatus.Indexing -> {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Show progress indicator
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Text(
+                                    text = "索引中...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                            Text(
+                                text = "${indexingStatus.current}/${indexingStatus.total}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        
+                        // Progress bar
+                        LinearProgressIndicator(
+                            progress = { 
+                                if (indexingStatus.total > 0) {
+                                    indexingStatus.current.toFloat() / indexingStatus.total
+                                } else {
+                                    0f
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        // Success/Failed stats
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = AutoDevComposeIcons.CheckCircle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "${indexingStatus.succeeded}",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                            if (indexingStatus.failed > 0) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.Error,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                    Text(
+                                        text = "${indexingStatus.failed}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            is IndexingStatus.Completed -> {
+                // Show completion summary with reset button
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (indexingStatus.failed > 0) {
+                            MaterialTheme.colorScheme.errorContainer
+                        } else {
+                            MaterialTheme.colorScheme.tertiaryContainer
+                        }
                     )
-                    Text(
-                        text = "索引中: ${indexingStatus.current}/${indexingStatus.total}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "索引完成",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Text(
+                                    text = "成功: ${indexingStatus.succeeded}",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                                if (indexingStatus.failed > 0) {
+                                    Text(
+                                        text = "失败: ${indexingStatus.failed}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                        IconButton(onClick = onResetIndexing) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Close,
+                                contentDescription = "关闭",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
 
         // Search field
+        val searchEnabled = indexingStatus is IndexingStatus.Completed
         OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchQueryChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
+                val placeholderText = when {
+                    !documentsLoaded -> "加载文档后可搜索..."
+                    indexingStatus !is IndexingStatus.Completed -> "索引完成后可搜索内容..."
+                    else -> "搜索文档（文件名和内容）..."
+                }
                 Text(
-                    text = if (searchEnabled) "搜索文档..." else "索引完成后可搜索...",
+                    text = placeholderText,
                     style = MaterialTheme.typography.bodySmall
                 )
             },

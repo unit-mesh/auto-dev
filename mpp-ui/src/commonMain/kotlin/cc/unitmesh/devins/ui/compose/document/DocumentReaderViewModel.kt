@@ -86,7 +86,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     init {
         loadDocuments()
         initializeLLMService()
-        indexService.indexWorkspace()
+        // 不自动索引，等待用户手动触发
     }
 
     /**
@@ -246,11 +246,28 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     }
 
     /**
-     * Refresh documents list and re-index
+     * Manually trigger indexing for all loaded documents
+     */
+    fun startIndexing() {
+        if (documents.isEmpty()) {
+            println("No documents to index")
+            return
+        }
+        indexService.indexDocuments(documents)
+    }
+    
+    /**
+     * Refresh documents list (without re-indexing)
      */
     fun refreshDocuments() {
         loadDocuments()
-        indexService.indexWorkspace()
+    }
+    
+    /**
+     * Reset indexing status to Idle
+     */
+    fun resetIndexingStatus() {
+        indexService.resetStatus()
     }
 
     fun selectDocument(doc: DocumentFile) {

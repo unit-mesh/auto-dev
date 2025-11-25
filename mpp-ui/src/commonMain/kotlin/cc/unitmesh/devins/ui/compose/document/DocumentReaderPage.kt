@@ -49,7 +49,9 @@ fun DocumentReaderPage(
                         searchQuery = viewModel.searchQuery,
                         onSearchQueryChange = { viewModel.updateSearchQuery(it) },
                         onDocumentSelected = { viewModel.selectDocument(it) },
-                        onRefresh = { viewModel.refreshDocuments() }
+                        onRefresh = { viewModel.refreshDocuments() },
+                        onStartIndexing = { viewModel.startIndexing() },
+                        onResetIndexing = { viewModel.resetIndexingStatus() }
                     )
                 },
                 second = {
