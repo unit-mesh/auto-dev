@@ -18,6 +18,13 @@ interface ProjectFileSystem {
     fun readFile(path: String): String?
 
     /**
+     * 读取文件内容为字节数组（用于二进制文件）
+     * @param path 文件路径（相对于项目根目录或绝对路径）
+     * @return 文件内容的字节数组，如果文件不存在返回 null
+     */
+    fun readFileAsBytes(path: String): ByteArray?
+
+    /**
      * 写入文件内容
      * @param path 文件路径（相对于项目根目录或绝对路径）
      * @param content 要写入的内容
@@ -76,6 +83,7 @@ interface ProjectFileSystem {
 class EmptyFileSystem : ProjectFileSystem {
     override fun getProjectPath(): String? = null
     override fun readFile(path: String): String? = null
+    override fun readFileAsBytes(path: String): ByteArray? = null
     override fun writeFile(path: String, content: String): Boolean = false
     override fun exists(path: String): Boolean = false
     override fun isDirectory(path: String): Boolean = false
@@ -92,6 +100,7 @@ class EmptyFileSystem : ProjectFileSystem {
 expect class DefaultFileSystem(projectPath: String) : ProjectFileSystem {
     override fun getProjectPath(): String?
     override fun readFile(path: String): String?
+    override fun readFileAsBytes(path: String): ByteArray?
     override fun writeFile(path: String, content: String): Boolean
     override fun exists(path: String): Boolean
     override fun isDirectory(path: String): Boolean
