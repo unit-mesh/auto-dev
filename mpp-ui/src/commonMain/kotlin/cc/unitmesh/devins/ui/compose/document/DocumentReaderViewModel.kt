@@ -88,7 +88,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
     init {
         // Initialize platform-specific parsers (Tika on JVM, etc.)
         DocumentRegistry.initializePlatformParsers()
-        
+
         // Register index provider to bridge DocumentRegistry with DocumentIndexService
         val provider = cc.unitmesh.devins.service.DocumentIndexServiceProvider(indexRepository)
         DocumentRegistry.setIndexProvider(provider)
@@ -190,7 +190,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                 // Search for all supported document formats
                 val pattern = DocumentParserFactory.getSearchPattern()
-                val allDocuments = fileSystem.searchFiles(pattern, maxDepth = 20, maxResults = 1000)
+                val allDocuments = fileSystem.searchFiles(pattern, maxDepth = 20, maxResults = 10000)
 
                 val loadedDocuments = allDocuments.mapNotNull { relativePath ->
                     try {

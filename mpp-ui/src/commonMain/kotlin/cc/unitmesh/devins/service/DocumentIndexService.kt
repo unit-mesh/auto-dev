@@ -4,7 +4,6 @@ import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.db.DocumentIndexRecord
 import cc.unitmesh.devins.db.DocumentIndexRepository
 import cc.unitmesh.devins.document.DocumentFile
-import cc.unitmesh.devins.document.DocumentFormatType
 import cc.unitmesh.devins.document.DocumentMetadata
 import cc.unitmesh.devins.document.DocumentParserFactory
 import cc.unitmesh.devins.filesystem.ProjectFileSystem
@@ -68,51 +67,6 @@ class DocumentIndexService(
      */
     fun resetStatus() {
         _indexingStatus.value = IndexingStatus.Idle
-    }
-
-    /**
-     * Legacy method - index all files in workspace
-     * Deprecated: Use indexDocuments(documents) instead
-     */
-    @Deprecated("Use indexDocuments(documents) instead", ReplaceWith("indexDocuments(documents)"))
-    fun indexWorkspace() {
-        scope.launch {
-            try {
-                _indexingStatus.value = IndexingStatus.Indexing(0, 0)
-                // Search for all supported document formats
-                val pattern = "**/*.{md,markdown,pdf,doc,docx,ppt,pptx,txt,html,htm}"
-                val files = fileSystem.searchFiles(pattern)
-                var indexedCount = 0
-                var succeededCount = 0
-                var failedCount = 0
-                val totalFiles = files.size
-
-                files.forEach { path ->
-                    val success = indexFile(path)
-                    indexedCount++
-                    if (success) {
-                        succeededCount++
-                    } else {
-                        failedCount++
-                    }
-                    _indexingStatus.value = IndexingStatus.Indexing(
-                        indexedCount,
-                        totalFiles,
-                        succeededCount,
-                        failedCount
-                    )
-                }
-
-                _indexingStatus.value = IndexingStatus.Completed(
-                    totalFiles,
-                    succeededCount,
-                    failedCount
-                )
-            } catch (e: Exception) {
-                println("Error during indexing: ${e.message}")
-                _indexingStatus.value = IndexingStatus.Idle
-            }
-        }
     }
 
     /**
