@@ -110,6 +110,7 @@ object DocumentCli {
                         DocumentFormatType.PDF -> "📕"
                         DocumentFormatType.DOCX -> "📘"
                         DocumentFormatType.PLAIN_TEXT -> "📄"
+                        DocumentFormatType.SOURCE_CODE -> "💻"
                         else -> "📄"
                     }
                     
@@ -149,6 +150,12 @@ object DocumentCli {
                         "pdf" -> "PDF"
                         "docx", "doc" -> "Word"
                         "pptx", "ppt" -> "PowerPoint"
+                        "java", "kt", "kts" -> "JVM Source"
+                        "js", "ts", "tsx" -> "JS/TS Source"
+                        "py" -> "Python Source"
+                        "go" -> "Go Source"
+                        "rs" -> "Rust Source"
+                        "cs" -> "C# Source"
                         else -> "Other"
                     }
                 }
@@ -274,10 +281,15 @@ object DocumentCli {
      */
     private fun scanDocuments(
         dir: File, 
-        extensions: List<String> = listOf(".md", ".pdf", ".docx", ".pptx", ".txt")
+        extensions: List<String> = listOf(
+            ".md", ".pdf", ".docx", ".pptx", ".txt",  // Documents
+            ".java", ".kt", ".kts",                   // JVM source code
+            ".js", ".ts", ".tsx",                     // JavaScript/TypeScript
+            ".py", ".go", ".rs", ".cs"                // Other languages
+        )
     ): List<File> {
         val documents = mutableListOf<File>()
-        val skipDirs = setOf("node_modules", ".git", "build", "dist", "target", ".gradle", "bin", ".idea")
+        val skipDirs = setOf("node_modules", ".git", "build", "dist", "target", ".gradle", "bin", ".idea", "out", "libs", "generated")
         
         fun scanRecursive(current: File) {
             if (!current.canRead()) return
@@ -361,7 +373,9 @@ object DocumentCli {
             
             // Read file content
             val content = when (formatType) {
-                DocumentFormatType.MARKDOWN, DocumentFormatType.PLAIN_TEXT -> {
+                DocumentFormatType.MARKDOWN, 
+                DocumentFormatType.PLAIN_TEXT, 
+                DocumentFormatType.SOURCE_CODE -> {
                     file.readText()
                 }
                 else -> {

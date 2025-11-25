@@ -30,6 +30,10 @@ actual fun platformInitialize() {
     DocumentParserFactory.registerParser(DocumentFormatType.HTML) { JsoupDocumentParser() }
     logger.debug { "Registered JsoupDocumentParser for HTML" }
     
-    logger.info { "JVM parsers initialized: ${tikaFormats.size + 1} formats supported (Tika + Jsoup)" }
+    // Register CodeDocumentParser for source code
+    DocumentParserFactory.registerParser(DocumentFormatType.SOURCE_CODE) { CodeDocumentParser() }
+    logger.debug { "Registered CodeDocumentParser for SOURCE_CODE" }
+    
+    logger.info { "JVM parsers initialized: ${tikaFormats.size + 3} formats supported (Tika + Jsoup + Code)" }
 }
 

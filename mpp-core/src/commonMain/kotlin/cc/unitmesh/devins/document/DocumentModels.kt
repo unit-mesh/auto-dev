@@ -140,7 +140,8 @@ enum class DocumentFormatType {
     PDF,
     DOCX,
     HTML,
-    PLAIN_TEXT
+    PLAIN_TEXT,
+    SOURCE_CODE  // For code files (Java, Kotlin, Python, etc.)
 }
 
 /**

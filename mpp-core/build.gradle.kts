@@ -172,6 +172,9 @@ kotlin {
 
                 // MCP SDK for JVM
                 implementation("io.modelcontextprotocol:kotlin-sdk:0.7.4")
+                
+                // CodeGraph for source code parsing
+                implementation(project(":mpp-codegraph"))
 
                 // Logback for JVM logging backend with file storage
                 implementation("ch.qos.logback:logback-classic:1.5.19")

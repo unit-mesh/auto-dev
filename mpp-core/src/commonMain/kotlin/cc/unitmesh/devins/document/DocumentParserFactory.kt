@@ -60,6 +60,8 @@ object DocumentParserFactory {
             "pdf" -> DocumentFormatType.PDF
             "doc", "docx", "ppt", "pptx" -> DocumentFormatType.DOCX  // Tika handles all Office formats
             "txt" -> DocumentFormatType.PLAIN_TEXT
+            // Source code files
+            "java", "kt", "kts", "js", "ts", "tsx", "py", "go", "rs", "cs" -> DocumentFormatType.SOURCE_CODE
             else -> null
         }
     }
@@ -122,7 +124,14 @@ object DocumentParserFactory {
             "doc", "docx",              // Word
             "ppt", "pptx",              // PowerPoint
             "txt",                      // Plain text
-            "html", "htm"               // HTML
+            "html", "htm",              // HTML
+            // Source code files
+            "java", "kt", "kts",        // JVM languages
+            "js", "ts", "tsx",          // JavaScript/TypeScript
+            "py",                       // Python
+            "go",                       // Go
+            "rs",                       // Rust
+            "cs"                        // C#
         )
     }
     
