@@ -49,7 +49,6 @@ fun CodeReviewSideBySideView(viewModel: CodeReviewViewModel, modifier: Modifier 
                 if (Platform.name == "WebAssembly") {
                     WasmGitCloneScreen(
                         onCommitsFetched = {
-                            println(state.commitHistory)
                             viewModel.refresh()
                         }
                     )

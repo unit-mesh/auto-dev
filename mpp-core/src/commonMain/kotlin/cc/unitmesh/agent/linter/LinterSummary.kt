@@ -21,8 +21,6 @@ data class LinterSummary(
         fun format(linterSummary: LinterSummary): String {
             return buildString {
                 appendLine("## Lint Results Summary")
-                appendLine("Files analyzed: ${linterSummary.totalFiles} | Files with issues: ${linterSummary.filesWithIssues}")
-                appendLine("Total issues: ${linterSummary.totalIssues} (❌ ${linterSummary.errorCount} errors, ⚠️ ${linterSummary.warningCount} warnings, ℹ️ ${linterSummary.infoCount} info)")
 
                 if (linterSummary.executedLinters.isNotEmpty()) {
                     appendLine("Linters executed: ${linterSummary.executedLinters.joinToString(", ")}")

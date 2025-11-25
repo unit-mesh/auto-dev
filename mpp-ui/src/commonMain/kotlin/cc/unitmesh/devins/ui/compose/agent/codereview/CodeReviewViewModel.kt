@@ -673,7 +673,6 @@ open class CodeReviewViewModel(
     }
 
     open fun refresh() {
-        println("refresh() called, gitOps.isSupported() = ${gitOps.isSupported()}")
         scope.launch {
             if (gitOps.isSupported()) {
                 // 如果支持 Git，就加载提交历史（无论当前是否有数据）

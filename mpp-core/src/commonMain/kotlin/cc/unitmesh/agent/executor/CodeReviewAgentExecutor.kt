@@ -18,10 +18,6 @@ import kotlinx.coroutines.yield
 import kotlinx.serialization.json.Json
 import cc.unitmesh.agent.orchestrator.ToolExecutionContext as OrchestratorContext
 
-/**
- * Executor for CodeReviewAgent
- * Handles the execution flow for code review tasks with tool calling support
- */
 class CodeReviewAgentExecutor(
     projectPath: String,
     llmService: KoogLLMService,
@@ -52,15 +48,8 @@ class CodeReviewAgentExecutor(
     ): CodeReviewResult {
         resetExecution()
         conversationManager = ConversationManager(llmService, systemPrompt)
-        logger.info(Json {  }.encodeToString(linterSummary))
+        logger.info(Json.encodeToString(linterSummary))
         val initialUserMessage = buildInitialUserMessage(task, linterSummary)
-
-        val reviewTarget = when {
-            task.patch != null -> task.patch
-            task.filePaths.isNotEmpty() -> "${task.filePaths.size} files"
-            else -> "code"
-        }
-        logger.info { "Starting code review: ${task.reviewType} for $reviewTarget" }
 
         while (shouldContinue()) {
             yield()
@@ -82,21 +71,17 @@ class CodeReviewAgentExecutor(
                 break
             }
 
-            // Parse tool calls from LLM response
             val toolCalls = toolCallParser.parseToolCalls(llmResponse.toString())
             if (toolCalls.isEmpty()) {
-                // No tool calls, review is complete
                 logger.info { "No tool calls found, review complete" }
                 renderer.renderTaskComplete()
                 break
             }
 
-            // Execute tool calls
             val toolResults = executeToolCalls(toolCalls)
             val toolResultsText = ToolResultFormatter.formatMultipleToolResults(toolResults)
             conversationManager!!.addToolResults(toolResultsText)
 
-            // Check if review is complete
             if (isReviewComplete(llmResponse.toString())) {
                 logger.info { "Review complete" }
                 renderer.renderTaskComplete()
@@ -122,19 +107,15 @@ class CodeReviewAgentExecutor(
             appendLine("Please review the following code changes:")
             appendLine()
             appendLine("**Project Path**: ${task.projectPath}")
-            appendLine("**Review Type**: ${task.reviewType}")
             appendLine()
 
-            // Add Git diff information if available
             if (task.patch != null) {
                 appendLine("## Code Changes (Git Diff)")
                 appendLine()
-                
-                // Compress the patch to fit within context limits
+
                 val compressedPatch = diffCompressor.compress(task.patch)
                 appendLine(compressedPatch)
             } else if (task.filePaths.isNotEmpty()) {
-                // Fallback to file list if no diff info provided
                 appendLine("**Files to review** (${task.filePaths.size} files):")
                 task.filePaths.forEach { filePath ->
                     appendLine("  - $filePath")
@@ -148,29 +129,11 @@ class CodeReviewAgentExecutor(
                 appendLine()
             }
 
-            // Add linter information to user message
             if (linterSummary != null) {
                 appendLine("## Linter Information")
                 appendLine()
                 appendLine(LinterSummary.format(linterSummary))
                 appendLine()
-            }
-
-            appendLine("**Instructions**:")
-            if (task.patch != null) {
-                appendLine("1. First, analyze the linter results above (if provided)")
-                appendLine("2. Review the git diff changes shown above")
-                appendLine("3. Use the read-file tool ONLY if you need additional context beyond the diff")
-                appendLine("4. Provide a thorough code review following the guidelines in the system prompt")
-                appendLine("5. Focus on issues beyond what linters can detect")
-            } else if (task.filePaths.isNotEmpty()) {
-                appendLine("1. First, analyze the linter results above (if provided)")
-                appendLine("2. Use the read-file tool to read the content of each file")
-                appendLine("3. Provide a thorough code review following the guidelines in the system prompt")
-                appendLine("4. Focus on issues beyond what linters can detect")
-            } else {
-                appendLine("Please provide a thorough code review following the guidelines in the system prompt.")
-                appendLine("Use tools as needed to read files and gather information.")
             }
         }
     }
@@ -180,15 +143,17 @@ class CodeReviewAgentExecutor(
     }
 
     private fun isReviewComplete(response: String): Boolean {
-        return hasCompletionIndicator(response, listOf(
-            "review complete",
-            "review is complete",
-            "finished reviewing",
-            "completed the review",
-            "final review",
-            "summary:",
-            "## summary"
-        ))
+        return hasCompletionIndicator(
+            response, listOf(
+                "review complete",
+                "review is complete",
+                "finished reviewing",
+                "completed the review",
+                "final review",
+                "summary:",
+                "## summary"
+            )
+        )
     }
 
     /**
@@ -214,7 +179,6 @@ class CodeReviewAgentExecutor(
                     environment = emptyMap()
                 )
 
-                // Execute tool using ToolOrchestrator (same as CodingAgentExecutor)
                 val executionResult = toolOrchestrator.executeToolCall(
                     toolName,
                     params,
@@ -242,6 +206,7 @@ class CodeReviewAgentExecutor(
                             }
                         }
                     }
+
                     is ToolResult.AgentResult -> if (!result.success) result.content else executionResult.content
                     else -> executionResult.content
                 }
@@ -275,7 +240,6 @@ class CodeReviewAgentExecutor(
             ?.lastOrNull { it.role == cc.unitmesh.devins.llm.MessageRole.ASSISTANT }
             ?.content ?: "No review generated"
 
-        // No longer parse findings from text - just return the content
         return CodeReviewResult(
             success = true,
             message = finalResponse,

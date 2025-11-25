@@ -83,15 +83,10 @@ class DiffContextCompressor(
      * @return Compressed diff string
      */
     fun compress(patch: String): String {
-        // First, format the diff to simplify it
         val formatted = DiffFormatter.postProcess(patch)
-        
-        // Split into file diffs
         val fileDiffs = splitIntoFileDiffs(formatted)
-        
         logger.info { "Compressing ${fileDiffs.size} file diffs" }
         
-        // Prioritize and compress
         val prioritizedDiffs = fileDiffs
             .map { PrioritizedFileDiff.from(it) }
             .sortedByDescending { it.priority.level }
@@ -128,15 +123,10 @@ class DiffContextCompressor(
                 includedFiles++
                 truncatedFiles++
             } else {
-                // Skip this file, not enough room
                 logger.info { "Skipping ${diff.filePath} (not enough room)" }
             }
         }
-        
-        logger.info {
-            "Compressed diff: included $includedFiles files ($truncatedFiles truncated), $totalLines total lines"
-        }
-        
+
         // Add summary if files were truncated or excluded
         if (truncatedFiles > 0 || includedFiles < prioritizedDiffs.size) {
             result.appendLine()
@@ -150,10 +140,6 @@ class DiffContextCompressor(
         
         return result.toString().trim()
     }
-
-    /**
-     * Split a formatted diff into individual file diffs.
-     */
     private fun splitIntoFileDiffs(formatted: String): List<String> {
         val fileDiffs = mutableListOf<String>()
         val lines = formatted.lines()
