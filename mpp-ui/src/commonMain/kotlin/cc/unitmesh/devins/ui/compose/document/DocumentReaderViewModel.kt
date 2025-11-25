@@ -134,7 +134,7 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
 
                 val allDocuments = mutableListOf<String>()
                 supportedExtensions.forEach { pattern ->
-                    allDocuments += fileSystem.searchFiles(pattern, maxDepth = 10, maxResults = 100)
+                    allDocuments += fileSystem.searchFiles(pattern, maxDepth = 10, maxResults = 1000)
                 }
 
                 documents = allDocuments.mapNotNull { relativePath ->
