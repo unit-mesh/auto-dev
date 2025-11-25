@@ -286,17 +286,11 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                 error = null
 
                 val fileSystem = workspace.fileSystem
-                val content = fileSystem.readFile(doc.path)
-                    ?: run {
-                        error = "Failed to read file content"
-                        documentContent = null
-                        parsedContent = null
-                        return@launch
-                    }
-
-                // Store original content (for Markdown/Text)
-                documentContent = content
-
+                val formatType = DocumentParserFactory.detectFormat(doc.path)
+                
+                // Determine if we need to read as binary
+                val isBinary = formatType?.let { DocumentParserFactory.isBinaryFormat(it) } ?: false
+                
                 // Get the appropriate parser for this document format
                 val parser = DocumentParserFactory.createParserForFile(doc.path)
                     ?: run {
@@ -306,8 +300,41 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
                         return@launch
                     }
 
-                // Parse the document
-                val parsedDoc = parser.parse(doc, content)
+                // Parse the document based on format type
+                val parsedDoc = if (isBinary) {
+                    // Binary formats (PDF, DOC, DOCX, PPT, PPTX) - read as bytes
+                    val bytes = fileSystem.readFileAsBytes(doc.path)
+                        ?: run {
+                            error = "Failed to read binary file content"
+                            documentContent = null
+                            parsedContent = null
+                            return@launch
+                        }
+                    
+                    documentContent = null // Binary files don't have text content to display
+                    
+                    // Use TikaDocumentParser's parseBytes method for binary files
+                    if (parser is cc.unitmesh.devins.document.TikaDocumentParser) {
+                        parser.parseBytes(doc, bytes)
+                    } else {
+                        // Fallback: convert bytes to ISO_8859_1 string (legacy behavior)
+                        val content = bytes.toString(Charsets.ISO_8859_1)
+                        parser.parse(doc, content)
+                    }
+                } else {
+                    // Text formats (Markdown, TXT) - read as string
+                    val content = fileSystem.readFile(doc.path)
+                        ?: run {
+                            error = "Failed to read file content"
+                            documentContent = null
+                            parsedContent = null
+                            return@launch
+                        }
+                    
+                    // Store original content (for Markdown/Text)
+                    documentContent = content
+                    parser.parse(doc, content)
+                }
 
                 // Get parsed content (for PDF, Word, etc. - Tika extracts text)
                 // For Markdown, this will be null (we use original content)

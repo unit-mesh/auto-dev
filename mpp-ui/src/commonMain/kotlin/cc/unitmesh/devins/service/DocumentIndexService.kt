@@ -124,18 +124,28 @@ class DocumentIndexService(
         val format = DocumentParserFactory.detectFormat(path) ?: return false
         if (!DocumentParserFactory.isSupported(format)) return false
 
-        // Read file content
-        // Note: ProjectFileSystem.readFile currently returns String.
-        // For binary files (PDF, etc.), this might be problematic if not handled correctly by FS implementation.
-        // However, TikaDocumentParser on JVM expects "raw bytes as string" (ISO-8859-1),
-        // so if FS reads as UTF-8, it might corrupt binary data.
-        // For now, we proceed with readFile.
-        val content = fileSystem.readFile(path) ?: return false
+        // Determine if we need to read as binary
+        val isBinary = DocumentParserFactory.isBinaryFormat(format)
         
-        // Calculate hash
-        // Using content hash + size as a simple check
-        val size = content.length.toLong()
-        val hash = "${content.hashCode()}_$size"
+        // Read file content based on format type
+        val content: String?
+        val bytes: ByteArray?
+        val size: Long
+        val hash: String
+        
+        if (isBinary) {
+            // Binary formats - read as bytes
+            bytes = fileSystem.readFileAsBytes(path) ?: return false
+            content = null
+            size = bytes.size.toLong()
+            hash = "${bytes.contentHashCode()}_$size"
+        } else {
+            // Text formats - read as string
+            content = fileSystem.readFile(path) ?: return false
+            bytes = null
+            size = content.length.toLong()
+            hash = "${content.hashCode()}_$size"
+        }
         
         val existing = repository.get(path)
         if (existing != null && existing.hash == hash && existing.status == "INDEXED") {
@@ -155,8 +165,22 @@ class DocumentIndexService(
                     )
                 )
                 
-                // Parse the document
-                val parsedDoc = parser.parse(docFile, content)
+                // Parse the document based on format type
+                val parsedDoc = if (isBinary && bytes != null) {
+                    // Use TikaDocumentParser's parseBytes for binary files
+                    if (parser is cc.unitmesh.devins.document.TikaDocumentParser) {
+                        parser.parseBytes(docFile, bytes)
+                    } else {
+                        // Fallback: convert bytes to ISO_8859_1 string
+                        val fallbackContent = bytes.toString(Charsets.ISO_8859_1)
+                        parser.parse(docFile, fallbackContent)
+                    }
+                } else if (content != null) {
+                    // Text format
+                    parser.parse(docFile, content)
+                } else {
+                    return false // Invalid state
+                }
                 
                 // Store extracted text content (not original binary)
                 // For Tika: extracted text from PDF/PPTX

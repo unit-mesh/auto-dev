@@ -78,7 +78,7 @@ object DocumentParserFactory {
     /**
      * Check if a format is supported
      * 
-     * @param formatType The document format type
+     * @param formatType The format type to check
      * @return true if the format is supported
      */
     fun isSupported(formatType: DocumentFormatType): Boolean {
@@ -86,8 +86,24 @@ object DocumentParserFactory {
     }
     
     /**
-     * Get all supported format types
+     * Check if a document format is binary (requires byte-level reading)
      * 
+     * @param formatType The document format type
+     * @return true if the format is binary (PDF, DOC, DOCX, PPT, PPTX), false for text formats
+     */
+    fun isBinaryFormat(formatType: DocumentFormatType): Boolean {
+        return when (formatType) {
+            DocumentFormatType.PDF,
+            DocumentFormatType.DOCX -> true  // DOCX covers DOC, DOCX, PPT, PPTX in Tika
+            DocumentFormatType.MARKDOWN,
+            DocumentFormatType.PLAIN_TEXT -> false
+            else -> false
+        }
+    }
+    
+    /**
+     * Get list of all supported format types
+     *
      * @return List of supported format types
      */
     fun getSupportedFormats(): List<DocumentFormatType> {

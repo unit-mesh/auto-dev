@@ -85,7 +85,10 @@ class MockFileSystem(
     override fun getProjectPath(): String? = "/mock/project"
     
     override fun readFile(path: String): String? = files[path]
-    
+    override fun readFileAsBytes(path: String): ByteArray? {
+        return null
+    }
+
     override fun writeFile(path: String, content: String): Boolean {
         files[path] = content
         return true

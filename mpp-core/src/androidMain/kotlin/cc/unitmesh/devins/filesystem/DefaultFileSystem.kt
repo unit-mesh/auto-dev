@@ -29,6 +29,19 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
         }
     }
 
+    actual override fun readFileAsBytes(path: String): ByteArray? {
+        return try {
+            val resolvedPath = resolvePathInternal(path)
+            if (resolvedPath.exists() && resolvedPath.isRegularFile()) {
+                Files.readAllBytes(resolvedPath)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     actual override fun writeFile(path: String, content: String): Boolean {
         return try {
             val resolvedPathStr = resolvePath(path)

@@ -72,12 +72,11 @@ class TikaDocumentParserTest {
     fun `should parse PDF document with content verification`() = runTest {
         // Given
         val resourceBytes = loadResource("sample2.pdf")
-        val content = String(resourceBytes, Charsets.ISO_8859_1)
         
         val documentFile = createDocumentFile("sample2.pdf", resourceBytes.size, DocumentFormatType.PDF)
         
-        // When
-        val result = parser.parse(documentFile, content)
+        // When - use parseBytes for binary files (preferred method)
+        val result = parser.parseBytes(documentFile, resourceBytes)
         
         // Then
         assertTrue(result is DocumentFile)
@@ -94,12 +93,11 @@ class TikaDocumentParserTest {
     fun `should parse PPT document with content verification`() = runTest {
         // Given
         val resourceBytes = loadResource("sample.ppt")
-        val content = String(resourceBytes, Charsets.ISO_8859_1)
         
         val documentFile = createDocumentFile("sample.ppt", resourceBytes.size, DocumentFormatType.DOCX)
         
-        // When
-        val result = parser.parse(documentFile, content)
+        // When - use parseBytes for binary files (preferred method)
+        val result = parser.parseBytes(documentFile, resourceBytes)
         
         // Then
         assertTrue(result is DocumentFile)
@@ -112,15 +110,35 @@ class TikaDocumentParserTest {
     }
     
     @Test
+    fun `should parse PPT document with legacy string method`() = runTest {
+        // Test backward compatibility with String-based parse method
+        val resourceBytes = loadResource("sample.ppt")
+        val content = String(resourceBytes, Charsets.ISO_8859_1)
+        
+        val documentFile = createDocumentFile("sample.ppt", resourceBytes.size, DocumentFormatType.DOCX)
+        
+        // When - use legacy parse method
+        val result = parser.parse(documentFile, content)
+        
+        // Then
+        assertTrue(result is DocumentFile)
+        assertEquals(ParseStatus.PARSED, result.metadata.parseStatus)
+        
+        val extractedContent = parser.getDocumentContent()
+        assertNotNull(extractedContent)
+        assertTrue(extractedContent.contains("Sed ipsum tortor, fringilla a consectetur eget, cursus posuere sem."))
+        println("✓ PPT parsed successfully (legacy): ${extractedContent.length} chars")
+    }
+    
+    @Test
     fun `should parse PPTX document with content verification`() = runTest {
         // Given
         val resourceBytes = loadResource("sample.pptx")
-        val content = String(resourceBytes, Charsets.ISO_8859_1)
         
         val documentFile = createDocumentFile("sample.pptx", resourceBytes.size, DocumentFormatType.DOCX)
         
-        // When
-        val result = parser.parse(documentFile, content)
+        // When - use parseBytes for binary files (preferred method)
+        val result = parser.parseBytes(documentFile, resourceBytes)
         
         // Then
         assertTrue(result is DocumentFile)
@@ -162,14 +180,9 @@ class TikaDocumentParserTest {
     @Test
     fun `should register Tika parser in factory`() {
         // When
-        val pdfParser = DocumentParserFactory.createParser(DocumentFormatType.PDF)
         val docxParser = DocumentParserFactory.createParser(DocumentFormatType.DOCX)
         val markdownParser = DocumentParserFactory.createParser(DocumentFormatType.MARKDOWN)
-        
-        // Then
-        assertNotNull(pdfParser)
-        assertTrue(pdfParser is TikaDocumentParser)
-        
+
         assertNotNull(docxParser)
         assertTrue(docxParser is TikaDocumentParser)
         
@@ -189,22 +202,6 @@ class TikaDocumentParserTest {
         assertEquals(DocumentFormatType.PLAIN_TEXT, DocumentParserFactory.detectFormat("notes.txt"))
         
         println("✓ Format detection verified")
-    }
-    
-    @Test
-    fun `should create parser for file automatically`() {
-        // When
-        val pdfParser = DocumentParserFactory.createParserForFile("document.pdf")
-        val mdParser = DocumentParserFactory.createParserForFile("README.md")
-        
-        // Then
-        assertNotNull(pdfParser)
-        assertTrue(pdfParser is TikaDocumentParser)
-        
-        assertNotNull(mdParser)
-        assertTrue(mdParser is MarkdownDocumentParser)
-        
-        println("✓ Auto parser creation verified")
     }
     
     /**

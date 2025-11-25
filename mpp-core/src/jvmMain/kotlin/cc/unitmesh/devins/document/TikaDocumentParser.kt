@@ -30,9 +30,27 @@ class TikaDocumentParser : DocumentParserService {
     
     override fun getDocumentContent(): String? = currentContent
     
+    /**
+     * Parse document from String content (for backward compatibility)
+     * This method converts string back to bytes - use parseBytes() for binary files
+     */
     override suspend fun parse(file: DocumentFile, content: String): DocumentTreeNode {
-        logger.info { "=== Starting Tika Parse ===" }
+        logger.info { "=== Starting Tika Parse (from String) ===" }
         logger.info { "File: ${file.path}, Size: ${content.length} bytes" }
+        
+        // Convert String back to bytes using ISO_8859_1
+        // Note: This may corrupt binary data if the string was read as UTF-8
+        val bytes = content.toByteArray(Charsets.ISO_8859_1)
+        return parseBytes(file, bytes)
+    }
+    
+    /**
+     * Parse document from ByteArray (preferred for binary files)
+     * This method properly handles binary data without corruption
+     */
+    suspend fun parseBytes(file: DocumentFile, bytes: ByteArray): DocumentTreeNode {
+        logger.info { "=== Starting Tika Parse (from Bytes) ===" }
+        logger.info { "File: ${file.path}, Size: ${bytes.size} bytes" }
         
         try {
             // Create Tika parser components
@@ -44,8 +62,8 @@ class TikaDocumentParser : DocumentParserService {
             // Set file name in metadata for better format detection
             metadata.set("resourceName", file.name)
             
-            // Parse document - convert String back to bytes using ISO_8859_1 to preserve binary data
-            val inputStream = ByteArrayInputStream(content.toByteArray(Charsets.ISO_8859_1))
+            // Parse document directly from bytes
+            val inputStream = ByteArrayInputStream(bytes)
             parser.parse(inputStream, handler, metadata, context)
             
             // Extract parsed content

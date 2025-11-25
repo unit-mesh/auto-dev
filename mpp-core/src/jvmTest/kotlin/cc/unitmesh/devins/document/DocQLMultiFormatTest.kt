@@ -29,13 +29,15 @@ class DocQLMultiFormatTest {
     fun `should query PDF document with DocQL`() = runTest {
         // Given - Parse and register PDF document
         val resourceBytes = loadResource("sample2.pdf")
-        val content = String(resourceBytes, Charsets.ISO_8859_1)
         
         val documentFile = createDocumentFile("sample2.pdf", resourceBytes.size, DocumentFormatType.PDF)
         val parser = DocumentRegistry.getParser(DocumentFormatType.PDF)
         assertNotNull(parser, "PDF parser should be available on JVM")
         
-        val parsedDoc = parser.parse(documentFile, content)
+        // Use parseBytes for binary files
+        val tikaParser = parser as? TikaDocumentParser
+        assertNotNull(tikaParser, "PDF parser should be TikaDocumentParser")
+        val parsedDoc = tikaParser.parseBytes(documentFile, resourceBytes)
         DocumentRegistry.registerDocument(documentFile.path, parsedDoc, parser)
         
         // When - Query using DocQL
@@ -175,11 +177,12 @@ class DocQLMultiFormatTest {
     fun `should verify position metadata in DocQL results`() = runTest {
         // Given
         val resourceBytes = loadResource("sample2.pdf")
-        val content = String(resourceBytes, Charsets.ISO_8859_1)
         val documentFile = createDocumentFile("sample2.pdf", resourceBytes.size, DocumentFormatType.PDF)
         val parser = DocumentRegistry.getParser(DocumentFormatType.PDF)!!
         
-        val parsedDoc = parser.parse(documentFile, content)
+        // Use parseBytes for binary files
+        val tikaParser = parser as TikaDocumentParser
+        val parsedDoc = tikaParser.parseBytes(documentFile, resourceBytes)
         DocumentRegistry.registerDocument(documentFile.path, parsedDoc, parser)
         
         // When - Query and get chunks

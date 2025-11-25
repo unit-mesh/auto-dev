@@ -47,6 +47,25 @@ actual class DefaultFileSystem actual constructor(private val projectPath: Strin
         }
     }
 
+    actual override fun readFileAsBytes(path: String): ByteArray? {
+        if (!requireNodeJs()) return null
+
+        return try {
+            val resolvedPath = resolvePathInternal(path)
+            if (exists(resolvedPath) && !isDirectory(resolvedPath)) {
+                val buffer = fs.readFileSync(resolvedPath)
+                // Convert Node.js Buffer to ByteArray
+                val array = Uint8Array(buffer.buffer as ArrayBuffer, buffer.byteOffset as Int, buffer.length as Int)
+                ByteArray(array.length) { array[it] }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            console.error("Error reading file as bytes: ${e.message}")
+            null
+        }
+    }
+
     actual override fun writeFile(path: String, content: String): Boolean {
         if (!requireNodeJs()) return false
 
