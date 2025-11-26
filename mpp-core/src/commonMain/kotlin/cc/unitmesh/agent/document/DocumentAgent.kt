@@ -43,7 +43,8 @@ class DocumentAgent(
     private val fileSystem: ToolFileSystem? = null,
     private val shellExecutor: ShellExecutor? = null,
     private val mcpToolConfigService: McpToolConfigService,
-    private val enableLLMStreaming: Boolean = true
+    private val enableLLMStreaming: Boolean = true,
+    private val contentThreshold: Int = 5000  // P0: Long content threshold
 ) : MainAgent<DocumentTask, ToolResult.AgentResult>(
     AgentDefinition(
         name = "DocumentAgent",
@@ -64,12 +65,14 @@ class DocumentAgent(
 ) {
     private val actualFileSystem = fileSystem ?: DefaultToolFileSystem(projectPath = ".")
 
+    private val subAgentManager = cc.unitmesh.agent.core.SubAgentManager()
+
     private val toolRegistry = run {
         ToolRegistry(
             fileSystem = actualFileSystem,
             shellExecutor = shellExecutor ?: DefaultShellExecutor(),
             configService = mcpToolConfigService,
-            subAgentManager = cc.unitmesh.agent.core.SubAgentManager(),
+            subAgentManager = subAgentManager,
             llmService = llmService
         ).apply {
             // Register DocQLTool
@@ -92,10 +95,15 @@ class DocumentAgent(
         toolOrchestrator = toolOrchestrator,
         renderer = renderer,
         maxIterations = maxIterations,
+        subAgentManager = subAgentManager,  // P0: Pass SubAgentManager
         enableLLMStreaming = enableLLMStreaming
     )
 
     init {
+        val analysisAgent = cc.unitmesh.agent.subagent.AnalysisAgent(llmService, contentThreshold)
+        toolRegistry.registerTool(analysisAgent)
+        subAgentManager.registerSubAgent(analysisAgent)
+        
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             // Initialize any necessary resources
         }
@@ -161,6 +169,10 @@ You are a document research assistant using DocQL for structured document querie
 - **Target Document**: ${context.documentPath ?: "All available documents"}
 
 $docsInfo
+
+## Smart Capabilities
+- **Automatic Summarization**: Large content (>5000 chars) is automatically summarized by an Analysis Agent. You will receive a concise summary with key points instead of the raw text.
+- **Recursive Strategy**: If a summary indicates relevant information but lacks detail, use DocQL to query that specific file or section again with a more targeted query.
 
 ## Available Tools
 ${AgentToolFormatter.formatToolListForAI(toolRegistry.getAllTools().values.toList())}

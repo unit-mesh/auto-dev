@@ -34,7 +34,8 @@ class DocumentAgentExecutor(
     toolOrchestrator: ToolOrchestrator,
     renderer: CodingAgentRenderer,
     maxIterations: Int = 10,
-    enableLLMStreaming: Boolean = true
+    enableLLMStreaming: Boolean = true,
+    private val subAgentManager: cc.unitmesh.agent.core.SubAgentManager? = null  // P0: SubAgent support
 ) : BaseAgentExecutor(
     projectPath = projectPath,
     llmService = llmService,
@@ -60,6 +61,15 @@ class DocumentAgentExecutor(
     ): DocumentAgentResult {
         resetExecution()
         conversationManager = ConversationManager(llmService, systemPrompt)
+        
+        // P0: Add compression callbacks
+        conversationManager?.onCompressionNeeded = { current, max ->
+            logger.debug { "⚠️ Compression needed: $current/$max tokens" }
+        }
+        
+        conversationManager?.onCompressionCompleted = { result ->
+            logger.info { "✅ Compression completed: ${result.info}" }
+        }
 
         val docPath = task.documentPath ?: "unspecified document"
         logger.debug { "Starting document query: '${task.query}' for $docPath" }
@@ -233,8 +243,40 @@ class DocumentAgentExecutor(
                     is ToolResult.AgentResult -> if (!result.success) result.content else executionResult.content
                     else -> executionResult.content
                 }
+                
+                // P1: Check for long content and auto-summarize
+                val contentHandlerResult = checkForLongContent(toolName, fullOutput ?: "", executionResult)
+                val displayOutput = contentHandlerResult?.content ?: fullOutput
+                
+                // CRITICAL FIX: If AnalysisAgent processed the content, update the ToolExecutionResult
+                // so the LLM receives the summary instead of the original long content
+                val finalExecutionResult = if (contentHandlerResult != null) {
+                    logger.debug { "📊 Replacing long content (${fullOutput?.length ?: 0} chars) with summary for LLM" }
+                    
+                    // Extract summary from the formatted output
+                    val summaryContent = contentHandlerResult.content
+                    
+                    ToolExecutionResult(
+                        executionId = executionResult.executionId,
+                        toolName = executionResult.toolName,
+                        result = ToolResult.Success(summaryContent),
+                        startTime = executionResult.startTime,
+                        endTime = executionResult.endTime,
+                        state = executionResult.state,
+                        metadata = executionResult.metadata + mapOf(
+                            "originalLength" to (fullOutput?.length?.toString() ?: "0"),
+                            "summarized" to "true",
+                            "analysisAgent" to "used"
+                        )
+                    )
+                } else {
+                    executionResult
+                }
+                
+                // Update the results list with the modified execution result
+                results[results.lastIndex] = Triple(toolName, params, finalExecutionResult)
 
-                renderer.renderToolResult(toolName, executionResult.isSuccess, executionResult.content, fullOutput)
+                renderer.renderToolResult(toolName, finalExecutionResult.isSuccess, finalExecutionResult.content, displayOutput)
             } catch (e: Exception) {
                 logger.error(e) { "Tool execution failed: ${toolName}" }
                 renderer.renderError("Tool execution failed: ${e.message}")
@@ -258,5 +300,45 @@ class DocumentAgentExecutor(
         }
 
         return results
+    }
+    
+    /**
+     * P1: Check for long content and delegate to AnalysisAgent for summarization
+     */
+    private suspend fun checkForLongContent(
+        toolName: String,
+        output: String,
+        executionResult: ToolExecutionResult
+    ): ToolResult.AgentResult? {
+        
+        if (subAgentManager == null) {
+            return null
+        }
+        
+        // Detect content type - optimized for DocQL
+        val contentType = when {
+            toolName == "docql" -> "document-content"
+            output.startsWith("{") || output.startsWith("[") -> "json"
+            output.contains("<?xml") -> "xml"
+            output.contains("```") -> "code"
+            else -> "text"
+        }
+        
+        // Build metadata
+        val metadata = mutableMapOf<String, String>()
+        metadata["toolName"] = toolName
+        metadata["executionId"] = executionResult.executionId
+        metadata["success"] = executionResult.isSuccess.toString()
+        
+        executionResult.metadata.forEach { (key, value) ->
+            metadata["tool_$key"] = value
+        }
+        
+        return subAgentManager.checkAndHandleLongContent(
+            content = output,
+            contentType = contentType,
+            source = toolName,
+            metadata = metadata
+        )
     }
 }

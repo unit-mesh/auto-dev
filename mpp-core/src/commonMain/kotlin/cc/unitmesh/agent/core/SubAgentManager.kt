@@ -71,7 +71,7 @@ class SubAgentManager {
         
         return try {
             analysisAgent.execute(context) { progress ->
-                logger.info { "📊 AnalysisAgent: $progress" }
+                logger.debug { "📊 AnalysisAgent: $progress" }  // Changed from INFO to DEBUG
             }
         } catch (e: Exception) {
             logger.error(e) { "❌ AnalysisAgent failed: ${e.message}" }

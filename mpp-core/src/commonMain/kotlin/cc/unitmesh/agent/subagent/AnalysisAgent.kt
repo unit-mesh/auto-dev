@@ -201,40 +201,30 @@ class AnalysisAgent(
     }
 
     /**
-     * 构建分析提示
+     * 构建分析提示 - 优化版本
      */
     private fun buildAnalysisPrompt(input: ContentHandlerContext): String {
-        val contentPreview = if (input.content.length > 2000) {
-            input.content.take(1000) + "\n\n... [CONTENT TRUNCATED] ...\n\n" + input.content.takeLast(1000)
+        // 智能截取：优先保留开头和关键部分
+        val contentPreview = if (input.content.length > 3000) {
+            input.content.take(2500) + "\n\n... [TRUNCATED ${input.content.length - 2500} chars] ..."
         } else {
             input.content
         }
 
         return """
-            Analyze the following ${input.contentType} content from ${input.source}:
-
-            Content (${input.content.length} characters):
+            Summarize this ${input.contentType} content from ${input.source} (${input.content.length} chars).
+            
+            Content:
             ```
             $contentPreview
             ```
-
-            Please provide a JSON response with the following structure:
-            {
-                "summary": "Brief summary of the content",
-                "keyPoints": ["key point 1", "key point 2", ...],
-                "structure": {
-                    "type": "detected structure type",
-                    "sections": ["section1", "section2", ...],
-                    "patterns": ["pattern1", "pattern2", ...]
-                },
-                "insights": ["insight 1", "insight 2", ...]
-            }
-
-            Focus on:
-            1. What is the main purpose/content of this data?
-            2. What are the most important elements?
-            3. What patterns or structures can you identify?
-            4. What insights would be valuable for a developer?
+            
+            Provide a concise summary in 2-3 sentences focusing on:
+            - Main topics/themes
+            - Key information that would help answer questions about this content
+            - Important entities, concepts, or patterns mentioned
+            
+            Format as plain text, not JSON.
         """.trimIndent()
     }
 
@@ -245,46 +235,70 @@ class AnalysisAgent(
         response: String,
         input: ContentHandlerContext
     ): ContentHandlerResult {
-        return try {
-            val jsonMatch = Regex("\\{[\\s\\S]*?\\}").find(response)
-            if (jsonMatch != null) {
-                val parsed = json.decodeFromString<ContentAnalysisJson>(jsonMatch.value)
-                ContentHandlerResult(
-                    summary = parsed.summary ?: "Content analyzed",
-                    keyPoints = parsed.keyPoints ?: emptyList(),
-                    structure = parsed.structure ?: emptyMap(),
-                    insights = parsed.insights ?: emptyList(),
-                    originalLength = input.content.length
-                )
-            } else {
-                // 降级处理
-                createFallbackResult(input, response)
-            }
-        } catch (e: Exception) {
-            createFallbackResult(input, response)
+        // 新版本：直接使用 LLM 的文本响应作为摘要
+        val cleanedResponse = response.trim()
+        
+        if (cleanedResponse.isNotEmpty() && cleanedResponse.length > 20) {
+            // LLM 返回了有效的摘要
+            return ContentHandlerResult(
+                summary = cleanedResponse,
+                keyPoints = extractKeyPoints(cleanedResponse),
+                structure = emptyMap(),
+                insights = emptyList(),
+                originalLength = input.content.length
+            )
+        } else {
+            // 降级：智能提取内容摘要
+            return createSmartFallbackResult(input)
         }
+    }
+    
+    /**
+     * 从摘要文本中提取关键点
+     */
+    private fun extractKeyPoints(summary: String): List<String> {
+        // 简单提取：按句子分割，取前3句
+        return summary.split(".", "。", "\n")
+            .map { it.trim() }
+            .filter { it.length > 10 }
+            .take(3)
     }
 
     /**
-     * 创建降级结果
+     * 创建智能降级结果 - 提取实际内容而非统计信息
      */
-    private fun createFallbackResult(
-        input: ContentHandlerContext,
-        response: String
+    private fun createSmartFallbackResult(
+        input: ContentHandlerContext
     ): ContentHandlerResult {
-        val lines = input.content.lines()
+        val lines = input.content.lines().filter { it.isNotBlank() }
+        
+        // 智能提取：获取前几行有意义的内容
+        val meaningfulLines = lines.take(10)
+        val preview = meaningfulLines.joinToString(" ").take(300)
+        
         val summary = when (input.contentType) {
-            "log" -> "Log file with ${lines.size} lines"
-            "json" -> "JSON data structure"
-            "code" -> "Code file with ${lines.size} lines"
-            else -> "Content with ${input.content.length} characters"
+            "document-content" -> {
+                // 文档内容：提取前几行作为摘要
+                "Document excerpt: $preview..."
+            }
+            "json" -> {
+                // JSON：尝试提取关键字段
+                "JSON data: $preview..."
+            }
+            "code" -> {
+                // 代码：提取前几行
+                "Code snippet (${lines.size} lines): $preview..."
+            }
+            else -> {
+                "Content preview: $preview..."
+            }
         }
 
         return ContentHandlerResult(
             summary = summary,
-            keyPoints = listOf("Content length: ${input.content.length} chars", "Lines: ${lines.size}"),
+            keyPoints = meaningfulLines.take(3),
             structure = mapOf("type" to input.contentType, "lines" to lines.size.toString()),
-            insights = listOf("Large content requiring analysis"),
+            insights = emptyList(),
             originalLength = input.content.length
         )
     }
