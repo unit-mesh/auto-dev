@@ -147,13 +147,31 @@ export class CliRenderer extends BaseRenderer {
           details: `Searching for pattern: ${params.pattern || 'unknown'}${params.path ? ` in ${params.path}` : ''}`
         };
       case 'DocQL':
-        const query = params.query || 'query';
-        const maxResults = params.maxResults ? ` (max: ${params.maxResults})` : '';
+      case 'docql': {
+        // Try to parse JSON for DocQL
+        let docqlParams: Record<string, any> = {};
+        try {
+          docqlParams = JSON.parse(paramsStr);
+        } catch {
+          docqlParams = params;
+        }
+        const query = docqlParams.query || params.query || 'query';
+        const docPath = docqlParams.documentPath || params.documentPath;
+        const maxResults = docqlParams.maxResults || params.maxResults;
+        const reranker = docqlParams.rerankerType || params.rerankerType;
+        
+        // Build details string
+        let details = `Query: "${query}"`;
+        if (docPath) details += ` | Doc: ${docPath}`;
+        if (maxResults) details += ` | Max: ${maxResults}`;
+        if (reranker) details += ` | Reranker: ${reranker}`;
+        
         return {
           name: 'DocQL',
-          description: 'tool',
-          details: `${query}${maxResults}`
+          description: 'document query',
+          details
         };
+      }
       default:
         return {
           name: toolName,

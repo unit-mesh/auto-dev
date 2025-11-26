@@ -302,6 +302,24 @@ export class ServerRenderer extends BaseRenderer {
             description: 'content finder',
             details: `Searching for pattern: ${paramsObj.pattern || 'unknown'}${paramsObj.path ? ` in ${paramsObj.path}` : ''}`
           };
+        case 'DocQL':
+        case 'docql': {
+          const query = paramsObj.query || 'query';
+          const docPath = paramsObj.documentPath;
+          const maxResults = paramsObj.maxResults;
+          const reranker = paramsObj.rerankerType;
+          
+          let details = `Query: "${query}"`;
+          if (docPath) details += ` | Doc: ${docPath}`;
+          if (maxResults) details += ` | Max: ${maxResults}`;
+          if (reranker) details += ` | Reranker: ${reranker}`;
+          
+          return {
+            name: 'DocQL',
+            description: 'document query',
+            details
+          };
+        }
         default:
           return {
             name: toolName,
