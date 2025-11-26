@@ -87,6 +87,7 @@ fun AgentMessageList(
                         output = timelineItem.output,
                         fullOutput = timelineItem.fullOutput,
                         executionTimeMs = timelineItem.executionTimeMs,
+                        docqlStats = timelineItem.docqlStats,
                         onOpenFileViewer = onOpenFileViewer
                     )
                 }

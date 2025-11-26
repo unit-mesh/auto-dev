@@ -94,6 +94,8 @@ class ComposeRenderer : BaseRenderer() {
             val output: String? = null, // 截断的输出用于直接展示
             val fullOutput: String? = null, // 完整的输出，用于折叠展示或错误诊断
             val executionTimeMs: Long? = null, // 执行时间
+            // DocQL-specific search statistics
+            val docqlStats: cc.unitmesh.agent.tool.impl.DocQLSearchStats? = null,
             val itemTimestamp: Long = Clock.System.now().toEpochMilliseconds()
         ) : TimelineItem(itemTimestamp)
         @Deprecated("Use CombinedToolItem instead")
@@ -350,6 +352,9 @@ class ComposeRenderer : BaseRenderer() {
 
                 // Add the complete item with result
                 val executionTime = metadata["execution_time_ms"]?.toLongOrNull()
+                
+                // Extract DocQL search stats if available
+                val docqlStats = cc.unitmesh.agent.tool.impl.DocQLSearchStats.fromMetadata(metadata)
 
                 _timeline.add(
                     lastItem.copy(
@@ -365,7 +370,8 @@ class ComposeRenderer : BaseRenderer() {
                             null
                         },
                         fullOutput = fullOutput,
-                        executionTimeMs = executionTime
+                        executionTimeMs = executionTime,
+                        docqlStats = docqlStats
                     )
                 )
             }

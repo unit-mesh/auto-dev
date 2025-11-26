@@ -136,10 +136,11 @@ class DocQLInvocation(
         logger.info { "Executing Smart Search for keyword: '$keyword'" }
         
         // Create reranker with appropriate config
-        val reranker = DocumentReranker(DocumentRerankerConfig(
+        val rerankerConfig = DocumentRerankerConfig(
             maxResults = maxResults,
             minScoreThreshold = 5.0  // Filter out very low relevance items
-        ))
+        )
+        val reranker = DocumentReranker(rerankerConfig)
         
         // 1. Define query sources for multi-channel retrieval
         val queryChannels = mapOf(
@@ -180,10 +181,23 @@ class DocQLInvocation(
             }
         }
 
+        // Count documents searched
+        val docsSearched = channelResults.values.sumOf { result ->
+            when (result) {
+                is DocQLResult.Entities -> result.itemsByFile.size
+                is DocQLResult.TocItems -> result.itemsByFile.size
+                is DocQLResult.Chunks -> result.itemsByFile.size
+                else -> 0
+            }
+        }
+
         // 4. Use Reranker for RRF fusion + BM25 scoring
         if (rankedLists.isEmpty()) {
-            return executeFallbackSearch(keyword, documentPath, maxResults, reranker)
+            return executeFallbackSearch(keyword, documentPath, maxResults, reranker, rerankerConfig)
         }
+
+        val totalRawResults = rankedLists.values.sumOf { it.size }
+        val activeChannels = rankedLists.keys.toList()
 
         val rerankResult = reranker.rerank(
             rankedLists = rankedLists,
@@ -192,7 +206,7 @@ class DocQLInvocation(
         )
 
         if (rerankResult.items.isEmpty()) {
-            return executeFallbackSearch(keyword, documentPath, maxResults, reranker)
+            return executeFallbackSearch(keyword, documentPath, maxResults, reranker, rerankerConfig)
         }
 
         // 5. Convert to ScoredResult for formatting
@@ -207,7 +221,35 @@ class DocQLInvocation(
             )
         }
 
-        return ToolResult.Success(formatSmartResult(scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount))
+        // Build search statistics
+        val scores = scoredResults.map { it.score }
+        val stats = DocQLSearchStats(
+            searchType = DocQLSearchStats.SearchType.SMART_SEARCH,
+            channels = activeChannels,
+            documentsSearched = docsSearched,
+            totalRawResults = totalRawResults,
+            resultsAfterRerank = rerankResult.items.size,
+            truncated = rerankResult.truncated,
+            usedFallback = false,
+            rerankerConfig = RerankerStats(
+                rerankerType = "RRF+Composite(BM25,Type,NameMatch)",
+                rrfK = rerankerConfig.rrfK,
+                rrfWeight = rerankerConfig.rrfWeight,
+                contentWeight = rerankerConfig.contentWeight,
+                minScoreThreshold = rerankerConfig.minScoreThreshold
+            ),
+            scoringInfo = if (scores.isNotEmpty()) ScoringStats(
+                scorerComponents = listOf("RRF", "BM25", "TypeScore", "NameMatch"),
+                avgScore = scores.average(),
+                maxScore = scores.maxOrNull() ?: 0.0,
+                minScore = scores.minOrNull() ?: 0.0
+            ) else null
+        )
+
+        return ToolResult.Success(
+            formatSmartResult(scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount),
+            stats.toMetadata()
+        )
     }
 
     /**
@@ -289,7 +331,8 @@ class DocQLInvocation(
         keyword: String,
         documentPath: String?,
         maxResults: Int,
-        reranker: DocumentReranker
+        reranker: DocumentReranker,
+        rerankerConfig: DocumentRerankerConfig
     ): ToolResult {
         logger.info { "Smart search yielded no results, trying broader content search" }
         val fallbackQuery = "$.content.chunks()"
@@ -300,6 +343,8 @@ class DocQLInvocation(
         }
         
         if (allChunksResult is DocQLResult.Chunks) {
+            val docsSearched = allChunksResult.itemsByFile.size
+            
             // Pre-filter chunks that contain the keyword
             val relevantChunks = allChunksResult.itemsByFile.flatMap { (file, chunks) ->
                 chunks.filter { it.content.contains(keyword, ignoreCase = true) }
@@ -329,11 +374,56 @@ class DocQLInvocation(
                         filePath = scoredItem.item.filePath
                     )
                 }
-                return ToolResult.Success(formatSmartResult(scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount))
+                
+                // Build fallback search statistics
+                val scores = scoredResults.map { it.score }
+                val stats = DocQLSearchStats(
+                    searchType = DocQLSearchStats.SearchType.FALLBACK_CONTENT,
+                    channels = listOf("content_chunks"),
+                    documentsSearched = docsSearched,
+                    totalRawResults = relevantChunks.size,
+                    resultsAfterRerank = rerankResult.items.size,
+                    truncated = rerankResult.truncated,
+                    usedFallback = true,
+                    rerankerConfig = RerankerStats(
+                        rerankerType = "Composite(BM25,Type,NameMatch)",
+                        rrfK = rerankerConfig.rrfK,
+                        rrfWeight = 0.0, // No RRF in fallback
+                        contentWeight = 1.0,
+                        minScoreThreshold = rerankerConfig.minScoreThreshold
+                    ),
+                    scoringInfo = if (scores.isNotEmpty()) ScoringStats(
+                        scorerComponents = listOf("BM25", "TypeScore", "NameMatch"),
+                        avgScore = scores.average(),
+                        maxScore = scores.maxOrNull() ?: 0.0,
+                        minScore = scores.minOrNull() ?: 0.0
+                    ) else null
+                )
+                
+                return ToolResult.Success(
+                    formatSmartResult(scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount),
+                    stats.toMetadata()
+                )
             }
         }
 
-        return ToolResult.Success("No results found for '$keyword'.\n\n${buildQuerySuggestion(keyword, DocumentRegistry.getRegisteredPaths())}")
+        // No results found - return stats for empty search
+        val emptyStats = DocQLSearchStats(
+            searchType = DocQLSearchStats.SearchType.FALLBACK_CONTENT,
+            channels = emptyList(),
+            documentsSearched = if (allChunksResult is DocQLResult.Chunks) allChunksResult.itemsByFile.size else 0,
+            totalRawResults = 0,
+            resultsAfterRerank = 0,
+            truncated = false,
+            usedFallback = true,
+            rerankerConfig = null,
+            scoringInfo = null
+        )
+
+        return ToolResult.Success(
+            "No results found for '$keyword'.\n\n${buildQuerySuggestion(keyword, DocumentRegistry.getRegisteredPaths())}",
+            emptyStats.toMetadata()
+        )
     }
 
     private data class ScoredResult(
@@ -365,7 +455,7 @@ class DocQLInvocation(
             byFile.forEach { (file, items) ->
                 appendLine("## $file")
                 items.forEach { result ->
-                    val scoreInfo = if (result.score > 0) " (score: %.2f)".format(result.score) else ""
+                    val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
                     when (val item = result.item) {
                         is Entity.ClassEntity -> {
                             appendLine("  - **Class**: ${item.name}$scoreInfo")
@@ -413,7 +503,22 @@ class DocQLInvocation(
             return queryAllDocuments(query)
         }
         
-        return ToolResult.Success(formatDocQLResult(result, documentPath, params.maxResults ?: 20))
+        val stats = DocQLSearchStats(
+            searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
+            channels = listOf(extractQueryType(query)),
+            documentsSearched = 1,
+            totalRawResults = getResultCount(result),
+            resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: 20),
+            truncated = getResultCount(result) > (params.maxResults ?: 20),
+            usedFallback = false,
+            rerankerConfig = null, // No reranker for direct queries
+            scoringInfo = null
+        )
+        
+        return ToolResult.Success(
+            formatDocQLResult(result, documentPath, params.maxResults ?: 20),
+            stats.toMetadata()
+        )
     }
 
     private suspend fun queryAllDocuments(query: String): ToolResult {
@@ -421,7 +526,32 @@ class DocQLInvocation(
         val result = DocumentRegistry.queryDocuments(query)
         
         return if (!isEmptyResult(result)) {
-            ToolResult.Success(formatDocQLResult(result, null, params.maxResults ?: 20))
+            val docsSearched = when (result) {
+                is DocQLResult.Entities -> result.itemsByFile.size
+                is DocQLResult.TocItems -> result.itemsByFile.size
+                is DocQLResult.Chunks -> result.itemsByFile.size
+                is DocQLResult.CodeBlocks -> result.itemsByFile.size
+                is DocQLResult.Tables -> result.itemsByFile.size
+                is DocQLResult.Files -> result.items.size
+                else -> 0
+            }
+            
+            val stats = DocQLSearchStats(
+                searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
+                channels = listOf(extractQueryType(query)),
+                documentsSearched = docsSearched,
+                totalRawResults = getResultCount(result),
+                resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: 20),
+                truncated = getResultCount(result) > (params.maxResults ?: 20),
+                usedFallback = false,
+                rerankerConfig = null,
+                scoringInfo = null
+            )
+            
+            ToolResult.Success(
+                formatDocQLResult(result, null, params.maxResults ?: 20),
+                stats.toMetadata()
+            )
         } else {
             // Provide helpful suggestions when no results found
             val availablePaths = DocumentRegistry.getAllAvailablePaths()
@@ -432,7 +562,49 @@ class DocQLInvocation(
                 )
             }
             val suggestion = buildQuerySuggestion(query, availablePaths)
-            ToolResult.Success("No results found for query: $query\n\n$suggestion")
+            
+            val emptyStats = DocQLSearchStats(
+                searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
+                channels = listOf(extractQueryType(query)),
+                documentsSearched = 0,
+                totalRawResults = 0,
+                resultsAfterRerank = 0,
+                truncated = false,
+                usedFallback = false,
+                rerankerConfig = null,
+                scoringInfo = null
+            )
+            
+            ToolResult.Success(
+                "No results found for query: $query\n\n$suggestion",
+                emptyStats.toMetadata()
+            )
+        }
+    }
+    
+    private fun extractQueryType(query: String): String {
+        return when {
+            query.contains("$.code.class") -> "class"
+            query.contains("$.code.function") -> "function"
+            query.contains("$.code.classes") -> "classes"
+            query.contains("$.code.functions") -> "functions"
+            query.contains("$.content.heading") -> "heading"
+            query.contains("$.content.chunks") -> "chunks"
+            query.contains("$.toc") -> "toc"
+            query.contains("$.files") -> "files"
+            else -> "unknown"
+        }
+    }
+    
+    private fun getResultCount(result: DocQLResult): Int {
+        return when (result) {
+            is DocQLResult.Entities -> result.totalCount
+            is DocQLResult.TocItems -> result.totalCount
+            is DocQLResult.Chunks -> result.totalCount
+            is DocQLResult.CodeBlocks -> result.totalCount
+            is DocQLResult.Tables -> result.totalCount
+            is DocQLResult.Files -> result.items.size
+            else -> 0
         }
     }
 
@@ -660,6 +832,25 @@ class DocQLInvocation(
             is DocQLResult.Tables -> result.totalCount == 0
             is DocQLResult.Files -> result.items.isEmpty()
             is DocQLResult.Error -> true
+        }
+    }
+    
+    /**
+     * Format a score value to 2 decimal places (multiplatform compatible)
+     */
+    private fun formatScore(value: Double): String {
+        val rounded = kotlin.math.round(value * 100) / 100
+        val str = rounded.toString()
+        val dotIndex = str.indexOf('.')
+        return if (dotIndex == -1) {
+            "$str.00"
+        } else {
+            val currentDecimals = str.length - dotIndex - 1
+            when {
+                currentDecimals >= 2 -> str.substring(0, dotIndex + 3)
+                currentDecimals == 1 -> str + "0"
+                else -> str + "00"
+            }
         }
     }
 }

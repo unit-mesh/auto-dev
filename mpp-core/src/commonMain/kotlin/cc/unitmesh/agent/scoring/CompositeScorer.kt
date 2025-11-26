@@ -131,10 +131,33 @@ data class ScoringBreakdown(
     override fun toString(): String {
         return buildString {
             appendLine("Scoring Breakdown:")
-            appendLine("  BM25: %.2f (weight: %.1f%%)".format(bm25, weights["bm25"]!! * 100))
-            appendLine("  Type: %.2f (weight: %.1f%%)".format(typeScore, weights["type"]!! * 100))
-            appendLine("  Name: %.2f (weight: %.1f%%)".format(nameMatch, weights["nameMatch"]!! * 100))
-            appendLine("  Combined: %.2f".format(combined))
+            appendLine("  BM25: ${formatDouble(bm25)} (weight: ${formatDouble(weights["bm25"]!! * 100, 1)}%)")
+            appendLine("  Type: ${formatDouble(typeScore)} (weight: ${formatDouble(weights["type"]!! * 100, 1)}%)")
+            appendLine("  Name: ${formatDouble(nameMatch)} (weight: ${formatDouble(weights["nameMatch"]!! * 100, 1)}%)")
+            appendLine("  Combined: ${formatDouble(combined)}")
+        }
+    }
+    
+    private fun formatDouble(value: Double, decimals: Int = 2): String {
+        val factor = when (decimals) {
+            0 -> 1.0
+            1 -> 10.0
+            2 -> 100.0
+            3 -> 1000.0
+            else -> generateSequence(1.0) { it * 10 }.take(decimals + 1).last()
+        }
+        val rounded = kotlin.math.round(value * factor) / factor
+        val str = rounded.toString()
+        val dotIndex = str.indexOf('.')
+        return if (dotIndex == -1) {
+            "$str.${"0".repeat(decimals)}"
+        } else {
+            val currentDecimals = str.length - dotIndex - 1
+            if (currentDecimals >= decimals) {
+                str.substring(0, dotIndex + decimals + 1)
+            } else {
+                str + "0".repeat(decimals - currentDecimals)
+            }
         }
     }
 }
