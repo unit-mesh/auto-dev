@@ -332,6 +332,8 @@ class AnalysisAgent(
 
             appendLine("📏 Original content: ${result.originalLength} characters")
             appendLine("⏰ Processed at: ${kotlinx.datetime.Instant.fromEpochMilliseconds(result.processedAt)}")
+            appendLine()
+            appendLine("💬 **Need more details?** Use `/ask-agent agentName=\"analysis-agent\" question=\"<your question>\"` to ask follow-up questions about this content.")
         }
     }
 
@@ -392,42 +394,64 @@ class AnalysisAgent(
     }
 
     /**
-     * 构建问答提示
+     * 构建问答提示 - 增强版本，包含原始内容以便回答详细问题
      */
     private fun buildQuestionPrompt(question: String, context: Map<String, Any>): String {
         val recentContent = contentHistory.takeLast(3) // 最近3个处理的内容
 
         return buildString {
-            appendLine("You are a Content Handler Agent with access to processed content history.")
-            appendLine("Answer the following question based on the content you have analyzed:")
+            appendLine("You are a Content Analysis Agent with access to previously analyzed content.")
+            appendLine("Your job is to answer questions based on the ORIGINAL content you analyzed, not just the summaries.")
             appendLine()
-            appendLine("Question: $question")
+            appendLine("## Question")
+            appendLine(question)
             appendLine()
-            appendLine("Available processed content:")
+            appendLine("## Analyzed Content (${recentContent.size} items)")
+            appendLine()
 
             recentContent.forEachIndexed { index, (input, result) ->
-                appendLine("--- Content ${index + 1} ---")
-                appendLine("Source: ${input.source}")
-                appendLine("Type: ${input.contentType}")
-                appendLine("Length: ${input.content.length} chars")
-                appendLine("Summary: ${result.summary}")
-                appendLine("Key Points: ${result.keyPoints.joinToString(", ")}")
-                if (result.insights.isNotEmpty()) {
-                    appendLine("Insights: ${result.insights.joinToString(", ")}")
+                appendLine("### Content ${index + 1}: ${input.source}")
+                appendLine("- **Type**: ${input.contentType}")
+                appendLine("- **Summary**: ${result.summary}")
+                appendLine()
+                
+                // Include more of the original content for answering questions
+                // Use intelligent truncation based on content length
+                val contentLimit = when {
+                    recentContent.size == 1 -> 8000  // Single content: include more
+                    recentContent.size == 2 -> 4000  // Two contents: moderate amount
+                    else -> 2500  // Multiple contents: less per item
                 }
+                
+                val originalContent = if (input.content.length > contentLimit) {
+                    // Smart truncation: include start and relevant portions
+                    val start = input.content.take(contentLimit - 500)
+                    val end = input.content.takeLast(500)
+                    "$start\n\n... [${input.content.length - contentLimit} chars truncated] ...\n\n$end"
+                } else {
+                    input.content
+                }
+                
+                appendLine("**Original Content:**")
+                appendLine("```")
+                appendLine(originalContent)
+                appendLine("```")
                 appendLine()
             }
 
             if (context.isNotEmpty()) {
-                appendLine("Additional context:")
+                appendLine("## Additional Context")
                 context.forEach { (key, value) ->
-                    appendLine("$key: $value")
+                    appendLine("- **$key**: $value")
                 }
                 appendLine()
             }
 
-            appendLine("Please provide a helpful and specific answer based on the processed content.")
-            appendLine("If the question cannot be answered from the available content, say so clearly.")
+            appendLine("## Instructions")
+            appendLine("1. Answer the question based on the ORIGINAL content above")
+            appendLine("2. Be specific and include relevant details from the content")
+            appendLine("3. If the content doesn't contain the answer, say so clearly")
+            appendLine("4. Quote or reference specific parts of the content when relevant")
         }
     }
 
