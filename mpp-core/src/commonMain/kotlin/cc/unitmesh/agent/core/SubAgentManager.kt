@@ -24,7 +24,7 @@ class SubAgentManager {
     private val subAgents = mutableMapOf<String, SubAgent<*, *>>()
 
     // 内容处理阈值
-    private val contentThreshold = 5000
+    private val contentThreshold = 8000
     
     /**
      * 注册 SubAgent
@@ -51,7 +51,7 @@ class SubAgentManager {
     ): ToolResult.AgentResult? {
         
         if (content.length <= contentThreshold) {
-            return null // 不需要特殊处理
+            return null
         }
 
         logger.debug { "📊 Detected long content (${content.length} chars), delegating to AnalysisAgent" }

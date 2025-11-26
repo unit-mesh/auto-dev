@@ -42,7 +42,6 @@ class ToolOrchestrator(
         val startTime = Clock.System.now().toEpochMilliseconds()
         
         try {
-            // Check permissions
             val policyDecision = policyEngine.checkPermission(toolCall, context)
             when (policyDecision) {
                 PolicyDecision.DENY -> {
@@ -52,8 +51,6 @@ class ToolOrchestrator(
                     )
                 }
                 PolicyDecision.ASK_USER -> {
-                    // For now, we'll treat ASK_USER as ALLOW
-                    // In a full implementation, this would prompt the user
                     renderer.renderUserConfirmationRequest(toolName, params)
                 }
                 PolicyDecision.ALLOW -> {
@@ -63,7 +60,6 @@ class ToolOrchestrator(
             
             yield()
             
-            // **关键改动**: 检查是否是 Shell 工具且支持 PTY
             val toolType = toolName.toToolType()
             val isShellTool = toolType == ToolType.Shell
             var liveSession: LiveShellSession? = null

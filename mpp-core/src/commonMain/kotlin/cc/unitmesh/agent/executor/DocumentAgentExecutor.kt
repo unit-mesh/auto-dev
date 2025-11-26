@@ -244,16 +244,10 @@ class DocumentAgentExecutor(
                     else -> executionResult.content
                 }
                 
-                // P1: Check for long content and auto-summarize
                 val contentHandlerResult = checkForLongContent(toolName, fullOutput ?: "", executionResult)
                 val displayOutput = contentHandlerResult?.content ?: fullOutput
                 
-                // CRITICAL FIX: If AnalysisAgent processed the content, update the ToolExecutionResult
-                // so the LLM receives the summary instead of the original long content
                 val finalExecutionResult = if (contentHandlerResult != null) {
-                    logger.debug { "📊 Replacing long content (${fullOutput?.length ?: 0} chars) with summary for LLM" }
-                    
-                    // Extract summary from the formatted output
                     val summaryContent = contentHandlerResult.content
                     
                     ToolExecutionResult(
@@ -316,9 +310,7 @@ class DocumentAgentExecutor(
             return null
         }
         
-        // Detect content type - optimized for DocQL
-        // Check if output contains code indicators (class definitions, function definitions, etc.)
-        val isCodeContent = output.contains("📘 class ") || 
+        val isCodeContent = output.contains("📘 class ") ||
                            output.contains("⚡ fun ") ||
                            output.contains("Found") && output.contains("entities") ||
                            output.contains("class ") && output.contains("{") ||

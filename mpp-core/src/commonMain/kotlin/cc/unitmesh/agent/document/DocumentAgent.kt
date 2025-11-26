@@ -168,19 +168,22 @@ You are a document research assistant. **ALWAYS use DocQL tool FIRST** to search
 Answer: "${context.query}"
 ${context.documentPath?.let { "Target: $it" } ?: ""}
 
-$docsInfo
-
 ## ⚡ REQUIRED: Use DocQL First!
 
-**Step 1: Search with DocQL using keyword**
-```
+**Step 1: Search with DocQL split users' question to multiple keyword**
 <devin>
 /docql
 ```json
-{"query": "your_keyword"}
+{"query": "keyword1"}
 ```
 </devin>
+
+<devin>
+/docql
+```json
+{"query": "keyword2"}
 ```
+</devin>
 
 Example for "How does MCP work?":
 ```json

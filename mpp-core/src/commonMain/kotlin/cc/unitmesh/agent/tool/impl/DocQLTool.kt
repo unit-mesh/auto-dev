@@ -42,7 +42,7 @@ data class DocQLParams(
     val secondaryKeyword: String? = null,
     /**
      * Reranker type to use for result ordering.
-     * 
+     *
      * Options:
      * - "heuristic" (default): Fast BM25 + type + name matching
      * - "rrf_composite": RRF fusion with composite scoring
@@ -113,7 +113,7 @@ class DocQLInvocation(
 
     /** Parsed reranker type for this invocation */
     private val rerankerType: RerankerType = DocQLTool.parseRerankerType(params.rerankerType)
-    
+
     /** Reranker instance for search result ordering */
     private val resultReranker = DocQLResultReranker(llmService)
 
@@ -208,7 +208,7 @@ class DocQLInvocation(
                 buildSearchResult(res, kw, rerankerConfig, stats)
             },
             fallbackExecutor = { kw, path, max, rr, rc ->
-                executeFallbackSearch(kw, path, max, rr, rc)
+                executeFallbackSearch(kw, path, rr, rc)
             }
         )
 
@@ -349,7 +349,7 @@ class DocQLInvocation(
             rerankerType = rerankerType,
             maxResults = params.maxResults ?: 20
         )
-        
+
         val scoredResults = rerankResult.scoredResults
         val llmRerankerStats = rerankResult.llmRerankerStats
         val actualSearchType = rerankResult.actualSearchType
@@ -360,7 +360,7 @@ class DocQLInvocation(
             RerankerType.HEURISTIC -> "Composite(BM25,Type,NameMatch)"
             RerankerType.RRF_COMPOSITE -> "RRF+Composite(BM25,Type,NameMatch)"
         }
-        
+
         val stats = DocQLSearchStats(
             searchType = actualSearchType,
             channels = result.activeChannels,
@@ -461,7 +461,6 @@ class DocQLInvocation(
     private suspend fun executeFallbackSearch(
         keyword: String,
         documentPath: String?,
-        maxResults: Int,
         reranker: DocumentReranker,
         rerankerConfig: DocumentRerankerConfig
     ): ToolResult {
@@ -552,12 +551,7 @@ class DocQLInvocation(
         )
 
         return ToolResult.Success(
-            "No results found for '$keyword'.\n\n${
-                buildQuerySuggestion(
-                    keyword,
-                    DocumentRegistry.getRegisteredPaths()
-                )
-            }",
+            "No results found for '$keyword'.\n\n${buildQuerySuggestion(keyword)}",
             emptyStats.toMetadata()
         )
     }
@@ -690,7 +684,7 @@ class DocQLInvocation(
                     ToolErrorType.FILE_NOT_FOUND.code
                 )
             }
-            val suggestion = buildQuerySuggestion(query, availablePaths)
+            val suggestion = buildQuerySuggestion(query)
 
             val emptyStats = DocQLSearchStats(
                 searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
@@ -737,32 +731,19 @@ class DocQLInvocation(
         }
     }
 
-    private fun buildQuerySuggestion(query: String, registeredPaths: List<String>): String {
+    private fun buildQuerySuggestion(query: String): String {
         val suggestions = mutableListOf<String>()
 
         suggestions.add("💡 **Suggestions to find the information:**")
-
-        // Suggest checking TOC if not already a TOC query
         if (!query.contains("toc")) {
             suggestions.add("1. Try `$.toc[*]` to see all available sections in the documents")
         }
 
-        // Suggest broader search if query looks specific
         if (query.contains("heading") || query.contains("h1") || query.contains("h2")) {
             suggestions.add("2. Try a broader heading search with fewer keywords")
             suggestions.add("3. Try `$.content.chunks()` to get all content and search manually")
         } else if (!query.contains("chunks")) {
             suggestions.add("2. Try `$.content.chunks()` to retrieve all document content")
-        }
-
-        // List available documents
-        if (registeredPaths.isNotEmpty()) {
-            suggestions.add("\n📚 **Available documents:**")
-            registeredPaths.forEach { path ->
-                if (true) {
-                    suggestions.add("   - $path")
-                }
-            }
         }
 
         return suggestions.joinToString("\n")
@@ -1061,7 +1042,7 @@ class DocQLTool(
             rerankerType = rerankerType
         )
     }
-    
+
     companion object {
         /**
          * Parse reranker type from string.
