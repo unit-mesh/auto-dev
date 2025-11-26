@@ -189,7 +189,7 @@ kotlin {
                 implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
 
                 // CodeHighlight
-                implementation("dev.snipme:highlights:1.1.0")
+                implementation("dev.snipme:highlights:1.0.0")
                 // Multiplatform Markdown Renderer for JVM
                 implementation("com.mikepenz:multiplatform-markdown-renderer-code:0.38.1")
                 implementation("com.mikepenz:multiplatform-markdown-renderer-jvm:0.38.1")
