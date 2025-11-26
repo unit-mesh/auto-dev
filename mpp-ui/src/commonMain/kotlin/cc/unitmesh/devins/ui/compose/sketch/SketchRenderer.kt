@@ -74,7 +74,7 @@ object SketchRenderer : BaseContentRenderer() {
                 when (fence.languageId.lowercase()) {
                     "markdown", "md", "" -> {
                         if (fence.text.isNotBlank()) {
-                            TextBlockRenderer(fence.text)
+                            MarkdownSketchRenderer.RenderMarkdown(fence.text, isComplete = blockIsComplete)
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }

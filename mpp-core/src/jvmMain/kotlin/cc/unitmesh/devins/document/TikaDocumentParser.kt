@@ -35,11 +35,6 @@ class TikaDocumentParser : DocumentParserService {
      * This method converts string back to bytes - use parseBytes() for binary files
      */
     override suspend fun parse(file: DocumentFile, content: String): DocumentTreeNode {
-        logger.info { "=== Starting Tika Parse (from String) ===" }
-        logger.info { "File: ${file.path}, Size: ${content.length} bytes" }
-        
-        // Convert String back to bytes using ISO_8859_1
-        // Note: This may corrupt binary data if the string was read as UTF-8
         val bytes = content.toByteArray(Charsets.ISO_8859_1)
         return parseBytes(file, bytes)
     }
@@ -49,9 +44,6 @@ class TikaDocumentParser : DocumentParserService {
      * This method properly handles binary data without corruption
      */
     override suspend fun parseBytes(file: DocumentFile, bytes: ByteArray): DocumentTreeNode {
-        logger.info { "=== Starting Tika Parse (from Bytes) ===" }
-        logger.info { "File: ${file.path}, Size: ${bytes.size} bytes" }
-        
         try {
             // Create Tika parser components
             val parser = AutoDetectParser()
@@ -66,23 +58,13 @@ class TikaDocumentParser : DocumentParserService {
             val inputStream = ByteArrayInputStream(bytes)
             parser.parse(inputStream, handler, metadata, context)
             
-            // Extract parsed content
             val extractedText = handler.toString().trim()
             currentContent = extractedText
             currentMetadata = metadata
-            
-            logger.info { "Extracted ${extractedText.length} characters" }
-            logger.debug { "Metadata: ${metadata.names().joinToString { "$it=${metadata.get(it)}" }}" }
-            
-            // Build simple chunks (split by paragraphs or sections)
+
             currentChunks = buildSimpleChunks(extractedText, file.path, file.metadata.formatType)
-            logger.info { "Created ${currentChunks.size} document chunks" }
-            
-            // Extract basic TOC if possible (for now, just return empty)
-            // TODO: Enhance with more sophisticated TOC extraction based on document structure
+
             val toc = extractSimpleTOC(extractedText)
-            
-            logger.info { "=== Parse Complete ===" }
             
             return file.copy(
                 toc = toc,

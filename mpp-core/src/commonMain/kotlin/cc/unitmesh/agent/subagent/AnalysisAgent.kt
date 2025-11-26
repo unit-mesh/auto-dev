@@ -157,8 +157,6 @@ class AnalysisAgent(
             contentHistory.add(input to result)
             updateConversationContext(input, result)
 
-            logger().info { "Analysis completed: $result" }
-
             return ToolResult.AgentResult(
                 success = true,
                 content = formatResult(result),
@@ -295,9 +293,6 @@ class AnalysisAgent(
 
     private fun formatResult(result: ContentHandlerResult): String {
         return buildString {
-            appendLine("📊 Content Analysis Summary")
-            appendLine("=========================================")
-            appendLine()
             appendLine("📝 Summary: ${result.summary}")
             appendLine()
 
