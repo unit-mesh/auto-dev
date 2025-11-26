@@ -75,8 +75,8 @@ class DocumentAgent(
             subAgentManager = subAgentManager,
             llmService = llmService
         ).apply {
-            // Register DocQLTool
-            registerTool(DocQLTool())
+            // Register DocQLTool with LLM service for LLM-based reranking
+            registerTool(DocQLTool(llmService))
         }
     }
 

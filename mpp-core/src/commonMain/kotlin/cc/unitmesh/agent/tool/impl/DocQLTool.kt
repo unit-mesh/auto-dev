@@ -1,10 +1,18 @@
 package cc.unitmesh.agent.tool.impl
 
+import cc.unitmesh.agent.scoring.CompositeScorer
+import cc.unitmesh.agent.scoring.DocumentMetadataItem
 import cc.unitmesh.agent.scoring.DocumentReranker
 import cc.unitmesh.agent.scoring.DocumentRerankerConfig
+import cc.unitmesh.agent.scoring.DocumentRichMetadata
+import cc.unitmesh.agent.scoring.DocumentRichMetadataExtractor
 import cc.unitmesh.agent.scoring.ExpandedKeywords
+import cc.unitmesh.agent.scoring.HybridReranker
 import cc.unitmesh.agent.scoring.KeywordExpander
 import cc.unitmesh.agent.scoring.KeywordExpanderConfig
+import cc.unitmesh.agent.scoring.LLMMetadataReranker
+import cc.unitmesh.agent.scoring.LLMMetadataRerankerConfig
+import cc.unitmesh.agent.scoring.RerankerType
 import cc.unitmesh.agent.scoring.ScoredItem
 import cc.unitmesh.agent.scoring.SearchStrategy
 import cc.unitmesh.agent.scoring.TextSegment
@@ -18,6 +26,7 @@ import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.docql.DocQLResult
 import cc.unitmesh.devins.document.DocumentChunk
 import cc.unitmesh.devins.document.TOCItem
+import cc.unitmesh.llm.KoogLLMService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -38,7 +47,17 @@ data class DocQLParams(
      * Example: query="base64", secondaryKeyword="encoding"
      *   → First searches for "base64", then filters by "encoding" if too many results
      */
-    val secondaryKeyword: String? = null
+    val secondaryKeyword: String? = null,
+    /**
+     * Reranker type to use for result ordering.
+     * 
+     * Options:
+     * - "heuristic" (default): Fast BM25 + type + name matching
+     * - "rrf_composite": RRF fusion with composite scoring
+     * - "llm_metadata": LLM-based metadata reranking (slower, more intelligent)
+     * - "hybrid": Heuristic pre-filter + LLM rerank
+     */
+    val rerankerType: String? = null
 )
 
 object DocQLSchema : DeclarativeToolSchema(
@@ -118,6 +137,19 @@ object DocQLSchema : DeclarativeToolSchema(
                   → Finds AuthService, AuthenticationService with higher priority
             """.trimIndent(),
             required = false
+        ),
+        "rerankerType" to string(
+            description = """
+                Reranker algorithm to use for ordering results.
+                
+                Options:
+                - "heuristic" (default): Fast BM25 + type + name matching. Best for quick searches.
+                - "rrf_composite": RRF fusion with composite scoring. Better for multi-source results.
+                - "llm_metadata": LLM-based intelligent reranking using document metadata.
+                  Considers file paths, headings, modification time, references. Slower but smarter.
+                - "hybrid": Heuristic pre-filter + LLM rerank. Balance of speed and quality.
+            """.trimIndent(),
+            required = false
         )
     )
 ) {
@@ -139,8 +171,12 @@ object DocQLSchema : DeclarativeToolSchema(
 
 class DocQLInvocation(
     params: DocQLParams,
-    tool: DocQLTool
+    tool: DocQLTool,
+    private val llmService: KoogLLMService? = null
 ) : BaseToolInvocation<DocQLParams, ToolResult>(params, tool) {
+
+    /** Parsed reranker type for this invocation */
+    private val rerankerType: RerankerType = DocQLTool.parseRerankerType(params.rerankerType)
 
     override fun getDescription(): String = if (params.documentPath != null) {
         "Executing DocQL query: ${params.query} on ${params.documentPath}"
@@ -520,47 +556,165 @@ class DocQLInvocation(
 
     /**
      * Build the final search result with statistics.
+     * Optionally applies LLM-based reranking when enabled.
      */
-    private fun buildSearchResult(
+    private suspend fun buildSearchResult(
         result: SearchLevelResult,
         keyword: String,
         rerankerConfig: DocumentRerankerConfig,
         keywordStats: KeywordExpansionStats
     ): ToolResult {
-        val scoredResults = result.items.map { item ->
-            val (originalItem, filePath) = result.metadata[item] ?: (item to null)
-            ScoredResult(
-                item = originalItem,
-                score = 0.0, // Score already applied during reranking
-                uniqueId = item.segment.id ?: item.hashCode().toString(),
-                preview = item.segment.text.take(100).replace("\n", " "),
-                filePath = filePath
-            )
+        // Check if LLM reranking should be applied
+        val shouldUseLLMRerank = rerankerType in listOf(RerankerType.LLM_METADATA, RerankerType.HYBRID)
+        
+        var scoredResults: List<ScoredResult>
+        var llmRerankerStats: LLMRerankerStats? = null
+        var actualSearchType = DocQLSearchStats.SearchType.SMART_SEARCH
+        
+        if (shouldUseLLMRerank && llmService != null && result.items.isNotEmpty()) {
+            // Apply LLM-based reranking
+            val startTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+            
+            try {
+                val llmReranker = LLMMetadataReranker(
+                    llmService = llmService,
+                    config = LLMMetadataRerankerConfig(
+                        maxItemsForLLM = 20,
+                        maxResults = params.maxResults ?: 20,
+                        includePreview = true
+                    )
+                )
+                
+                // Create metadata items for LLM reranking
+                val metadataItems = result.items.mapIndexed { index, item ->
+                    val filePath = item.segment.filePath ?: ""
+                    val heuristicScore = CompositeScorer().score(item.segment, keyword)
+                    
+                    DocumentMetadataItem(
+                        id = item.segment.id ?: "item_$index",
+                        filePath = filePath,
+                        fileName = filePath.substringAfterLast('/'),
+                        extension = filePath.substringAfterLast('.', ""),
+                        directory = filePath.substringBeforeLast('/', ""),
+                        contentType = item.segment.type,
+                        name = item.segment.name.ifEmpty { filePath.substringAfterLast('/') },
+                        preview = item.segment.text.take(200),
+                        h1Heading = result.metadata[item]?.second?.let { getH1FromPath(it) },
+                        heuristicScore = heuristicScore
+                    )
+                }
+                
+                val llmResult = llmReranker.rerank(metadataItems, keyword)
+                val endTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+                
+                // Map LLM results back to scored results
+                val idToItem = result.items.associateBy { it.segment.id ?: it.hashCode().toString() }
+                scoredResults = llmResult.rankedIds.mapNotNull { id ->
+                    val item = idToItem[id] ?: return@mapNotNull null
+                    val (originalItem, filePath) = result.metadata[item] ?: (item to null)
+                    ScoredResult(
+                        item = originalItem,
+                        score = llmResult.scores[id] ?: 0.0,
+                        uniqueId = id,
+                        preview = item.segment.text.take(100).replace("\n", " "),
+                        filePath = filePath
+                    )
+                }
+                
+                llmRerankerStats = LLMRerankerStats(
+                    success = llmResult.success,
+                    itemsProcessed = metadataItems.size,
+                    itemsReranked = scoredResults.size,
+                    latencyMs = endTime - startTime,
+                    explanation = llmResult.explanation,
+                    error = llmResult.error,
+                    usedFallback = !llmResult.success
+                )
+                
+                actualSearchType = DocQLSearchStats.SearchType.LLM_RERANKED
+                
+                logger.info { "LLM reranking completed: ${scoredResults.size} items, ${endTime - startTime}ms" }
+            } catch (e: Exception) {
+                logger.warn { "LLM reranking failed, falling back to heuristic: ${e.message}" }
+                // Fall back to heuristic scoring
+                scoredResults = result.items.map { item ->
+                    val (originalItem, filePath) = result.metadata[item] ?: (item to null)
+                    ScoredResult(
+                        item = originalItem,
+                        score = 0.0,
+                        uniqueId = item.segment.id ?: item.hashCode().toString(),
+                        preview = item.segment.text.take(100).replace("\n", " "),
+                        filePath = filePath
+                    )
+                }
+                llmRerankerStats = LLMRerankerStats(
+                    success = false,
+                    itemsProcessed = result.items.size,
+                    itemsReranked = scoredResults.size,
+                    error = e.message,
+                    usedFallback = true
+                )
+            }
+        } else {
+            // Standard heuristic-based scoring
+            scoredResults = result.items.map { item ->
+                val (originalItem, filePath) = result.metadata[item] ?: (item to null)
+                ScoredResult(
+                    item = originalItem,
+                    score = 0.0, // Score already applied during reranking
+                    uniqueId = item.segment.id ?: item.hashCode().toString(),
+                    preview = item.segment.text.take(100).replace("\n", " "),
+                    filePath = filePath
+                )
+            }
         }
 
+        val rerankerTypeName = when (rerankerType) {
+            RerankerType.LLM_METADATA -> "LLM_Metadata"
+            RerankerType.HYBRID -> "Hybrid(RRF+LLM)"
+            RerankerType.HEURISTIC -> "Composite(BM25,Type,NameMatch)"
+            RerankerType.RRF_COMPOSITE -> "RRF+Composite(BM25,Type,NameMatch)"
+        }
+        
         val stats = DocQLSearchStats(
-            searchType = DocQLSearchStats.SearchType.SMART_SEARCH,
+            searchType = actualSearchType,
             channels = result.activeChannels,
             documentsSearched = result.docsSearched,
             totalRawResults = result.totalCount,
-            resultsAfterRerank = result.items.size,
+            resultsAfterRerank = scoredResults.size,
             truncated = result.truncated,
             usedFallback = false,
             rerankerConfig = RerankerStats(
-                rerankerType = "RRF+Composite(BM25,Type,NameMatch)",
+                rerankerType = rerankerTypeName,
                 rrfK = rerankerConfig.rrfK,
                 rrfWeight = rerankerConfig.rrfWeight,
                 contentWeight = rerankerConfig.contentWeight,
                 minScoreThreshold = rerankerConfig.minScoreThreshold
             ),
             scoringInfo = null,
-            keywordExpansion = keywordStats
+            keywordExpansion = keywordStats,
+            llmRerankerInfo = llmRerankerStats
         )
 
         return ToolResult.Success(
             formatSmartResult(scoredResults, keyword, result.truncated, result.totalCount),
             stats.toMetadata()
         )
+    }
+    
+    /**
+     * Helper to get H1 heading from a file path (if document is registered)
+     */
+    private fun getH1FromPath(filePath: String): String? {
+        return try {
+            val docPair = DocumentRegistry.getDocument(filePath)
+            if (docPair?.first is cc.unitmesh.devins.document.DocumentFile) {
+                val docFile = docPair.first as cc.unitmesh.devins.document.DocumentFile
+                docFile.toc.firstOrNull { it.level == 1 }?.title
+            } else null
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /**
@@ -1189,7 +1343,9 @@ class DocQLInvocation(
     }
 }
 
-class DocQLTool : BaseExecutableTool<DocQLParams, ToolResult>() {
+class DocQLTool(
+    private val llmService: KoogLLMService? = null
+) : BaseExecutableTool<DocQLParams, ToolResult>() {
     override val name: String = "DocQL"
     override val description: String =
         "Executes a DocQL query against available documents (both in-memory and indexed)."
@@ -1224,7 +1380,7 @@ class DocQLTool : BaseExecutableTool<DocQLParams, ToolResult>() {
     }
 
     override fun createToolInvocation(params: DocQLParams): ToolInvocation<DocQLParams, ToolResult> {
-        return DocQLInvocation(params, this)
+        return DocQLInvocation(params, this, llmService)
     }
 
     private fun convertMapToDocQLParams(map: Map<String, Any>): DocQLParams {
@@ -1233,6 +1389,7 @@ class DocQLTool : BaseExecutableTool<DocQLParams, ToolResult>() {
 
         val documentPath = map["documentPath"] as? String
         val secondaryKeyword = map["secondaryKeyword"] as? String
+        val rerankerType = map["rerankerType"] as? String
         val maxResults = when (val maxRes = map["maxResults"]) {
             is Int -> maxRes
             is Long -> maxRes.toInt()
@@ -1246,7 +1403,23 @@ class DocQLTool : BaseExecutableTool<DocQLParams, ToolResult>() {
             query = query,
             documentPath = documentPath,
             maxResults = maxResults ?: 20,
-            secondaryKeyword = secondaryKeyword
+            secondaryKeyword = secondaryKeyword,
+            rerankerType = rerankerType
         )
+    }
+    
+    companion object {
+        /**
+         * Parse reranker type from string.
+         */
+        fun parseRerankerType(typeStr: String?): RerankerType {
+            return when (typeStr?.lowercase()) {
+                "heuristic" -> RerankerType.HEURISTIC
+                "rrf_composite", "rrf" -> RerankerType.RRF_COMPOSITE
+                "llm_metadata", "llm" -> RerankerType.LLM_METADATA
+                "hybrid" -> RerankerType.HYBRID
+                else -> RerankerType.RRF_COMPOSITE  // Default
+            }
+        }
     }
 }

@@ -27,13 +27,16 @@ data class DocQLSearchStats(
     /** Scoring breakdown for top results */
     val scoringInfo: ScoringStats? = null,
     /** Keyword expansion statistics (for multi-level keyword search) */
-    val keywordExpansion: KeywordExpansionStats? = null
+    val keywordExpansion: KeywordExpansionStats? = null,
+    /** LLM reranker statistics (when LLM-based reranking is used) */
+    val llmRerankerInfo: LLMRerankerStats? = null
 ) {
     @Serializable
     enum class SearchType {
         SMART_SEARCH,      // Keyword-based multi-channel search with RRF fusion
         DIRECT_QUERY,      // Standard DocQL query
-        FALLBACK_CONTENT   // Fallback to content chunks search
+        FALLBACK_CONTENT,  // Fallback to content chunks search
+        LLM_RERANKED       // LLM-based metadata reranking
     }
     
     /**
@@ -77,6 +80,21 @@ data class DocQLSearchStats(
             put("docql_kw_strategy", kw.strategyUsed)
             put("docql_kw_level1_count", kw.level1ResultCount.toString())
             put("docql_kw_level2_count", kw.level2ResultCount.toString())
+        }
+        
+        llmRerankerInfo?.let { llm ->
+            put("docql_llm_enabled", "true")
+            put("docql_llm_success", llm.success.toString())
+            put("docql_llm_items_processed", llm.itemsProcessed.toString())
+            put("docql_llm_items_reranked", llm.itemsReranked.toString())
+            if (llm.tokensUsed > 0) {
+                put("docql_llm_tokens", llm.tokensUsed.toString())
+            }
+            if (llm.latencyMs > 0) {
+                put("docql_llm_latency_ms", llm.latencyMs.toString())
+            }
+            llm.explanation?.let { put("docql_llm_explanation", it.take(200)) }
+            llm.error?.let { put("docql_llm_error", it) }
         }
     }
     
@@ -126,7 +144,8 @@ data class DocQLSearchStats(
                 usedFallback = metadata["docql_used_fallback"]?.toBooleanStrictOrNull() ?: false,
                 rerankerConfig = RerankerStats.fromMetadata(metadata),
                 scoringInfo = ScoringStats.fromMetadata(metadata),
-                keywordExpansion = KeywordExpansionStats.fromMetadata(metadata)
+                keywordExpansion = KeywordExpansionStats.fromMetadata(metadata),
+                llmRerankerInfo = LLMRerankerStats.fromMetadata(metadata)
             )
         }
     }
@@ -225,6 +244,49 @@ data class KeywordExpansionStats(
                 strategyUsed = metadata["docql_kw_strategy"] ?: "KEEP",
                 level1ResultCount = metadata["docql_kw_level1_count"]?.toIntOrNull() ?: 0,
                 level2ResultCount = metadata["docql_kw_level2_count"]?.toIntOrNull() ?: 0
+            )
+        }
+    }
+}
+
+/**
+ * Statistics about LLM-based metadata reranking.
+ * 
+ * Tracks LLM reranking performance and results.
+ */
+@Serializable
+data class LLMRerankerStats(
+    /** Whether LLM reranking was successful */
+    val success: Boolean = true,
+    /** Number of items processed by LLM */
+    val itemsProcessed: Int = 0,
+    /** Number of items in final reranked list */
+    val itemsReranked: Int = 0,
+    /** Tokens used by LLM call */
+    val tokensUsed: Int = 0,
+    /** Latency of LLM call in milliseconds */
+    val latencyMs: Long = 0,
+    /** Brief explanation from LLM about ranking logic */
+    val explanation: String? = null,
+    /** Error message if reranking failed */
+    val error: String? = null,
+    /** Whether fallback to heuristic was used */
+    val usedFallback: Boolean = false
+) {
+    companion object {
+        fun fromMetadata(metadata: Map<String, String>): LLMRerankerStats? {
+            // Only parse if LLM reranking was enabled
+            if (metadata["docql_llm_enabled"] != "true") return null
+            
+            return LLMRerankerStats(
+                success = metadata["docql_llm_success"]?.toBooleanStrictOrNull() ?: true,
+                itemsProcessed = metadata["docql_llm_items_processed"]?.toIntOrNull() ?: 0,
+                itemsReranked = metadata["docql_llm_items_reranked"]?.toIntOrNull() ?: 0,
+                tokensUsed = metadata["docql_llm_tokens"]?.toIntOrNull() ?: 0,
+                latencyMs = metadata["docql_llm_latency_ms"]?.toLongOrNull() ?: 0,
+                explanation = metadata["docql_llm_explanation"],
+                error = metadata["docql_llm_error"],
+                usedFallback = metadata["docql_llm_error"] != null
             )
         }
     }

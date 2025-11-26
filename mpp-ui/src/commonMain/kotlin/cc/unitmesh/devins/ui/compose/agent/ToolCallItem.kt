@@ -680,11 +680,13 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                         DocQLSearchStats.SearchType.SMART_SEARCH -> "Smart Search"
                         DocQLSearchStats.SearchType.DIRECT_QUERY -> "Direct Query"
                         DocQLSearchStats.SearchType.FALLBACK_CONTENT -> "Fallback Search"
+                        DocQLSearchStats.SearchType.LLM_RERANKED -> "LLM Reranked"
                     },
                     color = when (stats.searchType) {
                         DocQLSearchStats.SearchType.SMART_SEARCH -> Color(0xFF2196F3)
                         DocQLSearchStats.SearchType.DIRECT_QUERY -> Color(0xFF4CAF50)
                         DocQLSearchStats.SearchType.FALLBACK_CONTENT -> Color(0xFFFF9800)
+                        DocQLSearchStats.SearchType.LLM_RERANKED -> Color(0xFF9C27B0)  // Purple for LLM
                     }
                 )
                 
