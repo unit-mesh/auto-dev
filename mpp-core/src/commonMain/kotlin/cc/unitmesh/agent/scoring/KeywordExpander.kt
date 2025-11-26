@@ -92,7 +92,7 @@ data class ExpandedKeywords(
  * @see KeywordExpanderConfig
  */
 class KeywordExpander(
-    private val config: KeywordExpanderConfig = KeywordExpanderConfig()
+    val config: KeywordExpanderConfig = KeywordExpanderConfig()
 ) {
     
     /**

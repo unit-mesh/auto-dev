@@ -1,17 +1,9 @@
 package cc.unitmesh.agent.tool.impl
 
-import cc.unitmesh.agent.scoring.CompositeScorer
-import cc.unitmesh.agent.scoring.DocumentMetadataItem
 import cc.unitmesh.agent.scoring.DocumentReranker
 import cc.unitmesh.agent.scoring.DocumentRerankerConfig
-import cc.unitmesh.agent.scoring.DocumentRichMetadata
-import cc.unitmesh.agent.scoring.DocumentRichMetadataExtractor
-import cc.unitmesh.agent.scoring.ExpandedKeywords
-import cc.unitmesh.agent.scoring.HybridReranker
 import cc.unitmesh.agent.scoring.KeywordExpander
 import cc.unitmesh.agent.scoring.KeywordExpanderConfig
-import cc.unitmesh.agent.scoring.LLMMetadataReranker
-import cc.unitmesh.agent.scoring.LLMMetadataRerankerConfig
 import cc.unitmesh.agent.scoring.RerankerType
 import cc.unitmesh.agent.scoring.ScoredItem
 import cc.unitmesh.agent.scoring.SearchStrategy
@@ -189,188 +181,45 @@ class DocQLInvocation(
         val keywordExpander = KeywordExpander(expanderConfig)
         val expandedKeywords = keywordExpander.expandWithHint(keyword, secondaryKeyword)
 
-        // Track keyword expansion stats
-        var levelUsed = 1
-        var level1ResultCount = 0
-        var level2ResultCount = 0
-        var strategyUsed = "KEEP"
-
         // === LEVEL 1: Try primary keywords first ===
         val level1Results = executeKeywordSearch(
             keywords = expandedKeywords.primary,
             documentPath = documentPath,
             reranker = reranker,
-            rerankerConfig = rerankerConfig,
             queryForScoring = keyword
         )
-        level1ResultCount = level1Results.totalCount
 
-        // Determine strategy based on Level 1 results
-        val strategy = keywordExpander.recommendStrategy(level1Results.totalCount, 1)
+        val strategyType = keywordExpander.recommendStrategy(level1Results.totalCount, 1)
 
-        when (strategy) {
-            SearchStrategy.KEEP -> {
-                // Level 1 results are ideal, use them
-                strategyUsed = "KEEP"
-                return buildSearchResult(
-                    level1Results,
-                    keyword,
-                    rerankerConfig,
-                    KeywordExpansionStats(
-                        originalQuery = keyword,
-                        primaryKeywords = expandedKeywords.primary,
-                        secondaryKeywords = expandedKeywords.secondary,
-                        levelUsed = levelUsed,
-                        strategyUsed = strategyUsed,
-                        level1ResultCount = level1ResultCount,
-                        level2ResultCount = level2ResultCount
-                    )
-                )
+        val context = SmartSearchContext(
+            keyword = keyword,
+            secondaryKeyword = secondaryKeyword,
+            documentPath = documentPath,
+            maxResults = maxResults,
+            reranker = reranker,
+            rerankerConfig = rerankerConfig,
+            keywordExpander = keywordExpander,
+            expandedKeywords = expandedKeywords,
+            level1Results = level1Results,
+            searchExecutor = { kw, query ->
+                executeKeywordSearch(kw, documentPath, reranker, query)
+            },
+            resultBuilder = { res, kw, stats ->
+                buildSearchResult(res, kw, rerankerConfig, stats)
+            },
+            fallbackExecutor = { kw, path, max, rr, rc ->
+                executeFallbackSearch(kw, path, max, rr, rc)
             }
+        )
 
-            SearchStrategy.FILTER -> {
-                // Too many results, filter using secondary keywords
-                strategyUsed = "FILTER"
-
-                val filterKeywords = if (secondaryKeyword != null) {
-                    listOf(secondaryKeyword) + expandedKeywords.secondary.take(3)
-                } else {
-                    expandedKeywords.secondary.take(4)
-                }
-
-                if (filterKeywords.isNotEmpty()) {
-                    val filteredResults = filterResultsByKeywords(
-                        level1Results.items,
-                        filterKeywords,
-                        level1Results.metadata
-                    )
-                    level2ResultCount = filteredResults.size
-
-                    // If filtering produces reasonable results, use them
-                    if (filteredResults.size >= expanderConfig.minResultsThreshold) {
-                        levelUsed = 2
-                        val reranked = reranker.rerank(
-                            rankedLists = mapOf("filtered" to filteredResults),
-                            query = "$keyword ${filterKeywords.joinToString(" ")}",
-                            segmentExtractor = { it.segment }
-                        )
-
-                        return buildSearchResult(
-                            SearchLevelResult(
-                                items = filteredResults,
-                                totalCount = reranked.totalCount,
-                                truncated = reranked.truncated,
-                                metadata = level1Results.metadata,
-                                docsSearched = level1Results.docsSearched,
-                                activeChannels = level1Results.activeChannels
-                            ),
-                            keyword,
-                            rerankerConfig,
-                            KeywordExpansionStats(
-                                originalQuery = keyword,
-                                primaryKeywords = expandedKeywords.primary,
-                                secondaryKeywords = filterKeywords,
-                                levelUsed = levelUsed,
-                                strategyUsed = strategyUsed,
-                                level1ResultCount = level1ResultCount,
-                                level2ResultCount = level2ResultCount
-                            )
-                        )
-                    }
-                }
-
-                // Filtering didn't help much, fall back to Level 1 with truncation
-                return buildSearchResult(
-                    level1Results,
-                    keyword,
-                    rerankerConfig,
-                    KeywordExpansionStats(
-                        originalQuery = keyword,
-                        primaryKeywords = expandedKeywords.primary,
-                        secondaryKeywords = expandedKeywords.secondary,
-                        levelUsed = 1,
-                        strategyUsed = "KEEP_TRUNCATED",
-                        level1ResultCount = level1ResultCount,
-                        level2ResultCount = level2ResultCount
-                    )
-                )
-            }
-
-            SearchStrategy.EXPAND -> {
-                // Too few results, expand to Level 2
-                strategyUsed = "EXPAND"
-                levelUsed = 2
-
-                val level2Results = executeKeywordSearch(
-                    keywords = expandedKeywords.upToLevel(2),
-                    documentPath = documentPath,
-                    reranker = reranker,
-                    rerankerConfig = rerankerConfig,
-                    queryForScoring = keyword
-                )
-                level2ResultCount = level2Results.totalCount
-
-                // Check if Level 2 is enough
-                if (level2Results.totalCount >= expanderConfig.minResultsThreshold) {
-                    return buildSearchResult(
-                        level2Results,
-                        keyword,
-                        rerankerConfig,
-                        KeywordExpansionStats(
-                            originalQuery = keyword,
-                            primaryKeywords = expandedKeywords.primary,
-                            secondaryKeywords = expandedKeywords.secondary,
-                            levelUsed = levelUsed,
-                            strategyUsed = strategyUsed,
-                            level1ResultCount = level1ResultCount,
-                            level2ResultCount = level2ResultCount
-                        )
-                    )
-                }
-
-                // Still too few, expand to Level 3
-                levelUsed = 3
-                val level3Results = executeKeywordSearch(
-                    keywords = expandedKeywords.upToLevel(3),
-                    documentPath = documentPath,
-                    reranker = reranker,
-                    rerankerConfig = rerankerConfig,
-                    queryForScoring = keyword
-                )
-
-                if (level3Results.totalCount > 0) {
-                    return buildSearchResult(
-                        level3Results,
-                        keyword,
-                        rerankerConfig,
-                        KeywordExpansionStats(
-                            originalQuery = keyword,
-                            primaryKeywords = expandedKeywords.primary,
-                            secondaryKeywords = expandedKeywords.secondary + expandedKeywords.tertiary,
-                            levelUsed = levelUsed,
-                            strategyUsed = "EXPAND_L3",
-                            level1ResultCount = level1ResultCount,
-                            level2ResultCount = level2ResultCount
-                        )
-                    )
-                }
-
-                return executeFallbackSearch(keyword, documentPath, maxResults, reranker, rerankerConfig)
-            }
+        val strategy = when (strategyType) {
+            SearchStrategy.KEEP -> KeepStrategy()
+            SearchStrategy.FILTER -> FilterStrategy()
+            SearchStrategy.EXPAND -> ExpandStrategy()
         }
-    }
 
-    /**
-     * Result of a search at a specific keyword level.
-     */
-    private data class SearchLevelResult(
-        val items: List<SearchItem>,
-        val totalCount: Int,
-        val truncated: Boolean,
-        val metadata: MutableMap<SearchItem, Pair<Any, String?>>,
-        val docsSearched: Int,
-        val activeChannels: List<String>
-    )
+        return strategy.execute(context)
+    }
 
     /**
      * Execute search for a list of keywords and merge results.
@@ -379,7 +228,6 @@ class DocQLInvocation(
         keywords: List<String>,
         documentPath: String?,
         reranker: DocumentReranker,
-        rerankerConfig: DocumentRerankerConfig,
         queryForScoring: String
     ): SearchLevelResult {
         if (keywords.isEmpty()) {
@@ -482,24 +330,7 @@ class DocQLInvocation(
     /**
      * Filter search items by secondary keywords (for FILTER strategy).
      */
-    private fun filterResultsByKeywords(
-        items: List<SearchItem>,
-        filterKeywords: List<String>,
-        metadata: MutableMap<SearchItem, Pair<Any, String?>>
-    ): List<SearchItem> {
-        if (filterKeywords.isEmpty()) return items
 
-        return items.filter { item ->
-            val text = item.segment.text.lowercase()
-            val name = item.segment.name.lowercase()
-
-            // Item matches if any filter keyword is found in text or name
-            filterKeywords.any { kw ->
-                val kwLower = kw.lowercase()
-                text.contains(kwLower) || name.contains(kwLower)
-            }
-        }
-    }
 
     /**
      * Build the final search result with statistics.
@@ -511,7 +342,6 @@ class DocQLInvocation(
         rerankerConfig: DocumentRerankerConfig,
         keywordStats: KeywordExpansionStats
     ): ToolResult {
-        // Delegate reranking to DocQLResultReranker
         val rerankResult = resultReranker.rerank(
             items = result.items,
             metadata = result.metadata,
@@ -732,8 +562,6 @@ class DocQLInvocation(
         )
     }
 
-
-
     private fun formatSmartResult(
         results: List<ScoredResult>,
         keyword: String,
@@ -855,7 +683,7 @@ class DocQLInvocation(
             )
         } else {
             // Provide helpful suggestions when no results found
-            val availablePaths = DocumentRegistry.getAllAvailablePaths()
+            val availablePaths = DocumentRegistry.getRootRegisteredPaths()
             if (availablePaths.isEmpty()) {
                 return ToolResult.Error(
                     "No documents available. Please register or index documents first.",
@@ -931,7 +759,9 @@ class DocQLInvocation(
         if (registeredPaths.isNotEmpty()) {
             suggestions.add("\n📚 **Available documents:**")
             registeredPaths.forEach { path ->
-                suggestions.add("   - $path")
+                if (true) {
+                    suggestions.add("   - $path")
+                }
             }
         }
 
