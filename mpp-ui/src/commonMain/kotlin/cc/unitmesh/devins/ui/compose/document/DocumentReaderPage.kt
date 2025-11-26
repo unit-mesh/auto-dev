@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.document.docql.executeDocQL
+import cc.unitmesh.devins.ui.compose.agent.AgentTopAppBar
+import cc.unitmesh.devins.ui.compose.agent.AgentTopAppBarActions
 import cc.unitmesh.devins.ui.compose.agent.ResizableSplitPane
 import cc.unitmesh.devins.ui.compose.agent.VerticalResizableSplitPane
+import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 import cc.unitmesh.devins.workspace.WorkspaceManager
 
 /**
@@ -30,11 +35,27 @@ fun DocumentReaderPage(
     val workspace = remember { WorkspaceManager.getCurrentOrEmpty() }
     val viewModel = remember(workspace) { DocumentReaderViewModel(workspace) }
 
+    val notMobile = (Platform.isAndroid || Platform.isIOS).not()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            // TopAppBar is handled by the main layout usually, but if needed we can add one here
-            // For now, we assume the main app has a top bar or we don't need one specific to this page
+            if (notMobile) {
+                AgentTopAppBar(
+                    title = "Knowledge Agent",
+                    subtitle = workspace.name.takeIf { it.isNotBlank() },
+                    onBack = onBack,
+                    actions = {
+                        AgentTopAppBarActions.DeleteButton(
+                            onClick = { viewModel.clearChatHistory() },
+                            contentDescription = "Clear Chat"
+                        )
+                        AgentTopAppBarActions.RefreshButton(
+                            onClick = { viewModel.refreshDocuments() }
+                        )
+                    }
+                )
+            }
         }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
@@ -68,7 +89,7 @@ fun DocumentReaderPage(
                             )
                         },
                         second = {
-                            // Conditional rendering: 
+                            // Conditional rendering:
                             // - When no document is selected, show StructuredInfoPane globally
                             // - When a document is selected, show DocumentViewerPane with StructuredInfoPane below
                             if (viewModel.selectedDocument == null) {

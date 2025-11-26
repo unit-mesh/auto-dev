@@ -16,6 +16,15 @@ import androidx.compose.ui.unit.sp
 import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
 import cc.unitmesh.devins.ui.compose.icons.AutoDevComposeIcons
 
+/**
+ * Document Chat Pane - AI chat interface for document queries
+ *
+ * This pane displays the indexing status and chat messages.
+ * The top bar (title, actions) is now handled by the parent page using AgentTopAppBar.
+ *
+ * @param viewModel The DocumentReaderViewModel that manages document state
+ * @param modifier Modifier for the pane
+ */
 @Composable
 fun DocumentChatPane(
     viewModel: DocumentReaderViewModel,
@@ -24,125 +33,8 @@ fun DocumentChatPane(
     val indexingStatus by viewModel.indexingStatus.collectAsState()
 
     Column(modifier = modifier.fillMaxSize()) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ) {
-            Column(
-                modifier = Modifier.padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        AutoDevComposeIcons.SmartToy,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        "Knowledge Agent",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
+        IndexingStatusBanner(indexingStatus)
 
-                    IconButton(
-                        onClick = { viewModel.clearChatHistory() },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            AutoDevComposeIcons.Delete,
-                            contentDescription = "清空对话",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                when (indexingStatus) {
-                    is cc.unitmesh.devins.service.IndexingStatus.Indexing -> {
-                        val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Indexing
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp
-                                )
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "正在索引项目代码...",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
-                                    )
-                                    Text(
-                                        text = "已完成 ${status.current}/${status.total} 个文档",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    is cc.unitmesh.devins.service.IndexingStatus.Completed -> {
-                        val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Completed
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    AutoDevComposeIcons.CheckCircle,
-                                    contentDescription = "索引完成",
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "✓ 索引完成",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Text(
-                                        text = "已索引 ${status.total} 个文档 (成功 ${status.succeeded}, 失败 ${status.failed})，可以开始查询了",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    is cc.unitmesh.devins.service.IndexingStatus.Idle -> {
-                        // 空闲状态不显示卡片
-                    }
-                }
-            }
-        }
-
-        HorizontalDivider()
-
-        // 消息列表
         Box(modifier = Modifier.weight(1f)) {
             AgentMessageList(
                 renderer = viewModel.renderer,
@@ -150,7 +42,7 @@ fun DocumentChatPane(
             )
 
             // 当没有消息且索引完成时显示欢迎提示
-            if (indexingStatus is cc.unitmesh.devins.service.IndexingStatus.Completed 
+            if (indexingStatus is cc.unitmesh.devins.service.IndexingStatus.Completed
                 && viewModel.renderer.timeline.isEmpty()) {
                 WelcomeMessage(
                     onQuickQuery = { query ->
@@ -172,7 +64,92 @@ fun DocumentChatPane(
 }
 
 /**
- * 欢迎消息和快速查询建议
+ * Indexing status banner - shows the current indexing progress or completion status
+ */
+@Composable
+private fun IndexingStatusBanner(
+    indexingStatus: cc.unitmesh.devins.service.IndexingStatus
+) {
+    when (indexingStatus) {
+        is cc.unitmesh.devins.service.IndexingStatus.Indexing -> {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Indexing project code...",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                        )
+                        Text(
+                            text = "Completed ${indexingStatus.current}/${indexingStatus.total} documents",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        is cc.unitmesh.devins.service.IndexingStatus.Completed -> {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        AutoDevComposeIcons.CheckCircle,
+                        contentDescription = "Indexing complete",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Indexing Complete",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Indexed ${indexingStatus.total} documents (${indexingStatus.succeeded} succeeded, ${indexingStatus.failed} failed)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        is cc.unitmesh.devins.service.IndexingStatus.Idle -> {
+            // Don't show banner when idle
+        }
+    }
+}
+
+/**
+ * Welcome message and quick query suggestions
  */
 @Composable
 private fun WelcomeMessage(
