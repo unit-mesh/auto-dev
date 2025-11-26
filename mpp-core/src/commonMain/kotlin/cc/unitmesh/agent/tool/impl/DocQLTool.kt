@@ -27,11 +27,13 @@ import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
+private const val initialMaxResults = 50
+
 @Serializable
 data class DocQLParams(
     val query: String,
     val documentPath: String? = null,
-    val maxResults: Int? = 20,
+    val maxResults: Int? = initialMaxResults,
     /**
      * Optional secondary keyword for filtering results when primary query returns too many.
      * Used in multi-level keyword expansion strategy.
@@ -130,7 +132,7 @@ class DocQLInvocation(
                 executeSmartSearch(
                     keyword = params.query,
                     documentPath = params.documentPath,
-                    maxResults = params.maxResults ?: 20,
+                    maxResults = params.maxResults ?: initialMaxResults,
                     secondaryKeyword = params.secondaryKeyword
                 )
             } else {
@@ -347,7 +349,7 @@ class DocQLInvocation(
             metadata = result.metadata,
             query = keyword,
             rerankerType = rerankerType,
-            maxResults = params.maxResults ?: 20
+            maxResults = params.maxResults ?: initialMaxResults
         )
 
         val scoredResults = rerankResult.scoredResults
@@ -631,15 +633,15 @@ class DocQLInvocation(
             channels = listOf(extractQueryType(query)),
             documentsSearched = 1,
             totalRawResults = getResultCount(result),
-            resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: 20),
-            truncated = getResultCount(result) > (params.maxResults ?: 20),
+            resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: initialMaxResults),
+            truncated = getResultCount(result) > (params.maxResults ?: initialMaxResults),
             usedFallback = false,
             rerankerConfig = null, // No reranker for direct queries
             scoringInfo = null
         )
 
         return ToolResult.Success(
-            formatDocQLResult(result, documentPath, params.maxResults ?: 20),
+            formatDocQLResult(result, documentPath, params.maxResults ?: initialMaxResults),
             stats.toMetadata()
         )
     }
@@ -664,15 +666,15 @@ class DocQLInvocation(
                 channels = listOf(extractQueryType(query)),
                 documentsSearched = docsSearched,
                 totalRawResults = getResultCount(result),
-                resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: 20),
-                truncated = getResultCount(result) > (params.maxResults ?: 20),
+                resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: initialMaxResults),
+                truncated = getResultCount(result) > (params.maxResults ?: initialMaxResults),
                 usedFallback = false,
                 rerankerConfig = null,
                 scoringInfo = null
             )
 
             ToolResult.Success(
-                formatDocQLResult(result, null, params.maxResults ?: 20),
+                formatDocQLResult(result, null, params.maxResults ?: initialMaxResults),
                 stats.toMetadata()
             )
         } else {
@@ -752,7 +754,7 @@ class DocQLInvocation(
     private fun formatDocQLResult(
         result: DocQLResult,
         documentPath: String?,
-        maxResults: Int = 20
+        maxResults: Int = initialMaxResults
     ): String {
         return when (result) {
             is DocQLResult.TocItems -> {
@@ -781,6 +783,7 @@ class DocQLInvocation(
 
                     if (truncated) {
                         appendLine("💡 Tip: Query specific directories to get more focused results:")
+                        appendLine("   \$.content.h1()")
                         appendLine("   \$.toc[?(@.title contains \"keyword\")]")
                     }
                 }
@@ -1037,7 +1040,7 @@ class DocQLTool(
         return DocQLParams(
             query = query,
             documentPath = documentPath,
-            maxResults = maxResults ?: 20,
+            maxResults = maxResults ?: initialMaxResults,
             secondaryKeyword = secondaryKeyword,
             rerankerType = rerankerType
         )

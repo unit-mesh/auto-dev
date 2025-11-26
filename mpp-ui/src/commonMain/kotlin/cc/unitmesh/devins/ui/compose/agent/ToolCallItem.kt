@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -245,7 +243,7 @@ fun CombinedToolItem(
                         modifier = Modifier.Companion.fillMaxWidth()
                     ) {
                         Text(
-                            text = if (showFullParams) (displayParams) else formatToolParameters(displayParams),
+                            text = displayParams,
                             modifier = Modifier.Companion.padding(8.dp),
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.bodyMedium,
@@ -506,7 +504,7 @@ fun ToolCallItem(
                     modifier = Modifier.Companion.fillMaxWidth()
                 ) {
                     Text(
-                        text = if (showFullParams) (displayParams ?: "") else formatToolParameters(displayParams ?: ""),
+                        text = displayParams ?: "",
                         modifier = Modifier.Companion.padding(8.dp),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodyMedium,
@@ -523,67 +521,6 @@ fun ToolCallItem(
             filePath = filePath,
             onClose = { showFileViewerDialog = false }
         )
-    }
-}
-
-fun formatToolParameters(params: String): String {
-    return try {
-        val trimmed = params.trim()
-
-        // Check if it's JSON format
-        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
-            // Use proper JSON parsing with kotlinx.serialization
-            val parsed = parseJsonToMap(trimmed)
-            if (parsed.isNotEmpty()) {
-                return parsed.entries.joinToString("\n") { (key, value) ->
-                    "$key: $value"
-                }
-            }
-        }
-
-        // Try key=value format
-        val lines = mutableListOf<String>()
-        val regex = Regex("""(\w+)=["']?([^"']*?)["']?(?:\s|$)""")
-        regex.findAll(params).forEach { match ->
-            val key = match.groups[1]?.value ?: ""
-            val value = match.groups[2]?.value ?: ""
-            lines.add("$key: $value")
-        }
-
-        if (lines.isNotEmpty()) {
-            lines.joinToString("\n")
-        } else {
-            params // Fallback to original if parsing fails
-        }
-    } catch (e: Exception) {
-        params // Fallback to original on any error
-    }
-}
-
-/**
- * Parse JSON string to a map of key-value pairs for display.
- * Handles nested quotes and complex values properly.
- */
-private fun parseJsonToMap(json: String): Map<String, String> {
-    return try {
-        val result = mutableMapOf<String, String>()
-        val jsonElement = kotlinx.serialization.json.Json.parseToJsonElement(json)
-
-        if (jsonElement is kotlinx.serialization.json.JsonObject) {
-            jsonElement.entries.forEach { (key, value) ->
-                val displayValue = when (value) {
-                    is kotlinx.serialization.json.JsonPrimitive -> {
-                        if (value.isString) value.content else value.toString()
-                    }
-
-                    else -> value.toString()
-                }
-                result[key] = displayValue
-            }
-        }
-        result
-    } catch (e: Exception) {
-        emptyMap()
     }
 }
 
