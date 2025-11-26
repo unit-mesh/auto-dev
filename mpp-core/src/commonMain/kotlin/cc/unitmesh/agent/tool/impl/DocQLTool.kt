@@ -454,7 +454,7 @@ class DocQLInvocation(
                 }
             }
 
-            else -> {} // Ignore other types
+            else -> {}
         }
     }
 

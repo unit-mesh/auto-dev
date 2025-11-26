@@ -1,5 +1,7 @@
 package cc.unitmesh.agent.scoring
 
+import kotlin.math.round
+
 /**
  * Configuration for composite scoring.
  */
@@ -16,24 +18,24 @@ data class CompositeScorerConfig(
 
 /**
  * Composite scorer that combines multiple scoring strategies.
- * 
+ *
  * This scorer implements a weighted combination of:
  * - **BM25**: Term frequency-based relevance
  * - **Type scoring**: Prioritizes code entities
  * - **Name matching**: Rewards query matches in entity names
- * 
+ *
  * The final score is a weighted sum of all component scores.
- * 
+ *
  * ## Usage
- * 
+ *
  * ```kotlin
  * val scorer = CompositeScorer()
- * 
+ *
  * val segments = listOf(
  *     TextSegment("class AuthService", mapOf("type" to "class", "name" to "AuthService")),
  *     TextSegment("user authentication docs", mapOf("type" to "chunk"))
  * )
- * 
+ *
  * val scores = scorer.scoreAll(segments, "AuthService")
  * // Returns weighted scores combining all strategies
  * ```
@@ -137,26 +139,28 @@ data class ScoringBreakdown(
             appendLine("  Combined: ${formatDouble(combined)}")
         }
     }
-    
-    private fun formatDouble(value: Double, decimals: Int = 2): String {
-        val factor = when (decimals) {
-            0 -> 1.0
-            1 -> 10.0
-            2 -> 100.0
-            3 -> 1000.0
-            else -> generateSequence(1.0) { it * 10 }.take(decimals + 1).last()
-        }
-        val rounded = kotlin.math.round(value * factor) / factor
-        val str = rounded.toString()
-        val dotIndex = str.indexOf('.')
-        return if (dotIndex == -1) {
-            "$str.${"0".repeat(decimals)}"
-        } else {
-            val currentDecimals = str.length - dotIndex - 1
-            if (currentDecimals >= decimals) {
-                str.substring(0, dotIndex + decimals + 1)
+
+    companion object {
+        fun formatDouble(value: Double, decimals: Int = 2): String {
+            val factor = when (decimals) {
+                0 -> 1.0
+                1 -> 10.0
+                2 -> 100.0
+                3 -> 1000.0
+                else -> generateSequence(1.0) { it * 10 }.take(decimals + 1).last()
+            }
+            val rounded = round(value * factor) / factor
+            val str = rounded.toString()
+            val dotIndex = str.indexOf('.')
+            return if (dotIndex == -1) {
+                "$str.${"0".repeat(decimals)}"
             } else {
-                str + "0".repeat(decimals - currentDecimals)
+                val currentDecimals = str.length - dotIndex - 1
+                if (currentDecimals >= decimals) {
+                    str.substring(0, dotIndex + decimals + 1)
+                } else {
+                    str + "0".repeat(decimals - currentDecimals)
+                }
             }
         }
     }

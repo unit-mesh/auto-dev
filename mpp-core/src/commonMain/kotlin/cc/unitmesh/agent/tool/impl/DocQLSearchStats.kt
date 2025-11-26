@@ -1,5 +1,6 @@
 package cc.unitmesh.agent.tool.impl
 
+import cc.unitmesh.agent.scoring.ScoringBreakdown
 import kotlinx.serialization.Serializable
 
 /**
@@ -38,7 +39,7 @@ data class DocQLSearchStats(
         FALLBACK_CONTENT,  // Fallback to content chunks search
         LLM_RERANKED       // LLM-based metadata reranking
     }
-    
+
     /**
      * Serialize to metadata map for ToolResult
      */
@@ -52,7 +53,7 @@ data class DocQLSearchStats(
         put("docql_reranked_results", resultsAfterRerank.toString())
         put("docql_truncated", truncated.toString())
         put("docql_used_fallback", usedFallback.toString())
-        
+
         rerankerConfig?.let { config ->
             put("docql_reranker_type", config.rerankerType)
             put("docql_rrf_k", config.rrfK.toString())
@@ -60,14 +61,14 @@ data class DocQLSearchStats(
             put("docql_content_weight", config.contentWeight.toString())
             put("docql_min_score", config.minScoreThreshold.toString())
         }
-        
+
         scoringInfo?.let { scoring ->
             put("docql_scorer_components", scoring.scorerComponents.joinToString(","))
             put("docql_avg_score", formatDouble(scoring.avgScore))
             put("docql_max_score", formatDouble(scoring.maxScore))
             put("docql_min_score_value", formatDouble(scoring.minScore))
         }
-        
+
         keywordExpansion?.let { kw ->
             put("docql_kw_level_used", kw.levelUsed.toString())
             put("docql_kw_original", kw.originalQuery)
@@ -81,7 +82,7 @@ data class DocQLSearchStats(
             put("docql_kw_level1_count", kw.level1ResultCount.toString())
             put("docql_kw_level2_count", kw.level2ResultCount.toString())
         }
-        
+
         llmRerankerInfo?.let { llm ->
             put("docql_llm_enabled", "true")
             put("docql_llm_success", llm.success.toString())
@@ -97,31 +98,11 @@ data class DocQLSearchStats(
             llm.error?.let { put("docql_llm_error", it) }
         }
     }
-    
+
     private fun formatDouble(value: Double, decimals: Int = 2): String {
-        val factor = when (decimals) {
-            0 -> 1.0
-            1 -> 10.0
-            2 -> 100.0
-            3 -> 1000.0
-            else -> generateSequence(1.0) { it * 10 }.take(decimals + 1).last()
-        }
-        val rounded = kotlin.math.round(value * factor) / factor
-        val str = rounded.toString()
-        // Ensure we have exactly `decimals` decimal places
-        val dotIndex = str.indexOf('.')
-        return if (dotIndex == -1) {
-            "$str.${"0".repeat(decimals)}"
-        } else {
-            val currentDecimals = str.length - dotIndex - 1
-            if (currentDecimals >= decimals) {
-                str.substring(0, dotIndex + decimals + 1)
-            } else {
-                str + "0".repeat(decimals - currentDecimals)
-            }
-        }
+        return ScoringBreakdown.formatDouble(value, decimals)
     }
-    
+
     companion object {
         /**
          * Parse from metadata map
@@ -133,7 +114,7 @@ data class DocQLSearchStats(
             } catch (e: IllegalArgumentException) {
                 return null
             }
-            
+
             return DocQLSearchStats(
                 searchType = searchType,
                 channels = metadata["docql_channels"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
@@ -199,7 +180,7 @@ data class ScoringStats(
         fun fromMetadata(metadata: Map<String, String>): ScoringStats? {
             val components = metadata["docql_scorer_components"]?.split(",")?.filter { it.isNotBlank() }
             if (components.isNullOrEmpty()) return null
-            
+
             return ScoringStats(
                 scorerComponents = components,
                 avgScore = metadata["docql_avg_score"]?.toDoubleOrNull() ?: 0.0,
@@ -212,7 +193,7 @@ data class ScoringStats(
 
 /**
  * Statistics about keyword expansion for multi-level search.
- * 
+ *
  * Tracks which keyword level was used and the search strategy applied.
  */
 @Serializable
@@ -235,11 +216,12 @@ data class KeywordExpansionStats(
     companion object {
         fun fromMetadata(metadata: Map<String, String>): KeywordExpansionStats? {
             val original = metadata["docql_kw_original"] ?: return null
-            
+
             return KeywordExpansionStats(
                 originalQuery = original,
                 primaryKeywords = metadata["docql_kw_primary"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
-                secondaryKeywords = metadata["docql_kw_secondary"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+                secondaryKeywords = metadata["docql_kw_secondary"]?.split(",")?.filter { it.isNotBlank() }
+                    ?: emptyList(),
                 levelUsed = metadata["docql_kw_level_used"]?.toIntOrNull() ?: 1,
                 strategyUsed = metadata["docql_kw_strategy"] ?: "KEEP",
                 level1ResultCount = metadata["docql_kw_level1_count"]?.toIntOrNull() ?: 0,
@@ -251,7 +233,7 @@ data class KeywordExpansionStats(
 
 /**
  * Statistics about LLM-based metadata reranking.
- * 
+ *
  * Tracks LLM reranking performance and results.
  */
 @Serializable
@@ -277,7 +259,7 @@ data class LLMRerankerStats(
         fun fromMetadata(metadata: Map<String, String>): LLMRerankerStats? {
             // Only parse if LLM reranking was enabled
             if (metadata["docql_llm_enabled"] != "true") return null
-            
+
             return LLMRerankerStats(
                 success = metadata["docql_llm_success"]?.toBooleanStrictOrNull() ?: true,
                 itemsProcessed = metadata["docql_llm_items_processed"]?.toIntOrNull() ?: 0,

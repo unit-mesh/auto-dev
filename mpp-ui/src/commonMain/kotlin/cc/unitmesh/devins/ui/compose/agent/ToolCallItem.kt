@@ -34,6 +34,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cc.unitmesh.agent.scoring.ScoringBreakdown
 import cc.unitmesh.agent.tool.ToolType
 import cc.unitmesh.agent.tool.impl.DocQLSearchStats
 import cc.unitmesh.devins.ui.compose.agent.codereview.FileViewerDialog
@@ -528,18 +529,18 @@ fun ToolCallItem(
 fun formatToolParameters(params: String): String {
     return try {
         val trimmed = params.trim()
-        
+
         // Check if it's JSON format
         if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
             // Use proper JSON parsing with kotlinx.serialization
             val parsed = parseJsonToMap(trimmed)
             if (parsed.isNotEmpty()) {
-                return parsed.entries.joinToString("\n") { (key, value) -> 
+                return parsed.entries.joinToString("\n") { (key, value) ->
                     "$key: $value"
                 }
             }
         }
-        
+
         // Try key=value format
         val lines = mutableListOf<String>()
         val regex = Regex("""(\w+)=["']?([^"']*?)["']?(?:\s|$)""")
@@ -567,13 +568,14 @@ private fun parseJsonToMap(json: String): Map<String, String> {
     return try {
         val result = mutableMapOf<String, String>()
         val jsonElement = kotlinx.serialization.json.Json.parseToJsonElement(json)
-        
+
         if (jsonElement is kotlinx.serialization.json.JsonObject) {
             jsonElement.entries.forEach { (key, value) ->
                 val displayValue = when (value) {
                     is kotlinx.serialization.json.JsonPrimitive -> {
                         if (value.isString) value.content else value.toString()
                     }
+
                     else -> value.toString()
                 }
                 result[key] = displayValue
@@ -729,7 +731,7 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                         DocQLSearchStats.SearchType.LLM_RERANKED -> Color(0xFF9C27B0)  // Purple for LLM
                     }
                 )
-                
+
                 if (stats.usedFallback) {
                     StatBadge(
                         label = "Mode",
@@ -835,7 +837,7 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                     }
                 }
             }
-            
+
             // LLM Reranker Information - show cost/performance metrics
             stats.llmRerankerInfo?.let { llm ->
                 Surface(
@@ -867,7 +869,7 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                                 fontWeight = FontWeight.Bold,
                                 color = if (llm.success) Color(0xFF9C27B0) else MaterialTheme.colorScheme.error
                             )
-                            
+
                             // Cost warning badge
                             Surface(
                                 color = Color(0xFFFF9800).copy(alpha = 0.15f),
@@ -889,7 +891,7 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                                     )
                                 }
                             }
-                            
+
                             if (llm.usedFallback) {
                                 Surface(
                                     color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
@@ -904,7 +906,7 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                                 }
                             }
                         }
-                        
+
                         // Performance metrics
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -918,7 +920,7 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                                 ConfigItem("Latency", "${llm.latencyMs}ms")
                             }
                         }
-                        
+
                         // Explanation if available
                         llm.explanation?.let { explanation ->
                             Text(
@@ -928,7 +930,7 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                             )
                         }
-                        
+
                         // Error message if failed
                         llm.error?.let { error ->
                             Text(
@@ -980,7 +982,7 @@ private fun ChannelChip(channel: String) {
         "content_chunks" -> AutoDevComposeIcons.Description to Color(0xFF00BCD4)
         else -> AutoDevComposeIcons.Search to Color(0xFF607D8B)
     }
-    
+
     Surface(
         color = color.copy(alpha = 0.12f),
         shape = RoundedCornerShape(4.dp)
@@ -1080,28 +1082,6 @@ private fun ScoreItem(label: String, score: Double) {
     }
 }
 
-/**
- * Format a double value to specified decimal places (multiplatform compatible)
- */
 private fun formatDouble(value: Double, decimals: Int = 2): String {
-    val factor = when (decimals) {
-        0 -> 1.0
-        1 -> 10.0
-        2 -> 100.0
-        3 -> 1000.0
-        else -> generateSequence(1.0) { it * 10 }.take(decimals + 1).last()
-    }
-    val rounded = kotlin.math.round(value * factor) / factor
-    val str = rounded.toString()
-    val dotIndex = str.indexOf('.')
-    return if (dotIndex == -1) {
-        "$str.${"0".repeat(decimals)}"
-    } else {
-        val currentDecimals = str.length - dotIndex - 1
-        if (currentDecimals >= decimals) {
-            str.substring(0, dotIndex + decimals + 1)
-        } else {
-            str + "0".repeat(decimals - currentDecimals)
-        }
-    }
+    return ScoringBreakdown.formatDouble(value, decimals)
 }
