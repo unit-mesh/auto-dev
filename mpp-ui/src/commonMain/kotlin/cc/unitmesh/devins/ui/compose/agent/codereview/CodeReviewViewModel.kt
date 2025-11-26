@@ -1081,12 +1081,13 @@ open class CodeReviewViewModel(
      * Load issue information for a specific commit asynchronously
      *
      * @param commitIndex Index of the commit in commitHistory
+     * @param forceRefresh If true, bypass cache and fetch fresh data
      */
-    private fun loadIssueForCommit(commitIndex: Int) {
+    private fun loadIssueForCommit(commitIndex: Int, forceRefresh: Boolean = false) {
         val commit = currentState.commitHistory.getOrNull(commitIndex) ?: return
 
-        // Skip if already loaded or loading
-        if (commit.issueInfo != null || commit.isLoadingIssue) {
+        // Skip if already loaded or loading (unless force refresh)
+        if (!forceRefresh && (commit.issueInfo != null || commit.isLoadingIssue)) {
             return
         }
 
@@ -1096,7 +1097,7 @@ open class CodeReviewViewModel(
         // Load issue asynchronously
         scope.launch {
             try {
-                val issueDeferred = issueService.getIssueAsync(commit.hash, commit.message)
+                val issueDeferred = issueService.getIssueAsync(commit.hash, commit.message, forceRefresh)
                 val result = issueDeferred.await()
 
                 // Update commit with issue info or error
@@ -1104,8 +1105,16 @@ open class CodeReviewViewModel(
                     it.copy(
                         issueInfo = result.issueInfo,
                         isLoadingIssue = false,
-                        issueLoadError = result.error
+                        issueLoadError = result.error,
+                        issueFromCache = result.fromCache,
+                        issueCacheAge = result.cacheAgeDisplay
                     )
+                }
+                
+                if (result.fromCache) {
+                    AutoDevLogger.debug("CodeReviewViewModel") {
+                        "Loaded cached issue for commit ${commit.shortHash} (cached ${result.cacheAgeDisplay})"
+                    }
                 }
             } catch (e: Exception) {
                 AutoDevLogger.error("CodeReviewViewModel") {
@@ -1119,6 +1128,13 @@ open class CodeReviewViewModel(
                 }
             }
         }
+    }
+    
+    /**
+     * Force refresh issue for a specific commit (bypasses cache)
+     */
+    fun refreshIssueForCommit(commitIndex: Int) {
+        loadIssueForCommit(commitIndex, forceRefresh = true)
     }
 
     /**

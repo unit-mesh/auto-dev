@@ -1,5 +1,8 @@
 package cc.unitmesh.agent.tracker
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+
 /**
  * Issue information from issue tracker
  */
@@ -12,8 +15,46 @@ data class IssueInfo(
     val author: String? = null,
     val assignees: List<String> = emptyList(),
     val createdAt: String? = null,
-    val updatedAt: String? = null
-)
+    val updatedAt: String? = null,
+    /**
+     * When this issue info was fetched/cached (null if freshly fetched)
+     */
+    val cachedAt: Instant? = null
+) {
+    /**
+     * Check if this issue info is from cache
+     */
+    val isFromCache: Boolean get() = cachedAt != null
+    
+    /**
+     * Get cache age in minutes (null if not cached)
+     */
+    fun getCacheAgeMinutes(): Long? {
+        return cachedAt?.let {
+            (Clock.System.now() - it).inWholeMinutes
+        }
+    }
+    
+    /**
+     * Get human-readable cache age
+     */
+    fun getCacheAgeDisplay(): String? {
+        val minutes = getCacheAgeMinutes() ?: return null
+        return when {
+            minutes < 1 -> "just now"
+            minutes < 60 -> "${minutes}m ago"
+            minutes < 1440 -> "${minutes / 60}h ago"
+            else -> "${minutes / 1440}d ago"
+        }
+    }
+    
+    /**
+     * Create a cached copy with current timestamp
+     */
+    fun withCacheTimestamp(timestamp: Instant = Clock.System.now()): IssueInfo {
+        return copy(cachedAt = timestamp)
+    }
+}
 
 /**
  * Abstract interface for issue tracking systems

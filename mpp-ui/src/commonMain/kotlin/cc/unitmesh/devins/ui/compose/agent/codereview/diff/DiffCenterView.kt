@@ -64,6 +64,7 @@ fun DiffCenterView(
     workspaceRoot: String? = null,
     isLoadingDiff: Boolean = false,
     onConfigureToken: () -> Unit = {},
+    onRefreshIssue: ((Int) -> Unit)? = null, // Callback to refresh issue for commit index
     // Test coverage data
     relatedTests: Map<String, List<TestFileInfo>> = emptyMap(),
     isLoadingTests: Boolean = false
@@ -118,31 +119,90 @@ fun DiffCenterView(
                                     )
                                 }
                                 selectedCommit.issueInfo != null -> {
-                                    InlineIssueChip(issueInfo = selectedCommit.issueInfo)
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        InlineIssueChip(issueInfo = selectedCommit.issueInfo)
+                                        
+                                        // Show cache indicator and refresh button if from cache
+                                        if (selectedCommit.issueFromCache && selectedCommit.issueCacheAge != null) {
+                                            Text(
+                                                text = selectedCommit.issueCacheAge,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                            )
+                                        }
+                                        
+                                        // Refresh button
+                                        if (onRefreshIssue != null) {
+                                            IconButton(
+                                                onClick = { onRefreshIssue(0) }, // Single commit, index 0
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = AutoDevComposeIcons.Refresh,
+                                                    contentDescription = "Refresh issue",
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                                 selectedCommit.issueLoadError != null -> {
-                                    Button(
-                                        onClick = onConfigureToken,
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                        ),
-                                        modifier = Modifier.height(32.dp),
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                imageVector = AutoDevComposeIcons.Settings,
-                                                contentDescription = "Configure",
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Text(
-                                                text = "Configure Token",
-                                                style = MaterialTheme.typography.labelSmall
-                                            )
+                                        // Show error message
+                                        Text(
+                                            text = selectedCommit.issueLoadError,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                                        )
+                                        
+                                        // Retry button
+                                        if (onRefreshIssue != null) {
+                                            IconButton(
+                                                onClick = { onRefreshIssue(0) },
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = AutoDevComposeIcons.Refresh,
+                                                    contentDescription = "Retry",
+                                                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                        }
+                                        
+                                        // Configure token button (only for auth errors)
+                                        if (selectedCommit.issueLoadError.contains("Authentication", ignoreCase = true)) {
+                                            Button(
+                                                onClick = onConfigureToken,
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                                ),
+                                                modifier = Modifier.height(28.dp),
+                                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                            ) {
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(
+                                                        imageVector = AutoDevComposeIcons.Settings,
+                                                        contentDescription = "Configure",
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
+                                                    Text(
+                                                        text = "Token",
+                                                        style = MaterialTheme.typography.labelSmall
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }

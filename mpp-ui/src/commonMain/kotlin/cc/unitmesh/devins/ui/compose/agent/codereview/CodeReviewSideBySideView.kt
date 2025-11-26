@@ -158,6 +158,15 @@ private fun ThreeColumnLayout(
                     val workspaceRoot = viewModel.workspace.rootPath
                     val onConfigureToken = onShowConfigDialog
 
+                    // Map selected commit indices for refresh callback
+                    val selectedIndicesList = state.selectedCommitIndices.toList().sorted()
+                    val onRefreshIssue: (Int) -> Unit = { relativeIndex ->
+                        // Map relative index in selectedCommits to actual commitHistory index
+                        selectedIndicesList.getOrNull(relativeIndex)?.let { actualIndex ->
+                            viewModel.refreshIssueForCommit(actualIndex)
+                        }
+                    }
+                    
                     DiffCenterView(
                         diffFiles = state.diffFiles,
                         selectedCommits = state.selectedCommitIndices.mapNotNull { state.commitHistory.getOrNull(it) },
@@ -166,6 +175,7 @@ private fun ThreeColumnLayout(
                         workspaceRoot = workspaceRoot,
                         isLoadingDiff = state.isLoadingDiff,
                         onConfigureToken = onConfigureToken,
+                        onRefreshIssue = onRefreshIssue,
                         relatedTests = state.relatedTests,
                         isLoadingTests = state.isLoadingTests
                     )
