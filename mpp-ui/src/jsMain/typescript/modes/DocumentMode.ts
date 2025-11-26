@@ -32,7 +32,12 @@ export interface DocumentResult {
 /**
  * Scan for documents in a directory
  */
-function scanDocuments(dirPath: string, extensions: string[] = ['.md', '.pdf', '.docx', '.txt']): string[] {
+function scanDocuments(dirPath: string, extensions: string[] = [
+    '.md', '.pdf', '.docx', '.pptx', '.txt',  // Documents
+    '.java', '.kt', '.kts',                    // JVM source code
+    '.js', '.ts', '.tsx',                      // JavaScript/TypeScript
+    '.py', '.go', '.rs', '.cs'                 // Other languages
+]): string[] {
     const documents: string[] = [];
 
     function scanDir(currentPath: string) {

@@ -6,27 +6,69 @@ import cc.unitmesh.codegraph.parser.Language
 import kotlinx.coroutines.await
 import kotlin.js.Promise
 
+// External declarations for Node.js modules
+@JsModule("path")
+@JsNonModule
+external object NodePath {
+    fun join(vararg paths: String): String
+    fun dirname(path: String): String
+}
+
 /**
  * JS implementation of CodeParser using web-tree-sitter.
  * Based on autodev-workbench implementation.
  */
 class JsCodeParser : CodeParser {
     
-    private var initialized = false
-    private val parsers = mutableMapOf<Language, dynamic>()
+    companion object {
+        // Global TreeSitter initialization state - shared across all instances
+        private var globalInitialized = false
+        private var globalTreeSitter: dynamic = null
+        private val globalParsers = mutableMapOf<Language, dynamic>()
+        private var globalWasmBasePath: String = ""
+        
+        @Suppress("UNUSED_PARAMETER")
+        private fun createInitOptions(webTreeSitterPath: String): dynamic {
+            return js("""({
+                locateFile: function(scriptName, scriptDirectory) {
+                    if (scriptName.endsWith('.wasm')) {
+                        return webTreeSitterPath + '/' + scriptName;
+                    }
+                    return scriptDirectory + scriptName;
+                }
+            })""")
+        }
+        
+        @Suppress("UNUSED_PARAMETER")
+        internal fun createParser(TreeSitterClass: dynamic): dynamic {
+            return js("new TreeSitterClass()")
+        }
+    }
     
     /**
      * Initialize TreeSitter and load language grammars
      */
     suspend fun initialize() {
-        if (initialized) return
+        if (globalInitialized) return
         
-        // Initialize TreeSitter
-        val Parser = js("require('web-tree-sitter')")
-        val initPromise = Parser.init() as Promise<Unit>
+        // Initialize TreeSitter - require returns the TreeSitter class
+        globalTreeSitter = js("require('web-tree-sitter')")
+        
+        // Find the base path for web-tree-sitter WASM file
+        val webTreeSitterWasm = js("require.resolve('web-tree-sitter/tree-sitter.wasm')") as String
+        val webTreeSitterPath = NodePath.dirname(webTreeSitterWasm)
+        
+        // Find the base path for treesitter-artifacts WASM files
+        val artifactsPackageJson = js("require.resolve('@unit-mesh/treesitter-artifacts/package.json')") as String
+        globalWasmBasePath = NodePath.join(NodePath.dirname(artifactsPackageJson), "wasm")
+        
+        // Create init options with locateFile to properly locate the tree-sitter.wasm file
+        val initOptions = createInitOptions(webTreeSitterPath)
+        
+        val initPromise = globalTreeSitter.init(initOptions) as Promise<Unit>
         initPromise.await()
         
-        initialized = true
+        globalInitialized = true
     }
     
     override suspend fun parseNodes(
@@ -89,20 +131,23 @@ class JsCodeParser : CodeParser {
     }
     
     private suspend fun getOrCreateParser(language: Language): dynamic {
-        if (parsers.containsKey(language)) {
-            return parsers[language]
+        if (globalParsers.containsKey(language)) {
+            return globalParsers[language]
         }
         
-        val Parser = js("require('web-tree-sitter')")
-        val parser = js("new Parser()")
+        // Create a new parser instance from the initialized TreeSitter
+        // After TreeSitter.init(), new TreeSitter() creates a Parser instance
+        val parser = createParser(globalTreeSitter)
         
-        // Load language grammar
-        val languageName = getLanguageWasmName(language)
-        val languagePromise = Parser.Language.load(languageName) as Promise<dynamic>
+        // Load language grammar from the treesitter-artifacts package
+        val wasmFileName = getLanguageWasmName(language)
+        val wasmPath = NodePath.join(globalWasmBasePath, wasmFileName)
+        
+        val languagePromise = globalTreeSitter.Language.load(wasmPath) as Promise<dynamic>
         val languageGrammar = languagePromise.await()
         
         parser.setLanguage(languageGrammar)
-        parsers[language] = parser
+        globalParsers[language] = parser
         
         return parser
     }

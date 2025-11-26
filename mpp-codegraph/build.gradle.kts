@@ -96,7 +96,7 @@ kotlin {
                 // web-tree-sitter for JS platform
                 implementation(npm("web-tree-sitter", "0.22.2"))
                 // TreeSitter WASM artifacts - matching autodev-workbench versions
-                implementation(npm("@unit-mesh/treesitter-artifacts", "1.7.6"))
+                implementation(npm("@unit-mesh/treesitter-artifacts", "1.7.7"))
             }
         }
 
@@ -111,7 +111,7 @@ kotlin {
                 // web-tree-sitter for WASM-JS platform (uses same npm packages as JS)
                 implementation(npm("web-tree-sitter", "0.22.2"))
                 // TreeSitter WASM artifacts
-                implementation(npm("@unit-mesh/treesitter-artifacts", "1.7.6"))
+                implementation(npm("@unit-mesh/treesitter-artifacts", "1.7.7"))
 
                 implementation(devNpm("copy-webpack-plugin", "12.0.2"))
             }

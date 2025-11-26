@@ -206,6 +206,13 @@ kotlin {
             dependencies {
                 // Ktor JS engine for JavaScript
                 implementation("io.ktor:ktor-client-js:3.2.2")
+                
+                // CodeGraph for source code parsing
+                implementation(project(":mpp-codegraph"))
+                
+                // web-tree-sitter for source code parsing (required for JsCodeParser)
+                implementation(npm("web-tree-sitter", "0.22.2"))
+                implementation(npm("@unit-mesh/treesitter-artifacts", "1.7.7"))
             }
         }
 

@@ -6,11 +6,14 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * JS platform-specific initialization
- * Currently only Markdown is supported on JS platform
+ * Supports Markdown and Source Code parsing on JS platform
  */
 actual fun platformInitialize() {
-    logger.debug { "Initializing JS document parsers (Markdown only)" }
-    // JS platform only supports Markdown for now
+    logger.debug { "Initializing JS document parsers (Markdown + Source Code)" }
     // Markdown parser is already registered in DocumentRegistry init block
+    
+    // Register Source Code parser for JS platform
+    DocumentParserFactory.registerParser(DocumentFormatType.SOURCE_CODE) { CodeDocumentParser() }
+    logger.debug { "Registered SOURCE_CODE parser for JS platform" }
 }
 

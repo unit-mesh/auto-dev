@@ -51,6 +51,7 @@
     "@autodev/mpp-core": "file:../mpp-core/build/packages/js",
     "@js-joda/core": "^5.6.5",
     "@modelcontextprotocol/sdk": "^1.0.4",
+    "@unit-mesh/treesitter-artifacts": "^1.7.7",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "diff": "^7.0.0",
@@ -62,6 +63,7 @@
     "ink-text-input": "^6.0.0",
     "node-fetch": "^3.3.2",
     "react": "^18.3.1",
+    "web-tree-sitter": "^0.22.2",
     "yaml": "^2.6.1"
   },
   "devDependencies": {
