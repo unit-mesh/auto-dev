@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- 定义日志文件存储路径 -->
-    <property name="LOG_HOME" value="${user.home}/.autodev/logs" />
-    <property name="APP_NAME" value="autodev-app" />
-    
+    <property name="LOG_HOME" value="${user.home}/.autodev/logs"/>
+    <property name="APP_NAME" value="autodev-app"/>
+
     <!-- 控制台输出 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -14,7 +14,7 @@
             <level>INFO</level>
         </filter>
     </appender>
-    
+
     <!-- 文件输出 - 所有日志 -->
     <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${APP_NAME}.log</file>
@@ -34,7 +34,7 @@
             <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-    
+
     <!-- 错误日志单独文件 -->
     <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${APP_NAME}-error.log</file>
@@ -55,29 +55,33 @@
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-    
+
     <!-- 特定组件的日志级别配置 -->
-    <logger name="cc.unitmesh.agent" level="DEBUG" />
-    <logger name="cc.unitmesh.devins" level="DEBUG" />
-    <logger name="cc.unitmesh.llm" level="INFO" />
-    <logger name="cc.unitmesh.indexer" level="INFO" />
-    
+    <logger name="cc.unitmesh.agent" level="DEBUG"/>
+    <logger name="cc.unitmesh.devins" level="DEBUG"/>
+    <logger name="cc.unitmesh.llm" level="INFO"/>
+    <logger name="cc.unitmesh.indexer" level="INFO"/>
+
     <!-- MCP 相关日志 -->
-    <logger name="cc.unitmesh.agent.mcp" level="DEBUG" />
-    <logger name="cc.unitmesh.agent.config" level="DEBUG" />
-    
+    <logger name="cc.unitmesh.agent.mcp" level="DEBUG"/>
+    <logger name="cc.unitmesh.agent.config" level="DEBUG"/>
+
     <!-- 第三方库日志级别 -->
-    <logger name="io.ktor" level="INFO" />
-    <logger name="kotlinx.coroutines" level="WARN" />
-    <logger name="ai.koog" level="INFO" />
-    
+    <logger name="io.ktor" level="INFO"/>
+    <logger name="kotlinx.coroutines" level="WARN"/>
+    <logger name="ai.koog" level="INFO"/>
+
     <!-- Apache HTTP Client Wire Logging - Silence verbose output -->
-    <logger name="org.apache.hc.client5.http.wire" level="WARN" />
+    <logger name="org.apache.hc.client5.http.wire" level="WARN"/>
+
+    <logger name="ai.koog.agents.core.agent.entity.AIAgentSubgraph" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
 
     <!-- 根日志级别 -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE_ALL" />
-        <appender-ref ref="FILE_ERROR" />
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE_ALL"/>
+        <appender-ref ref="FILE_ERROR"/>
     </root>
 </configuration>
