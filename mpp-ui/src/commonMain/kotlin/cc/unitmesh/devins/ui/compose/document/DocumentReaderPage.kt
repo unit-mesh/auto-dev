@@ -3,12 +3,14 @@ package cc.unitmesh.devins.ui.compose.document
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.Platform
 import cc.unitmesh.devins.document.docql.executeDocQL
 import cc.unitmesh.devins.ui.compose.agent.AgentTopAppBar
@@ -37,6 +39,9 @@ fun DocumentReaderPage(
 
     val notMobile = (Platform.isAndroid || Platform.isIOS).not()
 
+    // State for domain dictionary dialog
+    var showDomainDictDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -46,6 +51,19 @@ fun DocumentReaderPage(
                     subtitle = workspace.name.takeIf { it.isNotBlank() },
                     onBack = onBack,
                     actions = {
+                        // Domain Dictionary button - for managing terminology
+                        IconButton(
+                            onClick = { showDomainDictDialog = true },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.MenuBook,
+                                contentDescription = "Domain Dictionary",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
                         AgentTopAppBarActions.DeleteButton(
                             onClick = { viewModel.clearChatHistory() },
                             contentDescription = "Clear Chat"
@@ -160,6 +178,14 @@ fun DocumentReaderPage(
                         }
                     )
                 }
+            )
+        }
+
+        // Domain Dictionary Dialog
+        if (showDomainDictDialog) {
+            DomainDictDialog(
+                workspace = workspace,
+                onDismiss = { showDomainDictDialog = false }
             )
         }
     }
