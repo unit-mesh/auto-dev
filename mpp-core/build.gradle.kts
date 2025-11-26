@@ -136,10 +136,10 @@ kotlin {
 
                 runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
                 // Koog AI Framework - JVM only for now
-                implementation("ai.koog:koog-agents:0.5.2")
-                implementation("ai.koog:agents-mcp:0.5.2")
+                implementation("ai.koog:koog-agents:0.5.3")
+                implementation("ai.koog:agents-mcp:0.5.3")
                 // Koog needs these executors
-                implementation("ai.koog:prompt-executor-llms-all:0.5.2")
+                implementation("ai.koog:prompt-executor-llms-all:0.5.3")
             }
         }
 
@@ -171,9 +171,6 @@ kotlin {
                 // Ktor CIO engine for JVM
                 implementation("io.ktor:ktor-client-cio:3.2.2")
 
-                // MCP SDK for JVM
-                implementation("io.modelcontextprotocol:kotlin-sdk:0.7.4")
-                
                 // CodeGraph for source code parsing
                 implementation(project(":mpp-codegraph"))
 

@@ -29,8 +29,8 @@ class McpToolsInitializer {
         }
         
         try {
-            // Create MCP client manager
-            clientManager = McpClientManagerFactory.create()
+            // Create MCP client manager (no factory needed - concrete class)
+            clientManager = McpClientManager()
             
             // Initialize with configuration
             val mcpConfig = McpConfig(mcpServers = mcpServers)

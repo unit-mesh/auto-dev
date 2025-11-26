@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import autodev_intellij.mpp_ui.generated.resources.NotoSansSC_Regular
 import autodev_intellij.mpp_ui.generated.resources.Res
 import cc.unitmesh.agent.Platform
-import cc.unitmesh.agent.mcp.McpClientManagerFactory
+import cc.unitmesh.agent.mcp.McpClientManager
 import cc.unitmesh.agent.mcp.McpConfig
 import cc.unitmesh.agent.mcp.McpServerConfig
 import cc.unitmesh.devins.completion.CompletionItem
@@ -54,13 +54,13 @@ import org.jetbrains.compose.resources.Font
  * 完整的输入界面，包含底部工具栏
  *
  * Model configuration is now managed internally by ModelSelector via ConfigManager.
- * 
+ *
  * Mobile-friendly improvements:
  * - No auto-focus on mobile (user taps to show keyboard)
  * - IME-aware keyboard handling (ImeAction.Send on mobile)
  * - Dismisses keyboard after sending message
  * - Better height constraints for touch ergonomics
- * 
+ *
  * @param autoFocusOnMount Whether to automatically focus the input on mount (desktop only, default: false)
  * @param dismissKeyboardOnSend Whether to dismiss keyboard after sending message (default: true)
  */
@@ -94,23 +94,23 @@ fun DevInEditorInput(
     // Tool Configuration 对话框状态
     var showToolConfig by remember { mutableStateOf(false) }
     var mcpServers by remember { mutableStateOf<Map<String, McpServerConfig>>(emptyMap()) }
-    val mcpClientManager = remember { McpClientManagerFactory.create() }
+    val mcpClientManager = remember { McpClientManager() }
 
     val highlighter = remember { DevInSyntaxHighlighter() }
     val manager = completionManager ?: remember { CompletionManager() }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
-    
+
     val isMobile = Platform.isAndroid || Platform.isIOS
     val isAndroid = Platform.isAndroid
-    
+
     // Style constants based on mode
     val inputShape = if (isAndroid && isCompactMode) 12.dp else 4.dp
     val inputFontSize = if (isAndroid && isCompactMode) 16.sp else 15.sp
     val inputLineHeight = if (isAndroid && isCompactMode) 24.sp else 22.sp
     val maxLines = if (isAndroid && isCompactMode) 5 else 8
-    
+
     // iOS: Use flexible sizing (wrapContent + maxHeight) to avoid keyboard constraint conflicts
     // Android/Desktop: Use minHeight for touch targets + maxHeight for bounds
     val minHeight = if (Platform.isIOS) {
@@ -120,7 +120,7 @@ fun DevInEditorInput(
     } else {
         80.dp
     }
-    
+
     val maxHeight = if (isCompactMode) {
         when {
             Platform.isIOS -> 160.dp // iOS: generous max height, flexible min
@@ -133,7 +133,7 @@ fun DevInEditorInput(
             else -> 160.dp
         }
     }
-    
+
     val padding = if (isCompactMode) {
         when {
             Platform.isIOS -> 14.dp // iOS: slightly more padding for comfort
@@ -353,7 +353,7 @@ fun DevInEditorInput(
 
         // 移动端：不拦截 Enter 键，让输入法和虚拟键盘正常工作
         // 桌面端：Enter 发送，Shift+Enter 换行
-        
+
         return when {
             // 补全弹窗显示时的特殊处理
             showCompletion -> {

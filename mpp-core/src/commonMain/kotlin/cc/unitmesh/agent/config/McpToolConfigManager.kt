@@ -17,7 +17,7 @@ import kotlinx.serialization.json.Json
  */
 object McpToolConfigManager {
     private val logger = getLogger("McpToolConfigManager")
-    private val clientManager: McpClientManager by lazy { McpClientManagerFactory.create() }
+    private val clientManager: McpClientManager by lazy { McpClientManager() }
     private val cached = mutableMapOf<String, Map<String, List<ToolItem>>>()
     private val loadingStateCallbacks = mutableListOf<McpLoadingStateCallback>()
 

@@ -178,7 +178,7 @@ node_modules
 package-lock.json
 local.properties
 docs
-#Samples
+Samples
 
 # iOS / Xcode
 ## Build generated
@@ -246,7 +246,6 @@ fastlane/test_output
 *.cer
 *.p12
 *.provisionprofile
-Samples
 
 # Downloaded fonts (auto-downloaded by Gradle, don't commit)
 **/composeResources/font/*.ttf
