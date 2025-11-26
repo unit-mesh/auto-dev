@@ -1,7 +1,8 @@
 package cc.unitmesh.agent.tool.impl
 
-import cc.unitmesh.agent.scoring.RerankConfig
-import cc.unitmesh.agent.scoring.Reranker
+import cc.unitmesh.agent.scoring.DocumentReranker
+import cc.unitmesh.agent.scoring.DocumentRerankerConfig
+import cc.unitmesh.agent.scoring.ScoredItem
 import cc.unitmesh.agent.scoring.TextSegment
 import cc.unitmesh.agent.tool.*
 import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
@@ -135,7 +136,7 @@ class DocQLInvocation(
         logger.info { "Executing Smart Search for keyword: '$keyword'" }
         
         // Create reranker with appropriate config
-        val reranker = Reranker(RerankConfig(
+        val reranker = DocumentReranker(DocumentRerankerConfig(
             maxResults = maxResults,
             minScoreThreshold = 5.0  // Filter out very low relevance items
         ))
@@ -288,7 +289,7 @@ class DocQLInvocation(
         keyword: String,
         documentPath: String?,
         maxResults: Int,
-        reranker: Reranker
+        reranker: DocumentReranker
     ): ToolResult {
         logger.info { "Smart search yielded no results, trying broader content search" }
         val fallbackQuery = "$.content.chunks()"
@@ -318,7 +319,7 @@ class DocQLInvocation(
                 val segments = relevantChunks.map { it.first }
                 val rerankResult = reranker.rerankSegments(segments, keyword)
                 
-                val scoredResults = rerankResult.items.mapIndexed { index, scoredItem ->
+                val scoredResults = rerankResult.items.mapIndexed { index, scoredItem: ScoredItem<TextSegment> ->
                     val chunk = relevantChunks.find { it.first == scoredItem.item }?.second
                     ScoredResult(
                         item = chunk ?: scoredItem.item,
