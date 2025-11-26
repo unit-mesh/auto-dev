@@ -16,9 +16,9 @@ import cc.unitmesh.devins.workspace.WorkspaceManager
 /**
  * 文档阅读器主页面
  * 采用查询优先的 3 栏布局：
- * 1. 左侧 (35%)：AI 聊天 (DocumentChatPane) - 主要交互区域，显示索引状态
- * 2. 中间 (20%)：文档导航 (DocumentNavigationPane) - 文件列表
- * 3. 右侧 (45%)：文档查看 (DocumentViewerPane) + 结构化信息 (StructuredInfoPane) - 垂直分割
+ * 1. 左侧：AI 聊天 (DocumentChatPane) - 主要交互区域，显示索引状态
+ * 2. 中间：文档导航 (DocumentNavigationPane) - 文件列表
+ * 3. 右侧：文档查看 (DocumentViewerPane) + 结构化信息 (StructuredInfoPane) - 垂直分割
  *
  * 工作流：用户在左侧查询 → 中间看到文件列表 → 右侧查看详细内容和结构
  */
@@ -40,11 +40,10 @@ fun DocumentReaderPage(
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             ResizableSplitPane(
                 modifier = Modifier.fillMaxSize(),
-                initialSplitRatio = 0.55f,
-                minRatio = 0.45f,
+                initialSplitRatio = 0.65f,
+                minRatio = 0.35f,
                 maxRatio = 0.85f,
                 first = {
-                    // 左侧: AI Chat - 主要交互区域
                     DocumentChatPane(
                         viewModel = viewModel
                     )
@@ -52,11 +51,10 @@ fun DocumentReaderPage(
                 second = {
                     ResizableSplitPane(
                         modifier = Modifier.fillMaxSize(),
-                        initialSplitRatio = 0.3f,
-                        minRatio = 0.2f,
-                        maxRatio = 0.3f,
+                        initialSplitRatio = 0.5f,
+                        minRatio = 0.3f,
+                        maxRatio = 0.8f,
                         first = {
-                            // 中间: Document Navigation - 文件列表
                             DocumentNavigationPane(
                                 documentLoadState = viewModel.documentLoadState,
                                 documents = viewModel.filteredDocuments,
@@ -73,9 +71,9 @@ fun DocumentReaderPage(
                             // 第三层分割: 上部 Viewer | 下部 Structure (垂直分割)
                             VerticalResizableSplitPane(
                                 modifier = Modifier.fillMaxSize(),
-                                initialSplitRatio = 0.25f,
-                                minRatio = 0.1f,
-                                maxRatio = 0.4f,
+                                initialSplitRatio = 0.5f,
+                                minRatio = 0.2f,
+                                maxRatio = 0.8f,
                                 top = {
                                     DocumentViewerPane(
                                         document = viewModel.selectedDocument,
