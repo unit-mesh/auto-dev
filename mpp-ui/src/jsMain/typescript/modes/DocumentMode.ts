@@ -218,23 +218,17 @@ export async function runDocument(
 
         const queryDuration = Date.now() - queryStartTime;
         console.log();
-        console.log(semanticChalk.success('✅ Query complete!'));
-        console.log(semanticChalk.muted(`⏱️  Time: ${queryDuration}ms`));
-        console.log();
 
-        // ===== STEP 5: Display Results =====
+        // Note: The LLM response is already streamed during execution,
+        // so we don't need to print result.message again to avoid duplication.
+        // Only show the final status.
         if (result.success) {
-            console.log(semanticChalk.info('📊 Result:'));
-            console.log();
-            console.log(result.message);
-            console.log();
+            console.log(semanticChalk.success('✅ Query complete!'));
+            console.log(semanticChalk.muted(`⏱️  Total time: ${queryDuration}ms`));
         } else {
             console.log(semanticChalk.error(`❌ Query failed: ${result.message}`));
+            console.log(semanticChalk.muted(`⏱️  Time: ${queryDuration}ms`));
         }
-
-        const totalDuration = Date.now() - startTime;
-        console.log(semanticChalk.success('✅ Complete!'));
-        console.log(semanticChalk.muted(`⏱️  Total time: ${totalDuration}ms`));
         console.log();
 
         return {

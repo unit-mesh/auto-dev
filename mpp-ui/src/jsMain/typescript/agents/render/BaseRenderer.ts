@@ -23,11 +23,14 @@ export abstract class BaseRenderer implements JsCodingAgentRenderer {
   protected lastOutputLength: number = 0;
 
   /**
-   * Filter out devin blocks from content
+   * Filter out devin blocks and thinking blocks from content
    */
   protected filterDevinBlocks(content: string): string {
     // Remove all complete devin blocks
     let filtered = content.replace(/<devin[^>]*>[\s\S]*?<\/devin>/g, '');
+
+    // Remove all complete thinking blocks
+    filtered = filtered.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
 
     // Handle incomplete devin blocks at the end - remove them completely
     const openDevinIndex = filtered.lastIndexOf('<devin');
@@ -39,26 +42,43 @@ export abstract class BaseRenderer implements JsCodingAgentRenderer {
       }
     }
 
-    // Also remove partial devin tags at the end and any standalone '<' that might be part of a devin tag
-    const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
-    filtered = filtered.replace(partialDevinPattern, '');
+    // Handle incomplete thinking blocks at the end - remove them completely
+    const openThinkingIndex = filtered.lastIndexOf('<thinking');
+    if (openThinkingIndex !== -1) {
+      const closeThinkingIndex = filtered.indexOf('</thinking>', openThinkingIndex);
+      if (closeThinkingIndex === -1) {
+        // Incomplete thinking block, remove it
+        filtered = filtered.substring(0, openThinkingIndex);
+      }
+    }
+
+    // Also remove partial devin/thinking tags at the end and any standalone '<' that might be part of a tag
+    const partialTagPattern = /<(?:de(?:v(?:i(?:n)?)?)?|th(?:i(?:n(?:k(?:i(?:n(?:g)?)?)?)?)?)?)?$|<$/;
+    filtered = filtered.replace(partialTagPattern, '');
 
     return filtered;
   }
 
   /**
-   * Check if content has incomplete devin blocks
+   * Check if content has incomplete devin or thinking blocks
    */
   protected hasIncompleteDevinBlock(content: string): boolean {
     // Check if there's an incomplete devin block
     const lastOpenDevin = content.lastIndexOf('<devin');
     const lastCloseDevin = content.lastIndexOf('</devin>');
 
-    // Also check for partial opening tags like '<de' or '<dev' or just '<'
-    const partialDevinPattern = /<de(?:v(?:i(?:n)?)?)?$|<$/;
-    const hasPartialTag = partialDevinPattern.test(content);
+    // Check if there's an incomplete thinking block
+    const lastOpenThinking = content.lastIndexOf('<thinking');
+    const lastCloseThinking = content.lastIndexOf('</thinking>');
 
-    return lastOpenDevin > lastCloseDevin || hasPartialTag;
+    // Also check for partial opening tags like '<de', '<dev', '<th', '<thi' or just '<'
+    const partialTagPattern = /<(?:de(?:v(?:i(?:n)?)?)?|th(?:i(?:n(?:k(?:i(?:n(?:g)?)?)?)?)?)?)?$|<$/;
+    const hasPartialTag = partialTagPattern.test(content);
+
+    const hasIncompleteDevin = lastOpenDevin > lastCloseDevin;
+    const hasIncompleteThinking = lastOpenThinking > lastCloseThinking;
+
+    return hasIncompleteDevin || hasIncompleteThinking || hasPartialTag;
   }
 
   /**
