@@ -6,6 +6,8 @@ import cc.unitmesh.agent.tool.schema.DeclarativeToolSchema
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.schema.ToolCategory
+import cc.unitmesh.devins.workspace.WorkspaceManager
+import kotlinx.io.files.Path
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -62,9 +64,6 @@ object ReadFileSchema : DeclarativeToolSchema(
     }
 }
 
-/**
- * Tool invocation for reading files
- */
 class ReadFileInvocation(
     params: ReadFileParams,
     tool: ReadFileTool,
@@ -88,18 +87,21 @@ class ReadFileInvocation(
     
     override suspend fun execute(context: ToolExecutionContext): ToolResult {
         return ToolErrorUtils.safeExecute(ToolErrorType.FILE_NOT_FOUND) {
-            if (!fileSystem.exists(params.path)) {
+            // Resolve the path using workspace root if it's a relative path
+            val resolvedPath = resolveFilePath(params.path)
+            
+            if (!fileSystem.exists(resolvedPath)) {
                 throw ToolException("File not found: ${params.path}", ToolErrorType.FILE_NOT_FOUND)
             }
 
-            val content = fileSystem.readFile(params.path)
+            val content = fileSystem.readFile(resolvedPath)
                 ?: throw ToolException("Could not read file: ${params.path}", ToolErrorType.FILE_NOT_FOUND)
             
             // Process line range if specified
             val processedContent = processLineRange(content)
             
             // Get file info for metadata
-            val fileInfo = fileSystem.getFileInfo(params.path)
+            val fileInfo = fileSystem.getFileInfo(resolvedPath)
             val metadata = mutableMapOf<String, String>().apply {
                 put("file_path", params.path)
                 put("total_lines", content.lines().size.toString())
@@ -116,11 +118,26 @@ class ReadFileInvocation(
         }
     }
     
+    /**
+     * Resolve file path by combining workspace root path with relative path
+     */
+    private fun resolveFilePath(path: String): String {
+        // If already an absolute path, return as-is
+        if (path.startsWith("/") || path.contains(":")) {
+            return path
+        }
+        
+        // Get workspace root path and combine with relative path
+        val workspace = WorkspaceManager.getCurrentOrEmpty()
+        val rootPath = workspace.rootPath ?: return path
+        
+        return Path(rootPath, path).toString()
+    }
+    
     private fun processLineRange(content: String): String {
         val lines = content.lines()
         val totalLines = lines.size
         
-        // If no line range specified, return full content
         if (params.startLine == null && params.endLine == null && params.maxLines == null) {
             return content
         }
@@ -148,7 +165,6 @@ class ReadFileInvocation(
             )
         }
         
-        // Extract the specified range
         val selectedLines = lines.subList(startIndex, endIndex + 1)
         return selectedLines.joinToString("\n")
     }
@@ -171,7 +187,6 @@ class ReadFileTool(
     override fun getParameterClass(): String = ReadFileParams::class.simpleName ?: "ReadFileParams"
     
     override fun createToolInvocation(params: ReadFileParams): ToolInvocation<ReadFileParams, ToolResult> {
-        // Validate parameters
         validateParameters(params)
         return ReadFileInvocation(params, this, fileSystem)
     }
