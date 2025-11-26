@@ -1,7 +1,6 @@
 package cc.unitmesh.agent.subagent
 
 import cc.unitmesh.agent.core.SubAgent
-import cc.unitmesh.agent.logging.logger
 import cc.unitmesh.agent.model.AgentDefinition
 import cc.unitmesh.agent.model.PromptConfig
 import cc.unitmesh.agent.model.RunConfig
@@ -14,9 +13,6 @@ import cc.unitmesh.llm.ModelConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/**
- * AnalysisAgent Schema 定义
- */
 object ContentHandlerSchema : DeclarativeToolSchema(
     description = "Intelligently analyze and summarize any type of content",
     properties = mapOf(
@@ -40,14 +36,11 @@ object ContentHandlerSchema : DeclarativeToolSchema(
     }
 }
 
-/**
- * 内容分析上下文
- */
 @Serializable
 data class ContentHandlerContext(
     val content: String,
-    val contentType: String = "text", // text, json, xml, log, code, error, file-list
-    val source: String = "unknown", // tool name or source
+    val contentType: String = "text",
+    val source: String = "unknown",
     val metadata: Map<String, String> = emptyMap()
 ) {
     override fun toString(): String =
@@ -199,13 +192,9 @@ class AnalysisAgent(
         return parseAnalysisResponse(llmResponse, input)
     }
 
-    /**
-     * 构建分析提示 - 优化版本
-     */
     private fun buildAnalysisPrompt(input: ContentHandlerContext): String {
-        // 智能截取：优先保留开头和关键部分
-        val contentPreview = if (input.content.length > 3000) {
-            input.content.take(2500) + "\n\n... [TRUNCATED ${input.content.length - 2500} chars] ..."
+        val contentPreview = if (input.content.length > 8000) {
+            input.content.take(8000) + "\n\n... [TRUNCATED ${input.content.length - 8000} chars] ..."
         } else {
             input.content
         }
@@ -218,60 +207,39 @@ class AnalysisAgent(
             $contentPreview
             ```
             
-            Provide a concise summary in 2-3 sentences focusing on:
+            Provide a concise summary in 3-5 sentences focusing on:
             - Main topics/themes
             - Key information that would help answer questions about this content
-            - Important entities, concepts, or patterns mentioned
-            
+            - Important fileName/document path, entities, concepts, or patterns mentioned
+
             Format as plain text, not JSON.
         """.trimIndent()
     }
 
-    /**
-     * 解析分析响应
-     */
     private fun parseAnalysisResponse(
         response: String,
         input: ContentHandlerContext
     ): ContentHandlerResult {
-        // 新版本：直接使用 LLM 的文本响应作为摘要
         val cleanedResponse = response.trim()
 
-        if (cleanedResponse.isNotEmpty() && cleanedResponse.length > 20) {
-            // LLM 返回了有效的摘要
-            return ContentHandlerResult(
+        return if (cleanedResponse.isNotEmpty() && cleanedResponse.length > 20) {
+            ContentHandlerResult(
                 summary = cleanedResponse,
-                keyPoints = extractKeyPoints(cleanedResponse),
+                keyPoints = emptyList(),
                 structure = emptyMap(),
                 insights = emptyList(),
                 originalLength = input.content.length
             )
         } else {
-            // 降级：智能提取内容摘要
-            return createSmartFallbackResult(input)
+            createSmartFallbackResult(input)
         }
     }
 
-    /**
-     * 从摘要文本中提取关键点
-     */
-    private fun extractKeyPoints(summary: String): List<String> {
-        // 简单提取：按句子分割，取前3句
-        return summary.split(".", "。", "\n")
-            .map { it.trim() }
-            .filter { it.length > 10 }
-            .take(3)
-    }
-
-    /**
-     * 创建智能降级结果 - 提取实际内容而非统计信息
-     */
     private fun createSmartFallbackResult(
         input: ContentHandlerContext
     ): ContentHandlerResult {
         val lines = input.content.lines().filter { it.isNotBlank() }
 
-        // 智能提取：获取前几行有意义的内容
         val meaningfulLines = lines.take(10)
         val preview = meaningfulLines.joinToString(" ").take(300)
 
@@ -284,7 +252,7 @@ class AnalysisAgent(
 
         return ContentHandlerResult(
             summary = summary,
-            keyPoints = meaningfulLines.take(3),
+            keyPoints = emptyList(),
             structure = mapOf("type" to input.contentType, "lines" to lines.size.toString()),
             insights = emptyList(),
             originalLength = input.content.length
@@ -349,10 +317,7 @@ class AnalysisAgent(
         }
 
         try {
-            // 构建问答提示
             val prompt = buildQuestionPrompt(question, context)
-
-            // 调用 LLM 获取答案
             val response = llmService.sendPrompt(prompt)
 
             return ToolResult.AgentResult(
@@ -375,11 +340,8 @@ class AnalysisAgent(
         }
     }
 
-    /**
-     * 构建问答提示 - 增强版本，包含原始内容以便回答详细问题
-     */
     private fun buildQuestionPrompt(question: String, context: Map<String, Any>): String {
-        val recentContent = contentHistory.takeLast(3) // 最近3个处理的内容
+        val recentContent = contentHistory.takeLast(3)
 
         return buildString {
             appendLine("You are a Content Analysis Agent with access to previously analyzed content.")
@@ -397,16 +359,13 @@ class AnalysisAgent(
                 appendLine("- **Summary**: ${result.summary}")
                 appendLine()
 
-                // Include more of the original content for answering questions
-                // Use intelligent truncation based on content length
-                val contentLimit = when {
-                    recentContent.size == 1 -> 8000  // Single content: include more
-                    recentContent.size == 2 -> 4000  // Two contents: moderate amount
-                    else -> 2500  // Multiple contents: less per item
+                val contentLimit = when (recentContent.size) {
+                    1 -> 8000
+                    2 -> 4000
+                    else -> 2500
                 }
 
                 val originalContent = if (input.content.length > contentLimit) {
-                    // Smart truncation: include start and relevant portions
                     val start = input.content.take(contentLimit - 500)
                     val end = input.content.takeLast(500)
                     "$start\n\n... [${input.content.length - contentLimit} chars truncated] ...\n\n$end"
@@ -437,9 +396,6 @@ class AnalysisAgent(
         }
     }
 
-    /**
-     * 获取当前状态摘要
-     */
     override fun getStateSummary(): Map<String, Any> {
         return mapOf(
             "name" to name,
@@ -453,25 +409,11 @@ class AnalysisAgent(
         )
     }
 
-    /**
-     * 检查是否应该触发此 SubAgent
-     * 当内容长度超过阈值时自动触发
-     */
     override fun shouldTrigger(context: Map<String, Any>): Boolean {
         val content = context["content"] as? String ?: return false
         return needsHandling(content)
     }
 
-    /**
-     * 获取处理历史
-     */
-    fun getProcessingHistory(): List<Pair<ContentHandlerContext, ContentHandlerResult>> {
-        return contentHistory.toList()
-    }
-
-    /**
-     * 清理旧的处理历史（保留最近的N个）
-     */
     fun cleanupHistory(keepLast: Int = 10) {
         if (contentHistory.size > keepLast) {
             val toRemove = contentHistory.size - keepLast
@@ -481,14 +423,3 @@ class AnalysisAgent(
         }
     }
 }
-
-/**
- * 内容分析 JSON 响应结构
- */
-@Serializable
-private data class ContentAnalysisJson(
-    val summary: String? = null,
-    val keyPoints: List<String>? = null,
-    val structure: Map<String, String>? = null,
-    val insights: List<String>? = null
-)
