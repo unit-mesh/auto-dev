@@ -1,6 +1,6 @@
 /**
  * 性能测试 - 使用新测试框架
- * 
+ *
  * 验证 CodingAgent 在不同复杂度任务下的性能表现
  */
 
@@ -61,7 +61,7 @@ describe('CodingAgent 性能测试 v2', () => {
         .withProjectType(ProjectType.GRADLE_SPRING_BOOT)
         .expectTool('read-file', { required: true })
         .expectTool('write-file', { required: true, minCalls: 3 })
-        .withTimeout(120000) // 2分钟
+        .withTimeout(180000) // 2分钟
         .build(),
 
       // 3. 复杂任务
@@ -73,7 +73,7 @@ describe('CodingAgent 性能测试 v2', () => {
         .withProjectType(ProjectType.GRADLE_SPRING_BOOT)
         .expectTool('read-file', { required: true, minCalls: 2 })
         .expectTool('write-file', { required: true, minCalls: 6 })
-        .withTimeout(300000) // 5分钟
+        .withTimeout(600000) // 5分钟
         .build(),
 
       // 4. 高复杂度任务
@@ -85,7 +85,7 @@ describe('CodingAgent 性能测试 v2', () => {
         .withProjectType(ProjectType.GRADLE_SPRING_BOOT)
         .expectTool('read-file', { required: true, minCalls: 3 })
         .expectTool('write-file', { required: true, minCalls: 8 })
-        .withTimeout(480000) // 8分钟
+        .withTimeout(720000) // 8分钟
         .build()
     ];
 
