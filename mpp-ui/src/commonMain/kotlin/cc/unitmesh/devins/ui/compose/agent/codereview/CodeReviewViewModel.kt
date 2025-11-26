@@ -652,6 +652,11 @@ open class CodeReviewViewModel(
 
             loadCommitDiffInternal(newSelection)
 
+            // Load issue info for selected commits
+            newSelection.forEach { idx ->
+                loadIssueForCommit(idx)
+            }
+
             // Restore analysis results only if single commit selected (complexity with multi-commit analysis storage)
             if (newSelection.size == 1) {
                 val commit = currentState.commitHistory.getOrNull(newSelection.first())
