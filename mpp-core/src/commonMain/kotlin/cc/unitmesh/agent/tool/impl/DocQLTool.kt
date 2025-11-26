@@ -62,15 +62,17 @@ data class DocQLParams(
 
 object DocQLSchema : DeclarativeToolSchema(
     description = """
-        Search and query project documents and code. Use this tool FIRST when answering questions about the project.
+        **Use this tool FIRST** when the user asks about:
+        - Project architecture, design, or structure ("How does X work?")
+        - Where specific functionality is implemented ("Where is authentication handled?")
+        - Code or documentation search ("Find classes related to Y")
         
-        ## Quick Start
-        Just provide a keyword: `{"query": "MCP"}` → Finds classes, functions, and docs matching "MCP"
+        ## Usage
+        Just provide a keyword: `{"query": "authentication"}` → Auto-searches classes, functions, and docs
         
-        ## Query Types
-        - **Smart Search**: `{"query": "keyword"}` - Auto-searches code + docs (recommended)
-        - **Code**: `$.code.class("ClassName")` or `$.code.function("funcName")`
-        - **Docs**: `$.content.heading("Title")` or `$.toc[*]`
+        **Advanced**: Use DocQL queries for precise results:
+        - Code: `$.code.class("UserService")` or `$.code.function("login")`
+        - Docs: `$.content.heading("Architecture")` or `$.toc[*]`
     """.trimIndent(),
     properties = mapOf(
         "query" to string(
@@ -90,7 +92,7 @@ object DocQLSchema : DeclarativeToolSchema(
             required = false
         ),
         "rerankerType" to string(
-            description = "Reranker: 'rrf_composite' (default/fast), 'llm_metadata' (slow but smart, uses AI), 'hybrid' (balanced)",
+            description = "Reranker: 'heuristic' (default, fast), 'llm_metadata' (uses AI model, smarter but costs tokens), 'hybrid' (balanced)",
             required = false
         )
     )
@@ -1360,7 +1362,7 @@ class DocQLTool(
                 "rrf_composite", "rrf" -> RerankerType.RRF_COMPOSITE
                 "llm_metadata", "llm" -> RerankerType.LLM_METADATA
                 "hybrid" -> RerankerType.HYBRID
-                else -> RerankerType.RRF_COMPOSITE  // Default
+                else -> RerankerType.HEURISTIC  // Default: fast, no AI costs
             }
         }
     }

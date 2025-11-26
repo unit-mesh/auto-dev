@@ -527,6 +527,30 @@ fun ToolCallItem(
 
 fun formatToolParameters(params: String): String {
     return try {
+        val trimmed = params.trim()
+        
+        // Check if it's JSON format
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            // Parse JSON-like format
+            val lines = mutableListOf<String>()
+            
+            // Simple JSON parsing for common cases
+            val jsonPattern = Regex(""""(\w+)"\s*:\s*("([^"]*)"|(\d+)|true|false|null)""")
+            jsonPattern.findAll(trimmed).forEach { match ->
+                val key = match.groups[1]?.value ?: ""
+                val value = match.groups[3]?.value 
+                    ?: match.groups[4]?.value 
+                    ?: match.groups[2]?.value?.removeSurrounding("\"") 
+                    ?: ""
+                lines.add("$key: $value")
+            }
+            
+            if (lines.isNotEmpty()) {
+                return lines.joinToString("\n")
+            }
+        }
+        
+        // Try key=value format
         val lines = mutableListOf<String>()
         val regex = Regex("""(\w+)=["']?([^"']*?)["']?(?:\s|$)""")
         regex.findAll(params).forEach { match ->
@@ -792,6 +816,111 @@ private fun DocQLStatsSection(stats: DocQLSearchStats) {
                         ScoreItem("Avg", scoring.avgScore)
                         ScoreItem("Max", scoring.maxScore)
                         ScoreItem("Min", scoring.minScore)
+                    }
+                }
+            }
+            
+            // LLM Reranker Information - show cost/performance metrics
+            stats.llmRerankerInfo?.let { llm ->
+                Surface(
+                    color = if (llm.success) {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                    } else {
+                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                    },
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        // Header with warning badge
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = AutoDevComposeIcons.Analytics,
+                                contentDescription = "LLM Reranking",
+                                tint = if (llm.success) Color(0xFF9C27B0) else MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "LLM Reranking",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (llm.success) Color(0xFF9C27B0) else MaterialTheme.colorScheme.error
+                            )
+                            
+                            // Cost warning badge
+                            Surface(
+                                color = Color(0xFFFF9800).copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "⚡",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                    Text(
+                                        text = "Uses AI Tokens",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color(0xFFFF9800)
+                                    )
+                                }
+                            }
+                            
+                            if (llm.usedFallback) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
+                                    Text(
+                                        text = "Fallback",
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // Performance metrics
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            ConfigItem("Items", "${llm.itemsProcessed} → ${llm.itemsReranked}")
+                            if (llm.tokensUsed > 0) {
+                                ConfigItem("Tokens", "~${llm.tokensUsed}")
+                            }
+                            if (llm.latencyMs > 0) {
+                                ConfigItem("Latency", "${llm.latencyMs}ms")
+                            }
+                        }
+                        
+                        // Explanation if available
+                        llm.explanation?.let { explanation ->
+                            Text(
+                                text = explanation,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                            )
+                        }
+                        
+                        // Error message if failed
+                        llm.error?.let { error ->
+                            Text(
+                                text = "Error: $error",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             }

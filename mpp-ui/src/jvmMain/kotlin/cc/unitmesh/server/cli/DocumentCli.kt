@@ -498,8 +498,33 @@ class ConsoleRenderer : CodingAgentRenderer {
     override fun renderToolCall(toolName: String, paramsStr: String) {
         println("● $toolName")
         if (paramsStr.isNotEmpty()) {
-            println("  ⎿ $paramsStr")
+            // Format JSON parameters for better readability
+            val formatted = formatCliParameters(paramsStr)
+            formatted.lines().forEach { line ->
+                println("  ⎿ $line")
+            }
         }
+    }
+    
+    private fun formatCliParameters(params: String): String {
+        val trimmed = params.trim()
+        
+        // Handle JSON format
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            val lines = mutableListOf<String>()
+            val jsonPattern = Regex(""""(\w+)"\s*:\s*("([^"]*)"|(\d+)|true|false|null)""")
+            jsonPattern.findAll(trimmed).forEach { match ->
+                val key = match.groups[1]?.value ?: ""
+                val value = match.groups[3]?.value 
+                    ?: match.groups[4]?.value 
+                    ?: match.groups[2]?.value?.removeSurrounding("\"") 
+                    ?: ""
+                lines.add("$key = $value")
+            }
+            return if (lines.isNotEmpty()) lines.joinToString(", ") else params
+        }
+        
+        return params
     }
     
     override fun renderToolResult(
