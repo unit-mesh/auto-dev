@@ -68,53 +68,74 @@ fun DocumentReaderPage(
                             )
                         },
                         second = {
-                            // 第三层分割: 上部 Viewer | 下部 Structure (垂直分割)
-                            VerticalResizableSplitPane(
-                                modifier = Modifier.fillMaxSize(),
-                                initialSplitRatio = 0.5f,
-                                minRatio = 0.2f,
-                                maxRatio = 0.8f,
-                                top = {
-                                    DocumentViewerPane(
-                                        document = viewModel.selectedDocument,
-                                        rawContent = viewModel.documentContent,
-                                        parsedContent = viewModel.parsedContent,
-                                        isLoading = viewModel.isLoading,
-                                        indexStatus = viewModel.selectedDocumentIndexStatus,
-                                        targetLineNumber = viewModel.targetLineNumber,
-                                        highlightedText = viewModel.highlightedText
-                                    )
-                                },
-                                bottom = {
-                                    val toc = viewModel.selectedDocument?.toc ?: emptyList()
-                                    val entities = viewModel.selectedDocument?.entities ?: emptyList()
+                            // Conditional rendering: 
+                            // - When no document is selected, show StructuredInfoPane globally
+                            // - When a document is selected, show DocumentViewerPane with StructuredInfoPane below
+                            if (viewModel.selectedDocument == null) {
+                                // No document selected - show global StructuredInfoPane
+                                StructuredInfoPane(
+                                    toc = emptyList(),
+                                    entities = emptyList(),
+                                    onTocSelected = { /* No action when no document selected */ },
+                                    onEntitySelected = { /* No action when no document selected */ },
+                                    onDocQLQuery = { query ->
+                                        // Global query across all indexed documents
+                                        try {
+                                            cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
+                                        } catch (e: Exception) {
+                                            cc.unitmesh.devins.document.docql.DocQLResult.Error("全局查询失败: ${e.message}")
+                                        }
+                                    }
+                                )
+                            } else {
+                                // Document selected - show DocumentViewerPane with StructuredInfoPane
+                                VerticalResizableSplitPane(
+                                    modifier = Modifier.fillMaxSize(),
+                                    initialSplitRatio = 0.5f,
+                                    minRatio = 0.2f,
+                                    maxRatio = 0.8f,
+                                    top = {
+                                        DocumentViewerPane(
+                                            document = viewModel.selectedDocument,
+                                            rawContent = viewModel.documentContent,
+                                            parsedContent = viewModel.parsedContent,
+                                            isLoading = viewModel.isLoading,
+                                            indexStatus = viewModel.selectedDocumentIndexStatus,
+                                            targetLineNumber = viewModel.targetLineNumber,
+                                            highlightedText = viewModel.highlightedText
+                                        )
+                                    },
+                                    bottom = {
+                                        val toc = viewModel.selectedDocument?.toc ?: emptyList()
+                                        val entities = viewModel.selectedDocument?.entities ?: emptyList()
 
-                                    StructuredInfoPane(
-                                        toc = toc,
-                                        entities = entities,
-                                        onTocSelected = { tocItem ->
-                                            viewModel.navigateToTocItem(tocItem)
-                                        },
-                                        onEntitySelected = { entity ->
-                                            viewModel.navigateToEntity(entity)
-                                        },
-                                        onDocQLQuery = { query ->
-                                            val document = viewModel.selectedDocument
-                                            if (document != null) {
-                                                // 查询当前选中的文档
-                                                executeDocQL(query, document, null)
-                                            } else {
-                                                // 全局查询所有已索引的文档
-                                                try {
-                                                    cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
-                                                } catch (e: Exception) {
-                                                    cc.unitmesh.devins.document.docql.DocQLResult.Error("全局查询失败: ${e.message}")
+                                        StructuredInfoPane(
+                                            toc = toc,
+                                            entities = entities,
+                                            onTocSelected = { tocItem ->
+                                                viewModel.navigateToTocItem(tocItem)
+                                            },
+                                            onEntitySelected = { entity ->
+                                                viewModel.navigateToEntity(entity)
+                                            },
+                                            onDocQLQuery = { query ->
+                                                val document = viewModel.selectedDocument
+                                                if (document != null) {
+                                                    // 查询当前选中的文档
+                                                    executeDocQL(query, document, null)
+                                                } else {
+                                                    // 全局查询所有已索引的文档
+                                                    try {
+                                                        cc.unitmesh.devins.document.DocumentRegistry.queryDocuments(query)
+                                                    } catch (e: Exception) {
+                                                        cc.unitmesh.devins.document.docql.DocQLResult.Error("全局查询失败: ${e.message}")
+                                                    }
                                                 }
                                             }
-                                        }
-                                    )
-                                }
-                            )
+                                        )
+                                    }
+                                )
+                            }
                         }
                     )
                 }

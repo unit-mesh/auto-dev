@@ -256,3 +256,4 @@ NotoSans*.otf
 stdout
 mpp-viewer-web/src/commonMain/resources/mermaid/mermaid.min.js
 /mpp-ui/jcef-bundle/*
+.claude

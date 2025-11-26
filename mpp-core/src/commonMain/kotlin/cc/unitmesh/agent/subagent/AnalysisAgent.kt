@@ -50,7 +50,8 @@ data class ContentHandlerContext(
     val source: String = "unknown", // tool name or source
     val metadata: Map<String, String> = emptyMap()
 ) {
-    override fun toString(): String = "AnalysisContext(contentType=$contentType, source=$source, length=${content.length})"
+    override fun toString(): String =
+        "AnalysisContext(contentType=$contentType, source=$source, length=${content.length})"
 }
 
 @Serializable
@@ -71,7 +72,7 @@ class AnalysisAgent(
 ) {
     private val contentHistory = mutableListOf<Pair<ContentHandlerContext, ContentHandlerResult>>()
     private val conversationContext = mutableMapOf<String, Any>()
-    
+
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
@@ -151,13 +152,13 @@ class AnalysisAgent(
         try {
             // 分析内容
             val result = analyzeContent(input, onProgress)
-            
+
             // 保存到历史记录
             contentHistory.add(input to result)
             updateConversationContext(input, result)
-            
+
             logger().info { "Analysis completed: $result" }
-            
+
             return ToolResult.AgentResult(
                 success = true,
                 content = formatResult(result),
@@ -170,7 +171,7 @@ class AnalysisAgent(
                     "handlerId" to "content-${kotlinx.datetime.Clock.System.now().toEpochMilliseconds()}"
                 )
             )
-            
+
         } catch (e: Exception) {
             onProgress("❌ Content analysis failed: ${e.message}")
             return ToolResult.AgentResult(
@@ -237,7 +238,7 @@ class AnalysisAgent(
     ): ContentHandlerResult {
         // 新版本：直接使用 LLM 的文本响应作为摘要
         val cleanedResponse = response.trim()
-        
+
         if (cleanedResponse.isNotEmpty() && cleanedResponse.length > 20) {
             // LLM 返回了有效的摘要
             return ContentHandlerResult(
@@ -252,7 +253,7 @@ class AnalysisAgent(
             return createSmartFallbackResult(input)
         }
     }
-    
+
     /**
      * 从摘要文本中提取关键点
      */
@@ -271,27 +272,16 @@ class AnalysisAgent(
         input: ContentHandlerContext
     ): ContentHandlerResult {
         val lines = input.content.lines().filter { it.isNotBlank() }
-        
+
         // 智能提取：获取前几行有意义的内容
         val meaningfulLines = lines.take(10)
         val preview = meaningfulLines.joinToString(" ").take(300)
-        
+
         val summary = when (input.contentType) {
-            "document-content" -> {
-                // 文档内容：提取前几行作为摘要
-                "Document excerpt: $preview..."
-            }
-            "json" -> {
-                // JSON：尝试提取关键字段
-                "JSON data: $preview..."
-            }
-            "code" -> {
-                // 代码：提取前几行
-                "Code snippet (${lines.size} lines): $preview..."
-            }
-            else -> {
-                "Content preview: $preview..."
-            }
+            "document-content" -> "Document excerpt: $preview..."
+            "json" -> "JSON data: $preview..."
+            "code" -> "Code snippet (${lines.size} lines): $preview..."
+            else -> "Content preview: $preview..."
         }
 
         return ContentHandlerResult(
@@ -303,9 +293,6 @@ class AnalysisAgent(
         )
     }
 
-    /**
-     * 格式化结果
-     */
     private fun formatResult(result: ContentHandlerResult): String {
         return buildString {
             appendLine("📊 Content Analysis Summary")
@@ -414,7 +401,7 @@ class AnalysisAgent(
                 appendLine("- **Type**: ${input.contentType}")
                 appendLine("- **Summary**: ${result.summary}")
                 appendLine()
-                
+
                 // Include more of the original content for answering questions
                 // Use intelligent truncation based on content length
                 val contentLimit = when {
@@ -422,7 +409,7 @@ class AnalysisAgent(
                     recentContent.size == 2 -> 4000  // Two contents: moderate amount
                     else -> 2500  // Multiple contents: less per item
                 }
-                
+
                 val originalContent = if (input.content.length > contentLimit) {
                     // Smart truncation: include start and relevant portions
                     val start = input.content.take(contentLimit - 500)
@@ -431,7 +418,7 @@ class AnalysisAgent(
                 } else {
                     input.content
                 }
-                
+
                 appendLine("**Original Content:**")
                 appendLine("```")
                 appendLine(originalContent)

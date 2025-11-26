@@ -24,7 +24,6 @@ fun DocumentChatPane(
     val indexingStatus by viewModel.indexingStatus.collectAsState()
 
     Column(modifier = modifier.fillMaxSize()) {
-        // 标题栏 - 更突出的索引状态
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -53,18 +52,17 @@ fun DocumentChatPane(
 
                     IconButton(
                         onClick = { viewModel.clearChatHistory() },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             AutoDevComposeIcons.Delete,
                             contentDescription = "清空对话",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
 
-                // 索引状态卡片 - 更显眼
                 when (indexingStatus) {
                     is cc.unitmesh.devins.service.IndexingStatus.Indexing -> {
                         val status = indexingStatus as cc.unitmesh.devins.service.IndexingStatus.Indexing
@@ -152,9 +150,14 @@ fun DocumentChatPane(
             )
 
             // 当没有消息且索引完成时显示欢迎提示
-            if (indexingStatus is cc.unitmesh.devins.service.IndexingStatus.Completed) {
-                // 欢迎提示会在 AgentMessageList 为空时自动显示（通过 renderer 的逻辑）
-                // 或者我们可以在这里叠加一个欢迎卡片
+            if (indexingStatus is cc.unitmesh.devins.service.IndexingStatus.Completed 
+                && viewModel.renderer.timeline.isEmpty()) {
+                WelcomeMessage(
+                    onQuickQuery = { query ->
+                        viewModel.sendMessage(query)
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
 
@@ -347,12 +350,13 @@ private fun ChatInputArea(
             if (isGenerating) {
                 IconButton(
                     onClick = onStopGeneration,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         AutoDevComposeIcons.Stop,
                         contentDescription = "Stop",
-                        tint = MaterialTheme.colorScheme.error
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             } else {
@@ -364,11 +368,12 @@ private fun ChatInputArea(
                         }
                     },
                     enabled = textFieldValue.text.isNotBlank(),
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         AutoDevComposeIcons.Send,
                         contentDescription = "Send",
+                        modifier = Modifier.size(16.dp),
                         tint = if (textFieldValue.text.isNotBlank()) {
                             MaterialTheme.colorScheme.primary
                         } else {

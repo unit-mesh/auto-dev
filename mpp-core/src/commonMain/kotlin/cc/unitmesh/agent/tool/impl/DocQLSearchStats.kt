@@ -25,7 +25,9 @@ data class DocQLSearchStats(
     /** Reranker configuration used */
     val rerankerConfig: RerankerStats? = null,
     /** Scoring breakdown for top results */
-    val scoringInfo: ScoringStats? = null
+    val scoringInfo: ScoringStats? = null,
+    /** Keyword expansion statistics (for multi-level keyword search) */
+    val keywordExpansion: KeywordExpansionStats? = null
 ) {
     @Serializable
     enum class SearchType {
@@ -61,6 +63,20 @@ data class DocQLSearchStats(
             put("docql_avg_score", formatDouble(scoring.avgScore))
             put("docql_max_score", formatDouble(scoring.maxScore))
             put("docql_min_score_value", formatDouble(scoring.minScore))
+        }
+        
+        keywordExpansion?.let { kw ->
+            put("docql_kw_level_used", kw.levelUsed.toString())
+            put("docql_kw_original", kw.originalQuery)
+            if (kw.primaryKeywords.isNotEmpty()) {
+                put("docql_kw_primary", kw.primaryKeywords.joinToString(","))
+            }
+            if (kw.secondaryKeywords.isNotEmpty()) {
+                put("docql_kw_secondary", kw.secondaryKeywords.joinToString(","))
+            }
+            put("docql_kw_strategy", kw.strategyUsed)
+            put("docql_kw_level1_count", kw.level1ResultCount.toString())
+            put("docql_kw_level2_count", kw.level2ResultCount.toString())
         }
     }
     
@@ -109,7 +125,8 @@ data class DocQLSearchStats(
                 truncated = metadata["docql_truncated"]?.toBooleanStrictOrNull() ?: false,
                 usedFallback = metadata["docql_used_fallback"]?.toBooleanStrictOrNull() ?: false,
                 rerankerConfig = RerankerStats.fromMetadata(metadata),
-                scoringInfo = ScoringStats.fromMetadata(metadata)
+                scoringInfo = ScoringStats.fromMetadata(metadata),
+                keywordExpansion = KeywordExpansionStats.fromMetadata(metadata)
             )
         }
     }
@@ -169,6 +186,45 @@ data class ScoringStats(
                 avgScore = metadata["docql_avg_score"]?.toDoubleOrNull() ?: 0.0,
                 maxScore = metadata["docql_max_score"]?.toDoubleOrNull() ?: 0.0,
                 minScore = metadata["docql_min_score_value"]?.toDoubleOrNull() ?: 0.0
+            )
+        }
+    }
+}
+
+/**
+ * Statistics about keyword expansion for multi-level search.
+ * 
+ * Tracks which keyword level was used and the search strategy applied.
+ */
+@Serializable
+data class KeywordExpansionStats(
+    /** Original query from user */
+    val originalQuery: String,
+    /** Primary keywords used (Level 1) */
+    val primaryKeywords: List<String> = emptyList(),
+    /** Secondary keywords used (Level 2) */
+    val secondaryKeywords: List<String> = emptyList(),
+    /** Which keyword level was ultimately used (1, 2, or 3) */
+    val levelUsed: Int = 1,
+    /** Strategy used: "KEEP", "EXPAND", "FILTER" */
+    val strategyUsed: String = "KEEP",
+    /** Result count at Level 1 */
+    val level1ResultCount: Int = 0,
+    /** Result count at Level 2 (if expanded) */
+    val level2ResultCount: Int = 0
+) {
+    companion object {
+        fun fromMetadata(metadata: Map<String, String>): KeywordExpansionStats? {
+            val original = metadata["docql_kw_original"] ?: return null
+            
+            return KeywordExpansionStats(
+                originalQuery = original,
+                primaryKeywords = metadata["docql_kw_primary"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+                secondaryKeywords = metadata["docql_kw_secondary"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+                levelUsed = metadata["docql_kw_level_used"]?.toIntOrNull() ?: 1,
+                strategyUsed = metadata["docql_kw_strategy"] ?: "KEEP",
+                level1ResultCount = metadata["docql_kw_level1_count"]?.toIntOrNull() ?: 0,
+                level2ResultCount = metadata["docql_kw_level2_count"]?.toIntOrNull() ?: 0
             )
         }
     }

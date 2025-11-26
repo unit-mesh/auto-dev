@@ -92,11 +92,10 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         // Register index provider to bridge DocumentRegistry with DocumentIndexService
         val provider = cc.unitmesh.devins.service.DocumentIndexServiceProvider(indexRepository)
         DocumentRegistry.setIndexProvider(provider)
-        println("DocumentIndexProvider registered with DocumentRegistry")
 
         loadDocuments()
         initializeLLMService()
-        
+
         // 自动开始索引文档（延迟一点以确保文档加载完成）
         scope.launch {
             kotlinx.coroutines.delay(500) // 等待 UI 初始化
@@ -249,12 +248,12 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
             documents.filter { doc ->
                 // Search by file name
                 val nameMatch = doc.name.lowercase().contains(query) ||
-                        doc.path.lowercase().contains(query)
+                    doc.path.lowercase().contains(query)
 
                 // Search by indexed content
                 val contentMatch = indexService.getIndexStatus(doc.path)?.let { record ->
                     record.status == "INDEXED" &&
-                    record.content?.lowercase()?.contains(query) == true
+                        record.content?.lowercase()?.contains(query) == true
                 } ?: false
 
                 nameMatch || contentMatch
@@ -431,7 +430,6 @@ class DocumentReaderViewModel(private val workspace: Workspace) {
         currentExecutionJob = null
         isGenerating = false
     }
-
 
 
     /**
