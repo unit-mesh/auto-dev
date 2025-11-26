@@ -148,20 +148,24 @@ export class CliRenderer extends BaseRenderer {
         };
       case 'DocQL':
       case 'docql': {
-        // Try to parse JSON for DocQL
+        // Use JSON.parse directly - it handles all edge cases properly
         let docqlParams: Record<string, any> = {};
         try {
+          // First try direct JSON parse
           docqlParams = JSON.parse(paramsStr);
         } catch {
+          // Fallback to the old regex-based parsing
           docqlParams = params;
         }
-        const query = docqlParams.query || params.query || 'query';
+        
+        const query = docqlParams.query || params.query || paramsStr;
         const docPath = docqlParams.documentPath || params.documentPath;
         const maxResults = docqlParams.maxResults || params.maxResults;
         const reranker = docqlParams.rerankerType || params.rerankerType;
         
-        // Build details string
-        let details = `Query: "${query}"`;
+        // Build details string - truncate long queries for display
+        const displayQuery = query.length > 80 ? query.substring(0, 77) + '...' : query;
+        let details = `Query: "${displayQuery}"`;
         if (docPath) details += ` | Doc: ${docPath}`;
         if (maxResults) details += ` | Max: ${maxResults}`;
         if (reranker) details += ` | Reranker: ${reranker}`;

@@ -531,22 +531,12 @@ fun formatToolParameters(params: String): String {
         
         // Check if it's JSON format
         if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
-            // Parse JSON-like format
-            val lines = mutableListOf<String>()
-            
-            // Simple JSON parsing for common cases
-            val jsonPattern = Regex(""""(\w+)"\s*:\s*("([^"]*)"|(\d+)|true|false|null)""")
-            jsonPattern.findAll(trimmed).forEach { match ->
-                val key = match.groups[1]?.value ?: ""
-                val value = match.groups[3]?.value 
-                    ?: match.groups[4]?.value 
-                    ?: match.groups[2]?.value?.removeSurrounding("\"") 
-                    ?: ""
-                lines.add("$key: $value")
-            }
-            
-            if (lines.isNotEmpty()) {
-                return lines.joinToString("\n")
+            // Use proper JSON parsing with kotlinx.serialization
+            val parsed = parseJsonToMap(trimmed)
+            if (parsed.isNotEmpty()) {
+                return parsed.entries.joinToString("\n") { (key, value) -> 
+                    "$key: $value"
+                }
             }
         }
         
@@ -566,6 +556,32 @@ fun formatToolParameters(params: String): String {
         }
     } catch (e: Exception) {
         params // Fallback to original on any error
+    }
+}
+
+/**
+ * Parse JSON string to a map of key-value pairs for display.
+ * Handles nested quotes and complex values properly.
+ */
+private fun parseJsonToMap(json: String): Map<String, String> {
+    return try {
+        val result = mutableMapOf<String, String>()
+        val jsonElement = kotlinx.serialization.json.Json.parseToJsonElement(json)
+        
+        if (jsonElement is kotlinx.serialization.json.JsonObject) {
+            jsonElement.entries.forEach { (key, value) ->
+                val displayValue = when (value) {
+                    is kotlinx.serialization.json.JsonPrimitive -> {
+                        if (value.isString) value.content else value.toString()
+                    }
+                    else -> value.toString()
+                }
+                result[key] = displayValue
+            }
+        }
+        result
+    } catch (e: Exception) {
+        emptyMap()
     }
 }
 

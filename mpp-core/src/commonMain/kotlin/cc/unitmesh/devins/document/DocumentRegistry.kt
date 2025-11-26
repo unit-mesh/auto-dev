@@ -141,7 +141,7 @@ object DocumentRegistry {
         
         // If still not found, return null (don't fall back to avoid infinite loop)
         if (docPair == null) {
-            logger.warn { "Document not found in index: $documentPath" }
+//            logger.warn { "Document not found in index: $documentPath" }
             return null
         }
         
@@ -533,7 +533,7 @@ object DocumentRegistry {
         val (content, formatType) = provider.loadIndexedDocument(path)
         
         if (content == null || formatType == null) {
-            logger.warn { "Document not found in index: $path" }
+//            logger.warn { "Document not found in index: $path" }
             return false
         }
         
@@ -556,7 +556,7 @@ object DocumentRegistry {
             
             val parsedDoc = parser.parse(docFile, content)
             registerDocument(path, parsedDoc, parser)
-            logger.info { "Loaded document from index: $path" }
+//            logger.info { "Loaded document from index: $path" }
             true
         } catch (e: Exception) {
             logger.error(e) { "Failed to load document from index: $path" }
