@@ -5,7 +5,7 @@ import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.clients.ConnectionTimeoutConfig
 import ai.koog.prompt.executor.clients.LLMClient
 import ai.koog.prompt.executor.clients.openai.base.AbstractOpenAILLMClient
-import ai.koog.prompt.executor.clients.openai.base.OpenAIBaseSettings
+import ai.koog.prompt.executor.clients.openai.base.OpenAIBasedSettings
 import ai.koog.prompt.executor.clients.openai.base.models.OpenAIMessage
 import ai.koog.prompt.executor.clients.openai.base.models.OpenAITool
 import ai.koog.prompt.executor.clients.openai.base.models.OpenAIToolChoice
@@ -30,7 +30,7 @@ class CustomOpenAIClientSettings(
     baseUrl: String,
     chatCompletionsPath: String = "chat/completions",
     timeoutConfig: ConnectionTimeoutConfig = ConnectionTimeoutConfig()
-) : OpenAIBaseSettings(baseUrl, chatCompletionsPath, timeoutConfig)
+) : OpenAIBasedSettings(baseUrl, chatCompletionsPath, timeoutConfig)
 
 /**
  * Request model for custom OpenAI-compatible chat completion
