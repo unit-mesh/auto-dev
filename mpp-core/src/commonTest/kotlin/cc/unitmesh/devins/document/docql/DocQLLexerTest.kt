@@ -140,12 +140,12 @@ class DocQLLexerTest {
     }
     
     @Test
-    fun `test invalid operator error`() {
+    fun `test single equals is valid for robustness`() {
+        // Single '=' is now treated as '==' for robustness (common user typo)
         val lexer = DocQLLexer("$.toc[?(@.level=1)]")
+        val tokens = lexer.tokenize()
         
-        assertFailsWith<DocQLException> {
-            lexer.tokenize()
-        }
+        assertIs<DocQLToken.Equals>(tokens[9])
     }
     
     @Test
@@ -257,5 +257,106 @@ class DocQLLexerTest {
         assertFailsWith<DocQLException> {
             lexer.tokenize()
         }
+    }
+    
+    // ============ Additional Operator Tests ============
+    
+    @Test
+    fun `test not equals operator`() {
+        val lexer = DocQLLexer("$.toc[?(@.level!=2)]")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.NotEquals>(tokens[9])
+    }
+    
+    @Test
+    fun `test greater than or equals operator`() {
+        val lexer = DocQLLexer("$.toc[?(@.level>=2)]")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.GreaterThanOrEquals>(tokens[9])
+    }
+    
+    @Test
+    fun `test less than or equals operator`() {
+        val lexer = DocQLLexer("$.toc[?(@.level<=10)]")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.LessThanOrEquals>(tokens[9])
+    }
+    
+    @Test
+    fun `test single quote string literal`() {
+        val lexer = DocQLLexer("$.entities[?(@.type=='API')]")
+        val tokens = lexer.tokenize()
+        
+        val stringToken = tokens[10] as DocQLToken.StringLiteral
+        assertEquals("API", stringToken.value)
+    }
+    
+    @Test
+    fun `test single equals treated as double equals`() {
+        val lexer = DocQLLexer("$.toc[?(@.level=1)]")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.Equals>(tokens[9])
+    }
+    
+    @Test
+    fun `test startsWith keyword`() {
+        val lexer = DocQLLexer("""$.toc[?(@.title startsWith "Ch")]""")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.StartsWith>(tokens[9])
+    }
+    
+    @Test
+    fun `test endsWith keyword`() {
+        val lexer = DocQLLexer("""$.toc[?(@.title endsWith "er")]""")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.EndsWith>(tokens[9])
+    }
+    
+    @Test
+    fun `test starts with two words`() {
+        val lexer = DocQLLexer("""$.toc[?(@.title starts with "Ch")]""")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.StartsWith>(tokens[9])
+    }
+    
+    @Test
+    fun `test ends with two words`() {
+        val lexer = DocQLLexer("""$.toc[?(@.title ends with "er")]""")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.EndsWith>(tokens[9])
+    }
+    
+    @Test
+    fun `test single quote with escape`() {
+        val lexer = DocQLLexer("""$.entities[?(@.name=='it\'s')]""")
+        val tokens = lexer.tokenize()
+        
+        val stringToken = tokens[10] as DocQLToken.StringLiteral
+        assertEquals("it\\'s", stringToken.value)
+    }
+    
+    @Test
+    fun `test mixed operators in complex query`() {
+        val lexer = DocQLLexer("$.toc[?(@.level>=1)]")
+        val tokens = lexer.tokenize()
+        
+        assertIs<DocQLToken.Root>(tokens[0])
+        assertIs<DocQLToken.Dot>(tokens[1])
+        assertIs<DocQLToken.Identifier>(tokens[2])
+        assertIs<DocQLToken.LeftBracket>(tokens[3])
+        assertIs<DocQLToken.Question>(tokens[4])
+        assertIs<DocQLToken.LeftParen>(tokens[5])
+        assertIs<DocQLToken.At>(tokens[6])
+        assertIs<DocQLToken.Dot>(tokens[7])
+        assertIs<DocQLToken.Identifier>(tokens[8])
+        assertIs<DocQLToken.GreaterThanOrEquals>(tokens[9])
     }
 }

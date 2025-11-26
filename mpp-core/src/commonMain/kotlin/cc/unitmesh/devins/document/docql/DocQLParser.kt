@@ -121,6 +121,10 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
                 advance()
                 "equals"
             }
+            check(DocQLToken.NotEquals::class) -> {
+                advance()
+                "notEquals"
+            }
             check(DocQLToken.Contains::class) -> {
                 advance()
                 "contains"
@@ -133,12 +137,28 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
                 advance()
                 "greater"
             }
+            check(DocQLToken.GreaterThanOrEquals::class) -> {
+                advance()
+                "greaterOrEquals"
+            }
             check(DocQLToken.LessThan::class) -> {
                 advance()
                 "less"
             }
+            check(DocQLToken.LessThanOrEquals::class) -> {
+                advance()
+                "lessOrEquals"
+            }
+            check(DocQLToken.StartsWith::class) -> {
+                advance()
+                "startsWith"
+            }
+            check(DocQLToken.EndsWith::class) -> {
+                advance()
+                "endsWith"
+            }
             else -> {
-                throw DocQLException("Expected operator (==, ~=, =~, >, <) at position $position")
+                throw DocQLException("Expected operator (==, !=, ~=, =~, >, >=, <, <=, startsWith, endsWith) at position $position")
             }
         }
         
@@ -148,8 +168,11 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
                 advance()
                 when (operator) {
                     "equals" -> FilterCondition.Equals(property, str.value)
+                    "notEquals" -> FilterCondition.NotEquals(property, str.value)
                     "contains" -> FilterCondition.Contains(property, str.value)
                     "regex" -> FilterCondition.RegexMatch(property, str.value, "")
+                    "startsWith" -> FilterCondition.StartsWith(property, str.value)
+                    "endsWith" -> FilterCondition.EndsWith(property, str.value)
                     else -> throw DocQLException("String value not valid for operator '$operator'")
                 }
             }
@@ -168,8 +191,11 @@ class DocQLParser(private val tokens: List<DocQLToken>) {
                 advance()
                 when (operator) {
                     "equals" -> FilterCondition.Equals(property, num.value.toString())
+                    "notEquals" -> FilterCondition.NotEquals(property, num.value.toString())
                     "greater" -> FilterCondition.GreaterThan(property, num.value)
+                    "greaterOrEquals" -> FilterCondition.GreaterThanOrEquals(property, num.value)
                     "less" -> FilterCondition.LessThan(property, num.value)
+                    "lessOrEquals" -> FilterCondition.LessThanOrEquals(property, num.value)
                     else -> throw DocQLException("Number value not valid for operator '$operator'")
                 }
             }

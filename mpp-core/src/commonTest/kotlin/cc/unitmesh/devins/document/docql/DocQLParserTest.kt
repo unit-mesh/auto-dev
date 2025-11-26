@@ -296,5 +296,130 @@ class DocQLParserTest {
         assertEquals("API", condition.pattern)
         assertEquals("i", condition.flags)
     }
+    
+    // ============ Additional JSONPath Operators Tests ============
+    
+    @Test
+    fun `test parse filter with not equals`() {
+        val query = parseDocQL("$.toc[?(@.level!=2)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.NotEquals
+        assertEquals("level", condition.property)
+        assertEquals("2", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with not equals string`() {
+        val query = parseDocQL("""$.entities[?(@.type!="Term")]""")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.NotEquals
+        assertEquals("type", condition.property)
+        assertEquals("Term", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with greater than or equals`() {
+        val query = parseDocQL("$.toc[?(@.level>=2)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.GreaterThanOrEquals
+        assertEquals("level", condition.property)
+        assertEquals(2, condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with less than or equals`() {
+        val query = parseDocQL("$.toc[?(@.page<=100)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.LessThanOrEquals
+        assertEquals("page", condition.property)
+        assertEquals(100, condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with single quote string`() {
+        val query = parseDocQL("$.entities[?(@.type=='API')]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.Equals
+        assertEquals("type", condition.property)
+        assertEquals("API", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with startsWith`() {
+        val query = parseDocQL("""$.toc[?(@.title startsWith "Chapter")]""")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.StartsWith
+        assertEquals("title", condition.property)
+        assertEquals("Chapter", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with endsWith`() {
+        val query = parseDocQL("""$.toc[?(@.title endsWith "Introduction")]""")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.EndsWith
+        assertEquals("title", condition.property)
+        assertEquals("Introduction", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with starts with two words`() {
+        val query = parseDocQL("""$.toc[?(@.title starts with "Ch")]""")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.StartsWith
+        assertEquals("title", condition.property)
+        assertEquals("Ch", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with ends with two words`() {
+        val query = parseDocQL("""$.toc[?(@.title ends with "ion")]""")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.EndsWith
+        assertEquals("title", condition.property)
+        assertEquals("ion", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with single equals as robustness`() {
+        // Single '=' should be treated as '==' for robustness
+        val query = parseDocQL("$.toc[?(@.level=1)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.Equals
+        assertEquals("level", condition.property)
+        assertEquals("1", condition.value)
+    }
+    
+    @Test
+    fun `test parse filter with mixed quote styles`() {
+        // Double quotes
+        val query1 = parseDocQL("""$.entities[?(@.name=="test")]""")
+        val condition1 = (query1.nodes[2] as DocQLNode.ArrayAccess.Filter).condition as FilterCondition.Equals
+        assertEquals("test", condition1.value)
+        
+        // Single quotes
+        val query2 = parseDocQL("$.entities[?(@.name=='test')]")
+        val condition2 = (query2.nodes[2] as DocQLNode.ArrayAccess.Filter).condition as FilterCondition.Equals
+        assertEquals("test", condition2.value)
+    }
+    
+    @Test
+    fun `test parse filter with spaces around operators`() {
+        val query = parseDocQL("$.toc[?(@.level >= 2)]")
+        
+        val filter = query.nodes[2] as DocQLNode.ArrayAccess.Filter
+        val condition = filter.condition as FilterCondition.GreaterThanOrEquals
+        assertEquals("level", condition.property)
+        assertEquals(2, condition.value)
+    }
 }
-

@@ -61,7 +61,17 @@ class DocQLLexer(private val input: String) {
                         advance()
                         DocQLToken.RegexMatch
                     } else {
-                        throw DocQLException("Unexpected character '=' at position $position, expected '==' or '=~'")
+                        // Treat single '=' as '==' for robustness (common typo)
+                        DocQLToken.Equals
+                    }
+                }
+                '!' -> {
+                    advance()
+                    if (peek() == '=') {
+                        advance()
+                        DocQLToken.NotEquals
+                    } else {
+                        throw DocQLException("Unexpected character '!' at position $position, expected '!='")
                     }
                 }
                 '~' -> {
@@ -78,14 +88,27 @@ class DocQLLexer(private val input: String) {
                 }
                 '>' -> {
                     advance()
-                    DocQLToken.GreaterThan
+                    if (peek() == '=') {
+                        advance()
+                        DocQLToken.GreaterThanOrEquals
+                    } else {
+                        DocQLToken.GreaterThan
+                    }
                 }
                 '<' -> {
                     advance()
-                    DocQLToken.LessThan
+                    if (peek() == '=') {
+                        advance()
+                        DocQLToken.LessThanOrEquals
+                    } else {
+                        DocQLToken.LessThan
+                    }
                 }
                 '"' -> {
-                    parseStringLiteral()
+                    parseStringLiteral('"')
+                }
+                '\'' -> {
+                    parseStringLiteral('\'')
                 }
                 in '0'..'9' -> {
                     parseNumber()
@@ -117,11 +140,11 @@ class DocQLLexer(private val input: String) {
         }
     }
     
-    private fun parseStringLiteral(): DocQLToken.StringLiteral {
+    private fun parseStringLiteral(quote: Char): DocQLToken.StringLiteral {
         advance() // skip opening quote
         val start = position
         
-        while (position < length && input[position] != '"') {
+        while (position < length && input[position] != quote) {
             if (input[position] == '\\' && position + 1 < length) {
                 position++ // skip escape char
             }
@@ -149,7 +172,7 @@ class DocQLLexer(private val input: String) {
         return DocQLToken.Number(value)
     }
     
-    private fun parseIdentifier(): DocQLToken.Identifier {
+    private fun parseIdentifier(): DocQLToken {
         val start = position
         
         while (position < length) {
@@ -162,7 +185,43 @@ class DocQLLexer(private val input: String) {
         }
         
         val value = input.substring(start, position)
-        return DocQLToken.Identifier(value)
+        
+        // Check for keyword operators
+        return when (value.lowercase()) {
+            "startswith" -> DocQLToken.StartsWith
+            "endswith" -> DocQLToken.EndsWith
+            "starts" -> {
+                // Check for "starts with" (two words)
+                skipWhitespace()
+                if (position < length && tryMatchKeyword("with")) {
+                    DocQLToken.StartsWith
+                } else {
+                    DocQLToken.Identifier(value)
+                }
+            }
+            "ends" -> {
+                // Check for "ends with" (two words)
+                skipWhitespace()
+                if (position < length && tryMatchKeyword("with")) {
+                    DocQLToken.EndsWith
+                } else {
+                    DocQLToken.Identifier(value)
+                }
+            }
+            else -> DocQLToken.Identifier(value)
+        }
+    }
+    
+    /**
+     * Try to match a keyword (case-insensitive), advancing position if matched
+     */
+    private fun tryMatchKeyword(keyword: String): Boolean {
+        val remaining = input.substring(position).takeWhile { it.isLetter() }
+        if (remaining.lowercase() == keyword.lowercase()) {
+            position += remaining.length
+            return true
+        }
+        return false
     }
     
     /**

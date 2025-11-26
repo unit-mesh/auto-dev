@@ -662,6 +662,13 @@ class DocQLExecutor(
                         else -> false
                     }
                 }
+                is FilterCondition.NotEquals -> {
+                    when (condition.property) {
+                        "level" -> item.level.toString() != condition.value
+                        "title" -> item.title != condition.value
+                        else -> true
+                    }
+                }
                 is FilterCondition.Contains -> {
                     when (condition.property) {
                         "title" -> item.title.contains(condition.value, ignoreCase = true)
@@ -681,10 +688,36 @@ class DocQLExecutor(
                         else -> false
                     }
                 }
+                is FilterCondition.GreaterThanOrEquals -> {
+                    when (condition.property) {
+                        "level" -> item.level >= condition.value
+                        "page" -> (item.page ?: 0) >= condition.value
+                        else -> false
+                    }
+                }
                 is FilterCondition.LessThan -> {
                     when (condition.property) {
                         "level" -> item.level < condition.value
                         "page" -> (item.page ?: 0) < condition.value
+                        else -> false
+                    }
+                }
+                is FilterCondition.LessThanOrEquals -> {
+                    when (condition.property) {
+                        "level" -> item.level <= condition.value
+                        "page" -> (item.page ?: 0) <= condition.value
+                        else -> false
+                    }
+                }
+                is FilterCondition.StartsWith -> {
+                    when (condition.property) {
+                        "title" -> item.title.startsWith(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                is FilterCondition.EndsWith -> {
+                    when (condition.property) {
+                        "title" -> item.title.endsWith(condition.value, ignoreCase = true)
                         else -> false
                     }
                 }
@@ -713,6 +746,21 @@ class DocQLExecutor(
                         else -> false
                     }
                 }
+                is FilterCondition.NotEquals -> {
+                    when (condition.property) {
+                        "name" -> entity.name != condition.value
+                        "type" -> {
+                            val entityType = when (entity) {
+                                is Entity.Term -> "Term"
+                                is Entity.API -> "API"
+                                is Entity.ClassEntity -> "ClassEntity"
+                                is Entity.FunctionEntity -> "FunctionEntity"
+                            }
+                            entityType != condition.value
+                        }
+                        else -> true
+                    }
+                }
                 is FilterCondition.Contains -> {
                     when (condition.property) {
                         "name" -> entity.name.contains(condition.value, ignoreCase = true)
@@ -725,20 +773,36 @@ class DocQLExecutor(
                         else -> false
                     }
                 }
-                is FilterCondition.GreaterThan, is FilterCondition.LessThan -> false
+                is FilterCondition.StartsWith -> {
+                    when (condition.property) {
+                        "name" -> entity.name.startsWith(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                is FilterCondition.EndsWith -> {
+                    when (condition.property) {
+                        "name" -> entity.name.endsWith(condition.value, ignoreCase = true)
+                        else -> false
+                    }
+                }
+                is FilterCondition.GreaterThan, is FilterCondition.GreaterThanOrEquals,
+                is FilterCondition.LessThan, is FilterCondition.LessThanOrEquals -> false
             }
         }
     }
     
     /**
      * Check if text matches regex pattern with flags
+     * Note: Only IGNORE_CASE and MULTILINE are supported across all Kotlin platforms (JVM, JS, Native)
+     * The 's' flag (DOT_MATCHES_ALL) is not available in Kotlin/JS, so we ignore it for cross-platform compatibility
      */
     private fun matchesRegex(text: String, pattern: String, flags: String): Boolean {
         return try {
             val options = mutableSetOf<RegexOption>()
             if (flags.contains('i')) options.add(RegexOption.IGNORE_CASE)
             if (flags.contains('m')) options.add(RegexOption.MULTILINE)
-            if (flags.contains('s')) options.add(RegexOption.DOT_MATCHES_ALL)
+            // Note: RegexOption.DOT_MATCHES_ALL is not available in Kotlin/JS
+            // For cross-platform compatibility, we skip the 's' flag
             
             val regex = Regex(pattern, options)
             regex.containsMatchIn(text)
