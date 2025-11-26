@@ -121,6 +121,9 @@ class DocQLInvocation(
 
     /** Parsed reranker type for this invocation */
     private val rerankerType: RerankerType = DocQLTool.parseRerankerType(params.rerankerType)
+    
+    /** Reranker instance for search result ordering */
+    private val resultReranker = DocQLResultReranker(llmService)
 
     override fun getDescription(): String = if (params.documentPath != null) {
         "Executing DocQL query: ${params.query} on ${params.documentPath}"
@@ -508,110 +511,18 @@ class DocQLInvocation(
         rerankerConfig: DocumentRerankerConfig,
         keywordStats: KeywordExpansionStats
     ): ToolResult {
-        // Check if LLM reranking should be applied
-        val shouldUseLLMRerank = rerankerType in listOf(RerankerType.LLM_METADATA, RerankerType.HYBRID)
+        // Delegate reranking to DocQLResultReranker
+        val rerankResult = resultReranker.rerank(
+            items = result.items,
+            metadata = result.metadata,
+            query = keyword,
+            rerankerType = rerankerType,
+            maxResults = params.maxResults ?: 20
+        )
         
-        var scoredResults: List<ScoredResult>
-        var llmRerankerStats: LLMRerankerStats? = null
-        var actualSearchType = DocQLSearchStats.SearchType.SMART_SEARCH
-        
-        if (shouldUseLLMRerank && llmService != null && result.items.isNotEmpty()) {
-            // Apply LLM-based reranking
-            val startTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-            
-            try {
-                val llmReranker = LLMMetadataReranker(
-                    llmService = llmService,
-                    config = LLMMetadataRerankerConfig(
-                        maxItemsForLLM = 20,
-                        maxResults = params.maxResults ?: 20,
-                        includePreview = true
-                    )
-                )
-                
-                // Create metadata items for LLM reranking
-                val metadataItems = result.items.mapIndexed { index, item ->
-                    val filePath = item.segment.filePath ?: ""
-                    val heuristicScore = CompositeScorer().score(item.segment, keyword)
-                    
-                    DocumentMetadataItem(
-                        id = item.segment.id ?: "item_$index",
-                        filePath = filePath,
-                        fileName = filePath.substringAfterLast('/'),
-                        extension = filePath.substringAfterLast('.', ""),
-                        directory = filePath.substringBeforeLast('/', ""),
-                        contentType = item.segment.type,
-                        name = item.segment.name.ifEmpty { filePath.substringAfterLast('/') },
-                        preview = item.segment.text.take(200),
-                        h1Heading = result.metadata[item]?.second?.let { getH1FromPath(it) },
-                        heuristicScore = heuristicScore
-                    )
-                }
-                
-                val llmResult = llmReranker.rerank(metadataItems, keyword)
-                val endTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
-                
-                // Map LLM results back to scored results
-                val idToItem = result.items.associateBy { it.segment.id ?: it.hashCode().toString() }
-                scoredResults = llmResult.rankedIds.mapNotNull { id ->
-                    val item = idToItem[id] ?: return@mapNotNull null
-                    val (originalItem, filePath) = result.metadata[item] ?: (item to null)
-                    ScoredResult(
-                        item = originalItem,
-                        score = llmResult.scores[id] ?: 0.0,
-                        uniqueId = id,
-                        preview = item.segment.text.take(100).replace("\n", " "),
-                        filePath = filePath
-                    )
-                }
-                
-                llmRerankerStats = LLMRerankerStats(
-                    success = llmResult.success,
-                    itemsProcessed = metadataItems.size,
-                    itemsReranked = scoredResults.size,
-                    latencyMs = endTime - startTime,
-                    explanation = llmResult.explanation,
-                    error = llmResult.error,
-                    usedFallback = !llmResult.success
-                )
-                
-                actualSearchType = DocQLSearchStats.SearchType.LLM_RERANKED
-                
-                logger.info { "LLM reranking completed: ${scoredResults.size} items, ${endTime - startTime}ms" }
-            } catch (e: Exception) {
-                logger.warn { "LLM reranking failed, falling back to heuristic: ${e.message}" }
-                // Fall back to heuristic scoring
-                scoredResults = result.items.map { item ->
-                    val (originalItem, filePath) = result.metadata[item] ?: (item to null)
-                    ScoredResult(
-                        item = originalItem,
-                        score = 0.0,
-                        uniqueId = item.segment.id ?: item.hashCode().toString(),
-                        preview = item.segment.text.take(100).replace("\n", " "),
-                        filePath = filePath
-                    )
-                }
-                llmRerankerStats = LLMRerankerStats(
-                    success = false,
-                    itemsProcessed = result.items.size,
-                    itemsReranked = scoredResults.size,
-                    error = e.message,
-                    usedFallback = true
-                )
-            }
-        } else {
-            // Standard heuristic-based scoring
-            scoredResults = result.items.map { item ->
-                val (originalItem, filePath) = result.metadata[item] ?: (item to null)
-                ScoredResult(
-                    item = originalItem,
-                    score = 0.0, // Score already applied during reranking
-                    uniqueId = item.segment.id ?: item.hashCode().toString(),
-                    preview = item.segment.text.take(100).replace("\n", " "),
-                    filePath = filePath
-                )
-            }
-        }
+        val scoredResults = rerankResult.scoredResults
+        val llmRerankerStats = rerankResult.llmRerankerStats
+        val actualSearchType = rerankResult.actualSearchType
 
         val rerankerTypeName = when (rerankerType) {
             RerankerType.LLM_METADATA -> "LLM_Metadata"
@@ -645,28 +556,6 @@ class DocQLInvocation(
             stats.toMetadata()
         )
     }
-    
-    /**
-     * Helper to get H1 heading from a file path (if document is registered)
-     */
-    private fun getH1FromPath(filePath: String): String? {
-        return try {
-            val docPair = DocumentRegistry.getDocument(filePath)
-            if (docPair?.first is cc.unitmesh.devins.document.DocumentFile) {
-                val docFile = docPair.first as cc.unitmesh.devins.document.DocumentFile
-                docFile.toc.firstOrNull { it.level == 1 }?.title
-            } else null
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /**
-     * Wrapper for search items to enable RRF fusion
-     */
-    private data class SearchItem(
-        val segment: TextSegment
-    )
 
     private fun collectSearchItems(
         result: DocQLResult,
@@ -843,13 +732,7 @@ class DocQLInvocation(
         )
     }
 
-    private data class ScoredResult(
-        val item: Any,
-        val score: Double,
-        val uniqueId: String,
-        val preview: String,
-        val filePath: String? = null
-    )
+
 
     private fun formatSmartResult(
         results: List<ScoredResult>,
@@ -911,14 +794,11 @@ class DocQLInvocation(
     }
 
     private suspend fun querySingleDocument(documentPath: String?, query: String): ToolResult {
-        // If documentPath is null or "null", delegate to global search
         if (documentPath == null || documentPath == "null") {
             return queryAllDocuments(query)
         }
 
         val result = DocumentRegistry.queryDocument(documentPath, query)
-
-        // If document not found, fall back to global search
         if (result == null) {
             logger.info { "Document '$documentPath' not found, falling back to global search" }
             return queryAllDocuments(query)
