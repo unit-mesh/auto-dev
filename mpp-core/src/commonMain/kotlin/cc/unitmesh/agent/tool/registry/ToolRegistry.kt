@@ -37,10 +37,15 @@ class ToolRegistry(
     }
     
     /**
-     * Get a tool by name
+     * Get a tool by name (case-insensitive lookup)
      */
     fun getTool(toolName: String): ExecutableTool<*, *>? {
-        return tools[toolName]
+        // First try exact match
+        tools[toolName]?.let { return it }
+        
+        // Fall back to case-insensitive match
+        val normalizedName = toolName.lowercase()
+        return tools.entries.find { it.key.lowercase() == normalizedName }?.value
     }
     
     /**
@@ -58,10 +63,12 @@ class ToolRegistry(
     }
     
     /**
-     * Check if a tool is registered
+     * Check if a tool is registered (case-insensitive lookup)
      */
     fun hasToolNamed(toolName: String): Boolean {
-        return toolName in tools
+        if (toolName in tools) return true
+        val normalizedName = toolName.lowercase()
+        return tools.keys.any { it.lowercase() == normalizedName }
     }
 
     fun generateToolExample(tool: ExecutableTool<*, *>): String {
@@ -142,7 +149,7 @@ class ToolRegistry(
     }
 
     fun getToolInfo(toolName: String): AgentTool? {
-        val tool = tools[toolName] ?: return null
+        val tool = getTool(toolName) ?: return null
         return AgentTool(
             name = tool.name,
             description = tool.description,
