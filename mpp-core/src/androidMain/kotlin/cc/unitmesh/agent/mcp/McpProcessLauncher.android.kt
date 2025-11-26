@@ -9,12 +9,12 @@ import io.modelcontextprotocol.kotlin.sdk.shared.Transport
  * Currently not supported on Android
  */
 actual class DefaultMcpProcessLauncher : McpProcessLauncher {
-    override suspend fun launchStdioProcess(config: McpProcessConfig): Transport {
+    actual override suspend fun launchStdioProcess(config: McpProcessConfig): Transport {
         throw ToolException(
             "MCP stdio process launching is not currently supported on Android",
             ToolErrorType.NOT_SUPPORTED
         )
     }
     
-    override fun isSupported(): Boolean = false
+    actual override fun isSupported(): Boolean = false
 }
