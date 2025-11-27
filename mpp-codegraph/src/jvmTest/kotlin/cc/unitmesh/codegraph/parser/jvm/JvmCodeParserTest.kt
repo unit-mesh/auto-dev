@@ -53,6 +53,72 @@ class JvmCodeParserTest {
     }
     
     @Test
+    fun testParseJavaConstructor() = runTest {
+        val sourceCode = """
+            package com.example;
+            
+            public class UserService {
+                private String name;
+                
+                public UserService(String name) {
+                    this.name = name;
+                }
+                
+                public void doSomething() {
+                    System.out.println(name);
+                }
+            }
+        """.trimIndent()
+        
+        val nodes = parser.parseNodes(sourceCode, "UserService.java", Language.JAVA)
+        
+        assertTrue(nodes.isNotEmpty())
+        
+        // Should find class
+        val classNode = nodes.find { it.type == CodeElementType.CLASS }
+        assertTrue(classNode != null)
+        assertEquals("UserService", classNode.name)
+        
+        // Should find constructor
+        val constructorNode = nodes.find { it.type == CodeElementType.CONSTRUCTOR }
+        assertTrue(constructorNode != null, "Constructor should be detected")
+        assertEquals("<init>", constructorNode.name)
+        assertEquals("UserService", constructorNode.metadata["parent"])
+        
+        // Should find method
+        val methodNode = nodes.find { it.type == CodeElementType.METHOD }
+        assertTrue(methodNode != null)
+        assertEquals("doSomething", methodNode.name)
+    }
+    
+    @Test
+    fun testParseKotlinConstructor() = runTest {
+        val sourceCode = """
+            package com.example
+            
+            class UserService(private val name: String) {
+                fun doSomething() {
+                    println(name)
+                }
+            }
+        """.trimIndent()
+        
+        val nodes = parser.parseNodes(sourceCode, "UserService.kt", Language.KOTLIN)
+        
+        assertTrue(nodes.isNotEmpty())
+        
+        // Should find class
+        val classNode = nodes.find { it.type == CodeElementType.CLASS }
+        assertTrue(classNode != null)
+        assertEquals("UserService", classNode.name)
+        
+        // Should find primary constructor
+        val constructorNode = nodes.find { it.type == CodeElementType.CONSTRUCTOR }
+        assertTrue(constructorNode != null, "Kotlin primary constructor should be detected")
+        assertEquals("<init>", constructorNode.name)
+    }
+    
+    @Test
     fun testParseCodeGraph() = runTest {
         val files = mapOf(
             "HelloWorld.java" to """

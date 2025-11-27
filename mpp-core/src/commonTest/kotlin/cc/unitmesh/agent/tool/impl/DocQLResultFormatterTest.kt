@@ -92,4 +92,105 @@ class DocQLResultFormatterTest {
         assertTrue(formatted.contains("- **Section**: Introduction (0.88)"))
         assertTrue(formatted.contains("> This is the introduction content."))
     }
+
+    @Test
+    fun `test formatSmartResult with ConstructorEntity`() {
+        val entity = Entity.ConstructorEntity(
+            name = "<init>",
+            className = "UserService",
+            signature = "UserService(String name)",
+            location = Location("UserService.kt", null, 15)
+        )
+        
+        val scoredResult = ScoredResult(
+            item = entity,
+            score = 0.92,
+            uniqueId = "id3",
+            preview = "constructor UserService",
+            filePath = "UserService.kt"
+        )
+
+        val results = listOf(scoredResult)
+        val formatted = DocQLResultFormatter.formatFallbackResult(
+            results = results, 
+            keyword = "UserService",
+            truncated = false
+        )
+
+        assertTrue(formatted.contains("## Search Results for 'UserService'"))
+        assertTrue(formatted.contains("Found 1 relevant items"))
+        assertTrue(formatted.contains("## UserService.kt"))
+        // Constructor should be formatted with signature and line number
+        assertTrue(formatted.contains("- **Constructor**: `UserService(String name):15`"))
+        assertTrue(formatted.contains("(0.92)"))
+    }
+    
+    @Test
+    fun `test extractItemInfo with ConstructorEntity`() {
+        val entity = Entity.ConstructorEntity(
+            name = "<init>",
+            className = "MyClass",
+            signature = "MyClass(int value)",
+            location = Location("MyClass.kt", null, 25)
+        )
+        
+        val scoredResult = ScoredResult(
+            item = entity,
+            score = 0.85,
+            uniqueId = "id4",
+            preview = "constructor MyClass",
+            filePath = "MyClass.kt"
+        )
+        
+        val (itemType, itemName) = DocQLResultFormatter.extractItemInfo(scoredResult)
+        
+        assertEquals("constructor", itemType)
+        assertEquals("MyClass:25", itemName)
+    }
+    
+    @Test
+    fun `test filter unknown entities including constructors`() {
+        val unknownConstructor = Entity.ConstructorEntity(
+            name = "unknown",
+            className = "Unknown",
+            signature = null,
+            location = Location("Unknown.kt", null, 10)
+        )
+        
+        val validConstructor = Entity.ConstructorEntity(
+            name = "<init>",
+            className = "ValidClass",
+            signature = "ValidClass()",
+            location = Location("ValidClass.kt", null, 20)
+        )
+        
+        val results = listOf(
+            ScoredResult(
+                item = unknownConstructor,
+                score = 0.5,
+                uniqueId = "unknown1",
+                preview = "unknown",
+                filePath = "Unknown.kt"
+            ),
+            ScoredResult(
+                item = validConstructor,
+                score = 0.9,
+                uniqueId = "valid1",
+                preview = "constructor ValidClass",
+                filePath = "ValidClass.kt"
+            )
+        )
+        
+        val formatted = DocQLResultFormatter.formatFallbackResult(
+            results = results,
+            keyword = "constructor",
+            truncated = false
+        )
+        
+        // Unknown constructor should be filtered out
+        assertTrue(formatted.contains("Found 1 relevant items"))
+        assertTrue(formatted.contains("(1 unparseable items filtered)"))
+        assertTrue(formatted.contains("ValidClass"))
+        assertTrue(!formatted.contains("Unknown.kt"))
+    }
 }

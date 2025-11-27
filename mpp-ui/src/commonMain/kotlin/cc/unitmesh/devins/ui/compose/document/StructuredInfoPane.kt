@@ -268,6 +268,7 @@ private fun EntityItemRow(
                     is Entity.API -> AutoDevComposeIcons.Api
                     is Entity.ClassEntity -> AutoDevComposeIcons.DataObject
                     is Entity.FunctionEntity -> AutoDevComposeIcons.Functions
+                    is Entity.ConstructorEntity -> AutoDevComposeIcons.Functions
                 },
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
@@ -286,6 +287,7 @@ private fun EntityItemRow(
                     is Entity.API -> entity.signature
                     is Entity.ClassEntity -> "Class"
                     is Entity.FunctionEntity -> entity.signature
+                    is Entity.ConstructorEntity -> entity.signature ?: "Constructor"
                 }
 
                 if (!desc.isNullOrEmpty()) {
