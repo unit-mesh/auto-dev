@@ -80,6 +80,12 @@ sealed class DocQLResult {
     ) : DocQLResult()
 
     /**
+     * Frontmatter result (for $.frontmatter queries)
+     * Contains parsed YAML frontmatter data
+     */
+    data class Frontmatter(val data: Map<String, Any>) : DocQLResult()
+
+    /**
      * Empty result
      */
     object Empty : DocQLResult()
@@ -113,6 +119,7 @@ sealed class DocQLResult {
             is DocQLResult.Tables -> result.totalCount == 0
             is DocQLResult.Files -> result.items.isEmpty()
             is DocQLResult.Structure -> result.paths.isEmpty()
+            is DocQLResult.Frontmatter -> result.data.isEmpty()
             is DocQLResult.Error -> true
         }
     }

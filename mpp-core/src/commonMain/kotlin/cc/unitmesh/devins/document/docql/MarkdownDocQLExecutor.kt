@@ -1,6 +1,7 @@
 package cc.unitmesh.devins.document.docql
 
 import cc.unitmesh.devins.document.*
+import cc.unitmesh.yaml.YamlUtils
 
 /**
  * Code block extracted from document
@@ -74,6 +75,28 @@ class MarkdownDocQLExecutor(
     override suspend fun executeCodeQuery(nodes: List<DocQLNode>): DocQLResult {
         // Markdown files don't have code structure, return empty
         return DocQLResult.Empty
+    }
+
+    /**
+     * Execute frontmatter query: $.frontmatter
+     * Extracts and parses YAML frontmatter from markdown documents
+     */
+    override suspend fun executeFrontmatterQuery(nodes: List<DocQLNode>): DocQLResult {
+        if (documentFile == null || parserService == null) {
+            return DocQLResult.Error("No document loaded")
+        }
+
+        val content = parserService.getDocumentContent()
+        if (content.isNullOrEmpty()) {
+            return DocQLResult.Empty
+        }
+
+        val frontmatter = extractFrontmatter(content)
+        return if (frontmatter != null) {
+            DocQLResult.Frontmatter(frontmatter)
+        } else {
+            DocQLResult.Empty
+        }
     }
 
     /**
@@ -371,9 +394,209 @@ class MarkdownDocQLExecutor(
 
     /**
      * Execute table query: $.content.table[*]
+     * Extracts tables from markdown content.
+     *
+     * Supports:
+     * - $.content.table[*] - All tables
+     * - $.content.table[0] - First table
+     * - $.content.table[?(@.headers~="Name")] - Filter by header content
      */
     private fun executeTableQuery(nodes: List<DocQLNode>): DocQLResult {
-        // TODO: Implement table extraction
-        return DocQLResult.Tables(emptyMap())
+        if (documentFile == null || parserService == null) {
+            return DocQLResult.Error("No document loaded")
+        }
+
+        val content = parserService.getDocumentContent()
+        if (content.isNullOrEmpty()) {
+            return DocQLResult.Empty
+        }
+
+        // Extract tables from content
+        var tables = extractTables(content)
+
+        // Apply filters from nodes
+        for (node in nodes) {
+            when (node) {
+                is DocQLNode.ArrayAccess.All -> {
+                    // Return all tables - no filtering needed
+                }
+
+                is DocQLNode.ArrayAccess.Index -> {
+                    tables = if (node.index < tables.size) {
+                        listOf(tables[node.index])
+                    } else {
+                        emptyList()
+                    }
+                }
+
+                is DocQLNode.ArrayAccess.Filter -> {
+                    tables = filterTables(tables, node.condition)
+                }
+
+                else -> {
+                    return DocQLResult.Error("Invalid operation for table query")
+                }
+            }
+        }
+
+        return if (tables.isNotEmpty()) {
+            DocQLResult.Tables(mapOf(documentFile.path to tables))
+        } else {
+            DocQLResult.Empty
+        }
+    }
+
+    /**
+     * Extract tables from markdown content.
+     * Parses markdown pipe tables: | Header 1 | Header 2 |
+     */
+    private fun extractTables(content: String): List<TableBlock> {
+        val tables = mutableListOf<TableBlock>()
+        val lines = content.lines()
+        var i = 0
+        var lineNumber = 1
+
+        while (i < lines.size) {
+            val line = lines[i]
+            // Detect table start: line with pipes
+            if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
+                val startLine = lineNumber
+                val tableLines = mutableListOf<String>()
+
+                // Collect table lines
+                while (i < lines.size && lines[i].trim().let {
+                    it.startsWith("|") && it.endsWith("|")
+                }) {
+                    tableLines.add(lines[i])
+                    i++
+                    lineNumber++
+                }
+
+                // Parse table (need at least header + separator + 1 row)
+                if (tableLines.size >= 2) {
+                    val headers = parseTableRow(tableLines[0])
+                    
+                    // Skip separator line (e.g., |---|---|)
+                    val dataRows = if (tableLines.size > 2 && tableLines[1].trim().matches(Regex("\\|[:\\s-|]+\\|"))) {
+                        tableLines.drop(2)
+                    } else {
+                        tableLines.drop(1)
+                    }
+                    
+                    val rows = dataRows.map { parseTableRow(it) }
+
+                    tables.add(
+                        TableBlock(
+                            headers = headers,
+                            rows = rows,
+                            location = Location(
+                                anchor = "#table-$startLine",
+                                line = startLine
+                            )
+                        )
+                    )
+                }
+            } else {
+                i++
+                lineNumber++
+            }
+        }
+
+        return tables
+    }
+
+    /**
+     * Parse a table row into cells
+     */
+    private fun parseTableRow(line: String): List<String> {
+        return line.trim()
+            .removePrefix("|")
+            .removeSuffix("|")
+            .split("|")
+            .map { it.trim() }
+    }
+
+    /**
+     * Filter tables by condition
+     */
+    private fun filterTables(tables: List<TableBlock>, condition: FilterCondition): List<TableBlock> {
+        return tables.filter { table ->
+            when (condition) {
+                is FilterCondition.Equals -> {
+                    when (condition.property) {
+                        "rowCount" -> table.rows.size.toString() == condition.value
+                        "columnCount" -> table.headers.size.toString() == condition.value
+                        else -> false
+                    }
+                }
+
+                is FilterCondition.Contains -> {
+                    when (condition.property) {
+                        "headers" -> table.headers.any { it.contains(condition.value, ignoreCase = true) }
+                        else -> false
+                    }
+                }
+
+                is FilterCondition.GreaterThan -> {
+                    when (condition.property) {
+                        "rowCount" -> table.rows.size > condition.value
+                        "columnCount" -> table.headers.size > condition.value
+                        else -> false
+                    }
+                }
+
+                is FilterCondition.GreaterThanOrEquals -> {
+                    when (condition.property) {
+                        "rowCount" -> table.rows.size >= condition.value
+                        "columnCount" -> table.headers.size >= condition.value
+                        else -> false
+                    }
+                }
+
+                is FilterCondition.LessThan -> {
+                    when (condition.property) {
+                        "rowCount" -> table.rows.size < condition.value
+                        "columnCount" -> table.headers.size < condition.value
+                        else -> false
+                    }
+                }
+
+                is FilterCondition.LessThanOrEquals -> {
+                    when (condition.property) {
+                        "rowCount" -> table.rows.size <= condition.value
+                        "columnCount" -> table.headers.size <= condition.value
+                        else -> false
+                    }
+                }
+
+                else -> false
+            }
+        }
+    }
+
+    /**
+     * Extract frontmatter from markdown content.
+     * Frontmatter is YAML content between --- delimiters at the start of the file.
+     *
+     * Example:
+     * ---
+     * title: My Document
+     * author: John Doe
+     * tags: [markdown, documentation]
+     * ---
+     */
+    private fun extractFrontmatter(content: String): Map<String, Any>? {
+        // Match frontmatter at the start of the file
+        val frontmatterRegex = Regex("^---\\s*\\n([\\s\\S]*?)\\n---\\s*\\n", RegexOption.MULTILINE)
+        val match = frontmatterRegex.find(content) ?: return null
+
+        val yamlContent = match.groupValues[1]
+        return try {
+            YamlUtils.load(yamlContent)
+        } catch (e: Exception) {
+            // Invalid YAML, return null
+            null
+        }
     }
 }
+

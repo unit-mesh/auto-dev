@@ -35,6 +35,7 @@ abstract class BaseDocQLExecutor(
                         "entities" -> executeEntitiesQuery(query.nodes.drop(2))
                         "content" -> executeContentQuery(query.nodes.drop(2))
                         "code" -> executeCodeQuery(query.nodes.drop(2))
+                        "frontmatter" -> executeFrontmatterQuery(query.nodes.drop(2))
                         "files" -> DocQLResult.Error("$.files queries must be executed via DocumentRegistry.queryDocuments()")
                         "structure" -> executeStructureQuery(query.nodes.drop(2))
                         else -> DocQLResult.Error("Unknown context '${contextNode.name}'")
@@ -167,6 +168,11 @@ abstract class BaseDocQLExecutor(
      * Execute code query - must be implemented by subclasses
      */
     protected abstract suspend fun executeCodeQuery(nodes: List<DocQLNode>): DocQLResult
+
+    /**
+     * Execute frontmatter query - must be implemented by subclasses
+     */
+    protected abstract suspend fun executeFrontmatterQuery(nodes: List<DocQLNode>): DocQLResult
 
     /**
      * Flatten TOC tree into a list

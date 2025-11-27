@@ -107,6 +107,15 @@ class CodeDocQLExecutor(
     }
 
     /**
+     * Execute frontmatter query - not applicable for code files
+     * Returns Empty since code files don't typically have YAML frontmatter
+     */
+    override suspend fun executeFrontmatterQuery(nodes: List<DocQLNode>): DocQLResult {
+        // Code files don't have frontmatter, return empty
+        return DocQLResult.Empty
+    }
+
+    /**
      * Execute $.code.classes[*] or $.code.classes[filter]
      */
     private fun executeCodeClassesQuery(nodes: List<DocQLNode>): DocQLResult {

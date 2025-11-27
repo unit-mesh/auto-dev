@@ -679,6 +679,16 @@ object DocQLResultFormatter {
                 }
             }
 
+            is DocQLResult.Frontmatter -> {
+                buildString {
+                    appendLine("Frontmatter:")
+                    appendLine()
+                    result.data.forEach { (key, value) ->
+                        appendLine("  $key: $value")
+                    }
+                }
+            }
+
             is DocQLResult.Empty -> {
                 "No results found."
             }
