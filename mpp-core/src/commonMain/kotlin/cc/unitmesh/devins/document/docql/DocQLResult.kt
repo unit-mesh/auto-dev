@@ -8,9 +8,6 @@ import cc.unitmesh.devins.document.TOCItem
 
 const val initialMaxResults = 20
 
-/**
- * DocQL query execution result - all results include source file information
- */
 sealed class DocQLResult {
     /**
      * TOC items result - grouped by source file
@@ -131,7 +128,7 @@ sealed class DocQLResult {
 
                     appendLine("Found $totalItems TOC items across ${result.itemsByFile.size} file(s):")
                     if (truncated) {
-                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
+                        appendLine("Showing first $maxResults results (${totalItems - maxResults} more available)")
                     }
                     appendLine()
 
@@ -149,7 +146,7 @@ sealed class DocQLResult {
                     }
 
                     if (truncated) {
-                        appendLine("💡 Tip: Query specific directories to get more focused results:")
+                        appendLine(" Tip: Query specific directories to get more focused results:")
                         appendLine("   \$.content.h1()")
                         appendLine("   \$.toc[?(@.title contains \"keyword\")]")
                     }
@@ -163,7 +160,7 @@ sealed class DocQLResult {
 
                     appendLine("Found $totalItems entities across ${result.itemsByFile.size} file(s):")
                     if (truncated) {
-                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
+                        appendLine(" ️ Showing first $maxResults results (${totalItems - maxResults} more available)")
                     }
                     appendLine()
 
@@ -186,18 +183,18 @@ sealed class DocQLResult {
 
                                 is Entity.FunctionEntity -> {
                                     val sig = entity.signature ?: entity.name
-                                    appendLine("  ⚡ $sig")
+                                    appendLine("  $sig")
                                     if (entity.location.line != null) {
                                         appendLine("     └─ Line ${entity.location.line}")
                                     }
                                 }
 
                                 is Entity.Term -> {
-                                    appendLine("  📝 ${entity.name}: ${entity.definition ?: ""}")
+                                    appendLine("  ${entity.name}: ${entity.definition ?: ""}")
                                 }
 
                                 is Entity.API -> {
-                                    appendLine("  🔌 ${entity.name}: ${entity.signature ?: ""}")
+                                    appendLine("  ${entity.name}: ${entity.signature ?: ""}")
                                 }
                             }
                             count++
@@ -206,7 +203,7 @@ sealed class DocQLResult {
                     }
 
                     if (truncated) {
-                        appendLine("💡 Tip: Use $.code.class(\"ClassName\") or $.code.function(\"functionName\") to get full source code")
+                        appendLine(" Tip: Use $.code.class(\"ClassName\") or $.code.function(\"functionName\") to get full source code")
                     }
                 }
             }
@@ -218,8 +215,8 @@ sealed class DocQLResult {
 
                     appendLine("Found $totalItems content chunks across ${result.itemsByFile.size} file(s):")
                     if (truncated) {
-                        appendLine("⚠️ Showing first $maxResults results (${totalItems - maxResults} more available)")
-                        appendLine("💡 Tip: Narrow down your search to specific files or directories")
+                        appendLine("  Showing first $maxResults results (${totalItems - maxResults} more available)")
+                        appendLine(" Tip: Narrow down your search to specific files or directories")
                         appendLine("   Example: Query documents in a specific directory only")
                     }
                     appendLine()
@@ -232,7 +229,7 @@ sealed class DocQLResult {
                         val nonEmptyItems = items.filter { it.content.trim().isNotEmpty() }
                         if (nonEmptyItems.isEmpty()) continue
 
-                        appendLine("## 📄 $filePath")
+                        appendLine("## $filePath")
                         appendLine()
 
                         for (chunk in nonEmptyItems) {
@@ -260,7 +257,7 @@ sealed class DocQLResult {
                     appendLine("Found ${result.totalCount} code blocks across ${result.itemsByFile.size} file(s):")
                     appendLine()
                     for ((filePath, items) in result.itemsByFile) {
-                        appendLine("## 📄 $filePath")
+                        appendLine("## $filePath")
                         items.forEach { block ->
                             appendLine("```${block.language ?: ""}")
                             appendLine(block.code)
@@ -275,7 +272,7 @@ sealed class DocQLResult {
                 buildString {
                     appendLine("Found ${result.totalCount} tables across ${result.itemsByFile.size} file(s):")
                     for ((filePath, items) in result.itemsByFile) {
-                        appendLine("## 📄 $filePath")
+                        appendLine("## $filePath")
                         appendLine("  ${items.size} table(s)")
                     }
                 }
@@ -286,7 +283,7 @@ sealed class DocQLResult {
                     appendLine("Found ${result.items.size} files:")
                     appendLine()
                     result.items.forEach { file ->
-                        appendLine("📄 ${file.path}")
+                        appendLine("## ${file.path}")
                         if (file.directory.isNotEmpty()) {
                             appendLine("   Directory: ${file.directory}")
                         }
@@ -299,8 +296,8 @@ sealed class DocQLResult {
                         appendLine()
                     }
                     if (result.items.size > 50) {
-                        appendLine("💡 Too many results! Consider filtering by directory:")
-                        appendLine("   \$.files[?(@.path contains \"your-directory\")]")
+                        appendLine(" Too many results! Consider filtering by directory:")
+                        appendLine(" \$.files[?(@.path contains \"your-directory\")]")
                     }
                 }
             }
@@ -311,8 +308,8 @@ sealed class DocQLResult {
                     appendLine()
                     appendLine(result.tree)
                     appendLine()
-                    appendLine("💡 Use \$.files[*] to get detailed file information")
-                    appendLine("   \$.files[?(@.extension==\"kt\")] to filter by extension")
+                    appendLine(" Use \$.files[*] to get detailed file information")
+                    appendLine(" \$.files[?(@.extension==\"kt\")] to filter by extension")
                 }
             }
 
