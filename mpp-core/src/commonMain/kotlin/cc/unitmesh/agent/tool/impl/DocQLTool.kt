@@ -313,6 +313,10 @@ class DocQLInvocation(
     /**
      * Build the final search result with statistics.
      * Optionally applies LLM-based reranking when enabled.
+     *
+     * Returns:
+     * - Compact summary as the main content (for user/LLM display)
+     * - Detailed results stored in stats.detailedResults (for dialog display)
      */
     private suspend fun buildSearchResult(
         result: SearchLevelResult,
@@ -339,6 +343,16 @@ class DocQLInvocation(
             RerankerType.RRF_COMPOSITE -> "RRF+Composite(BM25,Type,NameMatch)"
         }
 
+        // Format compact summary for display
+        val compactSummary = DocQLResultFormatter.formatCompactSummary(
+            scoredResults, keyword, result.truncated, result.totalCount
+        )
+
+        // Format detailed results for dialog
+        val detailedResults = DocQLResultFormatter.formatDetailedResult(
+            scoredResults, keyword, result.truncated, result.totalCount
+        )
+
         val stats = DocQLSearchStats(
             searchType = actualSearchType,
             channels = result.activeChannels,
@@ -356,13 +370,11 @@ class DocQLInvocation(
             ),
             scoringInfo = null,
             keywordExpansion = keywordStats,
-            llmRerankerInfo = llmRerankerStats
+            llmRerankerInfo = llmRerankerStats,
+            detailedResults = detailedResults
         )
 
-        return ToolResult.Success(
-            DocQLResultFormatter.formatSmartResult(scoredResults, keyword, result.truncated, result.totalCount),
-            stats.toMetadata()
-        )
+        return ToolResult.Success(compactSummary, stats.toMetadata())
     }
 
     private suspend fun executeFallbackSearch(
@@ -412,6 +424,14 @@ class DocQLInvocation(
                     )
                 }
 
+                // Format compact summary and detailed results
+                val compactSummary = DocQLResultFormatter.formatCompactSummary(
+                    scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount
+                )
+                val detailedResults = DocQLResultFormatter.formatDetailedResult(
+                    scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount
+                )
+
                 // Build fallback search statistics
                 val scores = scoredResults.map { it.score }
                 val stats = DocQLSearchStats(
@@ -434,13 +454,11 @@ class DocQLInvocation(
                         avgScore = scores.average(),
                         maxScore = scores.maxOrNull() ?: 0.0,
                         minScore = scores.minOrNull() ?: 0.0
-                    ) else null
+                    ) else null,
+                    detailedResults = detailedResults
                 )
 
-                return ToolResult.Success(
-                    DocQLResultFormatter.formatSmartResult(scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount),
-                    stats.toMetadata()
-                )
+                return ToolResult.Success(compactSummary, stats.toMetadata())
             }
         }
 

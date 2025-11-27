@@ -30,7 +30,12 @@ data class DocQLSearchStats(
     /** Keyword expansion statistics (for multi-level keyword search) */
     val keywordExpansion: KeywordExpansionStats? = null,
     /** LLM reranker statistics (when LLM-based reranking is used) */
-    val llmRerankerInfo: LLMRerankerStats? = null
+    val llmRerankerInfo: LLMRerankerStats? = null,
+    /**
+     * Detailed formatted results for display in dialog.
+     * Contains the full verbose output with scores and file groupings.
+     */
+    val detailedResults: String? = null
 ) {
     @Serializable
     enum class SearchType {
@@ -97,6 +102,9 @@ data class DocQLSearchStats(
             llm.explanation?.let { put("docql_llm_explanation", it.take(200)) }
             llm.error?.let { put("docql_llm_error", it) }
         }
+
+        // Store detailed results for dialog display
+        detailedResults?.let { put("docql_detailed_results", it) }
     }
 
     private fun formatDouble(value: Double, decimals: Int = 2): String {
@@ -126,7 +134,8 @@ data class DocQLSearchStats(
                 rerankerConfig = RerankerStats.fromMetadata(metadata),
                 scoringInfo = ScoringStats.fromMetadata(metadata),
                 keywordExpansion = KeywordExpansionStats.fromMetadata(metadata),
-                llmRerankerInfo = LLMRerankerStats.fromMetadata(metadata)
+                llmRerankerInfo = LLMRerankerStats.fromMetadata(metadata),
+                detailedResults = metadata["docql_detailed_results"]
             )
         }
     }

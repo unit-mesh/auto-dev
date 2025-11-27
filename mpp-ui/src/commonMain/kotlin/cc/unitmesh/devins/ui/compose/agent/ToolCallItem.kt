@@ -62,6 +62,7 @@ fun CombinedToolItem(
     var showFullOutput by remember { mutableStateOf(success == false) }
     var showFileViewerDialog by remember { mutableStateOf(false) }
     var showStats by remember { mutableStateOf(false) }
+    var showDetailDialog by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
 
     // Determine which params/output to display
@@ -146,8 +147,22 @@ fun CombinedToolItem(
                     )
                 }
 
-                // Show stats button for DocQL
+                // Show stats and details buttons for DocQL
                 if (hasStats) {
+                    // Details button - opens full result dialog
+                    IconButton(
+                        onClick = { showDetailDialog = true },
+                        modifier = Modifier.Companion.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = AutoDevComposeIcons.Description,
+                            contentDescription = "View Details",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.Companion.size(18.dp)
+                        )
+                    }
+
+                    // Stats button - toggles inline stats
                     IconButton(
                         onClick = { showStats = !showStats },
                         modifier = Modifier.Companion.size(24.dp)
@@ -336,6 +351,17 @@ fun CombinedToolItem(
         FileViewerDialog(
             filePath = filePath,
             onClose = { showFileViewerDialog = false }
+        )
+    }
+
+    // Show DocQL detail dialog
+    if (showDetailDialog && docqlStats != null) {
+        // Extract keyword from details or use a default
+        val keyword = details?.substringAfter("query: ")?.substringBefore(",")?.trim('"') ?: "search"
+        DocQLDetailDialog(
+            keyword = keyword,
+            stats = docqlStats,
+            onDismiss = { showDetailDialog = false }
         )
     }
 }

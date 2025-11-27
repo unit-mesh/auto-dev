@@ -12,14 +12,84 @@ import kotlin.math.round
  */
 object DocQLResultFormatter {
 
-    fun formatSmartResult(
+    /**
+     * Maximum number of items to show in the compact summary
+     */
+    private const val COMPACT_MAX_ITEMS = 8
+
+    /**
+     * Format a compact summary for display to user/LLM.
+     * Shows key information without technical details like scores.
+     *
+     * Example output:
+     * ```
+     * Found 12 results for "Auth":
+     * - AuthService (class) in auth/AuthService.kt
+     * - authenticate (function) in auth/AuthService.kt
+     * - Authorization (heading) in docs/security.md
+     * ... and 9 more
+     * ```
+     */
+    fun formatCompactSummary(
+        results: List<ScoredResult>,
+        keyword: String,
+        truncated: Boolean = false,
+        totalCount: Int = results.size
+    ): String {
+        if (results.isEmpty()) {
+            return "No results found for '$keyword'."
+        }
+
+        return buildString {
+            // Header with result count
+            val countInfo = if (truncated) "$totalCount+" else "${results.size}"
+            appendLine("Found $countInfo results for \"$keyword\":")
+            appendLine()
+
+            // Show top items, limit to COMPACT_MAX_ITEMS
+            val itemsToShow = results.take(COMPACT_MAX_ITEMS)
+
+            itemsToShow.forEach { result ->
+                val (itemType, itemName) = extractItemInfo(result)
+                val fileInfo = result.filePath?.substringAfterLast('/')?.let { " in $it" } ?: ""
+                appendLine("- $itemName ($itemType)$fileInfo")
+            }
+
+            // Show "and N more" if there are more results
+            val remainingCount = results.size - COMPACT_MAX_ITEMS
+            if (remainingCount > 0) {
+                appendLine()
+                appendLine("... and $remainingCount more (click Details to view all)")
+            }
+        }
+    }
+
+    /**
+     * Extract item type and name from a ScoredResult for compact display.
+     */
+    private fun extractItemInfo(result: ScoredResult): Pair<String, String> {
+        return when (val item = result.item) {
+            is Entity.ClassEntity -> "class" to item.name
+            is Entity.FunctionEntity -> "function" to item.name
+            is TOCItem -> "heading" to item.title
+            is DocumentChunk -> "content" to result.preview.take(40)
+            is TextSegment -> item.type to (item.name.ifEmpty { result.preview.take(40) })
+            else -> "item" to result.preview.take(40)
+        }
+    }
+
+    /**
+     * Format detailed results for storage in metadata.
+     * This is the full verbose format that can be shown in a dialog.
+     */
+    fun formatDetailedResult(
         results: List<ScoredResult>,
         keyword: String,
         truncated: Boolean = false,
         totalCount: Int = results.size
     ): String {
         return buildString {
-            appendLine("**Smart Search Results for '$keyword'**")
+            appendLine("## Search Results for '$keyword'")
             if (truncated) {
                 appendLine("Showing ${results.size} of $totalCount results (sorted by relevance)")
             } else {
@@ -31,44 +101,53 @@ object DocQLResultFormatter {
             val byFile = results.groupBy { it.filePath ?: "Unknown File" }
 
             byFile.forEach { (file, items) ->
-                appendLine("## $file")
+                appendLine("### $file")
                 items.forEach { result ->
                     val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
                     when (val item = result.item) {
                         is Entity.ClassEntity -> {
-                            appendLine("- **Class**: ${item.name}$scoreInfo")
-                            if (item.location.line != null) appendLine("  Line: ${item.location.line}")
+                            appendLine("- **Class**: `${item.name}`$scoreInfo")
+                            if (item.location.line != null) appendLine("  - Line: ${item.location.line}")
                         }
 
                         is Entity.FunctionEntity -> {
-                            appendLine("- **Function**: ${item.name}$scoreInfo")
-                            if (item.signature != null) appendLine("  Sig: ${item.signature}")
-                            if (item.location.line != null) appendLine("  Line: ${item.location.line}")
+                            appendLine("- **Function**: `${item.name}`$scoreInfo")
+                            if (item.signature != null) appendLine("  - Signature: `${item.signature}`")
+                            if (item.location.line != null) appendLine("  - Line: ${item.location.line}")
                         }
 
                         is TOCItem -> {
                             appendLine("- **Section**: ${item.title}$scoreInfo")
+                            appendLine("  - Level: H${item.level}")
                         }
 
                         is DocumentChunk -> {
-                            appendLine("- **Chunk**: ...${result.preview}...$scoreInfo")
+                            appendLine("- **Content**:$scoreInfo")
+                            appendLine("  > ${result.preview.take(200)}")
                         }
 
                         is TextSegment -> {
-                            val type = item.type
-                            appendLine("- **${type.replaceFirstChar { it.uppercase() }}**: ${item.name.ifEmpty { result.preview }}$scoreInfo")
+                            val type = item.type.replaceFirstChar { it.uppercase() }
+                            appendLine("- **$type**: ${item.name.ifEmpty { result.preview.take(100) }}$scoreInfo")
                         }
                     }
                 }
                 appendLine()
             }
-
-            if (truncated) {
-                appendLine("Tip: Use a more specific query or increase `maxResults` to see more results.")
-            } else {
-                appendLine("Tip: Use `$.code.class(\"Name\")` or `$.content.heading(\"Title\")` for more specific queries.")
-            }
         }
+    }
+
+    /**
+     * Legacy method - now redirects to formatDetailedResult for backward compatibility.
+     * @deprecated Use formatCompactSummary for display and formatDetailedResult for details.
+     */
+    fun formatSmartResult(
+        results: List<ScoredResult>,
+        keyword: String,
+        truncated: Boolean = false,
+        totalCount: Int = results.size
+    ): String {
+        return formatDetailedResult(results, keyword, truncated, totalCount)
     }
 
     fun formatDocQLResult(result: DocQLResult, maxResults: Int): String {
