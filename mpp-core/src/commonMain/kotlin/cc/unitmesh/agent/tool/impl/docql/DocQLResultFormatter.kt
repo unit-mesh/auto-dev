@@ -18,6 +18,37 @@ object DocQLResultFormatter {
     private const val COMPACT_MAX_ITEMS = 12
 
     /**
+     * Format a smart summary for header display.
+     * Shows a concise one-line summary of the search results.
+     *
+     * Example outputs:
+     * - "Found 12 results: AuthService (class), authenticate (function), ..."
+     * - "No results found"
+     */
+    fun formatSmartSummary(
+        results: List<ScoredResult>,
+        totalCount: Int,
+        truncated: Boolean
+    ): String {
+        if (results.isEmpty()) {
+            return "No results found"
+        }
+
+        val countInfo = if (truncated) "$totalCount+" else "${results.size}"
+
+        val topItems = results.take(COMPACT_MAX_ITEMS).map { result ->
+            val (itemType, itemName) = extractItemInfo(result)
+            "$itemName ($itemType)"
+        }
+
+        val preview = topItems.joinToString(", ")
+        val moreCount = results.size - COMPACT_MAX_ITEMS
+        val moreInfo = if (moreCount > 0) ", +$moreCount more" else ""
+
+        return "Found $countInfo: $preview$moreInfo"
+    }
+
+    /**
      * Format a compact summary for display to user/LLM.
      * Shows key information without technical details like scores.
      *
@@ -67,11 +98,11 @@ object DocQLResultFormatter {
     private fun extractItemInfo(result: ScoredResult): Pair<String, String> {
         return when (val item = result.item) {
             is Entity.ClassEntity -> {
-                "class" to item.name
+                "class" to result.item.toString()
             }
 
             is Entity.FunctionEntity -> {
-                "function" to item.name
+                "function" to result.item.toString()
             }
 
             is TOCItem -> {
@@ -79,14 +110,14 @@ object DocQLResultFormatter {
             }
 
             is DocumentChunk -> {
-                "content" to result.preview.take(40)
+                "content" to result.preview.take(200)
             }
 
             is TextSegment -> {
-                item.type to (item.name.ifEmpty { result.preview.take(40) })
+                item.type to (item.name.ifEmpty { result.preview.take(200) })
             }
 
-            else -> "item" to result.preview.take(40)
+            else -> "item" to result.preview.take(200)
         }
     }
 

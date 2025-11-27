@@ -662,6 +662,7 @@ class ComposeRenderer : BaseRenderer() {
             }
 
             is TimelineItem.CombinedToolItem -> {
+                val stats = item.docqlStats
                 cc.unitmesh.devins.llm.MessageMetadata(
                     itemType = cc.unitmesh.devins.llm.TimelineItemType.COMBINED_TOOL,
                     toolName = item.toolName,
@@ -674,7 +675,19 @@ class ComposeRenderer : BaseRenderer() {
                     summary = item.summary,
                     output = item.output,
                     fullOutput = item.fullOutput,
-                    executionTimeMs = item.executionTimeMs
+                    executionTimeMs = item.executionTimeMs,
+                    // DocQL stats
+                    docqlSearchType = stats?.searchType?.name,
+                    docqlQuery = stats?.query,
+                    docqlDocumentPath = stats?.documentPath,
+                    docqlChannels = stats?.channels?.joinToString(","),
+                    docqlDocsSearched = stats?.documentsSearched,
+                    docqlRawResults = stats?.totalRawResults,
+                    docqlRerankedResults = stats?.resultsAfterRerank,
+                    docqlTruncated = stats?.truncated,
+                    docqlUsedFallback = stats?.usedFallback,
+                    docqlDetailedResults = stats?.detailedResults,
+                    docqlSmartSummary = stats?.smartSummary
                 )
             }
             is TimelineItem.ToolResultItem -> {
@@ -746,6 +759,31 @@ class ComposeRenderer : BaseRenderer() {
             }
 
             TimelineItemType.COMBINED_TOOL -> {
+                // Restore DocQL stats if available
+                val searchTypeStr = metadata.docqlSearchType
+                val docqlStats = if (searchTypeStr != null) {
+                    val searchType = try {
+                        DocQLSearchStats.SearchType.valueOf(searchTypeStr)
+                    } catch (e: IllegalArgumentException) {
+                        null
+                    }
+                    searchType?.let {
+                        DocQLSearchStats(
+                            searchType = it,
+                            query = metadata.docqlQuery ?: "",
+                            documentPath = metadata.docqlDocumentPath,
+                            channels = metadata.docqlChannels?.split(",")?.filter { ch -> ch.isNotBlank() } ?: emptyList(),
+                            documentsSearched = metadata.docqlDocsSearched ?: 0,
+                            totalRawResults = metadata.docqlRawResults ?: 0,
+                            resultsAfterRerank = metadata.docqlRerankedResults ?: 0,
+                            truncated = metadata.docqlTruncated ?: false,
+                            usedFallback = metadata.docqlUsedFallback ?: false,
+                            detailedResults = metadata.docqlDetailedResults,
+                            smartSummary = metadata.docqlSmartSummary
+                        )
+                    }
+                } else null
+
                 TimelineItem.CombinedToolItem(
                     toolName = metadata.toolName ?: "",
                     description = metadata.description ?: "",
@@ -758,6 +796,7 @@ class ComposeRenderer : BaseRenderer() {
                     output = metadata.output,
                     fullOutput = metadata.fullOutput,
                     executionTimeMs = metadata.executionTimeMs,
+                    docqlStats = docqlStats,
                     itemTimestamp = message.timestamp
                 )
             }

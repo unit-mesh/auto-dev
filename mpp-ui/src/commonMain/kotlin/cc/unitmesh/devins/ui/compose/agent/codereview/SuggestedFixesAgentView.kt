@@ -21,7 +21,7 @@ import cc.unitmesh.devins.ui.compose.theme.AutoDevColors
 
 /**
  * Suggested Fixes Agent View - Displays fix generation timeline
- * 
+ *
  * This component shows the streaming agent output when CodingAgent generates fixes.
  * Note: Does NOT use AgentMessageList to avoid nested LazyColumn issues.
  *
@@ -163,6 +163,7 @@ fun SuggestedFixesAgentView(
                                         output = timelineItem.output,
                                         fullOutput = timelineItem.fullOutput,
                                         executionTimeMs = timelineItem.executionTimeMs,
+                                        docqlStats = timelineItem.docqlStats,
                                         onOpenFileViewer = onOpenFileViewer
                                     )
                                 }

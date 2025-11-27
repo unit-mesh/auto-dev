@@ -343,18 +343,20 @@ class DocQLInvocation(
             RerankerType.RRF_COMPOSITE -> "RRF+Composite(BM25,Type,NameMatch)"
         }
 
-        // Format compact summary for display
-        val compactSummary = DocQLResultFormatter.formatCompactSummary(
-            scoredResults, keyword, result.truncated, result.totalCount
-        )
-
         // Format detailed results for dialog
         val detailedResults = DocQLResultFormatter.formatDetailedResult(
             scoredResults, keyword, result.truncated, result.totalCount
         )
 
+        // Generate smart summary for header display
+        val smartSummary = DocQLResultFormatter.formatSmartSummary(
+            scoredResults, result.totalCount, result.truncated
+        )
+
         val stats = DocQLSearchStats(
             searchType = actualSearchType,
+            query = keyword,
+            documentPath = params.documentPath,
             channels = result.activeChannels,
             documentsSearched = result.docsSearched,
             totalRawResults = result.totalCount,
@@ -371,10 +373,12 @@ class DocQLInvocation(
             scoringInfo = null,
             keywordExpansion = keywordStats,
             llmRerankerInfo = llmRerankerStats,
-            detailedResults = detailedResults
+            detailedResults = detailedResults,
+            smartSummary = smartSummary
         )
 
-        return ToolResult.Success(compactSummary, stats.toMetadata())
+        // Return smart summary as main content (concise for LLM)
+        return ToolResult.Success(smartSummary, stats.toMetadata())
     }
 
     private suspend fun executeFallbackSearch(
@@ -424,18 +428,22 @@ class DocQLInvocation(
                     )
                 }
 
-                // Format compact summary and detailed results
-                val compactSummary = DocQLResultFormatter.formatCompactSummary(
-                    scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount
-                )
+                // Format detailed results
                 val detailedResults = DocQLResultFormatter.formatDetailedResult(
                     scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount
+                )
+
+                // Generate smart summary
+                val smartSummary = DocQLResultFormatter.formatSmartSummary(
+                    scoredResults, rerankResult.totalCount, rerankResult.truncated
                 )
 
                 // Build fallback search statistics
                 val scores = scoredResults.map { it.score }
                 val stats = DocQLSearchStats(
                     searchType = DocQLSearchStats.SearchType.FALLBACK_CONTENT,
+                    query = keyword,
+                    documentPath = documentPath,
                     channels = listOf("content_chunks"),
                     documentsSearched = docsSearched,
                     totalRawResults = relevantChunks.size,
@@ -455,16 +463,20 @@ class DocQLInvocation(
                         maxScore = scores.maxOrNull() ?: 0.0,
                         minScore = scores.minOrNull() ?: 0.0
                     ) else null,
-                    detailedResults = detailedResults
+                    detailedResults = detailedResults,
+                    smartSummary = smartSummary
                 )
 
-                return ToolResult.Success(compactSummary, stats.toMetadata())
+                return ToolResult.Success(smartSummary, stats.toMetadata())
             }
         }
 
         // No results found - return stats for empty search
+        val noResultSummary = "No results found for '$keyword'"
         val emptyStats = DocQLSearchStats(
             searchType = DocQLSearchStats.SearchType.FALLBACK_CONTENT,
+            query = keyword,
+            documentPath = documentPath,
             channels = emptyList(),
             documentsSearched = if (allChunksResult is DocQLResult.Chunks) allChunksResult.itemsByFile.size else 0,
             totalRawResults = 0,
@@ -472,11 +484,12 @@ class DocQLInvocation(
             truncated = false,
             usedFallback = true,
             rerankerConfig = null,
-            scoringInfo = null
+            scoringInfo = null,
+            smartSummary = noResultSummary
         )
 
         return ToolResult.Success(
-            "No results found for '$keyword'.\n\n${DocQLResultFormatter.buildQuerySuggestion(keyword)}",
+            "$noResultSummary\n\n${DocQLResultFormatter.buildQuerySuggestion(keyword)}",
             emptyStats.toMetadata()
         )
     }

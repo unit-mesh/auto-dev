@@ -118,23 +118,42 @@ fun CombinedToolItem(
                     modifier = Modifier.Companion.size(16.dp)
                 )
 
+                // Display tool name with query/path info for DocQL
+                val displayToolName = when {
+                    toolName.lowercase() == "docql" && docqlStats != null -> {
+                        val query = docqlStats.query.take(30).let {
+                            if (docqlStats.query.length > 30) "$it..." else it
+                        }
+                        if (query.isNotEmpty()) "\"$query\" - DocQL" else "DocQL"
+                    }
+                    else -> toolName
+                }
+
                 Text(
-                    text = if (toolName == "docql") "DocQL" else toolName,
+                    text = displayToolName,
                     fontWeight = FontWeight.Companion.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.Companion.weight(1f)
                 )
 
-                if (summary != null) {
+                // For DocQL, show smart summary; for others, show regular summary
+                val displaySummary = when {
+                    toolName.lowercase() == "docql" && docqlStats?.smartSummary != null ->
+                        docqlStats.smartSummary
+                    else -> summary
+                }
+
+                if (displaySummary != null) {
                     Text(
-                        text = "→ $summary",
+                        text = "-> $displaySummary",
                         color = when (success) {
                             true -> Color(0xFF4CAF50)
                             false -> MaterialTheme.colorScheme.error
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Companion.Medium
+                        fontWeight = FontWeight.Companion.Medium,
+                        maxLines = 1
                     )
                 }
 
@@ -269,7 +288,10 @@ fun CombinedToolItem(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Companion.Top
                     ) {
-                        Column {
+                        Row(
+                            verticalAlignment = Alignment.Companion.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             Text(
                                 text = "Output:",
                                 fontWeight = FontWeight.Companion.Medium,
@@ -280,12 +302,33 @@ fun CombinedToolItem(
                             if (hasFullOutput) {
                                 TextButton(
                                     onClick = { showFullOutput = !showFullOutput },
-                                    modifier = Modifier.Companion.height(32.dp)
+                                    modifier = Modifier.Companion.height(28.dp)
                                 ) {
                                     Text(
-                                        text = if (showFullOutput) "Show Less" else "Show Full Output",
+                                        text = if (showFullOutput) "Show Less" else "Show Full",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+
+                            // View All button for DocQL detailed results
+                            if (hasStats && docqlStats?.detailedResults != null) {
+                                TextButton(
+                                    onClick = { showDetailDialog = true },
+                                    modifier = Modifier.Companion.height(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = AutoDevComposeIcons.OpenInNew,
+                                        contentDescription = "View All",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.Companion.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "View All",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.Companion.padding(start = 4.dp)
                                     )
                                 }
                             }

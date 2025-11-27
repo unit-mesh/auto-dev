@@ -11,6 +11,10 @@ import kotlinx.serialization.Serializable
 data class DocQLSearchStats(
     /** Type of search performed */
     val searchType: SearchType,
+    /** The original query string */
+    val query: String = "",
+    /** The document path if specified */
+    val documentPath: String? = null,
     /** Query channels used (for smart search) */
     val channels: List<String> = emptyList(),
     /** Documents/files searched */
@@ -35,7 +39,12 @@ data class DocQLSearchStats(
      * Detailed formatted results for display in dialog.
      * Contains the full verbose output with scores and file groupings.
      */
-    val detailedResults: String? = null
+    val detailedResults: String? = null,
+    /**
+     * Smart result summary - a concise one-line summary of the search results.
+     * Used for display in the tool call header.
+     */
+    val smartSummary: String? = null
 ) {
     @Serializable
     enum class SearchType {
@@ -50,6 +59,11 @@ data class DocQLSearchStats(
      */
     fun toMetadata(): Map<String, String> = buildMap {
         put("docql_search_type", searchType.name)
+        if (query.isNotEmpty()) {
+            put("docql_query", query)
+        }
+        documentPath?.let { put("docql_document_path", it) }
+        smartSummary?.let { put("docql_smart_summary", it) }
         if (channels.isNotEmpty()) {
             put("docql_channels", channels.joinToString(","))
         }
@@ -125,6 +139,8 @@ data class DocQLSearchStats(
 
             return DocQLSearchStats(
                 searchType = searchType,
+                query = metadata["docql_query"] ?: "",
+                documentPath = metadata["docql_document_path"],
                 channels = metadata["docql_channels"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                 documentsSearched = metadata["docql_docs_searched"]?.toIntOrNull() ?: 0,
                 totalRawResults = metadata["docql_raw_results"]?.toIntOrNull() ?: 0,
@@ -135,7 +151,8 @@ data class DocQLSearchStats(
                 scoringInfo = ScoringStats.fromMetadata(metadata),
                 keywordExpansion = KeywordExpansionStats.fromMetadata(metadata),
                 llmRerankerInfo = LLMRerankerStats.fromMetadata(metadata),
-                detailedResults = metadata["docql_detailed_results"]
+                detailedResults = metadata["docql_detailed_results"],
+                smartSummary = metadata["docql_smart_summary"]
             )
         }
     }

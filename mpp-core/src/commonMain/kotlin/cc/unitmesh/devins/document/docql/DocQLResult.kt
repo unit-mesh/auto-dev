@@ -126,7 +126,7 @@ sealed class DocQLResult {
             is DocQLResult.TocItems -> {
                 buildString {
                     val totalItems = result.totalCount
-                    val truncated = totalItems > maxResults
+                    val truncated = totalItems > maxResults * 2
 
                     appendLine("Found $totalItems TOC items across ${result.itemsByFile.size} file(s):")
                     if (truncated) {
@@ -138,7 +138,7 @@ sealed class DocQLResult {
                     for ((filePath, items) in result.itemsByFile) {
                         if (count >= maxResults) break
 
-                        appendLine("## 📄 $filePath")
+                        appendLine("## $filePath")
                         for (item in items) {
                             if (count >= maxResults) break
                             appendLine("  ${"  ".repeat(item.level - 1)}${item.level}. ${item.title}")
@@ -170,14 +170,14 @@ sealed class DocQLResult {
                     for ((filePath, items) in result.itemsByFile) {
                         if (count >= maxResults) break
 
-                        appendLine("## 📄 $filePath")
+                        appendLine("## $filePath")
                         for (entity in items) {
                             if (count >= maxResults) break
                             when (entity) {
                                 is Entity.ClassEntity -> {
                                     val pkg =
                                         if (!entity.packageName.isNullOrEmpty()) " (${entity.packageName})" else ""
-                                    appendLine("  📘 class ${entity.name}$pkg")
+                                    appendLine("  class ${entity.name}$pkg")
                                     if (entity.location.line != null) {
                                         appendLine("     └─ Line ${entity.location.line}")
                                     }

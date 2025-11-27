@@ -101,6 +101,7 @@ object AutoDevComposeIcons {
     val Warning: ImageVector get() = Icons.Default.Warning
     val DriveFileRenameOutline: ImageVector get() = Icons.Default.Edit // Using Edit as fallback for rename
     val Analytics: ImageVector get() = Icons.Default.Analytics
+    val OpenInNew: ImageVector get() = Icons.Default.OpenInNew
 
     // Document Reader Icons
     val MenuBook: ImageVector get() = Icons.Default.MenuBook
