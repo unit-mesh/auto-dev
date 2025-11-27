@@ -260,6 +260,13 @@ class CodeDocQLExecutor(
      * Execute $.code.class("ClassName") - find specific class and its content
      * 
      * Supports wildcard: $.code.class("*") returns all classes (equivalent to $.code.classes[*])
+     * 
+     * Matching priority:
+     * 1. Exact match: class name exactly equals the query (e.g., "CodingAgent" matches "class CodingAgent")
+     * 2. Partial match: class name contains the query (e.g., "Agent" matches "CodingAgent", "CodingAgentContext")
+     * 
+     * When exact match is found, only exact matches are returned.
+     * This prevents returning unrelated classes like "CodingAgentContext" when searching for "CodingAgent".
      */
     private suspend fun executeCodeClassQuery(className: String): DocQLResult {
         if (documentFile == null) {
@@ -283,14 +290,65 @@ class CodeDocQLExecutor(
             val title = chunk.chapterTitle ?: ""
             title.startsWith("class ") ||
                     title.startsWith("interface ") ||
-                    title.startsWith("enum ")
+                    title.startsWith("enum ") ||
+                    title.startsWith("object ")  // Kotlin objects
         }
-
-        return if (classChunks.isNotEmpty()) {
-            DocQLResult.Chunks(mapOf(documentFile.path to classChunks))
+        
+        if (classChunks.isEmpty()) {
+            return DocQLResult.Empty
+        }
+        
+        // Prioritize exact matches over partial matches
+        // Extract class name from title (e.g., "class CodingAgent" -> "CodingAgent", "class Foo<T>" -> "Foo")
+        val exactMatches = classChunks.filter { chunk ->
+            val extractedName = extractClassNameFromTitle(chunk.chapterTitle ?: "")
+            extractedName.equals(className, ignoreCase = true)
+        }
+        
+        return if (exactMatches.isNotEmpty()) {
+            // Return only exact matches - this prevents returning CodingAgentContext when searching for CodingAgent
+            DocQLResult.Chunks(mapOf(documentFile.path to exactMatches))
         } else {
-            DocQLResult.Empty
+            // No exact match - return partial matches sorted by relevance
+            // Sort: shorter names (more specific) come first
+            val sortedChunks = classChunks.sortedBy { chunk ->
+                val extractedName = extractClassNameFromTitle(chunk.chapterTitle ?: "")
+                extractedName.length
+            }
+            DocQLResult.Chunks(mapOf(documentFile.path to sortedChunks))
         }
+    }
+    
+    /**
+     * Extract the class/interface/enum name from a chunk title.
+     * Examples:
+     * - "class CodingAgent" -> "CodingAgent"
+     * - "class Foo<T>" -> "Foo"
+     * - "interface Service" -> "Service"
+     * - "enum Status" -> "Status"
+     * - "object Companion" -> "Companion"
+     */
+    private fun extractClassNameFromTitle(title: String): String {
+        val prefixes = listOf("class ", "interface ", "enum ", "object ")
+        val withoutPrefix = prefixes.fold(title) { acc, prefix ->
+            if (acc.startsWith(prefix, ignoreCase = true)) {
+                acc.removePrefix(prefix).trimStart()
+            } else {
+                acc
+            }
+        }
+        // Remove generic parameters (e.g., "Foo<T>" -> "Foo")
+        val genericIndex = withoutPrefix.indexOf('<')
+        val parenIndex = withoutPrefix.indexOf('(')
+        val colonIndex = withoutPrefix.indexOf(':')
+        val spaceIndex = withoutPrefix.indexOf(' ')
+        
+        // Find the first delimiter
+        val endIndex = listOf(genericIndex, parenIndex, colonIndex, spaceIndex)
+            .filter { it > 0 }
+            .minOrNull() ?: withoutPrefix.length
+        
+        return withoutPrefix.substring(0, endIndex).trim()
     }
 
     /**
@@ -322,6 +380,8 @@ class CodeDocQLExecutor(
      * Execute $.code.query("keyword") - custom query for any code element
      * 
      * Supports wildcard: $.code.query("*") returns all code chunks
+     * 
+     * For function queries, prioritizes exact name matches over partial matches.
      */
     private suspend fun executeCodeCustomQuery(keyword: String): DocQLResult {
         if (parserService == null || documentFile == null) {
@@ -354,11 +414,67 @@ class CodeDocQLExecutor(
 
         // Use heading query for flexible search
         val chunks = parserService.queryHeading(keyword)
-
-        return if (chunks.isNotEmpty()) {
-            DocQLResult.Chunks(mapOf(documentFile.path to chunks))
-        } else {
-            DocQLResult.Empty
+        
+        if (chunks.isEmpty()) {
+            return DocQLResult.Empty
         }
+        
+        // Prioritize exact function name matches over partial matches
+        val exactMatches = chunks.filter { chunk ->
+            val title = chunk.chapterTitle ?: ""
+            // Extract function name from title (e.g., "fun execute()" -> "execute")
+            val funcName = extractFunctionNameFromTitle(title)
+            funcName.equals(keyword, ignoreCase = true)
+        }
+        
+        return if (exactMatches.isNotEmpty()) {
+            // Return exact matches first
+            DocQLResult.Chunks(mapOf(documentFile.path to exactMatches))
+        } else {
+            // No exact match - return all matches sorted by relevance (shorter names first)
+            val sortedChunks = chunks.sortedBy { chunk ->
+                val title = chunk.chapterTitle ?: ""
+                extractFunctionNameFromTitle(title).length
+            }
+            DocQLResult.Chunks(mapOf(documentFile.path to sortedChunks))
+        }
+    }
+    
+    /**
+     * Extract the function name from a chunk title.
+     * Examples:
+     * - "fun execute()" -> "execute"
+     * - "fun execute(param: String)" -> "execute"
+     * - "suspend fun process()" -> "process"
+     * - "private fun helper()" -> "helper"
+     */
+    private fun extractFunctionNameFromTitle(title: String): String {
+        // Find "fun " keyword and extract the function name after it
+        val funIndex = title.indexOf("fun ")
+        if (funIndex >= 0) {
+            val afterFun = title.substring(funIndex + 4).trimStart()
+            // Function name ends at ( or <
+            val parenIndex = afterFun.indexOf('(')
+            val genericIndex = afterFun.indexOf('<')
+            val endIndex = listOf(parenIndex, genericIndex)
+                .filter { it > 0 }
+                .minOrNull() ?: afterFun.length
+            return afterFun.substring(0, endIndex).trim()
+        }
+        
+        // For class methods without "fun" prefix, try to extract method name
+        val parenIndex = title.indexOf('(')
+        if (parenIndex > 0) {
+            // Find the last word before (
+            val beforeParen = title.substring(0, parenIndex).trim()
+            val lastSpaceIndex = beforeParen.lastIndexOf(' ')
+            return if (lastSpaceIndex >= 0) {
+                beforeParen.substring(lastSpaceIndex + 1)
+            } else {
+                beforeParen
+            }
+        }
+        
+        return title
     }
 }
