@@ -110,7 +110,7 @@ fun RenderMessageItem(
         }
 
         is ComposeRenderer.TimelineItem.CombinedToolItem -> {
-            CombinedToolItem(
+            ToolItem(
                 toolName = timelineItem.toolName,
                 details = timelineItem.details,
                 fullParams = timelineItem.fullParams,

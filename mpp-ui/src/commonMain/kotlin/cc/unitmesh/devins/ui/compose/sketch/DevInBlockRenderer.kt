@@ -2,20 +2,19 @@ package cc.unitmesh.devins.ui.compose.sketch
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cc.unitmesh.agent.parser.ToolCallParser
 import cc.unitmesh.agent.tool.ToolType
-import cc.unitmesh.devins.ui.compose.agent.CombinedToolItem
+import cc.unitmesh.devins.ui.compose.agent.ToolItem
 import cc.unitmesh.devins.workspace.WorkspaceManager
 import kotlinx.serialization.json.Json
 
 /**
  * DevIn Block Renderer - renders devin blocks as tool calls
- * 
+ *
  * Parses devin blocks (language id = "devin") and renders them as CombinedToolItem
  * when the block is complete.
  */
@@ -35,27 +34,27 @@ fun DevInBlockRenderer(
             if (toolCalls.isNotEmpty()) {
                 // Get workspace root path for resolving relative paths
                 val workspaceRoot = WorkspaceManager.currentWorkspace?.rootPath
-                
+
                 toolCalls.forEach { toolCall ->
                     // Extract details for rendering
                     val toolName = toolCall.toolName
                     val params = toolCall.params
-                    
+
                     // Format details string (for display)
                     val details = formatToolCallDetails(toolName, params)
-                    
+
                     // Format full params as JSON (for expansion)
                     val fullParams = formatParamsAsJson(params)
-                    
+
                     // Extract file path if available (for ReadFile/WriteFile)
                     // Resolve relative path to absolute path using workspace root
                     val relativePath = params["path"] as? String
                     val filePath = resolveAbsolutePath(relativePath, workspaceRoot)
-                    
+
                     // Map tool name to ToolType
                     val toolType = ToolType.fromName(toolName)
-                    
-                    CombinedToolItem(
+
+                    ToolItem(
                         toolName = toolName,
                         details = details,
                         fullParams = fullParams,
@@ -67,7 +66,7 @@ fun DevInBlockRenderer(
                         fullOutput = null,
                         executionTimeMs = null
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             } else {
@@ -95,12 +94,12 @@ fun DevInBlockRenderer(
 private fun resolveAbsolutePath(relativePath: String?, workspaceRoot: String?): String? {
     if (relativePath == null) return null
     if (workspaceRoot == null) return relativePath
-    
+
     // If already an absolute path, return as-is
     if (relativePath.startsWith("/") || relativePath.matches(Regex("^[A-Za-z]:.*"))) {
         return relativePath
     }
-    
+
     // Combine workspace root with relative path
     val separator = if (workspaceRoot.endsWith("/") || workspaceRoot.endsWith("\\")) "" else "/"
     return "$workspaceRoot$separator$relativePath"

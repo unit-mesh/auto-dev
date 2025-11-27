@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import cc.unitmesh.devins.llm.Message
 import cc.unitmesh.devins.llm.MessageRole
 import cc.unitmesh.devins.ui.compose.agent.AgentMessageList
-import cc.unitmesh.devins.ui.compose.agent.CombinedToolItem
+import cc.unitmesh.devins.ui.compose.agent.ToolItem
 import cc.unitmesh.devins.ui.compose.agent.ComposeRenderer
 import cc.unitmesh.devins.ui.compose.agent.CurrentToolCallItem
 import cc.unitmesh.devins.ui.compose.agent.ToolErrorItem
@@ -116,7 +116,7 @@ fun Preview_CurrentToolCallItem() {
 fun Preview_CombinedToolItem_FileRead() {
     MaterialTheme {
         Surface {
-            CombinedToolItem(
+            ToolItem(
                 toolName = "src/Main.kt - ReadFile",
                 details = "path=src/Main.kt",
                 fullParams = "path=src/Main.kt encoding=utf-8",

@@ -50,7 +50,7 @@ import cc.unitmesh.devins.ui.compose.terminal.PlatformTerminalDisplay
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CombinedToolItem(
+fun ToolItem(
     toolName: String,
     details: String?,
     fullParams: String? = null,
@@ -132,13 +132,12 @@ fun CombinedToolItem(
                     modifier = Modifier.Companion.size(16.dp)
                 )
 
-                // Display tool name with query/path info for DocQL
                 val displayToolName = when {
                     toolName.lowercase() == "docql" && docqlStats != null -> {
                         val query = docqlStats.query.take(30).let {
                             if (docqlStats.query.length > 30) "$it..." else it
                         }
-                        if (query.isNotEmpty()) "\"$query\" - DocQL" else "DocQL"
+                        if (query.isNotEmpty()) "DocQL - $query"  else "DocQL"
                     }
 
                     else -> toolName
@@ -153,7 +152,7 @@ fun CombinedToolItem(
 
                 val displaySummary = when {
                     toolName.lowercase() == "docql" && docqlStats?.smartSummary != null ->
-                        docqlStats.smartSummary?.take(16)
+                        "${docqlStats.totalRawResults} results"
 
                     else -> summary
                 }
