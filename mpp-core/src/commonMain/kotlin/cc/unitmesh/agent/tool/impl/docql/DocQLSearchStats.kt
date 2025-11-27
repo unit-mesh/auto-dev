@@ -12,7 +12,7 @@ data class DocQLSearchStats(
     /** Type of search performed */
     val searchType: SearchType,
     /** The original query string */
-    val query: String = "",
+    val query: String,
     /** The document path if specified */
     val documentPath: String? = null,
     /** Query channels used (for smart search) */
