@@ -318,8 +318,21 @@ class DocQLExecutor(
     /**
      * Execute code query: $.code.classes[*], $.code.class("Name"), $.code.functions[*], etc.
      * This is for querying source code structure (classes, methods, functions) parsed by CodeDocumentParser.
+     * 
+     * NOTE: This query only works on SOURCE_CODE files. For other document types (markdown, pdf, etc.),
+     * it returns Empty result to avoid returning irrelevant results.
      */
     private suspend fun executeCodeQuery(nodes: List<DocQLNode>): DocQLResult {
+        if (documentFile == null) {
+            return DocQLResult.Error("No document loaded")
+        }
+        
+        // $.code.* queries should only work on source code files
+        // Skip non-source-code files (markdown, pdf, etc.) to avoid returning irrelevant results
+        if (documentFile.metadata.formatType != DocumentFormatType.SOURCE_CODE) {
+            return DocQLResult.Empty
+        }
+        
         if (nodes.isEmpty()) {
             return DocQLResult.Error("Code query requires function call or property (e.g., $.code.classes[*], $.code.class(\"Name\"), $.code.functions[*])")
         }

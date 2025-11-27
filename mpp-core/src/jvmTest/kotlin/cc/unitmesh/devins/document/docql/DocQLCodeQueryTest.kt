@@ -487,5 +487,114 @@ class DocQLCodeQueryTest {
         )
         println("✅ $.code.function(\"*\") and $.code.functions[*] return same ${arrayEntities.totalCount} functions")
     }
+    
+    // ====== File Type Filtering Tests ======
+    
+    @Test
+    fun `code query should return empty for markdown files`() = runBlocking {
+        val markdownContent = """
+            # Introduction
+            
+            This document describes how to parse data.
+            
+            ## Parse Methods
+            
+            The `parse()` function is used to analyze input.
+            
+            ```kotlin
+            fun parse(input: String): Result {
+                return Result.success()
+            }
+            ```
+        """.trimIndent()
+        
+        val parser = MarkdownDocumentParser()
+        val file = DocumentFile(
+            name = "readme.md",
+            path = "docs/readme.md",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = markdownContent.length.toLong(),
+                formatType = DocumentFormatType.MARKDOWN  // This is a markdown file, not source code
+            )
+        )
+        
+        val parsedFile = parser.parse(file, markdownContent) as DocumentFile
+        
+        // Execute $.code.function("parse") - should return Empty for markdown files
+        val query = parseDocQL("$.code.function(\"parse\")")
+        val executor = DocQLExecutor(parsedFile, parser)
+        val result = executor.execute(query)
+        
+        // Should return Empty, not markdown heading results
+        assertTrue(
+            result is DocQLResult.Empty,
+            "$.code.* queries should return Empty for markdown files, but got: $result"
+        )
+        println("✅ $.code.function(\"parse\") correctly returned Empty for markdown file")
+    }
+    
+    @Test
+    fun `code query should only work on source code files`() = runBlocking {
+        // Test with Kotlin source code file
+        val parser = CodeDocumentParser()
+        val sourceFile = DocumentFile(
+            name = "Parser.kt",
+            path = "src/Parser.kt",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = sampleKotlinCode.length.toLong(),
+                formatType = DocumentFormatType.SOURCE_CODE
+            )
+        )
+        
+        val parsedSourceFile = parser.parse(sourceFile, sampleKotlinCode) as DocumentFile
+        
+        // Execute $.code.function("execute") on source code - should return results
+        val sourceQuery = parseDocQL("$.code.function(\"execute\")")
+        val sourceExecutor = DocQLExecutor(parsedSourceFile, parser)
+        val sourceResult = sourceExecutor.execute(sourceQuery)
+        
+        assertTrue(
+            sourceResult is DocQLResult.Chunks,
+            "$.code.* queries should return results for source code files, got: $sourceResult"
+        )
+        println("✅ $.code.function(\"execute\") correctly returned results for source code file")
+    }
+    
+    @Test
+    fun `code classes query should return empty for non-source-code files`() = runBlocking {
+        val markdownContent = """
+            # Class Design
+            
+            ## UserService Class
+            
+            The UserService class handles user operations.
+        """.trimIndent()
+        
+        val parser = MarkdownDocumentParser()
+        val file = DocumentFile(
+            name = "design.md",
+            path = "docs/design.md",
+            metadata = DocumentMetadata(
+                lastModified = System.currentTimeMillis(),
+                fileSize = markdownContent.length.toLong(),
+                formatType = DocumentFormatType.MARKDOWN
+            )
+        )
+        
+        val parsedFile = parser.parse(file, markdownContent) as DocumentFile
+        
+        // Execute $.code.classes[*] - should return Empty for markdown files
+        val query = parseDocQL("$.code.classes[*]")
+        val executor = DocQLExecutor(parsedFile, parser)
+        val result = executor.execute(query)
+        
+        assertTrue(
+            result is DocQLResult.Empty,
+            "$.code.classes[*] should return Empty for markdown files, but got: $result"
+        )
+        println("✅ $.code.classes[*] correctly returned Empty for markdown file")
+    }
 }
 
