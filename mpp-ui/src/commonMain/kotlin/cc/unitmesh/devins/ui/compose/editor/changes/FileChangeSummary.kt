@@ -213,7 +213,7 @@ fun FileChangeSummary(
                                 .padding(8.dp),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        items(changes, key = { it.timestamp }) { change ->
+                        items(changes, key = { "${it.filePath}_${it.timestamp}_${it.hashCode()}" }) { change ->
                             FileChangeItem(
                                 change = change,
                                 onClick = {
