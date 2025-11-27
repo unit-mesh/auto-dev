@@ -57,8 +57,9 @@ class DocQLResultFormatterTest {
         assertTrue(formatted.contains("## Search Results for 'Test'"))
         assertTrue(formatted.contains("Found 1 relevant items"))
         assertTrue(formatted.contains("## TestClass.kt"))
-        assertTrue(formatted.contains("- **Class**: `TestClass` (score: 0.95)"))
-        assertTrue(formatted.contains("Line: 20"))
+        // New inline format: class name with line number inline
+        assertTrue(formatted.contains("- **Class**: `TestClass:20`"))
+        assertTrue(formatted.contains("(0.95)"))
     }
 
     @Test
@@ -87,7 +88,8 @@ class DocQLResultFormatterTest {
 
         assertTrue(formatted.contains("Showing 1 of 10 results"))
         assertTrue(formatted.contains("## README.md"))
-        assertTrue(formatted.contains("- **Section**: Introduction (score: 0.88)"))
+        // New compact format: scoreInfo is now (0.88) instead of (score: 0.88)
+        assertTrue(formatted.contains("- **Section**: Introduction (0.88)"))
         assertTrue(formatted.contains("> This is the introduction content."))
     }
 }

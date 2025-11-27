@@ -13,15 +13,7 @@ import kotlin.collections.component2
 import kotlin.collections.iterator
 import kotlin.math.round
 
-/**
- * Responsible for formatting DocQL search results for display to the user/LLM.
- */
 object DocQLResultFormatter {
-
-    /**
-     * Maximum number of items to show in the compact summary
-     */
-    private const val COMPACT_MAX_ITEMS = 12
 
     /**
      * Format a smart summary for header display.
@@ -36,50 +28,70 @@ object DocQLResultFormatter {
         totalCount: Int,
         truncated: Boolean
     ): String {
-        if (results.isEmpty()) {
+        // Filter out "unknown" entities (failed parsing results)
+        val filteredResults = results.filter { result ->
+            !isUnknownEntity(result)
+        }
+
+        if (filteredResults.isEmpty()) {
             return "No results found"
         }
 
-        val countInfo = if (truncated) "$totalCount+" else "${results.size}"
+        val countInfo = if (truncated) "$totalCount+" else "${filteredResults.size}"
 
-        val topItems = results.take(COMPACT_MAX_ITEMS).map { result ->
+        val topItems = filteredResults.take(initialMaxResults).mapNotNull { result ->
             val (itemType, itemName) = extractItemInfo(result)
-            "$itemName ($itemType)"
+            if (itemName.isNotBlank()) "$itemName ($itemType)" else null
         }
 
         val preview = topItems.joinToString(", ")
-        val moreCount = results.size - COMPACT_MAX_ITEMS
+        val moreCount = filteredResults.size - initialMaxResults
         val moreInfo = if (moreCount > 0) ", +$moreCount more" else ""
 
         return "Found $countInfo: $preview$moreInfo"
     }
 
     /**
+     * Check if the result represents an unknown/unparseable entity
+     */
+    private fun isUnknownEntity(result: ScoredResult): Boolean {
+        return when (val item = result.item) {
+            is Entity.ClassEntity -> item.name == "unknown" || item.name.isBlank()
+            is Entity.FunctionEntity -> item.name == "unknown" || item.name.isBlank()
+            else -> false
+        }
+    }
+
+    /**
      * Extract item type and name from a ScoredResult for compact display.
+     * Format: "ClassName:123" or "functionName:45" with inline line numbers
      */
     fun extractItemInfo(result: ScoredResult): Pair<String, String> {
         return when (val item = result.item) {
             is Entity.ClassEntity -> {
-                "class" to result.item.toString()
+                val lineInfo = item.location.line?.let { ":$it" } ?: ""
+                "class" to "${item.name}$lineInfo"
             }
 
             is Entity.FunctionEntity -> {
-                "function" to result.item.toString()
+                val lineInfo = item.location.line?.let { ":$it" } ?: ""
+                "function" to "${item.name}$lineInfo"
             }
 
             is TOCItem -> {
-                "heading" to "page: ${item.page}, line: ${item.lineNumber}" + item.title + item.children.joinToString(", ")
+                val lineInfo = item.lineNumber?.let { ":$it" } ?: ""
+                "heading" to "${item.title}$lineInfo"
             }
 
             is DocumentChunk -> {
-                "content" to item.content
+                "content" to item.content.take(50)
             }
 
             is TextSegment -> {
-                item.type to (item.name.ifEmpty { result.preview.take(200) })
+                item.type to (item.name.ifEmpty { result.preview.take(50) })
             }
 
-            else -> "item" to result.preview.take(200)
+            else -> "item" to result.preview.take(50)
         }
     }
 
@@ -89,39 +101,53 @@ object DocQLResultFormatter {
         truncated: Boolean = false,
         totalCount: Int = results.size
     ): String {
+        // Filter out "unknown" entities (failed parsing results)
+        val filteredResults = results.filter { result ->
+            when (val item = result.item) {
+                is Entity.ClassEntity -> item.name != "unknown" && item.name.isNotBlank()
+                is Entity.FunctionEntity -> item.name != "unknown" && item.name.isNotBlank()
+                else -> true
+            }
+        }
+
+        val unknownCount = results.size - filteredResults.size
+
         return buildString {
             appendLine("## Search Results for '$keyword'")
             if (truncated) {
-                appendLine("Showing ${results.size} of $totalCount results (sorted by relevance)")
+                appendLine("Showing ${filteredResults.size} of $totalCount results (sorted by relevance)")
             } else {
-                appendLine("Found ${results.size} relevant items (sorted by relevance)")
+                appendLine("Found ${filteredResults.size} relevant items (sorted by relevance)")
+            }
+            if (unknownCount > 0) {
+                appendLine("($unknownCount unparseable items filtered)")
             }
             appendLine()
 
             // Group by file for cleaner output
-            val byFile = results.groupBy { it.filePath ?: "Unknown File" }
+            val byFile = filteredResults.groupBy { it.filePath ?: "Unknown File" }
 
             byFile.forEach { (file, items) ->
                 appendLine("### $file")
                 items.forEach { result ->
-                    val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
+                    val scoreInfo = if (result.score > 0) " (${formatScore(result.score)})" else ""
                     when (val item = result.item) {
                         is Entity.ClassEntity -> {
-                            appendLine("- **Class**: `${item.name}`$scoreInfo")
-                            if (item.location.line != null) appendLine("  - Line: ${item.location.line}")
+                            val lineInfo = item.location.line?.let { ":$it" } ?: ""
+                            appendLine("- **Class**: `${item.name}$lineInfo`$scoreInfo")
                         }
 
                         is Entity.FunctionEntity -> {
-                            appendLine("- **Function**: `${item.name}`$scoreInfo")
-                            if (item.signature != null) appendLine("  - Signature: `${item.signature}`")
-                            if (item.location.line != null) appendLine("  - Line: ${item.location.line}")
+                            val lineInfo = item.location.line?.let { ":$it" } ?: ""
+                            val sig = item.signature ?: item.name
+                            appendLine("- **Function**: `$sig$lineInfo`$scoreInfo")
                         }
 
                         is TOCItem -> {
                             appendLine("- **Section**: ${item.title}$scoreInfo")
                             appendLine("  - Level: H${item.level}")
                             if (!item.content.isNullOrBlank()) {
-                                appendLine("  > ${item.content!!.take(200).replace("\n", " ")}...")
+                                appendLine("  > ${item.content.take(200).replace("\n", " ")}...")
                             }
                         }
 
@@ -132,7 +158,7 @@ object DocQLResultFormatter {
 
                         is TextSegment -> {
                             val type = item.type.replaceFirstChar { it.uppercase() }
-                            appendLine("- **$type**: ${item.name.ifEmpty { result.preview.take(100) }}$scoreInfo")
+                            appendLine("- **$type**: ${item.name.ifEmpty { result.preview }}$scoreInfo")
                         }
                     }
                 }
@@ -160,7 +186,7 @@ object DocQLResultFormatter {
     }
 
 
-    fun formatDocQLResult(result: DocQLResult ,maxResults: Int = initialMaxResults): String {
+    fun formatDocQLResult(result: DocQLResult, maxResults: Int = initialMaxResults): String {
         return when (result) {
             is DocQLResult.TocItems -> {
                 buildString {
@@ -203,50 +229,70 @@ object DocQLResultFormatter {
 
             is DocQLResult.Entities -> {
                 buildString {
-                    val totalItems = result.totalCount
-                    val truncated = totalItems > maxResults
+                    // Filter out "unknown" entities (failed parsing results)
+                    val filteredByFile = result.itemsByFile.mapValues { (_, entities) ->
+                        entities.filter { entity ->
+                            entity.name != "unknown" && entity.name.isNotBlank()
+                        }
+                    }.filter { it.value.isNotEmpty() }
 
-                    appendLine("Found $totalItems entities across ${result.itemsByFile.size} file(s):")
+                    val filteredCount = filteredByFile.values.sumOf { it.size }
+                    val unknownCount = result.totalCount - filteredCount
+                    val truncated = filteredCount > maxResults
+
+                    appendLine("Found $filteredCount entities across ${filteredByFile.size} file(s):")
                     if (truncated) {
-                        appendLine(" ️ Showing first $maxResults results (${totalItems - maxResults} more available)")
+                        appendLine(" Showing first $maxResults results (${filteredCount - maxResults} more available)")
+                    }
+                    if (unknownCount > 0) {
+                        appendLine(" ($unknownCount unparseable entities filtered)")
                     }
                     appendLine()
 
                     var count = 0
-                    for ((filePath, items) in result.itemsByFile) {
+                    for ((filePath, items) in filteredByFile) {
                         if (count >= maxResults) break
 
                         appendLine("## $filePath")
-                        for (entity in items) {
+
+                        // Group entities by type for better readability
+                        val classes = items.filterIsInstance<Entity.ClassEntity>()
+                        val functions = items.filterIsInstance<Entity.FunctionEntity>()
+                        val terms = items.filterIsInstance<Entity.Term>()
+                        val apis = items.filterIsInstance<Entity.API>()
+
+                        // Format classes - inline with line number
+                        for (entity in classes) {
                             if (count >= maxResults) break
-                            when (entity) {
-                                is Entity.ClassEntity -> {
-                                    val pkg =
-                                        if (!entity.packageName.isNullOrEmpty()) " (${entity.packageName})" else ""
-                                    appendLine("  class ${entity.name}$pkg")
-                                    if (entity.location.line != null) {
-                                        appendLine("     └─ Line ${entity.location.line}")
-                                    }
-                                }
-
-                                is Entity.FunctionEntity -> {
-                                    val sig = entity.signature ?: entity.name
-                                    appendLine("  $sig")
-                                    if (entity.location.line != null) {
-                                        appendLine("     └─ Line ${entity.location.line}")
-                                    }
-                                }
-
-                                is Entity.Term -> {
-                                    appendLine("  ${entity.name}: ${entity.definition ?: ""}")
-                                }
-
-                                is Entity.API -> {
-                                    appendLine("  ${entity.name}: ${entity.signature ?: ""}")
-                                }
-                            }
+                            val lineInfo = entity.location.line?.let { ":$it" } ?: ""
+                            val pkg = if (!entity.packageName.isNullOrEmpty()) " (${entity.packageName})" else ""
+                            appendLine("  class ${entity.name}$lineInfo$pkg")
                             count++
                         }
+
+                        // Format functions - inline with line number
+                        for (entity in functions) {
+                            if (count >= maxResults) break
+                            val lineInfo = entity.location.line?.let { ":$it" } ?: ""
+                            val sig = entity.signature ?: entity.name
+                            appendLine("  $sig$lineInfo")
+                            count++
+                        }
+
+                        // Format terms
+                        for (entity in terms) {
+                            if (count >= maxResults) break
+                            appendLine("  ${entity.name}: ${entity.definition ?: ""}")
+                            count++
+                        }
+
+                        // Format APIs
+                        for (entity in apis) {
+                            if (count >= maxResults) break
+                            appendLine("  ${entity.name}: ${entity.signature ?: ""}")
+                            count++
+                        }
+
                         appendLine()
                     }
 
