@@ -71,22 +71,32 @@ function scanDocuments(dirPath: string, extensions: string[] = [
 }
 
 /**
+ * Result of document registration attempt
+ */
+interface RegistrationResult {
+    success: boolean;
+    filePath: string;
+    errorType?: string;
+}
+
+/**
  * Register a document with the DocumentRegistry
  */
 async function registerDocument(
     filePath: string,
     projectPath: string,
     agent: any
-): Promise<boolean> {
+): Promise<RegistrationResult> {
     try {
         const relativePath = path.relative(projectPath, filePath);
         const content = fs.readFileSync(filePath, 'utf-8');
 
         const registered = await agent.registerDocument(relativePath, content);
-        return registered;
+        return { success: registered, filePath };
     } catch (error: any) {
-        console.log(semanticChalk.warning(`⚠️  Failed to register ${filePath}: ${error.message}`));
-        return false;
+        // Extract error type for summary (e.g., "Cannot find module 'web-tree-sitter'")
+        const errorType = error.message?.split(':')[0] || 'Unknown error';
+        return { success: false, filePath, errorType };
     }
 }
 
@@ -149,6 +159,9 @@ export async function runDocument(
         let documentsRegistered = 0;
 
 
+        // Track failed registrations by error type for summary
+        const failedByErrorType: Map<string, number> = new Map();
+
         if (documentPath) {
             // Register specific document
             const fullPath = path.resolve(projectPath, documentPath);
@@ -159,13 +172,13 @@ export async function runDocument(
                 const relativePath = path.relative(projectPath, fullPath);
                 console.log(semanticChalk.muted(`   Registering as: ${relativePath}`));
 
-                const registered = await registerDocument(fullPath, projectPath, agent);
-                if (registered) {
+                const result = await registerDocument(fullPath, projectPath, agent);
+                if (result.success) {
                     console.log(semanticChalk.success(`✅ Document registered successfully`));
                     documentsRegistered = 1;
                     documentsScanned = 1;
                 } else {
-                    console.log(semanticChalk.warning(`⚠️  Failed to register document`));
+                    console.log(semanticChalk.warning(`⚠️  Failed to register document: ${result.errorType || 'Unknown error'}`));
                 }
                 console.log();
             } else {
@@ -181,14 +194,18 @@ export async function runDocument(
 
             if (foundDocs.length > 0) {
                 // Register documents silently - only show progress for large sets
-                const showProgress = foundDocs.length > 100;
+                const showProgress = foundDocs.length > 50;
                 let lastProgress = 0;
 
                 for (let i = 0; i < foundDocs.length; i++) {
                     const docPath = foundDocs[i];
-                    const registered = await registerDocument(docPath, projectPath, agent);
-                    if (registered) {
+                    const result = await registerDocument(docPath, projectPath, agent);
+                    if (result.success) {
                         documentsRegistered++;
+                    } else if (result.errorType) {
+                        // Track errors by type for summary
+                        const count = failedByErrorType.get(result.errorType) || 0;
+                        failedByErrorType.set(result.errorType, count + 1);
                     }
 
                     // Show progress every 25% for large document sets
@@ -202,9 +219,15 @@ export async function runDocument(
                 }
 
                 if (showProgress) {
-                    process.stdout.write('\r');  // Clear progress line
+                    process.stdout.write('\r                          \r');  // Clear progress line
                 }
                 console.log(semanticChalk.success(`✅ Registered ${documentsRegistered}/${documentsScanned} documents`));
+                
+                // Show summary of failures if any
+                if (failedByErrorType.size > 0) {
+                    const totalFailed = documentsScanned - documentsRegistered;
+                    console.log(semanticChalk.muted(`   ${totalFailed} documents skipped (code parsing requires tree-sitter)`));
+                }
                 console.log();
             }
         }

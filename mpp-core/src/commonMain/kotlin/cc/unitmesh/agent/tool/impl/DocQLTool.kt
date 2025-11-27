@@ -247,7 +247,7 @@ class DocQLInvocation(
         maxResults: Int,
         secondaryKeyword: String? = null
     ): ToolResult {
-        logger.info {
+        logger.debug {
             "Executing Smart Search for keyword: '$keyword'" +
                     (secondaryKeyword?.let { ", secondary: '$it'" } ?: "")
         }
@@ -386,7 +386,7 @@ class DocQLInvocation(
         reranker: DocumentReranker,
         rerankerConfig: DocumentRerankerConfig
     ): ToolResult {
-        logger.info { "Smart search yielded no results, trying broader content search" }
+        logger.debug { "Smart search yielded no results, trying broader content search" }
         val fallbackQuery = "$.content.chunks()"
         val allChunksResult = if (documentPath != null) {
             DocumentRegistry.queryDocument(documentPath, fallbackQuery)

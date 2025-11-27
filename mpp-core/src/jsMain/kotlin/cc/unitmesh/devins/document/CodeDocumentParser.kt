@@ -37,8 +37,8 @@ class CodeDocumentParser : DocumentParserService {
      * Parse source code file and build hierarchical structure
      */
     override suspend fun parse(file: DocumentFile, content: String): DocumentTreeNode {
-        logger.info { "=== Starting Code Parse ===" }
-        logger.info { "File: ${file.path}, Size: ${content.length} bytes" }
+        logger.debug { "=== Starting Code Parse ===" }
+        logger.debug { "File: ${file.path}, Size: ${content.length} bytes" }
         
         try {
             currentContent = content
@@ -54,21 +54,21 @@ class CodeDocumentParser : DocumentParserService {
                 )
             }
             
-            logger.info { "Detected language: $language" }
+            logger.debug { "Detected language: $language" }
             
             // Parse code using mpp-codegraph
             currentCodeNodes = codeParser.parseNodes(content, file.path, language)
-            logger.info { "Extracted ${currentCodeNodes.size} code nodes" }
+            logger.debug { "Extracted ${currentCodeNodes.size} code nodes" }
             
             // Build TOC from code structure (classes -> methods -> fields)
             val toc = buildTOCFromCodeNodes(currentCodeNodes)
-            logger.info { "Built TOC with ${toc.size} top-level items" }
+            logger.debug { "Built TOC with ${toc.size} top-level items" }
             
             // Build entities (classes, functions)
             val entities = buildEntitiesFromCodeNodes(currentCodeNodes)
-            logger.info { "Built ${entities.size} entities" }
+            logger.debug { "Built ${entities.size} entities" }
             
-            logger.info { "=== Parse Complete ===" }
+            logger.debug { "=== Parse Complete ===" }
             
             return file.copy(
                 toc = toc,
