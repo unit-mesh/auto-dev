@@ -101,6 +101,11 @@ object DocQLResultFormatter {
         }
     }
 
+    /**
+     * Maximum lines to show for function/method code blocks in search results.
+     */
+    private const val MAX_CODE_PREVIEW_LINES = 20
+    
     fun formatFallbackResult(
         results: List<ScoredResult>,
         keyword: String,
@@ -136,48 +141,145 @@ object DocQLResultFormatter {
 
             byFile.forEach { (file, items) ->
                 appendLine("### $file")
+                appendLine()
+                
                 items.forEach { result ->
-                    val scoreInfo = if (result.score > 0) " (${formatScore(result.score)})" else ""
+                    val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
                     when (val item = result.item) {
                         is Entity.ClassEntity -> {
                             val lineInfo = item.location.line?.let { ":$it" } ?: ""
-                            appendLine("- **Class**: `${item.name}$lineInfo`$scoreInfo")
+                            appendLine("#### Class: `${item.name}$lineInfo`$scoreInfo")
+                            appendLine()
+                            // Show class summary with functions from preview
+                            val preview = formatCodePreview(result.preview)
+                            if (preview.isNotBlank()) {
+                                appendLine("```kotlin")
+                                appendLine(preview)
+                                appendLine("```")
+                            }
+                            appendLine()
                         }
 
                         is Entity.FunctionEntity -> {
                             val lineInfo = item.location.line?.let { ":$it" } ?: ""
                             val sig = item.signature ?: item.name
-                            appendLine("- **Function**: `$sig$lineInfo`$scoreInfo")
+                            appendLine("#### Function: `$sig$lineInfo`$scoreInfo")
+                            appendLine()
+                            // Show function code (up to MAX_CODE_PREVIEW_LINES lines)
+                            val preview = formatCodePreview(result.preview)
+                            if (preview.isNotBlank() && preview != sig) {
+                                appendLine("```kotlin")
+                                appendLine(preview)
+                                appendLine("```")
+                            }
+                            appendLine()
                         }
 
                         is Entity.ConstructorEntity -> {
                             val lineInfo = item.location.line?.let { ":$it" } ?: ""
                             val sig = item.signature ?: "${item.className}()"
-                            appendLine("- **Constructor**: `$sig$lineInfo`$scoreInfo")
+                            appendLine("#### Constructor: `$sig$lineInfo`$scoreInfo")
+                            appendLine()
+                            // Show constructor code
+                            val preview = formatCodePreview(result.preview)
+                            if (preview.isNotBlank() && preview != sig) {
+                                appendLine("```kotlin")
+                                appendLine(preview)
+                                appendLine("```")
+                            }
+                            appendLine()
                         }
 
                         is TOCItem -> {
-                            appendLine("- **Section**: ${item.title}$scoreInfo")
-                            appendLine("  - Level: H${item.level}")
+                            appendLine("#### Section: ${item.title}$scoreInfo")
+                            appendLine("- Level: H${item.level}")
                             if (!item.content.isNullOrBlank()) {
-                                appendLine("  > ${item.content.take(200).replace("\n", " ")}...")
+                                val contentPreview = item.content!!.lines()
+                                    .take(MAX_CODE_PREVIEW_LINES)
+                                    .joinToString("\n")
+                                appendLine()
+                                appendLine("> ${contentPreview.replace("\n", "\n> ")}")
                             }
+                            appendLine()
                         }
 
                         is DocumentChunk -> {
-                            appendLine("- **Content**:$scoreInfo")
-                            appendLine("  > ${result.preview.take(200)}")
+                            val title = item.chapterTitle?.let { "#### $it$scoreInfo" } ?: "#### Content$scoreInfo"
+                            appendLine(title)
+                            appendLine()
+                            // Show content (up to MAX_CODE_PREVIEW_LINES lines)
+                            val preview = formatCodePreview(result.preview)
+                            if (preview.isNotBlank()) {
+                                // Detect if it looks like code
+                                if (looksLikeCode(preview)) {
+                                    appendLine("```")
+                                    appendLine(preview)
+                                    appendLine("```")
+                                } else {
+                                    appendLine(preview)
+                                }
+                            }
+                            appendLine()
                         }
 
                         is TextSegment -> {
                             val type = item.type.replaceFirstChar { it.uppercase() }
-                            appendLine("- **$type**: ${item.name.ifEmpty { result.preview }}$scoreInfo")
+                            val name = item.name.ifEmpty { extractNameFromPreview(result.preview) }
+                            appendLine("#### $type: `$name`$scoreInfo")
+                            appendLine()
+                            // Show code content (up to MAX_CODE_PREVIEW_LINES lines)
+                            val preview = formatCodePreview(result.preview)
+                            if (preview.isNotBlank() && preview != name) {
+                                if (looksLikeCode(preview)) {
+                                    appendLine("```kotlin")
+                                    appendLine(preview)
+                                    appendLine("```")
+                                } else {
+                                    appendLine(preview)
+                                }
+                            }
+                            appendLine()
                         }
                     }
                 }
-                appendLine()
             }
         }
+    }
+    
+    /**
+     * Format code preview, limiting to MAX_CODE_PREVIEW_LINES lines.
+     */
+    private fun formatCodePreview(preview: String): String {
+        val lines = preview.lines()
+        return if (lines.size > MAX_CODE_PREVIEW_LINES) {
+            val truncatedLines = lines.take(MAX_CODE_PREVIEW_LINES)
+            val remaining = lines.size - MAX_CODE_PREVIEW_LINES
+            truncatedLines.joinToString("\n") + "\n// ... ($remaining more lines)"
+        } else {
+            preview.trim()
+        }
+    }
+    
+    /**
+     * Check if content looks like code (has typical code patterns).
+     */
+    private fun looksLikeCode(content: String): Boolean {
+        val codePatterns = listOf(
+            "fun ", "class ", "interface ", "object ", "val ", "var ", // Kotlin
+            "public ", "private ", "protected ", "void ", "static ", // Java
+            "def ", "import ", "from ", // Python
+            "function ", "const ", "let ", "=>", // JavaScript/TypeScript
+            "{", "}", "()", "->", "::"
+        )
+        return codePatterns.any { content.contains(it) }
+    }
+    
+    /**
+     * Extract a name from preview content (first meaningful line).
+     */
+    private fun extractNameFromPreview(preview: String): String {
+        val firstLine = preview.lines().firstOrNull { it.isNotBlank() } ?: preview
+        return firstLine.take(60).let { if (firstLine.length > 60) "$it..." else it }
     }
 
     fun buildQuerySuggestion(query: String): String {

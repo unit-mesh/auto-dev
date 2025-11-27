@@ -14,7 +14,11 @@ import kotlinx.datetime.Clock
 
 private val logger = KotlinLogging.logger {}
 
-const val DEFAULT_CHAR_LENGTH = 100
+/**
+ * Default character length for preview text in search results.
+ * Increased from 100 to 500 to provide more meaningful context.
+ */
+const val DEFAULT_CHAR_LENGTH = 500
 
 /**
  * Handles reranking of DocQL search results using different strategies.
