@@ -14,10 +14,7 @@ import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.integer
 import cc.unitmesh.agent.tool.schema.SchemaPropertyBuilder.string
 import cc.unitmesh.agent.tool.schema.ToolCategory
 import cc.unitmesh.devins.document.DocumentRegistry
-import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.docql.DocQLResult
-import cc.unitmesh.devins.document.DocumentChunk
-import cc.unitmesh.devins.document.TOCItem
 import cc.unitmesh.llm.KoogLLMService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
@@ -169,12 +166,15 @@ class DocQLInvocation(
 
     /** Parsed reranker type for this invocation */
     private val rerankerType: RerankerType = DocQLTool.parseRerankerType(params.rerankerType)
-    
+
     /** Reranker instance for search result ordering */
     private val resultReranker = DocQLResultReranker(llmService)
-    
+
     /** Keyword search executor */
     private val keywordSearchExecutor = DocQLKeywordSearchExecutor()
+
+    /** Direct query executor */
+    private val directQueryExecutor = DocQLDirectQueryExecutor(params.maxResults ?: initialMaxResults)
 
     override fun getDescription(): String = if (params.documentPath != null) {
         "Executing DocQL query: ${params.query} on ${params.documentPath}"
@@ -184,6 +184,7 @@ class DocQLInvocation(
 
     override suspend fun execute(context: ToolExecutionContext): ToolResult {
         return ToolErrorUtils.safeExecute(ToolErrorType.COMMAND_FAILED) {
+
             // Check if it's a raw keyword (Smart Search) or a DocQL query
             if (!params.query.trim().startsWith("$.")) {
                 executeSmartSearch(
@@ -195,9 +196,9 @@ class DocQLInvocation(
             } else {
                 // Standard DocQL execution
                 if (params.documentPath != null) {
-                    querySingleDocument(params.documentPath, params.query)
+                    directQueryExecutor.querySingleDocument(params.documentPath, params.query)
                 } else {
-                    queryAllDocuments(params.query)
+                    directQueryExecutor.queryAllDocuments(params.query)
                 }
             }
         }
@@ -280,8 +281,6 @@ class DocQLInvocation(
         return strategy.execute(context)
     }
 
-
-
     /**
      * Build the final search result with statistics.
      * Optionally applies LLM-based reranking when enabled.
@@ -332,11 +331,10 @@ class DocQLInvocation(
         )
 
         return ToolResult.Success(
-            formatSmartResult(scoredResults, keyword, result.truncated, result.totalCount),
+            DocQLResultFormatter.formatSmartResult(scoredResults, keyword, result.truncated, result.totalCount),
             stats.toMetadata()
         )
     }
-
 
     private suspend fun executeFallbackSearch(
         keyword: String,
@@ -411,7 +409,7 @@ class DocQLInvocation(
                 )
 
                 return ToolResult.Success(
-                    formatSmartResult(scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount),
+                    DocQLResultFormatter.formatSmartResult(scoredResults, keyword, rerankResult.truncated, rerankResult.totalCount),
                     stats.toMetadata()
                 )
             }
@@ -431,221 +429,9 @@ class DocQLInvocation(
         )
 
         return ToolResult.Success(
-            "No results found for '$keyword'.\n\n${buildQuerySuggestion(keyword)}",
+            "No results found for '$keyword'.\n\n${DocQLResultFormatter.buildQuerySuggestion(keyword)}",
             emptyStats.toMetadata()
         )
-    }
-
-    private fun formatSmartResult(
-        results: List<ScoredResult>,
-        keyword: String,
-        truncated: Boolean = false,
-        totalCount: Int = results.size
-    ): String {
-        return buildString {
-            appendLine("**Smart Search Results for '$keyword'**")
-            if (truncated) {
-                appendLine("Showing ${results.size} of $totalCount results (sorted by relevance)")
-            } else {
-                appendLine("Found ${results.size} relevant items (sorted by relevance)")
-            }
-            appendLine()
-
-            // Group by file for cleaner output
-            val byFile = results.groupBy { it.filePath ?: "Unknown File" }
-
-            byFile.forEach { (file, items) ->
-                appendLine("## $file")
-                items.forEach { result ->
-                    val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
-                    when (val item = result.item) {
-                        is Entity.ClassEntity -> {
-                            appendLine("  - **Class**: ${item.name}$scoreInfo")
-                            if (item.location.line != null) appendLine("    Line: ${item.location.line}")
-                        }
-
-                        is Entity.FunctionEntity -> {
-                            appendLine("  - **Function**: ${item.name}$scoreInfo")
-                            if (item.signature != null) appendLine("    Sig: ${item.signature}")
-                            if (item.location.line != null) appendLine("    Line: ${item.location.line}")
-                        }
-
-                        is TOCItem -> {
-                            appendLine("  - **Section**: ${item.title}$scoreInfo")
-                        }
-
-                        is DocumentChunk -> {
-                            appendLine("  - **Content**: ...${result.preview}...$scoreInfo")
-                        }
-
-                        is TextSegment -> {
-                            val type = item.type
-                            appendLine("  - **${type.replaceFirstChar { it.uppercase() }}**: ${item.name.ifEmpty { result.preview }}$scoreInfo")
-                        }
-                    }
-                }
-                appendLine()
-            }
-
-            if (truncated) {
-                appendLine("Tip: Use a more specific query or increase `maxResults` to see more results.")
-            } else {
-                appendLine("Tip: Use `$.code.class(\"Name\")` or `$.content.heading(\"Title\")` for more specific queries.")
-            }
-        }
-    }
-
-    private suspend fun querySingleDocument(documentPath: String?, query: String): ToolResult {
-        if (documentPath == null || documentPath == "null") {
-            return queryAllDocuments(query)
-        }
-
-        val result = DocumentRegistry.queryDocument(documentPath, query)
-        if (result == null) {
-            logger.info { "Document '$documentPath' not found, falling back to global search" }
-            return queryAllDocuments(query)
-        }
-
-        val stats = DocQLSearchStats(
-            searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
-            channels = listOf(extractQueryType(query)),
-            documentsSearched = 1,
-            totalRawResults = getResultCount(result),
-            resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: initialMaxResults),
-            truncated = getResultCount(result) > (params.maxResults ?: initialMaxResults),
-            usedFallback = false,
-            rerankerConfig = null, // No reranker for direct queries
-            scoringInfo = null
-        )
-
-        return ToolResult.Success(
-            formatDocQLResult(result, params.maxResults ?: initialMaxResults),
-            stats.toMetadata()
-        )
-    }
-
-    private suspend fun queryAllDocuments(query: String): ToolResult {
-        // Use the new multi-file query API
-        val result = DocumentRegistry.queryDocuments(query)
-
-        return if (!isEmptyResult(result)) {
-            val docsSearched = when (result) {
-                is DocQLResult.Entities -> result.itemsByFile.size
-                is DocQLResult.TocItems -> result.itemsByFile.size
-                is DocQLResult.Chunks -> result.itemsByFile.size
-                is DocQLResult.CodeBlocks -> result.itemsByFile.size
-                is DocQLResult.Tables -> result.itemsByFile.size
-                is DocQLResult.Files -> result.items.size
-                else -> 0
-            }
-
-            val stats = DocQLSearchStats(
-                searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
-                channels = listOf(extractQueryType(query)),
-                documentsSearched = docsSearched,
-                totalRawResults = getResultCount(result),
-                resultsAfterRerank = getResultCount(result).coerceAtMost(params.maxResults ?: initialMaxResults),
-                truncated = getResultCount(result) > (params.maxResults ?: initialMaxResults),
-                usedFallback = false,
-                rerankerConfig = null,
-                scoringInfo = null
-            )
-
-            ToolResult.Success(
-                formatDocQLResult(result, params.maxResults ?: initialMaxResults),
-                stats.toMetadata()
-            )
-        } else {
-            // Provide helpful suggestions when no results found
-            val availablePaths = DocumentRegistry.getRootRegisteredPaths()
-            if (availablePaths.isEmpty()) {
-                return ToolResult.Error(
-                    "No documents available. Please register or index documents first.",
-                    ToolErrorType.FILE_NOT_FOUND.code
-                )
-            }
-            val suggestion = buildQuerySuggestion(query)
-
-            val emptyStats = DocQLSearchStats(
-                searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
-                channels = listOf(extractQueryType(query)),
-                documentsSearched = 0,
-                totalRawResults = 0,
-                resultsAfterRerank = 0,
-                truncated = false,
-                usedFallback = false,
-                rerankerConfig = null,
-                scoringInfo = null
-            )
-
-            ToolResult.Success(
-                "No results found for query: $query\n\n$suggestion",
-                emptyStats.toMetadata()
-            )
-        }
-    }
-
-    private fun extractQueryType(query: String): String {
-        return when {
-            query.contains("$.code.class") -> "class"
-            query.contains("$.code.function") -> "function"
-            query.contains("$.code.classes") -> "classes"
-            query.contains("$.code.functions") -> "functions"
-            query.contains("$.content.heading") -> "heading"
-            query.contains("$.content.chunks") -> "chunks"
-            query.contains("$.toc") -> "toc"
-            query.contains("$.files") -> "files"
-            else -> "unknown"
-        }
-    }
-
-    private fun getResultCount(result: DocQLResult): Int {
-        return result.getResultCount()
-    }
-
-    private fun buildQuerySuggestion(query: String): String {
-        val suggestions = mutableListOf<String>()
-
-        suggestions.add("💡 **Suggestions to find the information:**")
-        if (!query.contains("toc")) {
-            suggestions.add("1. Try `$.toc[*]` to see all available sections in the documents")
-        }
-
-        if (query.contains("heading") || query.contains("h1") || query.contains("h2")) {
-            suggestions.add("2. Try a broader heading search with fewer keywords")
-            suggestions.add("3. Try `$.content.chunks()` to get all content and search manually")
-        } else if (!query.contains("chunks")) {
-            suggestions.add("2. Try `$.content.chunks()` to retrieve all document content")
-        }
-
-        return suggestions.joinToString("\n")
-    }
-
-    private fun formatDocQLResult(result: DocQLResult, maxResults: Int = initialMaxResults): String {
-        return result.formatDocQLResult(maxResults)
-    }
-
-    private fun isEmptyResult(result: DocQLResult): Boolean {
-        return result.isEmptyResult()
-    }
-
-    /**
-     * Format a score value to 2 decimal places (multiplatform compatible)
-     */
-    private fun formatScore(value: Double): String {
-        val rounded = kotlin.math.round(value * 100) / 100
-        val str = rounded.toString()
-        val dotIndex = str.indexOf('.')
-        return if (dotIndex == -1) {
-            "$str.00"
-        } else {
-            val currentDecimals = str.length - dotIndex - 1
-            when {
-                currentDecimals >= 2 -> str.take(dotIndex + 3)
-                currentDecimals == 1 -> str + "0"
-                else -> str + "00"
-            }
-        }
     }
 }
 
@@ -665,24 +451,8 @@ class DocQLTool(
 
     override fun getParameterClass(): String = DocQLParams::class.simpleName ?: "DocQLParams"
 
-    /**
-     * Override createInvocation to handle Map<String, Any> parameters from ToolOrchestrator
-     */
     override fun createInvocation(params: DocQLParams): ToolInvocation<DocQLParams, ToolResult> {
-        // Handle both direct DocQLParams and Map<String, Any> from ToolOrchestrator
-        val actualParams = when (params) {
-            is DocQLParams -> params
-            else -> {
-                // If params is actually a Map (cast from Any), convert it to DocQLParams
-                @Suppress("UNCHECKED_CAST")
-                val paramsMap = params as? Map<String, Any> ?: throw ToolException(
-                    "Invalid parameters type: expected DocQLParams or Map<String, Any>, got ${params::class.simpleName}",
-                    ToolErrorType.INVALID_PARAMETERS
-                )
-                convertMapToDocQLParams(paramsMap)
-            }
-        }
-        return createToolInvocation(actualParams)
+        return createToolInvocation(params)
     }
 
     override fun createToolInvocation(params: DocQLParams): ToolInvocation<DocQLParams, ToolResult> {

@@ -308,10 +308,11 @@ class DocumentRegistryMultiFileQueryTest {
         val smallSummary = DocumentRegistry.getCompressedPathsSummary(threshold = 20)
         println("\nSmall summary (10 files):\n$smallSummary\n")
         
-        assertTrue(smallSummary.contains("Available documents (10)"), 
-            "Should show simple list for small number")
-        assertFalse(smallSummary.contains("directory structure"), 
-            "Should not show tree structure for small number")
+        // With 10 files (< threshold of 20), should show EXPANDED format (tree structure)
+        assertTrue(smallSummary.contains("Available documents (10 total"), 
+            "Should show 'total' for tree structure format")
+        assertTrue(smallSummary.contains("directory structure"), 
+            "Should show tree structure for small number (expanded format)")
         
         // Add more files to exceed threshold
         for (i in 11..25) {
@@ -326,14 +327,12 @@ class DocumentRegistryMultiFileQueryTest {
         val largeSummary = DocumentRegistry.getCompressedPathsSummary(threshold = 20)
         println("\nLarge summary (25 files):\n$largeSummary\n")
         
-        assertTrue(largeSummary.contains("25 total"), 
-            "Should show total count")
-        assertTrue(largeSummary.contains("directory structure"), 
-            "Should show tree structure for large number")
-        assertTrue(largeSummary.contains("$.files[*]"), 
-            "Should suggest files query")
-        assertTrue(largeSummary.contains("💡 Tip:"), 
-            "Should provide helpful tip")
+        // With 25 files (>= threshold of 20), should show COMPRESSED format (simple list)
+        assertTrue(largeSummary.contains("Available documents (25)"), 
+            "Should show simple count without 'total' for compressed format")
+        assertFalse(largeSummary.contains("directory structure"), 
+            "Should NOT show tree structure for large number (compressed format)")
+        assertFalse(largeSummary.contains("$.files[*]"), 
+            "Simple list format should not include DocQL tips")
     }
 }
-

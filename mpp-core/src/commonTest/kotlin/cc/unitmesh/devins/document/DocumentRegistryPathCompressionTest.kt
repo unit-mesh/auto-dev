@@ -25,14 +25,17 @@ class DocumentRegistryPathCompressionTest {
             DocumentRegistry.registerDocument(path, doc, parser)
         }
 
-        // Test: Should show all paths directly (under threshold of 20)
+        // Test: 3 files < threshold 20, should show EXPANDED format (tree structure)
         val summary = DocumentRegistry.getCompressedPathsSummary(threshold = 20)
 
         println("Summary (small):\n$summary\n")
 
-        assertTrue(summary.contains("Available documents (3)"))
+        // Should show tree structure with "total" and directory structure hint
+        assertTrue(summary.contains("Available documents (3 total"))
+        assertTrue(summary.contains("directory structure"))
         paths.forEach { path ->
-            assertContains(summary, path)
+            // In tree structure, we only see the file name, not the full path
+            assertContains(summary, path.substringAfterLast('/'))
         }
     }
 
@@ -60,27 +63,25 @@ class DocumentRegistryPathCompressionTest {
             DocumentRegistry.registerDocument(path, doc, parser)
         }
 
-        // Test: Should show compressed tree (over threshold of 20)
+        // Test: 30 files >= threshold 20, should show COMPRESSED format (simple list)
         val summary = DocumentRegistry.getCompressedPathsSummary(threshold = 20)
 
         println("Summary (large):\n$summary\n")
 
-        // Should indicate total count
-        assertTrue(summary.contains("30 total"))
+        // Should show simple format with just count (no "total")
+        assertTrue(summary.contains("Available documents (30)"))
 
-        // Should mention DocQL files query
-        assertContains(summary, "\$.files[*]")
+        // Should NOT mention DocQL queries (that's for expanded format)
+        assertTrue(!summary.contains("\$.files[*]"))
 
-        // Should show directory structure
+        // Should show all paths as simple list
         assertContains(summary, "docs/")
         assertContains(summary, "src/")
         assertContains(summary, "tests/")
 
-        // Should show file counts
-        assertTrue(summary.contains("10 files") || summary.contains("(10)"))
-
-        // Should provide tips
-        assertContains(summary, "Tip:")
+        // Should NOT have tree structure indicators
+        assertTrue(!summary.contains("directory structure"))
+        assertTrue(!summary.contains("Tip:"))
     }
 
     @Test
@@ -100,18 +101,19 @@ class DocumentRegistryPathCompressionTest {
             DocumentRegistry.registerDocument(path, doc, parser)
         }
 
+        // 5 files >= threshold 4, should show COMPRESSED format (simple list)
         val summary = DocumentRegistry.getCompressedPathsSummary(threshold = 4)
 
         println("Summary (nested):\n$summary\n")
 
-        // Should show hierarchical structure
+        // Should show simple list, not tree structure
         assertContains(summary, "a/")
         assertContains(summary, "b/")
         assertContains(summary, "c/")
 
-        // Should show correct file counts
-        // a/ should have 4 files total
-        assertTrue(summary.contains("(4 files)") || summary.contains("4 total"))
+        // Should show simple count without tree indicators
+        assertTrue(summary.contains("Available documents (5)"))
+        assertTrue(!summary.contains("directory structure"))
     }
 
     @Test

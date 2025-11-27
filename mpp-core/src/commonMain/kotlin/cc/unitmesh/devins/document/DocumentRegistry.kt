@@ -396,6 +396,7 @@ object DocumentRegistry {
             return "No documents available."
         }
 
+        // When there are MANY files (>= threshold), use COMPRESSED format (simple list to save space)
         if (allPaths.size >= threshold) {
             return buildString {
                 appendLine("Available documents (${allPaths.size}):")
@@ -405,17 +406,18 @@ object DocumentRegistry {
             }.trimEnd()
         }
 
+        // When there are FEW files (< threshold), use EXPANDED format (tree structure with more details)
         val pathTree = buildPathTree(allPaths)
 
         return buildString {
             appendLine("Available documents (${allPaths.size} total - showing directory structure):")
             appendLine()
-            appendLine("Use DocQL `\$.files[*]` to list all files, or `\$.files[?(@.path contains \"pattern\")]` to filter.")
+            appendLine("Use DocQL `\\$.files[*]` to list all files, or `\\$.files[?(@.path contains \\\"pattern\\\")]` to filter.")
             appendLine()
             renderPathTree(this, pathTree, "", true)
             appendLine()
             appendLine("💡 Tip: Query specific directories to reduce context size, e.g.:")
-            appendLine("   \$.files[?(@.path contains \"docs\")]")
+            appendLine("   \\$.files[?(@.path contains \\\"docs\\\")]")
         }.trimEnd()
     }
 
