@@ -142,43 +142,8 @@ export abstract class BaseRenderer implements JsCodingAgentRenderer {
     this.isInDevinBlock = false;
     this.lastOutputLength = 0;
   }
-
-  /**
-   * Common implementation for LLM response end with similarity checking
-   */
-  protected baseLLMResponseEnd(): void {
-    // Force output any remaining content after filtering devin blocks
-    const finalContent = this.filterDevinBlocks(this.reasoningBuffer);
-    const remainingContent = finalContent.slice(this.lastOutputLength || 0);
-
-    if (remainingContent.length > 0) {
-      this.outputContent(remainingContent);
-    }
-
-    // Check if this reasoning is similar to the last one
-    const currentReasoning = finalContent.trim();
-    const similarity = this.calculateSimilarity(currentReasoning, this.lastIterationReasoning);
-
-    if (similarity > 0.8 && this.lastIterationReasoning.length > 0) {
-      this.consecutiveRepeats++;
-      if (this.consecutiveRepeats >= 2) {
-        this.renderRepeatAnalysisWarning();
-      }
-    } else {
-      this.consecutiveRepeats = 0;
-    }
-
-    this.lastIterationReasoning = currentReasoning;
-
-    // Only add a line break if the content doesn't already end with one
-    const trimmedContent = finalContent.trimEnd();
-    if (trimmedContent.length > 0 && !trimmedContent.endsWith('\n')) {
-      this.outputNewline();
-    }
-  }
-
-  /**
-   * Output content - to be implemented by subclasses
+    /**
+     * Output content - to be implemented by subclasses
    */
   protected abstract outputContent(content: string): void;
 
@@ -186,11 +151,4 @@ export abstract class BaseRenderer implements JsCodingAgentRenderer {
    * Output newline - to be implemented by subclasses
    */
   protected abstract outputNewline(): void;
-
-  /**
-   * Render warning for repetitive analysis - can be overridden by subclasses
-   */
-  protected renderRepeatAnalysisWarning(): void {
-    this.renderError('Agent appears to be repeating similar analysis...');
-  }
 }

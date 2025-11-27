@@ -71,9 +71,6 @@ abstract class BaseRenderer : CodingAgentRenderer {
         return content.replace(Regex("\n{3,}"), "\n\n")
     }
     
-    /**
-     * Default implementation for LLM response start
-     */
     override fun renderLLMResponseStart() {
         reasoningBuffer.clear()
         isInDevinBlock = false
@@ -86,7 +83,7 @@ abstract class BaseRenderer : CodingAgentRenderer {
         val currentReasoning = reasoningBuffer.toString().trim()
         val similarity = calculateSimilarity(currentReasoning, lastIterationReasoning)
         
-        if (similarity > 0.8 && lastIterationReasoning.isNotEmpty()) {
+        if (similarity > 0.95 && lastIterationReasoning.isNotEmpty()) {
             consecutiveRepeats++
             if (consecutiveRepeats >= 2) {
                 renderRepeatAnalysisWarning()
