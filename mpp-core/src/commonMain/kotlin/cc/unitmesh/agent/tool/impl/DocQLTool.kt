@@ -172,9 +172,12 @@ class DocQLInvocation(
 
     /** Parsed reranker type for this invocation */
     private val rerankerType: RerankerType = DocQLTool.parseRerankerType(params.rerankerType)
-
+    
     /** Reranker instance for search result ordering */
     private val resultReranker = DocQLResultReranker(llmService)
+    
+    /** Keyword search executor */
+    private val keywordSearchExecutor = DocQLKeywordSearchExecutor()
 
     override fun getDescription(): String = if (params.documentPath != null) {
         "Executing DocQL query: ${params.query} on ${params.documentPath}"
@@ -241,7 +244,7 @@ class DocQLInvocation(
         val expandedKeywords = keywordExpander.expandWithHint(keyword, secondaryKeyword)
 
         // === LEVEL 1: Try primary keywords first ===
-        val level1Results = executeKeywordSearch(
+        val level1Results = keywordSearchExecutor.executeKeywordSearch(
             keywords = expandedKeywords.primary,
             documentPath = documentPath,
             reranker = reranker,
@@ -261,7 +264,7 @@ class DocQLInvocation(
             expandedKeywords = expandedKeywords,
             level1Results = level1Results,
             searchExecutor = { kw, query ->
-                executeKeywordSearch(kw, documentPath, reranker, query)
+                keywordSearchExecutor.executeKeywordSearch(kw, documentPath, reranker, query)
             },
             resultBuilder = { res, kw, stats ->
                 buildSearchResult(res, kw, rerankerConfig, stats)
@@ -280,115 +283,6 @@ class DocQLInvocation(
         return strategy.execute(context)
     }
 
-    /**
-     * Execute search for a list of keywords and merge results.
-     */
-    private suspend fun executeKeywordSearch(
-        keywords: List<String>,
-        documentPath: String?,
-        reranker: DocumentReranker,
-        queryForScoring: String
-    ): SearchLevelResult {
-        if (keywords.isEmpty()) {
-            return SearchLevelResult(
-                items = emptyList(),
-                totalCount = 0,
-                truncated = false,
-                metadata = mutableMapOf(),
-                docsSearched = 0,
-                activeChannels = emptyList()
-            )
-        }
-
-        val allItems = mutableListOf<SearchItem>()
-        val allMetadata = mutableMapOf<SearchItem, Pair<Any, String?>>()
-        var totalDocsSearched = 0
-        val allChannels = mutableSetOf<String>()
-
-        // Execute search for each keyword in parallel
-        val keywordResults = coroutineScope {
-            keywords.map { kw ->
-                async {
-                    val queryChannels = mapOf(
-                        "class" to "$.code.class(\"$kw\")",
-                        "function" to "$.code.function(\"$kw\")",
-                        "heading" to "$.content.heading(\"$kw\")",
-                        "toc" to "$.toc[?(@.title contains \"$kw\")]"
-                    )
-
-                    val channelResults = queryChannels.mapNotNull { (channel, query) ->
-                        try {
-                            val result = if (documentPath != null) {
-                                DocumentRegistry.queryDocument(documentPath, query)
-                            } else {
-                                DocumentRegistry.queryDocuments(query)
-                            }
-                            if (result != null) channel to result else null
-                        } catch (e: Exception) {
-                            logger.warn { "Search channel '$channel' for keyword '$kw' failed: ${e.message}" }
-                            null
-                        }
-                    }.toMap()
-
-                    kw to channelResults
-                }
-            }.awaitAll().toMap()
-        }
-
-        // Merge results from all keywords
-        keywordResults.forEach { (kw, channelResults) ->
-            channelResults.forEach { (channel, result: DocQLResult) ->
-                allChannels.add(channel)
-                val items = mutableListOf<SearchItem>()
-                collectSearchItems(result, items, allMetadata)
-                allItems.addAll(items)
-
-                totalDocsSearched += when (result) {
-                    is DocQLResult.Entities -> result.itemsByFile.size
-                    is DocQLResult.TocItems -> result.itemsByFile.size
-                    is DocQLResult.Chunks -> result.itemsByFile.size
-                    else -> 0
-                }
-            }
-        }
-
-        // Deduplicate items by their unique ID
-        val uniqueItems = allItems.distinctBy { it.segment.id ?: it.hashCode() }
-
-        if (uniqueItems.isEmpty()) {
-            return SearchLevelResult(
-                items = emptyList(),
-                totalCount = 0,
-                truncated = false,
-                metadata = allMetadata,
-                docsSearched = totalDocsSearched,
-                activeChannels = allChannels.toList()
-            )
-        }
-
-        // Rerank the merged results
-        val rankedLists = mapOf("merged" to uniqueItems)
-        val rerankResult = reranker.rerank(
-            rankedLists = rankedLists,
-            query = queryForScoring,
-            segmentExtractor = { it.segment }
-        )
-
-        val rerankedItems = rerankResult.items.map { it.item }
-
-        return SearchLevelResult(
-            items = rerankedItems,
-            totalCount = rerankResult.totalCount,
-            truncated = rerankResult.truncated,
-            metadata = allMetadata,
-            docsSearched = totalDocsSearched,
-            activeChannels = allChannels.toList()
-        )
-    }
-
-    /**
-     * Filter search items by secondary keywords (for FILTER strategy).
-     */
 
 
     /**
@@ -446,76 +340,6 @@ class DocQLInvocation(
         )
     }
 
-    private fun collectSearchItems(
-        result: DocQLResult,
-        items: MutableList<SearchItem>,
-        itemMetadata: MutableMap<SearchItem, Pair<Any, String?>>
-    ) {
-        when (result) {
-            is DocQLResult.Entities -> {
-                result.itemsByFile.forEach { (file, entities) ->
-                    entities.forEach { entity ->
-                        val type = when (entity) {
-                            is Entity.ClassEntity -> "class"
-                            is Entity.FunctionEntity -> "function"
-                            else -> "entity"
-                        }
-                        val segment = TextSegment(
-                            text = entity.name,
-                            metadata = mapOf(
-                                "type" to type,
-                                "name" to entity.name,
-                                "id" to "${file}:${entity.name}:${entity.location.line}",
-                                "filePath" to file
-                            )
-                        )
-                        val item = SearchItem(segment)
-                        items.add(item)
-                        itemMetadata[item] = entity to file
-                    }
-                }
-            }
-
-            is DocQLResult.TocItems -> {
-                result.itemsByFile.forEach { (file, tocItems) ->
-                    tocItems.forEach { tocItem ->
-                        val segment = TextSegment(
-                            text = tocItem.title,
-                            metadata = mapOf(
-                                "type" to "toc",
-                                "name" to tocItem.title,
-                                "id" to "${file}:${tocItem.title}:${tocItem.level}",
-                                "filePath" to file
-                            )
-                        )
-                        val item = SearchItem(segment)
-                        items.add(item)
-                        itemMetadata[item] = tocItem to file
-                    }
-                }
-            }
-
-            is DocQLResult.Chunks -> {
-                result.itemsByFile.forEach { (file, chunks) ->
-                    chunks.forEach { chunk ->
-                        val segment = TextSegment(
-                            text = chunk.content,
-                            metadata = mapOf(
-                                "type" to "chunk",
-                                "id" to "${file}:${chunk.content.hashCode()}",
-                                "filePath" to file
-                            )
-                        )
-                        val item = SearchItem(segment)
-                        items.add(item)
-                        itemMetadata[item] = chunk to file
-                    }
-                }
-            }
-
-            else -> {}
-        }
-    }
 
     private suspend fun executeFallbackSearch(
         keyword: String,
