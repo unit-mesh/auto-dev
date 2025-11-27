@@ -39,7 +39,7 @@ data class DocQLSearchStats(
      * Detailed formatted results for display in dialog.
      * Contains the full verbose output with scores and file groupings.
      */
-    val detailedResults: String? = null,
+    val detailedResults: String,
     /**
      * Smart result summary - a concise one-line summary of the search results.
      * Used for display in the tool call header.
@@ -126,9 +126,6 @@ data class DocQLSearchStats(
     }
 
     companion object {
-        /**
-         * Parse from metadata map
-         */
         fun fromMetadata(metadata: Map<String, String>): DocQLSearchStats? {
             val searchTypeStr = metadata["docql_search_type"] ?: return null
             val searchType = try {
@@ -151,7 +148,7 @@ data class DocQLSearchStats(
                 scoringInfo = ScoringStats.fromMetadata(metadata),
                 keywordExpansion = KeywordExpansionStats.fromMetadata(metadata),
                 llmRerankerInfo = LLMRerankerStats.fromMetadata(metadata),
-                detailedResults = metadata["docql_detailed_results"],
+                detailedResults = metadata["docql_detailed_results"] ?: "",
                 smartSummary = metadata["docql_smart_summary"]
             )
         }

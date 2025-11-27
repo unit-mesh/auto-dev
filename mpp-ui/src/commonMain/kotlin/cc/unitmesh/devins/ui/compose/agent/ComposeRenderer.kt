@@ -764,9 +764,10 @@ class ComposeRenderer : BaseRenderer() {
                 val docqlStats = if (searchTypeStr != null) {
                     val searchType = try {
                         DocQLSearchStats.SearchType.valueOf(searchTypeStr)
-                    } catch (e: IllegalArgumentException) {
+                    } catch (_: IllegalArgumentException) {
                         null
                     }
+
                     searchType?.let {
                         DocQLSearchStats(
                             searchType = it,
@@ -778,7 +779,7 @@ class ComposeRenderer : BaseRenderer() {
                             resultsAfterRerank = metadata.docqlRerankedResults ?: 0,
                             truncated = metadata.docqlTruncated ?: false,
                             usedFallback = metadata.docqlUsedFallback ?: false,
-                            detailedResults = metadata.docqlDetailedResults,
+                            detailedResults = metadata.docqlDetailedResults ?: "",
                             smartSummary = metadata.docqlSmartSummary
                         )
                     }
@@ -922,8 +923,6 @@ class ComposeRenderer : BaseRenderer() {
                         metadata = toMessageMetadata(item)
                     )
                 }
-                // Skip deprecated items and live terminal items
-//                is TimelineItem.ToolCallItem,
                 is TimelineItem.ToolResultItem,
                 is TimelineItem.LiveTerminalItem -> null
             }

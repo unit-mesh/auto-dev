@@ -484,7 +484,8 @@ class DocQLInvocation(
             usedFallback = true,
             rerankerConfig = null,
             scoringInfo = null,
-            smartSummary = noResultSummary
+            smartSummary = noResultSummary,
+            detailedResults = noResultSummary
         )
 
         return ToolResult.Success(

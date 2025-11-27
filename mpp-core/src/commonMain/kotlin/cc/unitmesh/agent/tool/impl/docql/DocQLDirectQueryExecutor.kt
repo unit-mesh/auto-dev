@@ -24,6 +24,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
             return queryAllDocuments(query)
         }
 
+        val detailedResults = result.formatDocQLResult(maxResults)
         val stats = DocQLSearchStats(
             searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
             channels = listOf(extractQueryType(query)),
@@ -33,13 +34,11 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
             truncated = result.getResultCount() > maxResults,
             usedFallback = false,
             rerankerConfig = null, // No reranker for direct queries
-            scoringInfo = null
+            scoringInfo = null,
+            detailedResults = detailedResults
         )
 
-        return ToolResult.Success(
-            result.formatDocQLResult(maxResults),
-            stats.toMetadata()
-        )
+        return ToolResult.Success(detailedResults, stats.toMetadata())
     }
 
     suspend fun queryAllDocuments(query: String): ToolResult {
@@ -56,6 +55,7 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
                 else -> 0
             }
 
+            val detailedResults = result.formatDocQLResult(maxResults)
             val stats = DocQLSearchStats(
                 searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
                 channels = listOf(extractQueryType(query)),
@@ -65,15 +65,12 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
                 truncated = result.getResultCount() > maxResults,
                 usedFallback = false,
                 rerankerConfig = null,
-                scoringInfo = null
+                scoringInfo = null,
+                detailedResults = detailedResults
             )
 
-            ToolResult.Success(
-                result.formatDocQLResult(maxResults),
-                stats.toMetadata()
-            )
+            ToolResult.Success(detailedResults, stats.toMetadata())
         } else {
-            // Provide helpful suggestions when no results found
             val availablePaths = DocumentRegistry.getRootRegisteredPaths()
             if (availablePaths.isEmpty()) {
                 return ToolResult.Error(
@@ -92,7 +89,8 @@ class DocQLDirectQueryExecutor(private val maxResults: Int) {
                 truncated = false,
                 usedFallback = false,
                 rerankerConfig = null,
-                scoringInfo = null
+                scoringInfo = null,
+                detailedResults = "No results found for query: $query\n\n$suggestion"
             )
 
             ToolResult.Success(
