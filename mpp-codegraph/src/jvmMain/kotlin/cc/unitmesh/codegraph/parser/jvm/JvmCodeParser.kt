@@ -95,9 +95,120 @@ class JvmCodeParser : CodeParser {
         val nodes = mutableListOf<CodeNode>()
         val packageName = extractPackageName(node, sourceCode)
         
+        // First try to handle fragmented class declarations (when Tree-sitter fails to parse properly)
+        // This happens with large Kotlin files where class, identifier, constructor are separate nodes
+        handleFragmentedClasses(node, sourceCode, filePath, packageName, language, nodes)
+        
         processNode(node, sourceCode, filePath, packageName, language, nodes)
         
         return nodes
+    }
+    
+    /**
+     * Handle fragmented class declarations in Kotlin.
+     * Sometimes Tree-sitter fails to parse a class properly and outputs:
+     *   class (keyword) -> simple_identifier -> primary_constructor -> {
+     * instead of a proper class_declaration node.
+     * 
+     * This function scans root children and reconstructs class declarations from fragments.
+     */
+    private fun handleFragmentedClasses(
+        rootNode: TSNode,
+        sourceCode: String,
+        filePath: String,
+        packageName: String,
+        language: Language,
+        nodes: MutableList<CodeNode>
+    ) {
+        if (language != Language.KOTLIN) return
+        
+        var i = 0
+        while (i < rootNode.childCount) {
+            val child = rootNode.getChild(i) ?: break
+            
+            // Look for standalone "class" keyword at root level
+            if (child.type == "class") {
+                // Check if next sibling is an identifier (class name)
+                val nextNode = if (i + 1 < rootNode.childCount) rootNode.getChild(i + 1) else null
+                
+                if (nextNode != null && (nextNode.type == "simple_identifier" || nextNode.type == "type_identifier")) {
+                    val className = extractNodeText(nextNode, sourceCode)
+                    
+                    // Find the class body end (look for matching closing brace)
+                    var endLine = child.endPoint.row + 1
+                    var endColumn = child.endPoint.column
+                    
+                    // Scan forward to find the class body and its end
+                    for (j in i + 2 until rootNode.childCount) {
+                        val scanNode = rootNode.getChild(j) ?: continue
+                        
+                        // Skip primary_constructor, but track its end
+                        if (scanNode.type == "primary_constructor") {
+                            endLine = scanNode.endPoint.row + 1
+                            endColumn = scanNode.endPoint.column
+                            continue
+                        }
+                        
+                        // Look for the opening brace of class body
+                        if (scanNode.type == "{") {
+                            // Now we need to find the matching closing brace
+                            // For simplicity, we'll look for function_declaration children
+                            // and take the last one's end as an approximation
+                            // (This is a heuristic - in practice we'd need to track braces)
+                            endLine = scanNode.endPoint.row + 1
+                            endColumn = scanNode.endPoint.column
+                            
+                            // Scan further for class members to find class end
+                            for (k in j + 1 until rootNode.childCount) {
+                                val memberNode = rootNode.getChild(k) ?: continue
+                                // If we hit another class or package-level element, stop
+                                if (memberNode.type == "class" || 
+                                    memberNode.type == "class_declaration" ||
+                                    memberNode.type == "object_declaration") {
+                                    break
+                                }
+                                // Update end position with each class member
+                                if (memberNode.type == "function_declaration" ||
+                                    memberNode.type == "property_declaration") {
+                                    endLine = memberNode.endPoint.row + 1
+                                    endColumn = memberNode.endPoint.column
+                                }
+                            }
+                            break
+                        }
+                        
+                        // If we encounter another class or function, we've gone too far
+                        if (scanNode.type == "class" || 
+                            scanNode.type == "class_declaration" ||
+                            scanNode.type == "function_declaration") {
+                            break
+                        }
+                    }
+                    
+                    // Create the class node
+                    val classNode = CodeNode(
+                        id = java.util.UUID.randomUUID().toString(),
+                        type = CodeElementType.CLASS,
+                        name = className,
+                        packageName = packageName,
+                        filePath = filePath,
+                        startLine = child.startPoint.row + 1,
+                        endLine = endLine,
+                        startColumn = child.startPoint.column,
+                        endColumn = endColumn,
+                        qualifiedName = "$packageName.$className",
+                        content = "",  // Content extraction can be added if needed
+                        metadata = mapOf(
+                            "language" to language.name,
+                            "nodeType" to "fragmented_class",
+                            "parent" to ""
+                        )
+                    )
+                    nodes.add(classNode)
+                }
+            }
+            i++
+        }
     }
     
     private fun processNode(
@@ -110,11 +221,9 @@ class JvmCodeParser : CodeParser {
         parentName: String = ""
     ) {
         when (node.type) {
-            // Java class-like structures
+            // Java/Kotlin class-like structures
             "class_declaration", "interface_declaration", "enum_declaration",
-            // JavaScript/TypeScript class
-            "class", "class_declaration",
-            // Python class
+            // JavaScript/TypeScript class (note: "class" is a keyword in Kotlin, not a declaration)
             "class_definition" -> {
                 val codeNode = createCodeNode(node, sourceCode, filePath, packageName, language, parentName)
                 nodes.add(codeNode)
