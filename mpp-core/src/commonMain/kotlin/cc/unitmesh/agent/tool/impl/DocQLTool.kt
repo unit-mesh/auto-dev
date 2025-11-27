@@ -372,6 +372,7 @@ class DocQLInvocation(
             scoringInfo = null,
             keywordExpansion = keywordStats,
             llmRerankerInfo = llmRerankerStats,
+            fullResults = scoredResults.joinToString("\n") { it.preview },
             detailedResults = detailedResults,
             smartSummary = smartSummary
         )
@@ -459,6 +460,7 @@ class DocQLInvocation(
                         maxScore = scores.maxOrNull() ?: 0.0,
                         minScore = scores.minOrNull() ?: 0.0
                     ) else null,
+                    fullResults = scoredResults.joinToString("\n") { it.preview },
                     detailedResults = detailedResults,
                     smartSummary = smartSummary
                 )
