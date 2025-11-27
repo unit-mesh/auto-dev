@@ -54,10 +54,10 @@ class DocQLResultFormatterTest {
                 truncated = false
             )
 
-        assertTrue(formatted.contains("**Smart Search Results for 'Test'**"))
+        assertTrue(formatted.contains("## Search Results for 'Test'"))
         assertTrue(formatted.contains("Found 1 relevant items"))
         assertTrue(formatted.contains("## TestClass.kt"))
-        assertTrue(formatted.contains("- **Class**: TestClass (score: 0.95)"))
+        assertTrue(formatted.contains("- **Class**: `TestClass` (score: 0.95)"))
         assertTrue(formatted.contains("Line: 20"))
     }
 
@@ -66,7 +66,8 @@ class DocQLResultFormatterTest {
         val tocItem = TOCItem(
             level = 1,
             title = "Introduction",
-            anchor = "#intro"
+            anchor = "#intro",
+            content = "This is the introduction content."
         )
 
         val scoredResult = ScoredResult(
@@ -87,5 +88,6 @@ class DocQLResultFormatterTest {
         assertTrue(formatted.contains("Showing 1 of 10 results"))
         assertTrue(formatted.contains("## README.md"))
         assertTrue(formatted.contains("- **Section**: Introduction (score: 0.88)"))
+        assertTrue(formatted.contains("> This is the introduction content."))
     }
 }

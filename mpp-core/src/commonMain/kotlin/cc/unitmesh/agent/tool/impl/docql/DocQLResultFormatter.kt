@@ -120,6 +120,9 @@ object DocQLResultFormatter {
                         is TOCItem -> {
                             appendLine("- **Section**: ${item.title}$scoreInfo")
                             appendLine("  - Level: H${item.level}")
+                            if (!item.content.isNullOrBlank()) {
+                                appendLine("  > ${item.content!!.take(200).replace("\n", " ")}...")
+                            }
                         }
 
                         is DocumentChunk -> {
@@ -178,6 +181,13 @@ object DocQLResultFormatter {
                         for (item in items) {
                             if (count >= maxResults) break
                             appendLine("  ${"  ".repeat(item.level - 1)}${item.level}. ${item.title}")
+                            if (!item.content.isNullOrBlank()) {
+                                val preview = item.content!!.lines().take(3).joinToString("\n") { "    > $it" }
+                                appendLine(preview)
+                                if (item.content!!.lines().size > 3) {
+                                    appendLine("    > ...")
+                                }
+                            }
                             count++
                         }
                         appendLine()

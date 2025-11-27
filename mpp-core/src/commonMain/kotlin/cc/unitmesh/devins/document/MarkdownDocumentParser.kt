@@ -126,13 +126,33 @@ class MarkdownDocumentParser : DocumentParserService {
             val anchor = "#${heading.text.lowercase().replace(Regex("[^a-z0-9]+"), "-")}"
             
             // Calculate line number from offset (1-indexed)
-            val lineNumber = content.substring(0, minOf(heading.startOffset, content.length)).count { it == '\n' } + 1
+            val lineNumber = content.take(minOf(heading.startOffset, content.length)).count { it == '\n' } + 1
+
+            // Extract content for this section (up to next heading or end of file)
+            val safeEndOffset = minOf(heading.endOffset, content.length)
+            val startLine = content.take(safeEndOffset).count { it == '\n' }
+            val endLine = if (index < headings.size - 1) {
+                val safeNextStartOffset = minOf(headings[index + 1].startOffset, content.length)
+                content.take(safeNextStartOffset).count { it == '\n' } - 1
+            } else {
+                content.lines().size - 1
+            }
+
+            val sectionContent = if (startLine < content.lines().size) {
+                 content.lines()
+                    .subList(startLine + 1, minOf(endLine + 1, content.lines().size))
+                    .joinToString("\n")
+                    .trim()
+            } else {
+                ""
+            }
             
             val tocItem = TOCItem(
                 level = heading.level,
                 title = heading.text,
                 anchor = anchor,
                 lineNumber = lineNumber,
+                content = sectionContent,
                 children = mutableListOf()
             )
             

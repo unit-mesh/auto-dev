@@ -64,6 +64,7 @@ data class TOCItem(
     val anchor: String,                 // 锚点 ID（如 "#section-id"）
     val page: Int? = null,              // 页码（PDF 文档）
     val lineNumber: Int? = null,        // 行号（源代码文档）
+    val content: String? = null,        // 章节内容摘要
     val children: List<TOCItem> = emptyList()  // 子章节
 )
 
