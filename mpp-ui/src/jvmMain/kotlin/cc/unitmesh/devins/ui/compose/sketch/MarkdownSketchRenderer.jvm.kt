@@ -26,7 +26,6 @@ import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import com.mikepenz.markdown.model.State
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
-import kotlinx.coroutines.delay
 import org.intellij.markdown.ast.ASTNode
 
 
@@ -149,11 +148,14 @@ fun MarkdownSuccess(
     ) {
         Column(modifier) {
             state.node.children.forEach { node ->
-                MarkdownElementWithFileLinks(
-                    node = node,
-                    components = components,
-                    content = state.content
-                )
+                // Skip nodes with invalid offsets to prevent "Range out of bounds" errors
+                if (isNodeValid(node, state.content.length)) {
+                    MarkdownElementWithFileLinks(
+                        node = node,
+                        components = components,
+                        content = state.content
+                    )
+                }
             }
         }
     }
@@ -167,6 +169,19 @@ fun MarkdownSuccess(
     }
 }
 
+/**
+ * Check if an AST node and all its children have valid offsets within the content bounds.
+ * This prevents "Range [x, y) out of bounds for length z" errors.
+ */
+private fun isNodeValid(node: ASTNode, contentLength: Int): Boolean {
+    // Check current node bounds
+    if (node.startOffset < 0 || node.endOffset < node.startOffset || node.endOffset > contentLength) {
+        return false
+    }
+    // Recursively check all children
+    return node.children.all { isNodeValid(it, contentLength) }
+}
+
 fun safeSubstring(content: String, start: Int, end: Int): String {
     val safeStart = start.coerceIn(0, content.length)
     val safeEnd = end.coerceIn(safeStart, content.length)
@@ -174,7 +189,8 @@ fun safeSubstring(content: String, start: Int, end: Int): String {
 }
 
 /**
- * Custom MarkdownElement that handles file:// links with icons
+ * Custom MarkdownElement that handles file:// links with icons.
+ * Includes safe bounds checking to prevent "Range out of bounds" errors.
  */
 @Composable
 fun MarkdownElementWithFileLinks(
@@ -183,6 +199,11 @@ fun MarkdownElementWithFileLinks(
     content: String
 ) {
     val onOpenFile = LocalOnOpenFile.current
+
+    // Additional safety check before processing
+    if (!isNodeValid(node, content.length)) {
+        return
+    }
 
     if (node.type == org.intellij.markdown.MarkdownElementTypes.INLINE_LINK) {
         val linkDestination = node.children.firstOrNull {
