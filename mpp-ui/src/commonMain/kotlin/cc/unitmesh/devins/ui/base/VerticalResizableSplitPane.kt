@@ -41,7 +41,7 @@ fun VerticalResizableSplitPane(
     initialSplitRatio: Float = 0.5f,
     minRatio: Float = 0.2f,
     maxRatio: Float = 0.8f,
-    dividerHeight: Int = 8,
+    dividerHeight: Int = 4,
     saveKey: String? = null,
     top: @Composable () -> Unit,
     bottom: @Composable () -> Unit

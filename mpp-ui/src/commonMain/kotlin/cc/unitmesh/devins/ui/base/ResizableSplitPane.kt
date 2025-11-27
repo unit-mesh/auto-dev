@@ -41,7 +41,7 @@ fun ResizableSplitPane(
     initialSplitRatio: Float = 0.5f,
     minRatio: Float = 0.2f,
     maxRatio: Float = 0.8f,
-    dividerWidth: Int = 8,
+    dividerWidth: Int = 4,
     saveKey: String? = null,
     first: @Composable () -> Unit,
     second: @Composable () -> Unit
