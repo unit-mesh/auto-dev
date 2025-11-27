@@ -66,70 +66,7 @@ fun AgentMessageList(
         verticalArrangement = Arrangement.spacedBy(6.dp) // Reduce spacing
     ) {
         items(renderer.timeline) { timelineItem ->
-            when (timelineItem) {
-                is ComposeRenderer.TimelineItem.MessageItem -> {
-                    MessageItem(
-                        message = timelineItem.message,
-                        tokenInfo = timelineItem.tokenInfo
-                    )
-                }
-
-                is ComposeRenderer.TimelineItem.CombinedToolItem -> {
-                    CombinedToolItem(
-                        toolName = timelineItem.toolName,
-                        details = timelineItem.details,
-                        fullParams = timelineItem.fullParams,
-                        filePath = timelineItem.filePath,
-                        toolType = timelineItem.toolType,
-                        success = timelineItem.success,
-                        summary = timelineItem.summary,
-                        output = timelineItem.output,
-                        fullOutput = timelineItem.fullOutput,
-                        executionTimeMs = timelineItem.executionTimeMs,
-                        docqlStats = timelineItem.docqlStats,
-                        onOpenFileViewer = onOpenFileViewer
-                    )
-                }
-
-                is ComposeRenderer.TimelineItem.ToolResultItem -> {
-                    ToolResultItem(
-                        toolName = timelineItem.toolName,
-                        success = timelineItem.success,
-                        summary = timelineItem.summary,
-                        output = timelineItem.output,
-                        fullOutput = timelineItem.fullOutput
-                    )
-                }
-
-                is ComposeRenderer.TimelineItem.ToolErrorItem -> {
-                    ToolErrorItem(error = timelineItem.error, onDismiss = { renderer.clearError() })
-                }
-
-                is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
-                    TaskCompletedItem(
-                        success = timelineItem.success,
-                        message = timelineItem.message
-                    )
-                }
-
-                is ComposeRenderer.TimelineItem.TerminalOutputItem -> {
-                    TerminalOutputItem(
-                        command = timelineItem.command,
-                        output = timelineItem.output,
-                        exitCode = timelineItem.exitCode,
-                        executionTimeMs = timelineItem.executionTimeMs
-                    )
-                }
-
-                is ComposeRenderer.TimelineItem.LiveTerminalItem -> {
-                    LiveTerminalItem(
-                        sessionId = timelineItem.sessionId,
-                        command = timelineItem.command,
-                        workingDirectory = timelineItem.workingDirectory,
-                        ptyHandle = timelineItem.ptyHandle
-                    )
-                }
-            }
+            RenderMessageItem(timelineItem, onOpenFileViewer, renderer)
         }
 
         if (renderer.currentStreamingOutput.isNotEmpty()) {
@@ -142,6 +79,78 @@ fun AgentMessageList(
             item {
                 CurrentToolCallItem(toolCall = toolCall)
             }
+        }
+    }
+}
+
+@Composable
+fun RenderMessageItem(
+    timelineItem: ComposeRenderer.TimelineItem,
+    onOpenFileViewer: ((String) -> Unit)?,
+    renderer: ComposeRenderer
+) {
+    when (timelineItem) {
+        is ComposeRenderer.TimelineItem.MessageItem -> {
+            MessageItem(
+                message = timelineItem.message,
+                tokenInfo = timelineItem.tokenInfo
+            )
+        }
+
+        is ComposeRenderer.TimelineItem.CombinedToolItem -> {
+            CombinedToolItem(
+                toolName = timelineItem.toolName,
+                details = timelineItem.details,
+                fullParams = timelineItem.fullParams,
+                filePath = timelineItem.filePath,
+                toolType = timelineItem.toolType,
+                success = timelineItem.success,
+                summary = timelineItem.summary,
+                output = timelineItem.output,
+                fullOutput = timelineItem.fullOutput,
+                executionTimeMs = timelineItem.executionTimeMs,
+                docqlStats = timelineItem.docqlStats,
+                onOpenFileViewer = onOpenFileViewer
+            )
+        }
+
+        is ComposeRenderer.TimelineItem.ToolResultItem -> {
+            ToolResultItem(
+                toolName = timelineItem.toolName,
+                success = timelineItem.success,
+                summary = timelineItem.summary,
+                output = timelineItem.output,
+                fullOutput = timelineItem.fullOutput
+            )
+        }
+
+        is ComposeRenderer.TimelineItem.ToolErrorItem -> {
+            ToolErrorItem(error = timelineItem.error, onDismiss = { renderer.clearError() })
+        }
+
+        is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
+            TaskCompletedItem(
+                success = timelineItem.success,
+                message = timelineItem.message
+            )
+        }
+
+        is ComposeRenderer.TimelineItem.TerminalOutputItem -> {
+            TerminalOutputItem(
+                command = timelineItem.command,
+                output = timelineItem.output,
+                exitCode = timelineItem.exitCode,
+                executionTimeMs = timelineItem.executionTimeMs
+            )
+        }
+
+        is ComposeRenderer.TimelineItem.LiveTerminalItem -> {
+            LiveTerminalItem(
+                sessionId = timelineItem.sessionId,
+                command = timelineItem.command,
+                workingDirectory = timelineItem.workingDirectory,
+                ptyHandle = timelineItem.ptyHandle
+            )
         }
     }
 }
@@ -177,7 +186,6 @@ fun MessageItem(
         ) {
             PlatformMessageTextContainer(text = message.content) {
                 Column(modifier = Modifier.padding(8.dp)) {
-                    // Use SketchRenderer for assistant messages to support thinking blocks
                     if (!isUser) {
                         SketchRenderer.RenderResponse(
                             content = message.content,
@@ -185,7 +193,6 @@ fun MessageItem(
                             modifier = Modifier.fillMaxWidth()
                         )
                     } else {
-                        // For user messages, use simple text
                         Text(
                             text = message.content,
                             fontFamily = if (Platform.isWasm) FontFamily(Font(Res.font.NotoSansSC_Regular)) else FontFamily.Monospace,
@@ -193,7 +200,6 @@ fun MessageItem(
                         )
                     }
 
-                    // Display token info if available (only for assistant messages)
                     if (!isUser && tokenInfo != null && tokenInfo.totalTokens > 0) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(

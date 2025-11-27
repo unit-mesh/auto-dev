@@ -144,67 +144,7 @@ fun SuggestedFixesAgentView(
                     if (fixRenderer != null) {
                         // Render timeline items directly (no LazyColumn to avoid nesting)
                         fixRenderer.timeline.forEach { timelineItem ->
-                            when (timelineItem) {
-                                is ComposeRenderer.TimelineItem.MessageItem -> {
-                                    MessageItem(
-                                        message = timelineItem.message,
-                                        tokenInfo = timelineItem.tokenInfo
-                                    )
-                                }
-                                is ComposeRenderer.TimelineItem.CombinedToolItem -> {
-                                    CombinedToolItem(
-                                        toolName = timelineItem.toolName,
-                                        details = timelineItem.details,
-                                        fullParams = timelineItem.fullParams,
-                                        filePath = timelineItem.filePath,
-                                        toolType = timelineItem.toolType,
-                                        success = timelineItem.success,
-                                        summary = timelineItem.summary,
-                                        output = timelineItem.output,
-                                        fullOutput = timelineItem.fullOutput,
-                                        executionTimeMs = timelineItem.executionTimeMs,
-                                        docqlStats = timelineItem.docqlStats,
-                                        onOpenFileViewer = onOpenFileViewer
-                                    )
-                                }
-                                is ComposeRenderer.TimelineItem.ToolResultItem -> {
-                                    ToolResultItem(
-                                        toolName = timelineItem.toolName,
-                                        success = timelineItem.success,
-                                        summary = timelineItem.summary,
-                                        output = timelineItem.output,
-                                        fullOutput = timelineItem.fullOutput
-                                    )
-                                }
-                                is ComposeRenderer.TimelineItem.ToolErrorItem -> {
-                                    ToolErrorItem(
-                                        error = timelineItem.error,
-                                        onDismiss = { fixRenderer.clearError() }
-                                    )
-                                }
-                                is ComposeRenderer.TimelineItem.TaskCompleteItem -> {
-                                    TaskCompletedItem(
-                                        success = timelineItem.success,
-                                        message = timelineItem.message
-                                    )
-                                }
-                                is ComposeRenderer.TimelineItem.TerminalOutputItem -> {
-                                    TerminalOutputItem(
-                                        command = timelineItem.command,
-                                        output = timelineItem.output,
-                                        exitCode = timelineItem.exitCode,
-                                        executionTimeMs = timelineItem.executionTimeMs
-                                    )
-                                }
-                                is ComposeRenderer.TimelineItem.LiveTerminalItem -> {
-                                    LiveTerminalItem(
-                                        sessionId = timelineItem.sessionId,
-                                        command = timelineItem.command,
-                                        workingDirectory = timelineItem.workingDirectory,
-                                        ptyHandle = timelineItem.ptyHandle
-                                    )
-                                }
-                            }
+                            RenderMessageItem(timelineItem, onOpenFileViewer, fixRenderer)
                         }
 
                         // Render streaming content if present
