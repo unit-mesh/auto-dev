@@ -116,7 +116,10 @@ fun AgentMessageList(
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        items(renderer.timeline) { timelineItem ->
+        items(
+            items = renderer.timeline,
+            key = { it.timestamp }
+        ) { timelineItem ->
             RenderMessageItem(
                 timelineItem = timelineItem,
                 onOpenFileViewer = onOpenFileViewer,
@@ -125,7 +128,10 @@ fun AgentMessageList(
                     coroutineScope.launch {
                         // Scroll to the bottom when an item expands
                         delay(50)
-                        listState.animateScrollToItem(maxOf(0, listState.layoutInfo.totalItemsCount - 1))
+                        val totalItems = listState.layoutInfo.totalItemsCount
+                        if (totalItems > 0) {
+                            listState.animateScrollToItem(totalItems - 1)
+                        }
                     }
                 }
             )
@@ -144,7 +150,7 @@ fun AgentMessageList(
         }
 
         renderer.currentToolCall?.let { toolCall ->
-            item {
+            item(key = "current_tool_call") {
                 CurrentToolCallItem(toolCall = toolCall)
             }
         }

@@ -75,7 +75,10 @@ fun MessageList(
         if (messages.isNotEmpty() && !isLLMProcessing) {
             // 新消息完成时，重置用户滚动状态并滚动到底部
             userScrolledAway = false
-            listState.animateScrollToItem(messages.size - 1)
+            val totalItems = listState.layoutInfo.totalItemsCount
+            if (totalItems > 0) {
+                listState.animateScrollToItem(totalItems - 1)
+            }
         }
     }
 
