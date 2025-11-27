@@ -3,7 +3,6 @@ package cc.unitmesh.agent.tool.impl.docql
 import cc.unitmesh.devins.document.DocumentChunk
 import cc.unitmesh.devins.document.Entity
 import cc.unitmesh.devins.document.TOCItem
-import cc.unitmesh.devins.document.docql.DocQLResult
 import cc.unitmesh.agent.scoring.TextSegment
 import kotlin.math.round
 
@@ -49,53 +48,9 @@ object DocQLResultFormatter {
     }
 
     /**
-     * Format a compact summary for display to user/LLM.
-     * Shows key information without technical details like scores.
-     *
-     * Example output:
-     * ```
-     * Found 12 results for "Auth":
-     * - AuthService (class) in auth/AuthService.kt
-     * - authenticate (function) in auth/AuthService.kt
-     * - Authorization (heading) in docs/security.md
-     * ... and 9 more
-     * ```
-     */
-    fun formatCompactSummary(
-        results: List<ScoredResult>,
-        keyword: String,
-        truncated: Boolean = false,
-        totalCount: Int = results.size
-    ): String {
-        if (results.isEmpty()) {
-            return "No results found for '$keyword'."
-        }
-
-        return buildString {
-            val countInfo = if (truncated) "$totalCount+" else "${results.size}"
-            appendLine("Found $countInfo results for \"$keyword\":")
-            appendLine()
-
-            val itemsToShow = results.take(COMPACT_MAX_ITEMS)
-
-            itemsToShow.forEach { result ->
-                val (itemType, itemName) = extractItemInfo(result)
-                val fileInfo = result.filePath
-                appendLine("- $itemName ($itemType)$fileInfo")
-            }
-
-            val remainingCount = results.size - COMPACT_MAX_ITEMS
-            if (remainingCount > 0) {
-                appendLine()
-                appendLine("... and $remainingCount more (click Details to view all)")
-            }
-        }
-    }
-
-    /**
      * Extract item type and name from a ScoredResult for compact display.
      */
-    private fun extractItemInfo(result: ScoredResult): Pair<String, String> {
+    fun extractItemInfo(result: ScoredResult): Pair<String, String> {
         return when (val item = result.item) {
             is Entity.ClassEntity -> {
                 "class" to result.item.toString()
@@ -106,11 +61,11 @@ object DocQLResultFormatter {
             }
 
             is TOCItem -> {
-                "heading" to item.title
+                "heading" to "page: ${item.page}, line: ${item.lineNumber}" + item.title + item.children.joinToString(", ")
             }
 
             is DocumentChunk -> {
-                "content" to result.preview.take(200)
+                "content" to item.content
             }
 
             is TextSegment -> {
@@ -194,9 +149,6 @@ object DocQLResultFormatter {
         return suggestions.joinToString("\n")
     }
 
-    /**
-     * Format a score value to 2 decimal places (multiplatform compatible)
-     */
     fun formatScore(value: Double): String {
         val rounded = round(value * 100) / 100
         val str = rounded.toString()
