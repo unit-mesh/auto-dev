@@ -541,38 +541,6 @@ class DocQLTool(
         return DocQLInvocation(params, this, llmService)
     }
 
-    private fun convertMapToDocQLParams(map: Map<String, Any>): DocQLParams {
-        val query = map["query"] as? String
-            ?: throw ToolException("Missing required parameter 'query'", ToolErrorType.MISSING_REQUIRED_PARAMETER)
-
-        val documentPath = map["documentPath"] as? String
-        val secondaryKeyword = map["secondaryKeyword"] as? String
-        val rerankerType = map["rerankerType"] as? String
-        val maxResults = when (val maxRes = map["maxResults"]) {
-            is Int -> maxRes
-            is Long -> maxRes.toInt()
-            is Double -> maxRes.toInt()
-            is String -> maxRes.toIntOrNull()
-            null -> null
-            else -> null
-        }
-        val returnAll = when (val ret = map["returnAll"]) {
-            is Boolean -> ret
-            is String -> ret.toBooleanStrictOrNull()
-            null -> null
-            else -> null
-        }
-
-        return DocQLParams(
-            query = query,
-            documentPath = documentPath,
-            maxResults = maxResults ?: initialMaxResults,
-            secondaryKeyword = secondaryKeyword,
-            rerankerType = rerankerType,
-            returnAll = returnAll
-        )
-    }
-
     companion object {
         /**
          * Parse reranker type from string.
