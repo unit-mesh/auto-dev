@@ -302,9 +302,9 @@ class DocQLResultFormatterTest {
         println(formatted)
         println("=======================")
         
-        // Verify grouping by file
-        assertTrue(formatted.contains("### src/DocQLExecutor.kt"), "Should group by first file")
-        assertTrue(formatted.contains("### src/DocQLParser.kt"), "Should group by second file")
+        // Verify grouping by file (now includes file type icons)
+        assertTrue(formatted.contains("DocQLExecutor.kt"), "Should group by first file")
+        assertTrue(formatted.contains("DocQLParser.kt"), "Should group by second file")
         
         // Verify code blocks are present
         assertTrue(formatted.contains("```kotlin"), "Should use kotlin code blocks")

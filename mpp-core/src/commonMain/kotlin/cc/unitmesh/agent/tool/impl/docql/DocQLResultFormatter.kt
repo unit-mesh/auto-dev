@@ -23,7 +23,7 @@ object DocQLResultFormatter {
         "CHANGELOG.md", "CHANGELOG", "HISTORY.md", "RELEASES.md",
         "package-lock.json", "yarn.lock", "pnpm-lock.yaml"
     )
-    
+
     /**
      * Directory patterns that should be deprioritized.
      * Matches any path containing these directory names.
@@ -32,7 +32,7 @@ object DocQLResultFormatter {
         ".augment", ".cursor", ".vscode", ".idea",
         "node_modules", "__pycache__", ".git"
     )
-    
+
     /**
      * Check if a file path is low priority (noisy content).
      */
@@ -41,21 +41,22 @@ object DocQLResultFormatter {
         if (LOW_PRIORITY_FILES.contains(fileName)) return true
         return LOW_PRIORITY_DIRS.any { dir -> path.contains("/$dir/") || path.startsWith("$dir/") }
     }
-    
+
     /**
      * Get file priority for sorting (lower = higher priority).
      * Source code files get higher priority than documentation.
      */
     private fun getFilePriority(path: String): Int {
         if (isLowPriorityPath(path)) return 100
-        
+
         val ext = path.substringAfterLast('.').lowercase()
         return when (ext) {
             // Source code (highest priority)
             "kt", "java", "ts", "tsx", "js", "jsx", "py", "go", "rs", "cs" -> 0
             // Test files (still important but lower than main code)
-            else -> if (path.contains("test", ignoreCase = true) || 
-                       path.contains("Test.")) 5 else {
+            else -> if (path.contains("test", ignoreCase = true) ||
+                path.contains("Test.")
+            ) 5 else {
                 when (ext) {
                     // Configuration files
                     "gradle", "kts", "toml", "yaml", "yml", "json", "xml" -> 10
@@ -67,7 +68,7 @@ object DocQLResultFormatter {
             }
         }
     }
-    
+
     /**
      * Sort files by priority, putting source code first and low-priority files last.
      */
@@ -75,6 +76,22 @@ object DocQLResultFormatter {
         return items.entries
             .sortedBy { getFilePriority(it.key) }
             .map { it.key to it.value }
+    }
+
+    /**
+     * Format file path with icon for display.
+     * Shows a cleaner, more readable path.
+     */
+    private fun formatFilePath(path: String): String {
+        val displayPath = if (path.length > 80) {
+            val parts = path.split("/")
+            if (parts.size > 4) {
+                val start = parts.take(2).joinToString("/")
+                val end = parts.takeLast(2).joinToString("/")
+                "$start/.../$end"
+            } else path
+        } else path
+        return "$displayPath"
     }
 
     /**
@@ -101,16 +118,34 @@ object DocQLResultFormatter {
 
         val countInfo = if (truncated) "$totalCount+" else "${filteredResults.size}"
 
-        val topItems = filteredResults.take(initialMaxResults).mapNotNull { result ->
+        // Generate concise preview with top items
+        val topItems = filteredResults.take(3).mapNotNull { result ->
             val (itemType, itemName) = extractItemInfo(result)
             if (itemName.isNotBlank()) "$itemName ($itemType)" else null
         }
 
         val preview = topItems.joinToString(", ")
-        val moreCount = filteredResults.size - initialMaxResults
-        val moreInfo = if (moreCount > 0) ", +$moreCount more" else ""
 
-        return "Found $countInfo: $preview$moreInfo"
+        // Add file type distribution for large result sets
+        val fileTypeSummary = if (filteredResults.size > 5) {
+            val byType = filteredResults.groupBy { result ->
+                when (val item = result.item) {
+                    is Entity.ClassEntity -> "class"
+                    is Entity.FunctionEntity -> "function"
+                    is Entity.ConstructorEntity -> "constructor"
+                    is TOCItem -> "heading"
+                    is DocumentChunk -> "content"
+                    else -> "item"
+                }
+            }
+            val typeCounts = byType.entries
+                .sortedByDescending { it.value.size }
+                .take(3)
+                .joinToString(", ") { "${it.value.size} ${it.key}s" }
+            " ($typeCounts)"
+        } else ""
+
+        return "Found $countInfo: $preview$fileTypeSummary"
     }
 
     /**
@@ -167,7 +202,7 @@ object DocQLResultFormatter {
      * Maximum lines to show for function/method code blocks in search results.
      */
     private const val MAX_CODE_PREVIEW_LINES = 20
-    
+
     fun formatFallbackResult(
         results: List<ScoredResult>,
         keyword: String,
@@ -184,7 +219,7 @@ object DocQLResultFormatter {
             }
             isValidEntity
         }
-        
+
         // Separate high-priority and low-priority results
         val (highPriority, lowPriority) = filteredResults.partition { result ->
             val path = result.filePath ?: ""
@@ -214,9 +249,9 @@ object DocQLResultFormatter {
             val sortedByFile = sortByFilePriority(byFile)
 
             sortedByFile.forEach { (file, items) ->
-                appendLine("### $file")
+                appendLine("### ${formatFilePath(file)}")
                 appendLine()
-                
+
                 items.forEach { result ->
                     val scoreInfo = if (result.score > 0) " (score: ${formatScore(result.score)})" else ""
                     when (val item = result.item) {
@@ -319,7 +354,7 @@ object DocQLResultFormatter {
             }
         }
     }
-    
+
     /**
      * Format code preview, limiting to MAX_CODE_PREVIEW_LINES lines.
      */
@@ -333,7 +368,7 @@ object DocQLResultFormatter {
             preview.trim()
         }
     }
-    
+
     /**
      * Check if content looks like code (has typical code patterns).
      */
@@ -347,7 +382,7 @@ object DocQLResultFormatter {
         )
         return codePatterns.any { content.contains(it) }
     }
-    
+
     /**
      * Extract a name from preview content (first meaningful line).
      */
@@ -382,7 +417,7 @@ object DocQLResultFormatter {
                     // Filter out low-priority files
                     val filteredByFile = result.itemsByFile.filterKeys { !isLowPriorityPath(it) }
                     val lowPriorityCount = result.totalCount - filteredByFile.values.sumOf { it.size }
-                    
+
                     val totalItems = filteredByFile.values.sumOf { it.size }
                     val truncated = totalItems > maxResults * 2
 
@@ -398,12 +433,12 @@ object DocQLResultFormatter {
                     var count = 0
                     // Sort by file priority (source code first)
                     val sortedFiles = sortByFilePriority(filteredByFile)
-                    
+
                     for ((filePath, items) in sortedFiles) {
                         if (count >= maxResults) break
 
-                        appendLine("## $filePath")
-                        
+                        appendLine("## ${formatFilePath(filePath)}")
+
                         // For very long TOC lists (like CHANGELOG), show summary instead
                         if (items.size > 50) {
                             appendLine("  (${items.size} sections - showing first 5)")
@@ -464,11 +499,11 @@ object DocQLResultFormatter {
                     var count = 0
                     // Sort by file priority (source code first)
                     val sortedFiles = sortByFilePriority(filteredByFile)
-                    
+
                     for ((filePath, items) in sortedFiles) {
                         if (count >= maxResults) break
 
-                        appendLine("## $filePath")
+                        appendLine("## ${formatFilePath(filePath)}")
 
                         // Group entities by type for better readability
                         val classes = items.filterIsInstance<Entity.ClassEntity>()
@@ -532,7 +567,7 @@ object DocQLResultFormatter {
                     // Filter out low-priority files
                     val filteredByFile = result.itemsByFile.filterKeys { !isLowPriorityPath(it) }
                     val lowPriorityCount = result.totalCount - filteredByFile.values.sumOf { it.size }
-                    
+
                     val totalItems = filteredByFile.values.sumOf { it.size }
                     val truncated = totalItems > maxResults
 
@@ -550,7 +585,7 @@ object DocQLResultFormatter {
                     var count = 0
                     // Sort by file priority (source code first)
                     val sortedFiles = sortByFilePriority(filteredByFile)
-                    
+
                     for ((filePath, items) in sortedFiles) {
                         if (count >= maxResults) break
 
@@ -558,7 +593,7 @@ object DocQLResultFormatter {
                         val nonEmptyItems = items.filter { it.content.trim().isNotEmpty() }
                         if (nonEmptyItems.isEmpty()) continue
 
-                        appendLine("## $filePath")
+                        appendLine("## ${formatFilePath(filePath)}")
                         appendLine()
 
                         for (chunk in nonEmptyItems) {
@@ -588,7 +623,7 @@ object DocQLResultFormatter {
                     appendLine("Found ${result.totalCount} code blocks across ${result.itemsByFile.size} file(s):")
                     appendLine()
                     for ((filePath, items) in result.itemsByFile) {
-                        appendLine("## $filePath")
+                        appendLine("## ${formatFilePath(filePath)}")
                         items.forEach { block ->
                             appendLine("```${block.language ?: ""}")
                             appendLine(block.code)
@@ -603,7 +638,7 @@ object DocQLResultFormatter {
                 buildString {
                     appendLine("Found ${result.totalCount} tables across ${result.itemsByFile.size} file(s):")
                     for ((filePath, items) in result.itemsByFile) {
-                        appendLine("## $filePath")
+                        appendLine("## ${formatFilePath(filePath)}")
                         appendLine("  ${items.size} table(s)")
                     }
                 }

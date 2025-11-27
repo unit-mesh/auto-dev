@@ -56,7 +56,8 @@ class DocQLResultFormatterTest {
 
         assertTrue(formatted.contains("## Search Results for 'Test'"))
         assertTrue(formatted.contains("Found 1 relevant items"))
-        assertTrue(formatted.contains("### TestClass.kt"))
+        // File path now includes icon
+        assertTrue(formatted.contains("TestClass.kt"))
         // Class with line number and score
         assertTrue(formatted.contains("#### Class: `TestClass:20`"))
         assertTrue(formatted.contains("(score: 0.95)"))
@@ -87,7 +88,8 @@ class DocQLResultFormatterTest {
         )
 
         assertTrue(formatted.contains("Showing 1 of 10 results"))
-        assertTrue(formatted.contains("### README.md"))
+        // File path now includes icon
+        assertTrue(formatted.contains("README.md"))
         // Section with score
         assertTrue(formatted.contains("#### Section: Introduction"))
         assertTrue(formatted.contains("(score: 0.88)"))
@@ -120,7 +122,8 @@ class DocQLResultFormatterTest {
 
         assertTrue(formatted.contains("## Search Results for 'UserService'"))
         assertTrue(formatted.contains("Found 1 relevant items"))
-        assertTrue(formatted.contains("### UserService.kt"))
+        // File path now includes icon
+        assertTrue(formatted.contains("UserService.kt"))
         // Constructor should be formatted with signature and line number
         assertTrue(formatted.contains("#### Constructor: `UserService(String name):15`"))
         assertTrue(formatted.contains("(score: 0.92)"))
