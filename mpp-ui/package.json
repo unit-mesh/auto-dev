@@ -1,6 +1,6 @@
 {
   "name": "@autodev/cli",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "AutoDev CLI - Terminal UI for AI-powered development assistant",
   "type": "module",
   "bin": {
@@ -8,8 +8,9 @@
   },
   "scripts": {
     "build:kotlin": "cd .. && ./gradlew :mpp-core:assembleJsPackage",
+    "build:kotlin-deps": "cd ../mpp-core/build/packages/js && npm install --ignore-scripts",
     "build:ts": "cd .. && ./gradlew :mpp-ui:compileKotlinJs && cd mpp-ui && tsc && chmod +x dist/jsMain/typescript/index.js",
-    "build": "npm run build:kotlin && npm run build:ts",
+    "build": "npm run build:kotlin && npm run build:kotlin-deps && npm run build:ts",
     "dev": "tsc --watch",
     "start": "node dist/jsMain/typescript/index.js",
     "code": "node dist/jsMain/typescript/index.js code",
