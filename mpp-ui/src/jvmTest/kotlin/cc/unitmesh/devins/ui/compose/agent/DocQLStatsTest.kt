@@ -84,7 +84,21 @@ class DocQLStatsTest {
     fun `test minimal DocQLSearchStats roundtrip`() {
         val original = DocQLSearchStats(
             searchType = DocQLSearchStats.SearchType.DIRECT_QUERY,
-            query = "simple query"
+            query = "simple query",
+            documentPath = "",
+            channels = emptyList(),
+            documentsSearched = 0,
+            totalRawResults = 0,
+            resultsAfterRerank = 0,
+            truncated = false,
+            usedFallback = false,
+            rerankerConfig = null,
+            scoringInfo = null,
+            keywordExpansion = null,
+            llmRerankerInfo = null,
+            detailedResults = "",
+            smartSummary = null,
+            fullResults = null,
         )
 
         val metadata = original.toMetadata()

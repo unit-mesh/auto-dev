@@ -17,7 +17,7 @@ import kotlin.test.assertNull
  * 5. fromMessageMetadata() deserializes docqlStats from MessageMetadata
  */
 class DocQLStatsFlowTest {
-    
+
     @Test
     fun `test MessageMetadata serialization and deserialization of DocQL stats`() {
         // Simulate what toMessageMetadata does
@@ -34,7 +34,7 @@ class DocQLStatsFlowTest {
             detailedResults = "Detailed results...",
             smartSummary = "Found 25: AuthService (class), login (function), +23 more"
         )
-        
+
         // Create MessageMetadata like toMessageMetadata does
         val messageMetadata = MessageMetadata(
             itemType = TimelineItemType.COMBINED_TOOL,
@@ -57,7 +57,7 @@ class DocQLStatsFlowTest {
             docqlDetailedResults = stats.detailedResults,
             docqlSmartSummary = stats.smartSummary
         )
-        
+
         // Verify all fields are set
         assertEquals("SMART_SEARCH", messageMetadata.docqlSearchType)
         assertEquals("authentication", messageMetadata.docqlQuery)
@@ -68,11 +68,11 @@ class DocQLStatsFlowTest {
         assertEquals(25, messageMetadata.docqlRerankedResults)
         assertEquals(true, messageMetadata.docqlTruncated)
         assertEquals(false, messageMetadata.docqlUsedFallback)
-        
+
         // Now simulate what fromMessageMetadata does
         val searchTypeStr = messageMetadata.docqlSearchType
         assertNotNull(searchTypeStr, "docqlSearchType should not be null")
-        
+
         val restoredStats = if (searchTypeStr != null) {
             val searchType = try {
                 DocQLSearchStats.SearchType.valueOf(searchTypeStr)
@@ -84,18 +84,19 @@ class DocQLStatsFlowTest {
                     searchType = it,
                     query = messageMetadata.docqlQuery ?: "",
                     documentPath = messageMetadata.docqlDocumentPath,
-                    channels = messageMetadata.docqlChannels?.split(",")?.filter { ch -> ch.isNotBlank() } ?: emptyList(),
+                    channels = messageMetadata.docqlChannels?.split(",")?.filter { ch -> ch.isNotBlank() }
+                        ?: emptyList(),
                     documentsSearched = messageMetadata.docqlDocsSearched ?: 0,
                     totalRawResults = messageMetadata.docqlRawResults ?: 0,
                     resultsAfterRerank = messageMetadata.docqlRerankedResults ?: 0,
                     truncated = messageMetadata.docqlTruncated ?: false,
                     usedFallback = messageMetadata.docqlUsedFallback ?: false,
-                    detailedResults = messageMetadata.docqlDetailedResults,
+                    detailedResults = messageMetadata.docqlDetailedResults ?: "",
                     smartSummary = messageMetadata.docqlSmartSummary
                 )
             }
         } else null
-        
+
         // Verify restored stats
         assertNotNull(restoredStats, "Restored stats should not be null")
         assertEquals(stats.searchType, restoredStats.searchType)
@@ -110,7 +111,7 @@ class DocQLStatsFlowTest {
         assertEquals(stats.detailedResults, restoredStats.detailedResults)
         assertEquals(stats.smartSummary, restoredStats.smartSummary)
     }
-    
+
     @Test
     fun `test MessageMetadata without DocQL stats`() {
         val messageMetadata = MessageMetadata(
@@ -118,16 +119,16 @@ class DocQLStatsFlowTest {
             toolName = "read_file",
             success = true
         )
-        
+
         // docqlSearchType should be null for non-DocQL tools
         assertNull(messageMetadata.docqlSearchType)
-        
+
         // Restoration should return null
         val searchTypeStr = messageMetadata.docqlSearchType
         val restoredStats = if (searchTypeStr != null) {
             DocQLSearchStats.SearchType.valueOf(searchTypeStr)
         } else null
-        
+
         assertNull(restoredStats)
     }
 }
